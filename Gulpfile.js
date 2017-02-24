@@ -146,7 +146,7 @@ function dev_server(done) {
         .listen(port, null, function() {
             console.info(`#############################################`);
             console.info(`## Development server started on port ${port} ##`);
-            console.info(`##     http://dev.online-go.com:${port}       ##`);
+            console.info(`##   http://dev.beta.online-go.com:${port}    ##`);
             console.info(`#############################################`);
         });
 
