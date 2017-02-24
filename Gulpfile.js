@@ -81,7 +81,7 @@ function build_styl(done) {
 }
 
 function min_styl(done) {
-    let version = execSync('git describe --long');
+    let version = execSync('git describe --long || echo "min"');
     version = ("" + version).replace(/\s/g, '')
     console.log(version);
     console.info(`Building ogs.${version}.css`);
