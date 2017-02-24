@@ -5,8 +5,6 @@ typings
 *.swo
 webpack-stats.json
 src/components/base
-crap
-yarn.lock
 .vscode
 todo
 yarn-error.log
