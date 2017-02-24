@@ -1,0 +1,651 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.Game {
+    position: absolute;
+    top: below-navbar;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+
+.Game.portrait.squashed {
+    overflow-y: scroll;
+}
+
+
+.Game.zen {
+    top: 0;
+}
+
+.submit-button {
+    white-space: nowrap;
+}
+
+
+//goban-view-bar-width=15rem
+goban-view-bar-width=400px
+
+.MainGobanView {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    //align-content: stretch;
+    //justify-content: stretch;
+
+    // .players is handled in Players.styl
+
+    .play-controls { /* {{{ */
+        flex-grow: 0;
+        flex-shrink: 0;
+        display: block;
+        user-select: none;
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 1rem;
+        max-width: 100vw;
+        //height: 23rem;
+        //min-height: 5rem;
+
+        > div {
+            width: 100%;
+        }
+
+        .game-state {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .game-action-buttons {
+            position: relative;
+            text-align: center;
+        }
+
+        .pause-controls {
+            text-align: center;
+        }
+        .play-buttons {
+            height: 2.6rem;
+            display: flex;
+            justify-content: space-between;
+            > span {
+                flex-grow: 1;
+                flex-basis: 33%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            > span:first-child {
+                justify-content: flex-start;
+            }
+            > span:last-child {
+                justify-content: flex-end;
+            }
+        }
+        .stone-removal-controls {
+            text-align: center;
+
+            .explanation {
+                padding: 1rem;
+                font-style: italic;
+            }
+        }
+        .cancel-button {
+            /*
+            position: absolute;
+            right: 0.5em;
+            bottom: 0.5em;
+            */
+        }
+        .undo-button {
+            /*
+            position: absolute;
+            left: 0.5em;
+            bottom: 0.5em;
+            */
+        }
+        .accept-undo-button {
+            /*
+            position: absolute;
+            left: 0.5em;
+            bottom: 0.5em;
+            */
+        }
+    }
+
+    .filler {
+        flex-grow: 1;
+        flex-basis: 95%;
+    }
+    
+    .center-col {
+        .play-controls {
+            flex-grow: 0;
+            padding-top: 0;
+            //height: 100%;
+        }
+    }
+
+    &.wide .right-col {
+        .play-controls {
+            flex-grow: 1;
+            flex-shrink: 0;
+            //justify-content: center;
+        }
+    }
+    /* }}} */
+
+    .conditional-move-planner { /* {{{ */
+        text-align: center;
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    /* }}} */
+
+    .game-analyze-button-bar { /* {{{ */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .stone-button {
+            line-height: 2rem;
+        }
+        img {
+            width: 1rem;
+            height: 1rem;
+        }
+        input {
+            width: 2.0rem;
+            height: 2.0rem;
+            line-height: 1rem;
+            padding: 0;
+            margin: 0;
+            border: 0;
+        }
+
+    }
+
+    /* }}} */
+
+    .chat-container { /* {{{ */
+        flex-shrink: 1;
+        flex-grow: 1;
+    }
+    .center-col {
+        .chat-container {
+            flex-grow: 1;
+            flex-basis: 250px;
+        }
+    }
+
+    &.portrait .center-col {
+        .chat-container {
+            flex-grow: 1;
+            flex-basis: 250px;
+            //margin-bottom: 2rem;
+        }
+    }
+
+    /* }}}*/
+
+    .ad-container { /* {{{ */
+        flex-grow: 0;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .ad {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .right-col {
+        .ad-container {
+            padding-top: 0.3rem;
+        }
+    }
+    .center-col {
+        .ad-container {
+            padding-top: 0.3rem;
+            padding-bottom: 0.3rem;
+        }
+    }
+
+    &.squashed {
+        .right-col, .center-col {
+            .ad-container {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+        }
+    }
+
+    /* }}} */
+
+    .goban-container { /* {{{ */
+        //flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        .Goban {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    } /* }}} */
+
+    .action-bar { /* {{{ */
+        display: flex;
+        min-height: 2rem;
+        //justify-content: space-between;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        themed color shade3
+
+        .move-number, .icons {
+            flex-shrink: 0;
+            flex-grow: 1;
+            white-space: nowrap;
+        }
+        .move-number {
+            text-align: right;
+        }
+
+        .fa-trophy, .fa-lock {
+            themed color shade3
+            margin-left: 0.2rem;
+        }
+        .fa-trophy:hover, .fa-lock:hover {
+            themed color fg
+        }
+
+        .controls {
+            flex-shrink: 0;
+            flex-grow: 1;
+            flex-basis: 50%;
+            display: flex;
+
+            .move-control {
+                flex-shrink: 0;
+                flex-grow: 1;
+                cursor: pointer;
+                text-align: center;
+            }
+            .move-control:hover, .move-number:hover, .icons:hover {
+                themed color fg
+            }
+
+        }
+    }
+
+    &.portrait .action-bar {
+        .icons {
+            padding-left: 1.0rem;
+        }
+        .move-number {
+        }
+    }
+    /* }}} */
+
+    .tab-icon { /* {{{ */
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        font-size: 1.2rem;
+        cursor: pointer;
+        themed color shade2
+        z-index: z.goban.tab-icon;
+        padding: 0.5rem;
+    }
+    .tab-icon:hover {
+        themed color fg
+    }
+    /* }}} */
+
+    .leave-zen-mode-button { /* {{{ */
+        display: none;
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 2rem;
+        themed color shade3
+        z-index: z.goban.exit-zenmode;
+        cursor: pointer;
+    }
+    .leave-zen-mode-button:hover {
+        themed color fg
+    }
+
+    &.zen {
+        themed background-color bg 
+        .left-col, .right-col {
+            display: none;
+        }
+
+        .leave-zen-mode-button {
+            display: inline-block;
+        }
+    } /* }}} */
+
+    .center-col { /* {{{ */
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        //justify-content: stretch;
+
+        .goban-container {
+        }
+
+    }
+    &.portrait .center-col {
+        .cancel-button {
+            position: relative;
+            flex-shrink: 0;
+        }
+    }
+
+    /* }}} */
+
+    .left-col, .right-col { /* {{{ */
+        display: flex;
+        width: goban-view-bar-width
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: auto;
+        flex-direction: column;
+        //align-content: stretch;
+        //align-items: stretch;
+        justify-content: space-between;
+    }
+    .left-col {
+        flex-basis: 15%;
+        flex-shrink: 1;
+        align-content: center;
+        justify-content: center;
+        padding-right: 0.3rem;
+        min-width: 340px;
+    }
+    .right-col {
+        flex-basis: 25%;
+        padding-left: 0.3rem;
+        padding-right: dock-collapsed-width + 0.3rem;
+        min-width: 340px;
+    }
+
+    .left-col.no-ads {
+        flex-basis: 0;
+        min-width: 0px;
+    }
+    .left-col.wide-skyscraper {
+        min-width: 170px;
+    }
+    .left-col.half-page {
+        min-width: 310px;
+    }
+
+    &.wide {
+        //background-color: red;
+        .right-col {
+            .player {
+                display: none;
+            }
+        }
+    }
+    &.square {
+        //background-color: blue;
+        .left-col {
+            display: none;
+        }
+    }
+    &.squashed {
+        .right-col {
+            padding-right: 0;
+        }
+    }
+    &.portrait {
+        //background-color: green;
+
+        .left-col {
+            display: none;
+        }
+        .right-col {
+            display: none;
+        }
+    }
+
+    /* }}} */
+
+    &.portrait { /* .Dock {{{ */
+        .Dock {
+            //flex: 1;
+            flex-shrink: 0;
+            flex-grow: 1;
+            @extend .Dock.inline;
+            margin-bottom: 3rem;
+            input[type="range"] {
+                max-width: 50%;
+            }
+        }
+    }
+
+    @media (min-height: dock-inline-height) {
+        .MainGobanView .Dock {
+            flex-shrink: 0;
+            flex-grow: 1;
+            margin-bottom: 3rem;
+            input[type="range"] {
+                max-width: 50%;
+            }
+        }
+    }
+
+
+
+    /* }}} */
+
+    &.zen { /* {{{ */
+        .action-bar, .chat-container {
+            display: none;
+        }
+    }
+    /* }}} */
+
+    .review-list {
+        text-align: center;
+    }
+
+
+    #game-move-node-text { /* {{{ */
+        width: 100%;
+    } /* }}} */
+
+    .Dock {
+        a.disabled {
+            themed color shade2
+        }
+    }
+}
+
+
+
+
+.ad.large-rectangle,
+.ad.medium-rectangle,
+.ad.leaderboard,
+.ad.mobile-banner,
+.ad.wide-skyscraper,
+.ad.half-page
+{
+    display: inline-block;
+    box-sizing: border-box;
+    border: 1px solid #EE5DC4;
+}
+
+.ad.large-rectangle {
+    width: 336px;
+    height: 280px;
+}
+.ad.medium-rectangle {
+    width: 300px;
+    height: 250px;
+}
+.ad.leaderboard{
+    width: 728px;
+    height: 90px;
+}
+.ad.mobile-banner{
+    width: 320px;
+    height: 100px;
+}
+.ad.wide-skyscraper{
+    width: 160px;
+    height: 600px;
+}
+.ad.half-page {
+    width: 300px;
+    height: 600px;
+}
+
+
+
+
+/*****************************/
+/*** Conditional Move tree ***/
+/*****************************/
+/* {{{ */
+
+.ctrl-conditional-tree {
+    text-align: left;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.conditional-move-tree-container {
+    overflow: auto;
+    height: 12em;
+    text-align: left;
+    padding-top: 0.3rem;
+
+    ul.tree,  ul.tree ul {
+        background: embedurl("tree-vline.png") repeat-y;
+    }
+
+    ul.tree {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            margin-left: 10px;
+        }
+        
+        li {
+            margin: 0;
+            padding: 0 12px;
+            line-height: 20px;
+            //color: #369;
+            font-weight: bold;
+            background: embedurl("tree-node.png") no-repeat;
+        }
+
+        li.last, li:last-child {
+            background: embedurl("tree-lastnode.png") no-repeat;
+        }
+    }
+
+    .move-row, .move-current {
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: bold;
+        user-select: none;
+
+        .stone {
+            border: 0.1em solid #888;
+            border-radius: 5em;
+            width: 0.8em;
+            height: 0.8em;
+            display: inline-block;
+            margin-left: 0.5em;
+            margin-right: 0.5em;
+        }
+        .white.stone {
+            background-color: #fff;
+            border-color: #000;
+        }
+        .black.stone {
+            background-color: #000;
+            border-color: #999;
+        }
+
+        .entry {
+            border: 1px solid transparent;
+            padding-right: 0.5em;
+            border-radius: 0.2rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        .entry:hover {
+            themed background-color shade4
+            border: 1px solid transparent;
+            themed border-color primary
+        }
+
+        .entry.selected, &.selected {
+            themed background-color shade4
+            border: 1px solid transparent;
+            themed border-color primary
+        }
+        .entry.selected:hover, &.selected:hover {
+            themed background-color shade3
+            border: 1px solid transparent;
+            themed border-color primary
+        }
+    }
+
+    .delete-move {
+        color: red;
+        margin-left: 0.7em;
+        margin-top: 0em !important;
+        text-align: top;
+        cursor: pointer;
+    }
+}
+
+/* }}} */
+

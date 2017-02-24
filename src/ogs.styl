@@ -1,0 +1,293 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+font-size-big = 16pt
+font-size-normal = 12pt
+font-size-small = 10pt
+font-size-smaller = 8pt
+font-size-extra-small = font-size-smaller
+font-size-normal = 12pt
+navbar-height = 2rem
+below-navbar = navbar-height + 0.3rem
+dock-collapsed-width=2rem;
+dock-width=15rem;
+private-chat-width=20rem;
+
+/* z indicies */
+z = {
+    goban: {
+        shadow-layer   : 10,
+        stone-layer    : 20,
+        pen-layer      : 30,
+        message        : 40,
+        tab-icon       : 160, /* must be above z.dock */
+        exit-zenmode   : 45,
+        score-details  : 50,
+    },
+    seek-graph: {
+        challenge-list : 150,
+    }
+    dock               : 150,
+    private-chat       : 153,
+    incident-list      : 155,
+    omnisearch         : 160,
+    announcements      : 180,
+    toast              : 200,
+    friend-list        : 300,
+    nav-menu: {
+        backdrop       : 1000,
+        menu           : 1010,
+    },
+    modal: {
+        backdrop       : 2000,
+        container      : 2010,
+    },
+    player-autocomplete: 3000,
+    popover            : 5000,
+    swal               : 10000,
+    superchat-modal    : 50005,
+    superchat          : 50010,
+}
+
+
+
+light = {}
+dark = {}
+
+light.clear = transparent
+dark.clear = transparent
+
+
+/*************/
+/*** LIGHT ***/
+/*************/
+
+//light.bg                                = #f0f0f0
+light.bg                                = #fff
+light.fg                                = #202020
+light.mix-base                          = #999
+light.background-color                  = light.bg
+light.card-background-color             = lighten(light.bg, 20%)
+light.text-color                        = light.fg
+light.text-color-active                 = darken(light.text-color, 50%)
+light.spectator-text-color              = #0A06A8
+light.default-button-color              = light.fg
+light.toast-bg                          = light.fg
+light.toast-fg                          = light.bg
+
+light.default-button                    = #E6E6E0
+light.primary                           = #2480FF
+light.danger                            = #FFA600
+//light.success                           = #00C600
+light.success                           = #2AD131
+light.success                           = #32C738
+//light.info                              = #A41EFF
+light.info                              = #C46EFF
+light.info                              = #C376FE
+light.reject                            = #FF410F
+light.colored-background-fg             = #fff
+light.malkovich-bg                      = #CCE3D5
+light.variation                         = #0088cc
+light.variation-hover                   = #005580
+
+//light.supporter                         = #fdd017;
+light.user                              = #3070A7
+light.supporter                         = #DBAF00;
+light.bot                               = #888;
+light.moderator                         = #9733EE
+light.admin                             = light.moderator
+light.ambassador                        = #6FCDEA
+light.teacher                           = #27AD49
+light.chat-mentions                     = #C81E1E
+//light.chat-mentions                     = #107A00 // green
+//light.chat-mentions                     = #ff5200 // orange
+light.chat-mentions                     = #DB397A // pink
+light.chat-self-message                 = #0449C4
+light.chat-system                       = #1CA760
+
+
+
+light.shade0                            = lighten(light.fg, 20%)
+light.shade1                            = lighten(light.fg, 40%)
+light.shade2                            = lighten(light.fg, 60%)
+light.shade3                            = lighten(light.fg, 80%)
+light.shade4                            = lighten(light.fg, 90%)
+light.shade5                            = lighten(light.fg, 95%)
+
+
+/** Navbar **/
+
+//light.navbar-highlight-background-color = lighten(light.bg, 5%);
+//light.navbar-background-color           = darken(light.bg, 5%);
+light.navbar-highlight-background-color = light.bg;
+light.navbar-background-color           = light.bg;
+light.logo-svg                          = svg-load("../assets/ogs_light.svg")
+
+/** Input **/
+
+light.input-bg                          = darken(light.bg, 3%)
+light.input-border                      = lighten(light.fg, 50%)
+light.input-fg                          = light.fg
+
+/** MiniBoards **/
+
+light.goban-shadow                      = 0 4px 8px rgba(128,128,128,.71)
+light.goban-shadow-borderless           = 0 0px 0px rgba(128,128,128,.71)
+light.miniboard-to-move                 = #E6FFD8
+light.miniboard-to-move-border          = darken(light.miniboard-to-move, 60%)
+light.miniboard-hover                   = #C7E7E9
+light.miniboard-hover-border            = darken(light.miniboard-hover, 30%)
+light.miniboard-stone-removal           = #FBfbD8
+light.miniboard-stone-removal-border    = darken(light.miniboard-stone-removal, 45%)
+light.miniboard-stone-removal-hover     = lighten(light.miniboard-stone-removal, 45%)
+light.miniboard-stone-removal-hover-border= darken(light.miniboard-stone-removal-hover, 45%)
+light.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%,#0e0e0e 100%);
+light.player-white-background           = linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+light.player-black-fg                   = #eeeeee
+light.player-white-fg                   = light.fg
+
+
+
+/************/
+/*** DARK ***/
+/************/
+core-color-darken-amount = 20%
+
+dark.bg                                 = #1a1a1a
+dark.fg                                 = #bbbbbb
+dark.mix-base                           = #777
+dark.background-color                   = dark.bg
+dark.card-background-color              = lighten(dark.bg, 7%)
+dark.text-color                         = dark.fg
+dark.spectator-text-color               = #8987FC
+dark.text-color-active                  = lighten(dark.text-color, 50%)
+dark.toast-bg                           = dark.fg
+dark.toast-fg                           = dark.bg
+
+
+dark.default-button                     = lighten(dark.bg, 10%)
+dark.default-button-color               = dark.fg
+dark.primary                            = darken(light.primary, core-color-darken-amount)
+dark.danger                             = darken(light.danger, core-color-darken-amount)
+dark.success                            = darken(light.success, core-color-darken-amount)
+dark.info                               = darken(light.info, core-color-darken-amount)
+dark.reject                             = darken(light.reject, core-color-darken-amount + 10%)
+dark.colored-background-fg              = #eeeeee
+dark.malkovich-bg                       = #597053
+dark.variation                          = #00aaff
+dark.variation-hover                    = #1A93D0
+
+dark.user                               = #3C8DFF
+dark.supporter                          = #FFCC00;
+dark.bot                                = light.bot
+dark.moderator                          = lighten(light.moderator, 20%)
+dark.admin                              = lighten(light.admin, 20%)
+dark.ambassador                         = light.ambassador
+dark.teacher                            = light.teacher 
+
+dark.shade0                             = lighten(dark.bg, 70%)
+dark.shade1                             = lighten(dark.bg, 50%)
+dark.shade2                             = lighten(dark.bg, 35%)
+dark.shade3                             = lighten(dark.bg, 25%)
+dark.shade4                             = lighten(dark.bg, 20%)
+dark.shade5                             = lighten(dark.bg, 13%)
+
+//dark.chat-mentions                      = lighten(light.chat-mentions, 10%)
+dark.chat-mentions                      = #86D88D // green
+dark.chat-mentions                      = #ED7C1A // orange
+dark.chat-mentions                      = #E36497 // ping
+//dark.chat-mentions                      = #C56767  // red
+dark.chat-self-message                  = #8AB1E6
+dark.chat-system                        = lighten(light.chat-system, 20%)
+
+/** Navbar **/
+
+dark.navbar-highlight-background-color  = #333
+dark.navbar-background-color            = lighten(dark.bg, 5%)
+dark.logo-svg                           = svg-load("../assets/ogs_dark.svg")
+
+
+/** Input **/
+
+dark.input-bg                           = lighten(dark.bg, 30%)
+dark.input-border                       = lighten(dark.bg, 30%)
+dark.input-fg                           = dark.fg
+
+
+/** MiniBoards **/
+
+dark.goban-shadow                      = none
+dark.goban-shadow-borderless           = none
+dark.miniboard-to-move                 = #2B4029
+dark.miniboard-to-move-border          = darken(dark.miniboard-to-move, 60%)
+dark.miniboard-hover                   = #578588
+dark.miniboard-hover-border            = darken(dark.miniboard-hover, 30%)
+dark.miniboard-stone-removal           = #5B4810
+dark.miniboard-stone-removal-border    = darken(dark.miniboard-stone-removal, 45%)
+dark.miniboard-stone-removal-hover     = darken(dark.miniboard-stone-removal, 45%)
+dark.miniboard-stone-removal-hover-border= darken(dark.miniboard-stone-removal-hover, 45%)
+dark.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%,#0e0e0e 100%);
+dark.player-white-background           = linear-gradient(to bottom, darken(#ffffff, 15%) 0%, darken(#e5e5e5, 45%) 100%);
+dark.player-black-fg                   = #fff
+dark.player-white-fg                   = #fff
+
+
+
+
+
+/************/
+/************/
+/************/
+
+themes = {}
+themes.light = light
+themes.dark = dark
+
+
+card1()
+    box-shadow: 2px 5px 6px rgba(0,0,0,0.3)
+
+card0()
+    box-shadow: 0px 0px 8px rgba(0,0,0,0.3)
+
+nowrap()
+    white-space: nowrap;
+
+
+
+@import "globals/mixins.styl";
+@import "globals/global.styl";
+@import "globals/bootstrap-esq.styl";
+@import "globals/misc-ui.styl";
+@import "globals/zocial-fixes.styl";
+@import "globals/ogs-font.styl";
+@import "lib/ogs-goban/Goban.styl";
+@import "globals/swal.styl";
+@import "globals/flags16.styl";
+@import "globals/flags32.styl";
+@import "globals/font-awesome-hacks.styl";
+@import "globals/react-datetime.styl";
+@import "globals/react-autosuggest.styl";
+
+@import "lib/popover.styl";
+@import "lib/toast.styl";
+
+@import "./components/*.styl";
+@import "./components/[A-Z]*/*.styl";
+@import "./views/[A-Z]*/*.styl";
+@import "./views/docs/*.styl";
+

@@ -1,0 +1,106 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.LibraryPlayer {
+
+    .breadcrumbs {
+        display: flex;
+
+        padding: 1rem;
+        font-size: font-size-big;
+
+        .breadcrumb {
+            cursor: pointer;
+            padding-left: 0.5rem;
+        }
+        .breadcrumb:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .collections {
+        cursor: pointer;
+        margin-bottom: 1rem;
+
+    }
+    .games {
+    }
+
+    .collections, .games {
+        display: table;
+    }
+
+    .collection-entry, .game-entry {
+        display: table-row;
+
+        span {
+            display: table-cell;
+            padding-right: 1.0rem;
+        }
+    }
+    .private-lock {
+        //cursor: pointer;
+        width: 2rem;
+        text-align: center;
+    }
+    .fa-lock, .fa-unlock {
+        cursor: pointer;
+    }
+    .collection-entry:hover {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+
+    .date {
+        min-width: 10rem;
+    }
+    .collection {
+        padding-left: 2rem;
+    }
+    .collection, .name {
+        min-width: 12rem;
+    }
+    .black, .white {
+        min-width: 6rem;
+    }
+    .outcome {
+        min-width: 5rem;
+    }
+
+    .empty-text {
+        text-align: center;
+    }
+
+    .new-collection {
+        input[type='text'] { 
+            width: 100%;
+            margin-right: 1rem;
+        }
+        label {
+            user-select: none;
+        }
+        .name-checkbox {
+            margin-right: 1rem;
+        }
+    }
+
+    .upload-button {
+        float: right;
+    }
+}

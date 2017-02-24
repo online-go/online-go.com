@@ -1,0 +1,132 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.Player {
+    themed color user
+    cursor: pointer;
+    white-space: nowrap;
+    
+    //themed color primary
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &.nolink {
+        cursor: auto;
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .flag {
+        margin-right: 0.3rem;
+        margin-left: 0.1rem;
+    }
+
+
+
+    &.with-flare:before {
+        display: inline-block;
+        width: 0.8rem;
+        font-family: 'FontAwesome';
+        font-size: 0.7rem;
+        content: " ";
+        //text-shadow: 0 0 1px rgba(0,0,0,0.5);
+    }
+    &.with-flare.supporter:before {
+        themed color supporter
+        content: fa-circle-content;
+    }
+    &.with-flare.moderator:before {
+        themed color moderator
+        content: fa-gavel-content;
+    }
+    &.with-flare.admin:before {
+        themed color admin
+        content: fa-wrench-content;
+    }
+
+    
+    &.timeout{
+        //color: @ogs-player-timeout  !important;
+    }
+    &.supporter{
+        themed color supporter
+    }
+    &.ambassador{
+        themed color ambassador
+    }
+    &.teacher{
+        themed color teacher
+    }
+    &.bot{
+        themed color bot
+    }
+    &.moderator{
+        themed color moderator
+    }
+    &.admin{
+        themed color admin
+    }
+    &.guest {
+        color: #888;
+        cursor: default;
+        text-decoration: none;
+    }
+
+    & span.rank span.timeout {
+        font-weight: bold;
+    }
+
+
+    &.online, &.offline{
+        &:before {
+            display: inline-block;
+            font-size: 0.5rem;
+            width: 0.5rem;
+            font-family: 'FontAwesome';
+            content: fa-circle-content;
+            color: #888;
+            text-shadow: 0 0 1px rgba(0,0,0,0.5);
+            vertical-align: middle;
+            padding-bottom: 0.5rem;
+            //position: absolute;
+            //top: 0.35em;
+            //left: -1.1em;
+        }
+    }
+
+    &.online:before {
+        color: #33FF33;
+    }
+}
+
+.Player[data-rank]:after {
+    content: attr(data-rank)
+    font-size: 0.7em;
+    padding-left: 0.15em;
+    padding-top: 0.2em;
+}
+
+.Player-with-icon {
+    display: inline-flex;
+    align-items: center; /* needed for Game info modal */
+
+    .PlayerIcon {
+        margin-right: 0.5em;
+    }
+}

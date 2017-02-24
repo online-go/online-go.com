@@ -1,0 +1,58 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.Ladder {
+    // here
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    h2 {
+        text-align: center;
+    }
+
+    .Card {
+        width: 50rem;
+        position: relative;
+        max-width: 100vw;
+        min-height: 30rem;
+        overflow-x: hidden;
+    }
+
+    @media only screen and (min-width: 640px) {
+        .actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+    }
+    .actions {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    td  {
+        border-bottom: 1px solid transparent;
+        themed border-color shade3
+    }
+}

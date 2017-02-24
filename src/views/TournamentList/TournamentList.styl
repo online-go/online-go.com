@@ -1,0 +1,107 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.TournamentList {
+    .fa, .ogs-turtle {
+        padding-right: 0.4rem;
+    }
+
+    .ogs-turtle {
+        font-size: 1.15em;
+    }
+    .ogs-turtle:before {
+        bottom: -0.20rem;
+        position: relative;
+    }
+
+    .tabhead {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tab {
+        cursor: pointer;
+        margin-left: 1.0rem;
+        padding: 0.4rem;
+        border-bottom: 2px solid transparent;
+    }
+
+    .tab:hover {
+        themed border-color shade2
+    }
+    .tab.active {
+        themed border-color shade1
+    }
+
+    h4 {
+        margin: 0;
+    }
+
+    img {
+        width: 24px;
+        height: 24px;
+    }
+
+    td {
+        padding-right: 1rem;
+        padding-left: 1rem;
+        padding-bottom: 0.7rem;
+        padding-top: 0.7rem;
+        vertical-align: top;
+    }
+
+    .TournamentList-Schedule {
+        display: flex;
+        justify-content: center;
+
+        .fa, .ogs-turtle {
+            themed color supporter
+        }
+        
+    }
+
+    .group-tourny, .site-tourny {
+        font-size: 1.3rem;
+        width: 1.5rem;
+        padding-right: 0.3rem;
+        text-align: center;
+    }
+    .site-tourny {
+        themed color supporter
+    }
+    .group-tourny {
+        themed color shade3
+    }
+
+    .tournament-name {
+        display: inline-flex;
+        align-items: center;
+        align-content: center;
+
+        img {
+            padding-right: 0.5rem;
+        }
+    }
+    .nobr {
+        white-space: nowrap;
+    }
+    .center {
+        text-align: center;
+    }
+}

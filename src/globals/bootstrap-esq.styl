@@ -1,0 +1,112 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*** Minimal Bootstrap3'esq classes we were using ***/
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    box-sizing: border-box;
+}
+
+
+.alert-block {
+    padding: 1rem;
+}
+
+.well {
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    themed border-color shade4
+    themed background-color shade5
+    padding: 1rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+grid-breaks = {
+    xs: 0px
+    sm: 576px
+    md: 720px
+    lg: 940px
+    xl: 1140px
+}
+
+grid-breaks = {
+    xs: 575px
+    sm: 719px
+    md: 939px
+    lg: 1139px
+}
+
+for name in grid-breaks
+    @media only screen and (min-width: grid-breaks[name])
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12
+            .row .col-{name}-{i}
+                display: inline-block;
+                width: (i*8.333333333)%;
+
+    @media only screen and (max-width: grid-breaks[name])
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12
+            .row .col-{name}-{i} 
+                display: inline-block;
+                width: 100%;
+    
+
+
+
+/** Form stuff **/
+
+fieldset {
+    border: 0;
+}
+
+.inline-form {
+}
+
+.form-horizontal{
+}
+
+.form-group{
+    display: flex;
+    width: 100%;
+    line-height: 2rem;
+
+    .control-label {
+        display: inline-block;
+        width: 20rem;
+        text-align: right;
+        font-weight: bold;
+        padding-right: 0.5rem;
+
+    }
+    .controls {
+        flex-grow: 1;
+        display: flex;
+
+    }
+}
+
+

@@ -1,0 +1,98 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.Supporter {
+    // here
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .main-paragraph {
+        max-width: 40rem;
+        text-align: justify;
+    }
+
+    input[type="range"] {
+        border: none;
+    }
+
+    .details {
+        text-align: center;
+    }
+
+
+    .paypal-button {
+        cursor: pointer;
+    }
+
+    .cc-form {
+        display: inline-block;
+        max-width: 20rem;
+        input{
+            font-family: 'Source Code Pro', monospace;
+            border: 1px solid transparent;
+            themed border-color shade3
+            border-radius: 0.3rem;
+            padding: 0.3rem;
+            themed background-color shade4
+        }
+    }
+
+    .cc-number, .exp-cvc, .name, .email {
+        display: flex;
+    }
+    .cc-number {
+        input {
+            width: 100%;
+        }
+    }
+    .exp-cvc{
+        display: flex;
+        justify-content: space-between;
+
+        input.cc-exp {
+            text-align: center;
+            width: 6rem;
+        }
+        input.cc-cvc {
+            text-align: center;
+            width: 4rem;
+        }
+    }
+    .name{
+        display: flex;
+        justify-content: space-between;
+        input.fname {
+
+            width: 40%;
+        }
+        input.lname {
+            width: 55%;
+        }
+    }
+    .email{
+        input {
+            width: 100%;
+        }
+    }
+
+    .LineText {
+        margin: 1rem;
+    }
+}
+

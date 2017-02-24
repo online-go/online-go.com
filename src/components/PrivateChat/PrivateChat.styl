@@ -1,0 +1,233 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.private-chat-window {
+    position: fixed;
+    display: inline-block;
+    bottom: 0;
+    right: 0;
+    border: 1px solid #4E697A;
+    border-radius: 4px;
+    z-index: z.private-chat;
+    background-color: #eeeeee;
+    width: 100%;
+    max-width: private-chat-width;
+
+
+    .title {
+        themed background-color shade0
+        border-bottom: 1px solid #aaaaaa;
+        padding-left: 0.1em;
+        padding-right: 0.1em;
+        padding: 0.0em;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        user-select: none;
+        line-height: 1.3rem;
+        display: flex;
+        align-items baseline;
+        cursor: move;
+
+        .Player {
+            flex-grow: 1;
+            padding-left: 1em;
+            themed color shade3
+            cursor: move;
+        }
+        .Player::before {
+            margin-top: 5px;
+            padding-right: 10px;
+            font-size: 0.8em;
+        }
+    }
+
+    .fa, .ogs-goban {
+        color: #666;
+        border: 1px solid transparent;
+        cursor: pointer;
+        themed color shade3
+    }
+
+    .fa:hover, .ogs-goban:hover {
+        //color: #000;
+        themed color shade4
+    }
+
+    .fa-bullhorn {
+        margin-top: 0.145em;
+        margin-right: 1.00em;
+        font-size: 1.0em;
+    }
+    .fa-bullhorn.enabled {
+        color: #f55 !important;
+    }
+
+    .ogs-goban {
+        //margin-top: -0.20em;
+        margin-top: 0.10em;
+        margin-right: 0.75em;
+        font-size: 1.0em;
+    }
+
+    .fa-info-circle {
+        margin-top: 0.145em;
+        margin-right: 0.75em;
+        font-size: 1.0em;
+    }
+
+    .fa-minus {
+        margin-top: 0.215em;
+        margin-right: 0.75em;
+        font-size: 1.1em;
+    }
+    .fa-times {
+        //margin-top: 0.15em;
+        margin-right: 0.5em;
+        font-size: 1.2em;
+
+    }
+}
+
+
+.private-chat-window.open {
+    //background-color: @ogs-private-chat-bg;
+    themed background-color card-background-color
+
+    .title {
+        position: relative;
+        cursor: move;
+    }
+
+    .body {
+        //padding-left: 0.3em;
+        //padding-right: 0.3em;
+        display: block;
+        height: 20em;
+        width: 100%;
+        themed background-color card-background-color
+        themed color fg
+        border-bottom: 1px solid #aab;
+        //margin-bottom: -.4em;
+        border-radius: 0;
+        overflow-y: auto;
+    }
+
+    .chat-line {
+        //border-bottom: 1px solid #aaa;
+        padding-right: 0.3em;
+    }
+
+    .timestamp {
+        @extend .monospace
+        font-size: 0.8rem;
+    }
+
+    input {
+        display: block;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        //background-color: @body-bg;
+    }
+}
+
+.private-chat-window.open.floating {
+    .body {
+    }
+}
+
+.private-chat-window.minimized {
+    .title {
+    }
+
+    .title:hover {
+        themed background-color shade0
+        cursor: pointer;
+    }
+}
+
+/*
+.private-chat-window.highlighted {
+    .title {
+        #gradient > .vertical(@ogs-private-chat-highlight-start, @ogs-private-chat-highlight-end)
+    }
+}
+*/
+
+
+.chat-line .username .player-name {
+    //color: @text-color;
+    font-size: small;
+}
+
+.chat-line .username {
+    font-weight: bold;
+}
+
+.chat-line .timestamp {
+    color: #666;
+}
+
+.chat-line.current-player {
+    //color: mix(@text-color, #0088cc, 75%);
+   .username .player-name {
+        //color: mix(@text-color, #0088cc, 75%);
+        //color: mix(#888888, @text-color, 20%);
+        //color: #444444;
+   }
+   .body{
+        //color: #444444;
+   }
+}
+.chat-line.system {
+    //color: mix(@text-color, #00ff00, 75%);
+}
+
+.chat-line.name-mentioned .body {
+    color: #E41B1B !important;
+}
+
+
+.private-chat-window.superchat {
+    z-index: z.superchat !important;
+
+    .ogs-goban {
+        display: none !important;
+    }
+
+    .fa-info-circle {
+        display: none !important;
+    }
+
+    .fa-minus {
+        display: none !important;
+    }
+    .fa-times {
+        display: none !important;
+    }
+}
+.superchat-modal {
+    z-index: z.superchat-modal;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    background-color: #000;
+    opacity: 0.5;
+}

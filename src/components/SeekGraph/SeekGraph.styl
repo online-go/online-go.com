@@ -1,0 +1,123 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.SeekGraph {
+    // here
+}
+
+.SeekGraph-challenge-list {
+    position: absolute;
+    padding: 0;
+
+    border: 1px solid transparent
+    themed background-color shade4
+    themed border-color shade3;
+
+    z-index: z.seek-graph.challenge-list;
+    max-width: 18em;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: -moz-none;
+    -ms-user-select: none;
+    user-select: none;
+
+    .header {
+        //background-color: #E1ECEC;
+        border-bottom: 1px solid transparent
+        themed background-color shade3
+        themed border-color shade2;
+        padding: 0.1em;
+
+        .fa-times {
+            color: #666;
+            padding: 0.12em;
+            padding-left: 0.6em;
+            cursor: pointer;
+        }
+        .fa-times:hover {
+            color: #000;
+        }
+    }
+
+    .fa-check-circle {
+        color: #59B259;
+        padding: 0.2em;
+        padding-right: 0.6em;
+        cursor: pointer;
+        font-size: 1.20em;
+    }
+
+    .fa-check-circle:hover {
+        color: #34D961;
+        text-shadow: 0 0 1px #fff;
+    }
+
+    .fa-trash-o {
+        color: #B41D17;
+        padding: 0.2em;
+        padding-right: 0.6em;
+        cursor: pointer;
+    }
+
+    .fa-trash-o:hover {
+        color: #F72820;
+        text-shadow: 0 0 1px #fff;
+    }
+
+    .fa-circle {
+        color: #aaaaaa;
+        padding: 0.2em;
+        padding-right: 0.6em;
+    }
+
+    .fa-eye {
+        color: #0000ff;
+        padding: 0.2em;
+        padding-right: 0.6em;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .fa-eye:hover {
+        color: #4444ff;
+    }
+
+    .challenge {
+        font-size: small;
+        padding: 0.1em;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .challenge:last-child {
+        border-bottom: 1px solid transparent !important;
+    }
+
+    .eligible {
+    }
+    .live-game {
+    }
+    .ineligible {
+        color: #888;
+        .cause {
+            font-weight: bold;
+            font-style: italic;
+        }
+    }
+    .user-challenge {
+    }
+}

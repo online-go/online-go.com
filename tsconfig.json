@@ -1,0 +1,36 @@
+{
+    "compileOnSave": false,
+    "buildOnSave": false,
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "target": "es5",
+        "moduleResolution": "node",
+        "removeComments": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": ["es2015", "dom"],
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "*",
+                "src/lib/*",
+                "src/components/*",
+                "src/views/*",
+                "src/*"
+            ],
+            "requests": [
+                "src/lib/requests"
+            ]
+        },
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "jsx": "react"
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ],
+    "files": [
+        "./src/main.tsx"
+    ]
+}

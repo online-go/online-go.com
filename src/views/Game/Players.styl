@@ -1,0 +1,408 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@keyframes pulsate-paused-clock {
+    50% { color: #888; }
+}
+
+
+.MainGobanView .players {
+    flex-shrink: 0;
+    flex-grow: 0;
+    //margin: 0.5em;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    //align-content: stretch;
+    //justify-content: space-around;
+    min-height: 2.7rem;
+    flex-direction: row;
+    box-sizing: border-box;
+    padding: 0.1rem;
+
+    .player-container { /* {{{ */
+        position: relative;
+        //display: inline-block;
+        display: flex;
+        flex-direction: column;
+        //width: 18.8em;
+        //min-width: 9.0rem ;
+        flex-grow: 1;
+        flex-shrink: 0;
+        flex-basis: 49%;
+
+        box-sizing: border-box;
+
+        border-radius: 0.3em;
+        text-align: center;
+        padding: 0.2em;
+        margin-top: 0.2em;
+        border: 1px solid transparent;
+        .komi {
+            flex-grow: 0;
+            text-align: right;
+            font-weight: bold;
+            //height: 1.3em;
+        }
+        .captures, .points {
+            font-weight: bold;
+            position: relative;
+            background-image: none;
+            font-size: 1.1rem;
+        }
+
+
+
+        &:first-child {
+            margin-right: 0.1rem;
+        }
+        &:last-child {
+            margin-left: 0.1rem;
+        }
+    }
+
+    .player-icon-clock-row{
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .player-icon-container {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: 2rem;
+        display: inline-flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        //width: 100%;
+        background-repeat: no-repeat;
+        background-size: contain;
+        min-height: 4rem;
+        min-width: 4rem;
+    }
+
+    /.MainGobanView.squashed {
+        .player-icon-container {
+            min-height: 2rem;
+            min-width: 2rem;
+        }
+    }
+
+
+    /*
+    .PlayerIcon{
+        flex-shrink: 1;
+        max-width: 100%;
+        max-height: 100%;
+    }
+    */
+
+    /*
+    /.MainGobanView.squashed {
+        .player-icon-container {
+        }
+        .PlayerIcon{
+            width: 16px !important;
+            height: 16px !important;
+            position: absolute;
+            left: 0;
+            top: 1rem;
+        }
+    }
+    */
+
+
+    .white.player-container {
+        themed background player-white-background
+
+        //border: 1px solid #ccc;
+        box-shadow: 0 2px 5px rgba(50,50,50,.51);
+        themed color player-white-fg
+        //border-top: 1px solid lighten(@ogs-game-white-grad-start, 10%);
+
+        .player-name {
+            //color: @ogs-game-white-link;
+        }
+        .player-name-plain {
+            //color: @ogs-game-white-link;
+        }
+        .komi, .captures {
+            ///color: #000 !important;
+        }
+    }
+
+    .black.player-container {
+        //#gradient > .vertical(#454545, #161616);
+        themed background player-black-background
+        themed color player-black-fg
+        //border: 1px solid #202020;
+        border-top: 1px solid #202020;
+        box-shadow: 0 2px 5px rgba(20,20,20,.71);
+
+        .player-name {
+            color: #00B8FF;
+        }
+
+        //#game-black-clock .plenty_of_time, #game-white-clock .plenty_of_time {
+            //color: #ddd;
+        //}
+    }
+
+    .player-container.shortgame.offline {
+        border: 1px solid #f66 !important;
+    }
+
+    .player-name-plain {
+        font-size: 1.1em;
+    }
+
+    .player-flag { 
+        position: absolute;
+        display: inline-block; 
+        right: -0.15em;
+        top: 0.0em;
+    }
+
+
+    .black.player-container .flag, .white.player-container .flag {
+        margin-top: .1em;
+        margin-right: .4em;
+        margin-left: .4em;
+    }
+
+
+    .player-name-container {
+        //position: absolute;
+        overflow: hidden;
+        text-align: left;
+        //padding-left: 1em;
+        //right: 0.2em;
+    }
+
+
+    .player-name {
+        display: inline-block;
+        font-size: 1.1em;
+        margin-top: 0.2em;
+        //margin-top: 1em;
+    }
+    /* }}} */
+
+    .ChatPresenceIndicator { /* {{{ */
+        position: absolute;
+        display: inline-block; 
+        left: 0.25em;
+        top: 0.25em;
+        font-size: 0.50em !important;
+        vertical-align: text-top;
+
+        &.online {
+            color: #6f6;
+            text-shadow: -1px -1px 0 #afa,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+        }
+    }
+
+    .white.player-container {
+        .online-status-indicator.online {
+            color: #00ff00;
+        }
+    }
+    /* }}} */
+
+    div.in-game-clock { /* {{{ */
+        flex: 1;
+        //margin-top: 0.5em;
+        //width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        //justify-content: space-around;
+        justify-content: flex-end;
+        align-items: center;
+
+        .main-time {
+            flex-grow: 1;
+            display: inline-block;
+            font-size: 14pt;
+        }
+
+        &.paused .main-time {
+            animation-name: pulsate-paused-clock;
+            animation-duration: 1s;
+            animation-timing-function: step-end;
+            animation-iteration-count: infinite
+        }
+
+        .overtime-container {
+            flex-grow: 1;
+            display: inline-block;
+        }
+        .periods-container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            align-content: stretch;
+
+            div {
+                //margin: auto;
+                margin-left: 0.5em;
+                margin-right: 0.5em;
+            }
+        }
+
+        .periods {
+            display: inline-block;
+            font-size: 10pt;
+        }
+        .period-time {
+            display: inline-block;
+            font-size: 10pt;
+        }
+        .overtime {
+            font-size: 6pt;
+            text-align: center;
+        }
+
+        .pause-text {
+            width: 100%;
+            text-align: right;
+            font-size: font-size-small;
+            display: block;
+        }
+
+        .boxed {
+            //border: 3px ridge #ff00ff;
+            //min-width: 3rem;
+            //padding: 1px;
+            //margin-left: 3px;
+            //min-height: 2em;
+            //vertical-align: middle;
+            text-align: right;
+        }
+    }
+
+    /*
+    .clock-container {
+        display: inline-block;
+        font-size: 1.3em;
+        text-align: left;
+    }
+    */
+
+    .in-overtime {
+        .overtime {
+            font-weight: bold;
+            color: #a55 !important;
+        }
+        .boxed {
+            border-color: #a55 !important;
+        }
+    }
+
+    /*
+    .black.clock {
+        .boxed {
+            border: 2px solid #555555;
+        }
+    }
+    .white.clock {
+        .boxed {
+            //border: 2px solid #EDEDED;
+            border: 2px solid #bbbbbb;
+        }
+    }
+    */
+    
+    #game-black-clock .out_of_time, #game-white-clock .out_of_time {
+        color: #f44;
+    }
+    #game-black-clock .plenty_of_time, #game-white-clock .plenty_of_time {
+        color: #000;
+    }
+    #game-black-clock .time_suffix {
+        color: #aaa;
+        font-size: 0.7em;
+    }
+    #game-white-clock .time_suffix {
+        color: #111;
+        font-size: 0.7em;
+    }
+
+    #game-black-clock .start_clock, #game-white-clock .start_clock {
+        color: #147AFF !important;
+    }
+
+    #game-black-clock .low_time, #game-white-clock .low_time {
+        color: #f44 !important;
+        font-weight: bold;
+    }
+
+
+    #black_score, #white_score, .clock-container {
+        font-weight: bold;
+    }
+
+
+    /* }}} */
+
+    .score-container { /* {{{ */
+        margin-top: 0.5em;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        position: relative;
+
+        .score-details {
+            position: absolute;
+            right: 0;
+            top: 1.2rem;
+            min-width: 100%;
+            border: 1px solid #999;
+            themed background-color shade4
+            themed color fg
+            box-shadow: 2px 2px 1px #888888;
+            border-radius: 2px;
+            visibility: hidden;
+        }
+
+        &:hover .score-details {
+            z-index: z.goban.score-details;
+            visibility: visible;
+            font-size: 1.2rem;
+        }
+    }
+
+    .score_breakdown { 
+        font-size: .8em; 
+        text-align: right; 
+        padding-right: .3em; 
+    }
+    .score_breakdown div div { 
+        display: inline-block; 
+        width: 3em;
+    }
+
+    #score-estimation {
+        font-size: 1.3em;
+        font-weight: bold;
+        padding-bottom: 1em;
+    }
+
+    /* }}} */
+}

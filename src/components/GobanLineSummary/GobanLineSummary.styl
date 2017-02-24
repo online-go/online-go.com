@@ -1,0 +1,71 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.GobanLineSummaryContainer {
+    display: table
+    width: 100%;
+}
+.GobanLineSummary, .GobanLineSummaryContainerHeader {
+    display: table-row;
+    cursor: pointer;
+
+    > div {
+        display: table-cell;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+.GobanLineSummaryContainerHeader {
+    font-weight: bold;
+}
+
+.GobanLineSummary {
+    .clock.paused {
+        color: #888;
+    }
+
+    .current-users-move {
+        themed background-color miniboard-to-move;
+    }
+
+    .game-name, .player {
+        text-align: left;
+    }
+
+    &.in-stone-removal-phase {
+        themed background-color miniboard-stone-removal
+    }
+    &:hover {
+        themed background-color miniboard-hover
+    }
+
+    &.in-stone-removal-phase:hover {
+        themed background-color miniboard-stone-removal-hover
+    }
+
+    &.finished{
+        opacity: 0.8;
+    }
+
+    .no_games {
+        text-align: center;
+        font-weight: bold;
+        margin: 2em;
+    }
+}
+

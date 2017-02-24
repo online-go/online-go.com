@@ -1,0 +1,322 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+navbar-width= 17rem;
+
+#NavBar {
+    display: flex;
+    margin-bottom: 0.5rem;
+    height: navbar-height;
+    user-select: none;
+    themed background-color navbar-background-color
+
+    //transition: box-shadow 0.4s linear;
+    box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
+    /*
+    &.active {
+        box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
+    }
+    */
+
+    .ogs-nav-logo-container {
+        flex-shrink: 0;
+        flex-wrap: nowrap;
+        display: flex;
+        align-items: center;
+        align-content: center;
+        height: navbar-height;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        margin-right: 1rem;
+        cursor: pointer;
+
+        i.fa-bars {
+            font-size: 1.5rem;
+        }
+    }
+
+    .left {
+        flex-shrink: 1;
+        flex-grow: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        a {
+            display: inline-block;
+            line-height: navbar-height;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            margin-right: 0.5rem;
+        }
+        overflow: hidden;
+    }
+
+    .right {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+
+        .icon-container {
+            display: flex;
+
+            position: relative;
+            padding-left: 0.5rem;
+            padding-right: 0.7rem;
+            cursor: pointer;
+            align-items: center;
+
+
+            .notification-indicator {
+                left: 0.5rem;
+                width: navbar-height;
+            }
+
+            img.PlayerIcon{
+                height: navbar-height;
+                width: navbar-height;
+                pointer-events: none;
+            }
+
+            .fa,  {
+                font-size: 1.0rem;
+                font-weight: 400;
+                margin-left: 0.5rem;
+                themed color shade1
+            }
+            &:hover .fa {
+                themed color fg
+            }
+        }
+    }
+
+    .fa-adjust {
+        padding: 0.6rem;
+        margin-bottom: -0.1rem;
+        cursor: pointer;
+    }
+
+    /body.dark .fa-adjust {
+        transform: rotate(180deg);
+    }
+
+    .sign-in {
+        padding-right: 1.0rem;
+    }
+        
+
+    .nav-menu-modal-backdrop {
+        display: none;
+        position: fixed;
+        z-index: z.nav-menu.backdrop;
+        top: navbar-height;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        //transition: background-color 0.4s ease;
+        //background-color: transparent;
+
+        &.active {
+            display: inline-block;
+            //background-color: rgba(128,128,128,0.2);
+        }
+    }
+
+    .rightnav, .leftnav {
+        position: absolute;
+        top: navbar-height;
+        //bottom: 0;
+        boder: 1px solid transparent;
+        themed boder-color shade2;
+        themed background-color navbar-background-color;
+        z-index: z.nav-menu.menu;
+        //min-height: 100%;
+        //overflow-y: scroll;
+
+        user-select: none;
+        width: navbar-width;
+        max-width: 100%;
+    }
+
+    .rightnav {
+        right: 0;
+        display: none;
+
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        &.active {
+            display: inline-block;
+        }
+
+        .NotificationList {
+            margin-bottom: 1rem;
+        }
+
+        .theme-selectors {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .settings-and-logout {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .center {
+        }
+    }
+
+    .leftnav {
+        left: -18rem;
+        transition: left 0.4s ease, box-shadow 0.4s linear;
+        bottom: 0;
+        overflow-y: auto;
+
+
+        box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        &.active {
+            left: 0;
+            box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
+        }
+
+
+        ul {
+            display: inline-block;
+            list-style-type: none;
+            list-style: none;
+            padding: 0;
+            vertical-align: top;
+            width: 100%;
+        }
+
+        .invite {
+            padding-left: 0.5em;
+            img, i {
+                //padding-bottom: 10px;
+                margin-top: 0.7em;
+                vertical-align: top;
+                padding-top: 0;
+            }
+            a {
+                width: auto;
+            }
+        }
+
+        .fa-check {
+            themed color primary;
+        }
+
+        .fa-times {
+            themed color reject;
+        }
+
+
+        ul.nav-items {
+            box-shadow: 2px 0px 2px 0px rgba(0, 0, 0, 0.16);
+        }
+
+        li {
+            list-style-type: none;
+            list-style: none;
+
+            a, span.fakelink {
+                display: block;
+                line-height: 2.0rem;
+                width: 100%;
+            }
+        }
+
+        li.divider {
+            padding: 0;
+            height: 1px !important;
+            margin: 0.7rem 0;
+            overflow: hidden;
+            themed background-color shade4
+        }
+
+        i {
+            themed color shade1;
+            width: 1.5rem;
+            text-align: center;
+
+            &.fa-moon-o, &.fa-sun-o {
+                themed color fg
+            }
+        }
+    }
+}
+
+
+
+
+button.theme-button {
+    cursor: pointer;
+    inactive-button()
+    border: 1px solid transparent;
+    padding: 0.3rem;
+    padding-right: 1.0rem;
+    padding-left: 1.0rem;
+    font-size: 1.2rem;
+}
+
+body.light #NavBar button.theme-button.light {
+    background-color: light.primary
+    border-color: darken(light.primary, 8%)
+    i.fa.fa-sun-o {
+        color: #fff;
+    }
+}
+body.dark #NavBar button.theme-button.dark {
+    background-color: dark.primary
+    border-color: darken(dark.primary, 8%)
+    i.fa.fa-moon-o {
+        color: #fff;
+    }
+}
+
+.OmniSearch-input {
+    width: (navbar-width - 2rem);
+    margin-left: 1.0rem;
+    margin-right: 1.0rem;
+    margin-top: 1.0rem;
+}
+
+.OmniSearch-results {
+    padding: 0.5rem;
+
+    img {
+        width: 15px;
+        height: 15px;
+    }
+
+    .loading, .no-results {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+        themed color shade3;
+        padding-top: 5rem;
+    }
+    .no-results {
+        font-weight: bold;
+        themed color fg;
+    }
+}
+

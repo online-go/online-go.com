@@ -1,0 +1,94 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+
+puzzle-controls-width=400px
+
+.Puzzle {
+    // here
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: absolute;
+    top: below-navbar;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+
+
+
+    .left-col {
+    }
+
+
+    .center-col {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        overflow: hidden;
+        //justify-content: stretch;
+
+    }
+
+    .left-col, .right-col {
+        width: puzzle-controls-width
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: auto;
+        padding: 0.5rem;
+    }
+
+    .btn-container {
+        text-align: center;
+    }
+
+    .goban-container {
+        //flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        .Goban {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+
+
+    .horizontal {
+        dt, dd {
+            width: 45%;
+        }
+    }
+
+    input, textarea {
+        width: 100%;
+    }
+
+    .padded {
+        padding: 0.5rem;
+    }
+
+}

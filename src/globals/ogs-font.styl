@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@font-face {
+  font-family: "ogs-font";
+  src: embedurl("./ogs-font.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+[data-icon]:before { content: attr(data-icon); }
+
+[data-icon]:before,
+.ogs-coordinates,
+.ogs-goban,
+.ogs-japanese-coordinates,
+.ogs-label-circle,
+.ogs-label-number,
+.ogs-label-square,
+.ogs-label-triangle,
+.ogs-label-x,
+.ogs-move-number,
+.ogs-turtle,
+.ogs-zen-mode {
+  display: inline-block;
+  font-family: "ogs-font";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-decoration: inherit;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+}
+
+.ogs-coordinates:before { content: "\f100"; }
+.ogs-goban:before { content: "\f101"; }
+.ogs-japanese-coordinates:before { content: "\f102"; }
+.ogs-label-circle:before { content: "\f103"; }
+.ogs-label-number:before { content: "\f104"; }
+.ogs-label-square:before { content: "\f105"; }
+.ogs-label-triangle:before { content: "\f106"; }
+.ogs-label-x:before { content: "\f107"; }
+.ogs-move-number:before { content: "\f108"; }
+.ogs-turtle:before { content: "\f109"; }
+.ogs-zen-mode:before { content: "\f10a"; }

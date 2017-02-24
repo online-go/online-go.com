@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.GobanThemePicker {
+    display: inline-flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    max-width: 100%;
+    justify-content: center;
+
+    .theme-set {
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        .selector {
+            margin: 1px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            opacity: 0.5;
+        }
+
+        .selector:hover, .selector.active {
+            themed border-color primary
+            opacity: 1.0;
+        }
+    }
+}

@@ -1,0 +1,88 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.Play {
+    // here
+    max-width: 60rem;
+
+    .seek-graph-container {
+        width: 100%;
+        height: 20em;
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .challenge-buttons {
+        margin-top: 2rem;
+        text-align: center;
+    }
+}
+
+
+#challenge-list-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 2rem;
+    max-width: 100vw;
+    overflow-y: auto;
+}
+
+#challenge-list-inner-container {
+    width: 100%;
+    display: inline-block;
+}
+
+#challenge-list {
+    display: table;
+    width: 100%;
+    .ineligible {
+        themed color shade3
+        font-size: 0.9em;
+        vertical-align: middle;
+        cursor: help;
+    }
+
+    .challenge-row {
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+        display: table-row;
+        font-size: 0.85em;
+        white-space: nowrap;
+
+        .head {
+            padding-left: 0.5em;
+            display: table-cell;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        .cell {
+            padding-left: 0.5em;
+            display: table-cell;
+            text-align: left;
+        }
+        .break {
+            border-top: 1px solid #888;
+            border-bottom: 1px solid #888;
+        }
+
+        .bold {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+    }
+}

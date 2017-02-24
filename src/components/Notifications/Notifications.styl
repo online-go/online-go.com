@@ -1,0 +1,171 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+indiciator-size=1.5rem
+
+@keyframes pulsate-notification {
+    0% { opacity: 0.5;  }
+    15% { opacity: 1.0; box-shadow 0 1px 1px rgba(0,0,255,0.3);}
+    30% { opacity: 0.5;}
+    100% { opacity: 0.5;}
+}
+
+.notification-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    display: none;
+    themed background-color primary
+    //border-radius: 50%;
+    border: 0;
+    //width: 0.5rem;
+    //height: 0.5rem;
+    height: 3px;
+
+
+    &.active {
+        display: inline-block;
+        animation-name: pulsate-notification;
+        animation-duration: 10s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite
+    }
+
+}
+
+.notification-indicator-count {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: none;
+    font-size: 0.7rem;
+    width: 1.0rem;
+    border-radius: 50%;
+    text-align: center;
+    padding-bottom: 0.1rem;
+
+    themed color colored-background-fg
+    themed background-color primary
+
+    &.active {
+        display: inline-block;
+    }
+}
+
+
+ .turn-indicator {
+    width: 3rem;
+
+    flex: 1;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .count {
+        visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: indiciator-size;
+        height: indiciator-size;
+        border-radius: 50%;
+        text-align: center;
+        border: 2px solid #fff;
+        font-weight: 700;
+        background-color: #000;
+        color: #fff;
+    }
+
+    .active.count {
+        visibility: visible;
+    }
+}
+
+
+notification-list-height=14rem
+
+.NotificationList {
+    display: block;
+    height: notification-list-height
+
+    .no-notifications {
+        display: flex;
+        height: notification-list-height;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .contents {
+        display: flex;
+        flex-direction: column;
+        height: notification-list-height;
+
+        .list {
+            flex-grow: 1;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .clear {
+            flex-grow: 0;
+            text-align: right;
+            padding-top: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+
+
+    .notification{
+        min-height: 3rem;
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        padding: 0.3rem;
+
+        .buttons {
+            text-align: right;
+            .fab.reject {
+                margin-right: 2rem;
+            }
+        }
+    }
+    .notification.clickable:hover {
+        themed background-color shade5
+    }
+    .notification.challenge {
+        .description {
+            font-style: italic;
+        }
+    }
+
+    .fa-times-circle {
+        float: right;
+        font-size: 1.3rem;
+        themed color shade3
+    }
+    .fa-times-circle:hover {
+        cursor: pointer;
+        themed color fg
+    }
+}
+
+
+

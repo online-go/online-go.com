@@ -1,0 +1,122 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+themed(field, variable) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: theme[variable];
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+themed-important(field, variable) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: theme[variable] !important; 
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+themed-lighten(field, variable, amt) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: lighten(theme[variable], amt);
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+themed-darken(field, variable, amt) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: darken(theme[variable], amt);
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+
+themed-desaturate-and-lighten(field, variable, amt) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: lighten(desaturate(theme[variable], amt), amt);
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+themed-desaturate-and-lighten-darken(field, variable, lighten-amt, darken-amt) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                if theme-name == 'light' {
+                    {field}: lighten(desaturate(theme[variable], lighten-amt), lighten-amt);
+                } else {
+                    {field}: darken(desaturate(theme[variable], darken-amt), darken-amt);
+                }
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+themed-desaturate(field, variable, amt) 
+    for theme-name in themes 
+        theme=themes[theme-name]
+        body.{theme-name} & {
+            if variable in theme {
+                {field}: desaturate(theme[variable], amt);
+            }
+            else {
+                p('Warning: ' + theme-name + ' ' + variable + ' not defined')
+            }
+        }
+
+
+
+phone() 
+    @media only screen and (max-width: 543px) {
+        arguments;
+    }
+
+tablet() 
+    @media only screen and (min-width: 544px) and (max-width: 767px) {
+        arguments;
+    }
+
+desktop() 
+    @media only screen and (min-width: 768px) {
+        arguments;
+    }

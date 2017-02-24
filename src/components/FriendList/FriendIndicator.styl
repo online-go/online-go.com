@@ -1,0 +1,62 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.FriendIndicator {
+    display: inline-flex;
+    flex-direction: column;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: -3px;
+    margin-top: 1px;
+    cursor: pointer;
+
+    .fa-users {
+        themed color shade3;
+        font-size: 0.9rem;
+    }
+
+    &.online .fa-users {
+        themed color success;
+    }
+
+    .count {
+        font-size: font-size-smaller;
+        padding-bottom: -5px;
+    }
+
+
+    .FriendList {
+        position: absolute;
+        themed background-color bg
+        top: navbar-height;
+        right: 0;
+        width: 15rem;
+        max-width: 100vw;
+        max-height: "calc(100vh - %s)" % navbar-height;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        z-index: z.friend-list;
+    }
+}
+.FriendIndicator:hover {
+    text-decoration: none;
+}

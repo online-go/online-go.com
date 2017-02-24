@@ -1,0 +1,92 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.IncidentReportTracker {
+    .incident-icon-container {
+        display: inline-flex;
+        flex-direction: column;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        align-items: center;
+        font-size: 0.9rem;
+        cursor: pointer;
+
+        // here
+        .fa-exclamation-triangle {
+            themed color reject
+        }
+        .sandbag {
+            themed color info
+        }
+        .count {
+            font-size: font-size-smaller;
+        }
+    }
+    .incident-icon-container:hover {
+        .fa-exclamation-triangle {
+            themed-lighten color reject 30%
+        }
+    }
+
+    .spread {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 0.7rem;
+    }
+
+    .incident {
+        padding-bottom: 1.0rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid transparent;
+        themed border-color shade3
+
+        .notes {
+            user-select: text;
+        }
+    }
+}
+.IncidentReportList-backdrop {
+    position: fixed;
+    display: flex;
+    //min-height: 100%;
+    //height: 100%;
+    max-height: 100vh;
+    top: navbar-height;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: z.incident-list;
+
+    align-items: flex-start;
+    align-content: stretch;
+    justify-content: center;
+}
+
+.IncidentReportList-results {
+    position: absolute;
+    padding: 0.5rem;
+    width: 20rem;
+    max-width: 100vw;
+    display: inline-block;
+    z-index: z.incident-list;
+    right: 0;
+    top: navbar-height;
+    box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+    themed background-color bg
+    themed border-color shade2
+}

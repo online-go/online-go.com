@@ -1,0 +1,9 @@
+locale
+ogs-ui-keys.json
+ogs.pot
+ogs.strings.js
+ogs.strings.js.map
+build/
+cldr/
+backups/
+Makefile.production

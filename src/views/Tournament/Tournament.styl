@@ -1,0 +1,282 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.Tournament {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    // here
+    dt {
+        white-space: nowrap;
+    }
+
+    .top-details {
+        display: flex;
+        justify-content: space-between;
+        > div {
+            flex: 1;
+        }
+
+        .top-right-details {
+            display: flex;
+            justify-content: center;
+        }
+
+        th {
+            text-align: right;
+            padding-right: 0.5rem;
+            white-space: nowrap;
+            width: 50%;
+        }
+        td {
+            text-align: left;
+            padding-left: 0.5rem;
+            white-space: nowrap;
+            width: 50%;
+        }
+        padding: 1rem;
+        h2 {
+            margin-top: 0;
+        }
+        border-bottom: 1px solid transparent;
+        themed border-color shade3
+
+        .start-time-edit {
+            margin-top: 1rem;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        input[type='checkbox'] {
+            width: 2rem;
+        }
+        input[type='number'] {
+            width: 5rem;
+        }
+        select {
+            width: 10rem;
+        }
+        select.rank-selection {
+            width: 5rem;
+        }
+    }
+
+    .bottom-details {
+        flex-grow: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+
+        .EmbeddedChat {
+            flex-shrink: 0;
+            flex-grow: 1;
+            min-width: 15rem;
+            flex-basis: 15rem;
+            overflow: hidden;
+            .Chat {
+            }
+        }
+        .results {
+            flex-shrink: 1;
+            flex-grow: 1;
+            flex-basis: 40rem;
+            //overflow: auto;
+        }
+
+        .player-list {
+            padding-top: 1rem;
+            flex-shrink: 0;
+            flex-grow: 1;
+            text-align: left;
+            min-width: 15rem;
+            flex-basis: 15rem;
+            .Card {
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: 10rem;
+                flex-grow: 1;
+            }
+
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+
+
+            .invite-input {
+                flex-grow: 0;
+                .input-group {
+                    display: flex;
+                    justify-content: center;
+                }
+            }
+        }
+
+        .signup-area {
+            flex-grow: 1;
+            text-align: center;
+            min-width: 20rem;
+            flex-basis: 30rem;
+        }
+    }
+    .bottom-details.not-started {
+        align-items: stretch;
+    }
+
+    
+    .round-group {
+        margin-top: 8em;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        th {
+            white-space: nowrap;
+        }
+
+
+        .rank {
+            text-align: center;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .player {
+            text-align: left;
+            padding-right: 1rem;
+        }
+        .rotated-title {
+            width: 3rem;
+            position: relative;
+            padding-bottom: 1.7em;
+            text-align: right;
+            .rotated {
+                display: block;
+                position: absolute;
+                white-space: nowrap;
+                transform-origin: 1rem 0;
+                transform: rotate(-35deg);
+            }
+
+        }
+        .result {
+            text-align: center;
+        }
+        .points {
+            width: 3rem;
+            text-align: center;
+        }
+    }
+
+    .win {
+        @extend .result-won
+    }
+    .loss {
+        @extend .result-lost
+    }
+    .no-result {
+        //@extend .result-none
+        //background-color: mix(@body-bg, #888, 80%);
+    }
+
+
+
+
+    @media (max-width: 800px){
+        .top-details {
+            flex-wrap: wrap;
+            .top-right-details {
+                width: 100vw;
+            }
+            table {
+                width: 100%;
+            }
+        }
+
+    }
+
+}
+
+.tournament-elimination-container {
+    position: relative;
+
+    .matchdiv, .byediv {
+        position: absolute;
+        height: 2.5em;
+        width: 12em;
+    }
+
+    .black, .white, .bye {
+        //border: 1px solid mix(@body-bg, #888, 30%);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .black {
+        
+    }
+
+    .white {
+        
+    }
+
+    .bye {
+        
+    }
+
+    .winner {
+    }
+
+    .matchdiv {
+        
+    }
+
+    .byediv {
+        
+    }
+
+    svg {
+        z-index: -1;
+    }
+
+    .user_icon{
+        margin-top: -4px;
+    }
+
+    .elimination-player-hover {
+        themed background-color success
+        .Player.player-name.clickable span {
+            themed color colored-background-fg !important
+        }
+    }
+
+    .ogs-goban {
+        themed color fg
+        text-decoration: none;
+        position: absolute;
+        margin-top: 2px;
+    }
+
+    a.elimination-game {
+        position: relative;
+        padding-right: 1.3em;
+    }
+
+
+
+}
+

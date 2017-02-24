@@ -1,0 +1,515 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#main-content {
+    display: block;
+}
+
+html, body, #main-content {
+    height: 100%;
+    font-size: font-size-normal;
+}
+html, body, #main-content, #main-content > div {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    themed background-color background-color;
+    themed color text-color;
+}
+
+.monospace {
+    font-family: 'Source Code Pro', monospace;
+}
+
+.text-align-center {
+    text-align: center;
+}
+.text-align-right {
+    text-align: right;
+}
+.text-align-left {
+    text-align: left;
+}
+
+#main-content > div {
+    display: flex;
+    flex-direction: column;
+}
+
+#main-content > div > div:first-child {
+    flex: 0 0 auto;
+}
+#main-content > div > div:nth-child(2) {
+    flex: 1 0 auto;
+}
+
+a, .clickable, .fakelink {
+    text-decoration: none;
+    themed color text-color
+    cursor: pointer;
+}
+
+
+a:active, a:hover, .clickable:hover, .fakelink:hover  {
+    text-decoration: underline
+    themed color text-color-active
+}
+
+
+
+a.primary, .primary.clickable, .primary.fakelink {
+    themed color primary
+    themed background-color clear
+}
+
+a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:hover  {
+    themed-lighten color primary 10%
+}
+
+
+
+
+.ogs-nav-logo {
+    themed background-image logo-svg no-repeat center center fixed;
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    margin-left: 0.5rem;
+    width: 4em;
+    height: 100%;
+    display: inline-block;
+}
+
+
+#main-content {
+    themed color text-color
+}
+
+
+.fg-shade0 { 
+    themed color shade0
+}
+.fg-shade1 { 
+    themed color shade1 
+}
+.fg-shade2 { 
+    themed color shade2 
+}
+.fg-shade3 { 
+    themed color shade3 
+}
+.fg-shade4 { 
+    themed color shade4 
+}
+.fg-shade5 { 
+    themed color shade5 
+}
+
+.bg-shade0 { 
+    themed background-color shade0
+}
+.bg-shade1 { 
+    themed background-color shade1 
+}
+.bg-shade2 { 
+    themed background-color shade2 
+}
+.bg-shade3 { 
+    themed background-color shade3 
+}
+.bg-shade4 { 
+    themed background-color shade4 
+}
+.bg-shade5 { 
+    themed background-color shade5 
+}
+
+
+/*** Error stuff ***/
+
+.error-message {
+    border: 1px solid transparent;
+    border-radius: 3px;
+    themed border-color reject
+    themed-desaturate-and-lighten-darken  background-color reject 80% 80%
+}
+input.boxed.validation-error, input.validation-error {
+    box-shadow: 0px 0px 5px rgba(255,128,128,0.2);
+    themed border-color reject
+    themed-desaturate-and-lighten-darken  background-color reject 80% 80%
+}
+
+
+/*** INPUT ***/
+
+input, select, textarea {
+    font-size: font-size-normal;
+    padding-top: 0.2rem;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 1px solid transparent;
+
+    background-color transparent;
+    themed border-color input-border
+    themed color input-fg
+}
+
+textarea {
+    border: 1px solid transparent;
+    padding: 0.3rem;
+}
+
+input.boxed, select.boxed, textarea.boxed {
+    padding: 0.5rem 0.5rem;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+
+    themed background-color input-bg
+    themed border-color input-border
+    themed color input-fg
+}
+
+input.fill, textarea.fill {
+    width: 100%;
+}
+.big {
+    font-size: font-size-big;
+}
+
+input.search{
+    themed background-color clear
+    border: 0;
+    border-bottom: 1px solid transparent;
+}
+
+
+.input-group {
+    width: 100%;
+    display: flex;
+    input {
+        flex: 1;
+    }
+    button { 
+        margin: 0;
+    }
+    input, button, select {
+        &:not(:first-child):not(:last-child) {
+            border-radius: 0;
+        }
+        &:first-child {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        &:last-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+}
+
+select {
+    themed background-color background-color;
+    themed color text-color;
+}
+
+
+
+
+/*** MISC ***/
+
+hr {
+    height: 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    themed border-color shade3;
+}
+
+.noselect {
+    user-select: none;
+}
+
+.bold {
+    font-weight: 700;
+}
+
+.italic {
+    font-style: italic;
+}
+
+border-darken-amount = 15%
+for cls in primary success info danger reject
+    .{cls}, a.btn.{cls}, .btn.{cls}, button.{cls} {
+        themed background-color cls
+        themed-darken border-color cls border-darken-amount
+        themed color colored-background-fg
+    }
+    .{cls}-text {
+        themed color cls
+    }
+
+
+/*** LISTS ***/
+
+dl.horizontal {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+
+    dt {
+        display: inline-block;
+        width: 20%;
+        font-weight: 700;
+        margin: 0;
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
+        text-align: right;
+        box-sizing: border-box;
+        vertical-align: middle;
+        line-height: font-size-normal*2;
+    }
+
+    dd {
+        display: inline-block;
+        width: 80%;
+        margin: 0;
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
+        padding-left: 1rem;
+        box-sizing: border-box;
+        vertical-align: middle;
+        line-height: font-size-normal*2;
+    }
+}
+
+.inline-flex {
+    display: inline-flex;
+    align-items: center;
+}
+
+
+
+/*** PROGRESS BARS **/
+
+.progress {
+    display: flex;
+    width: 100%;
+    align-items: left;
+    themed background-color shade4
+    border: 1px solid transparent;
+    themed border-color shade2
+    border-radius: 0.2rem;
+    box-sizing: border-box;
+    margin: 0;
+    margin-top: 0.1rem;
+
+    .progress-bar {
+        display: inline-block;
+        width: 50%;
+        text-align: center;
+        text-overflow: hidden;
+    }
+}
+
+
+/*** BUTTON ***/
+
+button-highlight-brighten-amount = 15%
+button-border-highlight-darken-amount= 5%
+button-disabled-desaturate-amount=70%
+
+button, a.btn, .btn {
+    display: inline-block;
+    margin: 0.15em;
+    user-select: none;
+
+    text-align: center;
+    font-size: font-size-normal;
+    cursor: pointer;
+    border: 1px solid transparent;
+    //border-bottom: 3px solid transparent;
+    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+    padding-left: 0.7em;
+    padding-right: 0.7em;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    border-radius: 0.3rem;
+    height: 2em;
+    vertical-align: middle;
+    box-sizing: border-box;
+    line-height: font-size-normal;
+
+    themed background-color default-button
+    themed-darken border-color default-button border-darken-amount
+    themed color default-button-color
+
+    transition: background-color 0.3s ease;
+
+    &.noshadow {
+        box-shadow: none;
+    }
+
+    &:before {
+      content: '';
+      display: inline-block;
+      vertical-align: middle;
+      //height: 100%;
+    }
+    &:hover, &:focus {
+        text-decoration: none;
+
+        themed-lighten background-color default-button button-highlight-brighten-amount
+        themed-darken border-color default-button button-border-highlight-darken-amount
+    }
+    &:active, &.active {
+        text-decoration: none;
+
+        themed-darken background-color default-button button-highlight-brighten-amount
+        themed-darken border-color default-button button-border-highlight-darken-amount
+    }
+    &.xs {
+        font-size: font-size-extra-small;
+        line-height: font-size-normal;
+        text-shadow: none !important;
+    }
+    &.sm {
+        font-size: font-size-small;
+        line-height: font-size-normal;
+        text-shadow: none !important;
+    }
+
+
+    &:disabled {
+        themed-desaturate background-color default-button button-disabled-desaturate-amount
+        themed color shade2 
+        themed-desaturate border-color default-button button-disabled-desaturate-amount
+        box-shadow: none;
+        cursor: default;
+        cursor: not-allowed;
+    }
+}
+
+a.btn, .btn {
+    &:before {
+        height: 100%;
+    }
+}
+
+for cls in primary info success danger reject
+    button.{cls}, a.btn.{cls}, .btn.{cls} {
+        themed color colored-background-fg
+        &:hover, &:focus {
+            themed-lighten background-color cls button-highlight-brighten-amount
+            themed-darken border-color cls button-border-highlight-darken-amount
+        }
+        &:active, &.active {
+            themed-darken background-color cls button-highlight-brighten-amount
+            themed-darken border-color cls button-border-highlight-darken-amount
+        }
+    }
+    .fab.{cls} {
+        themed background-color cls 
+        &:hover {
+            themed-lighten background-color cls button-highlight-brighten-amount
+        }
+    }
+    button.{cls}:disabled, a.btn.{cls}:disabled .btn.{cls}:disabled {
+        themed-desaturate background-color cls button-disabled-desaturate-amount
+        themed color shade3 
+        themed-desaturate border-color cls button-disabled-desaturate-amount
+        box-shadow: none;
+    }
+
+for cls in primary danger info reject
+    button.{cls}, a.btn{cls}, .btn.{cls} {
+        text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+    }
+
+
+    
+
+.btn-group {
+display: inline-block;
+    margin: 0.15em;
+    button, a.btn, .btn {
+        margin: 0;
+        border-radius: 0;
+
+        &:first-child {
+            border-bottom-left-radius: 0.2rem;
+            border-top-left-radius: 0.2rem;
+        }
+        &:last-child {
+            border-bottom-right-radius: 0.2rem;
+            border-top-right-radius: 0.2rem;
+        }
+
+        &.active {
+            themed background-color shade2
+        }
+    }
+}
+
+.btn-toolbar {
+    display: inline-block;
+
+    &.flex {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        .btn-group{
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    .btn-group{
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+    }
+    .btn-group:first-child {
+        margin-left: 0;
+        margin-right: 0.5em;
+    }
+    .btn-group:last-child {
+        margin-right: 0;
+    }
+}
+
+.rtl {
+    direction: rtl;
+}
+
+
+.result-won {
+    themed-desaturate-and-lighten-darken background-color success 75% 50%
+}
+.result-lost {
+    themed-desaturate-and-lighten-darken background-color reject 75% 50%
+}
+
+.space-around {
+    display: flex;
+    justify-content: space-around;
+}
+.space-between {
+    display: flex;
+    justify-content: space-between;
+}

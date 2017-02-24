@@ -1,0 +1,141 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.LineText {
+    display: flex;
+    align-items: center;
+    align-content: stretch;
+
+    .left, .right {
+        flex: 1;
+        border-bottom: 1px solid #888;
+        themed border-color shade3
+        margin-top: 0.25em;
+    }
+    .left {
+        margin-right: 0.5rem;
+    }
+    .right {
+        margin-left: 0.5rem;
+    }
+    .contents {
+    }
+}
+
+
+.flex {
+    display: flex;
+}
+
+.flex.center {
+    justify-content: center;
+}
+
+.flex.fill {
+    flex-grow: 1;
+}
+
+.flex.shrink {
+    flex-shrink: 1;
+}
+
+.flex.center-vertically {
+    align-items: center;
+}
+.flex.center-both {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex.stretch{
+    align-items: stretch;
+}
+
+.SearchInput {
+    position: relative;
+
+    i.fa {
+        position: absolute;
+        bottom: 0.2em;
+        left: 0.4rem;
+        themed color shade2
+    }
+
+    input {
+        padding-left: 1.6em;
+    }
+}
+
+/* Tooltip {{{ */ 
+.ogs-tooltip {
+    position: absolute;
+    border: 1px solid transparent;
+    padding: 0.1rem;
+    padding-bottom: 0.3rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    themed background-color bg
+    themed color fg
+    themed border-color shade3
+}
+
+/* }}} */
+
+/** Spinner from http://tobiasahlin.com/spinkit/  {{{ **/
+.spinner {
+  width: 40px;
+  height: 40px;
+
+  position: relative;
+  margin: 100px auto;
+}
+
+.double-bounce1, .double-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #333;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
+  animation: sk-bounce 2.0s infinite ease-in-out;
+}
+
+.double-bounce2 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+@-webkit-keyframes sk-bounce {
+  0%, 100% { -webkit-transform: scale(0.0) }
+  50% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}
+
+/* }}} */

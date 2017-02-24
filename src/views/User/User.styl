@@ -1,0 +1,195 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.User {
+    dt, dd {
+        margin-bottom: 0.5em;
+    }
+
+    h3, h4 {
+        margin: 0;
+    }
+
+    dd {
+        display: inline-flex !important;
+        align-items: center;
+        .f32 {
+            display: inline-flex !important;
+            align-items: flex-end;
+            margin-right: 0.5rem;
+        }
+        textarea {
+            width: 100%;
+        }
+    }
+
+    .trophies {
+        flex-wrap: wrap;
+    }
+
+    #rating-history-tooltip a {
+        color: #8AB3D0;
+    }
+
+    #rating-history {
+        width: 100%;
+        height: 10em;
+    }
+
+    table.aliases {
+        font-size: 0.8rem;
+
+        td {
+            vertical-align: bottom;
+        }
+    }
+
+    .profile-card {
+        position: relative;
+    }
+
+    .fa-pencil, .fa-save {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        cursor: pointer;
+    }
+
+    td.date {
+        width: 7em;
+        text-align: left;
+        margin-right: 1em;
+        //display: inline-block;
+    }
+
+    td.banned, th.banned {
+        width: 7em;
+        text-align: center;
+    }
+
+
+    td.browser_id {
+        @extend .monospace
+        width: 7em;
+        text-align: left;
+        padding-right: 1em;
+        font-size: 0.7rem;
+        //display: inline-block;
+    }
+
+    table {
+        width: 100%;
+        th {
+            text-align: left;
+        }
+    }
+
+    .won {
+        color: #5CB85C;
+    }
+    .loss {
+        color: #D9534F;
+    }
+
+    .rating_details {
+        height: 1rem;
+        margin-right: 1em;
+        themed color shade2
+        font-size: 0.9em;
+        width: 5em;
+        display: flex;
+        align-items: center;
+    }
+    .text-color {
+        themed color fg
+    }
+
+    i.ogs-turtle {
+        position: relative;
+        width: 1.5rem;
+    }
+    i.ogs-turtle:before {
+        bottom: -0.15em;
+        position: relative;
+    }
+
+    textarea.moderator-notes {
+        width: 100%;
+        margin-top: 1rem;
+        margin-left: -0.2rem;
+        min-height: 10em;
+    }
+
+    span.UserRating {
+        span.frac {
+            font-size: 100%;
+            themed color shade2
+        }
+        sup {
+            padding-left: 0.2em;
+        }
+    }
+
+    .progress-bar.right {
+        text-align: right;
+        span.UserRating {
+            padding-right: 0.5rem;
+            span.frac, sub, sup {
+                themed color colored-background-fg
+            }
+        }
+    }
+
+    .fa-circle-o, .fa-bolt, .fa-clock-o, .ogs-turtle:before {
+        width: 1.5em;
+        text-align: center;
+    }
+    .ogs-turtle:before {
+        bottom: -0.12em;
+        position: relative;
+    }
+
+
+    .library-won-result {
+        @extend .result-won
+    }
+    .library-lost-result {
+        @extend .result-lost
+    }
+
+    .Dropzone {
+        width: 128px;
+        height: 128px;
+        cursor: pointer;
+        border: 2px dashed #888;
+    }
+
+    .fa-file-text-o {
+        float: right;
+    }
+
+    .activity-dl {
+        dd {
+            display: block !important;
+        }
+        .icon {
+            max-width: 15px;
+            max-height: 15px;
+        }
+    }
+
+}
