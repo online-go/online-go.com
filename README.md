@@ -1,3 +1,5 @@
+[![Run Status](https://api.shippable.com/projects/58b08461067893070065aab3/badge?branch=devel)](https://app.shippable.com/projects/58b08461067893070065aab3)
+
 # Online-Go.com source code
 
 This repository contains the source code for web client used by Online-Go.com.
