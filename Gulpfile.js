@@ -138,6 +138,7 @@ function dev_server(done) {
     let express = require('express');
     let body_parser = require('body-parser');
     let http = require('http');
+    var proxy = require('express-http-proxy');
     let devserver = express();
     devserver.use(body_parser.json())
     devserver.use(body_parser.text())
@@ -152,6 +153,22 @@ function dev_server(done) {
 
     devserver.use(express.static('dist'))
     devserver.use(express.static('assets'))
+
+    let beta_proxy = (prefix) => proxy('beta.online-go.com', {
+        https: true,
+        forwardPath: function(req, res) {
+            let path = prefix + require('url').parse(req.url).path;
+            console.log('-->', path);
+            return path;
+        }
+    });
+
+    devserver.use('/api', beta_proxy('/api'));
+    devserver.use('/merchant', beta_proxy('/merchant'));
+    devserver.use('/sso', beta_proxy('/sso'));
+    devserver.use('/oauth2', beta_proxy('/oauth2'));
+    devserver.use('/complete', beta_proxy('/complete'));
+    devserver.use('/disconnect', beta_proxy('/disconnect'));
 
     devserver.get('*', (req, res) => {
         console.info(`GET ${req.path}`);
@@ -176,7 +193,7 @@ function dev_server(done) {
                 case 'VERSION_DOTCSS': return 'css';
                 case 'LANGUAGE_VERSION_DOTJS': return 'js';
                 case 'EXTRA_CONFIG': 
-                    return `window['api_host'] = "https://beta.online-go.com";`
+                    return `<script>window['websocket_host'] = "https://beta.online-go.com";</script>`
                 ;
             }
             return '{{' + parameter + '}}';

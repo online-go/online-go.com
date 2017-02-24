@@ -25,7 +25,7 @@ let io_config = {
     upgrade: false,
 };
 
-export const termination_socket = window['api_host'] ? io(window['api_host'], io_config) : io(io_config);
+export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
 export const comm_socket = termination_socket;
 /*
 export const comm_socket = io(window['comm_service'], {

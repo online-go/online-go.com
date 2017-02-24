@@ -1,8 +1,8 @@
 {
   "name": "online-go.com",
   "version": "5.1.0",
-  "url" : "https://github.com/online-go/online-go.com/issues",
-  "license" : "AGPL-3.0",
+  "url": "https://github.com/online-go/online-go.com/issues",
+  "license": "AGPL-3.0",
   "private": true,
   "devDependencies": {
     "autoprefixer": "^6.4.1",
@@ -13,6 +13,7 @@
     "body-parser": "^1.16.1",
     "cssnano": "^3.7.5",
     "express": "^4.14.1",
+    "express-http-proxy": "^0.11.0",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^3.0.3",
     "gulp-livereload": "^3.8.1",

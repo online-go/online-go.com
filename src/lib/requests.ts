@@ -17,11 +17,9 @@
 
 import {deepCompare} from "misc";
 
-let api_prefix = window['api_host'] ? window['api_host'] : '';
-
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
-        return api_prefix + path;
+        return path;
     }
     if (path.indexOf("/") === 0) {
         return path;
@@ -30,7 +28,7 @@ export function api1ify(path) {
         return path;
     }
 
-    return api_prefix + `/api/v1/${path}`;
+    return `/api/v1/${path}`;
 }
 
 export const api1 = api1ify;
@@ -111,6 +109,7 @@ export function request(type: string, url: string, data: any): Promise<any> {
                     console.warn(api1ify(url), err.status, err.statusText);
                     console.warn(traceback.stack);
                 }
+                console.error(err);
                 reject(err);
             }
         };
