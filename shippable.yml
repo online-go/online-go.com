@@ -1,0 +1,34 @@
+language: node_js
+
+node_js:
+  - 7.6
+
+env:
+  - PRODUCTION=true
+
+build:
+  pre_ci_boot:
+    image_name: node
+    image_tag: 7.6
+    pull: false
+
+  pre_ci:
+    - echo "Pre CI"
+
+  ci:
+    - shippable_retry npm install yarn
+    - shippable_retry node_modules/.bin/yarn install
+    - node_modules/.bin/gulp min_styl
+    - node_modules/.bin/tslint --type-check --project tsconfig.json 
+    - node_modules/.bin/webpack --optimize-minimize --devtool=source-map --display-modules --output-filename 'ogs.min.js'
+
+  post_ci:
+    - ls -a
+    - pwd
+    - 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
+    - 'gzipped ogs.min.css: ' `gzip -9 dist/ogs.min.css -c | wc -c`
+
+  cache: true
+
+  cache_dir_list:
+    - $SHIPPABLE_BUILD_DIR/node_modules
