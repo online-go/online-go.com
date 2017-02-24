@@ -25,8 +25,8 @@ build:
   post_ci:
     - ls -a
     - pwd
-    - 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
-    - 'gzipped ogs.min.css: ' `gzip -9 dist/ogs.min.css -c | wc -c`
+    - echo "gzipped ogs.min.js: `gzip -9 dist/ogs.min.js -c | wc -c`"
+    - echo "gzipped ogs.min.css: `gzip -9 dist/ogs.min.css -c | wc -c`"
 
   cache: true
 
