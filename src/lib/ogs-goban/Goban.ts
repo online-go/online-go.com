@@ -4126,10 +4126,6 @@ export abstract class Goban extends EventEmitter {
 
             // extra cues react only to current player time updates
             if (this.on_game_screen && player_id && window["user"] && player_id === window["user"].id) {
-                console.info("sound_to_play: " + seconds);
-                console.info("last_countdown_sound_played: " + this.last_countdown_sound_played);
-                console.info("last_countdown_registered: " + this.last_countdown_registered);
-                console.info("player_to_move: " + this.engine.playerToMove());
                 if (player_id === this.engine.playerToMove()) {
                     if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10) {
                         this.byoyomi_label = "" + seconds;
@@ -4149,7 +4145,14 @@ export abstract class Goban extends EventEmitter {
                         // play sound
                         let sound_to_play = seconds;
                         if (sound_to_play) {
-                            if (sound_to_play < this.last_countdown_sound_played
+                            // Normally below condition should be as simple as
+                            // sound_to_play < this.last_countdown_sound_played || sound_to_play < this.last_countdown_registered
+                            //
+                            // However in the issue details https://github.com/online-go/online-go.com/issues/11
+                            // I describe an extra even with playerToMove being current player (clock reset)
+                            // just after the turn was passed to opponent. Extra complexity is added to suppress that event as countdown
+                            // by simply bumping this.last_countdown_registered in that case
+                            if ((sound_to_play < this.last_countdown_sound_played && sound_to_play <= this.last_countdown_registered)
                                     || sound_to_play < this.last_countdown_registered) {
                                 this.last_countdown_sound_played = sound_to_play;
                                 if (this.getShouldPlayVoiceCountdown()) {
