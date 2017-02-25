@@ -121,7 +121,7 @@ export function rankString(r) { /* {{{ */
         // instead we could also test for > 36 when it isn't > 900.
         //
         if (r > 36) {
-            return translate_1.interpolate(translate_1.pgettext("Pro", "%sp"), [(r - 36)]);
+            return interpolate(pgettext("Pro", "%sp"), [(r - 36)]);
         }
     }
     if (r < -900) {
