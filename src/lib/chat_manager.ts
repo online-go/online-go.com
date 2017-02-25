@@ -215,6 +215,7 @@ class ChatManager {
             ui_class: obj.ui_class,
             country: obj.country,
             ranking: obj.ranking,
+            professional: obj.professional,
         }, true);
 
         this.channels[obj.channel].handleChat(obj);

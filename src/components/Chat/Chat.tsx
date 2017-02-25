@@ -274,6 +274,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             ui_class: obj.ui_class,
             country: obj.country,
             ranking: obj.ranking,
+            professional: obj.professional,
         }, true);
 
         c.chat_log.push(obj);
@@ -545,6 +546,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             obj.username = user.username;
             obj.id = user.id;
             obj.ranking = user.ranking;
+            obj.professional = user.professional;
             obj.ui_class = user.ui_class;
             obj.message = {"i": obj.uuid, "t": Math.floor(Date.now() / 1000), "m": txt};
             this.onChatMessage(obj);

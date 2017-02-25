@@ -115,14 +115,6 @@ export function rankString(r) { /* {{{ */
     }
     if (r > 900) {
         return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
-    } else {
-        // ChatUserList.tsx isn't showing professionals correctly, shows 8D instead of 1P.
-        // Probably need to send an opject to rankString() but I can't figure that out. So,
-        // instead we could also test for > 36 when it isn't > 900.
-        //
-        if (r > 36) {
-            return interpolate(pgettext("Pro", "%sp"), [(r - 36)]);
-        }
     }
     if (r < -900) {
         return "?";
