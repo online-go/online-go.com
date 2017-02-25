@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {errorAlerter} from "misc";
-import {chat_manager, ChatChannelProxy} from "chat";
+import {chat_manager, ChatChannelProxy} from "chat_manager";
 import preferences from "preferences";
 import {Player} from "Player";
 

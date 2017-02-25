@@ -41,7 +41,7 @@ import {Resizable} from "Resizable";
 import {TabCompleteInput} from "TabCompleteInput";
 import {ChatUserList} from "ChatUserList";
 import {ChatPresenceIndicator} from "ChatPresenceIndicator";
-import {chat_manager} from "chat";
+import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
