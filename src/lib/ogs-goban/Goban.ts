@@ -3984,9 +3984,6 @@ export abstract class Goban extends EventEmitter {
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
-        this.last_countdown_sound_played = 99;
-        this.last_countdown_registered = 99;
-
         let formatTime = (clock_div, time, base_time: number, player_id?: number) => { /* {{{ */
             let ms;
             let time_suffix = "";
@@ -4129,6 +4126,10 @@ export abstract class Goban extends EventEmitter {
 
             // extra cues react only to current player time updates
             if (this.on_game_screen && player_id && window["user"] && player_id === window["user"].id) {
+                console.info("sound_to_play: " + seconds);
+                console.info("last_countdown_sound_played: " + this.last_countdown_sound_played);
+                console.info("last_countdown_registered: " + this.last_countdown_registered);
+                console.info("player_to_move: " + this.engine.playerToMove());
                 if (player_id === this.engine.playerToMove()) {
                     if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10) {
                         this.byoyomi_label = "" + seconds;
