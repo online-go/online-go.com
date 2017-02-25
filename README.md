@@ -14,7 +14,7 @@ then simply clone the repository and within the working directory run the follow
 npm install
 
 # Run this to start the development server and build system
-node_modules/.bin/gulp
+npm run dev
 ```
 
 If you're on linux, you can simply type `make` and it will do all this for you as well.
