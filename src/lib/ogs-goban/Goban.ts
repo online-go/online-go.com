@@ -4063,7 +4063,7 @@ export abstract class Goban extends EventEmitter {
                         }
                         periods_left = ((time.periods - period_offset));
                         if (((time.periods - period_offset) - 1) > 0) {
-                            time_suffix = "<span class='time_suffix'>+" + periods_left + "x" + (shortDurationString(time.period_time)).trim() + "</span>";
+                            time_suffix = "<span class='time_suffix'>+" + (periods_left - 1) + "x" + (shortDurationString(time.period_time)).trim() + "</span>";
                             if (period_time_div) {
                                 period_time_div.text(shortDurationString(time.period_time));
                             }
