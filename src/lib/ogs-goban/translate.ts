@@ -23,7 +23,7 @@ export let sorted_locale_countries = [];
 
 let catalog;
 try {
-    catalog = locales[current_language];
+    catalog = locales[current_language] || {};
 } catch (e) {
     catalog = {};
 }

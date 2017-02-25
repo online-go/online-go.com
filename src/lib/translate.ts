@@ -25,7 +25,7 @@ export let sorted_locale_countries = [];
 
 let catalog;
 try {
-    catalog = locales[current_language];
+    catalog = locales[current_language] || {};
 } catch (e) {
     catalog = {};
 }
@@ -138,13 +138,16 @@ fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
 
 
-
-for (let e of fantasy_countries) {
-    fantasy_countries_cc[e[0]] = true;
-    countries[current_language][e[0]] = e[1];
-}
-for (let e of extended_countries) {
-    countries[current_language][e[0]] = e[1];
+try {
+    for (let e of fantasy_countries) {
+        fantasy_countries_cc[e[0]] = true;
+        countries[current_language][e[0]] = e[1];
+    }
+    for (let e of extended_countries) {
+        countries[current_language][e[0]] = e[1];
+    }
+} catch (e) {
+    console.error((e as Error).message);
 }
 
 
@@ -174,7 +177,12 @@ export function _(str): string {
 }
 
 export function cc_to_country_name(country_code) {
-    return countries[current_language][country_code];
+    if (current_language in countries) {
+        return countries[current_language][country_code];
+    }
+    else {
+        return country_code;
+    }
 }
 
 export function _setCurrentLanguage(language_code) {
