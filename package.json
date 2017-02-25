@@ -4,6 +4,9 @@
   "url": "https://github.com/online-go/online-go.com/issues",
   "license": "AGPL-3.0",
   "private": true,
+  "scripts": {
+    "dev": "gulp"
+  },
   "devDependencies": {
     "autoprefixer": "^6.4.1",
     "babel-core": "^6.14.0",
