@@ -17,6 +17,36 @@
 
 .GameList {
     text-align: center;
+
+    .GobanLineSummaryContainerHeader {
+        user-select: none;
+        > div {
+            white-space: nowrap;
+        }
+    }
+
+    .sortable {
+        cursor: pointer;
+    }
+    .sortable:after {
+        display: inline-block;
+        width: 0.8rem;
+        font-size: 0.7rem;
+        margin-left: 0.2rem;
+        margin-bottom: 0.2rem;
+        font-family: 'FontAwesome';
+        content: " ";
+    }
+
+    .sortable.sorted-asc:after {
+        content: fa-sort-asc-content;
+    }
+
+    .sortable.sorted-desc:after {
+        content: fa-sort-desc-content;
+    }
+
+
     
     .current-users-move {
         themed background-color miniboard-to-move
