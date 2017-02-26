@@ -142,7 +142,7 @@ function onKeyPress(e, options) {
         let last;
         let completed_event;
 
-        if (!sel.length && sel.start) {
+        if (sel !== null && !sel.length && sel.start) {
             if ($.fn.nicknameTabComplete.has_newline_bug) {
                 // Carriage return fix
                 text = this.value.substr(0, sel.start);
