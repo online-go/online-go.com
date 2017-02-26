@@ -16,7 +16,22 @@
 
 import GoTheme from "../GoTheme";
 import {_} from "../translate";
+import data from "data";
 
+data.setDefault("custom.board", "#DCB35C");
+data.setDefault("custom.line", "#000000");
+
+// Converts a six-digit hex string to rgba() notation
+function hexToRgba(raw: string, alpha: number = 1): string {
+    let hex = raw.replace("#", "");
+    if (hex.length !== 6) {
+        return raw;
+    }
+    let r = parseInt(`0x${hex.substr(0, 2)}`);
+    let g = parseInt(`0x${hex.substr(2, 2)}`);
+    let b = parseInt(`0x${hex.substr(4, 2)}`);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 export default function(GoThemes) {
 
@@ -24,16 +39,16 @@ export default function(GoThemes) {
         sort() { return 0; }
         getBackgroundCSS() {
             return {
-                "background-color": "#DCB35C",
+                "background-color": data.get("custom.board"),
                 "background-image": ""
             };
         };
-        getLineColor() { return "#000000"; };
-        getFadedLineColor() { return "#888888"; };
-        getStarColor() { return "#000000"; };
-        getFadedStarColor() { return "#888888"; };
-        getBlankTextColor() { return "#000000"; };
-        getLabelTextColor() { return "#444444"; };
+        getLineColor() { return data.get("custom.line"); };
+        getFadedLineColor() { return hexToRgba(data.get("custom.line"), 0.5); };
+        getStarColor() { return data.get("custom.line"); };
+        getFadedStarColor() { return hexToRgba(data.get("custom.line"), 0.5); };
+        getBlankTextColor() { return data.get("custom.line"); };
+        getLabelTextColor() { return hexToRgba(data.get("custom.line"), 0.75); };
     }
 
 
