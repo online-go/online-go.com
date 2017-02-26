@@ -600,6 +600,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             let c = getChannel(channel);
             if (c.unread_ct) {
                 return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={_("leave")} onClick={this.part.bind(this, channel, false, false)} />;
+            } else if (channel in this.state.joined_channels) {
+                return <span className="unread-count" data-count="" data-leave={_("leave")} onClick={this.part.bind(this, channel, false, false)} />;
             }
             /*
             if (c.user_count) {
