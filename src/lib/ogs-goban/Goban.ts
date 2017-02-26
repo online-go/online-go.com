@@ -2437,6 +2437,7 @@ export abstract class Goban extends EventEmitter {
         {{{
             let transparent = letter_was_drawn;
             let hovermark = null;
+            let symbol_color = stone_color === 1 ? this.theme_black_text_color : stone_color === 2 ? this.theme_white_text_color : text_color;
 
             if (this.analyze_tool === "label" && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)) {
                 if (this.analyze_subtool === "triangle" || this.analyze_subtool === "square" || this.analyze_subtool === "cross" || this.analyze_subtool === "circle") {
@@ -2454,7 +2455,7 @@ export abstract class Goban extends EventEmitter {
                 if (transparent) {
                     ctx.globalAlpha = 0.6;
                 }
-                ctx.strokeStyle = stone_color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
+                ctx.strokeStyle = symbol_color;
                 ctx.lineWidth = this.square_size * 0.075;
                 ctx.arc(cx, cy, this.square_size * 0.25, 0, 2 * Math.PI, false);
                 ctx.stroke();
@@ -2468,7 +2469,7 @@ export abstract class Goban extends EventEmitter {
                 if (transparent) {
                     ctx.globalAlpha = 0.6;
                 }
-                ctx.strokeStyle = stone_color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
+                ctx.strokeStyle = symbol_color;
                 if (pos.chat_triangle) {
                     ctx.strokeStyle = "#00aaFF";
                 }
@@ -2496,7 +2497,7 @@ export abstract class Goban extends EventEmitter {
                 ctx.lineTo(cx + r, cy + r);
                 ctx.moveTo(cx + r, cy - r);
                 ctx.lineTo(cx - r, cy + r);
-                ctx.strokeStyle = stone_color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
+                ctx.strokeStyle = symbol_color;
                 ctx.stroke();
                 ctx.restore();
                 draw_last_move = false;
@@ -2516,7 +2517,7 @@ export abstract class Goban extends EventEmitter {
                 ctx.lineTo(cx + r, cy + r);
                 ctx.lineTo(cx - r, cy + r);
                 ctx.lineTo(cx - r, cy - r);
-                ctx.strokeStyle = stone_color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
+                ctx.strokeStyle = symbol_color;
                 ctx.stroke();
                 ctx.restore();
                 draw_last_move = false;
@@ -2960,8 +2961,8 @@ export abstract class Goban extends EventEmitter {
         this.themes = themes;
 
         this.theme_board = new (GoThemes["board"][themes.board])();
-        this.theme_white = new (GoThemes["white"][themes.white])();
-        this.theme_black = new (GoThemes["black"][themes.black])();
+        this.theme_white = new (GoThemes["white"][themes.white])(this.theme_board);
+        this.theme_black = new (GoThemes["black"][themes.black])(this.theme_board);
 
         if (!this.metrics) {
             this.metrics = this.computeMetrics();

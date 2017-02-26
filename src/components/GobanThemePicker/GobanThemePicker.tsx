@@ -23,6 +23,7 @@ import {GoThemes} from "goban";
 import {getSelectedThemes} from "preferences";
 import preferences from "preferences";
 import {PersistentElement} from "PersistentElement";
+import data from "data";
 
 interface GobanThemePickerProperties {
     // id?: any,
@@ -47,7 +48,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             board: selected.board,
             white: selected.white,
             black: selected.black,
-
+            boardCustom: this.getCustom("board"),
+            lineCustom: this.getCustom("line"),
+            whiteCustom: this.getCustom("white"),
+            blackCustom: this.getCustom("black")
         };
 
         for (let k in GoThemes) {
@@ -76,7 +80,29 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     componentWillUnmount() {
     }
 
+    getCustom(key) {
+        return data.get(`custom.${key}`);
+    }
+    setCustom(key, event) {
+        if (event.target.value) {
+            data.set(`custom.${key}`, event.target.value);
+        } else {
+            data.remove(`custom.${key}`);
+        }
+        let up = {};
+        up[`${key}Custom`] = this.getCustom(key);
+        this.setState(up);
+        this.renderPickers();
+
+        if (key === "line") { // Changing the line color should update the board theme
+            key = "board";
+        }
+        preferences.set(`goban-theme-${key}`, this.state[key]);
+    }
+
     render() {
+        let inputStyle = {height: `${this.state.size}px`, width: `${this.state.size * 1.5}px`};
+        let {boardCustom, lineCustom, whiteCustom, blackCustom} = this.state;
 
         return (
             <div className="GobanThemePicker">
@@ -84,12 +110,23 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                     {GoThemes.board.sorted.map((theme, idx) => (
                         <div key={theme.theme_name}
                             className={"selector" + (this.state.board === theme.theme_name ? " active" : "")}
-                            style={theme.styles}
+                            style={{
+                                ...theme.styles,
+                                ...(theme.theme_name === "Plain" ? {backgroundColor: boardCustom} : {})
+                            }}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                             >
                             <PersistentElement elt={this.canvases.board[idx]} />
                         </div>
                     ))}
+                    {this.state.board === "Plain" &&
+                        <div>
+                            <input type="color" style={inputStyle} value={boardCustom} onChange={this.setCustom.bind(this, "board")} />
+                            <button className="color-reset" onClick={this.setCustom.bind(this, "board")}><i className="fa fa-undo"/></button>
+                            <input type="color" style={inputStyle} value={lineCustom} onChange={this.setCustom.bind(this, "line")} />
+                            <button className="color-reset" onClick={this.setCustom.bind(this, "line")}><i className="fa fa-undo"/></button>
+                        </div>
+                    }
                 </div>
 
                 <div className="theme-set">
@@ -102,6 +139,12 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             <PersistentElement elt={this.canvases.white[idx]} />
                         </div>
                     ))}
+                    {this.state.white === "Plain" &&
+                        <div>
+                            <input type="color" style={inputStyle} value={whiteCustom} onChange={this.setCustom.bind(this, "white")} />
+                            <button className="color-reset" onClick={this.setCustom.bind(this, "white")}><i className="fa fa-undo"/></button>
+                        </div>
+                    }
                 </div>
 
                 <div className="theme-set">
@@ -114,6 +157,12 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             <PersistentElement elt={this.canvases.black[idx]} />
                         </div>
                     ))}
+                    {this.state.black === "Plain" &&
+                        <div>
+                            <input type="color" style={inputStyle} value={blackCustom} onChange={this.setCustom.bind(this, "black")} />
+                            <button className="color-reset" onClick={this.setCustom.bind(this, "black")}><i className="fa fa-undo"/></button>
+                        </div>
+                    }
                 </div>
             </div>
         );
@@ -128,6 +177,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             let theme = new Theme();
             let canvas = this.canvases.board[i];
             let ctx = canvas[0].getContext("2d");
+            ctx.clearRect(0, 0, square_size, square_size);
 
             ctx.beginPath();
             ctx.strokeStyle = theme.getLineColor();
@@ -157,6 +207,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             let ctx = canvas[0].getContext("2d");
             let radius = Math.round(square_size / 2.2);
             let stones = theme.preRenderWhite(radius, 23434);
+            ctx.clearRect(0, 0, square_size, square_size);
             theme.placeWhiteStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
         }
 
@@ -167,6 +218,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             let ctx = canvas[0].getContext("2d");
             let radius = Math.round(square_size / 2.2);
             let stones = theme.preRenderBlack(radius, 23434);
+            ctx.clearRect(0, 0, square_size, square_size);
             theme.placeBlackStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
         }
 

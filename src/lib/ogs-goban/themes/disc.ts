@@ -16,49 +16,71 @@
 
 import GoTheme from "../GoTheme";
 import {_} from "../translate";
+import data from "data";
+
+data.setDefault("custom.black", "#000000");
+data.setDefault("custom.white", "#FFFFFF");
 
 export default function(GoThemes) {
-    class White extends GoTheme {
+    class Stone extends GoTheme {
         sort() { return  0; }
 
-        preRenderBlack(radius, seed): any {
-            return true;
-        };
-
-        placeBlackStone(ctx, shadow_ctx, stone, cx, cy, radius) {
-            ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0.001, 2 * Math.PI, false); /* 0.001 to workaround fucked up chrome bug */
-            ctx.fill();
-        };
-    }
-
-    class Black extends GoTheme {
-        sort() { return  0; }
-
-        preRenderWhite(radius, seed): any {
-            return true;
-        };
-
-        placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, radius) {
+        placePlainStone(ctx, cx, cy, radius, color) {
             let lineWidth = radius * 0.10;
             if (lineWidth < 0.3) {
                 lineWidth = 0;
             }
-            ctx.fillStyle = "#fff";
-            ctx.strokeStyle = "#000";
+            ctx.fillStyle = color;
+            ctx.strokeStyle = this.parent ? this.parent.getLineColor() : this.getLineColor();
             if (lineWidth > 0) {
                 ctx.lineWidth = lineWidth;
             }
             ctx.beginPath();
             ctx.arc(cx, cy, radius - lineWidth / 2, 0.001, 2 * Math.PI, false); /* 0.001 to workaround fucked up chrome bug */
-                    if (lineWidth > 0) {
+            if (lineWidth > 0) {
                 ctx.stroke();
             }
             ctx.fill();
-        };
+        }
     }
 
-    GoThemes["black"]["Plain"] = White;
-    GoThemes["white"]["Plain"] = Black;
+    class Black extends Stone {
+        preRenderBlack(radius, seed): any {
+            return true;
+        };
+
+        placeBlackStone(ctx, shadow_ctx, stone, cx, cy, radius) {
+            this.placePlainStone(ctx, cx, cy, radius, this.getBlackStoneColor());
+        };
+
+        public getBlackStoneColor() {
+            return data.get("custom.black");
+        }
+
+        public getBlackTextColor() {
+            return data.get("custom.white");
+        }
+    }
+
+    class White extends Stone {
+        preRenderWhite(radius, seed): any {
+            return true;
+        };
+
+        placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, radius) {
+            this.placePlainStone(ctx, cx, cy, radius, this.getWhiteStoneColor());
+        };
+
+        public getWhiteStoneColor() {
+            return data.get("custom.white");
+        }
+
+        public getWhiteTextColor() {
+            return data.get("custom.black");
+        }
+    }
+
+    GoThemes["black"]["Plain"] = Black;
+    GoThemes["white"]["Plain"] = White;
+
 }

@@ -16,8 +16,10 @@
 
 export default class GoTheme {
     public name: string;
+    protected parent: GoTheme; // An optional parent theme
 
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
     }
 
     /* Returns an array of black stone objects. The structure
@@ -37,7 +39,7 @@ export default class GoTheme {
     /* Places a pre rendered stone onto the canvas, centered at cx, cy */
     public placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, radius) {
         //if (shadow_ctx) do something
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = this.getWhiteStoneColor();
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, true);
         ctx.fill();
@@ -45,7 +47,7 @@ export default class GoTheme {
 
     public placeBlackStone(ctx, shadow_ctx, stone, cx, cy, radius) {
         //if (shadow_ctx) do something
-        ctx.fillStyle = "#000";
+        ctx.fillStyle = this.getBlackStoneColor();
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, true);
         ctx.fill();
@@ -57,17 +59,25 @@ export default class GoTheme {
         return false;
     };
 
+    /* Returns the color that should be used for white stones */
+    public getWhiteStoneColor() {
+        return "#ffffff";
+    }
+
+    /* Returns the color that should be used for black stones */
+    public getBlackStoneColor() {
+        return "#000000";
+    }
+
     /* Returns the color that should be used for text over white stones */
     public getWhiteTextColor(color) {
         return "#000000";
     };
 
-
     /* Returns the color that should be used for text over black stones */
     public getBlackTextColor(color) {
         return "#ffffff";
     };
-
 
     /* Returns a set of CSS styles that should be applied to the background layer (ie the board) */
     public getBackgroundCSS() {
