@@ -6,6 +6,7 @@ dev: node_modules
 
 node_modules:
 	npm install yarn
+	npm install supervisor
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) yarn install
 
 lint tslint:
