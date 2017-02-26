@@ -1,3 +1,5 @@
+'use strict';
+
 console.log(process.env.NODE_PATH)
 
 var path = require('path');
