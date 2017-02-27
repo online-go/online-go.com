@@ -33,7 +33,6 @@ export class Goban extends OGSGoban {
     constructor(config, preloaded_data?) {
         super(config, preloaded_data);
         this.on('move-made', this.autoadvance);
-        console.log('Goban constructed');
     }
 
     defaultConfig() {

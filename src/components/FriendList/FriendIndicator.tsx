@@ -68,15 +68,12 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     refresh() {
         get("ui/friends").then((res) => {
             data.set("friends", res.friends);
-            console.log("Updated friends");
-            //this.setState({'friends': this.sortFriends(res.friends), resolved: true});
         }).catch((err) => {
             console.error("Error resolving friends list: ", err);
         });
     }
 
     updateFriends = (friends) => {
-        console.log("updateFriends");
         this.friend_list = friends;
         this.updateFriendCount();
     }
