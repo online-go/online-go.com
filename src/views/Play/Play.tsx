@@ -73,6 +73,9 @@ export class Play extends React.Component<PlayProperties, any> {
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
+        if (w === 0 || h === 0) { // Wait for positive size
+            setTimeout(this.resize, 500);
+        }
     }}}
     updateChallenges = (challenges) => {{{
         let live = [];
@@ -140,7 +143,7 @@ export class Play extends React.Component<PlayProperties, any> {
                 <AdUnit unit="cdm-zone-01" nag/>
 
                 <div className="challenge-buttons">
-                    <button className="btn primary raise" style={{marginRight: "1em"}} onClick={openNewGameModal}>{_("Create a game")}</button> 
+                    <button className="btn primary raise" style={{marginRight: "1em"}} onClick={openNewGameModal}>{_("Create a game")}</button>
                 </div>
 
                 <div id="challenge-list-container">
