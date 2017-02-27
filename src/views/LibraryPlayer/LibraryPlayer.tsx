@@ -176,7 +176,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }
 
     uploadSGFs = (files) => {{{
-        if (this.props.params.player_id === data.get("user").id) {
+        if (parseInt(this.props.params.player_id) === data.get("user").id) {
+            files = files.filter((file) => /.sgf$/i.test(file.name));
             Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
             .then(() => {
                 this.refresh(this.props.params.player_id);
@@ -330,7 +331,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
 
 
 
-                <Dropzone ref="dropzone" className="Dropzone" onDrop={this.uploadSGFs} multiple={true} disableClick accept="application/x-go-sgf">
+                <Dropzone ref="dropzone" className="Dropzone" onDrop={this.uploadSGFs} multiple={true} disableClick>
                     <Card>
 
                         {owner &&
