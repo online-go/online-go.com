@@ -214,7 +214,9 @@
         /* }}} */
 
         /* Load our language */
-        document.write('<script defer src="{{CDN_SERVICE}}/{{RELEASE}}/locale/' + ogs_current_language + '.{{LANGUAGE_VERSION_DOTJS}}"><'+'/script>');
+        var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
+        language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
+        document.write('<script defer src="' + language_path + '"><'+'/script>');
       </script>
       <script defer src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
       <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}"></script>

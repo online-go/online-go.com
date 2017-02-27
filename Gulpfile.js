@@ -172,6 +172,34 @@ function dev_server(done) {
     devserver.use('/complete', beta_proxy('/complete'));
     devserver.use('/disconnect', beta_proxy('/disconnect'));
 
+    devserver.get('/locale/*', (req, res) => {
+        let options = {
+            hostname: 'storage.googleapis.com',
+            port: 80,
+            path: '/ogs-site-files/dev' + req.path,
+            method: 'GET',
+        };
+
+        let req2 = http.request(options, (res2) => {
+            res2.setEncoding('utf8');
+            let data = "";
+            res2.on('data', (chunk) => {
+                data += chunk.toString();
+            });
+            res2.on('end', () => {
+                res.setHeader('content-type', 'application/javascript');
+                res.setHeader("Content-Length", data.length);
+                res.send(200, data);
+            });
+        });
+
+        req2.on('error', (e) => {
+            res.send(500, e.message);
+        });
+
+        req2.end();
+    });
+
     devserver.get('*', (req, res) => {
         console.info(`GET ${req.path}`);
 
