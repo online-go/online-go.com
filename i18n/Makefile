@@ -4,7 +4,7 @@ all: build/countries.json
 cldr_version=30.0.2
 cldr/cldr-core.zip:
 	mkdir -p cldr
-	curl http://unicode.org/Public/cldr/$(cldr_version)/core.zip -O cldr/cldr-core.zip
+	curl http://unicode.org/Public/cldr/$(cldr_version)/core.zip -o cldr/cldr-core.zip
 
 cldr/common: cldr/cldr-core.zip
 	cd cldr;\
