@@ -1147,8 +1147,8 @@ export class Game extends OGSComponent<GameProperties, any> {
                     this.stone_removal_accept_timeout = null;
                 }, device.is_mobile ? 3000 : 1500 );
 
-                new_state.black_accepted = engine.players["black"].accepted_stones === stone_removals && engine.players["black"].accepted_strict_seki_mode === engine.strict_seki_mode;
-                new_state.white_accepted = engine.players["white"].accepted_stones === stone_removals && engine.players["white"].accepted_strict_seki_mode === engine.strict_seki_mode;
+                new_state.black_accepted = engine.players["black"].accepted_stones === stone_removals;
+                new_state.white_accepted = engine.players["white"].accepted_stones === stone_removals;
             }
 
             if ((engine.phase === "stone removal" || engine.phase === "finished") && goban.mode === "play") {
