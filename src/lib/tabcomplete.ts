@@ -18,7 +18,6 @@ declare var $;
  * (c) 2006 Alex Brem <alex@0xab.cd> - http://blog.0xab.cd
  */
 function getSelection(field) {
-
     let e = field;
 
     return (
@@ -135,7 +134,7 @@ function onKeyPress(e, options) {
     if (e.which === 9) {
         let $this = $(this);
         let val = $this.val();
-        let sel = getSelection(this);
+        let sel = getSelection($this[0]);
         let text = "";
         let match: any = "";
         let first;
