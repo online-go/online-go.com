@@ -1571,7 +1571,7 @@ export class Game extends OGSComponent<GameProperties, any> {
 
                     {this.frag_below_board_controls()}
 
-                    {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */} 
+                    {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
@@ -1705,14 +1705,14 @@ export class Game extends OGSComponent<GameProperties, any> {
                         </span>
                     }
 
-                    
+
                     {(state.mode === "analyze" || null) &&
                         <span>
                             {_("Analyze Mode")}
                         </span>
                     }
 
-                    
+
                     {(state.mode === "conditional" || null) &&
                         <span>
                             {_("Conditional Move Planner")}
@@ -1758,11 +1758,11 @@ export class Game extends OGSComponent<GameProperties, any> {
                             <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
                         </span>
                     }
-                    
+
                     {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
                         <span>
                             <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button> 
+                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
                         </span>
                     }
 
@@ -1866,7 +1866,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                           popover-placement="left"
                        ></i>
                        */}
-                      
+
                        { null &&   /* just going to disable this for now, no one cares I don't think */
                            (this.state.rules === "japanese" || this.state.rules === "korean" || null) &&
                            <div style={{paddingTop: "2rem", paddingBottom: "2rem", textAlign: "center"}}>
@@ -1960,7 +1960,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                     {this.frag_analyze_button_bar()}
 
                     <div className="space-around">
-                        <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button> 
+                        <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
                     </div>
 
                     <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
@@ -2201,7 +2201,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                           }
                     </span>
                 }
-                  
+
                     <span className="controls">
                         <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
                         <span onClick={this.nav_prev_10} className="move-control"><i className="fa fa-backward"></i></span>
