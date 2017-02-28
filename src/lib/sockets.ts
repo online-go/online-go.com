@@ -43,6 +43,7 @@ window["comm_socket"] = comm_socket;
 
 //termination_socket.on('connect', () => { console.info('Connected to termination server'); });
 comm_socket.on("connect", () => { console.info("Connection to server established"); });
+comm_socket.on('HUP', () => window.location.reload());
 
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
