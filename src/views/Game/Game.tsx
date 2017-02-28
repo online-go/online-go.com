@@ -1184,6 +1184,7 @@ export class Game extends OGSComponent<GameProperties, any> {
             /* review stuff */
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
+            new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id != engine.cur_review_move.id);
         }
 
         this.setState(new_state);
@@ -1517,6 +1518,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     syncToCurrentReviewMove = () => {{{
         if (this.goban.engine.cur_review_move) {
             this.goban.engine.jumpTo(this.goban.engine.cur_review_move);
+            this.sync_state();
         } else {
             setTimeout(this.syncToCurrentReviewMove, 50);
         }
@@ -1969,6 +1971,12 @@ export class Game extends OGSComponent<GameProperties, any> {
 
                     <div className="space-around">
                         <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
+                        {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
+                            this.state.review_out_of_sync &&
+                            <button className="sm" onClick={this.syncToCurrentReviewMove}>
+                                {pgettext("Synchronize to current review position", "Sync")} <i className='fa fa-refresh'/>
+                            </button>
+                        }
                     </div>
 
                     <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
