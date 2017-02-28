@@ -61,10 +61,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         let options = time_options[tc.speed];
 
         function goodChoice(arr) {
-            //console.log(arr[Math.round(arr.length/2)]);
             return arr[Math.round(arr.length / 2)].time;
         }
         function findIndex(arr, time) {
+            time = parseInt(time);
             for (let i = 0; i < arr.length; ++i) {
                 if (arr[i].time === time) {
                     return i;
