@@ -1184,7 +1184,7 @@ export class Game extends OGSComponent<GameProperties, any> {
             /* review stuff */
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
-            new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id != engine.cur_review_move.id);
+            new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id !== engine.cur_review_move.id);
         }
 
         this.setState(new_state);

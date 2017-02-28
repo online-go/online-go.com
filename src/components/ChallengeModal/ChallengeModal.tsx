@@ -551,7 +551,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     update_restrict_rank        = (ev) => this.upstate("conf.restrict_rank", ev);
     update_min_rank             = (ev) => {
         let min_ranking = parseInt(ev.target.value);
-        let max_ranking = this.state.challenge.max_ranking;;
+        let max_ranking = this.state.challenge.max_ranking;
         if (min_ranking > max_ranking) {
             max_ranking = min_ranking;
         }
@@ -565,7 +565,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 }
             )
         });
-    };
+    }
     update_max_rank             = (ev) => {
         let min_ranking = this.state.challenge.min_ranking;
         let max_ranking = parseInt(ev.target.value);
@@ -582,7 +582,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 }
             )
         });
-    };
+    }
     update_demo_black_name      = (ev) => this.upstate("demo.black_name", ev);
     update_demo_white_name      = (ev) => this.upstate("demo.white_name", ev);
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
