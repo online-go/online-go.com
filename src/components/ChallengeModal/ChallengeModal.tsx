@@ -549,8 +549,40 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     update_challenge_color      = (ev) => this.upstate("challenge.challenger_color", ev);
     update_disable_analysis     = (ev) => this.upstate("challenge.game.disable_analysis", ev);
     update_restrict_rank        = (ev) => this.upstate("conf.restrict_rank", ev);
-    update_min_rank             = (ev) => this.upstate("challenge.min_ranking", ev);
-    update_max_rank             = (ev) => this.upstate("challenge.max_ranking", ev);
+    update_min_rank             = (ev) => {
+        let min_ranking = parseInt(ev.target.value);
+        let max_ranking = this.state.challenge.max_ranking;;
+        if (min_ranking > max_ranking) {
+            max_ranking = min_ranking;
+        }
+        this.setState({
+            'challenge': Object.assign(
+                {},
+                this.state.challenge,
+                {
+                    'min_ranking': min_ranking,
+                    'max_ranking': max_ranking,
+                }
+            )
+        });
+    };
+    update_max_rank             = (ev) => {
+        let min_ranking = this.state.challenge.min_ranking;
+        let max_ranking = parseInt(ev.target.value);
+        if (max_ranking < min_ranking) {
+            min_ranking = max_ranking;
+        }
+        this.setState({
+            'challenge': Object.assign(
+                {},
+                this.state.challenge,
+                {
+                    'min_ranking': min_ranking,
+                    'max_ranking': max_ranking,
+                }
+            )
+        });
+    };
     update_demo_black_name      = (ev) => this.upstate("demo.black_name", ev);
     update_demo_white_name      = (ev) => this.upstate("demo.white_name", ev);
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
@@ -738,7 +770,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                         </div>
                       }{/* }}} */}
                     </div>
-                    
+
                     <hr/>
                     {(mode !== "demo" || null) && /* {{{ */
                         <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
