@@ -127,12 +127,12 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
         let overall = !blitz && !live && !correspondence;
 
         if (ranking) {
-            let target_key = "rating_" + (blitz ? "blitz" : "") + (live ? "live" : "")  + (correspondence ? "correspondence" : "") + (overall ? "overall" : "");
+            let target_key = "rating" + (blitz ? "_blitz" : "") + (live ? "_live" : "")  + (correspondence ? "_correspondence" : "");
             let rating = value * 100 + 50 - 900;
             obj[target_key] = rating;
             this.setState(obj);
         } else {
-            let target_key = "ranking_" + (blitz ? "blitz" : "") + (live ? "live" : "")  + (correspondence ? "correspondence" : "") + (overall ? "overall" : "");
+            let target_key = "ranking" + (blitz ? "_blitz" : "") + (live ? "_live" : "")  + (correspondence ? "_correspondence" : "");
             let ranking = Math.floor((value + 900) / 100);
             ranking = Math.max(0, Math.min(45, ranking));
             obj[target_key] = ranking;
