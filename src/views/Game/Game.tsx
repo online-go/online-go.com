@@ -544,15 +544,18 @@ export class Game extends OGSComponent<GameProperties, any> {
     nav_up() {{{
         this.checkAndEnterAnalysis();
         this.goban.prevSibling();
+        this.goban.syncReviewMove();
     }}}
     nav_down() {{{
         this.checkAndEnterAnalysis();
         this.goban.nextSibling();
+        this.goban.syncReviewMove();
     }}}
     nav_first() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.showFirst();
+        this.goban.syncReviewMove();
     }}}
     nav_prev_10() {{{
         this.stopAutoplay();
@@ -560,11 +563,13 @@ export class Game extends OGSComponent<GameProperties, any> {
         for (let i = 0; i < 10; ++i) {
             this.goban.showPrevious();
         }
+        this.goban.syncReviewMove();
     }}}
     nav_prev() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.showPrevious();
+        this.goban.syncReviewMove();
     }}}
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {{{
         if (!dont_stop_autoplay) {
@@ -572,6 +577,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         }
         this.checkAndEnterAnalysis();
         this.goban.showNext();
+        this.goban.syncReviewMove();
     }}}
     nav_next_10() {{{
         this.stopAutoplay();
@@ -579,11 +585,13 @@ export class Game extends OGSComponent<GameProperties, any> {
         for (let i = 0; i < 10; ++i) {
             this.goban.showNext();
         }
+        this.goban.syncReviewMove();
     }}}
     nav_last() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.jumpToLastOfficialMove();
+        this.goban.syncReviewMove();
     }}}
     nav_play_pause() {{{
         if (this.state.autoplaying) {
