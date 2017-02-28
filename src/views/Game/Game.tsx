@@ -544,15 +544,18 @@ export class Game extends OGSComponent<GameProperties, any> {
     nav_up() {{{
         this.checkAndEnterAnalysis();
         this.goban.prevSibling();
+        this.goban.syncReviewMove();
     }}}
     nav_down() {{{
         this.checkAndEnterAnalysis();
         this.goban.nextSibling();
+        this.goban.syncReviewMove();
     }}}
     nav_first() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.showFirst();
+        this.goban.syncReviewMove();
     }}}
     nav_prev_10() {{{
         this.stopAutoplay();
@@ -560,11 +563,13 @@ export class Game extends OGSComponent<GameProperties, any> {
         for (let i = 0; i < 10; ++i) {
             this.goban.showPrevious();
         }
+        this.goban.syncReviewMove();
     }}}
     nav_prev() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.showPrevious();
+        this.goban.syncReviewMove();
     }}}
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {{{
         if (!dont_stop_autoplay) {
@@ -572,6 +577,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         }
         this.checkAndEnterAnalysis();
         this.goban.showNext();
+        this.goban.syncReviewMove();
     }}}
     nav_next_10() {{{
         this.stopAutoplay();
@@ -579,11 +585,13 @@ export class Game extends OGSComponent<GameProperties, any> {
         for (let i = 0; i < 10; ++i) {
             this.goban.showNext();
         }
+        this.goban.syncReviewMove();
     }}}
     nav_last() {{{
         this.stopAutoplay();
         this.checkAndEnterAnalysis();
         this.goban.jumpToLastOfficialMove();
+        this.goban.syncReviewMove();
     }}}
     nav_play_pause() {{{
         if (this.state.autoplaying) {
@@ -1176,6 +1184,7 @@ export class Game extends OGSComponent<GameProperties, any> {
             /* review stuff */
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
+            new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id !== engine.cur_review_move.id);
         }
 
         this.setState(new_state);
@@ -1509,6 +1518,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     syncToCurrentReviewMove = () => {{{
         if (this.goban.engine.cur_review_move) {
             this.goban.engine.jumpTo(this.goban.engine.cur_review_move);
+            this.sync_state();
         } else {
             setTimeout(this.syncToCurrentReviewMove, 50);
         }
@@ -1961,6 +1971,12 @@ export class Game extends OGSComponent<GameProperties, any> {
 
                     <div className="space-around">
                         <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
+                        {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
+                            this.state.review_out_of_sync &&
+                            <button className="sm" onClick={this.syncToCurrentReviewMove}>
+                                {pgettext("Synchronize to current review position", "Sync")} <i className='fa fa-refresh'/>
+                            </button>
+                        }
                     </div>
 
                     <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
