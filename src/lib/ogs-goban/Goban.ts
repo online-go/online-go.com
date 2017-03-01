@@ -125,7 +125,8 @@ export abstract class Goban extends EventEmitter {
     private last_phase;
     private last_review_message;
     private last_sent_move;
-    private last_sound_played;
+    private last_countdown_sound_played;
+    private last_countdown_registered;
     private last_sound_played_for_a_stone_placement;
     private last_stone_sound;
     private layer_offset_left;
@@ -3646,7 +3647,7 @@ export abstract class Goban extends EventEmitter {
         if (this.last_sound_played_for_a_stone_placement === this.engine.cur_move.x + "," + this.engine.cur_move.y) {
             return;
         }
-        this.last_sound_played_for_a_stone_placement = this.last_sound_played = this.engine.cur_move.x + "," + this.engine.cur_move.y;
+        this.last_sound_played_for_a_stone_placement = this.engine.cur_move.x + "," + this.engine.cur_move.y;
 
         let idx;
         do {
@@ -3984,8 +3985,6 @@ export abstract class Goban extends EventEmitter {
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
-        this.last_sound_played = null;
-
         let formatTime = (clock_div, time, base_time: number, player_id?: number) => { /* {{{ */
             let ms;
             let time_suffix = "";
@@ -4123,37 +4122,51 @@ export abstract class Goban extends EventEmitter {
                     if (seconds % 2 === 0) {
                         cls += " low_time";
                     }
+                }
+            }
 
-                    let sound_to_play = null;
-
-                    if (this.on_game_screen && player_id) {
-                        sound_to_play = seconds;
-                        if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
-                            this.byoyomi_label = "" + seconds;
-                            let last_byoyomi_label = this.byoyomi_label;
-                            if (this.last_hover_square) {
-                                this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                            }
-                            setTimeout(() => {
-                                if (this.byoyomi_label === last_byoyomi_label) {
-                                    this.byoyomi_label = null;
-                                    if (this.last_hover_square) {
-                                        this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                                    }
-                                }
-                            }, 1100);
+            // extra cues react only to current player time updates
+            if (this.on_game_screen && player_id && window["user"] && player_id === window["user"].id) {
+                if (player_id === this.engine.playerToMove()) {
+                    if (days === 0 && hours === 0 && minutes === 0 && seconds <= 10) {
+                        this.byoyomi_label = "" + seconds;
+                        let last_byoyomi_label = this.byoyomi_label;
+                        if (this.last_hover_square) {
+                            this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
                         }
-                        if (sound_to_play && window["user"].id === this.engine.playerToMove() && player_id === window["user"].id) {
-                            if (this.last_sound_played !== sound_to_play) {
-                                this.last_sound_played = sound_to_play;
+                        setTimeout(() => {
+                            if (this.byoyomi_label === last_byoyomi_label) {
+                                this.byoyomi_label = null;
+                                if (this.last_hover_square) {
+                                    this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
+                                }
+                            }
+                        }, 1100);
 
-
+                        // play sound
+                        let sound_to_play = seconds;
+                        if (sound_to_play) {
+                            // Normally below condition should be as simple as
+                            // sound_to_play < this.last_countdown_sound_played || sound_to_play < this.last_countdown_registered
+                            //
+                            // However in the issue details https://github.com/online-go/online-go.com/issues/11
+                            // I describe an extra even with playerToMove being current player (clock reset)
+                            // just after the turn was passed to opponent. Extra complexity is added to suppress that event as countdown
+                            // by simply bumping this.last_countdown_registered in that case
+                            if ((sound_to_play < this.last_countdown_sound_played && sound_to_play <= this.last_countdown_registered)
+                                    || sound_to_play < this.last_countdown_registered) {
+                                this.last_countdown_sound_played = sound_to_play;
                                 if (this.getShouldPlayVoiceCountdown()) {
                                     sfx.play(sound_to_play);
                                 }
                             }
+                            // extra protection just in case reset on opponents move is missed
+                            this.last_countdown_registered = sound_to_play;
                         }
                     }
+                } else {
+                    // reset countdown on opponents turn
+                    this.last_countdown_sound_played = 99;
                 }
             }
 
