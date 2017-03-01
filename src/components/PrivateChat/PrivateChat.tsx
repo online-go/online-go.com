@@ -238,8 +238,6 @@ class PrivateChat {
         (input as any).nicknameTabComplete();
         this.dom.append(input);
 
-        body.click(() => input.focus());
-
         $(document.body).append(this.dom);
 
         body[0].scrollTop = body[0].scrollHeight;
