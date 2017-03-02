@@ -113,6 +113,7 @@ export abstract class Goban extends EventEmitter {
     private highlight_movetree_moves;
     private interactive;
     private isInPushedAnalysis;
+    private leavePushedAnalysis;
     private isPlayerController;
     private isPlayerOwner;
     private label_character;
@@ -269,6 +270,7 @@ export abstract class Goban extends EventEmitter {
         this.isPlayerOwner = config.isPlayerOwner || (() => false); /* for reviews  */
         this.isPlayerController = config.isPlayerController || (() => false); /* for reviews  */
         this.isInPushedAnalysis = config.isInPushedAnalysis ? config.isInPushedAnalysis : (() => false);
+        this.leavePushedAnalysis = config.leavePushedAnalysis ? config.leavePushedAnalysis : (() => false);
         this.onPendingResignation = config.onPendingResignation;
         this.onPendingResignationCleared = config.onPendingResignationCleared;
         this.onError = "onError" in config ? config.onError : null;
@@ -619,6 +621,10 @@ export abstract class Goban extends EventEmitter {
                         return;
                     }
                     let move = move_obj.move;
+
+                    if (this.isInPushedAnalysis()) {
+                        this.leavePushedAnalysis();
+                    }
 
                     /* clear any undo state that may be hanging around */
                     delete this.engine.undo_requested;

@@ -119,6 +119,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     on_refocus_title: string = "OGS";
     last_move_viewed: number = 0;
     conditional_move_tree;
+    leave_pushed_analysis: ()=>void = null;
 
 
     decide_white: () => void;
@@ -343,6 +344,11 @@ export class Game extends OGSComponent<GameProperties, any> {
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
+            "leavePushedAnalysis": () => {
+                if (this.leave_pushed_analysis) {
+                    this.leave_pushed_analysis();
+                }
+            },
 
             /*
             "onChat": function(m,t) { chat_handlers.handleChat(m,t); },
@@ -2678,8 +2684,23 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 this.props.gameview.last_variation_number = Math.max(v, this.props.gameview.last_variation_number);
                             }
 
+                            let onLeave = () => {
+                                if (this.props.gameview.in_pushed_analysis) {
+                                    this.props.gameview.in_pushed_analysis = false;
+                                    this.props.gameview.leave_pushed_analysis = null;
+                                    goban.engine.jumpTo(orig_move);
+                                    orig_move.marks = orig_marks;
+                                    goban.pen_marks = stashed_pen_marks;
+                                    if (goban.pen_marks.length === 0) {
+                                        goban.detachPenCanvas();
+                                    }
+                                    goban.redraw();
+                                }
+                            };
+
                             let onEnter = () => {
                                 this.props.gameview.in_pushed_analysis = true;
+                                this.props.gameview.leave_pushed_analysis = onLeave;
                                 let turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
                                 let moves = body.moves;
 
@@ -2699,18 +2720,6 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 }
 
                                 goban.redraw();
-                            };
-                            let onLeave = () => {
-                                if (this.props.gameview.in_pushed_analysis) {
-                                    this.props.gameview.in_pushed_analysis = false;
-                                    goban.engine.jumpTo(orig_move);
-                                    orig_move.marks = orig_marks;
-                                    goban.pen_marks = stashed_pen_marks;
-                                    if (goban.pen_marks.length === 0) {
-                                        goban.detachPenCanvas();
-                                    }
-                                    goban.redraw();
-                                }
                             };
 
                             let onClick = () => {
