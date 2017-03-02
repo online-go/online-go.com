@@ -18,6 +18,7 @@
 /// <reference path="../typings_manual/index.d.ts" />
 
 import data from "data";
+
 data.setDefault("theme", "light");
 data.setDefault("config", {
     "user": {
@@ -40,6 +41,7 @@ import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
 import player_cache from "player_cache";
+import {toast} from 'toast';
 
 import {NavBar} from "NavBar";
 import {Announcements} from "Announcements";
@@ -106,6 +108,21 @@ swal.setDefaults({
     //focusCancel: true,
 });
 
+
+/***
+ * Test if local storage is disabled for some reason (Either because the user
+ * turned it off, the browser doesn't support it, or because the user is using
+ * Safari in private browsing mode which implicitly disables the feature.)
+ */
+try {
+    localStorage.setItem('localstorage-test', "true");
+} catch (e) {
+    toast(
+        <div>
+            {_("It looks like localStorage is disabled on your browser. Unfortunately you won't be able to login without enabling it first.")}
+        </div>
+    );
+}
 
 
 /*** Layout our main view and routes ***/

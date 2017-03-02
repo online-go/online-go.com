@@ -56,7 +56,11 @@ export function set(key: string, value: any): any {
     }
 
     store[key] = value;
-    localStorage.setItem(`ogs.${key}`, JSON.stringify(value));
+    try {
+        localStorage.setItem(`ogs.${key}`, JSON.stringify(value));
+    } catch (e) {
+        console.error(e);
+    }
     if (key in listeners) {
         for (let id in listeners[key]) {
             listeners[key][id].cb(value, key);
@@ -89,7 +93,11 @@ export function remove(key: string): any {
             }
         }
     }
-    localStorage.removeItem(`ogs.${key}`);
+    try {
+        localStorage.removeItem(`ogs.${key}`);
+    } catch (e) {
+        console.error(e);
+    }
     if (key in store) {
         let val = store[key];
         delete store[key];
@@ -161,24 +169,29 @@ export function dump(key_prefix?: string, strip_prefix?: boolean) {
 }
 
 
-for (let i = 0; i < localStorage.length; ++i) {
-    let key = localStorage.key(i);
-    if (key.indexOf("ogs.") === 0) {
-        key = key.substr(4);
-        try {
-            let item = localStorage.getItem(`ogs.${key}`);
-            if (typeof(item) === "undefined") {
+try {
+    for (let i = 0; i < localStorage.length; ++i) {
+        let key = localStorage.key(i);
+        if (key.indexOf("ogs.") === 0) {
+            key = key.substr(4);
+            try {
+                let item = localStorage.getItem(`ogs.${key}`);
+                if (typeof(item) === "undefined") {
+                    localStorage.removeItem(`ogs.${key}`);
+                    continue;
+                }
+                store[key] = JSON.parse(item);
+            } catch (e) {
+                console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
+                console.error(e);
                 localStorage.removeItem(`ogs.${key}`);
-                continue;
             }
-            store[key] = JSON.parse(item);
-        } catch (e) {
-            console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
-            console.error(e);
-            localStorage.removeItem(`ogs.${key}`);
         }
     }
+} catch (e) {
+    console.error(e);
 }
+
 
 export default window["data"] = {
     set                 : set,

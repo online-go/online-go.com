@@ -141,7 +141,11 @@ export function emitNotification(title, body, cb?) {{{
                     //console.log("Debouncing notification")
                     return;
                 }
-                localStorage.setItem("lastNotificationSent", title + body);
+                try {
+                    localStorage.setItem("lastNotificationSent", title + body);
+                } catch (e) {
+                    console.error(e);
+                }
 
                 let notification = new Notification(title, {body: body,
                     icon: "https://cdn.online-go.com/favicon.ico",
@@ -508,7 +512,7 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
 
     render() {
         return (
-            <div className="NotificationList"> 
+            <div className="NotificationList">
                 {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
                 {this.state.list.length !== 0 &&
                     <div className="contents">
