@@ -119,7 +119,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     on_refocus_title: string = "OGS";
     last_move_viewed: number = 0;
     conditional_move_tree;
-    leave_pushed_analysis: ()=>void = null;
+    leave_pushed_analysis: () => void = null;
 
 
     decide_white: () => void;
