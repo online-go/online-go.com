@@ -51,4 +51,7 @@ export class GoConditionalMove {
         //console.log(this.children);
         return new GoConditionalMove(null, this);
     };
+    duplicate():GoConditionalMove {
+        return GoConditionalMove.decode(this.encode());
+    }
 }

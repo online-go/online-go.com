@@ -3377,7 +3377,7 @@ export abstract class Goban extends EventEmitter {
         }
     }; /* }}} */
 
-    private setConditionalTree(conditional_tree) { /* {{{ */
+    public setConditionalTree(conditional_tree) { /* {{{ */
         if (conditional_tree == null) {
             conditional_tree = new GoConditionalMove(null, null);
         }

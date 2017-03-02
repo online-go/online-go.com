@@ -120,6 +120,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     last_move_viewed: number = 0;
     conditional_move_tree;
     leave_pushed_analysis: () => void = null;
+    stashed_conditional_moves = null;
 
 
     decide_white: () => void;
@@ -1296,6 +1297,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
             //swal(_("Conditional moves have been disabled for this game."));
         } else {
+            this.stashed_conditional_moves = this.goban.conditional_tree.duplicate();
             this.goban.setMode("conditional");
         }
     }}}
@@ -1400,6 +1402,10 @@ export class Game extends OGSComponent<GameProperties, any> {
     }}}
     goban_setMode_play() {{{
         this.goban.setMode("play");
+        if (this.stashed_conditional_moves) {
+            this.goban.setConditionalTree(this.stashed_conditional_moves);
+            this.stashed_conditional_moves = null;
+        }
     }}}
     goban_resumeGame() {{{
         this.goban.resumeGame();
@@ -1408,6 +1414,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.goban.jumpToLastOfficialMove();
     }}}
     acceptConditionalMoves() {{{
+        this.stashed_conditional_moves = null;
         this.goban.saveConditionalMoves();
         this.goban.setMode("play");
     }}}
