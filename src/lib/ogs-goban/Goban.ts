@@ -4143,10 +4143,10 @@ export abstract class Goban extends EventEmitter {
                                 }
                             }, 1100);
                         }
-                        if (sound_to_play && window["user"].id === this.engine.playerToMove() && player_id === window["user"].id) {
+
+                        if (sound_to_play && window["user"].id === clock.current_player && player_id === window["user"].id) {
                             if (this.last_sound_played !== sound_to_play) {
                                 this.last_sound_played = sound_to_play;
-
 
                                 if (this.getShouldPlayVoiceCountdown()) {
                                     sfx.play(sound_to_play);
