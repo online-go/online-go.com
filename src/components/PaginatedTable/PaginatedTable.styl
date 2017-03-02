@@ -16,9 +16,27 @@
  */
 
 .PaginatedTable {
+    max-width: 100vw;
+    overflow-x: auto;
     table {
         width: 100%;
+        max-width: 100vw;
     }
+
+    .name, .player {
+        word-wrap: break-word;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .name {
+        min-width: 8rem;
+    }
+
+    .player {
+        min-width: 5rem;
+    }
+
 
     &.stripped {
         tr:nth-child(odd) {

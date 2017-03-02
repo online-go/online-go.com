@@ -1083,7 +1083,7 @@ export class User extends Resolver<UserProperties, any> {
                     <h2>{_("Game History")}</h2>
                     <Card>
                     <div>{/* loading-container="game_history.settings().$loading" */}
-                        <div style={{width: "20rem", "float": "right", marginBottom: "0.2rem"}}>
+                        <div className="search">
                             <PlayerAutocomplete onComplete={this.updateGameSearch}/>
                         </div>
 
@@ -1120,7 +1120,7 @@ export class User extends Resolver<UserProperties, any> {
                     <h2>{_("Reviews and Demos")}</h2>
                     <Card>
                         <div>{/* loading-container="game_history.settings().$loading" */}
-                            <div style={{width: "20rem", "float": "right", marginBottom: "0.2rem"}}>
+                            <div className="search">
                                 <PlayerAutocomplete onComplete={this.updateReviewSearch}/>
                             </div>
 
