@@ -39,6 +39,7 @@ import {errorAlerter} from "misc";
 import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
+import player_cache from "player_cache";
 
 import {NavBar} from "NavBar";
 import {Announcements} from "Announcements";
@@ -86,7 +87,11 @@ data.watch("config", (config) => {
     }
 });
 get("ui/config").then((config) => data.set("config", config));
-data.watch("config.user", (user) => {data.set("user", user); window["user"] = user; });
+data.watch("config.user", (user) => {
+    player_cache.update(user);
+    data.set("user", user);
+    window["user"] = user;
+});
 
 
 /*** SweetAlert setup ***/
