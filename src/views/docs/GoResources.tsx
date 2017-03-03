@@ -124,6 +124,7 @@ export let GoResources = (props) => {
                 <span><Flag country={un}/> <a href="http://gochild2009.appspot.com/?locale=en_US">GoChild</a></span>,
                 <span><Flag country={"cn"}/><Flag country={en}/> <a href="http://www.weiqiok.com/asp/English.asp">Weiqiok</a></span>,
                 <span><Flag country={un}/> <a href="http://321go.org/">3-2-1 Go</a></span>
+                <span><Flag country={en}/> <a href="https://www.ghost-go.com/">Ghost Go</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
