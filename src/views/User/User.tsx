@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
-import {post, get, put, patch} from "requests";
+import {post, get, put, del, patch} from "requests";
 import config from "config";
 import data from "data";
 import * as moment from "moment";
@@ -338,6 +338,18 @@ export class User extends Resolver<UserProperties, any> {
                     id: this.user_id,
                     icon: res.icon,
                 });
+            });
+        })
+        .catch(errorAlerter);
+    }}}
+    clearIcon = () => {{{
+        this.setState({new_icon: null});
+        del(`players/${this.user_id}/icon`)
+        .then((res) => {
+            console.log("Cleared icon", res);
+            player_cache.update({
+                id: this.user_id,
+                icon: res.icon,
             });
         })
         .catch(errorAlerter);
@@ -711,6 +723,9 @@ export class User extends Resolver<UserProperties, any> {
                                         }
                                        </Dropzone>
                                     : <PlayerIcon id={user.id} size={128} />
+                                }
+                                {this.state.editing &&
+                                    <button className='xs' onClick={this.clearIcon}>{_("Clear icon")}</button>
                                 }
                             </div>
 
