@@ -53,7 +53,7 @@ export class Settings extends React.PureComponent<{}, any> {
             profanity_filter: preferences.get("profanity-filter").locale,
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
-            autoplay_delay: preferences.get("autoplay-delay")/1000,
+            autoplay_delay: preferences.get("autoplay-delay") / 1000,
         };
     }
 
@@ -298,7 +298,7 @@ export class Settings extends React.PureComponent<{}, any> {
         this.setState({
             autoplay_delay: parseInt(ev.target.value)
         });
-        preferences.set("autoplay-delay", 1000*parseInt(ev.target.value));
+        preferences.set("autoplay-delay", 1000 * parseInt(ev.target.value));
     }}}
 
     render() {
