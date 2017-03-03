@@ -53,6 +53,7 @@ export class Settings extends React.PureComponent<{}, any> {
             profanity_filter: preferences.get("profanity-filter").locale,
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
+            autoplay_delay: preferences.get("autoplay-delay")/1000,
         };
     }
 
@@ -293,6 +294,13 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("game-list-threshold", parseInt(ev.target.value));
     }}}
 
+    updateAutoplayDelay = (ev) => {{{
+        this.setState({
+            autoplay_delay: parseInt(ev.target.value)
+        });
+        preferences.set("autoplay-delay", 1000*parseInt(ev.target.value));
+    }}}
+
     render() {
         let user = data.get("user");
         let aga_ratings_enabled = null;
@@ -411,6 +419,10 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dt><label htmlFor="autoadvance">{_("Auto-advance to next game after making a move")}</label></dt>
                     <dd>
                         <input id="autoadvance" type="checkbox" checked={this.state.autoadvance} onChange={this.setAutoAdvance} />
+                    </dd>
+                    <dt>{_("Autoplay Delay (in seconds)")}</dt>
+                    <dd>
+                        <input type="number" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
                     </dd>
                 </dl>
             </Card>
