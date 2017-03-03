@@ -296,9 +296,9 @@ export class Settings extends React.PureComponent<{}, any> {
 
     updateAutoplayDelay = (ev) => {{{
         this.setState({
-            autoplay_delay: parseInt(ev.target.value)
+            autoplay_delay: parseFloat(ev.target.value)
         });
-        preferences.set("autoplay-delay", 1000 * parseInt(ev.target.value));
+        preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
 
     render() {
@@ -422,7 +422,7 @@ export class Settings extends React.PureComponent<{}, any> {
                     </dd>
                     <dt>{_("Autoplay Delay (in seconds)")}</dt>
                     <dd>
-                        <input type="number" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
+                        <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
                     </dd>
                 </dl>
             </Card>
