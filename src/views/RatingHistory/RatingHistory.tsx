@@ -133,11 +133,32 @@ export class RatingHistory extends Resolver<UserProperties, any> {
 
             function showTooltip(x, y, contents) {
                 let w = $(window).width();
+                let h = $(window).height();
+                let l;
+                let r;
+                let t;
+                let b;
+                if (x > (w / 2)) {
+                    l = "auto";
+                    r = w - x + 5;
+                } else {
+                    l = x - 5;
+                    r = "auto";
+                }
+                if (y > (h / 2)) {
+                    t = "auto";
+                    b = h - y + 5;
+                } else {
+                    t = y - 5;
+                    b = "auto";
+                }
                 $("<div id='rating-history-tooltip'>" + contents + "</div>").css({
                     position: "absolute",
                     display: "none",
-                    top: y + 5,
-                    right: w - (x - 5),
+                    left: l,
+                    right: r,
+                    top: t,
+                    bottom: b,
                     border: "1px solid #000",
                     color: "#fff",
                     padding: "2px",
