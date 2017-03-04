@@ -26,10 +26,6 @@
         "sourceMap": true,
         "jsx": "react"
     },
-    "exclude": [
-        "node_modules",
-        "dist"
-    ],
     "files": [
         "./src/main.tsx"
     ]

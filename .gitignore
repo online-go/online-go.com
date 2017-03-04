@@ -10,6 +10,8 @@ todo
 yarn-error.log
 deployment-staging-area
 Makefile.production
+.DS_Store
+/.alm/
 
 
 
