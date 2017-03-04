@@ -130,33 +130,33 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         }
     } /* }}} */
 
-    setSpeedBracket = (bracket) => {
+    setSpeedBracket = (bracket) => {{{
         this.syncTimeControl(Object.assign(
             { },
             recallTimeControlSettings(bracket, this.state.system),
             { speed: bracket, },
         ));
-    }
-    setTimeControlSystem = (time_control_system) => {
+    }}}
+    setTimeControlSystem = (time_control_system) => {{{
         this.syncTimeControl(Object.assign(
             {},
             recallTimeControlSettings(this.state.speed, time_control_system),
             { speed: this.state.speed },
         ));
-    }
+    }}}
     update_speed_bracket        = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
     update_time_control_system  = (ev) => this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
-    update_initial_time         = (ev) => this.syncTimeControl({initial_time: ev.target.value});
-    update_time_increment       = (ev) => this.syncTimeControl({time_increment: ev.target.value});
-    update_max_time             = (ev) => this.syncTimeControl({max_time: ev.target.value});
-    update_per_move             = (ev) => this.syncTimeControl({per_move: ev.target.value});
-    update_main_time            = (ev) => this.syncTimeControl({main_time: ev.target.value});
+    update_initial_time         = (ev) => this.syncTimeControl({initial_time: parseInt(ev.target.value)});
+    update_time_increment       = (ev) => this.syncTimeControl({time_increment: parseInt(ev.target.value)});
+    update_max_time             = (ev) => this.syncTimeControl({max_time: parseInt(ev.target.value)});
+    update_per_move             = (ev) => this.syncTimeControl({per_move: parseInt(ev.target.value)});
+    update_main_time            = (ev) => this.syncTimeControl({main_time: parseInt(ev.target.value)});
     //update_main_time            = (ev)=>this.syncTimeControl({main_time: ev.target.value});
-    update_period_time          = (ev) => this.syncTimeControl({period_time: ev.target.value});
-    update_periods              = (ev) => this.syncTimeControl({periods: Math.max(1, Math.min(300, ev.target.value))});
+    update_period_time          = (ev) => this.syncTimeControl({period_time: parseInt(ev.target.value)});
+    update_periods              = (ev) => this.syncTimeControl({periods: Math.max(1, Math.min(300, parseInt(ev.target.value)))});
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
-    update_stones_per_period    = (ev) => this.syncTimeControl({stones_per_period: ev.target.value});
-    update_total_time           = (ev) => this.syncTimeControl({total_time: ev.target.value});
+    update_stones_per_period    = (ev) => this.syncTimeControl({stones_per_period: parseInt(ev.target.value)});
+    update_total_time           = (ev) => this.syncTimeControl({total_time: parseInt(ev.target.value)});
     update_pause_on_weekends    = (ev) => this.syncTimeControl({pause_on_weekends: ev.target.checked});
 
     saveSettings() {{{

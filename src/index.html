@@ -69,7 +69,12 @@
   </head>
   <body>
       <script>
-          document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');
+        try {
+            document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');
+        } catch (e) {
+            console.error(e);
+            document.body.className = "light";
+        }
       </script>
       <div id="em10"></div>
       <div id="main-content"></div>

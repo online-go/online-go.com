@@ -77,6 +77,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 "icon",
                 "rating",
                 "ranking",
+                "professional",
                 "country",
                 "ui_class",
             ]
@@ -162,10 +163,10 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                             <Player user={this.state} nodetails rank={false} />
                         </div>
                         <div>
-                            <span className="rating">{Math.round(this.state.rating) || "..."}</span> 
+                            <span className="rating">{Math.round(this.state.rating) || "..."}</span>
                         </div>
                         <div>
-                            <span className="rank">{rankString(this.state.ranking) || "..."}</span>
+                            <span className="rank">{rankString(this.state) || "..."}</span>
                         </div>
                     </div>
                 </div>

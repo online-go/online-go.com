@@ -113,6 +113,7 @@ export abstract class Goban extends EventEmitter {
     private highlight_movetree_moves;
     private interactive;
     private isInPushedAnalysis;
+    private leavePushedAnalysis;
     private isPlayerController;
     private isPlayerOwner;
     private label_character;
@@ -269,6 +270,7 @@ export abstract class Goban extends EventEmitter {
         this.isPlayerOwner = config.isPlayerOwner || (() => false); /* for reviews  */
         this.isPlayerController = config.isPlayerController || (() => false); /* for reviews  */
         this.isInPushedAnalysis = config.isInPushedAnalysis ? config.isInPushedAnalysis : (() => false);
+        this.leavePushedAnalysis = config.leavePushedAnalysis ? config.leavePushedAnalysis : (() => false);
         this.onPendingResignation = config.onPendingResignation;
         this.onPendingResignationCleared = config.onPendingResignationCleared;
         this.onError = "onError" in config ? config.onError : null;
@@ -619,6 +621,10 @@ export abstract class Goban extends EventEmitter {
                         return;
                     }
                     let move = move_obj.move;
+
+                    if (this.isInPushedAnalysis()) {
+                        this.leavePushedAnalysis();
+                    }
 
                     /* clear any undo state that may be hanging around */
                     delete this.engine.undo_requested;
@@ -3371,7 +3377,7 @@ export abstract class Goban extends EventEmitter {
         }
     }; /* }}} */
 
-    private setConditionalTree(conditional_tree) { /* {{{ */
+    public setConditionalTree(conditional_tree) { /* {{{ */
         if (conditional_tree == null) {
             conditional_tree = new GoConditionalMove(null, null);
         }
@@ -4143,10 +4149,10 @@ export abstract class Goban extends EventEmitter {
                                 }
                             }, 1100);
                         }
-                        if (sound_to_play && window["user"].id === this.engine.playerToMove() && player_id === window["user"].id) {
+
+                        if (sound_to_play && window["user"].id === clock.current_player && player_id === window["user"].id) {
                             if (this.last_sound_played !== sound_to_play) {
                                 this.last_sound_played = sound_to_play;
-
 
                                 if (this.getShouldPlayVoiceCountdown()) {
                                     sfx.play(sound_to_play);

@@ -143,7 +143,7 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
         return active_fetches[player_id];
     }
 
-    console.debug("Fetching ", player_id, " for fields ", missing_fields);
+    console.error("Fetching ", player_id, " for fields ", missing_fields);
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
         get(`players/${player_id}`)
