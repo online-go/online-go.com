@@ -746,9 +746,65 @@ function ChatLine(props) {{{
     let ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
-    if (typeof(body) === "string" && body.substr(0, 4) === "/me ") {
+
+    if (typeof(body) === 'string') {
+
+      let searchString = (site, parameters) => {
+
+        if (parameters.length === 1) {
+            return site + parameters[0]
+        }
+
+        return site +
+               parameters[0] +
+               '+' +
+               parameters
+                 .slice(1, parameters.length)
+                 .join('+')
+                 .slice(0);
+      }
+
+      let targetUser = (bodyString) => {
+        if (bodyString.split(' ')[0] === '-user') {
+          return bodyString.split(' ')[1] + ' ';
+        } else {
+          return '';
+        }
+      }
+
+      let generateChatSearchLine = (urlString, command, body) => {
+        let target = targetUser(body.substr(command.length));
+        let params = body.split(' ');
+        if (target.length > 0) {
+          return  target.slice(0, target.length - 1) + ": " + 
+                  searchString(urlString, params.slice(3, params.length));
+        } else {
+          return  searchString(urlString, params.slice(1, params.length));
+        }
+      }
+
+      if (body.substr(0, 4) ==='/me ') {
         third_person = (body.substr(0, 4) === "/me ");
         body = body.substr(4);
+      }
+
+      if (body.substr(0, 8) === '/sensei ') {
+        body = generateChatSearchLine(
+          'http://senseis.xmp.net/?search=', '/sensei ', body
+        );
+      }
+
+      if (body.substr(0, 8) === '/google ') {
+          body = generateChatSearchLine(
+          'https://www.google.com/#q=', '/google ', body
+        );
+      }
+
+      if (body.substr(0, 8) === '/lmgtfy ') {
+          body = generateChatSearchLine(
+          'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
+        );   
+      }
     }
 
     let mentions = name_match_regex.test(body);
