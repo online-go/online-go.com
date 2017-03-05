@@ -399,10 +399,22 @@ export class SeekGraph extends EventEmitter {
             if (C.live_game) {
                 ctx.fillStyle = "#4140FF";
                 ctx.strokeStyle = "#58E0FF";
-                ctx.fillRect(sx, sy, d, d);
             } else if (C.eligible) {
-                ctx.fillStyle = "#00aa30";
-                ctx.strokeStyle = "#00ff00";
+                if (C.ranked) {
+                    if (C.width === 19) {
+                        ctx.fillStyle = "#00aa30";
+                        ctx.strokeStyle = "#00ff00";
+                    } else if (C.width === 13) {
+                        ctx.fillStyle = "#f000d0";
+                        ctx.strokeStyle = "#ff60dd";
+                    } else {
+                        ctx.fillStyle = "#009090";
+                        ctx.strokeStyle = "#00ffff";
+                    }
+                } else {
+                    ctx.fillStyle = "#d06000";
+                    ctx.strokeStyle = "#ff9000";
+                }
                 ctx.fillRect(sx, sy, d, d);
             } else if (ct === 1) {
                 if (C.user_challenge) {
