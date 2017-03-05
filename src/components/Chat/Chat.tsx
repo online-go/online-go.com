@@ -752,7 +752,7 @@ function ChatLine(props) {{{
       let searchString = (site, parameters) => {
 
         if (parameters.length === 1) {
-            return site + parameters[0]
+            return site + parameters[0];
         }
 
         return site +
