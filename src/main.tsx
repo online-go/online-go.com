@@ -74,6 +74,7 @@ import {TournamentListMainView} from "TournamentList";
 import {TransactionHistory} from "TransactionHistory";
 import {Tutorial} from "Tutorial";
 import {User} from "User";
+import {RatingHistory} from "RatingHistory";
 import {Settings} from "Settings";
 import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
@@ -222,6 +223,9 @@ const routes = (
         <Route path="/user/view/:user_id" component={User}/>
         <Route path="/user/view/:user_id/*" component={User}/>
         <Route path="/user/view/:user_id/**/*" component={User}/>
+        <Route path="/ratinghistory/:user_id" component={RatingHistory}/>
+        <Route path="/ratinghistory/:user_id/*" component={RatingHistory}/>
+        <Route path="/ratinghistory/:user_id/**/*" component={RatingHistory}/>
         <Route path="/settings" component={Settings}/>
         <Route path="/user/settings" component={Settings}/>
         <Route path="/user/supporter" component={Supporter}/>

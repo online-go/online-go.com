@@ -946,6 +946,7 @@ export class User extends Resolver<UserProperties, any> {
                             </tr></tbody></table>
 
                             <div id="rating-history"></div>
+                            <div className="text-align-center"><Link to={interpolate("/ratinghistory/{{user_id}}", {"user_id": this.user_id})} target="_blank"><i className="fa fa-arrows-alt"></i>{" " + _("Full View")}</Link></div>
                         </Card>
                         </div>
                     }
