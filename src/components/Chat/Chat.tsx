@@ -619,7 +619,7 @@ export class Chat extends React.Component<ChatProperties, any> {
                 {this.props.showChannels &&
                     <div className={"channel-container" + (this.state.force_show_channels ? " force-show" : "")}>
                         <div ref="channels" className={"channels" + (!this.state.show_all_channels ? " hide-unjoined" : "")}>
-                        
+
                             {(this.state.group_channels.length > 0 || null) && (
                                 <div className="channel-header">
                                     <span>{_("Group Channels")}</span>
@@ -762,7 +762,7 @@ function ChatLine(props) {{{
                  .slice(1, parameters.length)
                  .join('+')
                  .slice(0);
-      }
+      };
 
       let targetUser = (bodyString) => {
         if (bodyString.split(' ')[0] === '-user') {
@@ -770,20 +770,20 @@ function ChatLine(props) {{{
         } else {
           return '';
         }
-      }
+      };
 
       let generateChatSearchLine = (urlString, command, body) => {
         let target = targetUser(body.substr(command.length));
         let params = body.split(' ');
         if (target.length > 0) {
-          return  target.slice(0, target.length - 1) + ": " + 
+          return  target.slice(0, target.length - 1) + ": " +
                   searchString(urlString, params.slice(3, params.length));
         } else {
           return  searchString(urlString, params.slice(1, params.length));
         }
-      }
+      };
 
-      if (body.substr(0, 4) ==='/me ') {
+      if (body.substr(0, 4) === '/me ') {
         third_person = (body.substr(0, 4) === "/me ");
         body = body.substr(4);
       }
@@ -803,7 +803,7 @@ function ChatLine(props) {{{
       if (body.substr(0, 8) === '/lmgtfy ') {
           body = generateChatSearchLine(
           'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
-        );   
+        );
       }
     }
 
