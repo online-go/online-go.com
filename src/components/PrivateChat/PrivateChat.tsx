@@ -330,7 +330,7 @@ class PrivateChat {
         } else {
             line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
         }
-        line.append($("<span>").html(chat_markup(txt)));
+        line.append($("<span>").html(chat_markup(profanity_filter(txt))));
 
 
         this.lines.push(line);
@@ -391,6 +391,7 @@ class PrivateChat {
         //if (line.message.to) {
             //this.addChat(data.get('user').username, line.message.m, 0, line.message.t);
         //} else {
+            line.message.m = profanity_filter(line.message.m);
             this.addChat(line.from.username, line.message.m, line.from.id, line.message.t);
             if (line.from.id !== data.get("user").id) { /* don't open if we were the ones who sent this (from another tab for instance) */
                 if (this.display_state === "closed") {
@@ -565,7 +566,6 @@ ITC.register("private-chat-close", (data) => { /* {{{ */
 
 function chat_markup(body) { /* {{{ */
     if (typeof(body) === "string") {
-        body = profanity_filter(body);
         let ret = $("<div>").text(body).html();
         let link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
         ret = ret.replace(link_matcher, "<a target='_blank' href='$1'>$1</a>");
