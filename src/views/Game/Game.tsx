@@ -1166,7 +1166,8 @@ export class Game extends OGSComponent<GameProperties, any> {
                 new_state.white_accepted = engine.players["white"].accepted_stones === stone_removals;
             }
 
-            if ((engine.phase === "stone removal" || engine.phase === "finished") && goban.mode === "play") {
+            if ((engine.phase === "stone removal" || engine.phase === "finished") &&
+              engine.outcome !== "Timeout" && engine.outcome !== "Resignation" && engine.outcome !== "Cancellation" && goban.mode === "play") {
                 new_state.score = engine.computeScore(false);
                 goban.showScores(new_state.score);
             } else {
@@ -2169,17 +2170,20 @@ export class Game extends OGSComponent<GameProperties, any> {
 
                       {(!portrait_game_mode || null) &&
                           <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
-                              {(goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) &&
+                              {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
+                                goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
                                   <div className="points">
                                       {interpolate(_("{{total}} points"), {"total": this.state.score[color].total})}
                                   </div>
                               }
-                              {(goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) &&
+                              {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
                                   <div className="captures">
                                       {interpolate(_("{{captures}} captures"), {"captures": this.state.score[color].prisoners})}
                                   </div>
                               }
-                              {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal") || null) &&
+                              {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
                                   <div className="komi">
                                     {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
                                   </div>
