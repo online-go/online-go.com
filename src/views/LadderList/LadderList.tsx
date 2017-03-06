@@ -23,6 +23,7 @@ import {post, get} from "requests";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "components";
 import {errorAlerter} from "misc";
+import {AdUnit} from "AdUnit";
 
 /* Ensure these get picked up in our translations */
 _("Site 19x19 Ladder");
@@ -62,25 +63,28 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
 
     render() {
         return (
-        <div className="LadderList">
-            {this.state.ladders.map((ladder, idx) => (
-                <Card key={idx}>
-                    <h2>{_(ladder.name)}</h2>
-                    {(ladder.player_rank < 0 || null) &&
-                        <button className="primary sm" onClick={this.join.bind(this, ladder.id)}>{_("Join")}</button>
-                    }
-                    <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>{_("Full View") /* translators: View details of the selected ladder */}</Link>
+        <div>
+            <AdUnit unit="cdm-zone-01" nag/>
+            <div className="LadderList">
+                {this.state.ladders.map((ladder, idx) => (
+                    <Card key={idx}>
+                        <h2>{_(ladder.name)}</h2>
+                        {(ladder.player_rank < 0 || null) &&
+                            <button className="primary sm" onClick={this.join.bind(this, ladder.id)}>{_("Join")}</button>
+                        }
+                        <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>{_("Full View") /* translators: View details of the selected ladder */}</Link>
 
-                    <h4>{interpolate(_("{{ladder_size}} players"), {"ladder_size": ladder.size})}</h4>
+                        <h4>{interpolate(_("{{ladder_size}} players"), {"ladder_size": ladder.size})}</h4>
 
-                    <LadderComponent
-                        pageSize={10}
-                        ladderId={ladder.id}
-                        hidePageControls={true}
-                        dontStartOnPlayersPage={true}
-                        />
-                </Card>
-            ))}
+                        <LadderComponent
+                            pageSize={10}
+                            ladderId={ladder.id}
+                            hidePageControls={true}
+                            dontStartOnPlayersPage={true}
+                            />
+                    </Card>
+                ))}
+            </div>
         </div>
         );
     }

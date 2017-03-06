@@ -21,6 +21,7 @@ import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "components";
+import {AdUnit} from "AdUnit";
 import data from "data";
 
 declare var swal;
@@ -90,22 +91,25 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         let user = data.get("user");
 
         return (
-        <div className="Ladder">
-            <Card>
-                <h2>{this.state.ladder && this.state.ladder.name}</h2>
-                <div className="actions">
-                    {(this.state.ladder && this.state.ladder.player_rank > 0)
-                      ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
-                      : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
-                    }
-                </div>
+        <div>
+            <AdUnit unit="cdm-zone-01" nag/>
+            <div className="Ladder">
+                <Card>
+                    <h2>{this.state.ladder && this.state.ladder.name}</h2>
+                    <div className="actions">
+                        {(this.state.ladder && this.state.ladder.player_rank > 0)
+                          ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
+                          : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
+                        }
+                    </div>
 
-                <LadderComponent
-                    ref="ladder_component"
-                    ladderId={this.props.params.ladder_id}
-                    fullView
-                    />
-            </Card>
+                    <LadderComponent
+                        ref="ladder_component"
+                        ladderId={this.props.params.ladder_id}
+                        fullView
+                        />
+                </Card>
+            </div>
         </div>
         );
     }

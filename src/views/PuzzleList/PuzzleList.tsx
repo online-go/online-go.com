@@ -25,6 +25,7 @@ import {MiniGoban} from "MiniGoban";
 import {SearchInput} from "components";
 import {StarRating} from "StarRating";
 import {longRankString, rankString} from "misc";
+import {AdUnit} from "AdUnit";
 import data from "data";
 import * as moment from "moment";
 
@@ -59,6 +60,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
 
         return (
             <div className="PuzzleList container">
+                <AdUnit unit="cdm-zone-01" nag/>
                 <div className="puzzle-list-container">
                     <SearchInput
                         className="pull-right"

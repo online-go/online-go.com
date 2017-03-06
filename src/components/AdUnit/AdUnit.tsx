@@ -67,6 +67,7 @@ function should_show_ads() {
     return true;
 }
 
+
 function refresh_ads() {
     if (!should_show_ads()) {
         return;
@@ -89,10 +90,12 @@ function refresh_ads() {
 
     refresh_delay_timeout = setTimeout(() => {
         if (window["factorem"]) {
-            console.info("Refreshing ads. Current adZones ", factorem.adZones);
+            //console.info("Refreshing ads. Current adZones ", factorem.adZones);
             factorem.minimumRefresh = 0;
             factorem.refreshAds();
-            console.info("Refreshed ads. New adZones ", factorem.adZones);
+            //console.info("Refreshed ads. New adZones ", factorem.adZones);
+            clearTimeout(failsafe);
+            refresh_delay_timeout = null;
             return;
         }
 
