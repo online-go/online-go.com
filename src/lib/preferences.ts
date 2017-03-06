@@ -40,6 +40,7 @@ let defaults = {
     "goban-theme-board": null,
     "goban-theme-black": null,
     "goban-theme-white": null,
+    "one-color-go": false,
 
     "language": "auto",
     "profanity-filter": {"en": true, "locale": true},

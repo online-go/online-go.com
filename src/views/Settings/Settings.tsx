@@ -54,6 +54,7 @@ export class Settings extends React.PureComponent<{}, any> {
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
+            one_color_go: data.get("one-color-go"),
         };
     }
 
@@ -209,6 +210,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setAutoAdvance = (ev) => {{{
         preferences.set("auto-advance-after-submit", ev.target.checked),
         this.setState({autoadvance: preferences.get("auto-advance-after-submit")});
+    }}}
+    setOneColorGo = (ev) => {{{
+        data.set("one-color-go", ev.target.checked),
+        this.setState({one_color_go: data.get("one-color-go")});
     }}}
 
     updatePassword1 = (ev) => {{{
@@ -423,6 +428,10 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dt>{_("Autoplay Delay (in seconds)")}</dt>
                     <dd>
                         <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
+                    </dd>
+                    <dt><label htmlFor="one-color-go">{_("Play One Color Go!")}</label></dt>
+                    <dd>
+                        <input id="one-color-go" type="checkbox" checked={this.state.one_color_go} onChange={this.setOneColorGo} />
                     </dd>
                 </dl>
             </Card>
