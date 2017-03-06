@@ -172,7 +172,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             .then((groups) => this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))}))
             .catch((err) => 0);
 
-            get("me/tournaments", {page_size: 30})
+            get("me/tournaments", {ended__isnull:true, page_size: 30})
             .then((tournaments) => this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))}))
             .catch((err) => 0);
         }
