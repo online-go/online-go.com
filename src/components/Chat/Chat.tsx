@@ -794,6 +794,12 @@ function ChatLine(props) {{{
         );
       }
 
+      if (body.substr(0, 9) === '/senseis ') {
+        body = generateChatSearchLine(
+          'http://senseis.xmp.net/?search=', '/senseis ', body
+        );
+      }
+
       if (body.substr(0, 8) === '/google ') {
           body = generateChatSearchLine(
           'https://www.google.com/#q=', '/google ', body
