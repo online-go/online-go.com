@@ -747,11 +747,10 @@ export class MoveTree {
         }
 
         if (color === 1) {
+            let stone = MoveTree.theme_black_stones[stone_idx % MoveTree.theme_black_stones.length];
             if (data.get("one-color-go")) {
-                let stone = MoveTree.theme_black_stones[stone_idx % MoveTree.theme_black_stones.length];
                 board.theme_black.placeWhiteStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
             } else {
-                let stone = MoveTree.theme_black_stones[stone_idx % MoveTree.theme_black_stones.length];
                 board.theme_black.placeBlackStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
             }
         } else if (color === 2) {
