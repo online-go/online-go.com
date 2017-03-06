@@ -16,12 +16,8 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
 import {_, interpolate} from "translate";
-import preferences from "preferences";
 import {Goban} from "goban";
-import {termination_socket} from "sockets";
-import {makePlayerLink} from "Player";
 import data from "data";
 import {PersistentElement} from "PersistentElement";
 import {rankString, navigateTo} from "misc";
@@ -29,22 +25,14 @@ import {Player} from "Player";
 
 interface GobanLineSummaryProps {
     id: number;
-    width?: number;
-    height?: number;
     black: any;
     white: any;
-    onUpdate?: () => void;
-    json?: any;
-    noLink?: boolean;
-    opponentStyle: boolean;
+    player?: any;
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
     white_clock;
     black_clock;
-    user_clock;
-    opponent_clock;
-    opponent;
     goban;
 
     constructor(props) {
@@ -56,10 +44,6 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
 
         this.white_clock = $("<span>");
         this.black_clock = $("<span>");
-        let user = data.get("user");
-        this.user_clock = user.id === this.props.black.id ? this.black_clock : this.white_clock;
-        this.opponent_clock = user.id === this.props.black.id ? this.white_clock : this.black_clock;
-        this.opponent = user.id === this.props.black.id ? this.props.white : this.props.black;
     }
 
     componentDidMount() {{{
@@ -87,16 +71,11 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             "use_short_format_clock": false,
             "game_id": this.props.id,
             "square_size": "auto",
-            "width" : this.props.width || (this.props.json ? this.props.json.width : 19),
-            "height" : this.props.height || (this.props.json ? this.props.json.height : 19)
-        }, this.props.json);
+        });
 
 
         this.goban.on("update", () => {
             this.sync_state();
-            if (this.props.onUpdate) {
-                this.props.onUpdate();
-            }
         });
 
         this.goban.on("pause-text", (new_text) => this.setState({
@@ -138,16 +117,28 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
     }
 
     gotoGame = (ev) => {
-        if (this.props.noLink) {
-            return;
-        }
         navigateTo(`/game/${this.props.id}`, ev);
     }
 
     render() {
+        let player;
+        let opponent;
+        let player_clock;
+        let opponent_clock;
+        if (this.props.player && this.props.player.id === this.props.black.id) {
+            player = this.props.black;
+            opponent = this.props.white;
+            player_clock = this.black_clock;
+            opponent_clock = this.white_clock;
+        }
+        if (this.props.player && this.props.player.id === this.props.white.id) {
+            player = this.props.white;
+            opponent = this.props.black;
+            player_clock = this.white_clock;
+            opponent_clock = this.black_clock;
+        }
         return (
             <div className={ `GobanLineSummary `
-                            + (this.props.noLink ? " nolink" : " link")
                             + (this.state.current_users_move ? " current-users-move" : "")
                             + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
@@ -156,26 +147,26 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {this.props.opponentStyle && <div className="player"><Player user={this.opponent} rank/></div> }
-                {this.props.opponentStyle &&
+                {player && <div className="player"><Player user={opponent} rank /></div> }
+                {player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.user_clock} />
+                        <PersistentElement className={`clock ${this.state.paused}`} elt={player_clock} />
                     </div>
                 }
-                {this.props.opponentStyle &&
+                {player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.opponent_clock} />
+                        <PersistentElement className={`clock ${this.state.paused}`} elt={opponent_clock} />
                     </div>
                 }
 
-                {!this.props.opponentStyle && <div className="player"><Player user={this.props.black} rank/></div> }
-                {!this.props.opponentStyle &&
+                {!player && <div className="player"><Player user={this.props.black} rank/></div> }
+                {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
                     </div>
                 }
-                {!this.props.opponentStyle && <div className="player"><Player user={this.props.white} rank/></div> }
-                {!this.props.opponentStyle &&
+                {!player && <div className="player"><Player user={this.props.white} rank/></div> }
+                {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
                     </div>

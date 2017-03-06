@@ -182,7 +182,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                 </div>
             </div>
 
-            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} opponentStyle={false} />
+            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} />
         </div>
         );
     }

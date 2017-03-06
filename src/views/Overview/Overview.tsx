@@ -85,7 +85,7 @@ export class Overview extends React.Component<{}, any> {
                             <div className="container">
                                 <h2>{_("Active Games")}</h2>
                             </div>
-                            <GameList list={this.state.overview.active_games} opponentStyle={true}
+                            <GameList list={this.state.overview.active_games} player={user}
                                 emptyMessage={_("You're not currently playing any games. Start a new game with the \"Create a new game\" or \"Look for open games\" buttons above.")}
                             />
                         </div>

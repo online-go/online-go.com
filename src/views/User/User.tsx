@@ -888,7 +888,7 @@ export class User extends Resolver<UserProperties, any> {
 
 
                     <h2>{_("Active Games")}</h2>
-                    <GameList list={this.state.active_games}  opponentStyle={true}/>
+                    <GameList list={this.state.active_games} player={user}/>
                 </div>
                 {/* end left col */}
 
