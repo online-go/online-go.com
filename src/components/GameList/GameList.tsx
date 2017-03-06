@@ -44,11 +44,11 @@ export class GameList extends React.PureComponent<GameListProps, any> {
     sortBy(name: string) {
         return () => {
             if (this.state.sort_order === name) {
-                this.setState({sort_order: '-' + name});
+                this.setState({ sort_order: '-' + name });
             } else {
-                this.setState({sort_order: name});
-            }
-        }
+                 this.setState({ sort_order: name });
+             }
+        };
     }
 
     render() {
