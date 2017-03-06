@@ -41,7 +41,7 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
 
     accept = () => {{{
         swal({
-            text: "Accepting..",
+            text: "Accepting...",
             type: "info",
             showCancelButton: false,
             showConfirmButton: false,
