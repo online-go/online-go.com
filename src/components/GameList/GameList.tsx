@@ -41,43 +41,13 @@ export class GameList extends React.PureComponent<GameListProps, any> {
         };
     }
 
-    sortByClock = () => {
-        if (this.state.sort_order === 'clock') {
-            this.setState({sort_order: '-clock'});
-        } else {
-            this.setState({sort_order: 'clock'});
-        }
-    }
-
-    sortByOpponentClock = () => {
-        if (this.state.sort_order === 'opponent-clock') {
-            this.setState({sort_order: '-opponent-clock'});
-        } else {
-            this.setState({sort_order: 'opponent-clock'});
-        }
-    }
-
-    sortByOpponent = () => {
-        if (this.state.sort_order === 'opponent') {
-            this.setState({sort_order: '-opponent'});
-        } else {
-            this.setState({sort_order: 'opponent'});
-        }
-    }
-
-    sortByName = () => {
-        if (this.state.sort_order === 'name') {
-            this.setState({sort_order: '-name'});
-        } else {
-            this.setState({sort_order: 'name'});
-        }
-    }
-
-    sortByMoveNumber = () => {
-        if (this.state.sort_order === 'move-number') {
-            this.setState({sort_order: '-move-number'});
-        } else {
-            this.setState({sort_order: 'move-number'});
+    sortBy(name: string) {
+        return () => {
+            if (this.state.sort_order === name) {
+                this.setState({sort_order: '-' + name});
+            } else {
+                this.setState({sort_order: name});
+            }
         }
     }
 
@@ -184,11 +154,11 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 <div className="GameList GobanLineSummaryContainer">
                     {this.props.player
                         ? <div className="GobanLineSummaryContainerHeader">
-                              <div onClick={this.sortByMoveNumber} className={sortable + move_number_sort}>{_("Move")}</div>
-                              <div onClick={this.sortByName} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
-                              <div onClick={this.sortByOpponent} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
-                              <div onClick={this.sortByClock} className={sortable + clock_sort}>{_("Clock")}</div>
-                              <div onClick={this.sortByOpponentClock} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
+                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{_("Move")}</div>
+                              <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
+                              <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
+                              <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
+                              <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
                               <div >{_("Move")}</div>
