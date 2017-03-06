@@ -205,8 +205,11 @@ export class NavBar extends OGSComponent<{}, any> {
         try {
             let q = ev.target.value || "";
 
-            if (q !== this.state.omnisearch_string) {
+            if (q.trim() !== this.state.omnisearch_string.trim()) {
                 this.abortOmnisearch();
+            } else {
+                this.setState({ omnisearch_string: q });
+                return;
             }
             if (q === "") {
                 this.setState({
