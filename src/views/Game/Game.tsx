@@ -1661,10 +1661,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                 <span>
                     {(state.cur_move_number >= 1 && state.player_not_to_move === data.get("user").id &&
                       !(this.goban.engine.undo_requested >= this.goban.engine.getMoveNumber()) && this.goban.submit_move == null || null) &&
-                         <button
-                            className="bold undo-button"
-                            style={{position: "absolute", left: "0.5em", bottom: "0.5em"}}
-                            onClick={this.undo}>{_("Undo")}</button>
+                         <button className="bold undo-button xs" onClick={this.undo}>{_("Undo")}</button>
                     }
                     {state.show_undo_requested &&
                         <span>
@@ -1708,6 +1705,32 @@ export class Game extends OGSComponent<GameProperties, any> {
 
         return (
             <div className="play-controls">
+                <div className="game-action-buttons">{/* {{{ */}
+                    {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
+                        this.frag_play_buttons(show_cancel_button)
+                    }
+                    {(state.mode === "play" && state.phase === "play" && this.goban.engine.disable_analysis && state.cur_move_number < state.official_move_number || null) &&
+                        <span>
+                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                        </span>
+                    }
+
+                    {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
+                        <span>
+                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
+                        </span>
+                    }
+
+                    {(state.mode === "score estimation" || null) &&
+                        <span>
+                            <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
+                        </span>
+                    }
+
+                    {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
+                </div>
+                {/* }}} */}
                <div className="game-state">{/*{{{*/}
                     {(state.mode === "play" && state.phase === "play" || null) &&
                         <span>
@@ -1773,32 +1796,6 @@ export class Game extends OGSComponent<GameProperties, any> {
                     }
                 </div>
                 {/*}}}*/}
-                <div className="game-action-buttons">{/* {{{ */}
-                    {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
-                        this.frag_play_buttons(show_cancel_button)
-                    }
-                    {(state.mode === "play" && state.phase === "play" && this.goban.engine.disable_analysis && state.cur_move_number < state.official_move_number || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "score estimation" || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
-                    {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
-                </div>
-                {/* }}} */}
                 {((state.phase === "play" && state.mode === "play" && this.state.paused && this.goban.engine.pause_control && this.goban.engine.pause_control.paused) || null) &&  /* {{{ */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
@@ -2157,40 +2154,38 @@ export class Game extends OGSComponent<GameProperties, any> {
                           }
                       </div>
 
-                      {(!portrait_game_mode && (goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
+                      {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className="player-name-container">
                              <Player user={goban.engine.players[color]}/>
                           </div>
                       }
 
-                      {(!portrait_game_mode && (!goban.engine.players[color]) || null) &&
+                      {((!goban.engine.players[color]) || null) &&
                           <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>
                       }
 
 
-                      {(!portrait_game_mode || null) &&
-                          <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
-                              {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
-                                goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
-                                  <div className="points">
-                                      {interpolate(_("{{total}} points"), {"total": this.state.score[color].total})}
-                                  </div>
-                              }
-                              {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                                  <div className="captures">
-                                      {interpolate(_("{{captures}} captures"), {"captures": this.state.score[color].prisoners})}
-                                  </div>
-                              }
-                              {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                                  <div className="komi">
-                                    {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
-                                  </div>
-                              }
-                              <div id={`${color}-score-details`} className="score-details"/>
-                          </div>
-                      }
+                      <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
+                          {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
+                            goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
+                              <div className="points">
+                                  {interpolate(_("{{total}} points"), {"total": this.state.score[color].total})}
+                              </div>
+                          }
+                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                              <div className="captures">
+                                  {interpolate(_("{{captures}} captures"), {"captures": this.state.score[color].prisoners})}
+                              </div>
+                          }
+                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                              <div className="komi">
+                                {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
+                              </div>
+                          }
+                          <div id={`${color}-score-details`} className="score-details"/>
+                      </div>
                   </div>
               ); })}
             </div>
