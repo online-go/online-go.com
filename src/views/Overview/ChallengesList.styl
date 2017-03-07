@@ -1,0 +1,39 @@
+.ChallengesList {
+    .challenge-cards {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .Card {
+        width: 20rem;
+        max-width: 100vw;
+
+        .icon-name {
+            flex-grow: 1;
+            display: flex;
+
+            .name {
+                flex-grow: 1;
+            }
+
+            .PlayerIcon {
+                flex: 0
+                margin-right: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            h4 {
+                margin: 0;
+            }
+        }
+
+        .challenge-actions {
+            text-align: right;
+        }
+        .fab {
+            float: right;
+        }
+    }
+}
