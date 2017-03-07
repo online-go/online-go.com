@@ -203,10 +203,13 @@ export class NavBar extends OGSComponent<{}, any> {
     }
     updateOmnisearch = (ev) => {
         try {
-            let q = (ev.target.value && ev.target.value.trim()) || "";
+            let q = ev.target.value || "";
 
-            if (q !== this.state.omnisearch_string) {
+            if (q.trim() !== this.state.omnisearch_string.trim()) {
                 this.abortOmnisearch();
+            } else {
+                this.setState({ omnisearch_string: q });
+                return;
             }
             if (q === "") {
                 this.setState({
@@ -223,7 +226,7 @@ export class NavBar extends OGSComponent<{}, any> {
                     omnisearch_groups: [],
                 });
 
-                get("ui/omniSearch", {q: q})
+                get("ui/omniSearch", {q: q.trim()})
                 .then((res) => {
                     player_cache.update(res.players);
                     this.setState({
