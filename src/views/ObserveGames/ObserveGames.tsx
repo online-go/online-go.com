@@ -120,7 +120,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         this.setPage(this.state.page + 1);
     }}}
     setPage = (ev_or_page) => {{{
-        let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value);
+        let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value) || 1;
         page = Math.max(1, Math.min(Math.ceil(
             (this.state.viewing === "live" ? this.state.live_game_count : this.state.corr_game_count)
                 / this.state.page_size), page));
@@ -160,7 +160,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                             <div className="left">
                                 {this.state.page > 1 ? <i className="fa fa-step-backward" onClick={this.prevPage}/> : <i className="fa"/>}
                                 <input onChange={this.setPage} value={this.state.page}/>
-                                <span className="of"> of </span>
+                                <span className="of"> {_("of")} </span>
                                 <span className="total">{this.state.num_pages.toString()}</span>
                                 {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
                             </div>
