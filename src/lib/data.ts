@@ -124,7 +124,7 @@ export function get(key: string, _default?: any): any {
     if (key in defaults) {
         return defaults[key];
     }
-    return _default; ;
+    return _default;
 }
 export function ensureDefaultAndGet(key: string): any {
     if (!(key in defaults)) {

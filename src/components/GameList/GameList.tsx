@@ -28,8 +28,8 @@ import data from "data";
 
 interface GameListProps {
     list: Array<any>;
+    player?: any;
     emptyMessage?: string;
-    opponentStyle: boolean;
     disableSort?: boolean;
 }
 
@@ -41,48 +41,17 @@ export class GameList extends React.PureComponent<GameListProps, any> {
         };
     }
 
-    sortByClock = () => {
-        if (this.state.sort_order === 'clock') {
-            this.setState({sort_order: '-clock'});
-        } else {
-            this.setState({sort_order: 'clock'});
-        }
-    }
-
-    sortByOpponentClock = () => {
-        if (this.state.sort_order === 'opponent-clock') {
-            this.setState({sort_order: '-opponent-clock'});
-        } else {
-            this.setState({sort_order: 'opponent-clock'});
-        }
-    }
-
-    sortByOpponent = () => {
-        if (this.state.sort_order === 'opponent') {
-            this.setState({sort_order: '-opponent'});
-        } else {
-            this.setState({sort_order: 'opponent'});
-        }
-    }
-
-    sortByName = () => {
-        if (this.state.sort_order === 'name') {
-            this.setState({sort_order: '-name'});
-        } else {
-            this.setState({sort_order: 'name'});
-        }
-    }
-
-    sortByMoveNumber = () => {
-        if (this.state.sort_order === 'move-number') {
-            this.setState({sort_order: '-move-number'});
-        } else {
-            this.setState({sort_order: 'move-number'});
-        }
+    sortBy(name: string) {
+        return () => {
+            if (this.state.sort_order === name) {
+                this.setState({ sort_order: '-' + name });
+            } else {
+                 this.setState({ sort_order: name });
+             }
+        };
     }
 
     render() {
-        let user = data.get('user');
         let lst = this.props.list.slice(0);
 
         if (!this.props.disableSort) {
@@ -91,10 +60,10 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'clock':
                     lst.sort((a, b) => {
                         try {
-                            if (a.json.clock.current_player === user.id && b.json.clock.current_player !== user.id) {
+                            if (a.json.clock.current_player === this.props.player.id && b.json.clock.current_player !== this.props.player.id) {
                                 return -1;
                             }
-                            if (b.json.clock.current_player === user.id && a.json.clock.current_player !== user.id) {
+                            if (b.json.clock.current_player === this.props.player.id && a.json.clock.current_player !== this.props.player.id) {
                                 return 1;
                             }
 
@@ -110,10 +79,10 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'opponent-clock':
                     lst.sort((a, b) => {
                         try {
-                            if (a.json.clock.current_player === user.id && b.json.clock.current_player !== user.id) {
+                            if (a.json.clock.current_player === this.props.player.id && b.json.clock.current_player !== this.props.player.id) {
                                 return 1;
                             }
-                            if (b.json.clock.current_player === user.id && a.json.clock.current_player !== user.id) {
+                            if (b.json.clock.current_player === this.props.player.id && a.json.clock.current_player !== this.props.player.id) {
                                 return -1;
                             }
 
@@ -141,8 +110,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'opponent':
                     lst.sort((a, b) => {
                         try {
-                            let a_opponent = a.black.id === user.id ? a.white : a.black;
-                            let b_opponent = b.black.id === user.id ? b.white : b.black;
+                            let a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
+                            let b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
                             return a_opponent.username.localeCompare(b_opponent.username) || a.id - b.id;
                         } catch (e) {
                             console.error(a, b, e);
@@ -173,7 +142,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
         if (lst.length === 0) {
             return <div className="container">{this.props.emptyMessage || ""}</div>;
         } else if (lst.length > preferences.get("game-list-threshold")) {
-            let sortable = this.props.disableSort ? '' : ' sortable ';
+            let sortable = this.props.disableSort && this.props.player ? '' : ' sortable ';
             let sort_order = this.state.sort_order;
             let move_number_sort      = sort_order === 'move-number'    ? 'sorted-desc' : sort_order === '-move-number'    ? 'sorted-asc' : '';
             let game_sort             = sort_order === 'name'           ? 'sorted-desc' : sort_order === '-name'           ? 'sorted-asc' : '';
@@ -183,13 +152,13 @@ export class GameList extends React.PureComponent<GameListProps, any> {
 
             return (
                 <div className="GameList GobanLineSummaryContainer">
-                    {this.props.opponentStyle
+                    {this.props.player
                         ? <div className="GobanLineSummaryContainerHeader">
-                              <div onClick={this.sortByMoveNumber} className={sortable + move_number_sort}>{_("Move")}</div>
-                              <div onClick={this.sortByName} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
-                              <div onClick={this.sortByOpponent} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
-                              <div onClick={this.sortByClock} className={sortable + clock_sort}>{_("Clock")}</div>
-                              <div onClick={this.sortByOpponentClock} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
+                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{_("Move")}</div>
+                              <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
+                              <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
+                              <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
+                              <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
                               <div >{_("Move")}</div>
@@ -205,7 +174,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             id={game.id}
                             black={game.black}
                             white={game.white}
-                            opponentStyle={this.props.opponentStyle}
+                            player={this.props.player}
                             />)}
                 </div>
             );
