@@ -80,6 +80,8 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
             for (let f of fields) {
                 settings[f] = this.state[f];
             }
+            settings.numProvisional = this.state.provisional_games_left;
+
             settings.moderation_note = reason;
 
             put(`players/${this.props.playerId}/moderate`, settings)
@@ -97,6 +99,7 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
     setShadowbanned = (ev) => this.setState({is_shadowbanned: ev.target.checked});
     setBot = (ev) => this.setState({is_bot: ev.target.checked});
     setBotOwner = (ev) => this.setState({bot_owner: parseInt(ev.target.value)});
+    setNumProvisional = (ev) => this.setState({provisional_games_left: parseInt(ev.target.value)});
 
     setRanking = (ev) => this.syncRankRating({ranking: ev.target.value});
     setRating = (ev) => this.syncRankRating({rating: ev.target.value});
@@ -164,6 +167,9 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
 
                                     <dt><label htmlFor="shadowbanned">Shadowbanned</label></dt>
                                     <dd><input id="shadowbanned" type="checkbox" checked={user.is_shadowbanned} onChange={this.setShadowbanned} /></dd>
+
+                                    <dt><label htmlFor="numProvisional">Provisional games</label></dt>
+                                    <dd><input id="numProvisional" type="number" min={0} max={50} value={user.provisional_games_left} onChange={this.setNumProvisional} /></dd>
 
                                     <dt><label htmlFor="bot">Bot</label></dt>
                                     <dd>
