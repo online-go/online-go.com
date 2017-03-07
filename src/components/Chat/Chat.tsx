@@ -198,13 +198,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         });
 
         let I;
+        let sanityCheck = 100;
         let resizeSeekgraph = () => {
+            --sanityCheck;
             if ($(this.seekgraph_canvas).width() > 0) {
                 this.seekgraph.resize($(this.seekgraph_canvas).width(), $(this.seekgraph_canvas).height());
                 clearInterval(I);
             }
+            else if (sanityCheck <= 0) {
+                clearInterval(I);
+            }
         };
-        I = setInterval(resizeSeekgraph);
+        I = setInterval(resizeSeekgraph, 50);
         resizeSeekgraph();
     }}}
     componentDidUpdate() {{{
