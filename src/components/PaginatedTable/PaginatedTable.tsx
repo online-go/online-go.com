@@ -135,6 +135,7 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
 
     needs_another_update: boolean = false;
     filter_updated() {
+        this.setPage(1);
         if (this.updating) {
             this.needs_another_update = true;
         } else {
