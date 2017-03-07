@@ -270,6 +270,63 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         }, 1);
     }}}
+    deleteNewsPost(entry) {{{
+        swal({
+            "text": _("Delete this news post?"),
+            "showCancelButton": true,
+            "focusCancel": true,
+        })
+        .then(() => {
+            post(`group/${this.state.group_id}/news/`, {
+                'id': entry.id,
+                'delete': true
+            })
+            .then(() => {
+                if (this.refs.news) {
+                    this.refs.news.update();
+                }
+                else {
+                    this.resolve(this.state.group_id);
+                }
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }}}
+    editNewsPost(entry) {{{
+        this.setState({editing_news: entry});
+    }}}
+    updateNewsPost = () => {{{
+        put(`group/${this.state.group_id}/news/`, this.state.editing_news)
+        .then(() => {
+            this.setState({editing_news: null});
+            if (this.refs.news) {
+                this.refs.news.update();
+            }
+            else {
+                this.resolve(this.state.group_id);
+            }
+        })
+        .catch(errorAlerter);
+    }}}
+    updateNewsContent = (ev) => {{{
+        this.setState({
+            editing_news: Object.assign(
+                {},
+                this.state.editing_news,
+                {content: ev.target.value}
+            )
+        });
+    }}}
+    updateNewsTitle = (ev) => {{{
+        this.setState({
+            editing_news: Object.assign(
+                {},
+                this.state.editing_news,
+                {title: ev.target.value}
+            )
+        });
+    }}}
 
     inviteUser = (ev) => {{{
         post(`group/${this.state.group_id}/members`, {"username": this.state.user_to_invite.username })
@@ -315,7 +372,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                        {this.state.new_banner
                            ? <img src={this.state.new_banner.preview}/>
                            : (group.banner ? <img src={group.banner}/> : <i className="fa fa-picture-o"/>)
-                       }   
+                       }
                       </Dropzone>
                     : (group.banner ? <img src={group.banner}/> : <i className="fa fa-picture-o"/>)
                   }
@@ -335,7 +392,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                        {this.state.new_icon
                                            ? <img src={this.state.new_icon.preview} style={{maxHeight: "128px", maxWidth: "128px"}}/>
                                            : <img src={group.icon} style={{maxHeight: "128px", maxWidth: "128px"}}/>
-                                       }   
+                                       }
                                       </Dropzone>
                                     : <img src={group.icon} style={{maxHeight: "128px", maxWidth: "128px"}}/>
                                 }
@@ -387,7 +444,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     )
                                 }
 
-                                
+
                                 <div className="pad">
                                     {(editing || group.website || null) && <b>{_("Website")}: </b>}
                                     {((!editing && group.website) || null) && <span>{
@@ -470,11 +527,26 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 columns={[
                                     {header: _("News"), className: "none", render: (entry) => (
                                         <div>
-                                        <h2>{entry.title}</h2>
-                                        <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
-                                        <Markdown source={entry.content} />
-                                        </div>
+                                            {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                ? <h2><input value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
+                                                : <h2>{entry.title}</h2>
+                                            }
 
+                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
+                                            {this.state.is_admin &&
+                                                <div>
+                                                    {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                        ?  <button className='xs' onClick={this.updateNewsPost} >{_("Save")}</button>
+                                                        :  <button className='xs' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
+                                                    }
+                                                    <button className='xs reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
+                                                </div>
+                                            }
+                                            {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                ? <textarea value={this.state.editing_news.content} onChange={this.updateNewsContent} />
+                                                : <Markdown source={entry.content} />
+                                            }
+                                        </div>
                                     )},
                                 ]}
                             />
