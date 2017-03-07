@@ -1400,7 +1400,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
             {!loading && !tournament.started && /* {{{ */
                 <div className={"bottom-details not-started"}>
-                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} />
+                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
                     {(!tournament.start_waiting || null) &&
                         <div className="signup-area" style={{textAlign: "center"}}>
@@ -1411,7 +1411,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             }
 
                             {this.state.is_joined != null &&
-                                <p style={{marginTop: "6em"}}> 
+                                <p style={{marginTop: "6em"}}>
                                     {(!this.state.is_joined && can_join || null) &&
                                         <button className="btn raise btn-primary" onClick={this.joinTournament}>{_("Join this tournament!")}</button>
                                     }
@@ -1433,7 +1433,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     }
                     {(tournament.start_waiting || null) &&
                         <div className="signup-area" style={{textAlign: "center"}}>
-                            <p style={{marginTop: "6em"}}> 
+                            <p style={{marginTop: "6em"}}>
                                 <span>{_("Tournament is starting")}</span>
                             </p>
                         </div>
@@ -1465,12 +1465,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             {/* }}} */}
             {!loading && tournament.started && /* {{{ */
                 <div className="bottom-details">
-                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} />
+                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
                     <div className="results">
                     {this.state.use_elimination_trees ? <PersistentElement elt={this.elimination_tree_container[0]}/> :
                         <div>
-                            
+
                             {this.state.rounds.length > 1 &&
                                 <Steps
                                     completed={this.state.rounds.length}
@@ -1507,7 +1507,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                         return (
                                                         <tr key={idx} >
                                                             {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
-                                                        
+
                                                             <th className="player"><Player user={player} icon /></th>
                                                             {group.players.map((opponent, idx) => (
                                                                 <td key={idx} className={"result " + selected_round.colors[player.id + "x" + opponent.id]}>
@@ -1575,7 +1575,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     </table>
                                 </div>
                             }
-                            
+
                             {/* Case for busted tournaments that have random matches that they shouldn't have but do */}
                             {((selected_round && selected_round.broken_list.length) || null) &&
                                 <div className="round-group">

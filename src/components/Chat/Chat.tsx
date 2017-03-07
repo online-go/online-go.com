@@ -43,7 +43,7 @@ interface ChatProperties {
     autofocus?: boolean;
     showChannels?: boolean;
     showUserList?: boolean;
-    updateTitle?: boolean;
+    updateTitle: boolean;
 }
 
 let name_match_regex = /^loading...$/;
@@ -206,7 +206,9 @@ export class Chat extends React.Component<ChatProperties, any> {
         comm_socket.off("connect", this.connect);
         comm_socket.off("disconnect", this.disconnect);
         $(window).off("focus", this.onDocumentFocus);
-        window.document.title = "OGS";
+        if (this.props.updateTitle) {
+            window.document.title = "OGS";
+        }
         this.seekgraph.destroy();
     }}}
 
@@ -241,7 +243,9 @@ export class Chat extends React.Component<ChatProperties, any> {
     }}}
     onDocumentFocus = () => {{{
         this.unread_ct = 0;
-        window.document.title = _("Chat");
+        if (this.props.updateTitle) {
+            window.document.title = _("Chat");
+        }
     }}}
 
     onChatMessage = (obj) => {{{
@@ -297,10 +301,14 @@ export class Chat extends React.Component<ChatProperties, any> {
 
         if (document.hasFocus()) {
             this.unread_ct = 0;
-            window.document.title = _("Chat");
+            if (this.props.updateTitle) {
+                window.document.title = _("Chat");
+            }
         } else {
             ++this.unread_ct;
-            window.document.title = `(${this.unread_ct}) ` + _("Chat");
+            if (this.props.updateTitle) {
+                window.document.title = `(${this.unread_ct}) ` + _("Chat");
+            }
         }
     }}}
     onChatJoin = (joins) => {{{
