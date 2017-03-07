@@ -195,6 +195,10 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
     }
 
     _setPage = (ev) => {
+        if ((ev.target as any).value === "") {
+            this.setState({page: ""});
+            return;
+        }
         let n = parseInt(ev.target.value);
         if (isNaN(n)) {
             if (ev.target.value.trim() === "") {
