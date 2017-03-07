@@ -196,7 +196,16 @@ export class Chat extends React.Component<ChatProperties, any> {
             canvas: this.seekgraph_canvas,
             show_live_games: true,
         });
-        this.seekgraph.resize($(this.seekgraph_canvas).width(), $(this.seekgraph_canvas).height());
+
+        let I;
+        let resizeSeekgraph = () => {
+            if ($(this.seekgraph_canvas).width() > 0) {
+                this.seekgraph.resize($(this.seekgraph_canvas).width(), $(this.seekgraph_canvas).height());
+                clearInterval(I);
+            }
+        };
+        I = setInterval(resizeSeekgraph);
+        resizeSeekgraph();
     }}}
     componentDidUpdate() {{{
         this.autoscroll();
