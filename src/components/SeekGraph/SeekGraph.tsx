@@ -157,7 +157,7 @@ export class SeekGraph extends EventEmitter {
         for (let i = 0; i < lst.length; ++i) {
             let e = lst[i];
             if ("game_started" in e) {
-                console.log(e);
+                //console.log(e);
             }
             else if ("delete" in e) {
                 let uid = this.challenges[e.challenge_id].system_message_id;
