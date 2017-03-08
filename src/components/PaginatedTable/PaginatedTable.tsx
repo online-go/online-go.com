@@ -195,13 +195,11 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
     }
 
     _setPage = (ev) => {
-        let n = parseInt(ev.target.value);
-        if (isNaN(n)) {
-            if (ev.target.value.trim() === "") {
-                this.setPage(1);
-            }
+        if ((ev.target as any).value === "") {
+            this.setState({page: ""});
             return;
         }
+        let n = parseInt(ev.target.value);
         this.setPage(n);
     }
     _select = (ev) => {
@@ -280,7 +278,7 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
                                 onChange={this._setPage}
                                 onFocus={this._select}
                                 value={this.state.page}/>
-                                <span className="of"> of </span><span className="total">{this.state.num_pages}</span>
+                                <span className="of"> {_("of")} </span><span className="total">{this.state.num_pages}</span>
                             {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={() => this.setPage(this.state.page + 1)}/> : <i className="fa"/>}
                         </div>
                         <div className="right">
