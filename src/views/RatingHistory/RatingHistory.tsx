@@ -162,7 +162,7 @@ export class RatingHistory extends Resolver<UserProperties, any> {
                     border: "1px solid #000",
                     color: "#fff",
                     padding: "2px",
-                    "background-color": "#444",
+                    "background-color": "#000",
                     opacity: 0.80
                 }).appendTo("body").fadeIn(200);
             }
