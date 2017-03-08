@@ -36,6 +36,8 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
     massage(source: string): string {
         source = source.replace(/^(#+)([a-zA-Z0-9])/g, "$1 $2"); // headers used to behave like this
         source = source.replace(/<script/ig, "(script"); // hasnt' been exploitable yet with how react works i don't think, but they leave most html intact for some stupid reason, this string shouldn't exist anyways
+        source = source.replace(/^(https?:\/\/[^\s]+)/g, "[$1]($1)");
+        source = source.replace(/[^[(](https?:\/\/[^\s\]\)]+)/g, "[$1]($1)");
         return source;
     }
 
