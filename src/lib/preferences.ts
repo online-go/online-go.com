@@ -44,7 +44,9 @@ let defaults = {
     "language": "auto",
     "profanity-filter": {"en": true, "locale": true},
     "chat.user-sort-order": "rank",
-    "chat.show-all-channels": true,
+    "chat.show-all-global-channels": true,
+    "chat.show-all-group-channels": true,
+    "chat.show-all-tournament-channels": true,
 
     "observed-games-page-size": 9,
     "observed-games-viewing": "live",

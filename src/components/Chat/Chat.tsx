@@ -155,7 +155,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             active_channel: this.props.channel ? this.props.channel : data.get("chat.active_channel", "global-english"),
             group_channels: [],
             tournament_channels: [],
-            show_all_channels: preferences.get("chat.show-all-channels"),
+            show_all_global_channels: preferences.get("chat.show-all-global-channels"),
+            show_all_group_channels: preferences.get("chat.show-all-group-channels"),
+            show_all_tournament_channels: preferences.get("chat.show-all-tournament-channels"),
             user_sort_order: preferences.get("chat.user-sort-order"),
             force_show_channels: false,
             force_show_users: false,
@@ -616,9 +618,17 @@ export class Chat extends React.Component<ChatProperties, any> {
     leaveActiveChannel = () => {{{
         this.part(this.state.active_channel, false, false);
     }}}
-    toggleShowAllChannels = () => {{{
-        preferences.set("chat.show-all-channels", !this.state.show_all_channels),
-        this.setState({show_all_channels: !this.state.show_all_channels});
+    toggleShowAllGlobalChannels = () => {{{
+        preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels),
+        this.setState({show_all_global_channels: !this.state.show_all_global_channels});
+    }}}
+    toggleShowAllGroupChannels = () => {{{
+        preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels),
+        this.setState({show_all_group_channels: !this.state.show_all_group_channels});
+    }}}
+    toggleShowAllTournamentChannels = () => {{{
+        preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels),
+        this.setState({show_all_tournament_channels: !this.state.show_all_tournament_channels});
     }}}
 
     render() {{{
@@ -652,67 +662,73 @@ export class Chat extends React.Component<ChatProperties, any> {
             <div className="Chat">
                 {this.props.showChannels &&
                     <div className={"channel-container" + (this.state.force_show_channels ? " force-show" : "")}>
-                        <div ref="channels" className={"channels" + (!this.state.show_all_channels ? " hide-unjoined" : "")}>
 
-                            {(this.state.group_channels.length > 0 || null) && (
-                                <div className="channel-header">
-                                    <span>{_("Group Channels")}</span>
-                                    <i onClick={this.toggleShowAllChannels} className={"channel-expand-toggle " + (this.state.show_all_channels ?  "fa fa-minus" : "fa fa-plus")}/>
-                                </div>
-                            ) }
-                            {this.state.group_channels.map((chan) => (
-                                <div key={chan.id}
-                                     className={
-                                         (this.state.active_channel === ("group-" + chan.id) ? "channel active" : "channel")
-                                         + chan_class("group-" + chan.id)
-                                     }
-                                >
-                                    <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel}>
-                                        <img className="icon" src={chan.icon}/> {chan.name}
-                                    </span>
-                                    {user_count("group-" + chan.id)}
-                                </div>
-                            ))}
-
-                            {(this.state.tournament_channels.length > 0 || null) && (
-                                <div className="channel-header">
-                                    <span>{_("Tournament Channels")}</span>
-                                    <i onClick={this.toggleShowAllChannels} className={"channel-expand-toggle " + (this.state.show_all_channels ?  "fa fa-minus" : "fa fa-plus")}/>
-                                </div>
-                            )}
-                            {this.state.tournament_channels.map((chan) => (
-                                <div key={chan.id}
-                                     className={
-                                         (this.state.active_channel === ("tournament-" + chan.id) ? "channel active" : "channel")
-                                         + chan_class("tournament-" + chan.id)
-                                     }
-                                >
-                                    <span className="channel-name" data-channel={"tournament-" + chan.id} onClick={this.setActiveChannel} >
-                                        <i className="fa fa-trophy" /> {chan.name}
-                                    </span>
-                                    {user_count("tournament-" + chan.id)}
-                                </div>
-                            ))}
-
-                            <div className="channel-header">
-                                <span>{_("Global Channels")}</span>
-                                <i onClick={this.toggleShowAllChannels} className={"channel-expand-toggle " + (this.state.show_all_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                        <div className="all-channels">
+                            <div className={"channels" + (!this.state.show_all_group_channels ? " hide-unjoined" : "")}>
+                                {(this.state.group_channels.length > 0 || null) && (
+                                    <div className="channel-header">
+                                        <span>{_("Group Channels")}</span>
+                                        <i onClick={this.toggleShowAllGroupChannels} className={"channel-expand-toggle " + (this.state.show_all_group_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                                    </div>
+                                ) }
+                                {this.state.group_channels.map((chan) => (
+                                    <div key={chan.id}
+                                        className={
+                                            (this.state.active_channel === ("group-" + chan.id) ? "channel active" : "channel")
+                                            + chan_class("group-" + chan.id)
+                                        }
+                                    >
+                                        <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel}>
+                                            <img className="icon" src={chan.icon}/> {chan.name}
+                                        </span>
+                                        {user_count("group-" + chan.id)}
+                                    </div>
+                                ))}
                             </div>
-                            {global_channels.map((chan) => (
-                                <div key={chan.id}
-                                     className={
-                                         (this.state.active_channel === chan.id ? "channel active" : "channel")
-                                         + chan_class(chan.id)
-                                     }
-                                >
-                                    <span className="channel-name" data-channel={chan.id} onClick={this.setActiveChannel}>
-                                        <Flag country={chan.country}/> {chan.name}
-                                    </span>
-                                    {user_count(chan.id)}
-                                </div>
-                            ))}
 
+                            <div className={"channels" + (!this.state.show_all_tournament_channels ? " hide-unjoined" : "")}>
+                                {(this.state.tournament_channels.length > 0 || null) && (
+                                    <div className="channel-header">
+                                        <span>{_("Tournament Channels")}</span>
+                                        <i onClick={this.toggleShowAllTournamentChannels} className={"channel-expand-toggle " + (this.state.show_all_tournament_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                                    </div>
+                                )}
+                                {this.state.tournament_channels.map((chan) => (
+                                    <div key={chan.id}
+                                        className={
+                                            (this.state.active_channel === ("tournament-" + chan.id) ? "channel active" : "channel")
+                                            + chan_class("tournament-" + chan.id)
+                                        }
+                                    >
+                                        <span className="channel-name" data-channel={"tournament-" + chan.id} onClick={this.setActiveChannel} >
+                                            <i className="fa fa-trophy" /> {chan.name}
+                                        </span>
+                                        {user_count("tournament-" + chan.id)}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className={"channels" + (!this.state.show_all_global_channels ? " hide-unjoined" : "")}>
+                                <div className="channel-header">
+                                    <span>{_("Global Channels")}</span>
+                                    <i onClick={this.toggleShowAllGlobalChannels} className={"channel-expand-toggle " + (this.state.show_all_global_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                                </div>
+                                {global_channels.map((chan) => (
+                                    <div key={chan.id}
+                                        className={
+                                            (this.state.active_channel === chan.id ? "channel active" : "channel")
+                                            + chan_class(chan.id)
+                                        }
+                                    >
+                                        <span className="channel-name" data-channel={chan.id} onClick={this.setActiveChannel}>
+                                            <Flag country={chan.country}/> {chan.name}
+                                        </span>
+                                        {user_count(chan.id)}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
+
                         <div className="seekgraph-container">
                             <PersistentElement elt={this.seekgraph_canvas} />
                         </div>
