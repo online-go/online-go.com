@@ -117,14 +117,18 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         this.setPage(this.state.page - 1);
     }}}
     nextPage = () => {{{
-        this.setPage(this.state.page + 1);
+        if (typeof(this.state.page) === "number") {
+            this.setPage(this.state.page + 1);
+        } else {
+            this.setPage(1);
+        }
     }}}
     setPage = (ev_or_page) => {{{
-        if ((ev_or_page.target as any).value === "") {
+        let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value);
+        if (isNaN(page)) {
             this.setState({page: ""});
             return;
         }
-        let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value);
         page = Math.max(1, Math.min(Math.ceil(
             (this.state.viewing === "live" ? this.state.live_game_count : this.state.corr_game_count)
                 / this.state.page_size), page));

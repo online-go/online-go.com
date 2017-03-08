@@ -200,12 +200,6 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
             return;
         }
         let n = parseInt(ev.target.value);
-        if (isNaN(n)) {
-            if (ev.target.value.trim() === "") {
-                this.setPage(1);
-            }
-            return;
-        }
         this.setPage(n);
     }
     _select = (ev) => {
