@@ -112,7 +112,7 @@ export function openGameAcceptModal(challenge): Promise<any> {
     console.log(challenge);
 
     return new Promise((resolve, reject) => {
-        openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} />);
+        openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);
     });
 }
 
