@@ -485,6 +485,16 @@ export class Chat extends React.Component<ChatProperties, any> {
         let sort_order = this.state.user_sort_order;
         if (sort_order === "rank") {
             lst.sort((a, b) => {
+                if (!a.ranking && b.ranking) {
+                    return 1;
+                }
+                if (a.ranking && !b.ranking) {
+                    return -1;
+                }
+                if (!a.ranking && !b.ranking) {
+                    return a.username.localeCompare(b.username);
+                }
+
                 if (a.ranking - b.ranking === 0)  {
                     return a.username.localeCompare(b.username);
                 }
