@@ -815,7 +815,7 @@ export class User extends Resolver<UserProperties, any> {
                                     }
 
                                     {(editing || user.about) && <dt>{_("About")}</dt>}
-                                    {(!editing && user.about) && <dd><Markdown source={user.about}/></dd>}
+                                    {(!editing && user.about) && <dd className='about-markdown'><Markdown source={user.about}/></dd>}
                                     {(editing || null) && <dd><textarea rows={6} onChange={this.saveAbout} value={user.about}/></dd>}
 
                                     {(editing || user.website) && <dt >{_("Website")}</dt>}
