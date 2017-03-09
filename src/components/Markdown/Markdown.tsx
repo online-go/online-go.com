@@ -16,35 +16,39 @@
  */
 
 import * as React from "react";
-import * as commonmark from "commonmark";
+import * as markdownit from "markdown-it";
 
 interface MarkdownProps {
     source: string;
 }
 
-let parser = new commonmark.Parser();
-let renderer = new commonmark.HtmlRenderer();
+const md = markdownit({
+    html: true,
+    linkify: true,
+    typographer: true,
+});
 
 export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
     constructor(props) {
         super(props);
         this.state = {
-            html: this.props.source ? renderer.render(parser.parse(this.massage(this.props.source))) : ""
+            html: this.props.source ? md.render(this.massage(this.props.source)) : ""
         };
     }
 
     massage(source: string): string {
-        source = source.replace(/^(#+)([a-zA-Z0-9])/g, "$1 $2"); // headers used to behave like this
+        source = source.split('\n').map((l)=>l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
+        //source = source.replace(/^(#+)([a-zA-Z0-9])/g, "$1 $2"); // headers used to behave like this
         source = source.replace(/<script/ig, "(script"); // hasnt' been exploitable yet with how react works i don't think, but they leave most html intact for some stupid reason, this string shouldn't exist anyways
-        source = source.replace(/^(https?:\/\/[^\s]+)/g, "[$1]($1)");
-        source = source.replace(/[^[(](https?:\/\/[^\s\]\)]+)/g, "[$1]($1)");
+        //source = source.replace(/^(https?:\/\/[^\s]+)/g, "[$1]($1)");
+        //source = source.replace(/[^[(](https?:\/\/[^\s\]\)]+)/g, "[$1]($1)");
         return source;
     }
 
     componentWillReceiveProps(next_props) {{{
         if (next_props.source !== this.props.source) {
             this.setState({
-                html: next_props.source ? renderer.render(parser.parse(this.massage(next_props.source))) : ""
+                html: next_props.source ? md.render(this.massage(next_props.source)) : ""
             });
         }
     }}}

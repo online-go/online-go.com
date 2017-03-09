@@ -76,7 +76,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.`
         "react-router": "ReactRouter",
         "blueimp-md5": "md5",
         "eventemitter3": "EventEmitter",
-        "commonmark": "commonmark",
+        "markdown-it": "markdownit",
         "moment": "moment",
         "redux": "Redux",
         "react-redux": "ReactRedux",
