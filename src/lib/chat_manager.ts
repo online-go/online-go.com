@@ -151,7 +151,13 @@ class ChatChannel extends EventEmitter {
         }
         this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
         this.users_by_rank.sort((a, b) => {
-            if (a.ranking - b.ranking === 0)  {
+            if (!a.ranking && b.ranking) {
+                return 1;
+            }
+            if (a.ranking && !b.ranking) {
+                return -1;
+            }
+            if ((!a.ranking && !b.ranking) || a.ranking - b.ranking === 0) {
                 return a.username.localeCompare(b.username);
             }
             return b.ranking - a.ranking;
