@@ -51,12 +51,14 @@ channel-width=12rem;
         flex-direction: column;
         user-select: none;
     }
-    .channels {
-        flex-grow: 1;
-        flex-shrink: 1;
-        overflow-y: auto;
+    .all-channels {
         height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
-
+        overflow-y: scroll;
+    }
+    .channels {
+        flex-grow: 0;
+        flex-shrink: 1;
+  
         .channel-header {
             margin-top: 1.0rem;
             text-transform: uppercase;
