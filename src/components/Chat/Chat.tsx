@@ -822,9 +822,11 @@ function ChatLine(props) {{{
         body = body.substr(4);
       }
 
-      if (body.substr(0, 8) === '/sensei ') {
+      if (/^\/senseis?\s/.test(body)) {
         body = generateChatSearchLine(
-          'http://senseis.xmp.net/?search=', '/sensei ', body
+          'http://senseis.xmp.net/?search=',
+          /^\/senseis?\s/.exec(body)[0],
+          body
         );
       }
 
