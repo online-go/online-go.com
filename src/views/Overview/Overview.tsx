@@ -30,6 +30,7 @@ import {Player} from "Player";
 import {PlayerIcon} from "components";
 import online_status from "online_status";
 import data from "data";
+import player_cache from "player_cache";
 import {longRankString, errorAlerter} from "misc";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
@@ -52,6 +53,7 @@ export class Overview extends React.Component<{}, any> {
             overview: {
                 active_games: [],
             },
+            rating: 0,
             resolved: false,
         };
     }
@@ -59,6 +61,9 @@ export class Overview extends React.Component<{}, any> {
     componentDidMount() {
         return get("ui/overview").then((overview) => {
             this.setState({"overview": overview, resolved: true});
+            player_cache.fetch(data.get("config.user").id, ["rating"]).then((player) => {
+                this.setState({rating: player.rating});
+            });
         }).catch((err) => {
             this.setState({resolved: true});
             errorAlerter(err);
@@ -107,7 +112,7 @@ export class Overview extends React.Component<{}, any> {
                             <div className="rank-and-progress">
                                 <span className="rank">{longRankString(user)} &nbsp;</span>
                                 <div className="progress">
-                                    <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
+                                    <div className="progress-bar primary" style={{width: ((1000 + this.state.rating) % 100.0) + "%"}}>&nbsp;</div>
                                 </div>
                             </div>
 
