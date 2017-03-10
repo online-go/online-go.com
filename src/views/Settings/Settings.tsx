@@ -352,7 +352,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 <h3>
                     {this.state.profile.on_vacation
                         ?  <span className="vacation-status">
-                               <i className="fa fa-smile-o"></i> 
+                               <i className="fa fa-smile-o"></i>
                                    &nbsp; {_("You are on vacation")} &nbsp;
                                <i className="fa fa-smile-o"></i>
                            </span>
@@ -401,7 +401,7 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dt><label htmlFor="voice-countdown">{_("Voice Countdown")}</label></dt>
                     <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
                     <dt>{_("Live game submit mode")}</dt>
-                    <dd> 
+                    <dd>
                         <select value={this.state.live_submit_mode} onChange={this.setLiveSubmitMode}>
                             <option value="single">{_("One-click to move")}</option>
                             <option value="double">{_("Double-click to move")}</option>
@@ -445,7 +445,7 @@ export class Settings extends React.PureComponent<{}, any> {
                     }
                     {(!this.state.email_changed || null) && this.state.email_message}
                     </dd>
-                    
+
                     <dt>{_("Password")}</dt>
                     <dd className="password-update">
                         <div>
@@ -499,7 +499,7 @@ export class Settings extends React.PureComponent<{}, any> {
 
                 </Card>
             /* }}} */}
-            
+
         </div>
         );
     }

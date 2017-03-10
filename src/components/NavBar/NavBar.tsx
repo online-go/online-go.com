@@ -35,8 +35,6 @@ import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
 import player_cache from "player_cache";
 
-declare var Hammer;
-
 let body = $(document.body);
 
 function _update_theme(theme) {
@@ -72,13 +70,6 @@ function logout() {
         browserHistory.push("/");
     });
 }
-
-delete Hammer.defaults.cssProps.userSelect;
-let hammertime = new Hammer(document.body, {
-    cssProps: {
-        userSelect: "auto",
-    }
-});
 
 
 export class NavBar extends OGSComponent<{}, any> {
@@ -123,25 +114,6 @@ export class NavBar extends OGSComponent<{}, any> {
         browserHistory.listen(location => {
             this.closeNavbar();
             this.setState({path: location.pathname});
-        });
-
-        hammertime.on("swipeleft", (ev) => {
-            if (ev.pointerType === "mouse") {
-                return;
-            }
-
-            if (this.state.left_nav_active) {
-                this.toggleLeftNav();
-            }
-        });
-        hammertime.on("swiperight", (ev) => {
-            if (ev.pointerType === "mouse") {
-                return;
-            }
-
-            if (!this.state.left_nav_active) {
-                this.toggleLeftNav();
-            }
         });
     }
 
@@ -345,7 +317,7 @@ export class NavBar extends OGSComponent<{}, any> {
                 <Link to='/'>Notification</Link>
 
             */}
-            
+
 
             <div className={"nav-menu-modal-backdrop " + ((this.state.left_nav_active || this.state.right_nav_active) ? "active" : "")} onClick={this.closeNavbar}/>
 
@@ -369,13 +341,13 @@ export class NavBar extends OGSComponent<{}, any> {
                     <GobanThemePicker />
                 </div>
 
-                {(show_debug || null) && <LineText>{_("Debug")}</LineText>}          
+                {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
                 {(show_debug || null) &&
                     <div style={{textAlign: "center"}}>
                         <button className={debug ? "sm info" : "sm"} onClick={this.toggleDebug}>{debug ? "Turn debugging off" : "Turn debugging on"}</button>
                         <button className={debug ? "sm info" : "sm"} onClick={this.toggleAdOverride}>{data.get("ad-override", false) ? "Turn ads off" : "Turn ads on"}</button>
                     </div>
-                }          
+                }
             </div>
             }
 
@@ -439,7 +411,7 @@ export class NavBar extends OGSComponent<{}, any> {
                                 <li><h5>{_("Tournaments")}</h5></li>
                                 {tournament_invites.map((ti, idx) => (
                                     <li key={idx}>
-                                        <img src={ti.icon} height="15" width="15"/> 
+                                        <img src={ti.icon} height="15" width="15"/>
                                         <i className="fa fa-check accept clickable" onClick={() => acceptTournamentInvite(ti.id)}></i>
                                         <i className="fa fa-times reject clickable" onClick={() => rejectTournamentInvite(ti.id)}></i>
                                         <Link to={`/tournament/${ti.tournament_id}/`} title={ti.message}> {ti.name}</Link>
@@ -470,7 +442,7 @@ export class NavBar extends OGSComponent<{}, any> {
 
                                 {group_invites.map((gi, idx) => (
                                     <li key={idx} className="invite">
-                                        <img src={gi.icon} height="15" width="15"/> 
+                                        <img src={gi.icon} height="15" width="15"/>
                                         <i className="fa fa-check accept clickable" onClick={() => acceptGroupInvite(gi.id)}></i>
                                         <i className="fa fa-times reject clickable" onClick={() => rejectGroupInvite(gi.id)}></i>
                                         <Link to={`/group/${gi.group_id}/`}> {gi.name}</Link>
@@ -510,7 +482,7 @@ export class NavBar extends OGSComponent<{}, any> {
                                 {_("No results.") /* translators: No search results */}
                             </div>
                         }
-                                
+
                         {(this.state.omnisearch_players.length || null) &&
                             <div>
                                 <h3>{_("Players")}</h3>
@@ -539,7 +511,7 @@ export class NavBar extends OGSComponent<{}, any> {
                                 ))}
                             </div>
                         }
-                        
+
                     </div>
                 /* }}} */}
             </div>
