@@ -48,7 +48,7 @@ interface ChatProperties {
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
-    name_match_regex = new RegExp("\b" + user.username.replace(/[\\^$*+.()|[\]{}]/g, "\$&") + "\b", "i");
+    name_match_regex = new RegExp("\\b" + user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&") + "\\b", "i");
 });
 
 let global_channels: Array<any> = [ /* {{{ */
