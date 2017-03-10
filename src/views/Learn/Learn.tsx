@@ -143,7 +143,7 @@ export class Learn extends React.PureComponent<LearnProperties, any> {
                             </div>
                         </div>
                     </Card>
-                    <EmbeddedChat channel={`group-${group.id}`} />
+                    <EmbeddedChat channel={`group-${group.id}`} updateTitle={false} />
                     {(this.state.news.length > 0 || null) &&
                         <Card style={{minHeight: "12rem"}}>
                             <PaginatedTable
