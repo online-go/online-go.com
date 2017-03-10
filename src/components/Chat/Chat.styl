@@ -52,6 +52,8 @@ channel-width=12rem;
         user-select: none;
     }
     .all-channels {
+        display: flex;
+        flex-direction:column;
         height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
         overflow-y: auto;
     }
