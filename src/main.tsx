@@ -65,6 +65,7 @@ import {LibraryPlayer} from "LibraryPlayer";
 import {Play} from "Play";
 import {Moderator} from "Moderator";
 import {ObserveGames} from "ObserveGames";
+import {Learn} from "Learn";
 import {Puzzle} from "Puzzle";
 import {PuzzleList} from "PuzzleList";
 import {PuzzleModify} from "PuzzleModify";
@@ -205,6 +206,7 @@ const routes = (
         <Route path="/play" component={Play}/>
         <Route path="/chat" component={ChatView}/>
         <Route path="/observe-games" component={ObserveGames}/>
+        <Route path="/learn" component={Learn}/>
         <Route path="/game/:game_id" component={Game}/>
         <Route path="/game/view/:game_id" component={Game}/>
         <Route path="/review/:review_id" component={Game}/>

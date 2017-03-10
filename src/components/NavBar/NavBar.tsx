@@ -300,6 +300,7 @@ export class NavBar extends OGSComponent<{}, any> {
                 {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
                 {user && <Link to="/play">{_("Play")}</Link>}
                 <Link to="/observe-games">{_("Watch")}</Link>
+                <Link to="/learn">{_("Learn")}</Link>
                 <Link to="/chat">{_("Chat")}</Link>
                 <Link to="/puzzles">{_("Puzzles")}</Link>
                 <Link to="/tournaments">{_("Tournaments")}</Link>
