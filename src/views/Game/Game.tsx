@@ -32,6 +32,7 @@ import {termination_socket, get_network_latency, get_clock_drift} from "sockets"
 import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
+import player_cache from "player_cache";
 import {getPlayerIconURL} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";
@@ -2135,6 +2136,9 @@ export class Game extends OGSComponent<GameProperties, any> {
             <div className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
+                  player_cache.fetch(engine.players[color].id, ["country"]).then((player) => {
+                    Object.assign(engine.players[color], player);
+                  });
                   if (engine.players[color] && this.state.player_icons[engine.players[color].id]) {
                       player_bg.backgroundImage = `url("${this.state.player_icons[engine.players[color].id]}")`;
                   }
