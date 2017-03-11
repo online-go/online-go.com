@@ -2159,7 +2159,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                       </div>
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
-                          <div className="player-name-container">
+                          <div className={`${color} player-name-container`}>
                              <Player user={goban.engine.players[color]}/>
                           </div>
                       }

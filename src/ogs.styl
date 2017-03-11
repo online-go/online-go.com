@@ -161,7 +161,8 @@ light.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%,
 light.player-white-background           = linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
 light.player-black-fg                   = #eeeeee
 light.player-white-fg                   = light.fg
-
+light.player-black-name                 = lighten(light.user, 50%)
+light.player-white-name                 = light.user
 
 
 /************/
@@ -244,11 +245,12 @@ dark.miniboard-stone-removal           = #5B4810
 dark.miniboard-stone-removal-border    = darken(dark.miniboard-stone-removal, 45%)
 dark.miniboard-stone-removal-hover     = darken(dark.miniboard-stone-removal, 45%)
 dark.miniboard-stone-removal-hover-border= darken(dark.miniboard-stone-removal-hover, 45%)
-dark.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%,#0e0e0e 100%);
-dark.player-white-background           = linear-gradient(to bottom, darken(#ffffff, 15%) 0%, darken(#e5e5e5, 45%) 100%);
-dark.player-black-fg                   = #fff
-dark.player-white-fg                   = #fff
-
+dark.player-black-background           = linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
+dark.player-white-background           = linear-gradient(to bottom, #dddddd 0%, #666666 50%, #333333 101%);
+dark.player-black-fg                   = dark.fg
+dark.player-white-fg                   = lighten(dark.fg, 20%)
+dark.player-black-name                 = lighten(dark.user, 50%)
+dark.player-white-name                 = lighten(dark.user, 50%)
 
 
 
