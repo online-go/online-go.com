@@ -2468,9 +2468,13 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.autoscroll();
 
         setTimeout(() => {
-            this.setState({online_count: this.props.gameview.chat_proxy.channel.users_by_rank.length});
-            this.props.gameview.chat_proxy.on("join", this.updateOnlineCount);
-            this.props.gameview.chat_proxy.on("part", this.updateOnlineCount);
+            try {
+                this.setState({ online_count: this.props.gameview.chat_proxy.channel.users_by_rank.length });
+                this.props.gameview.chat_proxy.on("join", this.updateOnlineCount);
+                this.props.gameview.chat_proxy.on("part", this.updateOnlineCount);
+            } catch (e) {
+                console.error(e);
+            }
         }, 1);
     }}}
     componentDidUpdate() {{{
