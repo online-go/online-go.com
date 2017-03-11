@@ -3994,8 +3994,12 @@ export abstract class Goban extends EventEmitter {
 
         let formatTime = (clock_div, time, base_time: number, player_id?: number) => { /* {{{ */
             let ms;
+
             let time_suffix = "";
             let periods_left = 0;
+
+            let in_overtime = false;
+            let overtime_available = false;
 
             /*** New game clock displays ***/
             let main_time_div       = null;
@@ -4022,6 +4026,7 @@ export abstract class Goban extends EventEmitter {
             if (typeof(time) === "object") {
                 ms = (base_time + (time.thinking_time) * 1000) - now;
                 if ("moves_left" in time) { /* canadian */
+                    overtime_available = true;
                     if ("block_time" in time) {
                         if (time.moves_left) {
                             time_suffix = "<span class='time_suffix'> + " + shortDurationString(time.block_time) + "/" + time.moves_left + "</span>";
@@ -4031,6 +4036,7 @@ export abstract class Goban extends EventEmitter {
                         periods_left = 1;
                     }
                     if (ms < 0 || (time.thinking_time === 0 && "block_time" in time)) {
+                        in_overtime = true;
                         if (overtime_parent_div) {
                             overtime_parent_div.addClass("in-overtime");
                         }
@@ -4050,8 +4056,10 @@ export abstract class Goban extends EventEmitter {
                     }
                 }
                 if ("periods" in time) { /* byo yomi */
+                    overtime_available = true;
                     let period_offset = 0;
                     if (ms < 0 || time.thinking_time === 0) {
+                        in_overtime = true;
                         if (overtime_parent_div) {
                             overtime_parent_div.addClass("in-overtime");
                         }
@@ -4125,7 +4133,7 @@ export abstract class Goban extends EventEmitter {
                     nextClockUpdate = 60000;
                 }
                 html = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                if (minutes === 0 && seconds <= 10) {
+                if (minutes === 0 && seconds <= 10 && (in_overtime || !overtime_available)) {
                     if (seconds % 2 === 0) {
                         cls += " low_time";
                     }
