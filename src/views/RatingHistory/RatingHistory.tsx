@@ -279,7 +279,7 @@ export class RatingHistory extends Resolver<UserProperties, any> {
 
         return (
           <div className="RatingHistory container">
-              <h1>{interpolate("Rating History for {{username}}", {"username": user.username})}</h1>
+              <h1>{interpolate(_("Rating History for {{username}}"), {"username": user.username})}</h1>
               <div className="RatingHistory" id="rating-history"></div>
           </div>
         );
