@@ -120,6 +120,12 @@ function stone_normal(x, y, radius) { /* {{{ */
 
     return ret;
 } /* }}} */
+function square_size(radius) { /* {{{ */
+    return 2 * Math.ceil(radius) + 1;
+} /* }}} */
+function stone_center_in_square(radius) { /* {{{ */
+    return Math.ceil(radius) + 0.5;
+} /* }}} */
 function copyAlpha(ctx, width, height) { /* {{{ */
     if (width <= 0 || height <= 0) {
         throw ("Invalid width/height given: " + (width + "x" + height));
@@ -155,13 +161,16 @@ function pasteAlpha(ctx, alpha, width, height) { /* {{{ */
 function applyPhongShading(ctx, width, height, radius, ambient, specular_hardness, diffuse_light_distance, specular_light_distance, light) { /* {{{ */
     let image = ctx.getImageData(0, 0, width, height);
 
+    let ss = square_size(radius);
+    let center = stone_center_in_square(radius);
+
     let r2 = (radius + 1) * (radius + 1); /* alpha will save us from overrunning the image*/
     let look = [0, 0, 1];
 
     let idx = 0;
     let normal_idx = 0;
-    for (let y = -radius; y < radius; ++y) {
-        for (let x = -radius; x < radius; ++x) {
+    for (let y = -center; y < ss - center; ++y) {
+        for (let x = -center; x < ss - center; ++x) {
             let xxyy = x * x + y * y;
             if (xxyy < r2) {
                 let r = image.data[idx];
@@ -170,7 +179,6 @@ function applyPhongShading(ctx, width, height, radius, ambient, specular_hardnes
 
                 let N = stone_normal(x, y, radius);
                 let diffuse_intensity = dot(N, light) / diffuse_light_distance;
-
                 let H = normalized(add(light, look));
                 let specular_intensity = Math.pow( dot(N, H), specular_hardness) / specular_light_distance;
 
@@ -213,7 +221,8 @@ function preRenderStone(radius, seed, options) { /* {{{ */
     radius *= deviceCanvasScalingRatio();
 
     //var ss = radius*2; /* Square size */
-    let ss = Math.ceil(radius * 2); /* Square size */
+    let ss = square_size(radius);
+    let center = stone_center_in_square(radius);
     let sss = radius * 2.5; /* Shadow square size */
 
     let stone;
@@ -249,7 +258,7 @@ function preRenderStone(radius, seed, options) { /* {{{ */
 
     ctx.beginPath();
     ctx.fillStyle = fillColor;
-    ctx.arc(radius, radius, radius, 0, 2 * Math.PI, false);
+    ctx.arc(center, center, radius, 0, 2 * Math.PI, false);
     ctx.fill();
     /* draw clamshell lines */
     if (options.shell_lines) { /* {{{ */
@@ -321,15 +330,15 @@ function preRenderStone(radius, seed, options) { /* {{{ */
 
     applyPhongShading(ctx, ss, ss, radius, options.ambient, options.specular_hardness, options.diffuse_light_distance, options.specular_light_distance, options.light);
 
-    if (radius < 10) {
+    if (! stoneCastsShadow(radius)) {
         ctx.beginPath();
         ctx.strokeStyle = "rgba(100,100,100,0.3)";
         ctx.lineWidth = radius * 0.15;
-        ctx.arc(radius, radius, radius, Math.PI / 2 * 0.25, Math.PI / 2 * 0.75, false);
+        ctx.arc(center, center, radius, Math.PI / 2 * 0.25, Math.PI / 2 * 0.75, false);
         ctx.stroke();
         ctx.beginPath();
         ctx.strokeStyle = "rgba(100,100,100,0.5)";
-        ctx.arc(radius, radius, radius, 0, Math.PI / 2, false);
+        ctx.arc(center, center, radius, 0, Math.PI / 2, false);
         ctx.stroke();
     }
 
@@ -343,22 +352,25 @@ function preRenderStone(radius, seed, options) { /* {{{ */
      * funky problems when we mask out the shadow and apply it underneath the
      * stone. (Without this we tend to see some funny artifacts) */
     //shadow_ctx.arc(radius*0.97, radius*0.97, radius*0.97, 0, 2*Math.PI, false);
-    shadow_ctx.arc(radius, radius, radius * 0.90, 0, 2 * Math.PI, false);
+    shadow_ctx.arc(center, center, radius * 0.90, 0, 2 * Math.PI, false);
     shadow_ctx.fill();
     clearAboveColor(shadow_ctx, sss, sss, 150, 150, 150);
 
     return [{"stone": stone[0], "shadow": shadow[0]}];
 } /* }}} */
 function placeRenderedStone(ctx, shadow_ctx, stone, cx, cy, radius) {{{
-    let sx = Math.round(cx - radius);
-    let sy = Math.round(cy - radius);
+    let ss = square_size(radius);
+    let center = stone_center_in_square(radius);
+
+    let sx = cx - center;
+    let sy = cy - center;
 
     let dcsr = deviceCanvasScalingRatio();
     if (dcsr !== 1.0) {
         if (shadow_ctx) {
             shadow_ctx.drawImage(stone.shadow, sx, sy, radius * 2.5, radius * 2.5);
         }
-        ctx.drawImage(stone.stone, sx, sy, radius * 2, radius * 2);
+        ctx.drawImage(stone.stone, sx, sy, ss, ss);
     } else {
         if (shadow_ctx) {
             shadow_ctx.drawImage(stone.shadow, sx, sy);

@@ -2957,7 +2957,7 @@ export abstract class Goban extends EventEmitter {
     abstract getSelectedThemes();
 
     private computeThemeStoneRadius(metrics) {{{
-        return Math.round(Math.max(1, metrics.mid - 1.0));
+        return Math.max(1, this.square_size * 0.48);
     }}}
     private setThemes(themes, dont_redraw) { /* {{{ */
         if (this.no_display) {
