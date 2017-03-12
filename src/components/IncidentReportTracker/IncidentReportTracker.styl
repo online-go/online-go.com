@@ -78,10 +78,12 @@
 }
 
 .IncidentReportList-results {
-    position: absolute;
+    position: fixed;
+    overflow-y: scroll;
     padding: 0.5rem;
     width: 20rem;
     max-width: 100vw;
+    max-height: 100vh - navbar-height;
     display: inline-block;
     z-index: z.incident-list;
     right: 0;
