@@ -21,10 +21,31 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-width: 100vw;
+    padding: 1rem;
 
     .main-paragraph {
-        max-width: 40rem;
+        width: 30rem;
         text-align: justify;
+
+        .p {
+            margin-top: 1rem;
+        }
+
+        .perk {
+            padding: 1rem 1rem 0 1rem;
+            display: flex;
+            align-items: top;
+            .fa-circle {
+                font-size: 0.5rem;
+                padding: 0.4rem;
+            }
+        }
+    }
+
+    .support-thanks {
+        margin-top: 1rem;
+        text-align: center;
     }
 
     input[type="range"] {

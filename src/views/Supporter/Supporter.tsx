@@ -57,19 +57,25 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     constructor(props) {
         super(props);
-        this.state = {
-            loading: true,
-            processing: false,
-            amount: 5.0,
-            amount_step: 4,
+        if (data.get('user').anonymous) {
+            this.state = {
+                loading: false
+            };
+        } else {
+            this.state = {
+                loading: true,
+                processing: false,
+                amount: 5.0,
+                amount_step: 4,
 
-            card_number_spaced: "",
-            card_exp_spaced: "",
-            cvc: "",
-            fname: "",
-            lname: "",
-            email: "",
-        };
+                card_number_spaced: "",
+                card_exp_spaced: "",
+                cvc: "",
+                fname: "",
+                lname: "",
+                email: "",
+            };
+        }
 
         if (ogs_release === "") {
             /* debug mode */
@@ -100,15 +106,17 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
         }
 
-        get("me/supporter")
-        .then((supporter) => {
-            braintree_js_promise
-            .then(() => {
-                this.setState(Object.assign({loading: false}, supporter));
+        if (!data.get('user').anonymous) {
+            get("me/supporter")
+            .then((supporter) => {
+                braintree_js_promise
+                .then(() => {
+                    this.setState(Object.assign({loading: false}, supporter));
+                })
+                .catch(errorAlerter);
             })
             .catch(errorAlerter);
-        })
-        .catch(errorAlerter);
+        }
     }}}
 
     setAmount = (ev) => {{{
@@ -377,167 +385,148 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let processing = this.state.processing;
         let cdn_release = data.get("config.cdn_release");
 
+        let supporter_text = (
+            <div className='main-paragraph'>
+                <div className='p'>
+                    {interpolate("Hello! As you may or may not know, Online-Go.com is an ever evolving community project driven by countless Go enthusiasts.  First established in 2005, Online-Go.com has grown to be the first place almost all beginners find themselves at when they're first learning about the game, and is home to a seemingly ever growing community of established players.  Bringing in on average {{number_of_new_players}} new players to the game per week, Online-Go.com is the fastest growing western Go server and is one of the most important facets, if not the most important facet, to the now-revitalizing western Go community.", {'number_of_new_players': 1200})}
+                </div>
+
+                <div className='p'>
+                {_("This project is almost entirely supported by donations from players like you. By choosing to help support OGS financially, you are directly helping us keep this service going and spread the game of Go!")}
+                </div>
+
+                <div className='p'>
+                    {_("When you become a supporter you also get a few perks!")}
+
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! All ads on OGS are removed for you while you're logged in.")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("Golden name! Your username will show up in gold (You can turn this off in settings if you want.)")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("Golden orb next to your name in chat! (You can turn this off in settings if you want.)")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_('Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!')}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("More vacation time! If you play a lot of correspondence games this is a great benefit, your vacation time limit will be raised to 60 days (up from 30)")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("Faster vacation recharge time! Vacation will accrue at 1 day per 5 days, up from 1 day per 8 days.")}</span></div>
+                </div>
+            </div>
+        );
+
+        if (user.anonymous) {
+            return (
+                <div className="Supporter">
+                    {supporter_text}
+                    <p>
+                        <i>To donate, you'll first need to log in.</i>
+                    </p>
+                </div>
+            );
+        }
 
         return (
-        <div className="Supporter container">
-            {(!(processing) || null) &&
-                <div>
-                    {(!this.state.is_supporter || null) &&  /* {{{ */
-                        <div className="main-paragraph">
-                            <p>
-                            Hello from your friendly OGS developers! As you may or may not
-                            know, OGS has been entirely developed by two friends <a href="/user/view/4">matburt</a> and <a href="/user/view/1">anoek</a>.
-                            Begun as a side project in 2012, in late 2016 we were able to afford for
-                            one of us to work on OGS full time thanks to the great support by
-                            our loving site supporters. This has allowed us to create the OGS
-                            you know and love today, and enables us to bring you the OGS you'll
-                            know an love tomorrow! Currently, OGS is the fastest-growing western
-                            go server, bringing in around 1800 new players per week. We're
-                            pleased to say that 1200 of these players are brand new to the
-                            game, which to the best of our knowledge, makes us the leader as it
-                            relates to growing the western Go community. By choosing to help
-                            support OGS financially, you are directly helping us keep this service
-                            going and spread the game of Go!
-                            </p>
+        <div className="Supporter">
+            {supporter_text}
+            {processing
+                ? <h1 style={{textAlign: "center", marginTop: "5em"}}>{_("Processing")}</h1>
+                : !this.state.is_supporter
+                    ? <div className="main-paragraph">
+                        <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
+                            {_("How much would you like to donate?")}
+                        </p>
 
-                            <div className="p">
-                            When you become a supporter you also get a few perks!
-                                <ul>
-                                    <li><b>No more ads!</b> All ads on OGS are removed for you while you're logged in.</li>
-                                    <li>Golden name! Your username will show up in gold (You can turn this off in settings if you want.) </li>
-                                    <li>Golden orb next to your name in chat! (You can turn this off in settings if you want.)</li>
-                                    <li>Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!</li>
-                                    <li>More vacation time! If you play a lot of correspondence games this is a great benefit, your vacation time limit will be raised to 60 days (up from 30)</li>
-                                    <li>Faster vacation recharge time! Vacation will accrue at 1 day per 5 days, up from 1 day per 8 days.</li>
-                                </ul>
+                        <div className="details">
+                            <div>
+                                <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps.length - 1} step={1}/>
+                            </div>
+                            <div>
+                                <h3>{`$${this.state.amount.toFixed(2)}/` + _("month")}</h3>
                             </div>
 
-                            <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                                How much would you like to donate?
-                            </p>
 
-                            {(!user.anonymous || null) &&  /* {{{ */
-                                <div className="details">
-                                    <div>
-                                        <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps.length - 1} step={1}/>
-                                    </div>
-                                    <div>
-                                        <h3>{`$${this.state.amount.toFixed(2)}/` + _("month")}</h3>
+                            <div className="cc-form">
+                                <form acceptCharset="UTF-8" action="/payment" className="cardInfo" role="form" method="post" autoComplete="on">
+                                    <div className="cc-number">
+                                        <input ref="ccnum" name="cc-number" type="tel" className="cc-number" placeholder="•••• •••• •••• ••••"
+                                            autoComplete="cc-number" required={true}
+                                            value={this.state.card_number_spaced} onChange={this.updateCardNumber}/>
                                     </div>
 
-
-                                    <div className="cc-form">
-                                        <form acceptCharset="UTF-8" action="/payment" className="cardInfo" role="form" method="post" autoComplete="on">
-                                            <div className="cc-number">
-                                                <input ref="ccnum" name="cc-number" type="tel" className="cc-number" placeholder="•••• •••• •••• ••••"
-                                                    autoComplete="cc-number" required={true}
-                                                    value={this.state.card_number_spaced} onChange={this.updateCardNumber}/>
-                                            </div>
-
-                                            <div className="exp-cvc">
-                                                <input ref="ccexp" name="cc-exp" type="tel" className="cc-exp" placeholder="MM / YY" autoComplete="cc-exp" required={true}
-                                                    value={this.state.card_exp_spaced} onChange={this.updateExp}/>
-                                                <input ref="cccvc" name="cvc" type="tel" className="cc-cvc" placeholder={_("CVC")} autoComplete="cc-csc" required={true}
-                                                    value={this.state.cvc} onChange={this.updateCvc}/>
-                                            </div>
-
-                                            <div className="name">
-                                                <input ref="fname" name="fname" type="text" className="fname" placeholder={_("Name")} autoComplete="fname" required={true}
-                                                    value={this.state.fname} onChange={this.updateFname}/>
-                                                <input ref="lname" name="lname" type="text" className="lname" placeholder="" autoComplete="lname" required={true}
-                                                    value={this.state.lname} onChange={this.updateLname}/>
-                                            </div>
-                                            <div className="email">
-                                                <input ref="email" name="email" type="email" className="fname" placeholder={_("Email")} autoComplete="email" required={true}
-                                                    value={this.state.email} onChange={this.updateEmail}/>
-                                            </div>
-                                        </form>
-
-                                        <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
-                                            {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${this.state.amount.toFixed(2)}`})}
-                                        </button>
+                                    <div className="exp-cvc">
+                                        <input ref="ccexp" name="cc-exp" type="tel" className="cc-exp" placeholder="MM / YY" autoComplete="cc-exp" required={true}
+                                            value={this.state.card_exp_spaced} onChange={this.updateExp}/>
+                                        <input ref="cccvc" name="cvc" type="tel" className="cc-cvc" placeholder={_("CVC")} autoComplete="cc-csc" required={true}
+                                            value={this.state.cvc} onChange={this.updateCvc}/>
                                     </div>
 
-                                    <LineText>{_("or")}</LineText>
-
-                                    <div className="paypal">
-                                        <img className="paypal-button" src={`${cdn_release}/img/paypal.png`} onClick={this.processPaypal} />
-
-                                        <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                                            <input type="hidden" name="cmd" value="_xclick-subscriptions" />
-                                            <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                                            <input type="hidden" name="item_name" value="Supporter Account" />
-                                            <input type="hidden" name="a3" value={this.state.amount.toFixed(2)} />
-                                            <input type="hidden" name="p3" value="1" />
-                                            <input type="hidden" name="t3" value="M" />
-                                            <input type="hidden" name="src" value="1" />
-                                            <input type="hidden" name="no_note" value="1" />
-                                            <input type="hidden" name="custom" value={data.get("user").id} />
-                                            <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                                            <input type="hidden" name="modify" value="1" />
-                                            <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
-                                        </form>
+                                    <div className="name">
+                                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("Name")} autoComplete="fname" required={true}
+                                            value={this.state.fname} onChange={this.updateFname}/>
+                                        <input ref="lname" name="lname" type="text" className="lname" placeholder="" autoComplete="lname" required={true}
+                                            value={this.state.lname} onChange={this.updateLname}/>
                                     </div>
-                                </div>
-                            /* }}} */
-                            }
+                                    <div className="email">
+                                        <input ref="email" name="email" type="email" className="fname" placeholder={_("Email")} autoComplete="email" required={true}
+                                            value={this.state.email} onChange={this.updateEmail}/>
+                                    </div>
+                                </form>
 
-                            {(user.anonymous || null) &&
-                                <div>
-                                    <p>
-                                    To donate, please create an account, it's free, incredibly
-                                    easy, and you should probably have one if you're going to be
-                                    donating anyways!
-                                    </p>
-                                </div>
-                            }
+                                <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
+                                    {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${this.state.amount.toFixed(2)}`})}
+                                </button>
+                            </div>
 
+                            <LineText>{_("or")}</LineText>
+
+                            <div className="paypal">
+                                <img className="paypal-button" src={`${cdn_release}/img/paypal.png`} onClick={this.processPaypal} />
+
+                                <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                                    <input type="hidden" name="cmd" value="_xclick-subscriptions" />
+                                    <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                                    <input type="hidden" name="item_name" value="Supporter Account" />
+                                    <input type="hidden" name="a3" value={this.state.amount.toFixed(2)} />
+                                    <input type="hidden" name="p3" value="1" />
+                                    <input type="hidden" name="t3" value="M" />
+                                    <input type="hidden" name="src" value="1" />
+                                    <input type="hidden" name="no_note" value="1" />
+                                    <input type="hidden" name="custom" value={data.get("user").id} />
+                                    <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
+                                    <input type="hidden" name="modify" value="1" />
+                                    <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
+                                </form>
+                            </div>
                         </div>
-                    }
-                    {/* }}} */}
-                    {(this.state.is_supporter || null) &&  /* {{{ */
-                        <div style={{textAlign: "center"}}>
-                            <h3>{_("Thank you for your support!")}</h3>
+                      </div>
+                    : <div className='main-paragraph support-thanks'>
+                        <h3>{_("Thank you for your support!")}</h3>
 
-                            {(this.state.payment_account.payment_vendor === "braintree" || null) &&
-                                <div>
-                                    <p>
-                                        {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}}, thanks!"),
-                                            {
-                                                "amount": parseFloat(this.state.purchase.price).toFixed(2),
-                                                "card_type": this.state.payment_method.card_type,
-                                                "last_four": this.state.payment_method.card_number,
-                                            })
-                                        }
-                                    </p>
-                                    <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
-                                        {_("Cancel this support")}
-                                    </button> 
-                                </div>
-                            }
+                        {(this.state.payment_account.payment_vendor === "braintree" || null) &&
+                            <div>
+                                <p>
+                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}}, thanks!"),
+                                        {
+                                            "amount": parseFloat(this.state.purchase.price).toFixed(2),
+                                            "card_type": this.state.payment_method.card_type,
+                                            "last_four": this.state.payment_method.card_number,
+                                        })
+                                    }
+                                </p>
+                                <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
+                                    {_("Cancel this support")}
+                                </button>
+                            </div>
+                        }
 
-                            {(this.state.payment_account.payment_vendor === "paypal" || null) &&
-                                <div>
-                                    <p>
-                                        {interpolate(_("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!"),
-                                            {
-                                                "amount": parseFloat(this.state.purchase.price).toFixed(2),
-                                            })
-                                        }</p>
-                                    <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
-                                        {_("Cancel this support")}
-                                    </button> 
-                                </div>
-                            }
-                        </div>
-                    /* }}} */
-                    }
-                </div>
-            }
-            {(!(!processing) || null) &&
-                <div>
-                    <h1 style={{textAlign: "center", marginTop: "5em"}}>{_("Processing")}</h1>
-                </div>
+                        {(this.state.payment_account.payment_vendor === "paypal" || null) &&
+                            <div>
+                                <p>
+                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!"),
+                                        {
+                                            "amount": parseFloat(this.state.purchase.price).toFixed(2),
+                                        })
+                                    }</p>
+                                <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
+                                    {_("Cancel this support")}
+                                </button>
+                            </div>
+                        }
+                      </div>
             }
         </div>
         );
@@ -558,4 +547,4 @@ function luhnChk(luhn: string): boolean {
     }
 
     return sum % 10 === 0 && sum > 0;
-};
+}
