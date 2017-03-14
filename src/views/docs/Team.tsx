@@ -43,7 +43,7 @@ export class Team extends React.PureComponent<{}, any> {
     componentWillMount() {
         get('https://api.github.com/repos/online-go/online-go.com/contributors')
         .then((list) => {
-            this.setState({contributors: list})
+            this.setState({contributors: list});
         })
         .catch((err) => {
             console.error(err);
