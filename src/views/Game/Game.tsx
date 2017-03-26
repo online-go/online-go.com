@@ -40,7 +40,7 @@ import {PersistentElement} from "PersistentElement";
 import {close_all_popovers} from "popover";
 import {Resizable} from "Resizable";
 import {TabCompleteInput} from "TabCompleteInput";
-import {ChatUserList} from "ChatUserList";
+import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {ChatPresenceIndicator} from "ChatPresenceIndicator";
 import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
@@ -2444,8 +2444,6 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.state = {
             chat_log: "main",
             show_player_list: false,
-            online_count: 0,
-            tick: 0,
         };
         this.chat_log_filter = this.chat_log_filter.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
@@ -2466,33 +2464,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
     componentDidMount() {{{
         this.autoscroll();
-
-        setTimeout(() => {
-            try {
-                this.setState({ online_count: this.props.gameview.chat_proxy.channel.users_by_rank.length });
-                this.props.gameview.chat_proxy.on("join", this.updateOnlineCount);
-                this.props.gameview.chat_proxy.on("part", this.updateOnlineCount);
-            } catch (e) {
-                console.error(e);
-            }
-        }, 1);
     }}}
     componentDidUpdate() {{{
         this.autoscroll();
-    }}}
-    componentWillMount() {{{
-    }}}
-    componentWillUnmount() {{{
-        if (this.props.gameview.chat_proxy) {
-            this.props.gameview.chat_proxy.off("join", this.updateOnlineCount);
-            this.props.gameview.chat_proxy.off("part", this.updateOnlineCount);
-        }
-    }}}
-    updateOnlineCount = () => {{{
-        this.setState({
-            online_count: this.props.gameview.chat_proxy.channel.users_by_rank.length,
-            tick: this.state.tick + 1
-        });
     }}}
 
     updateScrollPosition() {{{
@@ -2531,7 +2505,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     render() {{{
         let last_line = null;
         let user = data.get("user");
-
+        let channel = this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`;
 
         return (
             <div className="chat-container">
@@ -2548,7 +2522,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         </div>
                     </div>
                     {(this.state.show_player_list || null) &&
-                        <ChatUserList channel={this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`} />
+                        <ChatUserList channel={channel} />
                     }
                 </div>
                 <div className="chat-input-container input-group">
@@ -2571,12 +2545,11 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         }
                         onKeyPress={this.onKeyPress}
                     />
-                    <button
-                        onClick={this.togglePlayerList}
-                        className={"chat-input-player-list-toggle sm" + (this.state.show_player_list ? " active" : "")}
-                        >
-                        <i className="fa fa-users" /> {this.state.online_count}
-                    </button>
+                    <ChatUserCount
+                        chat={this}
+                        active={this.state.show_player_list}
+                        channel={channel}
+                    />
                 </div>
             </div>
         );
