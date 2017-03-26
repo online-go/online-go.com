@@ -98,7 +98,7 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
 }
 
 export class ChatUserCount extends ChatUsers<ChatUserCountProperties> {
-    render () {
+    render() {
         return (
             <button
                 onClick={this.props.chat.togglePlayerList}
