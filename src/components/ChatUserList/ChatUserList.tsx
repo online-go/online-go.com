@@ -22,23 +22,25 @@ import {errorAlerter} from "misc";
 import {chat_manager, ChatChannelProxy} from "chat_manager";
 import preferences from "preferences";
 import {Player} from "Player";
+import {GameChat} from "Game";
 
 interface ChatUserListProperties {
     channel: string;
     display_name?: string;
 }
 
-export class ChatUserList extends React.PureComponent<ChatUserListProperties, any> {
+interface ChatUserCountProperties extends ChatUserListProperties {
+    chat: GameChat;
+    active: boolean;
+}
+
+export class ChatUsers<T extends ChatUserListProperties> extends React.PureComponent<T, any> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
         super(props);
-        this.state = {
-            tick: 0,
-            user_sort_order: preferences.get("chat.user-sort-order"),
-        };
+        this.state = {tick: 0};
     }
-
     componentWillMount() {
         this.init(this.props.channel, this.props.display_name);
     }
@@ -62,6 +64,14 @@ export class ChatUserList extends React.PureComponent<ChatUserListProperties, an
         this.proxy.part();
         this.proxy = null;
     }
+}
+
+export class ChatUserList extends ChatUsers<ChatUserListProperties> {
+    constructor(props) {
+        super(props);
+        this.state.user_sort_order = preferences.get("chat.user-sort-order");
+    }
+
     toggleSortOrder = () => {{{
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
@@ -83,6 +93,19 @@ export class ChatUserList extends React.PureComponent<ChatUserListProperties, an
 
                 {sorted_users.map((user) => <div key={user.id}><Player user={user} flag rank /></div>)}
             </div>
+        );
+    }
+}
+
+export class ChatUserCount extends ChatUsers<ChatUserCountProperties> {
+    render() {
+        return (
+            <button
+                onClick={this.props.chat.togglePlayerList}
+                className={"chat-input-player-list-toggle sm" + (this.props.active ? " active" : "")}
+                >
+                <i className="fa fa-users" /> {this.proxy ? this.proxy.channel.users_by_name.length : ""}
+            </button>
         );
     }
 }
