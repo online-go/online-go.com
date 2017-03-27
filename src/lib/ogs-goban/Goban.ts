@@ -27,6 +27,7 @@ import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingR
 import {EventEmitter} from "eventemitter3";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
+import data from "data";
 
 
 export const GOBAN_FONT =  "Verdana,Arial,sans-serif";
@@ -2269,7 +2270,11 @@ export abstract class Goban extends EventEmitter {
                     }
                     if (color === 1) {
                         let stone = this.theme_black_stones[((i + 1) * 53) * ((j + 1) * 97) % this.theme_black_stones.length];
-                        this.theme_black.placeBlackStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
+                        if (data.get("one-color-go")) {
+                            this.theme_black.placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
+                        } else {
+                            this.theme_black.placeBlackStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
+                        }
                     } else {
                         let stone = this.theme_white_stones[((i + 1) * 53) * ((j + 1) * 97) % this.theme_white_stones.length];
                         this.theme_white.placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
@@ -2968,7 +2973,11 @@ export abstract class Goban extends EventEmitter {
 
         this.theme_board = new (GoThemes["board"][themes.board])();
         this.theme_white = new (GoThemes["white"][themes.white])(this.theme_board);
-        this.theme_black = new (GoThemes["black"][themes.black])(this.theme_board);
+        if (data.get("one-color-go")) {
+            this.theme_black = new (GoThemes["white"][themes.white])(this.theme_board);
+        } else {
+            this.theme_black = new (GoThemes["black"][themes.black])(this.theme_board);
+        }
 
         if (!this.metrics) {
             this.metrics = this.computeMetrics();
@@ -2998,7 +3007,11 @@ export abstract class Goban extends EventEmitter {
             __theme_cache.white[themes.white][this.theme_stone_radius] = this.theme_white.preRenderWhite(this.theme_stone_radius, 23434);
         }
         if (!(this.theme_stone_radius in __theme_cache.black[themes.black])) {
-            __theme_cache.black[themes.black][this.theme_stone_radius] = this.theme_black.preRenderBlack(this.theme_stone_radius, 2081);
+            if (data.get("one-color-go")) {
+                __theme_cache.black[themes.black][this.theme_stone_radius] = this.theme_black.preRenderWhite(this.theme_stone_radius, 2081);
+            } else {
+                __theme_cache.black[themes.black][this.theme_stone_radius] = this.theme_black.preRenderBlack(this.theme_stone_radius, 2081);
+            }
         }
 
         this.theme_white_stones = __theme_cache.white[themes.white][this.theme_stone_radius];
@@ -3008,7 +3021,11 @@ export abstract class Goban extends EventEmitter {
         this.theme_star_color = this.theme_board.getStarColor();
         this.theme_faded_star_color = this.theme_board.getFadedStarColor();
         this.theme_blank_text_color = this.theme_board.getBlankTextColor();
-        this.theme_black_text_color = this.theme_black.getBlackTextColor();
+        if (data.get("one-color-go")) {
+            this.theme_black_text_color = this.theme_black.getWhiteTextColor();
+        } else {
+            this.theme_black_text_color = this.theme_black.getBlackTextColor();
+        }
         this.theme_white_text_color = this.theme_white.getWhiteTextColor();
         this.parent.css(this.theme_board.getBackgroundCSS());
         if (this.move_tree_div) {

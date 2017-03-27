@@ -19,6 +19,7 @@ import {GoEngine} from "./GoEngine";
 import {resizeDeviceScaledCanvas} from "./GoUtil";
 import {encodeMove} from "./GoEngine";
 import {GOBAN_FONT, Goban} from "./Goban";
+import data from "data";
 
 let __move_tree_id = 0;
 
@@ -747,7 +748,11 @@ export class MoveTree {
 
         if (color === 1) {
             let stone = MoveTree.theme_black_stones[stone_idx % MoveTree.theme_black_stones.length];
-            board.theme_black.placeBlackStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
+            if (data.get("one-color-go")) {
+                board.theme_black.placeWhiteStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
+            } else {
+                board.theme_black.placeBlackStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
+            }
         } else if (color === 2) {
             let stone = MoveTree.theme_white_stones[stone_idx % MoveTree.theme_white_stones.length];
             board.theme_white.placeWhiteStone(ctx, null, stone, cx, cy, MoveTree.stone_radius);
@@ -956,7 +961,11 @@ export class MoveTree {
 
         MoveTree.theme_line_color = board.theme_board.getLineColor();
         MoveTree.theme_white_stones = MoveTree.theme_cache.white[white_theme][radius];
-        MoveTree.theme_black_stones = MoveTree.theme_cache.black[black_theme][radius];
+        if (data.get("one-color-go")) {
+            MoveTree.theme_black_stones = MoveTree.theme_cache.white[white_theme][radius];
+        } else {
+            MoveTree.theme_black_stones = MoveTree.theme_cache.black[black_theme][radius];
+        }
     }; /* }}} */
     addBindings(canvas) { /* {{{ */
         let self = this;

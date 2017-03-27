@@ -63,6 +63,9 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
                 this.selectTheme[k][theme.theme_name] = () => {
                     preferences.set(`goban-theme-${k}`, theme.theme_name);
+                    if (data.get("one-color-go") && k === "white" && theme.theme_name !== "Plain") {
+                        preferences.set(`goban-theme-black`, theme.theme_name);
+                    }
                     let up = {};
                     up[k] = theme.theme_name;
                     this.setState(up);
@@ -150,14 +153,14 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                 <div className="theme-set">
                     {GoThemes.black.sorted.map((theme, idx) => (
                         <div key={theme.theme_name}
-                            className={"selector" + (this.state.black === theme.theme_name ? " active" : "")}
+                            className={data.get("one-color-go") ? "" : ("selector" + (this.state.black === theme.theme_name ? " active" : "") )}
                             style={theme.styles}
                             onClick={this.selectTheme["black"][theme.theme_name]}
                             >
                             <PersistentElement elt={this.canvases.black[idx]} />
                         </div>
                     ))}
-                    {this.state.black === "Plain" &&
+                    {!data.get("one-color-go") && this.state.black === "Plain" &&
                         <div>
                             <input type="color" style={inputStyle} value={blackCustom} onChange={this.setCustom.bind(this, "black")} />
                             <button className="color-reset" onClick={this.setCustom.bind(this, "black")}><i className="fa fa-undo"/></button>
