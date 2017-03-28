@@ -1108,9 +1108,8 @@ export class User extends Resolver<UserProperties, any> {
                             ref="game_table"
                             name="game-history"
                             method="get"
-                            source={`games/`}
+                            source={`players/${this.user_id}/games/`}
                             filter={{
-                                "player": this.user_id,
                                 "source": "play",
                                 "ended__isnull": false,
                             }}
