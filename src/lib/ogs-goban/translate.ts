@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export let current_language = window["ogs_current_language"];
-export let languages = window["ogs_languages"];
-export let countries = window["ogs_countries"];
-export let locales = window["ogs_locales"];
+let win = typeof(window) === "undefined" ? {} : window;
+
+export let current_language = win["ogs_current_language"] || 'en';
+export let languages = win["ogs_languages"] || {'en': 'English'};
+export let countries = win["ogs_countries"] || {'en': {'us': 'United States'}};
+export let locales = win["ogs_locales"] || {'en': {}};
 export let sorted_locale_countries = [];
 
 

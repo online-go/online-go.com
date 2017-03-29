@@ -18,7 +18,7 @@ import {GoMath} from "./GoMath";
 import {GoEngine} from "./GoEngine";
 import {resizeDeviceScaledCanvas} from "./GoUtil";
 import {encodeMove} from "./GoEngine";
-import {GOBAN_FONT, Goban} from "./Goban";
+
 
 let __move_tree_id = 0;
 
@@ -46,7 +46,6 @@ export class MoveTree {
     private layout_y: any;
     private label_metrics: any;
     private label: any;
-    public marks: any;
     private active_path_: any;
     public move_number: number;
     private pretty_coordinates: any;
@@ -58,21 +57,25 @@ export class MoveTree {
     public wrong_answer: boolean;
     private hint_next: any;
     private player: any;
-    private isobranches: any;
     private line_color: any;
     public trunk: boolean;
     public text: string;
     private active_path_number: number;
-    private chatlog: any;
     private engine: GoEngine;
     public x: number;
     public y: number;
     public edited: boolean;
-    public pen_marks: any;
     private automark: any;
     private active_node_number: any;
     public state: any;
     private redraw_on_scroll: any;
+    public pen_marks: Array<any> = [];
+
+    /* These need to be protected by accessor methods now that we're not
+     * initializing them on construction */
+    private chatlog: Array<any>;
+    private marks: any;
+    private isobranches: any;
 
     constructor(engine, trunk, x, y, edited, player, move_number, parent, state) {
         this.id = ++__move_tree_id;
@@ -94,15 +97,11 @@ export class MoveTree {
         this.branches = [];
         this.active_path_number = 0;
         this.active_node_number = 0;
-        this.clearMarks();
+        //this.clearMarks();
         this.automark = null;
         this.line_color = -1;
 
         this.text = "";
-        this.chatlog = [];
-        this.pen_marks = [];
-
-        this.isobranches = [];
 
         this.correct_answer = null;
         this.wrong_answer = null;
@@ -115,7 +114,7 @@ export class MoveTree {
             y: this.y,
         };
 
-        if (this.pen_marks.length) {
+        if (this.pen_marks && this.pen_marks.length) {
             ret.pen_marks = this.pen_marks;
         }
         if (this.hasMarks()) {
@@ -174,7 +173,6 @@ export class MoveTree {
     }; /* }}} */
 
     recomputeIsobranches() { /* {{{ */
-        "use strict";
         if (this.parent) {
             throw new Error("MoveTree.recomputeIsobranches needs to be called from the root node");
         }
@@ -380,10 +378,28 @@ export class MoveTree {
             this.remove();
         }
     }; /* }}} */
+    getChatLog() {
+        if (!this.chatlog) {
+            this.chatlog = [];
+        }
+        return this.chatlog;
+    }
+    getAllMarks() {
+        if (!this.marks) {
+            this.clearMarks();
+        }
+        return this.marks;
+    }
+    setAllMarks(marks:any) {
+        this.marks = marks;
+    }
     clearMarks() { /* {{{ */
         this.marks = GoMath.makeObjectMatrix(this.engine.width, this.engine.height);
     }; /* }}} */
     hasMarks() { /* {{{ */
+        if (!this.marks) {
+            return false;
+        }
         for (let j = 0; j < this.marks.length; ++j) {
             for (let i = 0; i < this.marks[j].length; ++i) {
                 for (let k in this.marks[j][i]) {
@@ -394,6 +410,10 @@ export class MoveTree {
         return false;
     }; /* }}} */
     foreachMarkedPosition(fn) { /* {{{ */
+        if (!this.marks) {
+            return;
+        }
+
         for (let j = 0; j < this.marks.length; ++j) {
             for (let i = 0; i < this.marks[j].length; ++i) {
                 for (let k in this.marks[j][i]) {
@@ -451,22 +471,24 @@ export class MoveTree {
                 txt = this.text;
             }
 
-            if (this.chatlog.length) {
+            if (this.chatlog && this.chatlog.length) {
                 txt += "\n\n-- chat --\n";
                 for (let i = 0; i < this.chatlog.length; ++i) {
                     txt += this.chatlog[i].username + ": " + MoveTree.markupSGFChatMessage(this.chatlog[i].body, this.engine.width, this.engine.height) + "\n";
                 }
             }
 
-            for (let y = 0; y < this.marks.length; ++y) {
-                for (let x = 0; x < this.marks[0].length; ++x) {
-                    let m = this.marks[y][x];
-                    let pos = "abcdefghijklmnopqrstuvwxyz"[x] + "abcdefghijklmnopqrstuvwxyz"[y];
-                    if (m.triangle) { ret += "TR[" + pos + "]"; }
-                    if (m.square) { ret += "SQ[" + pos + "]"; }
-                    if (m.cross) { ret += "XX[" + pos + "]"; }
-                    if (m.circle) { ret += "CR[" + pos + "]"; }
-                    if (m.letter) { ret += "LB[" + pos + ":" + (m.letter).replace(/[\\]/, "\\\\").replace(/\]/g, "\\]").replace(/[[]/g, "\\[") + "]"; }
+            if (this.marks) {
+                for (let y = 0; y < this.marks.length; ++y) {
+                    for (let x = 0; x < this.marks[0].length; ++x) {
+                        let m = this.marks[y][x];
+                        let pos = "abcdefghijklmnopqrstuvwxyz"[x] + "abcdefghijklmnopqrstuvwxyz"[y];
+                        if (m.triangle) { ret += "TR[" + pos + "]"; }
+                        if (m.square) { ret += "SQ[" + pos + "]"; }
+                        if (m.cross) { ret += "XX[" + pos + "]"; }
+                        if (m.circle) { ret += "CR[" + pos + "]"; }
+                        if (m.letter) { ret += "LB[" + pos + ":" + (m.letter).replace(/[\\]/, "\\\\").replace(/\]/g, "\\]").replace(/[[]/g, "\\[") + "]"; }
+                    }
                 }
             }
 
@@ -532,6 +554,9 @@ export class MoveTree {
     }; /* }}} */
 
     getMarks(x, y):any { /* {{{ */
+        if (!this.marks) {
+            this.clearMarks();
+        }
         return this.marks[y][x];
     }; /* }}} */
     setActivePath(path_number) { /* {{{ */
@@ -690,8 +715,10 @@ export class MoveTree {
             this.branches[i].recursiveDrawPath(ctx, viewport);
         }
 
-        for (let i = 0; i < this.isobranches.length; ++i) {
-            this.drawIsoBranchTo(ctx, this.isobranches[i]);
+        if (this.isobranches) {
+            for (let i = 0; i < this.isobranches.length; ++i) {
+                this.drawIsoBranchTo(ctx, this.isobranches[i]);
+            }
         }
 
         /* only consider x, since lines can extend awhile on the y */
@@ -708,9 +735,11 @@ export class MoveTree {
         c.recomputeIsobranches();
 
         let ret:Array<MoveTree> = [];
-        for (let i = 0; i < this.isobranches.length; ++i) {
-            if (this.isobranches[i].trunk_next || this.isobranches[i].branches.length) {
-                ret.push(this.isobranches[i]);
+        if (this.isobranches) {
+            for (let i = 0; i < this.isobranches.length; ++i) {
+                if (this.isobranches[i].trunk_next || this.isobranches[i].branches.length) {
+                    ret.push(this.isobranches[i]);
+                }
             }
         }
 
@@ -840,7 +869,7 @@ export class MoveTree {
 
         MoveTree.layout_dirty = false;
         this.updateTheme(config.board);
-        MoveTree.labeling = Goban.getMoveTreeNumbering();
+        MoveTree.labeling = 'move-number';
 
         config.active_path_end.setActivePath(++MoveTree.active_path_number);
 
@@ -935,7 +964,7 @@ export class MoveTree {
         ctx.save();
         ctx.globalCompositeOperation = "source-over";
         let text_size = 10;
-        ctx.font = "bold " + text_size + "px " + GOBAN_FONT;
+        ctx.font = `bold ${text_size}px Verdana,Arial,sans-serif`;
         ctx.textBaseline = "middle";
         this.recursiveDrawStones(ctx, board, MoveTree.active_path_number, viewport);
         ctx.restore();

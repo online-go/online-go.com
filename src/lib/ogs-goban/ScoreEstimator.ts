@@ -22,7 +22,7 @@ import {_} from "./translate";
 /* manually init the module, we should be able to do this through the normal
  * require system but i can't figure it out right now */
 declare var OGSScoreEstimator;
-OGSScoreEstimator = OGSScoreEstimator();
+let OGSScoreEstimator_initialized = false;
 
 class SEGroup {
     points;
@@ -193,6 +193,11 @@ export class ScoreEstimator {
         //this.sealDame();
     }; /* }}} */
     estimateScore(trials, tolerance) { /* {{{ */
+        if (!OGSScoreEstimator_initialized) {
+            OGSScoreEstimator_initialized = true;
+            OGSScoreEstimator = OGSScoreEstimator();
+        }
+
         /* NEW STUFF */
         if (!trials) {
             trials = 1000;

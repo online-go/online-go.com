@@ -617,7 +617,7 @@ export abstract class Goban extends EventEmitter {
                     if (this.disconnectedFromGame) { return; }
 
                     if (move_obj.game_id !== this.game_id) {
-                        console.error("Invalid move for this game received [" + this.game_id + "]");
+                        console.error("Invalid move for this game received [" + this.game_id + "]", move_obj);
                         return;
                     }
                     let move = move_obj.move;

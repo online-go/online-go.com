@@ -16,7 +16,7 @@
 
 import {GoError} from "./GoError";
 import {MoveTree} from "./MoveTree";
-import {GoMath} from "./GoMath";
+import {GoMath, Move} from "./GoMath";
 import {GoStoneGroup} from "./GoStoneGroup";
 import {ScoreEstimator} from "./ScoreEstimator";
 import {_} from "./translate";
@@ -46,7 +46,6 @@ export function encodeMoves(lst) { /* {{{ */
 }; /* }}} */
 
 type PlayerColor = 0|1|2; /* 0 empty, 1 black, 2 white */
-type Move = {x:number, y:number, edited:boolean};
 
 export class GoEngine {
     public readonly black_player_id:number;
@@ -84,6 +83,9 @@ export class GoEngine {
     public undo_requested: number;
     public readonly white_player_id:number;
     public winner:'black'|'white';
+    public game_id:number;
+    public decoded_moves:Array<Move>;
+    public automatic_stone_removal:boolean;
 
     private aga_handicap_scoring;
     private allow_ko;
@@ -92,7 +94,6 @@ export class GoEngine {
     private black_prisoners;
     private board_is_repeating;
     private cb;
-    private decoded_moves;
     private dontStoreBoardHistory;
     private free_handicap_placement;
     private loading_sgf;
@@ -107,7 +108,7 @@ export class GoEngine {
     private white_prisoners;
 
 
-    constructor(config, cb, dontStoreBoardHistory?) { /* {{{ */
+    constructor(config, cb?, dontStoreBoardHistory?) { /* {{{ */
         try {
             /* We had a bug where we were filling in some initial state data incorrectly when we were dealing with
              * sgfs, so this code exists for sgf 'games' < 800k in the database.. -anoek 2014-08-13 */
@@ -245,7 +246,7 @@ export class GoEngine {
                 }
                 else {
                     try {
-                        this.place(mv.x, mv.y, false, false, false, true, true);
+                        this.place(mv.x, mv.y, false, false, true, true, true);
                     } catch (e) {
                         if (!("errors" in config)) {
                             config.errors = [];
@@ -531,24 +532,29 @@ export class GoEngine {
         }
     }; /* }}} */
 
+
+    private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) {
+        let idx = x + y * this.width;
+        if (done_array[idx]) {
+            return;
+        }
+        done_array[idx] = true;
+        fn_of_neighbor_pt(x, y);
+    }
     private foreachNeighbor(pt_or_group, fn_of_neighbor_pt) { /* {{{ */
-        let self = this;
-        let done_array;
-        let group;
         if (pt_or_group.constructor === Array) {
-            group = pt_or_group;
-            done_array = new Array(this.height * this.width);
+            let group = pt_or_group;
+            let done_array =  new Array(this.height * this.width);
             for (let i = 0; i < group.length; ++i) {
                 done_array[group[i].x + group[i].y * this.width] = true;
             }
 
-
             for (let i = 0; i < group.length; ++i) {
                 let pt = group[i];
-                if (pt.x - 1 >= 0)            { checkAndDo(pt.x - 1, pt.y); }
-                if (pt.x + 1 !== this.width)  { checkAndDo(pt.x + 1, pt.y); }
-                if (pt.y - 1 >= 0)            { checkAndDo(pt.x, pt.y - 1); }
-                if (pt.y + 1 !== this.height) { checkAndDo(pt.x, pt.y + 1); }
+                if (pt.x - 1 >= 0)            { this.foreachNeighbor_checkAndDo(pt.x - 1, pt.y, done_array, fn_of_neighbor_pt); }
+                if (pt.x + 1 !== this.width)  { this.foreachNeighbor_checkAndDo(pt.x + 1, pt.y, done_array, fn_of_neighbor_pt); }
+                if (pt.y - 1 >= 0)            { this.foreachNeighbor_checkAndDo(pt.x, pt.y - 1, done_array, fn_of_neighbor_pt); }
+                if (pt.y + 1 !== this.height) { this.foreachNeighbor_checkAndDo(pt.x, pt.y + 1, done_array, fn_of_neighbor_pt); }
             }
         } else {
             let pt = pt_or_group;
@@ -557,17 +563,7 @@ export class GoEngine {
             if (pt.y - 1 >= 0)            { fn_of_neighbor_pt(pt.x, pt.y - 1); }
             if (pt.y + 1 !== this.height) { fn_of_neighbor_pt(pt.x, pt.y + 1); }
         }
-
-        function checkAndDo(x, y) {
-            let idx = x + y * self.width;
-            if (done_array[idx]) {
-                return;
-            }
-            done_array[idx] = true;
-
-            fn_of_neighbor_pt(x, y);
-        }
-    }; /* }}} */
+    } /* }}} */
     /** Returns an array of x/y pairs of all the same color */
     private getGroup(x, y, clearMarks) { /* {{{ */
         let color = this.board[y][x];
@@ -598,19 +594,18 @@ export class GoEngine {
     }; /* }}} */
     /** Returns an array of groups connected to the given group */
     private getConnectedGroups(group) { /* {{{ */
-        let self = this;
         let gr = group;
         this.incrementCurrentMarker();
         this.markGroup(group);
         let ret = [];
         this.foreachNeighbor(group, (x, y) => {
-            if (self.board[y][x]) {
-                self.incrementCurrentMarker();
-                self.markGroup(gr);
+            if (this.board[y][x]) {
+                this.incrementCurrentMarker();
+                this.markGroup(gr);
                 for (let i = 0; i < ret.length; ++i) {
-                    self.markGroup(ret[i]);
+                    this.markGroup(ret[i]);
                 }
-                let g = self.getGroup(x, y, false);
+                let g = this.getGroup(x, y, false);
                 if (g.length) { /* can be zero if the peice has already been marked */
                     ret.push(g);
                 }
@@ -619,7 +614,6 @@ export class GoEngine {
         return ret;
     }; /* }}} */
     private getConnectedOpenSpace(group) { /* {{{ */
-        let self = this;
         let gr = group;
         this.incrementCurrentMarker();
         this.markGroup(group);
@@ -627,13 +621,13 @@ export class GoEngine {
         let included = {};
 
         this.foreachNeighbor(group, (x, y) => {
-            if (!self.board[y][x]) {
-                self.incrementCurrentMarker();
-                self.markGroup(gr);
+            if (!this.board[y][x]) {
+                this.incrementCurrentMarker();
+                this.markGroup(gr);
                 for (let i = 0; i < ret.length; ++i) {
-                    self.markGroup(ret[i]);
+                    this.markGroup(ret[i]);
                 }
-                let g = self.getGroup(x, y, false);
+                let g = this.getGroup(x, y, false);
                 for (let i = 0; i < g.length; ++i) {
                     if (!included[g[i].x + "," + g[i].y]) {
                         ret.push(g[i]);
@@ -645,15 +639,11 @@ export class GoEngine {
         return ret;
     }; /* }}} */
     private countLiberties(group) { /* {{{ */
-        let self = this;
         let ct = 0;
+        let counter = (x, y) => ct += this.board[y][x] ? 0 : 1;
         for (let i = 0; i < group.length; ++i) {
-            this.foreachNeighbor(group[i], process);
+            this.foreachNeighbor(group[i], counter);
         }
-        function process(x, y) {
-            ct += self.board[y][x] ? 0 : 1;
-        }
-
         return ct;
     }; /* }}} */
     private captureGroup(group) { /* {{{ */
@@ -780,9 +770,8 @@ export class GoEngine {
             //var trunk = this.loading_trunk_moves || (!this.cb || this.cb.mode === "play");
             let trunk = isTrunkMove ? true : false;
             //console.log("Trunk move: ", trunk, this.cb.mode);
+            //this.cur_move = this.cur_move.move(x, y, trunk, false, color, next_move_number, !this.dontStoreBoardHistory ? this.getState() : null);
             this.cur_move = this.cur_move.move(x, y, trunk, false, color, next_move_number, this.getState());
-
-
         } catch (e) {
             this.jumpTo(this.cur_move);
             /*
@@ -802,7 +791,7 @@ export class GoEngine {
             throw e;
         }
     }; /* }}} */
-    private isBoardRepeating() { /* {{{ */
+    public isBoardRepeating() { /* {{{ */
         let MAX_SUPERKO_SEARCH = 30; /* any more than this is probably a waste of time. This may be overkill even. */
         let current_state = this.getState();
         //var current_state = this.cur_move.state;
@@ -879,7 +868,7 @@ export class GoEngine {
     public resetMoveTree() { /* {{{ */
         let marks = null;
         if (this.move_tree) {
-            marks = this.move_tree.marks;
+            marks = this.move_tree.getAllMarks();
         }
 
         this.move_tree = new MoveTree(this, true, -1, -1, false, 0, 0, null, this.getState());
@@ -888,7 +877,7 @@ export class GoEngine {
         this.move_before_jump = null;
 
         if (marks) {
-            this.move_tree.marks = marks;
+            this.move_tree.setAllMarks(marks);
         }
 
         if ("initial_player" in this.config) {
@@ -1017,7 +1006,7 @@ export class GoEngine {
 
     /* Returns a details object containing the total score and the breakdown of the
      * scoring details */
-    public computeScore(only_prisoners) { /* {{{ */
+    public computeScore(only_prisoners?) { /* {{{ */
         let self = this;
         /*
         if (this.phase === "finished" && this.score && (!this.cb || this.cb.mode !== "analyze")) {
@@ -1221,7 +1210,7 @@ export class GoEngine {
             delete config["ladder"];
         }
     }}}
-    private static fillDefaults(game_obj) { /* {{{ */
+    public static fillDefaults(game_obj) { /* {{{ */
         if (!("phase" in game_obj)) { game_obj.phase = "play"; }
         if (!("rules" in game_obj)) { game_obj.rules = "japanese"; }
 
@@ -1458,7 +1447,7 @@ export class GoEngine {
 
         return game_obj;
     }; /* }}} */
-    private static clearRuleSettings(game_obj) { /* {{{ */
+    public static clearRuleSettings(game_obj) { /* {{{ */
         delete game_obj.allow_self_capture;
         delete game_obj.automatic_stone_removal;
         delete game_obj.allow_ko;
@@ -1781,4 +1770,3 @@ export class GoEngine {
     } /* }}} */
 
 }
-

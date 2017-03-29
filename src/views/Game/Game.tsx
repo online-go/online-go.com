@@ -1010,7 +1010,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     popupScores(color) {{{
         let goban = this.goban;
 
-        this.orig_marks = JSON.stringify(goban.engine.cur_move.marks);
+        this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
         goban.engine.cur_move.clearMarks();
 
         let only_prisoners = false;
@@ -1060,7 +1060,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         if (!this.showing_scores) {
             goban.hideScores();
         }
-        goban.engine.cur_move.marks = JSON.parse(this.orig_marks);
+        goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
         goban.redraw();
         $("#" + color + "-score-details").children().remove();
     }}}

@@ -16,6 +16,7 @@
 
 import {_, pgettext, interpolate} from "./translate";
 
+declare var $;
 let __deviceCanvasScalingRatio = null;
 
 /* Creates a non-blury canvas object. Most systems don't have an issue with

@@ -17,10 +17,10 @@
 import {GoStoneGroup} from "./GoStoneGroup";
 import {GoEngine} from './GoEngine';
 
-interface Move {
+export interface Move {
     x: number;
     y: number;
-    color: number;
+    color?: number;
     timedelta?: number;
     edited?: boolean;
 }
@@ -282,7 +282,7 @@ export class GoMath {
         }
         return ret;
     }; /* }}} */
-    private static encodeMoveToArray(mv) { /* {{{ */
+    public static encodeMoveToArray(mv) { /* {{{ */
         let arr = [mv.x, mv.y];
         arr.push(mv.timedelta ? mv.timedelta : -1);
         if (mv.edited) {
@@ -290,7 +290,7 @@ export class GoMath {
         }
         return arr;
     }; /* }}} */
-    private static encodeMovesToArray(moves) { /* {{{ */
+    public static encodeMovesToArray(moves) { /* {{{ */
         let ret = [];
         for (let i = 0; i < moves.length; ++i) {
             ret.push(GoMath.encodeMoveToArray(moves[i]));
