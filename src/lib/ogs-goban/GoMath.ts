@@ -300,6 +300,10 @@ export class GoMath {
 
     /* Returns a sorted move string, this is used in our stone removal logic */
     public static sortMoves(move_string) { /* {{{ */
+        if (!move_string) {
+            move_string = "";
+        }
+
         let moves = GoMath.decodeMoves(move_string);
         moves.sort((a, b) => {
             let av = (a.edited ? 1 : 0) * 10000 + a.x + a.y * 100;
