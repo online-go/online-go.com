@@ -123,7 +123,9 @@ export class GoEngine {
         GoEngine.fillDefaults(config);
 
         for (let k in config) {
-            this[k] = config[k];
+            if (k !== 'move_tree') {
+                this[k] = config[k];
+            }
         }
 
 
@@ -274,7 +276,6 @@ export class GoEngine {
         }
 
         function unpackMoveTree(cur, tree) {
-            //console.log("Unpacking : ", tree);
             cur.loadJsonForThisNode(tree);
             if (tree.trunk_next) {
                 let n = tree.trunk_next;

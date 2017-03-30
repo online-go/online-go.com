@@ -1885,10 +1885,9 @@ export abstract class Goban extends EventEmitter {
             this.move_selected = false;
             console.error(e);
             this.errorHandler(e);
+            this.emit("error");
             this.emit("update");
         }
-
-
     }; /* }}} */
     public setStrictSekiMode(tf) { /* {{{ */
         if (this.engine.phase !== "stone removal") {

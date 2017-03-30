@@ -106,6 +106,13 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             "draw_right_labels": true,
             "display_width": this.props.displayWidth || (Math.min($("body").width() - 50, $("#em10").width() * 2)),
             "square_size": "auto",
+
+            "puzzle_opponent_move_mode": "automatic",
+            "puzzle_player_move_mode": "free",
+            "getPuzzlePlacementSetting": () => {
+                return {"mode": "play"};
+            },
+
             "width" : (this.props.config ? this.props.config.width : 9),
             "height" : (this.props.config ? this.props.config.height : 9)
         }, this.props.config);
@@ -117,6 +124,18 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
                 this.props.onUpdate();
             }
         });
+
+        if (this.props.config['onCorrectAnswer']) {
+            this.goban.on("puzzle-correct-answer", this.props.config.onCorrectAnswer);
+        }
+        if (this.props.config['onWrongAnswer']) {
+            this.goban.on("puzzle-wrong-answer", this.props.config.onWrongAnswer);
+        }
+        if (this.props.config['onError']) {
+            this.goban.on("error", this.props.config.onError);
+        }
+
+
 
         /*
         if (opts.display_width <= 0) {
