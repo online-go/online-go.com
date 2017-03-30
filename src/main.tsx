@@ -263,7 +263,9 @@ const routes = (
         */}
         <Route path="/admin/tournament-schedule-list" component={AdminTournamentScheduleList}/>
         <Route path="/moderator" component={Moderator}/>
+        <Route path="/learn-to-play-go/:step" component={Tutorial}/>
         <Route path="/learn-to-play-go" component={Tutorial}/>
+        <Route path="/docs/learn-to-play-go/:step" component={Tutorial}/>
         <Route path="/docs/learn-to-play-go" component={Tutorial}/>
 
         <Route path="/styling" component={Styling}/>
