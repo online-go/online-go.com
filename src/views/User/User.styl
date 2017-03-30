@@ -131,25 +131,28 @@
         margin-left: -0.2rem;
         min-height: 10em;
     }
-
-    span.UserRating {
-        span.frac {
-            font-size: 100%;
-            themed color shade2
-        }
-        sup {
-            padding-left: 0.2em;
-        }
+    
+    .progress-bar.left {
+        position: relative;
+        text-align: left;
     }
 
     .progress-bar.right {
+        position: relative;
         text-align: right;
-        span.UserRating {
-            padding-right: 0.5rem;
-            span.frac, sub, sup {
-                themed color colored-background-fg
-            }
-        }
+    }
+
+    .progress-bar.left span {
+        position: relative;
+        left: 100%;
+        padding-left: 0.5rem;
+        themed color shade2
+    }
+
+    .progress-bar.right span {
+        position: relative;
+        padding-right: 0.5rem;
+        themed color colored-background-fg
     }
 
     .fa-circle-o, .fa-bolt, .fa-clock-o, .ogs-turtle:before {

@@ -51,9 +51,13 @@ interface UserProperties {
 
 let UserRating = (props: {rating: number}) => {
     let wholeRating = Math.floor(props.rating);
-    let tenthsRating = Math.floor(props.rating * 10) % 10;
-    //return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
     return <span className="UserRating">{wholeRating}</span>;
+};
+
+let rating_percentage = (rating: number) => {
+    rating %= 100;
+    rating = rating >= 0 ? rating : rating + 100;
+    return rating;
 };
 
 let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
@@ -912,10 +916,9 @@ export class User extends Resolver<UserProperties, any> {
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking}></Rank>&nbsp;</td>
                                     <td width="99%">
                                         <div className="progress">
-                                            <div className="progress-bar right primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}} >
-                                                {((1000 + user.rating) % 100.0 >= 50) && <span ><UserRating rating={user.rating} /></span>}
+                                            <div className={"progress-bar primary " + (rating_percentage(user.rating) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating) + "%"}} >
+                                                <UserRating rating={user.rating} />
                                             </div>
-                                            {((1000 + user.rating) % 100.0 < 50) && <span ><UserRating rating={user.rating}/></span>}
                                         </div>
                                     </td>
                                     <td style={nowrapAlignTop}>&nbsp;<Rank ranking={user.ranking + 1}></Rank></td>
@@ -925,10 +928,9 @@ export class User extends Resolver<UserProperties, any> {
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_blitz}></Rank>&nbsp;</td>
                                     <td width="99%">
                                         <div className="progress">
-                                            <div className="progress-bar right reject" style={{width: ((1000 + user.rating_blitz) % 100.0) + "%"}}>
-                                                {((1000 + user.rating_blitz) % 100.0 >= 50) && <span ><UserRating rating={user.rating_blitz} /></span>}
+                                            <div className={"progress-bar reject " + (rating_percentage(user.rating_blitz) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_blitz) + "%"}} >
+                                                <UserRating rating={user.rating_blitz} />
                                             </div>
-                                            {((1000 + user.rating_blitz) % 100.0 < 50) && <span ><UserRating rating={user.rating_blitz}/></span>}
                                         </div>
                                     </td>
                                     <td style={nowrapAlignTop}>&nbsp;<Rank ranking={user.ranking_blitz + 1}></Rank></td>
@@ -938,10 +940,9 @@ export class User extends Resolver<UserProperties, any> {
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_live}></Rank>&nbsp;</td>
                                     <td width="99%">
                                         <div className="progress">
-                                            <div className="progress-bar right danger" style={{width: ((1000 + user.rating_live) % 100.0) + "%"}}>
-                                                {((1000 + user.rating_live) % 100.0 >= 50) && <span ><UserRating rating={user.rating_live}/></span>}
+                                            <div className={"progress-bar danger " + (rating_percentage(user.rating_live) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_live) + "%"}} >
+                                                <UserRating rating={user.rating_live} />
                                             </div>
-                                            {((1000 + user.rating_live) % 100.0 < 50) && <span ><UserRating rating={user.rating_live}/></span>}
                                         </div>
                                     </td>
                                     <td style={nowrapAlignTop}>&nbsp;<Rank ranking={user.ranking_live + 1}></Rank></td>
@@ -951,10 +952,9 @@ export class User extends Resolver<UserProperties, any> {
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_correspondence}></Rank>&nbsp;</td>
                                     <td width="99%">
                                         <div className="progress">
-                                            <div className="progress-bar right info" style={{width: ((1000 + user.rating_correspondence) % 100.0) + "%"}}>
-                                                {((1000 + user.rating_correspondence) % 100.0 >= 50) && <span ><UserRating rating={user.rating_correspondence}/></span>}
+                                            <div className={"progress-bar info " + (rating_percentage(user.rating_correspondence) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_correspondence) + "%"}} >
+                                                <UserRating rating={user.rating_correspondence} />
                                             </div>
-                                            {((1000 + user.rating_correspondence) % 100.0 < 50) && <span ><UserRating rating={user.rating_correspondence}/></span>}
                                         </div>
                                     </td>
                                     <td style={nowrapAlignTop}>&nbsp;<Rank ranking={user.ranking_correspondence + 1}></Rank></td>
