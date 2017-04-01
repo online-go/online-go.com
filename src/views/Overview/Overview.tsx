@@ -34,6 +34,7 @@ import {longRankString, errorAlerter} from "misc";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
+import {EmailBanner} from "EmailBanner";
 
 
 
@@ -78,6 +79,7 @@ export class Overview extends React.Component<{}, any> {
         return (
         <div id="Overview-Container">
             <AdUnit unit="cdm-zone-01" nag/>
+            <EmailBanner />
             <div id="Overview">
                 <div className="left">
                     <ChallengesList />

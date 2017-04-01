@@ -751,8 +751,10 @@ export class Chat extends React.Component<ChatProperties, any> {
                         }
 
                         <TabCompleteInput ref="input" type="text" className={this.state.rtl_mode ? "rtl" : ""}
-                               placeholder={this.state.show_say_hi_placeholder ? _("Say hi!") : ""}
-                               disabled={data.get("user").anonymous}
+                               placeholder={
+                                   !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated") :
+                                       this.state.show_say_hi_placeholder ? _("Say hi!") : ""}
+                               disabled={data.get("user").anonymous || !data.get('user').email_validated}
                                onKeyPress={this.onKeyPress}
                                />
 

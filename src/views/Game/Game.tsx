@@ -2526,7 +2526,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                     }
                 </div>
                 <div className="chat-input-container input-group">
-                    {(this.props.userIsPlayer || null) &&
+                    {((this.props.userIsPlayer && data.get('user').email_validated) || null) &&
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleChatLog}
@@ -2535,13 +2535,14 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         </button>
                     }
                     <TabCompleteInput className={`chat-input  ${this.state.chat_log}`}
-                        disabled={user.anonymous}
+                        disabled={user.anonymous || !data.get('user').email_validated}
                         placeholder={user.anonymous
                             ? _("Login to chat")
-                            : (this.state.chat_log === "malkovich"
-                                ? _("Leave a note that will only be visible after the game")
-                                : _("Say hi!")
-                              )
+                            : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
+                                : (this.state.chat_log === "malkovich"
+                                    ? _("Leave a note that will only be visible after the game")
+                                    : _("Say hi!")
+                                  )
                         }
                         onKeyPress={this.onKeyPress}
                     />

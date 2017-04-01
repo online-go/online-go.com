@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
-import {errorAlerter} from "misc";
+import {errorAlerter, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
 import {sfx} from "goban";
@@ -244,6 +244,9 @@ export class Settings extends React.PureComponent<{}, any> {
                 email_changed: false,
                 email_message: _("Email updated successfully!")
             });
+            post('me/validateEmail', {})
+            .then(() => {})
+            .catch(ignore);
         }).catch(errorAlerter);
         /*
         swal({
@@ -300,6 +303,13 @@ export class Settings extends React.PureComponent<{}, any> {
         });
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
+    resendValidationEmail = () => {
+        post(`me/validateEmail`, {})
+        .then(() => {
+            swal("Validation email sent! Please check your email and click the validation link.");
+        })
+        .catch(errorAlerter);
+    }
 
     render() {
         let user = data.get("user");
@@ -443,7 +453,15 @@ export class Settings extends React.PureComponent<{}, any> {
                             {this.emailIsValid() ? _("Update email address") : _("Email address is not valid")}
                         </button>
                     }
-                    {(!this.state.email_changed || null) && this.state.email_message}
+                    {this.state.email_message && <div>{this.state.email_message}</div>}
+                    {!data.get('user').email_validated &&
+                        <div>
+                            <div className='awaiting-validation-text'>
+                                {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}
+                            </div>
+                            <button onClick={this.resendValidationEmail}>{_("Resend validation email")}</button>
+                        </div>
+                    }
                     </dd>
 
                     <dt>{_("Password")}</dt>

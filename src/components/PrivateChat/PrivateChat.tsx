@@ -17,6 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
+import {_} from 'translate';
 import data from "data";
 import ITC from "ITC";
 import {splitOnBytes} from "misc";
@@ -226,6 +227,10 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
+            if (!data.get('user').email_validated) {
+                return;
+            }
+
             if (ev.keyCode === 13) {
                 if (input.val().trim() === "") {
                     return false;
@@ -234,6 +239,12 @@ class PrivateChat {
                 return false;
             }
         });
+
+        if (!data.get('user').email_validated) {
+            input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
+            input.attr("disabled", "disabled");
+        }
+
 
         (input as any).nicknameTabComplete();
         this.dom.append(input);

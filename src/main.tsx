@@ -78,6 +78,7 @@ import {RatingHistory} from "RatingHistory";
 import {Settings} from "Settings";
 import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
+import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
 
 declare const swal;
@@ -281,6 +282,7 @@ const routes = (
         <Route path="/docs/changelog" component={docs.ChangeLog}/>
         <Route path="/docs/team" component={docs.Team}/>
         <Route path="/docs/other-go-resources" component={docs.GoResources}/>
+        <Route path="/user/verifyEmail" component={VerifyEmail}/>
 
         <Route path="/*" component={PageNotFound}/>
     </Route>
