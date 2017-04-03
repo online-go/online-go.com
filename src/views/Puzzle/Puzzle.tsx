@@ -300,7 +300,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             this.reset();
 
             let bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
-            new_state.zoomable = bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1;
+            new_state.zoomable = bounds && (bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1);
 
             this.setState(new_state);
             this.onResize(true);
@@ -1156,7 +1156,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                         <div className="padded">
                             <div className="space-around">
                                 <select ref="puzzle_type" value={this.state.puzzle.puzzle_type} onChange={this.setPuzzleType}>
-                                    <option value="">-- {_("Type")} --</option> 
+                                    <option value="">-- {_("Type")} --</option>
                                     <option value="life_and_death">{_("Life and Death")}</option>
                                     <option value="joseki">{_("Joseki")}</option>
                                     <option value="fuseki">{_("Fuseki")}</option>
@@ -1273,7 +1273,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                                 <i className="fa fa-trash"></i>
                             </button>
                         </div>
-     
+
                         <Resizable id="move-tree-container" className="vertically-resizable" >
                             <canvas id="move-tree-canvas"></canvas>
                         </Resizable>
@@ -1338,11 +1338,11 @@ export class PuzzleSettingsModal extends React.PureComponent<PuzzleSettingsModal
             <div className="PuzzleSettingsModal">
                 <div className="details">
                     <div className="option">
-                        <input id="transform" type="checkbox" checked={this.state.randomize_transform} onChange={this.toggleTransform} /> 
+                        <input id="transform" type="checkbox" checked={this.state.randomize_transform} onChange={this.toggleTransform} />
                         <label htmlFor="transform">{_("Randomly transform puzzles")}</label>
                     </div>
                     <div className="option">
-                        <input id="color" type="checkbox" checked={this.state.randomize_color}  onChange={this.toggleColor} /> 
+                        <input id="color" type="checkbox" checked={this.state.randomize_color}  onChange={this.toggleColor} />
                         <label htmlFor="color">{_("Randomize colors")}</label>
                     </div>
                 </div>
