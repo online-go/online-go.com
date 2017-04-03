@@ -120,11 +120,11 @@ function stone_normal(x, y, radius) { /* {{{ */
 
     return ret;
 } /* }}} */
-function square_size(radius) { /* {{{ */
-    return 2 * Math.ceil(radius) + 1;
+function square_size(radius, scaled) { /* {{{ */
+    return 2 * Math.ceil(radius) + (scaled ? 0 : 1);
 } /* }}} */
-function stone_center_in_square(radius) { /* {{{ */
-    return Math.ceil(radius) + 0.5;
+function stone_center_in_square(radius, scaled) { /* {{{ */
+    return Math.ceil(radius) + (scaled ? 0 : 0.5);
 } /* }}} */
 function copyAlpha(ctx, width, height) { /* {{{ */
     if (width <= 0 || height <= 0) {
@@ -158,11 +158,8 @@ function pasteAlpha(ctx, alpha, width, height) { /* {{{ */
     }
     ctx.putImageData(image, 0, 0);
 } /* }}} */
-function applyPhongShading(ctx, width, height, radius, ambient, specular_hardness, diffuse_light_distance, specular_light_distance, light) { /* {{{ */
-    let image = ctx.getImageData(0, 0, width, height);
-
-    let ss = square_size(radius);
-    let center = stone_center_in_square(radius);
+function applyPhongShading(ctx, ss, center, radius, ambient, specular_hardness, diffuse_light_distance, specular_light_distance, light) { /* {{{ */
+    let image = ctx.getImageData(0, 0, ss, ss);
 
     let r2 = (radius + 1) * (radius + 1); /* alpha will save us from overrunning the image*/
     let look = [0, 0, 1];
@@ -218,11 +215,12 @@ function clearAboveColor(ctx, width, height, r, g, b) { /* {{{ */
     ctx.putImageData(image, 0, 0);
 } /* }}} */
 function preRenderStone(radius, seed, options) { /* {{{ */
-    radius *= deviceCanvasScalingRatio();
 
-    //var ss = radius*2; /* Square size */
-    let ss = square_size(radius);
-    let center = stone_center_in_square(radius);
+    let dcsr = deviceCanvasScalingRatio();
+    radius *= dcsr;
+
+    let ss = square_size(radius, dcsr !== 1.0);
+    let center = stone_center_in_square(radius, dcsr !== 1.0);
     let sss = radius * 2.5; /* Shadow square size */
 
     let stone;
@@ -328,7 +326,7 @@ function preRenderStone(radius, seed, options) { /* {{{ */
         }
     } /* }}} */
 
-    applyPhongShading(ctx, ss, ss, radius, options.ambient, options.specular_hardness, options.diffuse_light_distance, options.specular_light_distance, options.light);
+    applyPhongShading(ctx, ss, center, radius, options.ambient, options.specular_hardness, options.diffuse_light_distance, options.specular_light_distance, options.light);
 
     if (! stoneCastsShadow(radius)) {
         ctx.beginPath();
@@ -359,35 +357,40 @@ function preRenderStone(radius, seed, options) { /* {{{ */
     return [{"stone": stone[0], "shadow": shadow[0]}];
 } /* }}} */
 function placeRenderedStone(ctx, shadow_ctx, stone, cx, cy, radius) {{{
-    let ss = square_size(radius);
-    let center = stone_center_in_square(radius);
-
-    let sx = cx - center;
-    let sy = cy - center;
 
     let dcsr = deviceCanvasScalingRatio();
     if (dcsr !== 1.0) {
+        let center = stone_center_in_square(radius * dcsr, true) / dcsr;
+        let ss = square_size(radius * dcsr, true) / dcsr;
+
+        let sx = cx - center;
+        let sy = cy - center;
+
         if (shadow_ctx) {
             shadow_ctx.drawImage(stone.shadow, sx, sy, radius * 2.5, radius * 2.5);
         }
         ctx.drawImage(stone.stone, sx, sy, ss, ss);
     } else {
+        let center = stone_center_in_square(radius, false);
+
+        let sx = cx - center;
+        let sy = cy - center;
+
         if (shadow_ctx) {
             shadow_ctx.drawImage(stone.shadow, sx, sy);
         }
         ctx.drawImage(stone.stone, sx, sy);
     }
+
 }}}
 function stoneCastsShadow(radius) {{{
     return radius >= 10;
 }}}
 
-
-
 export default function(GoThemes) {
     class Common extends GoTheme {
         stoneCastsShadow(radius) {
-            return stoneCastsShadow(radius);
+            return stoneCastsShadow(radius * deviceCanvasScalingRatio());
         }
         placeBlackStone(ctx, shadow_ctx, stone, cx, cy, radius) {
             placeRenderedStone(ctx, shadow_ctx, stone, cx, cy, radius);
