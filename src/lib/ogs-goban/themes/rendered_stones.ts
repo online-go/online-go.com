@@ -218,7 +218,6 @@ function clearAboveColor(ctx, width, height, r, g, b) { /* {{{ */
     ctx.putImageData(image, 0, 0);
 } /* }}} */
 function preRenderStone(radius, seed, options) { /* {{{ */
-    radius *= deviceCanvasScalingRatio();
 
     //var ss = radius*2; /* Square size */
     let ss = square_size(radius);
@@ -359,24 +358,17 @@ function preRenderStone(radius, seed, options) { /* {{{ */
     return [{"stone": stone[0], "shadow": shadow[0]}];
 } /* }}} */
 function placeRenderedStone(ctx, shadow_ctx, stone, cx, cy, radius) {{{
-    let ss = square_size(radius);
+
     let center = stone_center_in_square(radius);
 
     let sx = cx - center;
     let sy = cy - center;
 
-    let dcsr = deviceCanvasScalingRatio();
-    if (dcsr !== 1.0) {
-        if (shadow_ctx) {
-            shadow_ctx.drawImage(stone.shadow, sx, sy, radius * 2.5, radius * 2.5);
-        }
-        ctx.drawImage(stone.stone, sx, sy, ss, ss);
-    } else {
-        if (shadow_ctx) {
-            shadow_ctx.drawImage(stone.shadow, sx, sy);
-        }
-        ctx.drawImage(stone.stone, sx, sy);
+    if (shadow_ctx) {
+        shadow_ctx.drawImage(stone.shadow, sx, sy);
     }
+    ctx.drawImage(stone.stone, sx, sy);
+
 }}}
 function stoneCastsShadow(radius) {{{
     return radius >= 10;
