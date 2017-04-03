@@ -44,10 +44,10 @@ export class EmailBanner extends React.PureComponent<EmailBannerProperties, any>
         return (
             <div className="EmailBanner-container">
                 <div className="EmailBanner">
-                    {_("Welcome to OGS! Feel free to start playing games. In an effort to reduce spam and limit trolls, chat is disabled for all users until their email address has been validated. To validate your email address, simply click the activation link that has been sent to you!")}
+                    {_("Welcome to OGS! Feel free to start playing games. In an effort to reduce spam and limit trolls, chat is disabled for all users until their email address has been validated. To validate your email address, simply click the activation link that has been sent to you.")}
                     <br/>
                     <br/>
-                    {_("You can visit the settings page to update your email address or resend the validation email")}
+                    {_("You can visit the settings page to update your email address or resend the validation email.")}
                     <button className='primary' onClick={this.viewSettings}>{_("Go to settings")} &rarr;</button>
                 </div>
             </div>

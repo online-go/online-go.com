@@ -244,9 +244,6 @@ export class Settings extends React.PureComponent<{}, any> {
                 email_changed: false,
                 email_message: _("Email updated successfully!")
             });
-            post('me/validateEmail', {})
-            .then(() => {})
-            .catch(ignore);
         }).catch(errorAlerter);
         /*
         swal({
