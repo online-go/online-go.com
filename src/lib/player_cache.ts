@@ -120,6 +120,11 @@ function watch(player_id: number, cb: (player: any, player_id?: number) => void)
 }
 
 function fetch(player_id: number, required_fields?: Array<string>): Promise<any> {
+    if (!player_id) {
+        console.error("Attempted to fetch invalid player id: ", player_id);
+        return Promise.reject("invalid player id");
+    }
+
     let missing_fields = [];
 
     if (player_id in cache) {
@@ -138,12 +143,15 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
         if (have_cached_copy) {
             return Promise.resolve(cache[player_id]);
         }
+
+        console.error("Fetching ", player_id, " for fields ", missing_fields);
+    } else {
+        console.error("Fetching ", player_id, " because no user information was in our cache");
     }
+
     if (player_id in active_fetches) {
         return active_fetches[player_id];
     }
-
-    console.error("Fetching ", player_id, " for fields ", missing_fields);
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
         get(`players/${player_id}`)

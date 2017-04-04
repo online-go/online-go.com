@@ -2136,9 +2136,13 @@ export class Game extends OGSComponent<GameProperties, any> {
             <div className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
-                  player_cache.fetch(engine.players[color].id, ["country"]).then((player) => {
-                    Object.assign(engine.players[color], player);
-                  });
+                  if (engine.players[color].id) {
+                      player_cache.fetch(engine.players[color].id, ["country"]).then((player) => {
+                          Object.assign(engine.players[color], player);
+                      }).catch(ignore);
+                  } else {
+                      Object.assign(engine.players[color], {"country": "un"});
+                  }
                   if (engine.players[color] && this.state.player_icons[engine.players[color].id]) {
                       player_bg.backgroundImage = `url("${this.state.player_icons[engine.players[color].id]}")`;
                   }
