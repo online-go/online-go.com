@@ -17,6 +17,7 @@
 
 import {get} from "requests";
 
+const player_cache_debug_enabled = false;
 let cache: {[id: number]: any} = {};
 let cache_by_username: {[username: string]: any} = {};
 let active_fetches: {[id: number]: Promise<any>} = {};
@@ -144,9 +145,13 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
             return Promise.resolve(cache[player_id]);
         }
 
-        console.error("Fetching ", player_id, " for fields ", missing_fields);
+        if (player_cache_debug_enabled) {
+            console.error("Fetching ", player_id, " for fields ", missing_fields);
+        }
     } else {
-        console.error("Fetching ", player_id, " because no user information was in our cache");
+        if (player_cache_debug_enabled) {
+            console.error("Fetching ", player_id, " because no user information was in our cache");
+        }
     }
 
     if (player_id in active_fetches) {
@@ -154,8 +159,11 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
     }
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
-        get(`players/${player_id}`)
+        get(`/termination-api/player/${player_id}`)
         .then((player) => {
+            if ('icon-url' in player) {
+                player.icon = player['icon-url']; /* handle stupid inconsistency in API */
+            }
             delete active_fetches[player_id];
             update(player);
             if (required_fields) {

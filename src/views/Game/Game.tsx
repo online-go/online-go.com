@@ -506,7 +506,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                 for (let color in this.goban.engine.players) {
                     getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
                         urls[this.goban.engine.players[color].id] = url;
-                        this.setState({player_icons: Object.assign({}, urls)});
+                        this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
                     });
                 }
             } catch (e) {
@@ -514,8 +514,19 @@ export class Game extends OGSComponent<GameProperties, any> {
             this.sync_state();
         });
         if (this.review_id) {
-            this.goban.on("review.updated", () => {
+            this.goban.on("review.updated", (e) => {
                 this.sync_state();
+                if (this.goban.engine.players.white.id && !this.state.player_icons[this.goban.engine.players.white.id]) {
+                    for (let color in this.goban.engine.players) {
+                        getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
+                            setTimeout(() => {
+                                let urls = {};
+                                urls[this.goban.engine.players[color].id] = url;
+                                this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
+                            }, 1);
+                        });
+                    }
+                }
             });
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
@@ -526,6 +537,13 @@ export class Game extends OGSComponent<GameProperties, any> {
         if (this.game_id) {
             get(`games/${this.game_id}`)
             .then((game) => {
+                if (game.players.white.id) {
+                    player_cache.update(game.players.white, true);
+                }
+                if (game.players.black.id) {
+                    player_cache.update(game.players.black, true);
+                }
+
                 let review_list = [];
                 for (let k in game.gamedata.reviews) {
                     review_list.push({
@@ -1106,8 +1124,8 @@ export class Game extends OGSComponent<GameProperties, any> {
         if (this.goban) {
             /* Is player? */
             try {
-                for (let player in this.goban.engine.players) {
-                    if (this.goban.engine.players[player].id === data.get("user").id) {
+                for (let color in this.goban.engine.players) {
+                    if (this.goban.engine.players[color].id === data.get("user").id) {
                         new_state.user_is_player = true;
                         break;
                     }
