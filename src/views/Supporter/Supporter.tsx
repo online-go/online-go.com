@@ -455,9 +455,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     </div>
 
                                     <div className="name">
-                                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("Name")} autoComplete="fname" required={true}
+                                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("First Name")} autoComplete="fname" required={true}
                                             value={this.state.fname} onChange={this.updateFname}/>
-                                        <input ref="lname" name="lname" type="text" className="lname" placeholder="" autoComplete="lname" required={true}
+                                        <input ref="lname" name="lname" type="text" className="lname" placeholder={_("Last Name")} autoComplete="lname" required={true}
                                             value={this.state.lname} onChange={this.updateLname}/>
                                     </div>
                                     <div className="email">
