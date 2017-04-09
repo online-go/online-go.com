@@ -906,7 +906,7 @@ export class User extends Resolver<UserProperties, any> {
 
                             <div className="progress">
                                 <div className="progress-bar success" style={{width: this.state.statistics.winPerc + "%"}}>{this.state.statistics.wins || <span>&nbsp;</span>}</div>
-                                <div className="progress-bar primary" style={{width: this.state.statistics.lossPerc + "%"}}>{this.state.statistics.losses || <span>&nbsp;</span>}</div>
+                                <div className="progress-bar reject" style={{width: this.state.statistics.lossPerc + "%"}}>{this.state.statistics.losses || <span>&nbsp;</span>}</div>
                                 <div className="progress-bar info" style={{width: this.state.statistics.drawPerc + "%"}}>{this.state.statistics.draws || <span>&nbsp;</span>}</div>
                             </div>
 
