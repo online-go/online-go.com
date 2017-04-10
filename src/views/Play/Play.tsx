@@ -25,7 +25,7 @@ import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl} from "TimeControl";
 import {createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
-import {errorAlerter} from "misc";
+import {errorAlerter, rulesText} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import data from "data";
@@ -127,6 +127,26 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
 
+    cellBreaks(amount) {
+        let result = [];
+        for (let i = 0; i < amount; ++i) {
+            result.push(<span className="cell break"></span>);
+        }
+        return result;
+    }
+
+    gameListHeaders() {
+        return <div className="challenge-row">
+            <span className="head"></span>
+            <span className="head">{_("Player")}</span>
+            <span className="head">{_("Size")}</span>
+            <span className="head">{_("Time")}</span>
+            <span className="head">{_("Ranked")}</span>
+            <span className="head">{_("Handicap")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
+        </div>;
+    }
 
     render() {
         if (!data.get("user").setup_rank_set) {
@@ -151,111 +171,69 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div id="challenge-list">
                         <div className="challenge-row">
                             <span className="cell break" colSpan={2}>{_("Short Games")}</span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
+                            {this.cellBreaks(7)}
                         </div>
 
-                        <div className="challenge-row">
-                            <span className="head"></span>
-                            <span className="head">{_("Player")}</span>
-                            <span className="head">{_("Size")}</span>
-                            <span className="head">{_("Time")}</span>
-                            <span className="head">{_("Ranked")}</span>
-                            <span className="head">{_("Handicap")}</span>
-                            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
-                        </div>
-                        {this.state.live_list.map((C, idx) => (
-                            <div key={idx} className="challenge-row">
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
-                                    {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
-                                    {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
-                                </span>
-                                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                                    <Player user={this.extractUser(C)}/>
-                                </span>
-                                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
-                                    {C.width}x{C.height}
-                                </span>
-                                <span className={"cell " + ((C.time_per_move > 3600 || C.time_per_move === 0) ? "bold" : "")}>
-                                    {shortShortTimeControl(C.time_control_parameters)}
-                                </span>
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {C.ranked_text}
-                                </span>
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {C.handicap_text}
-                                </span>
-                                <span className="cell" style={{textAlign: "left"}}>
-                                    {C.name}
-                                </span>
-                            </div>
-                        ))}
+                        {this.gameListHeaders()}
 
-                        <div style={{marginTop: "2em"}}>
-                        </div>
+                        {this.gameList(true)}
+
+                        <div style={{marginTop: "2em"}}></div>
 
                         <div className="challenge-row" style={{marginTop: "1em"}}>
                             <span className="cell break" colSpan={2}>{_("Long Games")}</span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                            <span className="cell break"></span>
-                        </div>
-                        <div className="challenge-row">
-                            <span className="head"></span>
-                            <span className="head">{_("Player")}</span>
-                            <span className="head">{_("Size")}</span>
-                            <span className="head">{_("Time")}</span>
-                            <span className="head">{_("Ranked")}</span>
-                            <span className="head">{_("Handicap")}</span>
-                            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
+                            {this.cellBreaks(7)}
                         </div>
 
-                        {this.state.correspondence_list.map((C, idx) => (
-                            <div key={idx} className="challenge-row">
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
-                                    {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
-                                    {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
-                                </span>
-                                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                                    <Player user={this.extractUser(C)}/>
-                                </span>
-                                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
-                                    {C.width}x{C.height}
-                                </span>
-                                <span className="cell">
-                                    {shortShortTimeControl(C.time_control_parameters)}
-                                </span>
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {C.ranked_text}
-                                </span>
-                                <span className="cell" style={{textAlign: "center"}}>
-                                    {C.handicap_text}
-                                </span>
-                                <span className="cell" style={{textAlign: "left"}}>
-                                    {C.name}
-                                </span>
-                            </div>
-                        ))}
+                        {this.gameListHeaders()}
+
+                        {this.gameList(false)}
                     </div>
                   </div>
                 </div>
 
-
-
             </div>
         );
     }
-}
 
+    gameList(isLive: boolean) {
+        let timeControlClassName = (config) => {
+            let isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
+            return "cell " + (isBold ? "bold" : "");
+        };
+
+        let commonSpan = (text: string, align: string) => {
+            return <span className="cell" style={{textAlign: align}}>
+                {text}
+            </span>;
+        };
+
+        let gameList = isLive ? this.state.live_list : this.state.correspondence_list;
+
+        return gameList.map((C, idx) => (
+            <div key={idx} className="challenge-row">
+                <span className="cell" style={{textAlign: "center"}}>
+                    {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
+                    {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
+                    {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
+                </span>
+                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                    <Player user={this.extractUser(C)}/>
+                </span>
+                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                    {C.width}x{C.height}
+                </span>
+                <span className={timeControlClassName(C)}>
+                    {shortShortTimeControl(C.time_control_parameters)}
+                </span>
+                {commonSpan(C.ranked_text, "center")}
+                {commonSpan(C.handicap_text, "center")}
+                {commonSpan(C.name, "left")}
+                {commonSpan(rulesText(C.rules), "left")}
+            </div>
+        ));
+    }
+}
 
 function challenge_sort(A, B) {
     if (A.eligible && !B.eligible) { return -1; }
