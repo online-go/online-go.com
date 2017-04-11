@@ -67,11 +67,6 @@ export class About extends React.Component<{}, any> {
                         <Link to="/developer">Developers</Link>
                     </h4>
 
-                    <h4 className="about-links">
-                        <a href="https://ogs.uservoice.com/" target="_blank">{_("Feature Requests & Suggestions")}</a>
-                        <a href="https://github.com/online-go/online-go.com/">GitHub</a>
-                    </h4>
-
                     <hr/>
 
                     <div className="about-links">
