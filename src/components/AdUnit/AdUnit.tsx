@@ -91,8 +91,8 @@ function refresh_ads() {
     refresh_delay_timeout = setTimeout(() => {
         if (window["factorem"]) {
             //console.info("Refreshing ads. Current adZones ", factorem.adZones);
-            factorem.minimumRefresh = 0;
-            factorem.refreshAds();
+            //factorem.minimumRefresh = 0;
+            factorem.refreshAds([1, 2], true);
             //console.info("Refreshed ads. New adZones ", factorem.adZones);
             clearTimeout(failsafe);
             refresh_delay_timeout = null;
