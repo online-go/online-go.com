@@ -1953,8 +1953,8 @@ export abstract class Goban extends EventEmitter {
     }; /* }}} */
     public computeMetrics() { /* {{{ */
         if (this.square_size <= 0) {
-            console.error("Non positive square size set", this.square_size);
-            console.error(new Error().stack);
+            //console.error("Non positive square size set", this.square_size);
+            //console.error(new Error().stack);
             this.square_size = 1;
         }
 
