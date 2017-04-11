@@ -934,30 +934,38 @@ export abstract class Goban extends EventEmitter {
 
         if (this.review_id) {
             this._socket_on(prefix + "full_state", (entries) => {
-                if (this.disconnectedFromGame) { return; }
+                try {
+                    if (!entries || entries.length == 0) {
+                        console.error('Blank full state received, ignoring');
+                        return;
+                    }
+                    if (this.disconnectedFromGame) { return; }
 
-                this.disableDrawing();
-                /* TODO: Clear our state here better */
+                    this.disableDrawing();
+                    /* TODO: Clear our state here better */
 
-                bulk_processing = true;
-                for (let i = 0; i < entries.length; ++i) {
-                    process_r(entries[i]);
-                }
-                bulk_processing = false;
-                this.emit("review.updated", true);
+                    bulk_processing = true;
+                    for (let i = 0; i < entries.length; ++i) {
+                        process_r(entries[i]);
+                    }
+                    bulk_processing = false;
+                    this.emit("review.updated", true);
 
-                this.enableDrawing();
-                if (this.isPlayerController()) {
+                    this.enableDrawing();
+                    if (this.isPlayerController()) {
+                        this.done_loading_review = true;
+                        this.drawPenMarks(this.engine.cur_move.pen_marks);
+                        this.redraw(true);
+                        return;
+                    }
+
                     this.done_loading_review = true;
                     this.drawPenMarks(this.engine.cur_move.pen_marks);
+                    this.redrawMoveTree();
                     this.redraw(true);
-                    return;
+                } catch (e) {
+                    console.error(e);
                 }
-
-                this.done_loading_review = true;
-                this.drawPenMarks(this.engine.cur_move.pen_marks);
-                this.redrawMoveTree();
-                this.redraw(true);
             });
             this._socket_on(prefix + "r", process_r);
         }
