@@ -31,31 +31,34 @@ export class Developer extends React.PureComponent<DeveloperProperties, any> {
     render() {
         return (
         <div className="Developer container">
-            <h1>{_("View the docs")}</h1>
+            <h1>{_("Source Code")}</h1>
+            <h2><a href="https://github.com/online-go/online-go.com/">Source Code on GitHub</a></h2>
+
+            <h1>{_("Application management")}</h1>
+            <h2><a href="/oauth2/applications/">OAuth2 Application Manager</a></h2>
+
+            <h1>API</h1>
             <div className="row">
-                <div className="col-md-4">
-                    <a target="_blank" href="http://docs.ogs.apiary.io/">
-                        <img src={data.get("config.cdn_release") + "/img/apiary-on-white.png"} className="top-image"/>
-                    </a>
-                </div>
-                <div className="col-md-4">
-                </div>
-                <div className="col-md-4">
-                    <a target="_blank" href="http://ogs.readme.io/" style={{paddingTop: "20px", display: "inline-block"}}>
-                        <span style={{fontSize: "60px", fontFamily: '"Courier New", Courier, monospace'}}><b>read</b>me.io</span>
-                    </a>
-                </div>
-            </div>
-            <h1>{_("View the API")}</h1>
-            <div className="row">
-                <div className="col-md-4">
+                <div >
                   <a href="/api/" target="_self">
                       <img src={data.get("config.cdn_release") + "/img/drf-logo.png"} className="top-image"/>
                   </a>
                 </div>
             </div>
-            <h1>{_("Application management")}</h1>
-            <a href="/oauth2/applications/">OAuth2 Application Manager</a>
+
+            <h1>Documentation</h1>
+            <div >
+                <div >
+                    <a target="_blank" href="http://docs.ogs.apiary.io/">
+                        <img src={data.get("config.cdn_release") + "/img/apiary-on-white.png"} className="top-image"/>
+                    </a>
+                </div>
+                <div >
+                    <a target="_blank" href="http://ogs.readme.io/" style={{paddingTop: "20px", display: "inline-block"}}>
+                        <span style={{fontSize: "60px", fontFamily: '"Courier New", Courier, monospace'}}><b>read</b>me.io</span>
+                    </a>
+                </div>
+            </div>
         </div>
         );
     }
