@@ -11,7 +11,6 @@ relatively small portion of the community actively develops the code base and
 regularly visits this github page and the issue tracker. As such:
 
 * https://forums.online-go.com should be used to discuss any proposed functional changes or any new notable features, allowing non developers to chime in with their thoughts and ideas.
-* https://ogs.uservoice.com/ should be used when it is desired to obtain a guage on community interest for a feature or change 
 * The [github issue tracker](https://github.com/online-go/online-go.com/issues) should be used to track all bugs, minor "obvious" enhancements, and accepted major enhancements. Any enhancements (and ideally bugs) posted need to be articulated in a way that it is obvious what needs to be done, partial thoughts will be closed and should be moved back to the forums for futher discussion.
 
 
