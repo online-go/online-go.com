@@ -953,7 +953,6 @@ export abstract class Goban extends EventEmitter {
                     this.redraw(true);
                     return;
                 }
-                this.done_loading_review = true;
 
                 this.done_loading_review = true;
                 this.drawPenMarks(this.engine.cur_move.pen_marks);
