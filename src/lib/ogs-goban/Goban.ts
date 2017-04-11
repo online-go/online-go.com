@@ -935,7 +935,7 @@ export abstract class Goban extends EventEmitter {
         if (this.review_id) {
             this._socket_on(prefix + "full_state", (entries) => {
                 try {
-                    if (!entries || entries.length == 0) {
+                    if (!entries || entries.length === 0) {
                         console.error('Blank full state received, ignoring');
                         return;
                     }
