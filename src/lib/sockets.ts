@@ -27,23 +27,19 @@ let io_config = {
 
 export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
 export const comm_socket = termination_socket;
-/*
-export const comm_socket = io(window['comm_service'], {
-    reconnection: true,
-    reconnectionDelay: 750,
-    reconnectionDelayMax: 10000,
-});
-*/
 
 termination_socket.send = termination_socket.emit;
-//comm_socket.send = comm_socket.emit;
 
 window["termination_socket"] = termination_socket;
-window["comm_socket"] = comm_socket;
 
-//termination_socket.on('connect', () => { console.info('Connected to termination server'); });
-comm_socket.on("connect", () => { console.info("Connection to server established"); });
-comm_socket.on('HUP', () => window.location.reload());
+termination_socket.on("connect", () => {
+    console.info("Connection to server established");
+    termination_socket.emit('hostinfo');
+});
+termination_socket.on('HUP', () => window.location.reload());
+termination_socket.on('hostinfo', (hostinfo) => {
+    console.log('Termination server: ', hostinfo);
+});
 
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
