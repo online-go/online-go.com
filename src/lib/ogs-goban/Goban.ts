@@ -2936,7 +2936,7 @@ export abstract class Goban extends EventEmitter {
         }
 
         /* Draw squares */
-        if (!this.__draw_state || force_clear) {
+        if (!this.__draw_state || force_clear || this.__draw_state.length !== this.height || this.__draw_state[0].length !== this.width) {
             this.__draw_state = GoMath.makeMatrix(this.width, this.height);
         }
 
@@ -3074,6 +3074,10 @@ export abstract class Goban extends EventEmitter {
             this.display_width = config["display_width"];
             let n_squares = Math.max(this.bounded_width + +this.draw_left_labels + +this.draw_right_labels, this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels);
             this.square_size = Math.floor(this.display_width / n_squares);
+        }
+
+        if (!this.__draw_state || this.__draw_state.length !== this.height || this.__draw_state[0].length !== this.width) {
+            this.__draw_state = GoMath.makeMatrix(this.width, this.height);
         }
 
         let merged_log = [];
