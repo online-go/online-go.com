@@ -185,7 +185,6 @@ browserHistory.listen(location => {
         } else {
             cleaned_path = '/non' + cleaned_path;
         }
-        console.log('Cleaned path: ', cleaned_path);
 
         if (ga) {
             //console.log('Sending pageview', cleaned_path);
