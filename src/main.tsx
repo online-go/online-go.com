@@ -179,7 +179,13 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 declare var ga;
 browserHistory.listen(location => {
     try {
-        let cleaned_path = location.pathname.replace(/[0-9]+/, "ID");
+        let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
+        if (data.get('user').supporter) {
+            cleaned_path = '/sup' + cleaned_path;
+        } else {
+            cleaned_path = '/non' + cleaned_path;
+        }
+        console.log('Cleaned path: ', cleaned_path);
 
         if (ga) {
             //console.log('Sending pageview', cleaned_path);
