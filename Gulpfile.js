@@ -136,7 +136,7 @@ function background_webpack(done) {
 }
 
 function dev_server(done) {
-    let port = 8080;
+    let port = (process.env.ONLINE_GO_PORT ? process.env.ONLINE_GO_PORT : 8080);
     let express = require('express');
     let body_parser = require('body-parser');
     let http = require('http');
