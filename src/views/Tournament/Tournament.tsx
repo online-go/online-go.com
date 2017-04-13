@@ -19,7 +19,8 @@ import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
-import {ignore, errorAlerter, rankString, longRankString, rulesText, dup} from "misc";
+import {ignore, errorAlerter, rulesText, dup} from "misc";
+import {longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
 import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
 import {Markdown} from "Markdown";
@@ -38,12 +39,13 @@ import player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
-import {ranks} from "ChallengeModal";
 import * as d3 from "d3";
 
 
 
 declare var swal;
+
+let ranks = amateurRanks();
 
 interface TournamentProperties {
     params: any;

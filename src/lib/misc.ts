@@ -18,7 +18,6 @@
 import {_, interpolate, pgettext} from "translate";
 import {post} from "requests";
 import {browserHistory} from "react-router";
-//import {challenge} from 'ChallengeModal';
 
 declare var swal;
 
@@ -104,46 +103,6 @@ export function deepEqual(a: any, b: any) { /* {{{ */
     } else {
         return a === b;
     }
-} /* }}} */
-export function rankString(r) { /* {{{ */
-    if (typeof(r) === "object") {
-        let ranking = "ranking" in r ? r.ranking : r.rank;
-        if (r.pro || r.professional) {
-            return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
-        }
-        r = ranking;
-    }
-    if (r > 900) {
-        return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
-    }
-    if (r < -900) {
-        return "?";
-    }
-
-    if (r < 30) {
-        return interpolate(pgettext("Kyu", "%sk"), [(30 - r)]);
-    }
-    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1)]);
-} /* }}} */
-export function longRankString(r) { /* {{{ */
-    if (typeof(r) === "object") {
-        if (r.pro) {
-            return interpolate(_("%s Pro"), [((r.ranking - 36))]);
-        }
-        r = r.ranking;
-    }
-    if (r > 900) {
-        return interpolate(_("%s Pro"), [(((r - 1000) - 36))]);
-    }
-
-    if (r < -900) {
-        return "?";
-    }
-
-    if (r < 30) {
-        return interpolate(_("%s Kyu"), [(30 - r)]);
-    }
-    return interpolate(_("%s Dan"), [((r - 30) + 1)]);
 } /* }}} */
 export function getRandomInt(min, max) { /* {{{ */
   return Math.floor(Math.random() * (max - min)) + min;

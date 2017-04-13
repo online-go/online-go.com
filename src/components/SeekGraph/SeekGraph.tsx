@@ -24,14 +24,12 @@ import {EventEmitter} from "eventemitter3";
 import data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
-import {rankString, getRelativeEventPosition, errorAlerter} from "misc";
+import {getRelativeEventPosition, errorAlerter} from "misc";
+import {rankString} from "rank_utils";
 import {makePlayerLink} from "Player";
 import {kb_bind, kb_unbind} from "KBShortcut";
 
-
 declare let swal;
-
-
 
 let MAX_RATIO = 0.99;
 

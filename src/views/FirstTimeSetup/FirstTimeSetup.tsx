@@ -18,7 +18,9 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put} from "requests";
-import {longRankString, errorAlerter} from "misc";
+import {errorAlerter} from "misc";
+import {longRankString} from "rank_utils";
+
 import data from "data";
 
 declare var swal;
