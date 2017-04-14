@@ -20,7 +20,8 @@ import {_, interpolate} from "translate";
 import {Goban} from "goban";
 import data from "data";
 import {PersistentElement} from "PersistentElement";
-import {rankString, navigateTo} from "misc";
+import {navigateTo} from "misc";
+import {rankString} from "rank_utils";
 import {Player} from "Player";
 
 interface GobanLineSummaryProps {

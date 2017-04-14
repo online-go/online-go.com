@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import {browserHistory} from "react-router";
-import {rankString, shouldOpenNewTab, errorLogger} from "misc";
+import {shouldOpenNewTab, errorLogger} from "misc";
+import {rankString} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";

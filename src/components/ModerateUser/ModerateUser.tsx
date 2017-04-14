@@ -18,7 +18,8 @@
 import * as React from "react";
 import {_} from "translate";
 import {put, get} from "requests";
-import {longRankString, errorAlerter, ignore} from "misc";
+import {errorAlerter, ignore} from "misc";
+import {longRankString} from "rank_utils";
 import {Modal, openModal} from "Modal";
 
 interface ModerateUserProperties {

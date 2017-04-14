@@ -23,7 +23,8 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
-import {errorLogger, errorAlerter, longRankString, rulesText, dup, rankString, ignore} from "misc";
+import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
+import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "components";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
 import preferences from "preferences";
@@ -32,7 +33,6 @@ import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
 
 declare let swal;
-
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
@@ -43,7 +43,6 @@ interface ChallengeModalProperties {
     config?: any;
     autoCreate?: boolean;
 }
-
 
 function deepAssign(obj1: any, obj2: any) {{{
     if (typeof(obj1) !== "object" || typeof(obj2) !== "object") {
@@ -67,11 +66,9 @@ function deepAssign(obj1: any, obj2: any) {{{
     return obj1;
 }}}
 
-
 export let username_to_id = {};
 
 /* Constants {{{ */
-
 
 let negKomiRanges = [];
 let posKomiRanges = [];
@@ -85,39 +82,18 @@ let handicapRanges = [];
 for (let i = 1; i <= 36; ++i) {
     handicapRanges.push(i);
 }
-export let ranks = [];
-export let ranked_ranks = [];
-export let demo_ranks = [];
-for (let i = 0; i < 37; ++i) {
-    let title = longRankString(i);
-    demo_ranks.push({
-        "rank": i,
-        "label": title
-    });
 
-    //if (i === 0) title = _('Beginner');
-    if (i === 36) {
-        title += "+";
-    }
+let ranks = amateurRanks();
+let demo_ranks = allRanks();
 
-    ranks.push({
-        "rank": i,
-        "label": title
-    });
-    if (data.get("user") && (i >= data.get("user").ranking - 9) && (i <= data.get("user").ranking + 9)) {
-        ranked_ranks.push({
-            "rank": i,
-            "label": title
-        });
-    }
-}
-for (let i = 37; i <= 45; ++i) {
-    let title = longRankString(i + 1000);
-    demo_ranks.push({
-        "rank": i + 1000,
-        "label": title
-    });
-}
+let ranked_ranks = (() => {
+    if (!data.get("user")) { return []; }
+
+    let rankedMin = Math.max(0, data.get("user").ranking - 9);
+    let rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
+
+    return rankList(rankedMin, rankedMax, false);
+})();
 
 /* }}} */
 
@@ -168,8 +144,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 mode: this.props.mode,
                 username: "",
                 bot_id: data.get("challenge.bot", 0),
-                handicap_enabled: data.get("challenge.handicap_enabled", false),
-                //selected_board_size: data.get('challenge.size', '19x19'),
                 selected_board_size: preferences.get("new-game-board-size") + "x" + preferences.get("new-game-board-size"),
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },
@@ -202,7 +176,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 this.state.initial_time_control = this.props.config.time_control;
             }
         }
-
 
         if (this.state.conf.mode === "computer" && bot_count()) {
             let found_bot = false;
@@ -278,16 +251,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         });
     } /* }}} */
 
-    setHandicapsEnabled(tf) {{{
-        let next = this.next();
-        next.conf.handicap_enabled = tf;
-        next.challenge.game.handicap = tf ? (next.challenge.game.handicap === 0 ? -1 : next.challenge.game.handicap) : 0;
-        this.setState({
-            conf: next.conf,
-            challenge: next.challenge,
-        });
-    }}}
-
     saveSettings() {{{
         let next = this.next();
         if (this.refs.time_control_picker) {
@@ -295,7 +258,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         }
         let speed = data.get("challenge.speed", "live");
         data.set("challenge.challenge." + speed, next.challenge);
-        data.set("challenge.handicap_enabled", next.conf.handicap_enabled);
         data.set("challenge.bot", next.conf.bot_id);
         data.set("challenge.size", next.conf.selected_board_size);
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
@@ -407,9 +369,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         if (!conf.restrict_rank) {
             challenge.min_ranking = -1000;
             challenge.max_ranking = 1000;
-        }
-        if (!conf.handicap_enabled) {
-            challenge.game.handicap = 0;
         }
 
         challenge.game.width = parseInt(challenge.game.width);
@@ -535,7 +494,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     update_challenge_game_name  = (ev) => this.upstate("challenge.game.name", ev);
     update_private              = (ev) => this.upstate([["challenge.game.private", ev], ["challenge.game.ranked", false]]);
     update_demo_private         = (ev) => this.upstate("demo.private", ev);
-    update_handicaps_enabled    = (ev) => this.setHandicapsEnabled((ev.target as HTMLInputElement).checked);
     update_ranked               = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked           = (ev) => {this.setAGARanked((ev.target as HTMLInputElement).checked); };
     update_demo_rules           = (ev) => this.upstate("demo.rules", ev);
@@ -590,13 +548,355 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     /* }}} */
 
 
+    /* rendering {{{ */
+
+    // game name and privacy
+    basicSettings = () => {
+        let mode = this.props.mode;
+        return <div id="challenge-basic-settings" className="left-pane pane form-horizontal" role="form">
+            {(mode === "computer" || null) &&
+                <div className="form-group">
+                    <label className="control-label" htmlFor="engine">{_("Engine")}</label>
+                    <div className="controls">
+                    <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
+                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
+                    </select>
+                    </div>
+                </div>
+            }
+            {(mode !== "computer" || null) &&
+                <div className="form-group">
+                    <label className="control-label" htmlFor="challenge_game_name">{_("Game Name")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input type="text" value={this.state.challenge.game.name} onChange={this.update_challenge_game_name} className="form-control" id="challenge-game-name" placeholder={_("Game Name")}/>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div className="form-group">
+                <label className="control-label" htmlFor="challenge-private">
+                    {_("Private")}
+                </label>
+                <div className="controls">
+                    {(mode !== "demo" || null) && <div className="checkbox">
+                        <input type="checkbox"
+                        id="challenge-private"
+                        checked={this.state.challenge.game.private} onChange={this.update_private}/>
+                    </div>
+                    }
+                    {(mode === "demo" || null) && <div className="checkbox">
+                        <input type="checkbox"
+                        id="challenge-private"
+                        checked={this.state.demo.private} onChange={this.update_demo_private}/>
+                    </div>
+                    }
+
+                </div>
+            </div>
+        </div>;
+    }
+
+    // board size and 'Ranked' checkbox
+    additionalSettings = () => {
+        let mode = this.props.mode;
+        let conf = this.state.conf;
+
+        return <div id="challenge-basic-settings" className="right-pane pane form-horizontal" role="form">
+            {(mode !== "demo" || null) &&
+            <div>
+                <div className="form-group">
+                    <label className="control-label" htmlFor="challenge-ranked">{_("Ranked")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input type="checkbox"
+                                id="challenge-ranked"
+                                disabled={this.state.challenge.game.private}
+                                checked={this.state.challenge.game.ranked} onChange={this.update_ranked}/>
+                        </div>
+                    </div>
+                </div>
+
+                {data.get("config.aga_rankings_enabled", null) &&
+                    <div className="form-group">
+                        <label className="control-label" htmlFor="challenge-aga-ranked">{_("AGA Ranked")}</label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input type="checkbox"
+                                    id="challenge-aga-ranked"
+                                    disabled={this.state.challenge.game.private}
+                                    checked={this.state.challenge.aga_ranked} onChange={this.update_aga_ranked}/>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            }
+            {(mode === "demo" || null) &&
+            <div>
+                <div className="form-group" id="challenge.game.rules-group">
+                    <label className="control-label" htmlFor="rules">{_("Rules")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.demo.rules} onChange={this.update_demo_rules} className="challenge-dropdown form-control">
+                                <option value="aga">{_("AGA")}</option>
+                                <option value="chinese">{_("Chinese")}</option>
+                                <option value="ing">{_("Ing SST")}</option>
+                                <option value="japanese">{_("Japanese")}</option>
+                                <option value="korean">{_("Korean")}</option>
+                                <option value="nz">{_("New Zealand")}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            <div className="form-group" id="challenge-board-size-group">
+                <label className="control-label" htmlFor="challenge-board-size">{_("Board Size")}</label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select id="challenge-board-size" value={this.state.conf.selected_board_size} onChange={this.update_board_size} className="challenge-dropdown form-control">
+                            <optgroup label={_("Normal Sizes")}>
+                                <option value="19x19">19x19</option>
+                                <option value="13x13">13x13</option>
+                                <option value="9x9">9x9</option>
+                            </optgroup>
+                            <optgroup label={_("Extreme Sizes")}>
+                                <option disabled={this.state.challenge.game.ranked} value="25x25">25x25</option>
+                                <option disabled={this.state.challenge.game.ranked} value="21x21">21x21</option>
+                                <option disabled={this.state.challenge.game.ranked} value="5x5">5x5</option>
+                            </optgroup>
+                            <optgroup label={_("Non-Square")}>
+                                <option disabled={this.state.challenge.game.ranked} value="19x9">19x9</option>
+                                <option disabled={this.state.challenge.game.ranked} value="5x13">5x13</option>
+                            </optgroup>
+                            <optgroup label={_("Custom")}>
+                                <option disabled={this.state.challenge.game.ranked} value="custom">{_("Custom Size")}</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {(conf.selected_board_size === "custom" || null) &&
+                <div className="form-group">
+                    <label className="control-label" htmlFor="challenge-board-size-custom"></label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input type="number" value={this.state.challenge.game.width} onChange={this.update_board_width} id="challenge-goban-width" className="form-control" style={{width: "3em"}} min="1" max="25"/>
+                            x
+                            <input type="number" value={this.state.challenge.game.height} onChange={this.update_board_height} id="challenge-goban-height" className="form-control" style={{width: "3em"}} min="1" max="25"/>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>;
+    }
+
+    advancedDemoSettings = () => {
+        return <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
+            <div className="left-pane pane form-horizontal">
+                <div className="form-group">
+                    <label className="control-label" htmlFor="demo-black-name">{_("Black Player")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
+                                {demo_ranks.map((r, idx) => (
+                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="right-pane pane form-horizontal">
+                <div className="form-group">
+                    <label className="control-label" htmlFor="demo-black-name">{_("White Player")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
+                                {demo_ranks.map((r, idx) => (
+                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>;
+    }
+
+    advancedSettings = () => {
+        let mode = this.props.mode;
+        let challenge = this.state.challenge;
+        let conf = this.state.conf;
+
+        return <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
+            <div className="left-pane pane form-horizontal">
+
+                {(mode !== "computer" || null) &&
+                    <div>
+                        <div className="form-group" id="challenge.game.rules-group">
+                            <label className="control-label" htmlFor="rules">{_("Rules")}</label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <select value={this.state.challenge.game.rules} onChange={this.update_rules} id="challenge.game.rules" className="challenge-dropdown form-control">
+                                        <option value="aga">{_("AGA")}</option>
+                                        <option value="chinese">{_("Chinese")}</option>
+                                        <option value="ing">{_("Ing SST")}</option>
+                                        <option value="japanese">{_("Japanese")}</option>
+                                        <option value="korean">{_("Korean")}</option>
+                                        <option value="nz">{_("New Zealand")}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <TimeControlPicker value={this.state.initial_time_control} ref="time_control_picker" />
+            </div>
+
+            <div className="right-pane pane form-horizontal">
+
+                <div className="form-group" id="challenge.game.handicap-group">
+                    <label className="control-label">{_("Handicap")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.challenge.game.handicap} onChange={this.update_handicap} className="challenge-dropdown form-control">
+                                <option value="-1"
+                                        /*{disabled={!this.state.conf.handicap_enabled}}*/
+                                        >{_("Automatic")}</option>
+                                <option value="0"
+                                        >{_("None")}</option>
+                                {handicapRanges.map((n, idx) => (
+                                    <option key={idx} value={n}
+                                        disabled={n > 9 && challenge.game.ranked}
+                                        >{n}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="form-group">
+                    <label className="control-label">{_("Komi")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.challenge.game.komi_auto} onChange={this.update_komi_auto} className="challenge-dropdown form-control">
+                                <option value="automatic">{_("Automatic")}</option>
+                                <option value="custom" disabled={this.state.challenge.game.ranked}>{_("Custom")}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {(challenge.game.komi_auto === "custom" || null) &&
+                    <div className="form-group">
+                        <label className="control-label"></label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input type="number" value={this.state.challenge.game.komi} onChange={this.update_komi} className="form-control" style={{width: "4em"}} step="0.5"/>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div className="form-group">
+                    <label className="control-label" htmlFor="color">{_("Your Color")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.challenge.challenger_color} onChange={this.update_challenge_color} id="challenge-color" className="challenge-dropdown form-control">
+                                <option value="automatic">{_("Automatic")}</option>
+                                <option value="black">{_("Black")}</option>
+                                <option value="white">{_("White")}</option>
+                                <option value="random">{_("Random")}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {(mode !== "computer" || null) &&
+                    <div>
+                        <div className="form-group" style={{position: "relative"}}>
+                            <label className="control-label" htmlFor="challenge-disable-analysis">{_("Disable Analysis")}</label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <input checked={this.state.challenge.game.disable_analysis} onChange={this.update_disable_analysis} id="challenge-disable-analysis" type="checkbox"/> *
+                                </div>
+                            </div>
+                        </div>
+
+                        {(mode === "open" || null) &&
+                            <div>
+                                <div className="form-group" id="challenge-restrict-rank-group">
+                                    <label className="control-label" htmlFor="challenge-restrict-rank">{_("Restrict Rank")}</label>
+                                    <div className="controls">
+                                        <div className="checkbox">
+                                            <input checked={this.state.conf.restrict_rank} onChange={this.update_restrict_rank} id="challenge-restrict-rank"
+                                                type="checkbox"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                {(conf.restrict_rank || null) &&
+                                    <div>
+
+                                        <div className="form-group" id="challenge-min-rank-group">
+                                            <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
+                                            <div className="controls">
+                                                <div className="checkbox">
+                                                    <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
+                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
+                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group" id="challenge-max-rank-group">
+                                            <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
+                                            <div className="controls">
+                                                <div className="checkbox">
+                                                    <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
+                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
+                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        }
+                        <div style={{marginTop: "1.0em", textAlign: "right", fontSize: "0.8em"}}>* {_("Also disables conditional moves")}</div>
+                    </div>
+                }
+            </div>
+        </div>;
+    }
+
     render() {
         let mode = this.props.mode;
         let player_id = this.props.playerId;
         let player = player_id && player_cache.lookup(player_id);
         let player_username = player ? player.username : "...";
-        let conf = this.state.conf;
-        let challenge = this.state.challenge;
 
         if (player_id && !player) {
             player_cache.fetch(player_id).then(() => this.setState({player_username_resolved: true})).catch(errorLogger);
@@ -615,51 +915,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
               <div className="body">
                 <div className="challenge  form-inline">
                     <div className="challenge-pane-container">
-                      <div id="challenge-basic-settings" className="left-pane pane form-horizontal" role="form">{/* {{{ */}
-                          {(mode === "computer" || null) &&
-                              <div className="form-group">
-                                  <label className="control-label" htmlFor="engine">{_("Engine")}</label>
-                                  <div className="controls">
-                                    <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
-                                    </select>
-                                  </div>
-                              </div>
-                          }
-                          {(mode !== "computer" || null) &&
-                              <div className="form-group">
-                                  <label className="control-label" htmlFor="challenge_game_name">{_("Game Name")}</label>
-                                  <div className="controls">
-                                      <div className="checkbox">
-                                          <input type="text" value={this.state.challenge.game.name} onChange={this.update_challenge_game_name} className="form-control" id="challenge-game-name" placeholder={_("Game Name")}/>
-                                      </div>
-                                  </div>
-                              </div>
-                          }
-
-
-                          <div className="form-group">
-                              <label className="control-label" htmlFor="challenge-private">
-                                  {_("Private")}
-                              </label>
-                              <div className="controls">
-                                  {(mode !== "demo" || null) && <div className="checkbox">
-                                      <input type="checkbox"
-                                        id="challenge-private"
-                                        checked={this.state.challenge.game.private} onChange={this.update_private}/>
-                                   </div>
-                                  }
-                                  {(mode === "demo" || null) && <div className="checkbox">
-                                      <input type="checkbox"
-                                        id="challenge-private"
-                                        checked={this.state.demo.private} onChange={this.update_demo_private}/>
-                                   </div>
-                                  }
-
-                              </div>
-                          </div>
-                      </div>
-                      {/* }}} */}
+                      { this.basicSettings() }
 
                       {/* TODO: Initial state
                       {this.state.initial_state.map((config,idx) => (
@@ -669,301 +925,16 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                       ))}
                       */}
                       {(!this.state.initial_state || null) && /* {{{ */
-                          <div id="challenge-basic-settings" className="right-pane pane form-horizontal" role="form">
-                          {(mode !== "demo" || null) &&
-                           <div>
-                              <div className="form-group">
-                                  <label className="control-label" htmlFor="challenge-handicap-enabled" id="challenge.game.handicap-enabled-label">{_("Enable Handicaps")}</label>
-                                  <div className="controls">
-                                      <div className="checkbox">
-                                          <input type="checkbox" id="challenge-handicap-enabled" checked={this.state.conf.handicap_enabled}
-                                              onChange={this.update_handicaps_enabled}/>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <div className="form-group">
-                                  <label className="control-label" htmlFor="challenge-ranked">{_("Ranked")}</label>
-                                  <div className="controls">
-                                      <div className="checkbox">
-                                          <input type="checkbox"
-                                            id="challenge-ranked"
-                                            disabled={this.state.challenge.game.private}
-                                            checked={this.state.challenge.game.ranked} onChange={this.update_ranked}/>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              {data.get("config.aga_rankings_enabled", null) &&
-                                  <div className="form-group">
-                                      <label className="control-label" htmlFor="challenge-aga-ranked">{_("AGA Ranked")}</label>
-                                      <div className="controls">
-                                          <div className="checkbox">
-                                              <input type="checkbox"
-                                                id="challenge-aga-ranked"
-                                                disabled={this.state.challenge.game.private}
-                                                checked={this.state.challenge.aga_ranked} onChange={this.update_aga_ranked}/>
-                                          </div>
-                                      </div>
-                                  </div>
-                              }
-                           </div>
-                          }
-                          {(mode === "demo" || null) &&
-                           <div>
-                              <div className="form-group" id="challenge.game.rules-group">
-                                  <label className="control-label" htmlFor="rules">{_("Rules")}</label>
-                                  <div className="controls">
-                                      <div className="checkbox">
-                                          <select value={this.state.demo.rules} onChange={this.update_demo_rules} className="challenge-dropdown form-control">
-                                              <option value="aga">{_("AGA")}</option>
-                                              <option value="chinese">{_("Chinese")}</option>
-                                              <option value="ing">{_("Ing SST")}</option>
-                                              <option value="japanese">{_("Japanese")}</option>
-                                              <option value="korean">{_("Korean")}</option>
-                                              <option value="nz">{_("New Zealand")}</option>
-                                          </select>
-                                      </div>
-                                  </div>
-                              </div>
-                           </div>
-                          }
-                          <div className="form-group" id="challenge-board-size-group">
-                              <label className="control-label" htmlFor="challenge-board-size">{_("Board Size")}</label>
-                              <div className="controls">
-                                  <div className="checkbox">
-                                      <select id="challenge-board-size" value={this.state.conf.selected_board_size} onChange={this.update_board_size} className="challenge-dropdown form-control">
-                                          <optgroup label={_("Normal Sizes")}>
-                                              <option value="19x19">19x19</option>
-                                              <option value="13x13">13x13</option>
-                                              <option value="9x9">9x9</option>
-                                          </optgroup>
-                                          <optgroup label={_("Extreme Sizes")}>
-                                              <option disabled={this.state.challenge.game.ranked} value="25x25">25x25</option>
-                                              <option disabled={this.state.challenge.game.ranked} value="21x21">21x21</option>
-                                              <option disabled={this.state.challenge.game.ranked} value="5x5">5x5</option>
-                                          </optgroup>
-                                          <optgroup label={_("Non-Square")}>
-                                              <option disabled={this.state.challenge.game.ranked} value="19x9">19x9</option>
-                                              <option disabled={this.state.challenge.game.ranked} value="5x13">5x13</option>
-                                          </optgroup>
-                                          <optgroup label={_("Custom")}>
-                                              <option disabled={this.state.challenge.game.ranked} value="custom">{_("Custom Size")}</option>
-                                          </optgroup>
-                                      </select>
-                                  </div>
-                              </div>
-                          </div>
-
-                          {(conf.selected_board_size === "custom" || null) &&
-                              <div className="form-group">
-                                  <label className="control-label" htmlFor="challenge-board-size-custom"></label>
-                                  <div className="controls">
-                                      <div className="checkbox">
-                                        <input type="number" value={this.state.challenge.game.width} onChange={this.update_board_width} id="challenge-goban-width" className="form-control" style={{width: "3em"}} min="1" max="25"/>
-                                        x
-                                        <input type="number" value={this.state.challenge.game.height} onChange={this.update_board_height} id="challenge-goban-height" className="form-control" style={{width: "3em"}} min="1" max="25"/>
-                                      </div>
-                                  </div>
-                              </div>
-                          }
-                        </div>
+                          this.additionalSettings()
                       }{/* }}} */}
                     </div>
 
                     <hr/>
                     {(mode !== "demo" || null) && /* {{{ */
-                        <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
-                            <div className="left-pane pane form-horizontal">
-
-                                {(mode !== "computer" || null) &&
-                                    <div>
-                                        <div className="form-group" id="challenge.game.rules-group">
-                                            <label className="control-label" htmlFor="rules">{_("Rules")}</label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <select value={this.state.challenge.game.rules} onChange={this.update_rules} id="challenge.game.rules" className="challenge-dropdown form-control">
-                                                        <option value="aga">{_("AGA")}</option>
-                                                        <option value="chinese">{_("Chinese")}</option>
-                                                        <option value="ing">{_("Ing SST")}</option>
-                                                        <option value="japanese">{_("Japanese")}</option>
-                                                        <option value="korean">{_("Korean")}</option>
-                                                        <option value="nz">{_("New Zealand")}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                                <TimeControlPicker value={this.state.initial_time_control} ref="time_control_picker" />
-                            </div>
-
-                            <div className="right-pane pane form-horizontal">
-
-                                <div className="form-group" id="challenge.game.handicap-group">
-                                    <label className="control-label">{_("Handicap")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <select value={this.state.challenge.game.handicap} onChange={this.update_handicap} className="challenge-dropdown form-control">
-                                                <option value="-1"
-                                                        disabled={!this.state.conf.handicap_enabled}
-                                                        >{_("Automatic")}</option>
-                                                <option value="0"
-                                                        >{_("None")}</option>
-                                                {handicapRanges.map((n, idx) => (
-                                                    <option key={idx} value={n}
-                                                        disabled={!this.state.conf.handicap_enabled || n > 9 && challenge.game.ranked}
-                                                        >{n}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="control-label">{_("Komi")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <select value={this.state.challenge.game.komi_auto} onChange={this.update_komi_auto} className="challenge-dropdown form-control">
-                                                <option value="automatic">{_("Automatic")}</option>
-                                                <option value="custom" disabled={this.state.challenge.game.ranked}>{_("Custom")}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                {(challenge.game.komi_auto === "custom" || null) &&
-                                    <div className="form-group">
-                                        <label className="control-label"></label>
-                                        <div className="controls">
-                                            <div className="checkbox">
-                                                <input type="number" value={this.state.challenge.game.komi} onChange={this.update_komi} className="form-control" style={{width: "4em"}} step="0.5"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-
-                                <div className="form-group">
-                                    <label className="control-label" htmlFor="color">{_("Your Color")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <select value={this.state.challenge.challenger_color} onChange={this.update_challenge_color} id="challenge-color" className="challenge-dropdown form-control">
-                                                <option value="automatic">{_("Automatic")}</option>
-                                                <option value="black">{_("Black")}</option>
-                                                <option value="white">{_("White")}</option>
-                                                <option value="random">{_("Random")}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {(mode !== "computer" || null) &&
-                                    <div>
-                                        <div className="form-group" style={{position: "relative"}}>
-                                            <label className="control-label" htmlFor="challenge-disable-analysis">{_("Disable Analysis")}</label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <input checked={this.state.challenge.game.disable_analysis} onChange={this.update_disable_analysis} id="challenge-disable-analysis" type="checkbox"/> *
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {(mode === "open" || null) &&
-                                            <div>
-                                                <div className="form-group" id="challenge-restrict-rank-group">
-                                                    <label className="control-label" htmlFor="challenge-restrict-rank">{_("Restrict Rank")}</label>
-                                                    <div className="controls">
-                                                        <div className="checkbox">
-                                                            <input checked={this.state.conf.restrict_rank} onChange={this.update_restrict_rank} id="challenge-restrict-rank"
-                                                                type="checkbox"/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {(conf.restrict_rank || null) &&
-                                                    <div>
-
-                                                        <div className="form-group" id="challenge-min-rank-group">
-                                                            <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
-                                                            <div className="controls">
-                                                                <div className="checkbox">
-                                                                    <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
-                                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                                            <option key={idx} value={r.rank}>{r.label}</option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="form-group" id="challenge-max-rank-group">
-                                                            <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
-                                                            <div className="controls">
-                                                                <div className="checkbox">
-                                                                    <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
-                                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                                            <option key={idx} value={r.rank}>{r.label}</option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                }
-                                            </div>
-                                        }
-                                        <div style={{marginTop: "1.0em", textAlign: "right", fontSize: "0.8em"}}>* {_("Also disables conditional moves")}</div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                        this.advancedSettings()
                     }{/* }}} */}
                     {(mode === "demo" || null) && /* {{{ */
-                        <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
-                            <div className="left-pane pane form-horizontal">
-                                <div className="form-group">
-                                    <label className="control-label" htmlFor="demo-black-name">{_("Black Player")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
-                                                {demo_ranks.map((r, idx) => (
-                                                    <option key={idx} value={r.rank}>{r.label}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="right-pane pane form-horizontal">
-                                <div className="form-group">
-                                    <label className="control-label" htmlFor="demo-black-name">{_("White Player")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
-                                                {demo_ranks.map((r, idx) => (
-                                                    <option key={idx} value={r.rank}>{r.label}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        this.advancedDemoSettings()
                     }
                     {/* }}} */}
                 </div>
@@ -978,10 +949,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
           </div>
         );
     }
+    /* }}} */
+
 }
-
-
-//const challenge_open = (<ChallengeModal mode='open'/>);
 
 export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {{{
     // TODO: Support challenge by player, w/ initial state, or computer
@@ -1049,60 +1019,9 @@ export function challengeRematch(goban, player, original_game_meta) { /* {{{ */
 
     console.log(original_game_meta);
 
-
-    config.conf.handicap_enabled = conf.handicap ? true : false;
     config.challenge.game.handicap = conf.handicap;
 
     config.time_control = dup(conf.time_control);
-
-    //config.time_control = recallTimeControlSettings('live'); /* speed doesn't matter, we're just getting the obj */
-    /*
-    config.challenge.game.time_control_parameters = {}
-
-    for (var k in conf.time_control) {
-        console.log(k, conf.time_control[k]);
-        config.challenge.game.time_control_parameters = Object.assign({}, conf.time_control);
-    }
-    var tc = conf.time_control;
-    config.time_control.time_control = tc.time_control;
-    console.log("Conf: ", tc);
-    switch (tc.time_control) {
-        case 'fischer':
-            config.time_control.initial_time = tc.initial_time;
-            config.time_control.time_increment = tc.time_increment;
-            config.time_control.max_time = tc.max_time;
-            break;
-        case 'byoyomi':
-            config.time_control.main_time = tc.main_time;
-            config.time_control.period_time = tc.period_time;
-            config.time_control.periods = tc.periods;
-            break;
-        case 'simple':
-            config.time_control.per_move = tc.per_move;
-            break;
-        case 'canadian':
-            config.time_control.main_time = tc.main_time;
-            config.time_control.period_time = tc.period_time;
-            config.time_control.stones_per_period = tc.stones_per_period;
-            break;
-        case 'absolute':
-            config.time_control.total_time = tc.total_time;
-            break;
-        case 'none':
-            break;
-    }
-    var avg_move_time = computeAverageMoveTime(tc);
-
-
-    if (avg_move_time > 0 && avg_move_time < 20) {
-        config.conf.speed = 'blitz';
-    } else if (avg_move_time > 0 && avg_move_time < 3600) {
-        config.conf.speed = 'live';
-    } else {
-        config.conf.speed = 'correspondence';
-    }
-
-   */
 
 
     config.challenge.game.time_control = conf.time_control["time_control"];
@@ -1210,7 +1129,6 @@ export function challenge_text_description(challenge) { /* {{{ */
 
 export let blitz_config = { /* {{{ */
     conf: {
-        handicap_enabled: false,
         restrict_rank: true,
     },
     challenge: {
@@ -1219,7 +1137,7 @@ export let blitz_config = { /* {{{ */
             name: "",
             rules: "japanese",
             ranked: true,
-            handicap: -1,
+            handicap: 0,
             komi_auto: "automatic",
             disable_analysis: false,
             initial_state: null,
@@ -1237,7 +1155,6 @@ export let blitz_config = { /* {{{ */
 }; /* }}} */
 export let live_config = { /* {{{ */
     conf: {
-        handicap_enabled: false,
         restrict_rank: true,
     },
     challenge: {
@@ -1246,7 +1163,7 @@ export let live_config = { /* {{{ */
             name: "",
             rules: "japanese",
             ranked: true,
-            handicap: -1,
+            handicap: 0,
             komi_auto: "automatic",
             disable_analysis: false,
             initial_state: null,
@@ -1264,7 +1181,6 @@ export let live_config = { /* {{{ */
 }; /* }}} */
 export let correspondence_config = { /* {{{ */
     conf: {
-        handicap_enabled: false,
         restrict_rank: true,
     },
     challenge: {
@@ -1273,7 +1189,7 @@ export let correspondence_config = { /* {{{ */
             name: "",
             rules: "japanese",
             ranked: true,
-            handicap: -1,
+            handicap: 0,
             komi_auto: "automatic",
             disable_analysis: false,
             initial_state: null,

@@ -24,7 +24,7 @@ import {Player} from "Player";
 import {MiniGoban} from "MiniGoban";
 import {SearchInput} from "components";
 import {StarRating} from "StarRating";
-import {longRankString, rankString} from "misc";
+import {longRankString, rankString} from "rank_utils";
 import {AdUnit} from "AdUnit";
 import data from "data";
 import * as moment from "moment";

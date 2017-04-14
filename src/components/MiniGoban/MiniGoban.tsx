@@ -24,7 +24,8 @@ import {termination_socket} from "sockets";
 import {makePlayerLink} from "Player";
 import data from "data";
 import {PersistentElement} from "PersistentElement";
-import {rankString, navigateTo} from "misc";
+import {navigateTo} from "misc";
+import {rankString} from "rank_utils";
 
 interface MiniGobanProps {
     id: number;

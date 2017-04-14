@@ -87,60 +87,58 @@ export class NewGameModal extends Modal<NewGameModalProperties, any> {
     render() {
         return (
             <div className="Modal NewGameModal" ref="modal">
-                  <div className="header">
-                      <h2>{_("What kind of game would you like to play?")}</h2>
-                  </div>
-                 <div className="body">
+                <div className="header">
+                    <h2>{_("What kind of game would you like to play?")}</h2>
+                </div>
+                <div className="body">
                     <div className="board-size-selection input-group">
                         <button className={this.state.board_size === 9 ? "active" : ""} onClick={this.size9}>9x9</button>
                         <button className={this.state.board_size === 13 ? "active" : ""} onClick={this.size13}>13x13</button>
                         <button className={this.state.board_size === 19 ? "active" : ""} onClick={this.size19}>19x19</button>
                     </div>
-                 </div>
-                 <div className="body">
 
-                     <div className="new-game-button" onClick={this.newBlitz}>
-                         <i className="fa fa-bolt" />
+                    <div className="new-game-button" onClick={this.newBlitz}>
+                        <i className="fa fa-bolt" />
                         <h2>{_("Blitz")}</h2>
                         <div>{shortShortTimeControl(blitz_config.time_control)}</div>
                         {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a blitz game take?", "Around 3 to 7 minutes")}</i>}
                         {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a blitz game take?", "Around 5 to 11 minutes")}</i>}
                         {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a blitz game take?", "Around 7 to 16 minutes")}</i>}
-                     </div>
-                     <div className="new-game-button" onClick={this.newLive}>
-                         <i className="fa fa-clock-o" />
+                    </div>
+                    <div className="new-game-button" onClick={this.newLive}>
+                        <i className="fa fa-clock-o" />
                         <h2>{_("Live")}</h2>
                         <div>{shortShortTimeControl(live_config.time_control)}</div>
                         {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a live game take?", "Around 5 to 15 minutes")}</i>}
                         {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a live game take?", "Around 8 to 20 minutes")}</i>}
                         {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a live game take?", "Around 15 to 30 minutes")}</i>}
-                     </div>
-                     <div className="new-game-button" onClick={this.newCorrespondence}>
-                         <i className="ogs-turtle" />
+                    </div>
+                    <div className="new-game-button" onClick={this.newCorrespondence}>
+                        <i className="ogs-turtle" />
                         <h2>{_("Correspondence")}</h2>
                         <div>{shortShortTimeControl(correspondence_config.time_control)}</div>
                         {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 10 to 20 days")}</i>}
                         {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 13 to 30 days")}</i>}
                         {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 30 to 70 days")}</i>}
-                     </div>
+                    </div>
 
-                     <div className="new-game-button" onClick={this.newCustom}>
-                         <i className="fa fa-cog" />
+                    <div className="new-game-button" onClick={this.newCustom}>
+                        <i className="fa fa-cog" />
                         <h2>{_("Custom")}</h2>
                         <i>{_("Create a custom game")}</i>
-                     </div>
+                    </div>
 
-                     <div className={"new-game-button " + (bot_count() === 0 ? "disabled" : "")} onClick={this.newComputer}>
-                         <i className="fa fa-laptop" />
+                    <div className={"new-game-button " + (bot_count() === 0 ? "disabled" : "")} onClick={this.newComputer}>
+                        <i className="fa fa-laptop" />
                         <h2>{_("Computer")}</h2>
                         <i>{_("Play against the computer")}</i>
-                     </div>
-                  </div>
+                    </div>
+                </div>
 
-                  <div className="buttons">
-                      <button onClick={this.close}>{_("Cancel")}</button>
-                  </div>
-            </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Cancel")}</button>
+                </div>
+        </div>
         );
     }
 }

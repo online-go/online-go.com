@@ -23,7 +23,7 @@ import config from "config";
 import data from "data";
 import * as moment from "moment";
 import {Resolver} from "components";
-import {rankString} from "misc";
+import {rankString} from "rank_utils";
 import {errorAlerter} from "misc";
 import player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";

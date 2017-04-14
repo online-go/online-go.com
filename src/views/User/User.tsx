@@ -25,7 +25,8 @@ import * as moment from "moment";
 import {Card, OGSComponent, Resolver, PlayerIcon} from "components";
 import {GameList} from "GameList";
 import {Player} from "Player";
-import {longRankString, rankString, updateDup, alertModerator, getGameResultText, ignore} from "misc";
+import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
+import {longRankString, rankString} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {PaginatedTable} from "PaginatedTable";
@@ -906,7 +907,7 @@ export class User extends Resolver<UserProperties, any> {
 
                             <div className="progress">
                                 <div className="progress-bar success" style={{width: this.state.statistics.winPerc + "%"}}>{this.state.statistics.wins || <span>&nbsp;</span>}</div>
-                                <div className="progress-bar primary" style={{width: this.state.statistics.lossPerc + "%"}}>{this.state.statistics.losses || <span>&nbsp;</span>}</div>
+                                <div className="progress-bar reject" style={{width: this.state.statistics.lossPerc + "%"}}>{this.state.statistics.losses || <span>&nbsp;</span>}</div>
                                 <div className="progress-bar info" style={{width: this.state.statistics.drawPerc + "%"}}>{this.state.statistics.draws || <span>&nbsp;</span>}</div>
                             </div>
 
