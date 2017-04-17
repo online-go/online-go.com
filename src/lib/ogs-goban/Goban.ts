@@ -3940,10 +3940,19 @@ export abstract class Goban extends EventEmitter {
         }, 10);
     }; /* }}} */
     private sendMove(mv) { /* {{{ */
-        let sent_time = new Date();
         let timeout = setTimeout(() => {
             this.message(_("Error submitting move"), -1);
-        }, 5000);
+
+            let second_try_timeout = setTimeout(() => {
+                window.location.reload();
+            }, 4000);
+            this.socket.send("game/move", mv, () => {
+                let confirmation_time = new Date();
+                clearTimeout(second_try_timeout);
+                this.clearMessage();
+            });
+
+        }, 4000);
         this.socket.send("game/move", mv, () => {
             let confirmation_time = new Date();
             clearTimeout(timeout);
