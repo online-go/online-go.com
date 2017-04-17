@@ -61,9 +61,8 @@ export class Settings extends React.PureComponent<{}, any> {
         this.resolve();
         this.vacation_interval = setInterval(() => {
             if (this.state.profile.on_vacation) {
-                let vacation_string = durationString(
-                    this.state.profile.vacation_left - (Date.now() - this.vacation_base_time) / 1000
-                );
+                let vacation_time_left = this.state.profile.vacation_left - (Date.now() - this.vacation_base_time) / 1000;
+                let vacation_string = vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase());
                 if (this.state.vacation_left !== vacation_string) {
                     this.setState({vacation_left: vacation_string});
                 }

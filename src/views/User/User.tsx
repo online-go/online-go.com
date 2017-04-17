@@ -88,6 +88,7 @@ export class User extends Resolver<UserProperties, any> {
             vs: {},
             ip: null,
             vacation_left: null,
+            vacation_left_text: "",
             ranks: [],
             syncRating: null,
             host_ip_settings: null,
@@ -103,7 +104,10 @@ export class User extends Resolver<UserProperties, any> {
                 if (this.resolved && this.state.user) {
                     if (this.state.user.on_vacation) {
                         let time_diff = Math.round(((Date.now()) - interval_start) / 1000);
-                        this.refs.vacation_left.innerText = durationString(this.state.user.vacation_left - time_diff);
+                        let vacation_time_left = this.state.user.vacation_left - time_diff;
+                        this.setState({
+                            vacation_left_text: vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase())
+                        })
                     }
                 }
             }, 1000);
@@ -762,9 +766,7 @@ export class User extends Resolver<UserProperties, any> {
                                     {(user.is_bot) && <dd ><Player user={user.bot_owner}/></dd>}
 
                                     {(user.on_vacation) && <dt ></dt>}
-                                    {(user.on_vacation) && <dd ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} <i className="fa fa-smile-o fa-spin"></i></h3></dd>}
-                                    {(user.on_vacation) && <dt ></dt>}
-                                    {(user.on_vacation) && <dd ><h5 style={inlineBlock} ref="vacation_left"></h5></dd>}
+                                    {(user.on_vacation) && <dd ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></dd>}
 
                                     <dt>{_("User Name")}</dt>
                                     {editing
