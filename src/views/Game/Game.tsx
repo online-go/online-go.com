@@ -26,7 +26,7 @@ import {OGSComponent, KBShortcut, UIPush} from "components";
 import {alertModerator, errorAlerter, ignore} from "misc";
 import {LineText} from "misc-ui";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GoEngine, GoMath} from "goban";
+import {Goban, GoEngine, GoMath, MoveTree} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -578,44 +578,50 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.goban.syncReviewMove();
     }}}
     nav_first() {{{
+        let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showFirst();
         this.goban.syncReviewMove();
     }}}
     nav_prev_10() {{{
+        let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
             this.goban.showPrevious();
         }
         this.goban.syncReviewMove();
     }}}
     nav_prev() {{{
+        let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showPrevious();
         this.goban.syncReviewMove();
     }}}
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {{{
+        let last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
         }
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showNext();
         this.goban.syncReviewMove();
     }}}
     nav_next_10() {{{
+        let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
             this.goban.showNext();
         }
         this.goban.syncReviewMove();
     }}}
     nav_last() {{{
+        let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
-        this.checkAndEnterAnalysis();
+        this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.jumpToLastOfficialMove();
         this.goban.syncReviewMove();
     }}}
@@ -658,13 +664,19 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.setState({autoplaying: true});
     }}}
 
-    checkAndEnterAnalysis() {{{
+    checkAndEnterAnalysis(move?:MoveTree) {{{
         if (this.goban.mode === "play" && this.goban.engine.phase !== "stone removal" && (!this.goban.engine.config.disable_analysis || this.goban.engine.phase === "finished")) {
             this.setState({variation_name: ""});
             this.goban.setMode("analyze");
+            if (move) {
+                this.goban.engine.jumpTo(move);
+            }
             return true;
         }
         if (this.goban.mode === "analyze") {
+            if (move) {
+                this.goban.engine.jumpTo(move);
+            }
             return true;
         }
         return false;
@@ -863,11 +875,12 @@ export class Game extends OGSComponent<GameProperties, any> {
         if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
         } else {
-            if (this.state.estimating_score) {
-                this.stopEstimatingScore();
-            }
+            let last_estimate_move = this.stopEstimatingScore();
 
             this.goban.setMode("analyze");
+            if (last_estimate_move) {
+                this.goban.engine.jumpTo(last_estimate_move);
+            }
         }
     }}}
     fork() {{{
@@ -1343,32 +1356,28 @@ export class Game extends OGSComponent<GameProperties, any> {
             .catch(ignore);
         }
     }}}
-    estimateScore() {{{
+    estimateScore():boolean {{{
         if (this.goban.engine.phase === "stone removal") {
             console.log("Cowardly refusing to enter score estimation phase while stone removal phase is active");
-            return;
+            return false;
         }
         this.setState({estimating_score: true});
-        //$scope.estimating_score = true;
-        //if (!$scope.$$phase) $scope.$digest();
-        //setTimeout(function() {
         this.goban.setScoringMode(true);
         this.sync_state();
-        /*
-            setTimeout(function() {
-                sync();
-            }, 1);
-        }, 1);
-        */
+        return true;
     }}}
-    stopEstimatingScore() {{{
+    stopEstimatingScore():MoveTree {{{
+        if (!this.state.estimating_score) {
+            return null;
+        }
         this.setState({estimating_score: false});
-        this.goban.setScoringMode(false);
+        let ret = this.goban.setScoringMode(false);
         this.goban.engine.clearRemoved();
         this.goban.hideScores();
         this.goban.score_estimate = null;
         //goban.engine.cur_move.clearMarks();
         this.sync_state();
+        return ret;
     }}}
     alertModerator() {{{
         alertModerator(this.game_id ? {game: this.game_id} : {review: this.review_id});

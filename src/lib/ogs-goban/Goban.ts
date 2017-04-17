@@ -4363,8 +4363,9 @@ export abstract class Goban extends EventEmitter {
             this.socket.send("review/append", msg);
         }
     }; /* }}} */
-    public setScoringMode(tf) { /* {{{ */
+    public setScoringMode(tf):MoveTree { /* {{{ */
         this.scoring_mode = tf;
+        let ret = this.engine.cur_move;
 
         if (this.scoring_mode) {
             this.message(_("Processing..."), -1);
@@ -4378,6 +4379,8 @@ export abstract class Goban extends EventEmitter {
             this.setMode("play");
             this.redraw(true);
         }
+
+        return ret;
     }; /* }}} */
     protected getShouldPlayVoiceCountdown():boolean {{{
         return false;
