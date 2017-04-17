@@ -47,7 +47,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
         if (!(player_id in block_state)) {
             block_state[player_id] = {};
         }
-        block_state[player_id].block_chat = tf;
+        block_state[player_id].block_games = tf;
         put("players/" + player_id + "/block", {block_games: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);

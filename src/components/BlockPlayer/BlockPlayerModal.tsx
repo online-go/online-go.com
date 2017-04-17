@@ -44,7 +44,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
     }
 
     toggleGameBlock = () => {
-        setGameBlock(this.props.playerId, !this.state.block_chat);
+        setGameBlock(this.props.playerId, !this.state.block_games);
         this.setState({block_games: !this.state.block_games});
     }
 
@@ -53,11 +53,11 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
             <div className="BlockPlayerModal">
                 <div className="details">
                     <div className="block-option">
-                        <input id="block-chat" type="checkbox" checked={this.state.block_chat} onChange={this.toggleChatBlock} /> 
+                        <input id="block-chat" type="checkbox" checked={this.state.block_chat} onChange={this.toggleChatBlock} />
                         <label htmlFor="block-chat">{_("Ignore chats and private messages")}</label>
                     </div>
                     <div className="block-option">
-                        <input id="block-game" type="checkbox" checked={this.state.block_games}  onChange={this.toggleGameBlock} /> 
+                        <input id="block-game" type="checkbox" checked={this.state.block_games}  onChange={this.toggleGameBlock} />
                         <label htmlFor="block-game">{_("Block user from accepting my open games")}</label>
                     </div>
                 </div>
