@@ -293,6 +293,10 @@ export class SeekGraph extends EventEmitter {
         let pos = getRelativeEventPosition(ev);
         let ret = [];
 
+        if (!pos) {
+            return ret;
+        }
+
         for (let id in this.challenges) {
             let C = this.challenges[id];
             if (dist(C, pos) < this.square_size * 2) {
