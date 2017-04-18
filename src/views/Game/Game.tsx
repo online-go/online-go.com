@@ -2164,7 +2164,7 @@ export class Game extends OGSComponent<GameProperties, any> {
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
                   if (engine.players[color].id) {
-                      player_cache.fetch(engine.players[color].id, ["country"]).then((player) => {
+                      player_cache.fetch(engine.players[color].id, ["country", "ui_class"]).then((player) => {
                           Object.assign(engine.players[color], player);
                       }).catch(ignore);
                   } else {
@@ -2191,7 +2191,7 @@ export class Game extends OGSComponent<GameProperties, any> {
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className={`${color} player-name-container`}>
-                             <Player user={goban.engine.players[color]}/>
+                             <Player user={goban.engine.players[color].id ? goban.engine.players[color].id : goban.engine.players[color]}/>
                           </div>
                       }
 
