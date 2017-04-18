@@ -1482,6 +1482,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     />
                             }
 
+                            {(!selected_round && tournament.group.hide_details) &&
+                                <div className='hide-details-note'>
+                                    {_("This tournament is part of a group that hides group activity and details, as such you must be a member of the group to see the tournament results.")}
+                                </div>
+                            }
 
 
                             {/* Round robin / simul style groups */}
