@@ -107,7 +107,7 @@ export class User extends Resolver<UserProperties, any> {
                         let vacation_time_left = this.state.user.vacation_left - time_diff;
                         this.setState({
                             vacation_left_text: vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase())
-                        })
+                        });
                     }
                 }
             }, 1000);
