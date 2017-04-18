@@ -20,6 +20,8 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {browserHistory} from "react-router";
 import {OGSComponent, AdUnit, PaginatedTable, SearchInput} from "components";
+import {navigateTo} from "misc";
+
 
 interface GroupListProperties {
 }
@@ -57,7 +59,7 @@ export class GroupList extends OGSComponent<GroupListProperties, any> {
                         source={`groups/`}
                         orderBy={["-member_count"]}
                         filter={{ "name__istartswith": "" }}
-                        onRowClick={(row) => browserHistory.push(`/group/${row.id}`)}
+                        onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
                         columns={[
                             {header: "",  className: "group-icon-header",
                                 render: (X) => (<img className='group-icon' src={X.icon} width="64" height="64" />)},

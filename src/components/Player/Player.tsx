@@ -249,6 +249,9 @@ $(document).on("mousedown", ".Player", (ev) => {
                 minWidth: 240,
                 minHeight: 250,
             });
+
+            ev.preventDefault();
+            return false;
         }
     } catch (e) {
         console.error(e);

@@ -143,7 +143,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                     `MiniGoban `
                     + (this.props.noLink ? " nolink" : " link")
                 }
-                onClick={this.gotoGame}
+                onMouseDown={this.gotoGame}
                 >
                 <div className="inner-container">
                     <PersistentElement className={

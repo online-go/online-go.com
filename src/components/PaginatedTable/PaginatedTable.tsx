@@ -45,7 +45,7 @@ interface PaginatedTableProperties {
     filter?: any;
     orderBy?: Array<string>;
     groom?: ((data: Array<any>) => Array<any>);
-    onRowClick?: (row) => any;
+    onRowClick?: (row, ev) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
     startingPage?: number;
@@ -262,7 +262,7 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
                                 <td key={this.key("td", row.id, c)} className={cls(row, column)} {...column.cellProps}>{column_render(column, row)}</td>
                             ));
                             if (this.props.onRowClick) {
-                                return (<tr key={this.key("tr", row.id)} onClick={(ev) => this.props.onRowClick(row)}>{cols}</tr>);
+                                return (<tr key={this.key("tr", row.id)} onMouseUp={(ev) => this.props.onRowClick(row, ev)}>{cols}</tr>);
                             } else {
                                 return (<tr key={this.key("tr", row.id)}>{cols}</tr>);
                             }

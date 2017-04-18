@@ -26,6 +26,7 @@ import {SearchInput} from "components";
 import {StarRating} from "StarRating";
 import {longRankString, rankString} from "rank_utils";
 import {AdUnit} from "AdUnit";
+import {navigateTo} from "misc";
 import data from "data";
 import * as moment from "moment";
 
@@ -94,7 +95,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                 return arr;
                             }
                         }
-                        onRowClick={(row) => browserHistory.push(`/puzzle/${row.starting_puzzle.id}`)}
+                        onRowClick={(row, ev) => navigateTo(`/puzzle/${row.starting_puzzle.id}`, ev)}
                         columns={[
                             {header: "",  className: () => "icon",
                              render: (X) => (

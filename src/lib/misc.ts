@@ -399,13 +399,28 @@ export function shouldOpenNewTab(event) { /* {{{ */
     return false;
 } /* }}} */
 
-export function navigateTo(path, event?) {
+let last_navigateTo = {
+    path: null,
+    timestamp: null
+};
+
+export function navigateTo(path, event?) {{{
+    if (last_navigateTo.path === path && Date.now() - last_navigateTo.timestamp < 100) {
+        /* debounce, this is for elements that need to have both onClick and onMouseUp to
+         * handle various use cases in different browsers */
+        console.log('navigate debounce');
+        return false;
+    }
+
+    last_navigateTo.path = path;
+    last_navigateTo.timestamp = Date.now();
+
     if (event && shouldOpenNewTab(event)) {
         window.open(path, "_blank");
     } else {
         browserHistory.push(path);
     }
-}
+}}}
 
 export function deepCompare(x: any, y: any) {{{
     // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript

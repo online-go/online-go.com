@@ -144,6 +144,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                             + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
                  onClick={this.gotoGame}
+                 onMouseUp={this.gotoGame}
                 >
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>

@@ -37,6 +37,7 @@ import { Router, Route, IndexRoute, browserHistory } from "react-router";
 //import {Promise} from "es6-promise";
 import {get} from "requests";
 import {errorAlerter} from "misc";
+import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
@@ -191,9 +192,12 @@ browserHistory.listen(location => {
             window["ga"]("set", "page", cleaned_path);
             window["ga"]("send", "pageview");
         }
+
+        close_all_popovers();
     } catch (e) {
         console.log(e);
     }
+
 });
 
 
