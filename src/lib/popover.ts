@@ -81,7 +81,9 @@ export function popover(config: PopoverConfig): PopOver {
     let minHeight: number = config.minHeight || 25;
     let x: number = 0;
     let y: number = 0;
-    let bounds = {x: document.body.scrollLeft + window.innerWidth - 16 , y: document.body.scrollTop + window.innerHeight - 16};
+    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    let bounds = {x: scrollLeft + window.innerWidth - 16 , y: scrollTop + window.innerHeight - 16};
 
     if (config.at) {
         x = config.at.x;
@@ -89,9 +91,12 @@ export function popover(config: PopoverConfig): PopOver {
     }
 
     x = Math.min(x, bounds.x - minWidth);
-    y = Math.min(y, bounds.y - minHeight);
 
-    container.css({minWidth: minWidth, minHeight: minHeight, top: y, left: x});
+    if (y < bounds.y - minHeight) {
+        container.css({minWidth: minWidth, top: y, left: x});
+    } else {
+        container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+    }
 
     $(document.body).append(backdrop);
     $(document.body).append(container);
