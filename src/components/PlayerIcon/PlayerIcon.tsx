@@ -62,9 +62,11 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         if (!this.state.url) {
             this.fetch(id, props);
         }
-        this.listener = player_cache.watch(id, (_user) => {
-            this.fetch(id, this.props);
-        });
+        if (id && id > 0) {
+            this.listener = player_cache.watch(id, (_user) => {
+                this.fetch(id, this.props);
+            });
+        }
     }
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
@@ -88,12 +90,14 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         if (current_id !== next_id) {
             this.setState({url: null});
             this.listener.remove();
-            this.listener = player_cache.watch(next_id, (_user) => {
-                this.fetch(next_id, next_props);
-            });
+            if (next_id && next_id > 0) {
+                this.listener = player_cache.watch(next_id, (_user) => {
+                    this.fetch(next_id, next_props);
+                });
+            }
 
 
-            if (isNaN(next_id)) {
+            if (!next_id || isNaN(next_id)) {
                 return;
             }
 

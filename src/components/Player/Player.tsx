@@ -68,9 +68,11 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
         }
         let player_id = typeof(this.props.user) === "number" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-        player_cache.fetch(player_id, ["username", "ui_class", "ranking", "professional"]).then((user) => {
-            this.setState({user: user});
-        }).catch(errorLogger);
+        if (player_id && player_id > 0) {
+            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "professional"]).then((user) => {
+                this.setState({user: user});
+            }).catch(errorLogger);
+        }
 
         this.syncUpdateOnline(this.props.user);
     }}}
@@ -103,11 +105,12 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             this.setState({user: new_props.user});
         }
 
-        let player_id = typeof(this.props.user) === "number" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-        player_cache.fetch(player_id, ["username", "ui_class", "ranking", "professional"]).then((user) => {
-            this.setState({user: user});
-        }).catch(errorLogger);
-
+        let player_id = typeof(new_props.user) === "number" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+        if (player_id && player_id > 0) {
+            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "professional"]).then((user) => {
+                this.setState({user: user});
+            }).catch(errorLogger);
+        }
         this.syncUpdateOnline(new_props.user);
     }}}
     componentDidUpdate() {{{

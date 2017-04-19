@@ -999,7 +999,7 @@ export class GoEngine {
     }; /* }}} */
 
     public getMoveNumber() { /* {{{ */
-        return this.cur_move.move_number;
+        return this.cur_move ? this.cur_move.move_number : 0;
     }; /* }}} */
     public getCurrentMoveNumber() { /* {{{ */
         return this.last_official_move.move_number;
@@ -1732,7 +1732,9 @@ export class GoEngine {
         return () => {
             cb();
             /* jump to farthest loaded move so we don't begin at the first branch point */
-            self.jumpTo(farthest_move);
+            if (farthest_move) {
+                self.jumpTo(farthest_move);
+            }
         };
     }; /* }}} */
     public estimateScore(trials, tolerance) { /* {{{ */
