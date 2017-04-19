@@ -124,7 +124,12 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'move-number' :
                     lst.sort((a, b) => {
                         try {
-                            return a.json.moves.length - b.json.moves.length || a.id - b.id;
+                            if(a.json && b.json){
+                                return a.json.moves.length - b.json.moves.length || a.id - b.id;
+                            }
+                            else{
+                                return a.move_number - b.move_number;
+                            }
                         } catch (e) {
                             console.error(a, b, e);
                             return 0;
@@ -161,8 +166,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                               <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
-                              <div >{_("Move")}</div>
-                              <div >{_("Game")}</div>
+                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{_("Move")}</div>
+                              <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
                               <div className="text-align-left">{_("Black")}</div>
                               <div></div>
                               <div className="text-align-left">{_("White")}</div>

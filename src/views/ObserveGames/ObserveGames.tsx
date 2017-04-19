@@ -84,6 +84,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         setTimeout(this.refresh, 1);
     }}}
     refresh = () => {{{
+
         let now = Date.now();
         //if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
         if (this.last_refresh != null && (now - this.last_refresh < 1.0)) {
@@ -190,7 +191,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                 </div>
             </div>
 
-            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} />
+            <GameList list={this.state.game_list} disableSort={false} emptyMessage={_("No games being played")} />
         </div>
         );
     }
