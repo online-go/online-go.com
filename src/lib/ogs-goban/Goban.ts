@@ -784,6 +784,10 @@ export abstract class Goban extends EventEmitter {
             }
 
             if ("gamedata" in obj) {
+                if (obj.gamedata.phase == "stone removal") {
+                    obj.gamedata.phase = "finished";
+                }
+
                 this.load(obj.gamedata);
                 this.review_had_gamedata = true;
                 $("#option-review-sgf-download-a").removeClass("hidden");
