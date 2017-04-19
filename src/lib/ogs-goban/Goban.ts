@@ -784,7 +784,7 @@ export abstract class Goban extends EventEmitter {
             }
 
             if ("gamedata" in obj) {
-                if (obj.gamedata.phase == "stone removal") {
+                if (obj.gamedata.phase === "stone removal") {
                     obj.gamedata.phase = "finished";
                 }
 
