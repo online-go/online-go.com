@@ -196,3 +196,5 @@ export const player_cache = {
 };
 
 export default player_cache;
+
+window['player_cache'] = player_cache;
