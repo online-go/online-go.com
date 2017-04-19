@@ -1107,6 +1107,7 @@ export abstract class Goban extends EventEmitter {
                 this.title_div.append(title);
             }
         }
+        this.emit('title', title);
     } /* }}} */
 
     private getWidthForSquareSize(square_size) { /* {{{ */

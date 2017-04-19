@@ -457,6 +457,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         /* }}} */
 
         this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
+        this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
         this.goban.on("show-submit", (tf) => {
