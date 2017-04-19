@@ -171,7 +171,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         </div>
                     </div>
                 </div>
-                {(user.id !== this.props.playerId || null) &&
+                {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
@@ -179,7 +179,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
+                {!user.anonymous && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
                 { ((user.is_moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
