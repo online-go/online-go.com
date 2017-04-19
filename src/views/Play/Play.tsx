@@ -130,7 +130,7 @@ export class Play extends React.Component<PlayProperties, any> {
     cellBreaks(amount) {
         let result = [];
         for (let i = 0; i < amount; ++i) {
-            result.push(<span className="cell break"></span>);
+            result.push(<span key={i} className="cell break"></span>);
         }
         return result;
     }
