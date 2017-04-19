@@ -106,6 +106,7 @@ let channels = { };
 function getChannel(channel) { /* {{{ */
     if (!(channel in channels)) {
         channels[channel] = {
+            name: "<error>",
             chat_log: [],
             chat_ids: {},
             unread_ct: 0,
@@ -117,6 +118,7 @@ function getChannel(channel) { /* {{{ */
     }
     return channels[channel];
 }; /* }}} */
+
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
     render() {
@@ -133,7 +135,6 @@ export class Chat extends React.Component<ChatProperties, any> {
     received_messages = {};
     online_count_interval = null;
     joining_channel = {};
-    channel_names = {};
     defered_state_update = null;
     send_tokens = 5;
     scrolled_to_bottom: boolean = true;
@@ -171,11 +172,21 @@ export class Chat extends React.Component<ChatProperties, any> {
     resolve() {{{
         if (!data.get("config.user").anonymous) {
             get("me/groups", {page_size: 30})
-            .then((groups) => this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))}))
+            .then((groups) => {
+                this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
+                groups.results.map((g) => {
+                    getChannel("group-" + g.id).name = g.name;
+                });
+            })
             .catch((err) => 0);
 
             get("me/tournaments", {ended__isnull:true, page_size: 30})
-            .then((tournaments) => this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))}))
+            .then((tournaments) => {
+                this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))});
+                tournaments.results.map((t) => {
+                    getChannel("tournament-" + t.id).name = t.name;
+                });
+            })
             .catch((err) => 0);
         }
     }}}
@@ -230,6 +241,9 @@ export class Chat extends React.Component<ChatProperties, any> {
 
     connect = () => {{{
         channels = {};
+        global_channels.map((chan) => getChannel(chan.id).name = chan.name);
+        this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
+        this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).name = t.name);
         comm_socket.on("chat-message", this.onChatMessage);
         comm_socket.on("chat-join", this.onChatJoin);
         comm_socket.on("chat-part", this.onChatPart);
@@ -271,10 +285,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 if (name_match_regex.test(obj.message.m)) {
                     if (!(obj.channel in this.joining_channel)) {
                         mentioned = true;
-                        emitNotification("[" + this.channel_names[obj.channel] + "]: " + obj.username,
-                                         "[" + this.channel_names[obj.channel] + "] " + obj.username + ": " + obj.message.m);
-                    } else {
-                        //console.log('Not sending name match notification since we just joined the channel ', obj.channel);
+                        emitNotification("[" + getChannel(obj.channel).name + "]: " + obj.username,
+                                         "[" + getChannel(obj.channel).name + "] " + obj.username + ": " + obj.message.m);
                     }
                 }
             }
@@ -894,24 +906,6 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
     let ret = [profanity_filter(body)];
     for (let r of replacements) {
         ret = [].concat.apply([], ret.map((text_fragment) => {
-            //console.log(text_fragment, text_fragment.split(r.split), r.split)
-
-            /*
-            let new_fragments = text_fragment.split(r.split)
-            if (new_fragments.length > 1) {
-                let found_match = false;
-                for (let f of new_fragments) {
-                    if (f.search(r.pattern) >= 0) {
-                        found_match = true;
-                        break;
-                    }
-                }
-                if (!found_match) {
-                    console.error('Pattern did not match split: ', r.pattern, r.split, text_fragment, new_fragments);
-                }
-            }
-            */
-
             return text_fragment.split(r.split);
         }));
     }
