@@ -60,14 +60,18 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'clock':
                     lst.sort((a, b) => {
                         try {
-                            if (a.json.clock.current_player === this.props.player.id && b.json.clock.current_player !== this.props.player.id) {
+                            let a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            let b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+
+                            /* not my move? push to bottom (or top) */
+                            if (a_clock.current_player === this.props.player.id && b_clock.current_player !== this.props.player.id) {
                                 return -1;
                             }
-                            if (b.json.clock.current_player === this.props.player.id && a.json.clock.current_player !== this.props.player.id) {
+                            if (b_clock.current_player === this.props.player.id && a_clock.current_player !== this.props.player.id) {
                                 return 1;
                             }
 
-                            return a.json.clock.expiration - b.json.clock.expiration || a.id - b.id;
+                            return a_clock.expiration - b_clock.expiration || a.id - b.id;
                         } catch (e) {
                             console.error(a, b, e);
                             return 0;
@@ -79,14 +83,18 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'opponent-clock':
                     lst.sort((a, b) => {
                         try {
-                            if (a.json.clock.current_player === this.props.player.id && b.json.clock.current_player !== this.props.player.id) {
+                            let a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            let b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+
+                            /* not my move? push to bottom (or top) */
+                            if (a_clock.current_player === this.props.player.id && b_clock.current_player !== this.props.player.id) {
                                 return 1;
                             }
-                            if (b.json.clock.current_player === this.props.player.id && a.json.clock.current_player !== this.props.player.id) {
+                            if (b_clock.current_player === this.props.player.id && a_clock.current_player !== this.props.player.id) {
                                 return -1;
                             }
 
-                            return a.json.clock.expiration - b.json.clock.expiration || a.id - b.id;
+                            return a_clock.expiration - b_clock.expiration || a.id - b.id;
                         } catch (e) {
                             console.error(a, b, e);
                             return 0;
@@ -124,7 +132,10 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'move-number' :
                     lst.sort((a, b) => {
                         try {
-                            return a.json.moves.length - b.json.moves.length || a.id - b.id;
+                            let a_move_num = a.goban ? a.goban.engine.getMoveNumber() : a.json.moves.length;
+                            let b_move_num = b.goban ? b.goban.engine.getMoveNumber() : b.json.moves.length;
+
+                            return a_move_num - b_move_num || a.id - b.id;
                         } catch (e) {
                             console.error(a, b, e);
                             return 0;
@@ -175,6 +186,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             black={game.black}
                             white={game.white}
                             player={this.props.player}
+                            gobanref={(goban) => game.goban = goban}
                             />)}
                 </div>
             );

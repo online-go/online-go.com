@@ -29,6 +29,7 @@ interface GobanLineSummaryProps {
     black: any;
     white: any;
     player?: any;
+    gobanref?: (goban:Goban) => void;
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
@@ -83,6 +84,10 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             "white_pause_text": new_text.white_pause_text,
             "black_pause_text": new_text.black_pause_text,
         }));
+
+        if (this.props.gobanref) {
+            this.props.gobanref(this.goban);
+        }
     }}}
 
     destroy() {
