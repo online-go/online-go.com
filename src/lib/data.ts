@@ -49,7 +49,7 @@ export class Listener {
     }
 }
 
-export function set(key: string, value: any): any {
+export function set(key: string, value: any, dontTriggerListeners?:boolean): any {
     if (typeof(value) === "undefined") {
         remove(key);
         return value;
@@ -61,6 +61,11 @@ export function set(key: string, value: any): any {
     } catch (e) {
         console.error(e);
     }
+
+    if (dontTriggerListeners) {
+        return value;
+    }
+
     if (key in listeners) {
         for (let id in listeners[key]) {
             listeners[key][id].cb(value, key);
