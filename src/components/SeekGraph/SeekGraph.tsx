@@ -703,6 +703,10 @@ export class SeekGraph extends EventEmitter {
                     }
                 }
 
+                if (C.time_control_parameters.pause_on_weekends) {
+                    details_html += ", " + _("pause on weekends");
+                }
+
                 if (C.name.length > 3) {
                     details_html += ", \"" + ($("<div>").text(C.name).html()) + "\"";
                 }

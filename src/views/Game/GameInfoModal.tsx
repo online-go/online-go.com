@@ -39,6 +39,12 @@ export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
     render() {
         const game = this.props.game;
 
+        if (game.config && game.config.pause_on_weekends) {
+            /* There was a bug in our tournament creation code that didn't
+             * stick this value in the time_control object, so this helps with
+             * display on those games. */
+            game.time_control.pause_on_weekends = game.config.pause_on_weekends;
+        }
         let time_control_description = timeControlDescription(game.time_control);
 
         return (

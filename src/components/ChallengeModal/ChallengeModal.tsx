@@ -1095,6 +1095,12 @@ export function challenge_text_description(challenge) { /* {{{ */
     } else {
         details_html += ", " + _("no time limits");
     }
+
+
+    if (typeof(g.time_control) === "object" && g.time_control.pause_on_weekends) {
+        details_html += ", " + _("pause on weekends");
+    }
+
     details_html +=
         ", " + interpolate(_("%s handicap"), [(g.handicap < 0 ? _("auto") : g.handicap)])
         + ((g.komi == null || typeof(g.komi) === "object") ? "" : (", " + interpolate(_("{{komi}} komi"), {komi: g.komi})))
