@@ -34,6 +34,7 @@ import {Player} from "./Player";
 
 interface PlayerDetailsProperties {
     playerId: number;
+    noextracontrols?: boolean;
 }
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
@@ -179,7 +180,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {!user.anonymous && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
+                {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
                 { ((user.is_moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>

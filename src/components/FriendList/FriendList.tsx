@@ -80,7 +80,7 @@ export class FriendList extends React.PureComponent<{}, any> {
             <div className="FriendList">
                 {this.state.friends.map((friend) => (
                     <div key={friend.id} >
-                        <Player user={friend} online rank />
+                        <Player user={friend} online rank noextracontrols />
                     </div>
                 ))}
                 {(this.state.friends.length === 0 || null) &&

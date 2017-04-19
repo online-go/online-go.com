@@ -39,6 +39,7 @@ interface PlayerProperties {
     online?: boolean;
     nolink?: boolean;
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
+    noextracontrols?: boolean; /* Disable extra controls */
     disableCacheUpdate?: boolean;
 }
 
@@ -161,6 +162,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += " nodetails";
         }
 
+        if (this.props.noextracontrols) {
+            main_attrs.className += " noextracontrols";
+        }
+
         if (this.props.rank !== false) {
             if ("rank" in player && !("ranking" in player)) {
                 player.ranking = player.rank;
@@ -235,17 +240,23 @@ $(document).on("mousedown", ".Player", (ev) => {
             }
             window.open(uri , "_blank");
         } else {
+            let noextracontrols = false;
+
             if ($(ev.target).hasClass("nodetails")) {
                 close_all_popovers();
                 browserHistory.push(`/player/${player_id}/`);
                 return;
             }
 
+            if ($(ev.target).hasClass("noextracontrols")) {
+                noextracontrols = true;
+            }
+
 
             let offset = elt.offset();
 
             popover({
-                elt: (<PlayerDetails playerId={parseInt(player_id)} />),
+                elt: (<PlayerDetails playerId={parseInt(player_id)} noextracontrols={noextracontrols} />),
                 at: {x: offset.left, y: offset.top + elt.height()},
                 minWidth: 240,
                 minHeight: 250,
