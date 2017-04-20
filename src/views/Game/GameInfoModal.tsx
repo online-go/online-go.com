@@ -28,6 +28,7 @@ import {handicapText} from "GameAcceptModal";
 
 interface GameInfoModalProperties {
     game: GoEngine;
+    creatorId: number;
 }
 
 
@@ -64,6 +65,8 @@ export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
               <div className="body">
                 <dl className="horizontal">
                     <dt>{_("Game")}</dt><dd>{game.config.game_name}</dd>
+                    {this.props.creatorId && <dt>{_("Creator")}</dt>}
+                    {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
                     <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.black} /></dd>
                     <dt>{_("White")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.white} /></dd>
                     <dt>{_("Time")}</dt>
@@ -90,8 +93,8 @@ export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(game): void {
-    openModal(<GameInfoModal game={game} fastDismiss />);
+export function openGameInfoModal(game:GoEngine, creator_id: number): void {
+    openModal(<GameInfoModal game={game} creatorId={creator_id} fastDismiss />);
 }
 
 function yesno(tf: boolean) {{{

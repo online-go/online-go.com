@@ -95,6 +95,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     };
 
     game_id: number;
+    creator_id: number;
     review_id: number;
     goban_div: any; ;
     white_clock: any; ;
@@ -300,6 +301,7 @@ export class Game extends OGSComponent<GameProperties, any> {
     deinitialize() {{{
         this.chat_proxy.part();
         this.chat_log = [];
+        this.creator_id = null;
         $(window).off("resize", this.onResize as () => void);
         $(document).off("keypress", this.setLabelHandler);
         try {
@@ -544,6 +546,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                 if (game.players.black.id) {
                     player_cache.update(game.players.black, true);
                 }
+                this.creator_id = game.creator;
 
                 let review_list = [];
                 for (let k in game.gamedata.reviews) {
@@ -866,7 +869,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         goban.redraw(true);
     }}}
     showGameInfo() {{{
-        openGameInfoModal(this.goban.engine);
+        openGameInfoModal(this.goban.engine, this.creator_id || this.goban.review_owner_id);
     }}}
     showLinkModal() {{{
         openGameLinkModal(this.goban);
