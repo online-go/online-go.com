@@ -196,13 +196,13 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", {ended__isnull: true, order_by: "name"}).then((res) => {
+        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"my_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
-        get("tournaments", {started__isnull: true, group__isnull: true, order_by: "name"}).then((res) => {
+        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
