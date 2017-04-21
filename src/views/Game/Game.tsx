@@ -2253,29 +2253,16 @@ export class Game extends OGSComponent<GameProperties, any> {
 
         return (
             <div className="action-bar">
-                {((this.state.view_mode !== "portrait") || null) &&
-                    <span className="icons">
-                          {(this.tournament_id || null) &&
-                              <Link className="plain" to={`/tournament/${this.tournament_id}`}><i className="fa fa-trophy" title={_("This is a tournament game")}></i></Link>
-                          }
-                          {(this.ladder_id || null) &&
-                              <Link className="plain" to={`/ladder/${this.ladder_id}`}><i className="fa fa-trophy" title={_("This is a ladder game")}></i></Link>
-                          }
-                          {(goban && goban.engine.config["private"] || null) &&
-                              <i className="fa fa-lock clickable" onClick={this.openACL}></i>
-                          }
-                    </span>
-                }
-
-                    <span className="controls">
-                        <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
-                        <span onClick={this.nav_prev_10} className="move-control"><i className="fa fa-backward"></i></span>
-                        <span onClick={this.nav_prev} className="move-control"><i className="fa fa-step-backward"></i></span>
-                        <span onClick={this.nav_play_pause} className="move-control"><i className={"fa " + (this.state.autoplaying ? "fa-pause" : "fa-play")}></i></span>
-                        <span onClick={this.nav_next} className="move-control"><i className="fa fa-step-forward"></i></span>
-                        <span onClick={this.nav_next_10} className="move-control"><i className="fa fa-forward"></i></span>
-                        <span onClick={this.nav_last} className="move-control"><i className="fa fa-fast-forward"></i></span>
-                    </span>
+                <span className="icons" />{/* for flex centering */}
+                <span className="controls">
+                    <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
+                    <span onClick={this.nav_prev_10} className="move-control"><i className="fa fa-backward"></i></span>
+                    <span onClick={this.nav_prev} className="move-control"><i className="fa fa-step-backward"></i></span>
+                    <span onClick={this.nav_play_pause} className="move-control"><i className={"fa " + (this.state.autoplaying ? "fa-pause" : "fa-play")}></i></span>
+                    <span onClick={this.nav_next} className="move-control"><i className="fa fa-step-forward"></i></span>
+                    <span onClick={this.nav_next_10} className="move-control"><i className="fa fa-forward"></i></span>
+                    <span onClick={this.nav_last} className="move-control"><i className="fa fa-fast-forward"></i></span>
+                </span>
 
                 {((this.state.view_mode !== "portrait") || null) &&
                 <span className="move-number">
@@ -2285,6 +2272,7 @@ export class Game extends OGSComponent<GameProperties, any> {
             </div>
         );
     }}}
+
     frag_dock() {{{
         let goban = this.goban;
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
@@ -2308,6 +2296,16 @@ export class Game extends OGSComponent<GameProperties, any> {
 
         return (
             <Dock>
+                {(this.tournament_id || null) &&
+                    <Link className="plain" to={`/tournament/${this.tournament_id}`}><i className="fa fa-trophy" title={_("This is a tournament game")}/> {_("Tournament")}</Link>
+                }
+                {(this.ladder_id || null) &&
+                    <Link className="plain" to={`/ladder/${this.ladder_id}`}><i className="fa fa-trophy" title={_("This is a ladder game")}/> {_("Ladder")}</Link>
+                }
+                {(this.goban && this.goban.engine.config["private"] || null) &&
+                    <a onClick={this.openACL}><i className="fa fa-lock"/> {pgettext("Control who can access the game or review", "Access settings")}</a>
+                }
+
                 <a>
                     <i className={"fa volume-icon " +
                         (this.state.volume === 0 ? "fa-volume-off"
