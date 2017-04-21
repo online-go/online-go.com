@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {OGSComponent} from "components";
-import {_, interpolate} from "translate";
+import {_, pgettext, interpolate} from "translate";
 import preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
@@ -165,14 +165,14 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 <div className="GameList GobanLineSummaryContainer">
                     {this.props.player
                         ? <div className="GobanLineSummaryContainerHeader">
-                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{_("Move")}</div>
+                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{pgettext("Game list move number", "Move")}</div>
                               <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
                               <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
                               <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
                               <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
-                              <div >{_("Move")}</div>
+                              <div >{pgettext("Game list move number", "Move")}</div>
                               <div >{_("Game")}</div>
                               <div className="text-align-left">{_("Black")}</div>
                               <div></div>

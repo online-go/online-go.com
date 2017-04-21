@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link} from "react-router";
-import {_, interpolate} from "translate";
+import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
@@ -653,11 +653,12 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
 
         let user_count = (channel: string) => {
+            let leave_text = pgettext("Leave chat room", "leave");
             let c = getChannel(channel);
             if (c.unread_ct) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={_("leave")} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
             } else if (channel in this.state.joined_channels) {
-                return <span className="unread-count" data-count="" data-leave={_("leave")} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count="" data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
             }
             /*
             if (c.user_count) {

@@ -168,7 +168,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                             <div className="left">
                                 {this.state.page > 1 ? <i className="fa fa-step-backward" onClick={this.prevPage}/> : <i className="fa"/>}
                                 <input onChange={this.setPage} value={this.state.page}/>
-                                <span className="of"> {_("of")} </span>
+                                <span className="of"> / </span>
                                 <span className="total">{this.state.num_pages.toString()}</span>
                                 {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
                             </div>
