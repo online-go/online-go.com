@@ -28,6 +28,7 @@ import {challenge_text_description} from "ChallengeModal";
 import {Player} from "Player";
 import {FabX, FabCheck} from "material";
 import {EventEmitter} from "eventemitter3";
+import {toast} from 'toast';
 
 
 declare let Notification: any;
@@ -78,25 +79,6 @@ function formatTime(seconds) { /* {{{ */
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;
-
-function notificationPermissionRequest() {
-    if (already_asked_for_permission) { return; }
-    already_asked_for_permission = true;
-    try {
-        //NOTE: Store this perhaps and don't try to emit a notification if we don't have permission
-        Notification.requestPermission((perm) => {
-            if (perm === "granted") {
-                console.log("granted notification permission");
-            } else {
-                console.log("permission not granted for notifications");
-            }
-        });
-    } catch (e) {
-        console.log("Error requesting notification permissions: ", e);
-    }
-}
-console.log("TODO: Need to ask for notification permissions");
-
 let notification_timeout = null;
 let sent = {};
 $(window).on("storage", (event) => {
@@ -113,6 +95,28 @@ $(window).on("storage", (event) => {
 
 export function emitNotification(title, body, cb?) {{{
     try {
+        if (!preferences.get('desktop-notifications')) {
+            return;
+        }
+
+        if (!preferences.get("asked-to-enable-desktop-notifications") && Notification.permission === "default") {
+            preferences.set("asked-to-enable-desktop-notifications", true);
+            let t = toast(
+                <div>
+                    {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
+                    <FabCheck onClick={() => {
+                        Notification.requestPermission().then((perm) => {
+                            emitNotification(title, body, cb);
+                        }).catch((err) => console.error(err));
+                        t.close();
+                    }}/>
+                    <FabX onClick={() => t.close()}/>
+                </div>
+            );
+
+            return;
+        }
+
         if (ogs_has_focus()) {
             //console.log('Not emitting notification, ogs has focus');
             return;
@@ -147,11 +151,15 @@ export function emitNotification(title, body, cb?) {{{
                     console.error(e);
                 }
 
-                let notification = new Notification(title, {body: body,
-                    icon: "https://cdn.online-go.com/favicon.ico",
-                    dir: "auto",
-                    lang: "",
-                    tag: "ogs"});
+                let notification = new Notification(title,
+                    {
+                        body: body,
+                        icon: "https://cdn.online-go.com/favicon.ico",
+                        dir: "auto",
+                        lang: "",
+                        tag: "ogs"
+                    }
+                );
                 if (cb) {
                     notification.onclick = cb;
                 }
@@ -399,7 +407,6 @@ class NotificationManager {
         }
     }}}
     rebuildNotificationList() {{{
-        /* Notification Count */
         this.ordered_notifications = [];
 
         this.unread_notification_count = 0;

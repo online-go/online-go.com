@@ -31,11 +31,12 @@ let defaults = {
     "auto-advance-after-submit": true,
     "notification-timeout": 10,
     "autoplay-delay": 10000,
+    "desktop-notifications": true,
+    "asked-to-enable-desktop-notifications": false,
 
     "sound-enabled": true,
     "sound-volume": 0.5,
     "sound-voice-countdown": true,
-
 
     "goban-theme-board": null,
     "goban-theme-black": null,

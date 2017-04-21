@@ -64,7 +64,10 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
     ReactDOM.render(element, container[0]);
     let ret = new Toast(container[0], timeout);
     container.click((ev) => {
-        if (ev.target.nodeName !== "BUTTON") {
+        if (
+            ev.target.nodeName !== "BUTTON"
+            && ev.target.className.indexOf('fab') === -1
+        ) {
             ret.close();
         }
     });

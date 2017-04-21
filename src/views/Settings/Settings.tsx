@@ -27,6 +27,7 @@ import {LanguagePicker} from "LanguagePicker";
 import preferences from "preferences";
 import data from "data";
 import {current_language} from "translate";
+import {toast} from 'toast';
 
 declare var swal;
 
@@ -36,6 +37,16 @@ export class Settings extends React.PureComponent<{}, any> {
 
     constructor(props) {
         super(props);
+
+        let desktop_notifications_enabled = false;
+
+        try {
+            desktop_notifications_enabled = preferences.get("desktop-notifications") && (Notification as any).permission === "granted";
+        } catch (e) {
+            /* not all browsers support the Notification API */
+        }
+
+
         this.state = {
             resolved: false,
             profile: {email: ""},
@@ -54,6 +65,8 @@ export class Settings extends React.PureComponent<{}, any> {
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
+            desktop_notifications_enabled: desktop_notifications_enabled,
+            desktop_notifications_enableable: typeof(Notification) !== "undefined"
         };
     }
 
@@ -209,6 +222,43 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("auto-advance-after-submit", ev.target.checked),
         this.setState({autoadvance: preferences.get("auto-advance-after-submit")});
     }}}
+    updateDesktopNotifications = (ev) => {{{
+        let enabled = ev.target.checked;
+        console.log('=>', enabled);
+
+        if (!enabled) {
+            this.setState({'desktop_notifications_enabled': false});
+        }
+
+        try {
+            preferences.set('desktop-notifications', enabled);
+
+            if (enabled) {
+                if ((Notification as any).permission === 'denied') {
+                    this.setState({'desktop_notifications_enabled': false});
+                    toast(<div>{_("You have previously denied desktop notifications on OGS, you will need to go into your browser settings and change your decision there to enable them.")}</div>);
+                }
+
+                if ((Notification as any).permission === 'granted') {
+                    this.setState({'desktop_notifications_enabled': true});
+                }
+
+                if ((Notification as any).permission === 'default') {
+                    Notification.requestPermission((perm) => {
+                        if (perm === "granted") {
+                            this.setState({'desktop_notifications_enabled': true});
+                            console.log("granted notification permission");
+                        } else {
+                            this.setState({'desktop_notifications_enabled': false});
+                            toast(<div>{_("You have previously denied desktop notifications on OGS, you will need to go into your browser settings and change your decision there to enable them.")}</div>);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }}}
 
     updatePassword1 = (ev) => {{{
         this.setState({password1: ev.target.value});
@@ -299,13 +349,13 @@ export class Settings extends React.PureComponent<{}, any> {
         });
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
-    resendValidationEmail = () => {
+    resendValidationEmail = () => {{{
         post(`me/validateEmail`, {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })
         .catch(errorAlerter);
-    }
+    }}}
 
     render() {
         let user = data.get("user");
@@ -330,10 +380,11 @@ export class Settings extends React.PureComponent<{}, any> {
         return (
         <div className="Settings container">
             <Card>
-                <h3>{_("Display Settings")}</h3>
+                <h3>{_("General Settings")}</h3>
                 <dl>
                     <dt>{_("Language")}</dt>
                     <dd><LanguagePicker /></dd>
+
                     <dt>{_("Profanity Filter")}</dt>
                     <dd>
                         <input type="checkbox" checked={this.state.profanity_filter}
@@ -342,6 +393,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             {this.state.profanity_filter ? _("Enabled") : _("Disabled")}
                         </label>
                     </dd>
+
                     <dt>{_("Game thumbnail list threshold")}</dt>
                     <dd>
                         <select onChange={this.updateGameListThreshold} value={this.state.game_list_threshold}>
@@ -350,6 +402,23 @@ export class Settings extends React.PureComponent<{}, any> {
                                 <option key={idx} value={value}>{value}</option>
                             )}
                         </select>
+                    </dd>
+
+                    <dt>{_("Desktop Notifications")}</dt>
+                    <dd>
+                        <input type="checkbox"
+                                checked={this.state.desktop_notifications_enabled}
+                                onChange={this.updateDesktopNotifications}
+                                disabled={!this.state.desktop_notifications_enableable}
+                                id="desktop_notifications"/>
+                        <label htmlFor="desktop_notifications">
+                            {this.state.desktop_notifications_enabled ? _("Enabled") : _("Disabled")}
+                        </label>
+                        {!this.state.desktop_notifications_enableable &&
+                            <div><i>
+                            {_("Desktop notifications are not supported by your browser")}
+                            </i></div>
+                        }
                     </dd>
                 </dl>
             </Card>
