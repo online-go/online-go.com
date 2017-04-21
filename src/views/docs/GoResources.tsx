@@ -77,17 +77,17 @@ export let GoResources = (props) => {
                 <dt>{_("Books")}</dt>
 
                 {scramble(
-                    <span><Flag country={kr}/><Flag country={en}/> <a href="http://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
+                    <span><Flag country={kr}/><Flag country={en}/> <a href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
                         <br/><span style={{marginLeft: "1.7em", fontSize: "0.9em"}}> Korea Baduk Association</span></span>,
                     <span><Flag country={en}/> <a href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">River Mountain Go 1 (30k-20k)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Oliver Richman</span></span>,
                     <span><Flag country={en}/> <a href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf">River Mountain Go 2 (20k-8k)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Oliver Richman</span></span>,
-                    <span><Flag country={es}/> <a href="http://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf">Introducción al juego de Go</a>
+                    <span><Flag country={es}/> <a href="https://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf">Introducción al juego de Go</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Mariano López Minnucci</span></span>,
-                    <span><Flag country={en}/> <a href="http://cdn.online-go.com/81_little_lions.pdf">81 Little Lions (9x9 intro)</a>
+                    <span><Flag country={en}/> <a href="https://cdn.online-go.com/81_little_lions.pdf">81 Little Lions (9x9 intro)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Françisa d'Alsace</span></span>,
-                    <span><Flag country={en}/> <a href="http://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
+                    <span><Flag country={en}/> <a href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Seong-June Kim</span>
                     </span>
@@ -98,9 +98,9 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Kifu Sheets")}</dt>
                 {scramble(
-                <span><Flag country={en}/> <a href="http://cdn.online-go.com/kifu-en-19x19.pdf">19x19</a> <a href="http://cdn.online-go.com/kifu-en-13x13.pdf">13x13</a> <a href="http://cdn.online-go.com/kifu-en-9x9.pdf">9x9</a></span>,
+                <span><Flag country={en}/> <a href="https://cdn.online-go.com/kifu-en-19x19.pdf">19x19</a> <a href="https://cdn.online-go.com/kifu-en-13x13.pdf">13x13</a> <a href="https://cdn.online-go.com/kifu-en-9x9.pdf">9x9</a></span>,
                 <span><Flag country={en}/> <a href="https://cdn.online-go.com/kifu-with-circles-en-19x19.pdf">19x19 with circles</a> </span>,
-                <span><Flag country={es}/> <a href="http://cdn.online-go.com/kifu-es-19x19.pdf">19x19</a> <a href="http://cdn.online-go.com/kifu-es-13x13.pdf">13x13</a> <a href="http://cdn.online-go.com/kifu-es-9x9.pdf">9x9</a></span>,
+                <span><Flag country={es}/> <a href="https://cdn.online-go.com/kifu-es-19x19.pdf">19x19</a> <a href="https://cdn.online-go.com/kifu-es-13x13.pdf">13x13</a> <a href="https://cdn.online-go.com/kifu-es-9x9.pdf">9x9</a></span>,
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
