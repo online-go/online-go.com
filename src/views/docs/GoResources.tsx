@@ -75,7 +75,7 @@ export let GoResources = (props) => {
             <div className="multi-columns">
             <dl>
                 <dt>{_("Books")}</dt>
-                
+
                 {scramble(
                     <span><Flag country={kr}/><Flag country={en}/> <a href="http://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
                         <br/><span style={{marginLeft: "1.7em", fontSize: "0.9em"}}> Korea Baduk Association</span></span>,
@@ -99,6 +99,7 @@ export let GoResources = (props) => {
                 <dt>{_("Kifu Sheets")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a href="http://cdn.online-go.com/kifu-en-19x19.pdf">19x19</a> <a href="http://cdn.online-go.com/kifu-en-13x13.pdf">13x13</a> <a href="http://cdn.online-go.com/kifu-en-9x9.pdf">9x9</a></span>,
+                <span><Flag country={en}/> <a href="https://cdn.online-go.com/kifu-with-circles-en-19x19.pdf">19x19 with circles</a> </span>,
                 <span><Flag country={es}/> <a href="http://cdn.online-go.com/kifu-es-19x19.pdf">19x19</a> <a href="http://cdn.online-go.com/kifu-es-13x13.pdf">13x13</a> <a href="http://cdn.online-go.com/kifu-es-9x9.pdf">9x9</a></span>,
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
@@ -155,7 +156,7 @@ export let GoResources = (props) => {
                 <span><Flag country={es}/> <a href="https://www.youtube.com/user/EscueladeGodeBilbao">EscueladeGodeBilbao</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
-                
+
             </dl>
 
 
@@ -186,7 +187,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="http://gooften.net/">Go of Ten</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
-                
+
             </dl>
 
             <dl>
