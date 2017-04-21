@@ -96,6 +96,8 @@ export class Game extends OGSComponent<GameProperties, any> {
 
     game_id: number;
     creator_id: number;
+    ladder_id: number;
+    tournament_id: number;
     review_id: number;
     goban_div: any; ;
     white_clock: any; ;
@@ -302,6 +304,8 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.chat_proxy.part();
         this.chat_log = [];
         this.creator_id = null;
+        this.ladder_id = null;
+        this.tournament_id = null;
         $(window).off("resize", this.onResize as () => void);
         $(document).off("keypress", this.setLabelHandler);
         try {
@@ -547,6 +551,8 @@ export class Game extends OGSComponent<GameProperties, any> {
                     player_cache.update(game.players.black, true);
                 }
                 this.creator_id = game.creator;
+                this.ladder_id = game.ladder;
+                this.tournament_id = game.tournament;
 
                 let review_list = [];
                 for (let k in game.gamedata.reviews) {
@@ -2257,11 +2263,11 @@ export class Game extends OGSComponent<GameProperties, any> {
             <div className="action-bar">
                 {((this.state.view_mode !== "portrait") || null) &&
                     <span className="icons">
-                          {(goban && goban.engine.config.tournament_id || null) &&
-                              <Link className="plain" to={`/tournament/${this.goban.engine.config.tournament_id}`}><i className="fa fa-trophy" title={_("This is a tournament game")}></i></Link>
+                          {(this.tournament_id || null) &&
+                              <Link className="plain" to={`/tournament/${this.tournament_id}`}><i className="fa fa-trophy" title={_("This is a tournament game")}></i></Link>
                           }
-                          {(goban && goban.engine.config.ladder_id || null) &&
-                              <Link className="plain" to={`/ladder/${goban.engine.config.ladder_id}`}><i className="fa fa-trophy" title={_("This is a ladder game")}></i></Link>
+                          {(this.ladder_id || null) &&
+                              <Link className="plain" to={`/ladder/${this.ladder_id}`}><i className="fa fa-trophy" title={_("This is a ladder game")}></i></Link>
                           }
                           {(goban && goban.engine.config["private"] || null) &&
                               <i className="fa fa-lock clickable" onClick={this.openACL}></i>
