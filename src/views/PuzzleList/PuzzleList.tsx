@@ -62,16 +62,15 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
         return (
             <div className="PuzzleList container">
                 <AdUnit unit="cdm-zone-01" nag/>
-                <div className="puzzle-list-container">
-                    <SearchInput
-                        className="pull-right"
-                        placeholder={_("Search")}
-                        onChange={(event) => {
-                            this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
-                            this.refs.table.filter_updated();
-                        }}
-                    />
 
+                <SearchInput
+                    placeholder={_("Search")}
+                    onChange={(event) => {
+                        this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
+                        this.refs.table.filter_updated();
+                    }}
+                />
+                <div className="puzzle-list-container">
                     <PaginatedTable
                         className=""
                         ref="table"
