@@ -209,7 +209,6 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.estimateScore = this.estimateScore.bind(this);
         this.alertModerator = this.alertModerator.bind(this);
         this.showLinkModal = this.showLinkModal.bind(this);
-        this.downloadSGF = this.downloadSGF.bind(this);
         this.pauseGame = this.pauseGame.bind(this);
         this.decide_black = this.decide.bind(this, "black");
         this.decide_white = this.decide.bind(this, "white");
@@ -1035,13 +1034,6 @@ export class Game extends OGSComponent<GameProperties, any> {
             this.last_analysis_sent = analysis;
         } else {
             goban.message("Can't send to the " + this.refs.chat.state.chat_log  + " chat_log");
-        }
-    }}}
-    downloadSGF() {{{
-        if (this.game_id) {
-            window.open(api1(`games/${this.game_id}/sgf`), "_blank");
-        } else {
-            window.open(api1(`reviews/${this.review_id}/sgf`), "_blank");
         }
     }}}
     openACL = () => {{{
@@ -2307,6 +2299,13 @@ export class Game extends OGSComponent<GameProperties, any> {
             game_id = this.goban.engine.config.game_id;
         } catch (e) {}
 
+        let sgf_url = null;
+        if (this.game_id) {
+            sgf_url = api1(`games/${this.game_id}/sgf`);
+        } else {
+            sgf_url = api1(`reviews/${this.review_id}/sgf`);
+        }
+
         return (
             <Dock>
                 <a>
@@ -2347,7 +2346,7 @@ export class Game extends OGSComponent<GameProperties, any> {
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
-                <a onClick={this.downloadSGF}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                 {mod && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
