@@ -1079,26 +1079,26 @@ export function createCorrespondence() {{{
 
 
 export function challenge_text_description(challenge) { /* {{{ */
-    //console.log(challenge);
     let c = challenge;
     let g = "game" in challenge ? challenge.game : challenge;
     let details_html =
         (g.ranked ? _("Ranked") : _("Unranked"))
         + ", " + g.width + "x" + g.height
         + ", " + interpolate(_("%s rules"), [rulesText(g.rules)]) ;
-    //console.log(g.time_control);
-    if (g.time_control && g.time_control !== "none") {
-        details_html += ", " + interpolate(_("%s clock: %s"), [
-            timeControlText(g.time_control),
-            shortShortTimeControl(g.time_control)
-        ]);
-    } else {
-        details_html += ", " + _("no time limits");
-    }
 
+    if (typeof(g.time_control) === "object") {
+        if (g.time_control.time_control !== "none") {
+            details_html += ", " + interpolate(_("%s clock: %s"), [
+                timeControlText(g.time_control),
+                shortShortTimeControl(g.time_control)
+            ]);
+        } else {
+            details_html += ", " + _("no time limits");
+        }
 
-    if (typeof(g.time_control) === "object" && g.time_control.pause_on_weekends) {
-        details_html += ", " + _("pause on weekends");
+        if (g.time_control.pause_on_weekends) {
+            details_html += ", " + _("pause on weekends");
+        }
     }
 
     details_html +=
