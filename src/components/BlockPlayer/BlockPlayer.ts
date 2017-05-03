@@ -19,6 +19,7 @@ import {get, put} from "requests";
 import data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
+import player_cache from 'player_cache';
 
 let ignores = {};
 let block_state = {};
@@ -84,7 +85,7 @@ function update_blocks() {
 
             for (let uid in new_ignores) {
                 if (!(uid in ignores)) {
-                    ignoreUser(uid);
+                    ignoreUser(uid, true);
                 }
             }
             for (let uid in ignores) {
@@ -98,9 +99,21 @@ function update_blocks() {
 }
 
 
-function ignoreUser(uid) {
-    ignores[uid] = true;
-    $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
+function ignoreUser(uid, dont_fetch = false) {
+    if (dont_fetch) {
+        ignores[uid] = true;
+        $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
+    }
+    else {
+        player_cache.fetch(uid, ['ui_class']).then((obj) => {
+            if (obj.ui_class.indexOf('moderator') < 0) {
+                ignores[uid] = true;
+                $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
+            } else {
+                console.error("Can't ignore a moderator.");
+            }
+        });
+    }
 }
 function unIgnoreUser(uid) {
     delete ignores[uid];
