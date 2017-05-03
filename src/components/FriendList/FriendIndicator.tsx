@@ -23,7 +23,10 @@ import {get} from "requests";
 import * as moment from "moment";
 import {FriendList} from "./FriendList";
 import {UIPush} from "UIPush";
+import {KBShortcut} from "KBShortcut";
 
+
+let friend_indicator_singleton:FriendIndicator;
 
 export class FriendIndicator extends React.PureComponent<{}, any> {
     update_interval = null;
@@ -37,6 +40,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
             online_ct: 0,
             show_friend_list: false,
         };
+        friend_indicator_singleton = this;
     }
 
     componentWillMount() {
@@ -96,10 +100,19 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
                 <i className="fa fa-users"/>
                 <span className="count">{this.state.online_ct}</span>
                 {(this.state.show_friend_list || null) &&
-                    <FriendList />
+                    <div>
+                        <KBShortcut shortcut="escape" action={this.toggleFriendList}/>
+                        <div className='FriendListBackdrop' onClick={this.toggleFriendList} />
+                        <FriendList />
+                    </div>
                 }
             </span>
         );
     }
 };
 
+export function close_friend_list() {
+    if (friend_indicator_singleton && friend_indicator_singleton.state.show_friend_list) {
+        friend_indicator_singleton.setState({show_friend_list: false});
+    }
+}

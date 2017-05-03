@@ -30,6 +30,7 @@ import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
+import {close_friend_list} from 'FriendList/FriendIndicator';
 
 
 interface PlayerDetailsProperties {
@@ -110,8 +111,13 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     componentWillUnmount() {{{
     }}}
 
-    gotoPlayerView = (ev) => {{{
+    close_all_modals_and_popovers = () => {
         close_all_popovers();
+        close_friend_list();
+    }
+
+    gotoPlayerView = (ev) => {{{
+        this.close_all_modals_and_popovers();
 
         let url = `/player/${this.props.playerId}/${this.state.username}`;
         if (shouldOpenNewTab(ev)) {
@@ -122,33 +128,33 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     }}}
     challenge = (_ev) => {{{
         challenge(this.props.playerId);
-        close_all_popovers();
+        this.close_all_modals_and_popovers();
     }}}
     message = (_ev) => {{{
         getPrivateChat(this.props.playerId).open();
-        close_all_popovers();
+        this.close_all_modals_and_popovers();
     }}}
     report = (_ev) => {{{
         alertModerator({user: this.props.playerId});
-        close_all_popovers();
+        this.close_all_modals_and_popovers();
     }}}
     block = (ev) => {{{
         let controls = openBlockPlayerControls(ev, this.props.playerId);
         controls.on("close", () => {
-            close_all_popovers();
+            this.close_all_modals_and_popovers();
         });
     }}}
     ban = (_ev) => {{{
-        ban(this.props.playerId).then(close_all_popovers).catch(errorAlerter);
+        ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     shadowban = (_ev) => {{{
-        shadowban(this.props.playerId).then(close_all_popovers).catch(errorAlerter);
+        shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeShadowban = (_ev) => {{{
-        remove_shadowban(this.props.playerId).then(close_all_popovers).catch(errorAlerter);
+        remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeBan = (_ev) => {{{
-        remove_ban(this.props.playerId).then(close_all_popovers).catch(errorAlerter);
+        remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
 
     render() {
