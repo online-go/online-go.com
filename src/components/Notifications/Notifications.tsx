@@ -300,7 +300,7 @@ class NotificationManager {
                 let current_game_id = getCurrentGameId();
                 if ((current_game_id !== game.id || !document.hasFocus())) {
                     if (game.avg_move_time > 3600) { // don't notify for realtime games ever
-                        emitNotification("Your Turn", "It's your turn in game " + game.id,
+                        emitNotification(_("Your Turn"), interpolate("It's your turn in game {{game_id}}", {'game_id': game.id}),
                             () => {
                                 if (window.location.pathname !== "/game/" + game.id) {
                                     browserHistory.push("/game/" + game.id);
@@ -330,23 +330,23 @@ class NotificationManager {
             }
 
             if (notification.type === "challenge") {
-                emitNotification("Challenge Received", "You have received a challenge from " + notification.user.username);
+                emitNotification(_("Challenge Received"), interpolate("You have received a challenge from {{username}}", {'username':  notification.user.username}));
             }
 
             if (notification.type === "gameDeclined") {
-                emitNotification("Game Declined", "Your game request has been declined");
+                emitNotification(_("Game Declined"), _("Your game request has been declined"));
             }
 
             if (notification.type === "friendRequest") {
-                emitNotification("Friend Request", "You have received a new friend request");
+                emitNotification(_("Friend Request"), _("You have received a new friend request"));
             }
 
             if (notification.type === "friendAccepted") {
-                emitNotification("Friend Request Accepted", "Your friend request has been accepted");
+                emitNotification(_("Friend Request Accepted"), _("Your friend request has been accepted"));
             }
 
             if (notification.type === "friendDeclined") {
-                emitNotification("Friend Request Declined", "Your friend request has been declined");
+                emitNotification(_("Friend Request Declined"), _("Your friend request has been declined"));
             }
 
             if (notification.type === "gameStarted" ||
@@ -362,20 +362,20 @@ class NotificationManager {
                         let title = "";
                         let body = "";
                         if (notification.type === "gameStarted") {
-                            title = "Game Started";
-                            body = "Your game has started";
+                            title = _("Game Started");
+                            body = _("Your game has started");
                         } else if (notification.type === "gameEnded") {
-                            title = "Game Ended";
-                            body = "Your game has ended";
+                            title = _("Game Ended");
+                            body = _("Your game has ended");
                         } else if (notification.type === "gameEnteredStoneRemoval") {
-                            title = "Game Entered Stone Removal";
-                            body = "Your game has entered Stone Removal Phase";
+                            title = _("Game Entered Stone Removal");
+                            body = _("Your game has entered Stone Removal Phase");
                         } else if (notification.type === "gameResumedFromStoneRemoval") {
-                            title = "Game Resume from Stone Removal";
-                            body = "Your opponent has resumed from the stone removal phase";
+                            title = _("Game Resume from Stone Removal");
+                            body = _("Your opponent has resumed from the stone removal phase");
                         } else {
-                            title = "Notification from Online Go";
-                            body = "You have received a new notification from OGS";
+                            title = _("Notification from Online Go");
+                            body = _("You have received a new notification from OGS");
                         }
                         emitNotification(title, body);
                     }
