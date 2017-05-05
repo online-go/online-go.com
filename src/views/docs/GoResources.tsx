@@ -244,6 +244,14 @@ export let GoResources = (props) => {
             </dl>
 
             <dl>
+                <dt>{_("Club Support")}</dt>
+                {scramble(
+                <span><Flag country={us}/> <a href="https://www.goclubs.org/">GoClubsOnline</a></span>
+                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
+                }
+            </dl>
+
+            <dl>
                 <dt>{_("Teaching Resources")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a href="http://agfgo.org/pages/lessonplancoop.php">AGF Lesson Plan Cooperative</a></span>,
@@ -308,7 +316,6 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-dollar"></i> <i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=lrstudios.games.ego&hl=en">Ely Go</a></span>,
                 <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a href="http://smartgo.com/index.html">SmartGo</a></span>,
                 <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <a href="https://gobooks.com/platforms.html">Go Books</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-link"></i> <a href="https://www.goclubs.org/">GoClubsOnline</a></span>,
                 <span>
                     <i className="fa fa-linux" /> <i className="fa fa-apple" /> <i className="fa fa-windows" /> <a href="https://www.sjeng.org/leela.html">Leela</a></span>,
                 <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <a href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">EasyGo</a></span>
