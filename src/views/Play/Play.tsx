@@ -155,12 +155,11 @@ export class Play extends React.Component<PlayProperties, any> {
 
         return (
             <div className="Play container">
+                <AdUnit unit="cdm-zone-01" nag/>
 
                 <div ref="container" className="seek-graph-container">
                     <PersistentElement elt={this.canvas} />
                 </div>
-
-                <AdUnit unit="cdm-zone-01" nag/>
 
                 <div className="challenge-buttons">
                     <button className="btn primary raise" style={{marginRight: "1em"}} onClick={openNewGameModal}>{_("Create a game")}</button>
