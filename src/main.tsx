@@ -181,16 +181,27 @@ declare var ga;
 browserHistory.listen(location => {
     try {
         let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
-        if (data.get('user').supporter) {
-            cleaned_path = '/sup' + cleaned_path;
+
+        let user_type = 'error';
+        let user = data.get('user');
+
+        if (!user || user.anonymous) {
+            user_type = 'anonymous';
+        } else if (user.supporter) {
+            user_type = 'supporter';
         } else {
-            cleaned_path = '/non' + cleaned_path;
+            user_type = 'non-supporter';
         }
 
+        /*
+        console.log("send", "pageview", cleaned_path, {
+            dimension1: user_type
+        });
+        */
         if (ga) {
-            //console.log('Sending pageview', cleaned_path);
-            window["ga"]("set", "page", cleaned_path);
-            window["ga"]("send", "pageview");
+            window["ga"]("send", "pageview", cleaned_path, {
+                dimension1: user_type
+            });
         }
 
         close_all_popovers();
