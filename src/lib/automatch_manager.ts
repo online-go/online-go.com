@@ -26,6 +26,7 @@ export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
 
 export interface AutomatchPreferences {
     uuid: string;
+    timestamp?: number;
     size_speed_options: Array<{speed:Speed, size:Size}>;
     lower_rank_diff: number;
     upper_rank_diff: number;
@@ -54,17 +55,10 @@ export interface AutomatchPreferences {
     };
 };
 
-class AutomatchEntry {
-    uuid:string;
-
-    constructor() {
-    }
-}
-
 
 class AutomatchManager extends EventEmitter {
-    active_live_automatcher:AutomatchEntry;
-    active_correspondence_automatchers:Array<AutomatchEntry> = [];
+    active_live_automatcher:AutomatchPreferences;
+    active_correspondence_automatchers:{[id:string]: AutomatchPreferences} = {};
     last_find_match_uuid:string;
 
 
@@ -75,15 +69,23 @@ class AutomatchManager extends EventEmitter {
             this.clearState();
             termination_socket.send("automatch/list");
         });
+        termination_socket.on('disconnect', () => {
+            this.clearState();
+        });
         termination_socket.on('automatch/start', this.onAutomatchStart);
         termination_socket.on('automatch/entry', this.onAutomatchEntry);
         termination_socket.on('automatch/cancel', this.onAutomatchCancel);
     }
 
     private onAutomatchEntry = (entry:AutomatchPreferences) => {{{
+        console.log(entry);
+        if (!entry.timestamp) {
+            entry.timestamp = Date.now();
+        }
+
         for (let opt of entry.size_speed_options) {
             if (opt.speed === 'correspondence') {
-                this.active_correspondence_automatchers.push(entry);
+                this.active_correspondence_automatchers[entry.uuid] = entry;
             } else {
                 this.active_live_automatcher = entry;
             }
@@ -107,16 +109,11 @@ class AutomatchManager extends EventEmitter {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
             this.active_live_automatcher = null;
         }
-        for (let i = 0; i < this.active_correspondence_automatchers.length; ++i) {
-            if (this.active_correspondence_automatchers[i].uuid === uuid) {
-                this.active_correspondence_automatchers.splice(i, 1);
-                break;
-            }
-        }
+        delete this.active_correspondence_automatchers[uuid];
     }
     private clearState() {{{
         this.active_live_automatcher = null;
-        this.active_correspondence_automatchers = [];
+        this.active_correspondence_automatchers = {};
         this.last_find_match_uuid = null;
     }}}
 

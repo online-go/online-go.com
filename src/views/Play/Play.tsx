@@ -26,7 +26,7 @@ import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl} from "TimeControl";
 import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
-import {errorAlerter, rulesText, dup, uuid} from "misc";
+import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
@@ -136,26 +136,6 @@ export class Play extends React.Component<PlayProperties, any> {
         };
     }}}
 
-    cellBreaks(amount) {{{
-        let result = [];
-        for (let i = 0; i < amount; ++i) {
-            result.push(<span key={i} className="cell break"></span>);
-        }
-        return result;
-    }}}
-    gameListHeaders() {{{
-        return <div className="challenge-row">
-            <span className="head"></span>
-            <span className="head">{_("Player")}</span>
-            <span className="head">{_("Size")}</span>
-            <span className="head">{_("Time")}</span>
-            <span className="head">{_("Ranked")}</span>
-            <span className="head">{_("Handicap")}</span>
-            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
-            <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
-        </div>;
-    }}}
-
     onAutomatchEntry = (entry) => {{{
         this.forceUpdate();
     }}}
@@ -173,7 +153,7 @@ export class Play extends React.Component<PlayProperties, any> {
                 return {
                     'size': size,
                     'speed': speed,
-                }
+                };
             }),
             lower_rank_diff: settings.lower_rank_diff,
             upper_rank_diff: settings.upper_rank_diff,
@@ -230,6 +210,11 @@ export class Play extends React.Component<PlayProperties, any> {
             return <FirstTimeSetup/>;
         }
 
+        let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
+        let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
+        corr_automatchers.sort((a, b) => a.timestamp-b.timestamp);
+
+
         return (
             <div className="Play container">
                 <AdUnit unit="cdm-zone-01" nag/>
@@ -249,12 +234,68 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
 
+
                 <div id="challenge-list-container">
                   <div id="challenge-list-inner-container">
-                    <h3>{_("Open custom games")}</h3>
                     <div id="challenge-list">
+
+                        {(corr_automatchers.length || null) &&
+                            <div className='challenge-row'>
+                                <span className="cell break">{_("Automatch")}</span>
+                                {this.cellBreaks(7)}
+                            </div>
+                        }
+                        {(corr_automatchers.length || null) &&
+                            <div className='challenge-row'>
+                                <span className="head"></span>
+                                <span className="head">{_("Rank")}</span>
+                                <span className="head">{_("Size")}</span>
+                                <span className="head">{_("Time Control")}</span>
+                                <span className="head">{_("Handicap")}</span>
+                                <span className="head">{_("Rules")}</span>
+                            </div>
+                        }
+                        {corr_automatchers.map((m, idx) => (
+                            <div className='challenge-row automatch-challenge-row' key={m.uuid}>
+                                <span className='cell'>
+                                    <button className='reject xs' onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
+                                </span>
+
+                                <span className='cell'>
+                                    {m.lower_rank_diff === m.upper_rank_diff ? <span>&plusmn; {m.lower_rank_diff}</span> : <span>-{m.lower_rank_diff} : +{m.upper_rank_diff}</span>}
+                                </span>
+
+                                <span className='cell'>
+                                    {m.size_speed_options.filter((x) => x.speed === 'correspondence').map((x) => x.size).join(',')}
+                                </span>
+
+                                <span className={m.time_control.condition + ' cell'}>
+                                    {m.time_control.condition === 'no-preference'
+                                        ? pgettext("Automatch: no preference", "No preference")
+                                        : timeControlSystemText(m.time_control.value.system)
+                                    }
+                                </span>
+
+                                <span className={m.handicap.condition + ' cell'}>
+                                    {m.handicap.condition === 'no-preference'
+                                        ? pgettext("Automatch: no preference", "No preference")
+                                        : (m.handicap.value === 'enabled' ? pgettext("Handicap dnabled", "Enabled") : pgettext("Handicap disabled", "Disabled"))
+                                    }
+                                </span>
+
+                                <span className={m.rules.condition + ' cell'}>
+                                    {m.rules.condition === 'no-preference'
+                                        ? pgettext("Automatch: no preference", "No preference")
+                                        : rulesText(m.rules.value)
+                                    }
+                                </span>
+                            </div>
+                        ))}
+
+                        <div style={{marginTop: "2em"}}></div>
+
                         <div className="challenge-row">
-                            <span className="cell break" colSpan={2}>{_("Short Games")}</span>
+                            <span className="cell break">{_("Short Games")}</span>
                             {this.cellBreaks(7)}
                         </div>
 
@@ -265,7 +306,7 @@ export class Play extends React.Component<PlayProperties, any> {
                         <div style={{marginTop: "2em"}}></div>
 
                         <div className="challenge-row" style={{marginTop: "1em"}}>
-                            <span className="cell break" colSpan={2}>{_("Long Games")}</span>
+                            <span className="cell break">{_("Long Games")}</span>
                             {this.cellBreaks(7)}
                         </div>
 
@@ -316,15 +357,15 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='automatch-row-container'>
                         <div className='automatch-row'>
-                            <button className='primary' onClick={()=>this.findMatch("blitz")}>
+                            <button className='primary' onClick={() => this.findMatch("blitz")}>
                                 <i className="fa fa-bolt" /> {_("Blitz")}
                             </button>
-                            <button className='primary' onClick={()=>this.findMatch("live")}>
+                            <button className='primary' onClick={() => this.findMatch("live")}>
                                 <i className="fa fa-clock-o" /> {_("Normal")}
                             </button>
                         </div>
                         <div className='automatch-row'>
-                            <button className='primary' onClick={()=>this.findMatch("correspondence")}>
+                            <button className='primary' onClick={() => this.findMatch("correspondence")}>
                                 <i className="ogs-turtle" /> {_("Correspondence")}
                             </button>
                             <button className='primary' onClick={this.newCustomGame}>
@@ -383,6 +424,26 @@ export class Play extends React.Component<PlayProperties, any> {
             </div>
         ));
     }}}
+    cellBreaks(amount) {{{
+        let result = [];
+        for (let i = 0; i < amount; ++i) {
+            result.push(<span key={i} className="cell break"></span>);
+        }
+        return result;
+    }}}
+    gameListHeaders() {{{
+        return <div className="challenge-row">
+            <span className="head"></span>
+            <span className="head">{_("Player")}</span>
+            <span className="head">{_("Size")}</span>
+            <span className="head">{_("Time")}</span>
+            <span className="head">{_("Ranked")}</span>
+            <span className="head">{_("Handicap")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
+        </div>;
+    }}}
+
 }
 
 function challenge_sort(A, B) {
