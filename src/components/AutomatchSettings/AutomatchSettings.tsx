@@ -303,7 +303,7 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                 </div>
 
                 <div className="buttons">
-                    <button onClick={this.close}>{_("Cancel")}</button>
+                    <button onClick={this.close}>{_("Close")}</button>
                 </div>
         </div>
         );
