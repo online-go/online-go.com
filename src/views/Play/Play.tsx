@@ -17,19 +17,23 @@
 
 import * as React from "react";
 import {AdUnit} from "AdUnit";
-import {browserHistory} from "react-router";
+import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
+import {Card} from "material";
 import {post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl} from "TimeControl";
-import {createOpenChallenge, challengeComputer} from "ChallengeModal";
+import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
-import {errorAlerter, rulesText} from "misc";
+import {errorAlerter, rulesText, dup, uuid} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
+import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import data from "data";
 import {FirstTimeSetup} from "FirstTimeSetup";
+import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
+import {bot_count} from "bots";
 
 
 interface PlayProperties {
@@ -49,6 +53,7 @@ export class Play extends React.Component<PlayProperties, any> {
         this.state = {
             live_list: [],
             correspondence_list: [],
+            automatch_size_options: data.get('automatch.size_options', ['19x19']),
         };
         this.canvas = $("<canvas>")[0];
     }
@@ -59,12 +64,17 @@ export class Play extends React.Component<PlayProperties, any> {
         });
         this.resize();
         this.seekgraph.on("challenges", this.updateChallenges);
-
+        automatch_manager.on('entry', this.onAutomatchEntry);
+        automatch_manager.on('start', this.onAutomatchStart);
+        automatch_manager.on('cancel', this.onAutomatchCancel);
         $(window).on("resize", this.resize);
     }}}
     componentWillUnmount() {{{
         console.log("Unmounted Play");
         $(window).off("resize", this.resize);
+        automatch_manager.off('entry', this.onAutomatchEntry);
+        automatch_manager.off('start', this.onAutomatchStart);
+        automatch_manager.off('cancel', this.onAutomatchCancel);
         this.seekgraph.destroy();
     }}}
     resize = () => {{{
@@ -126,16 +136,14 @@ export class Play extends React.Component<PlayProperties, any> {
         };
     }}}
 
-
-    cellBreaks(amount) {
+    cellBreaks(amount) {{{
         let result = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
         }
         return result;
-    }
-
-    gameListHeaders() {
+    }}}
+    gameListHeaders() {{{
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
@@ -146,7 +154,76 @@ export class Play extends React.Component<PlayProperties, any> {
             <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
             <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
         </div>;
-    }
+    }}}
+
+    onAutomatchEntry = (entry) => {{{
+        this.forceUpdate();
+    }}}
+    onAutomatchStart = (entry) => {{{
+        this.forceUpdate();
+    }}}
+    onAutomatchCancel = (entry) => {{{
+        this.forceUpdate();
+    }}}
+    findMatch = (speed:'blitz'|'live'|'correspondence') => {{{
+        let settings = getAutomatchSettings(speed);
+        let preferences:AutomatchPreferences = {
+            uuid: uuid(),
+            size_speed_options: this.state.automatch_size_options.map((size) => {
+                return {
+                    'size': size,
+                    'speed': speed,
+                }
+            }),
+            lower_rank_diff: settings.lower_rank_diff,
+            upper_rank_diff: settings.upper_rank_diff,
+            rules: {
+                condition: settings.rules.condition,
+                value: settings.rules.value
+            },
+            time_control: {
+                condition: settings.time_control.condition,
+                value: settings.time_control.value
+            },
+            handicap: {
+                condition: settings.handicap.condition,
+                value: settings.handicap.value
+            }
+        };
+        preferences.uuid = uuid();
+        automatch_manager.findMatch(preferences);
+        this.onAutomatchEntry(preferences);
+    }}}
+    cancelActiveAutomatch = () => {{{
+        automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
+        this.forceUpdate();
+    }}}
+    newComputerGame = () => {{{
+        if (bot_count() === 0) {
+            swal(_("Sorry, all bots seem to be offline, please try again later."));
+            return;
+        }
+        challengeComputer();
+    }}}
+    newCustomGame = () => {{{
+        challenge(null);
+    }}}
+
+    toggleSize(size) {{{
+        let size_options = dup(this.state.automatch_size_options);
+        if (size_options.indexOf(size) >= 0) {
+            size_options = size_options.filter((x) => x !== size);
+        }
+        else {
+            size_options.push(size);
+        }
+        if (size_options.length === 0) {
+            size_options.push('19x19');
+        }
+        data.set('automatch.size_options', size_options);
+        this.setState({automatch_size_options: size_options});
+    }}}
+
 
     render() {
         if (!data.get("user").setup_rank_set) {
@@ -157,16 +234,24 @@ export class Play extends React.Component<PlayProperties, any> {
             <div className="Play container">
                 <AdUnit unit="cdm-zone-01" nag/>
 
-                <div ref="container" className="seek-graph-container">
-                    <PersistentElement elt={this.canvas} />
-                </div>
-
-                <div className="challenge-buttons">
-                    <button className="btn primary raise" style={{marginRight: "1em"}} onClick={openNewGameModal}>{_("Create a game")}</button>
+                <div className='row'>
+                    <div className='col-sm-6'>
+                        <Card>
+                            {this.automatchContainer()}
+                        </Card>
+                    </div>
+                    <div className='col-sm-6'>
+                        <Card>
+                            <div ref="container" className="seek-graph-container">
+                                <PersistentElement elt={this.canvas} />
+                            </div>
+                        </Card>
+                    </div>
                 </div>
 
                 <div id="challenge-list-container">
                   <div id="challenge-list-inner-container">
+                    <h3>{_("Open custom games")}</h3>
                     <div id="challenge-list">
                         <div className="challenge-row">
                             <span className="cell break" colSpan={2}>{_("Short Games")}</span>
@@ -195,7 +280,73 @@ export class Play extends React.Component<PlayProperties, any> {
         );
     }
 
-    gameList(isLive: boolean) {
+    automatchContainer() {{{
+        let size_enabled = (size) => {
+            return this.state.automatch_size_options.indexOf(size) >= 0;
+        };
+
+        if (automatch_manager.active_live_automatcher) {
+            return (
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Finding you a game...")}
+                    </div>
+                    <div className='automatch-row-container'>
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className='automatch-settings'>
+                        <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>
+                    </div>
+                </div>
+            );
+        }
+        else {
+            return (
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        <div>{_("Quick match finder")}</div>
+                        <div className='btn-group'>
+                            <button className={size_enabled('9x9') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("9x9")}>9x9</button>
+                            <button className={size_enabled('13x13') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("13x13")}>13x13</button>
+                            <button className={size_enabled('19x19') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("19x19")}>19x19</button>
+                        </div>
+                    </div>
+                    <div className='automatch-row-container'>
+                        <div className='automatch-row'>
+                            <button className='primary' onClick={()=>this.findMatch("blitz")}>
+                                <i className="fa fa-bolt" /> {_("Blitz")}
+                            </button>
+                            <button className='primary' onClick={()=>this.findMatch("live")}>
+                                <i className="fa fa-clock-o" /> {_("Normal")}
+                            </button>
+                        </div>
+                        <div className='automatch-row'>
+                            <button className='primary' onClick={()=>this.findMatch("correspondence")}>
+                                <i className="ogs-turtle" /> {_("Correspondence")}
+                            </button>
+                            <button className='primary' onClick={this.newCustomGame}>
+                                <i className="fa fa-cog" /> {_("Custom")}
+                            </button>
+                        </div>
+
+                        <div className='automatch-row'>
+                            <button className='primary' onClick={this.newComputerGame}>
+                                <i className="fa fa-desktop" /> {_("Computer")}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className='automatch-settings'>
+                        <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}>{_("Settings")} <i className='fa fa-gear'/></span>
+                    </div>
+                </div>
+            );
+        }
+    }}}
+    gameList(isLive: boolean) {{{
         let timeControlClassName = (config) => {
             let isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
@@ -231,7 +382,7 @@ export class Play extends React.Component<PlayProperties, any> {
                 {commonSpan(rulesText(C.rules), "left")}
             </div>
         ));
-    }
+    }}}
 }
 
 function challenge_sort(A, B) {

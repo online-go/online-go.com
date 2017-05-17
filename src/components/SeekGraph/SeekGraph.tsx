@@ -542,7 +542,7 @@ export class SeekGraph extends EventEmitter {
             let metrics = ctx.measureText(word);
             ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, h - 2);
 
-            word = _("Live");
+            word = _("Normal");
             metrics = ctx.measureText(word);
             ctx.fillText(word, padding + blitz_line + ((live_line - blitz_line) - metrics.width) / 2, h - 2);
 

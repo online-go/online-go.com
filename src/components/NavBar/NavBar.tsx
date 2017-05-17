@@ -364,7 +364,7 @@ export class NavBar extends OGSComponent<{}, any> {
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
                         {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i> {_("Sign In")}</Link></li>}
                         {user && <li><Link to="/play"><i className="ogs-goban"></i> {_("Play")}</Link></li>}
-                        {user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i> {_("New Game")}</span></li>}
+                        {/* user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i> {_("New Game")}</span></li> */}
                         {user && <li><span className="fakelink" onClick={this.newDemo}><i className="fa fa-plus"></i> {_("Demo Board")}</span></li>}
                         <li><Link to="/observe-games"><i className="fa fa-eye"></i> {_("Games")}</Link></li>
                         <li><Link to="/leaderboards"><i className="fa fa-list-ol"></i> {_("Leaderboards")}</Link></li>

@@ -15,5 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Play";
-export * from "./Automatch";
+
+.AutomatchSettings {
+    width: 44rem;
+    max-width: 100vw;
+    margin-top: 2rem;
+    
+    .body {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-around;
+        margin-bottom: 1rem;
+    }
+
+    .automatch-settings {
+        margin-top: 2rem;
+        td {
+            padding-left: 1rem;
+        }
+        th {
+            text-align: right;
+            padding-right: 1rem;
+            vertical-align: top;
+            padding-top: 0.3rem;
+        }
+        td {
+            width: 20rem;
+            padding-bottom: 1.5rem;
+        }
+        i {
+            font-size: font-size-small;
+        }
+    }
+}

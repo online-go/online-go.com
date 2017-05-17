@@ -547,7 +547,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     update_demo_white_ranking   = (ev) => this.upstate("demo.white_ranking", ev);
     /* }}} */
 
-
     /* rendering {{{ */
 
     // game name and privacy
@@ -906,7 +905,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
           <div className="Modal ChallengeModal" ref="modal">
               <div className="header">
                   <h2>
-                      {(mode === "open" || null) && <span>{_("Open Challenge")}</span> }
+                      {(mode === "open" || null) && <span>{_("Custom Game")}</span> }
                       {(mode === "demo" || null) && <span>{_("Demo Board")}</span> }
                       {(mode === "player" || null) && <span className="header-with-icon"><PlayerIcon id={player_id} size={32} />&nbsp; {player_username}</span> }
                       {(mode === "computer" || null) && <span>{_("Computer")}</span> }
@@ -950,7 +949,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         );
     }
     /* }}} */
-
 }
 
 export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {{{
