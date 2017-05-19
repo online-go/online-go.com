@@ -78,7 +78,6 @@ class AutomatchManager extends EventEmitter {
     }
 
     private onAutomatchEntry = (entry:AutomatchPreferences) => {{{
-        console.log(entry);
         if (!entry.timestamp) {
             entry.timestamp = Date.now();
         }

@@ -53,6 +53,7 @@ export class Play extends React.Component<PlayProperties, any> {
         this.state = {
             live_list: [],
             correspondence_list: [],
+            disableCorrespondenceButton: false,
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
         };
         this.canvas = $("<canvas>")[0];
@@ -173,6 +174,11 @@ export class Play extends React.Component<PlayProperties, any> {
         preferences.uuid = uuid();
         automatch_manager.findMatch(preferences);
         this.onAutomatchEntry(preferences);
+
+        if (speed === 'correspondence') {
+            this.setState({disableCorrespondenceButton: true});
+            setTimeout(()=>this.setState({disableCorrespondenceButton: false}), 1000);
+        }
     }}}
     cancelActiveAutomatch = () => {{{
         automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
@@ -365,8 +371,11 @@ export class Play extends React.Component<PlayProperties, any> {
                             </button>
                         </div>
                         <div className='automatch-row'>
-                            <button className='primary' onClick={() => this.findMatch("correspondence")}>
-                                <i className="ogs-turtle" /> {_("Correspondence")}
+                            <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
+                                {this.state.disableCorrespondenceButton
+                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
+                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
+                                }
                             </button>
                             <button className='primary' onClick={this.newCustomGame}>
                                 <i className="fa fa-cog" /> {_("Custom")}
