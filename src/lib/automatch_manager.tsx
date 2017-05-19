@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
+import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
 import {EventEmitter} from "eventemitter3";
 import {browserHistory} from 'react-router';
 import data from "data";
+import {Toast, toast} from 'toast';
 
 export type Speed = 'blitz' | 'live' | 'correspondence';
 export type Size = '9x9' | '13x13' | '19x19';
@@ -56,10 +59,44 @@ export interface AutomatchPreferences {
 };
 
 
+class AutomatchToast extends React.PureComponent<{}, any> {
+    timer:number;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            start: Date.now(),
+            elapsed: '00:00',
+        };
+    }
+
+    componentDidMount() {
+        this.timer = setInterval(() => {
+            let elapsed = Math.floor((Date.now() - this.state.start) / 1000);
+            let seconds = elapsed % 60;
+            let minutes = Math.floor((elapsed - seconds) / 60);
+            let display = seconds < 10 ? `${minutes}:0${seconds}` : `${minutes}:${seconds}`;
+            this.setState({elapsed: display});
+        }, 1000);
+    }
+    componentWillUnmount() {
+        clearInterval(this.timer);
+    }
+
+    render() {
+        return (
+            <div className='AutomatchToast'>
+                {interpolate(pgettext("Automatch search message", "{{elapsed_time}} Finding a game..."), {"elapsed_time": this.state.elapsed})}
+            </div>
+        );
+    }
+}
+
 class AutomatchManager extends EventEmitter {
     active_live_automatcher:AutomatchPreferences;
     active_correspondence_automatchers:{[id:string]: AutomatchPreferences} = {};
     last_find_match_uuid:string;
+    active_toast:Toast;
 
 
 
@@ -86,6 +123,7 @@ class AutomatchManager extends EventEmitter {
             if (opt.speed === 'correspondence') {
                 this.active_correspondence_automatchers[entry.uuid] = entry;
             } else {
+                console.log('Active: ', opt.speed, entry);
                 this.active_live_automatcher = entry;
             }
         }
@@ -93,14 +131,22 @@ class AutomatchManager extends EventEmitter {
         this.emit('entry', entry);
     }}}
     private onAutomatchStart = (entry) => {{{
-        this.emit('start', entry);
+        this.remove(entry.uuid);
 
-        if (entry.uuid) {
-            this.remove(entry.uuid);
+        if (entry.uuid === this.last_find_match_uuid) {
             browserHistory.push(`/game/view/${entry.game_id}`);
         }
+
+        this.emit('start', entry);
     }}}
     private onAutomatchCancel = (entry) => {{{
+        if (!entry)  {
+            if (this.active_live_automatcher) {
+                entry = this.active_live_automatcher;
+            } else {
+                return;
+            }
+        }
         this.remove(entry.uuid);
         this.emit('cancel', entry);
     }}}
@@ -108,18 +154,39 @@ class AutomatchManager extends EventEmitter {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
             this.active_live_automatcher = null;
         }
+
+        if (uuid === this.last_find_match_uuid) {
+            if (this.active_toast) {
+                this.active_toast.close();
+                this.active_toast = null;
+            }
+        }
+
         delete this.active_correspondence_automatchers[uuid];
     }
     private clearState() {{{
         this.active_live_automatcher = null;
         this.active_correspondence_automatchers = {};
         this.last_find_match_uuid = null;
+        if (this.active_toast) {
+            this.active_toast.close();
+            this.active_toast = null;
+        }
     }}}
 
     public findMatch(preferences:AutomatchPreferences) {{{
-        this.last_find_match_uuid = preferences.uuid;
         console.log('Finding match: ', preferences);
         termination_socket.emit('automatch/find_match', preferences);
+
+        /* live game? track it, and pop up our searching toast */
+        if (preferences.size_speed_options.filter((opt) => opt.speed === 'blitz' || opt.speed === 'live').length) {
+            this.last_find_match_uuid = preferences.uuid;
+            if (this.active_toast) {
+                this.active_toast.close();
+                this.active_toast = null;
+            }
+            this.active_toast = toast(<AutomatchToast />);
+        }
     }}}
     public cancel(uuid?:string) {{{
         this.remove(uuid);

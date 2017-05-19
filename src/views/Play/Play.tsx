@@ -71,7 +71,6 @@ export class Play extends React.Component<PlayProperties, any> {
         $(window).on("resize", this.resize);
     }}}
     componentWillUnmount() {{{
-        console.log("Unmounted Play");
         $(window).off("resize", this.resize);
         automatch_manager.off('entry', this.onAutomatchEntry);
         automatch_manager.off('start', this.onAutomatchStart);
@@ -125,7 +124,6 @@ export class Play extends React.Component<PlayProperties, any> {
         }).catch(errorAlerter);
     }}}
     cancelOpenChallenge(challenge) {{{
-        console.log(challenge);
         del(`challenges/${challenge.challenge_id}`).then(() => 0).catch(errorAlerter);
     }}}
     extractUser(challenge) {{{
@@ -177,11 +175,13 @@ export class Play extends React.Component<PlayProperties, any> {
 
         if (speed === 'correspondence') {
             this.setState({disableCorrespondenceButton: true});
-            setTimeout(()=>this.setState({disableCorrespondenceButton: false}), 1000);
+            setTimeout(() => this.setState({disableCorrespondenceButton: false}), 1000);
         }
     }}}
     cancelActiveAutomatch = () => {{{
-        automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
+        if (automatch_manager.active_live_automatcher) {
+            automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
+        }
         this.forceUpdate();
     }}}
     newComputerGame = () => {{{
@@ -218,7 +218,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
         let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
-        corr_automatchers.sort((a, b) => a.timestamp-b.timestamp);
+        corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
 
 
         return (
