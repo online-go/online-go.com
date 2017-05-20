@@ -371,11 +371,8 @@ export class Play extends React.Component<PlayProperties, any> {
                             </button>
                         </div>
                         <div className='automatch-row'>
-                            <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
-                                {this.state.disableCorrespondenceButton
-                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                }
+                            <button className='primary' onClick={this.newComputerGame}>
+                                <i className="fa fa-desktop" /> {_("Computer")}
                             </button>
                             <button className='primary' onClick={this.newCustomGame}>
                                 <i className="fa fa-cog" /> {_("Custom")}
@@ -383,8 +380,11 @@ export class Play extends React.Component<PlayProperties, any> {
                         </div>
 
                         <div className='automatch-row'>
-                            <button className='primary' onClick={this.newComputerGame}>
-                                <i className="fa fa-desktop" /> {_("Computer")}
+                            <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
+                                {this.state.disableCorrespondenceButton
+                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
+                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
+                                }
                             </button>
                         </div>
                     </div>

@@ -32,6 +32,7 @@
         flex-direction: column;
         align-items: stretch;
         justify-content: center;
+        box-sizing: border-box;
     }
 
     .automatch-container {
@@ -49,6 +50,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        .btn-group {
+            display: flex;
+            flex-wrap: nowrap;
+        }
     }
 
     .automatch-row-container {
@@ -61,10 +67,15 @@
 
     .automatch-row {
         display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 100%;
+
         button {
             font-size: 1.1rem;
             font-weight: bold;
-            min-width: 12rem;
+            flex-grow: 1;
+            flex-basis: 13rem;
             height: 4rem;
             margin: 1rem;
 
