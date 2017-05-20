@@ -219,7 +219,7 @@ export class Styling extends React.PureComponent<{}, any> {
 
                     <div className="btn-group">
                         <button className="xs">A</button>
-                        <button className="xs primary">B</button>
+                        <button className="xs primary active">B</button>
                         <a className="xs btn primary">C</a>
                         <button className="xs danger">D</button>
                     </div>
@@ -332,21 +332,21 @@ export class Styling extends React.PureComponent<{}, any> {
                         <Card>
                             {this.state.star_ratings.map((v, idx) => (
                                 <div key={idx}>
-                                    <StarRating value={v} /> {v} 
+                                    <StarRating value={v} /> {v}
                                 </div>
                             ))}
                         </Card>
                         <Card>
                             {this.state.star_ratings.map((v, idx) => (
                                 <div key={idx}>
-                                    <StarRating rated value={v} /> {v} 
+                                    <StarRating rated value={v} /> {v}
                                 </div>
                             ))}
                         </Card>
                         <Card>
                             {this.state.star_ratings.map((v, idx) => (
                                 <div key={idx}>
-                                    <StarRating value={v} onChange={this.setStarRating.bind(this, idx)} /> {v} 
+                                    <StarRating value={v} onChange={this.setStarRating.bind(this, idx)} /> {v}
                                 </div>
                             ))}
                         </Card>

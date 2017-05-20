@@ -424,6 +424,19 @@ for cls in primary info success danger reject
             themed-darken border-color cls button-border-highlight-darken-amount
         }
     }
+    .btn-group {
+        button.{cls}, a.btn.{cls}, .btn.{cls} {
+            themed color colored-background-fg
+            &:hover, &:focus {
+                themed-lighten background-color cls button-highlight-brighten-amount
+                themed-darken border-color cls button-border-highlight-darken-amount
+            }
+            &:active, &.active {
+                themed-darken background-color cls button-highlight-brighten-amount
+                themed-darken border-color cls button-border-highlight-darken-amount
+            }
+        }
+    }
     .fab.{cls} {
         themed background-color cls 
         &:hover {
@@ -512,4 +525,8 @@ display: inline-block;
 .space-between {
     display: flex;
     justify-content: space-between;
+}
+
+.flex-stretch {
+    align-items: stretch;
 }
