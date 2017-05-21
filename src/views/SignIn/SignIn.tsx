@@ -152,9 +152,7 @@ export class SignIn extends OGSComponent<{}, any> {
                     errorAlerter(res);
                 }
             })
-            .catch((err) => {
-                swal(err.responseText);
-            });
+            .catch(errorAlerter);
         })
         .catch(ignore);
     }
