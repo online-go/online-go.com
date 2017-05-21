@@ -41,6 +41,7 @@ interface AdUnitProperties {
 const never_load_ads = false;
 let zone_end = null;
 let refresh_delay_timeout = null;
+let rotate_timer = null;
 
 if (never_load_ads) {
     console.info("Ads are currently disabled");
@@ -142,6 +143,16 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
 
     componentDidMount() {
         refresh_ads();
+        if (rotate_timer) {
+            return;
+        }
+        rotate_timer = setInterval(refresh_ads, 95 * 1000);
+    }
+
+    componentWillUnmount() {
+        refresh_ads();
+        clearInterval(rotate_timer);
+        rotate_timer = null;
     }
 
     render() {
