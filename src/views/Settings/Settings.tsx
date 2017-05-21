@@ -519,7 +519,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </button>
                     }
                     {this.state.email_message && <div>{this.state.email_message}</div>}
-                    {!data.get('user').email_validated &&
+                    {this.state.profile.email && !this.state.email_changed && !data.get('user').email_validated &&
                         <div>
                             <div className='awaiting-validation-text'>
                                 {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}

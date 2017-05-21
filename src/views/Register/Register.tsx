@@ -57,7 +57,7 @@ export class Register extends OGSComponent<{}, any> {
             }).catch(errorAlerter);
         };
 
-        let focus_empty = () => {
+        let focus_empty = (focus_email?:boolean) => {
             if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
                 this.refs.username.focus();
                 return true;
@@ -73,7 +73,7 @@ export class Register extends OGSComponent<{}, any> {
                 this.refs.password.focus();
                 return true;
             }
-            if (this.refs.email.value.trim() === "") {
+            if (focus_email && this.refs.email.value.trim() === "" && this.refs.email !== document.activeElement) {
                 this.refs.email.focus();
                 return true;
             }
@@ -91,7 +91,7 @@ export class Register extends OGSComponent<{}, any> {
         if (event.type === "keypress") {
             if (event.charCode === 13) {
                 event.preventDefault();
-                if (focus_empty()) {
+                if (focus_empty(true)) {
                     return false;
                 }
                 actually_register();
@@ -129,7 +129,7 @@ export class Register extends OGSComponent<{}, any> {
                     <input className="boxed" autoFocus ref="username" name="username" onKeyPress={this.register} onChange={this.validateUsername} placeholder={_("Username") /* translators: New account registration */} />
                     {this.state.error && <div className="error-message">{this.state.error}</div>}
                     <input className="boxed" ref="password" type="password" name="password" onKeyPress={this.register} placeholder={_("Password") /* translators: New account registration */} />
-                    <input className="boxed" ref="email" type="email" name="email" onKeyPress={this.register} placeholder={_("Email") /* translators: New account registration */} />
+                    <input className="boxed" ref="email" type="email" name="email" onKeyPress={this.register} placeholder={_("Email (optional)") /* translators: New account registration */} />
                     <div style={{textAlign: "right", marginBottom: "1.0rem"}}>
                         <button className="primary" onClick={this.register}>
                             <i className="fa fa-sign-in"/> {_("Sign up")}
