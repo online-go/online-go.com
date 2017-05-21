@@ -20,7 +20,7 @@ import {Link} from "react-router";
 
 
 export const Card = props => (
-    <div className={"Card " + (props.className || "")} {...props} >
+    <div {...props} className={"Card " + (props.className || "")}>
         {props.children}
     </div>
 );
