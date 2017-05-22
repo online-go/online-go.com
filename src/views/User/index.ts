@@ -17,3 +17,4 @@
 
 
 export * from "./User";
+export * from "./UserByName";
