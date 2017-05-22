@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import data from "data";
 import {_, current_language, languages} from "translate";
-import {OGSComponent, PlayerIcon} from "components";
+import {PlayerIcon} from "components";
 import {post, get, abort_requests_in_flight} from "requests";
 import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore} from "misc";
 import {LineText} from "misc-ui";
@@ -72,7 +72,7 @@ function logout() {
 }
 
 
-export class NavBar extends OGSComponent<{}, any> {
+export class NavBar extends React.PureComponent<{}, any> {
     refs: {
         input: any;
         notification_list: NotificationList;

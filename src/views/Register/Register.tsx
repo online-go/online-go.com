@@ -22,13 +22,12 @@ import {_} from "translate";
 import {Card} from "material";
 import {errorAlerter} from "misc";
 import {LineText} from "misc-ui";
-import {OGSComponent} from "components";
 import {post, get} from "requests";
 import {get_ebi} from "SignIn";
 
 declare var swal;
 
-export class Register extends OGSComponent<{}, any> {
+export class Register extends React.PureComponent<{}, any> {
     refs: {
         username: any;
         email: any;

@@ -33,7 +33,7 @@ function guid() {
     s4() + "-" + s4() + s4() + s4();
 }
 
-export class OGSComponent<Props, State> extends React.PureComponent<Props, State> {
+export class EventEmitterPureComponent<Props, State> extends React.PureComponent<Props, State> {
     uuid: string;
     event_emitter: EventEmitter;
     mounted: boolean = false;
@@ -50,14 +50,11 @@ export class OGSComponent<Props, State> extends React.PureComponent<Props, State
             this.event_emitter.emit("init", props);
         }
     }
-
     deinit() {
         if (this.event_emitter) {
             this.event_emitter.emit("destroy");
         }
     }
-
-
     componentWillUnmount() {
         this.mounted = false;
         this.deinit();
@@ -77,13 +74,6 @@ export class OGSComponent<Props, State> extends React.PureComponent<Props, State
     componentWillReceiveProps(newProps: any) {
         this.deinit();
         this.init(newProps);
-    }
-
-    /************/
-    /*** UTIL ***/
-    /************/
-    key(...args: any[]): string {
-        return this.uuid + "." + args.join(".");
     }
 
     /********************/

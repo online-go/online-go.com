@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./OGSComponent";
-export * from "./Resolver";
 export * from "./KBShortcut";
 export * from "./material";
 export * from "./misc-ui";

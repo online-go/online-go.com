@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {OGSComponent, Resolver} from "components";
+import {EventEmitterPureComponent} from "EventEmitterPureComponent";
 import {browserHistory} from "react-router";
 
 declare var swal;
@@ -26,7 +26,7 @@ declare var swal;
 interface GroupCreateProperties {
 }
 
-export class GroupCreate extends OGSComponent<GroupCreateProperties, any> {
+export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties, any> {
     refs: {
         name
     };

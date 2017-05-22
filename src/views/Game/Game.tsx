@@ -22,7 +22,7 @@ import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
-import {OGSComponent, KBShortcut, UIPush} from "components";
+import {KBShortcut, UIPush} from "components";
 import {alertModerator, errorAlerter, ignore} from "misc";
 import {LineText} from "misc-ui";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
@@ -87,7 +87,7 @@ interface GameChatLineProperties {
 export type ViewMode = "portrait"|"wide"|"square"|"zen";
 type AdClass = "large-rectangle"|"medium-rectangle"|"leaderboard"|"mobile-banner"|"wide-skyscraper"|"half-page"|"no-ads";
 
-export class Game extends OGSComponent<GameProperties, any> {
+export class Game extends React.PureComponent<GameProperties, any> {
     refs: {
         goban;
         goban_container;
@@ -240,13 +240,11 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.updateVariationName = this.updateVariationName.bind(this);
     } /* }}}  */
     componentWillMount() {{{
-        super.componentWillMount();
         active_game_view = this;
         setExtraActionCallback(this.renderExtraPlayerActions);
         $(window).on("focus", this.onFocus);
     }}}
     componentWillReceiveProps(nextProps) {{{
-        super.componentWillReceiveProps(nextProps);
         if (
             this.props.params.game_id !== nextProps.params.game_id ||
             this.props.params.review_id !== nextProps.params.review_id
@@ -281,7 +279,6 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.onResize();
     }}}
     componentDidMount() {{{
-        super.componentDidMount();
         this.initialize();
         if (this.computeViewMode() === "portrait") {
             this.refs.goban_container.style.minHeight = `${screen.width}px`;
@@ -291,7 +288,6 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.onResize();
     }}}
     componentWillUnmount() {{{
-        super.componentWillUnmount();
         sfx.volume_override = null;
         this.deinitialize();
         active_game_view = null;

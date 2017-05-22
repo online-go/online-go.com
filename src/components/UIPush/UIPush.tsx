@@ -19,7 +19,6 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {OGSComponent, Resolver} from "components";
 import {comm_socket} from "sockets";
 
 interface UIPushProperties {

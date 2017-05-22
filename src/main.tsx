@@ -50,7 +50,6 @@ import {SignIn} from "SignIn";
 import {Register} from "Register";
 import {Overview} from "Overview";
 import {Admin} from "Admin";
-import {AdminTournamentScheduleList} from "AdminTournamentScheduleList";
 import {ChatView} from "ChatView";
 import {Developer} from "Developer";
 import {Game} from "Game";
@@ -60,19 +59,15 @@ import {GroupList} from "GroupList";
 import {Ladder} from "Ladder";
 import {LadderList} from "LadderList";
 import {LeaderBoard} from "LeaderBoard";
-import {Library} from "Library";
-import {LibraryGameHistory} from "LibraryGameHistory";
 import {LibraryPlayer} from "LibraryPlayer";
 import {Play} from "Play";
 import {Moderator} from "Moderator";
 import {ObserveGames} from "ObserveGames";
 import {Puzzle} from "Puzzle";
 import {PuzzleList} from "PuzzleList";
-import {PuzzleModify} from "PuzzleModify";
 import {Supporter} from "Supporter";
 import {Tournament} from "Tournament";
 import {TournamentListMainView} from "TournamentList";
-import {TransactionHistory} from "TransactionHistory";
 import {Tutorial} from "Tutorial";
 import {User, UserByName} from "User";
 import {RatingHistory} from "RatingHistory";
@@ -239,7 +234,6 @@ const routes = (
         <Route path="/player/:user_id/**/*" component={User}/>
         <Route path="/player/settings" component={Settings}/>
         <Route path="/player/supporter" component={Supporter}/>
-        <Route path="/player/transaction-history" component={TransactionHistory}/>
 
         <Route path="/user/view/:user_id" component={User}/>
         <Route path="/user/view/:user_id/*" component={User}/>
@@ -252,13 +246,15 @@ const routes = (
         <Route path="/settings" component={Settings}/>
         <Route path="/user/settings" component={Settings}/>
         <Route path="/user/supporter" component={Supporter}/>
-        <Route path="/user/transaction-history" component={TransactionHistory}/>
 
         <Route path="/supporter" component={Supporter}/>
         <Route path="/support" component={Supporter}/>
         <Route path="/donate" component={Supporter}/>
+
+        {/*
         <Route path="/library" component={Library}/>
         <Route path="/library/game-history" component={LibraryGameHistory}/>
+        */}
         <Route path="/library/:player_id/:collection_id" component={LibraryPlayer}/>
         <Route path="/library/:player_id" component={LibraryPlayer}/>
         <Route path="/groups" component={GroupList}/>
@@ -274,8 +270,6 @@ const routes = (
         <Route path="/ladder/:ladder_id" component={Ladder}/>
         <Route path="/puzzles" component={PuzzleList}/>
         <Route path="/puzzle/:puzzle_id" component={Puzzle}/>
-        <Route path="/puzzle/create" component={PuzzleModify}/>
-        <Route path="/puzzle/edit/:puzzle_id" component={PuzzleModify}/>
         <Route path="/leaderboards" component={LeaderBoard}/>
         <Route path="/leaderboard" component={LeaderBoard}/>
         <Route path="/developer" component={Developer}/>
@@ -283,8 +277,8 @@ const routes = (
         <Route path="/announcement-center" component={AnnouncementCenter}/>
         {/*
         <Route path="/admin/tournament-scheduler/:schedule_id" component={TournamentModify}/>
-        */}
         <Route path="/admin/tournament-schedule-list" component={AdminTournamentScheduleList}/>
+        */}
         <Route path="/moderator" component={Moderator}/>
         <Route path="/learn-to-play-go/:step" component={Tutorial}/>
         <Route path="/learn-to-play-go" component={Tutorial}/>

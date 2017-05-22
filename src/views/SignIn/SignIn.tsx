@@ -21,7 +21,6 @@ import * as data from "data";
 import {_} from "translate";
 import {Card} from "material";
 import {LineText} from "misc-ui";
-import {OGSComponent} from "components";
 import {errorAlerter, ignore} from "misc";
 import {post, get} from "requests";
 
@@ -63,7 +62,7 @@ export function get_ebi() {
     return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." +   tzoffset;
 }
 
-export class SignIn extends OGSComponent<{}, any> {
+export class SignIn extends React.PureComponent<{}, any> {
     refs: {
         username: any;
         password: any;

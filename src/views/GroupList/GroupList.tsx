@@ -19,14 +19,14 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {browserHistory} from "react-router";
-import {OGSComponent, AdUnit, PaginatedTable, SearchInput} from "components";
+import {AdUnit, PaginatedTable, SearchInput} from "components";
 import {navigateTo} from "misc";
 
 
 interface GroupListProperties {
 }
 
-export class GroupList extends OGSComponent<GroupListProperties, any> {
+export class GroupList extends React.PureComponent<GroupListProperties, any> {
     refs: {
         table
     };

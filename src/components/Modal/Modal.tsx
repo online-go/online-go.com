@@ -16,10 +16,10 @@
  */
 
 import * as ReactDOM from "react-dom";
-import {OGSComponent} from "components";
+import {EventEmitterPureComponent} from "EventEmitterPureComponent";
 
 let current_modal = null;
-export class Modal<P, S> extends OGSComponent<P&{fastDismiss?: boolean}, S> {
+export class Modal<P, S> extends EventEmitterPureComponent<P&{fastDismiss?: boolean}, S> {
     constructor(props) {
         super(props);
         current_modal = this;

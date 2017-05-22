@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import {OGSComponent} from "components";
 import {_, pgettext, interpolate} from "translate";
 import preferences from "preferences";
 import {Goban} from "goban";

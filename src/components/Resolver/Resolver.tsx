@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import {OGSComponent} from "../OGSComponent";
+import {EventEmitterPureComponent} from "EventEmitterPureComponent";
 
-export class Resolver<Props, State> extends OGSComponent<Props, State> {
+export class Resolver<Props, State> extends EventEmitterPureComponent<Props, State> {
     resolved: boolean = true;
     resolve_error: boolean = false;
     resolve_promise: any = null;

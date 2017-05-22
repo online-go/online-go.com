@@ -18,7 +18,6 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {OGSComponent} from "components";
 import data from "data";
 
 interface PaginatedTableColumnProperties {
@@ -56,7 +55,7 @@ interface PaginatedTableProperties {
     // callback?: ()=>any,
 }
 
-export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> {
+export class PaginatedTable extends React.PureComponent<PaginatedTableProperties, any> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
@@ -75,7 +74,6 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
     }
 
     componentDidMount() {
-        super.componentDidMount();
         this.setState({
             page_size: this.props.pageSize || (this.props.name ? data.get(`paginated-table.${this.props.name}.page_size`) : 0) || 10,
         });
@@ -253,18 +251,18 @@ export class PaginatedTable extends OGSComponent<PaginatedTableProperties, any> 
                 <table className={extra_classes}>
                     <thead>
                         <tr>
-                            {columns.map((column, c) => <th key={this.key("th", c)} className={cls(null, column)} {...column.headerProps}>{column.header}</th>)}
+                            {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps}>{column.header}</th>)}
                         </tr>
                     </thead>
                     <tbody>
                         {this.state.rows.map((row, i) => {
-                            let cols = columns.map((column, c) => (
-                                <td key={this.key("td", row.id, c)} className={cls(row, column)} {...column.cellProps}>{column_render(column, row)}</td>
+                            let cols = columns.map((column, idx) => (
+                                <td key={idx} className={cls(row, column)} {...column.cellProps}>{column_render(column, row)}</td>
                             ));
                             if (this.props.onRowClick) {
-                                return (<tr key={this.key("tr", row.id)} onMouseUp={(ev) => this.props.onRowClick(row, ev)}>{cols}</tr>);
+                                return (<tr key={row.id} onMouseUp={(ev) => this.props.onRowClick(row, ev)}>{cols}</tr>);
                             } else {
-                                return (<tr key={this.key("tr", row.id)}>{cols}</tr>);
+                                return (<tr key={row.id}>{cols}</tr>);
                             }
                         })}
                         {blank_rows}
