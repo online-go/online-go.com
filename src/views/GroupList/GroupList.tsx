@@ -19,7 +19,9 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {browserHistory} from "react-router";
-import {AdUnit, PaginatedTable, SearchInput} from "components";
+import {AdUnit} from "AdUnit";
+import {PaginatedTable} from "PaginatedTable";
+import {SearchInput} from "misc-ui";
 import {navigateTo} from "misc";
 
 

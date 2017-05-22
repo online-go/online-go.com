@@ -27,7 +27,7 @@ import {post, get, abort_requests_in_flight} from "requests";
 import {Goban} from "goban";
 import {toast} from "toast";
 import {Player} from "Player";
-import {PlayerIcon} from "components";
+import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
 import data from "data";
 import {errorAlerter} from "misc";

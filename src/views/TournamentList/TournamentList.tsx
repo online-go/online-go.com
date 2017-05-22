@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {Card} from "components";
+import {Card} from "material";
 import {AdUnit} from "AdUnit";
 import preferences from "preferences";
 import {errorAlerter} from "misc";

@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {openModal, Modal} from "components";
+import {openModal, Modal} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {errorAlerter} from "misc";

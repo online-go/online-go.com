@@ -20,7 +20,7 @@ import {del, get, post} from "requests";
 import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
-import {Card} from "components";
+import {Card} from "material";
 import {AdUnit} from "AdUnit";
 import data from "data";
 

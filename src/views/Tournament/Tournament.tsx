@@ -28,7 +28,7 @@ import {Player, setExtraActionCallback, makePlayerLink} from "Player";
 import * as moment from "moment";
 import * as Datetime from "react-datetime";
 import {UIPush} from "UIPush";
-import {Card} from "components";
+import {Card} from "material";
 import {EmbeddedChat} from "Chat";
 import data from "data";
 import {PaginatedTable} from "PaginatedTable";

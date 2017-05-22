@@ -21,7 +21,7 @@ import {_, pgettext, interpolate} from "translate";
 import {Link} from "react-router";
 import {post, get} from "requests";
 import {LadderComponent} from "LadderComponent";
-import {Card} from "components";
+import {Card} from "material";
 import {errorAlerter} from "misc";
 import {AdUnit} from "AdUnit";
 

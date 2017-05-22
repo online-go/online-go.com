@@ -21,7 +21,7 @@ import { get} from "requests";
 import {errorAlerter} from "misc";
 import {AdUnit} from "AdUnit";
 import {Player} from "Player";
-import {Card} from "components";
+import {Card} from "material";
 
 interface LeaderBoardProperties {
 }

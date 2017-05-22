@@ -19,7 +19,7 @@ import * as React from "react";
 import * as moment from "moment";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {openModal, Modal} from "components";
+import {openModal, Modal} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {GoEngine} from "goban";
 import {Player} from "Player";

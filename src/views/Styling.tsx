@@ -16,8 +16,9 @@
  */
 
 import * as React from "react";
-import { Card, FabX, FabCheck, FabAdd } from "material";
-import { Player, PlayerIcon } from "components";
+import {Card, FabX, FabCheck, FabAdd } from "material";
+import {Player} from "Player";
+import {PlayerIcon} from "PlayerIcon";
 import {toast} from "toast";
 import {VoiceChat} from "VoiceChat";
 import * as Datetime from "react-datetime";

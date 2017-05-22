@@ -22,7 +22,7 @@ import {post, get} from "requests";
 import {PaginatedTable} from "PaginatedTable";
 import {Player} from "Player";
 import {MiniGoban} from "MiniGoban";
-import {SearchInput} from "components";
+import {SearchInput} from "misc-ui";
 import {StarRating} from "StarRating";
 import {longRankString, rankString} from "rank_utils";
 import {AdUnit} from "AdUnit";

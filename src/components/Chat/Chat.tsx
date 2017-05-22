@@ -26,7 +26,7 @@ import data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
-import {Card} from "components";
+import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
 import player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";

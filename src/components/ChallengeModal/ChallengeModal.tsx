@@ -25,7 +25,7 @@ import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
 import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
-import {PlayerIcon} from "components";
+import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
 import preferences from "preferences";
 import {notification_manager} from "Notifications";
