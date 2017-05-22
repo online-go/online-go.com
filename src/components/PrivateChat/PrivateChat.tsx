@@ -50,7 +50,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "..."};
+    player = {"username": "...", "ui_class": ""};
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -84,6 +84,7 @@ class PrivateChat {
             this.player = player;
             this.player_dom.text(player.username);
             this.player_dom.addClass(player.ui_class);
+            this.updateInputPlaceholder();
         })
         .catch((err) => {
             console.error(err);
@@ -227,7 +228,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated) {
+            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length == 0) {
                 return;
             }
 
@@ -240,10 +241,7 @@ class PrivateChat {
             }
         });
 
-        if (!data.get('user').email_validated) {
-            input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
-            input.attr("disabled", "disabled");
-        }
+        this.updateInputPlaceholder();
 
 
         (input as any).nicknameTabComplete();
@@ -262,6 +260,18 @@ class PrivateChat {
             data.set("pm.read-" + this.user_id, this.last_uid);
         }
     }; /* }}} */
+    updateInputPlaceholder() {
+        if (!this.input) {
+            return;
+        }
+        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length == 0) {
+            this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
+            this.input.attr("disabled", "disabled");
+        } else {
+            this.input.removeAttr("placeholder");
+            this.input.removeAttr("disabled");
+        }
+    }
     minimize(send_itc?) { /* {{{ */
         if (this.superchat_enabled) { return; }
         if (this.display_state === "minimized") { return; }
@@ -359,6 +369,7 @@ class PrivateChat {
                 body.scrollTop = body.scrollHeight;
             }
         }
+        this.updateInputPlaceholder();
     }; /* }}} */
     addSystem(message) { /* {{{ */
         let line = $("<div>").addClass("chat-line system");
