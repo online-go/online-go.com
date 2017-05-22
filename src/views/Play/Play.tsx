@@ -365,9 +365,11 @@ export class Play extends React.Component<PlayProperties, any> {
                         <div className='automatch-row'>
                             <button className='primary' onClick={() => this.findMatch("blitz")}>
                                 <i className="fa fa-bolt" /> {_("Blitz")}
+                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
                             </button>
                             <button className='primary' onClick={() => this.findMatch("live")}>
                                 <i className="fa fa-clock-o" /> {_("Normal")}
+                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
                             </button>
                         </div>
                         <div className='automatch-row'>
@@ -385,6 +387,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                     ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
                                     : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
                                 }
+                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
                             </button>
                         </div>
                     </div>
