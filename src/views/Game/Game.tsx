@@ -1450,7 +1450,7 @@ export class Game extends OGSComponent<GameProperties, any> {
         this.goban.setMode("play");
     }}}
     pass() {{{
-        if (!isLiveGame(this.goban.engine.time_control)) {
+        if (!isLiveGame(this.goban.engine.time_control) || !preferences.get('one-click-submit-live')) {
             swal({text: _("Are you sure you want to pass?"), showCancelButton: true})
             .then(() => this.goban.pass())
             .catch(() => 0);
