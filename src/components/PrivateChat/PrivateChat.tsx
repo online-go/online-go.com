@@ -228,7 +228,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length == 0) {
+            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
                 return;
             }
 
@@ -264,7 +264,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length == 0) {
+        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
