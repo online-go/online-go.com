@@ -547,6 +547,10 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 
         this.del = this.del.bind(this);
         this.onError = this.onError.bind(this);
+
+        if (this.props.notification.type === 'gameOfferRejected') {
+            setTimeout(this.del, 1);
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
