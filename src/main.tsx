@@ -238,14 +238,14 @@ const routes = (
         <Route path="/user/view/:user_id" component={User}/>
         <Route path="/user/view/:user_id/*" component={User}/>
         <Route path="/user/view/:user_id/**/*" component={User}/>
-        <Route path="/u/:username" component={UserByName}/>
-        <Route path="/user/:username" component={UserByName}/>
         <Route path="/ratinghistory/:user_id" component={RatingHistory}/>
         <Route path="/ratinghistory/:user_id/*" component={RatingHistory}/>
         <Route path="/ratinghistory/:user_id/**/*" component={RatingHistory}/>
         <Route path="/settings" component={Settings}/>
         <Route path="/user/settings" component={Settings}/>
         <Route path="/user/supporter" component={Supporter}/>
+        <Route path="/u/:username" component={UserByName}/>
+        <Route path="/user/:username" component={UserByName}/>
 
         <Route path="/supporter" component={Supporter}/>
         <Route path="/support" component={Supporter}/>
