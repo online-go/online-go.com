@@ -1547,6 +1547,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             volume: volume,
             sound_enabled: enabled,
         });
+        let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
+        sfx.play("stone-" + (idx + 1));
     }}}
     saveVolume = () => {{{
         let enabled = this.state.volume > 0;
