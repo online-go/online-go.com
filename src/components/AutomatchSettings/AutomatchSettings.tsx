@@ -68,7 +68,7 @@ let default_live = {
     },
     handicap: {
         condition: 'no-preference',
-        value: 'disabled',
+        value: 'enabled',
     },
 };
 let default_correspondence = {
@@ -163,10 +163,15 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                 break;
         }
     }}}
-    setRankDiff = (ev) => {{{
+    setLowerRankDiff = (ev) => {{{
         let settings = this.getSelectedSettings();
         let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
+        this.setSelectedSettings(settings);
+    }}}
+    setUpperRankDiff = (ev) => {{{
+        let settings = this.getSelectedSettings();
+        let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
     }}}
@@ -246,9 +251,13 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                         <table>
                             <tbody>
                             <tr>
-                                <th>{_("Rank difference")}</th>
+                                <th>{_("Opponent rank range")}</th>
                                 <td>
-                                    &plusmn; <input type='number' min={0} max={9} value={settings.lower_rank_diff} onChange={this.setRankDiff} />
+                                    <span style={{visibility: settings.lower_rank_diff ? 'visible' : 'hidden'}}>-</span>
+                                    <input type='number' min={0} max={9} value={settings.lower_rank_diff} onChange={this.setLowerRankDiff} />
+                                    &nbsp; &nbsp;
+                                    <span style={{visibility: settings.upper_rank_diff ? 'visible' : 'hidden'}}>+</span>
+                                    <input type='number' min={0} max={9} value={settings.upper_rank_diff} onChange={this.setUpperRankDiff} />
                                 </td>
                             </tr>
                             <tr>
@@ -256,7 +265,7 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                                 <td>
                                     <ConditionSelect value={settings.handicap.condition} onChange={this.setHandicapCondition} />
                                     {settings.handicap.condition === 'no-preference'
-                                        ? <i>{tab === 'correspondence' ? _("Default is enabled") : _("Default is disabled")}</i>
+                                        ? <i>{tab === 'blitz' ? _("Default is disabled") : _("Default is enabled")} </i>
                                         : <select value={settings.handicap.value} onChange={this.setHandicapValue} >
                                             <option value='enabled'>{_("Handicaps enabled")}</option>
                                             <option value='disabled'>{_("Handicaps disabled")}</option>

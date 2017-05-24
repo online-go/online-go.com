@@ -268,7 +268,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                 </span>
 
                                 <span className='cell'>
-                                    {m.lower_rank_diff === m.upper_rank_diff ? <span>&plusmn; {m.lower_rank_diff}</span> : <span>-{m.lower_rank_diff} : +{m.upper_rank_diff}</span>}
+                                    {m.lower_rank_diff === m.upper_rank_diff ? <span>&plusmn; {m.lower_rank_diff}</span> : <span>-{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}</span>}
                                 </span>
 
                                 <span className='cell'>

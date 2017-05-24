@@ -123,7 +123,6 @@ class AutomatchManager extends EventEmitter {
             if (opt.speed === 'correspondence') {
                 this.active_correspondence_automatchers[entry.uuid] = entry;
             } else {
-                console.log('Active: ', opt.speed, entry);
                 this.active_live_automatcher = entry;
             }
         }
@@ -175,7 +174,6 @@ class AutomatchManager extends EventEmitter {
     }}}
 
     public findMatch(preferences:AutomatchPreferences) {{{
-        console.log('Finding match: ', preferences);
         termination_socket.emit('automatch/find_match', preferences);
 
         /* live game? track it, and pop up our searching toast */
