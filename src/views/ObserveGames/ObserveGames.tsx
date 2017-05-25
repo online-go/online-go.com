@@ -41,6 +41,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
             num_pages: 1,
             page_size: preferences.get("observed-games-page-size"),
             viewing: preferences.get("observed-games-viewing"), /* live / correspondence */
+            game_list_threshold: preferences.get("game-list-threshold"),
             game_list: [],
             live_game_count: 0,
             corr_game_count: 0,
@@ -82,6 +83,13 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         preferences.set("observed-games-page-size", ct);
         this.setState({page_size: ct});
         setTimeout(this.refresh, 1);
+    }}}
+    updateGameListThreshold = (ev) => {{{
+        this.setState({
+            game_list_threshold: parseInt(ev.target.value)
+        });
+        preferences.set("game-list-threshold", parseInt(ev.target.value));
+        this.refresh();
     }}}
     refresh = () => {{{
         let now = Date.now();
@@ -185,6 +193,15 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                                     <option value="28">{_("Show 28")}</option>
                                 </select>
                             </div>
+                        </div>
+                        <div>
+                            {_("Game thumbnail list threshold")}
+                            <select onChange={this.updateGameListThreshold} value={this.state.game_list_threshold}>
+                                <option value={0}>{_("Always show list")}</option>
+                                {[3, 5, 10, 25, 50, 100, 200].map((value, idx) =>
+                                    <option key={idx} value={value}>{value}</option>
+                                )}
+                            </select>
                         </div>
                     </div>
                 </div>
