@@ -144,7 +144,7 @@ export class MoveTree {
         }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     loadJsonForThisNode(json) { /* {{{ */
         /* Unlike toJson, restoring from the json blob is a collaborative effort between
          * MoveTree and the GoEngine because of all the state we capture along the way..
@@ -170,7 +170,7 @@ export class MoveTree {
         if (json.pen_marks) {
             this.pen_marks = json.pen_marks;
         }
-    }; /* }}} */
+    } /* }}} */
 
     recomputeIsobranches() { /* {{{ */
         if (this.parent) {
@@ -240,7 +240,7 @@ export class MoveTree {
             }
 
             return null;
-    }; /* }}} */
+    } /* }}} */
     move(x, y, trunk, edited, player, move_number, state) { /* {{{ */
         if (typeof(player) === "undefined") {
             throw new Error("Invalid player");
@@ -313,7 +313,7 @@ export class MoveTree {
         }
 
         return m;
-    }; /* }}} */
+    } /* }}} */
     next(dont_follow_hints?:boolean) { /* {{{ */
         if (this.hint_next && !dont_follow_hints) {
             /* Remember what branch we were on and follow that by default.. but
@@ -336,22 +336,22 @@ export class MoveTree {
             return this.branches[0];
         }
         return null;
-    }; /* }}} */
+    } /* }}} */
     prev() { /* {{{ */
         if (this.parent) {
             this.parent.hint_next = this;
         }
         return this.parent;
-    }; /* }}} */
+    } /* }}} */
     index(idx):MoveTree { /* {{{ */
         let cur:MoveTree = this;
         while (cur.prev() && idx < 0) { cur = cur.prev(); ++idx; }
         while (cur.next(true) && idx > 0) { cur = cur.next(true); --idx; }
         return cur;
-    }; /* }}} */
+    } /* }}} */
     is(other) { /* {{{ */
         return other && this.id === other.id;
-    }; /* }}} */
+    } /* }}} */
     remove() { /* {{{ */
         if (this.is(this.parent.next)) {
             this.parent.next = null;
@@ -365,19 +365,19 @@ export class MoveTree {
             }
         }
         return this.parent;
-    }; /* }}} */
+    } /* }}} */
     getRoot():MoveTree { /* {{{ */
         let ret:MoveTree = this;
         while (ret.parent) {
             ret = ret.parent;
         }
         return ret;
-    }; /* }}} */
+    } /* }}} */
     removeIfNoChildren() { /* {{{ */
         if (this.trunk_next == null && this.branches.length === 0) {
             this.remove();
         }
-    }; /* }}} */
+    } /* }}} */
     getChatLog() {
         if (!this.chatlog) {
             this.chatlog = [];
@@ -395,7 +395,7 @@ export class MoveTree {
     }
     clearMarks() { /* {{{ */
         this.marks = GoMath.makeObjectMatrix(this.engine.width, this.engine.height);
-    }; /* }}} */
+    } /* }}} */
     hasMarks() { /* {{{ */
         if (!this.marks) {
             return false;
@@ -408,7 +408,7 @@ export class MoveTree {
             }
         }
         return false;
-    }; /* }}} */
+    } /* }}} */
     foreachMarkedPosition(fn) { /* {{{ */
         if (!this.marks) {
             return;
@@ -422,17 +422,17 @@ export class MoveTree {
                 }
             }
         }
-    }; /* }}} */
+    } /* }}} */
     isAncestorOf(other) { /* {{{ */
         do {
             if (other.id === this.id) { return true; }
             other = other.parent;
         } while (other);
         return false;
-    }; /* }}} */
+    } /* }}} */
     passed() { /* {{{ */
         return this.x === -1;
-    }; /* }}} */
+    } /* }}} */
     debug(depth) { /* {{{ */
         let str = "";
         for (let i = 0; i < depth; ++i) {
@@ -447,7 +447,7 @@ export class MoveTree {
             this.branches[i].debug(depth + 2);
         }
         return str;
-    }; /* }}} */
+    } /* }}} */
     toSGF() { /* {{{ */
         let ret = "";
 
@@ -513,7 +513,7 @@ export class MoveTree {
         }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns the node in the main trunk which is our ancestor. May be this node. */
     getBranchPoint():MoveTree { /* {{{ */
@@ -522,7 +522,7 @@ export class MoveTree {
             cur = cur.parent;
         }
         return cur;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns the index of the node from root. This is only really meaningful as
      * an index on trunk nodes, but will give the distance of the node from the
@@ -535,7 +535,7 @@ export class MoveTree {
             cur = cur.parent;
         }
         return ct;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns the distance to the given node, or -1 if the node is not a descendent */
     getDistance(node):number { /* {{{ */
@@ -546,25 +546,25 @@ export class MoveTree {
             cur = cur.parent;
         }
         return ct;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns the difference between this move_number and the move number at our branch point */
     getMoveNumberDifferenceFromTrunk():number { /* {{{ */
         return this.move_number - this.getBranchPoint().move_number;
-    }; /* }}} */
+    } /* }}} */
 
     getMarks(x, y):any { /* {{{ */
         if (!this.marks) {
             this.clearMarks();
         }
         return this.marks[y][x];
-    }; /* }}} */
+    } /* }}} */
     setActivePath(path_number) { /* {{{ */
         this.active_path_number = path_number;
         if (this.parent) {
             this.parent.setActivePath(path_number);
         }
-    }; /* }}} */
+    } /* }}} */
     getMoveStringToThisPoint():string { /* {{{ */
         let move_stack = [];
         let cur:MoveTree = this;
@@ -578,7 +578,7 @@ export class MoveTree {
             ret += encodeMove(move_stack[i]);
         }
         return ret;
-    }; /* }}} */
+    } /* }}} */
 
 
 
@@ -657,7 +657,7 @@ export class MoveTree {
         }
 
         return min_y;
-    }; /* }}} */
+    } /* }}} */
     getNodeAtLayoutPosition(layout_x, layout_y) { /* {{{ */
         let key = layout_x  + "," + layout_y;
         if (key in MoveTree.layout_hash) {
@@ -676,7 +676,7 @@ export class MoveTree {
             );
             ctx.stroke();
         }
-    }; /* }}} */
+    } /* }}} */
     drawIsoBranchTo(ctx, node) { /* {{{ */
         let A = this;
         let B = node;
@@ -725,7 +725,7 @@ export class MoveTree {
         if (viewport == null || (this.layout_cx >= viewport.minx && this.layout_cx <= viewport.maxx)) {
             this._drawPath(ctx);
         }
-    }; /* }}} */
+    } /* }}} */
     findStrongIsobranches():Array<MoveTree> { /* {{{ */
         let c:MoveTree = this;
         while (c.parent) {
@@ -755,13 +755,13 @@ export class MoveTree {
         }
 
         this._drawPath(ctx);
-    }; /* }}} */
+    } /* }}} */
     reverseDrawPath(ctx) { /* {{{ */
         this._drawPath(ctx);
         if (this.parent) {
             this.parent.reverseDrawPath(ctx);
         }
-    }; /* }}} */
+    } /* }}} */
     drawStone(ctx, board, active_path_number) { /* {{{ */
         let stone_idx = this.move_number * 31;
         let cx = this.layout_cx;
@@ -835,7 +835,7 @@ export class MoveTree {
             ctx.arc(cx, cy, MoveTree.stone_radius, 0, 2 * Math.PI, true);
             ctx.stroke();
         }
-    }; /* }}} */
+    } /* }}} */
     recursiveDrawStones(ctx, board, active_path_number, viewport) { /* {{{ */
         if (this.trunk_next) {
             this.trunk_next.recursiveDrawStones(ctx, board, active_path_number, viewport);
@@ -847,7 +847,7 @@ export class MoveTree {
         if (viewport == null || (this.layout_cx >= viewport.minx && this.layout_cx <= viewport.maxx && this.layout_cy >= viewport.miny && this.layout_cy <= viewport.maxy)) {
             this.drawStone(ctx, board, active_path_number);
         }
-    }; /* }}} */
+    } /* }}} */
     highlight(ctx, color) { /* {{{ */
         ctx.beginPath();
         let sx = Math.round(this.layout_cx - MoveTree.stone_square_size * 0.5);
@@ -855,10 +855,10 @@ export class MoveTree {
         ctx.rect(sx, sy, MoveTree.stone_square_size, MoveTree.stone_square_size);
         ctx.fillStyle = color;
         ctx.fill();
-    }; /* }}} */
+    } /* }}} */
     updateDrawing(config) { /* {{{ */
         this.redraw(config);
-    }; /* }}} */
+    } /* }}} */
     static redraw_root = null;
     static redraw_config = null;
     redraw(config, no_warp?) { /* {{{ */
@@ -968,7 +968,7 @@ export class MoveTree {
         ctx.textBaseline = "middle";
         this.recursiveDrawStones(ctx, board, MoveTree.active_path_number, viewport);
         ctx.restore();
-    }; /* }}} */
+    } /* }}} */
     updateTheme(board) { /* {{{ */
         let white_theme = board.themes.white;
         let black_theme = board.themes.black;
@@ -986,7 +986,7 @@ export class MoveTree {
         MoveTree.theme_line_color = board.theme_board.getLineColor();
         MoveTree.theme_white_stones = MoveTree.theme_cache.white[white_theme][radius];
         MoveTree.theme_black_stones = MoveTree.theme_cache.black[black_theme][radius];
-    }; /* }}} */
+    } /* }}} */
     addBindings(canvas) { /* {{{ */
         let self = this;
         let mt = canvas.data("movetree-bindings");
@@ -1027,7 +1027,7 @@ export class MoveTree {
 
             canvas.data("movetree-bindings", true);
         }
-    }; /* }}} */
+    } /* }}} */
 
     nextSibling() { /* {{{ */
         let ret = null;
@@ -1061,7 +1061,7 @@ export class MoveTree {
         }
 
         return -5;
-    }; /* }}} */
+    } /* }}} */
 
     static markupSGFChatMessage(message, width, height) { /* {{{ */
         try {
@@ -1081,11 +1081,11 @@ export class MoveTree {
         }
 
         return message;
-    }; /* }}} */
+    } /* }}} */
     static markupSGFChat(username, message, width, height) { /* {{{ */
         return "C[" + ((username ? (username + ": ") : "") + MoveTree.markupSGFChatMessage(message, width, height)).replace(/[\\]/, "\\\\").replace(/\]/g, "\\]").replace(/[[]/g, "\\[") + "\n]\n";
-    }; /* }}} */
+    } /* }}} */
     static markupSGFChatWithoutNode(username, message, width, height) { /* {{{ */
         return ((username ? (username + ": ") : "") + MoveTree.markupSGFChatMessage(message, width, height)).replace(/[\\]/, "\\\\").replace(/\]/g, "\\]").replace(/[[]/g, "\\[") + "\n";
-    }; /* }}} */
+    } /* }}} */
 }

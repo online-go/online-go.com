@@ -52,7 +52,7 @@ function getSelection(field) {
         (() => { return null; })
     )();
 
-};
+}
 
 /*!
     These two functions were taken directly from an answer

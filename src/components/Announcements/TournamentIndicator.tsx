@@ -70,4 +70,4 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
             </Link>
        );
     }
-};
+}

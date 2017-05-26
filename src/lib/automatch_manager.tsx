@@ -56,7 +56,7 @@ export interface AutomatchPreferences {
         condition: AutomatchCondition;
         value: 'enabled' | 'disabled';
     };
-};
+}
 
 
 class AutomatchToast extends React.PureComponent<{}, any> {

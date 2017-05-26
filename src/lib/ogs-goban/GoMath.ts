@@ -249,19 +249,19 @@ export class GoMath {
         }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private static char2num(ch) { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghijklmnopqrstuvwxyz".indexOf(ch);
-    }; /* }}} */
+    } /* }}} */
     private static pretty_char2num(ch) { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghjklmnopqrstuvwxyz".indexOf(ch.toLowerCase());
-    }; /* }}} */
+    } /* }}} */
     public static num2char(num) { /* {{{ */
         if (num === -1) { return "."; }
         return "abcdefghijklmnopqrstuvwxyz"[num];
-    }; /* }}} */
+    } /* }}} */
     public static encodeMove(x, y?) { /* {{{ */
         if (typeof(x) === "number") {
             return GoMath.num2char(x) + GoMath.num2char(y);
@@ -274,14 +274,14 @@ export class GoMath {
                 return "!" + mv.player + GoMath.num2char(mv.x) + GoMath.num2char(mv.y);
             }
         }
-    }; /* }}} */
+    } /* }}} */
     public static encodeMoves(lst) { /* {{{ */
         let ret = "";
         for (let i = 0; i < lst.length; ++i) {
             ret += GoMath.encodeMove(lst[i]);
         }
         return ret;
-    }; /* }}} */
+    } /* }}} */
     public static encodeMoveToArray(mv) { /* {{{ */
         let arr = [mv.x, mv.y];
         arr.push(mv.timedelta ? mv.timedelta : -1);
@@ -289,14 +289,14 @@ export class GoMath {
             arr.push(mv.color);
         }
         return arr;
-    }; /* }}} */
+    } /* }}} */
     public static encodeMovesToArray(moves) { /* {{{ */
         let ret = [];
         for (let i = 0; i < moves.length; ++i) {
             ret.push(GoMath.encodeMoveToArray(moves[i]));
         }
         return ret;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns a sorted move string, this is used in our stone removal logic */
     public static sortMoves(move_string) { /* {{{ */
@@ -311,5 +311,5 @@ export class GoMath {
             return av - bv;
         });
         return GoMath.encodeMoves(moves);
-    }; /* }}} */
+    } /* }}} */
 }

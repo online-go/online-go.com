@@ -453,7 +453,7 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
             </span>
        );
     }
-}; /* }}} */
+} /* }}} */
 
 export class NotificationIndicator extends React.Component<{}, any> { /* {{{ */
     constructor(props) {

@@ -22,7 +22,7 @@ import {EventEmitter} from "eventemitter3";
 interface PopupCoordinates {
     x: number;
     y: number;
-};
+}
 
 interface PopoverConfig {
     elt: React.ReactElement<any>;
@@ -33,7 +33,7 @@ interface PopoverConfig {
     //below?:HTMLElement;;
     //left?:HTMLElement;;
     //right?:HTMLElement;;
-};
+}
 
 let last_id: number = 0;
 let open_popovers = {};

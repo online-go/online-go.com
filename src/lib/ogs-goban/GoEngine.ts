@@ -36,14 +36,14 @@ export function encodeMove(x, y?) { /* {{{ */
             return "!" + mv.player + GoMath.num2char(mv.x) + GoMath.num2char(mv.y);
         }
     }
-}; /* }}} */
+} /* }}} */
 export function encodeMoves(lst) { /* {{{ */
     let ret = "";
     for (let i = 0; i < lst.length; ++i) {
         ret += encodeMove(lst[i]);
     }
     return ret;
-}; /* }}} */
+} /* }}} */
 
 type PlayerColor = 0|1|2; /* 0 empty, 1 black, 2 white */
 
@@ -297,7 +297,7 @@ export class GoEngine {
 
     public decodeMoves(move_obj) { /* {{{ */
         return GoMath.decodeMoves(move_obj, this.width, this.height);
-    }; /* }}} */
+    } /* }}} */
     private getState() { /* {{{ */
         let state = {
             "player": this.player,
@@ -317,7 +317,7 @@ export class GoEngine {
         }
 
         return state;
-    }; /* }}} */
+    } /* }}} */
     private setState(state) { /* {{{ */
         this.player = state.player;
         this.white_prisoners = state.white_prisoners;
@@ -343,7 +343,7 @@ export class GoEngine {
         }
 
         return state;
-    }; /* }}} */
+    } /* }}} */
     private statesAreTheSame(state1, state2) { /* {{{ */
         if (state1.player !== state2.player) { return false; }
         if (state1.white_prisoners !== state2.white_prisoners) { return false; }
@@ -358,7 +358,7 @@ export class GoEngine {
         }
 
         return true;
-    }; /* }}} */
+    } /* }}} */
     public boardMatriciesAreTheSame(m1, m2) { /* {{{ */
         if (m1.length !== m2.length || m1[0].length !== m2[0].length) { return false; }
 
@@ -370,7 +370,7 @@ export class GoEngine {
             }
         }
         return true;
-    }; /* }}} */
+    } /* }}} */
 
     private boardStatesAreTheSame(state1, state2) { /* {{{ */
         for (let y = 0; y < this.height; ++y) {
@@ -382,7 +382,7 @@ export class GoEngine {
         }
 
         return true;
-    }; /* }}} */
+    } /* }}} */
 
     public followPath(from_turn: number, moves, cb?) { /* returns first move on the branch {{{ */
         try {
@@ -436,7 +436,7 @@ export class GoEngine {
             this.jumpTo(this.last_official_move);
             return [];
         }
-    }; /* }}} */
+    } /* }}} */
     public showPrevious() { /* {{{ */
         if (this.dontStoreBoardHistory) { return; }
 
@@ -446,26 +446,26 @@ export class GoEngine {
         }
 
         return false;
-    }; /* }}} */
+    } /* }}} */
     public showNext() { /* {{{ */
         if (this.dontStoreBoardHistory) { return; }
 
         if (this.cur_move.next()) {
             this.jumpTo(this.cur_move.index(1));
         }
-    }; /* }}} */
+    } /* }}} */
     public jumpTo(node) { /* {{{ */
         this.move_before_jump = this.cur_move;
         this.cur_move = node;
         if (node.state) {
             this.setState(node.state);
         }
-    }; /* }}} */
+    } /* }}} */
     public jumpToLastOfficialMove() { /* {{{ */
         if (this.dontStoreBoardHistory) { return; }
 
         this.jumpTo(this.last_official_move);
-    }; /* }}} */
+    } /* }}} */
     public setLastOfficialMove() { /* {{{ */
         if (this.dontStoreBoardHistory) { return; }
         if (!this.cur_move.trunk) {
@@ -475,10 +475,10 @@ export class GoEngine {
         }
 
         this.last_official_move = this.cur_move;
-    }; /* }}} */
+    } /* }}} */
     public isLastOfficialMove() { /* {{{ */
         return this.cur_move.is(this.last_official_move);
-    }; /* }}} */
+    } /* }}} */
     public getMoveDiff() { /* {{{ */
         let branch_point = this.cur_move.getBranchPoint();
         let cur = this.cur_move;
@@ -491,11 +491,11 @@ export class GoEngine {
 
         moves.reverse();
         return { "from": branch_point.getMoveIndex(), "moves": encodeMoves(moves) };
-    }; /* }}} */
+    } /* }}} */
     public setAsCurrentReviewMove() { /* {{{ */
         if (this.dontStoreBoardHistory) { return; }
         this.cur_review_move = this.cur_move;
-    }; /* }}} */
+    } /* }}} */
     public deleteCurMove() { /* {{{ */
         if (this.cur_move.id === this.move_tree.id) { console.log("Wont remove move tree itself."); return; }
         if (this.cur_move.trunk) { console.log("Wont remove trunk node"); return; }
@@ -503,20 +503,20 @@ export class GoEngine {
         this.cur_move.remove();
         this.cur_move = t;
         this.jumpTo(t);
-    }; /* }}} */
+    } /* }}} */
 
     private isMoveLegal(x, y) { /* {{{ */
         return true;
-    }; /* }}} */
+    } /* }}} */
     private pass() { /* {{{ */
         this.player = this.opponent();
-    }; /* }}} */
+    } /* }}} */
     private opponent() { /* {{{ */
         return this.player === 1 ? 2 : 1;
-    }; /* }}} */
+    } /* }}} */
     public prettyCoords(x, y) { /* {{{ */
         return GoMath.prettyCoords(x, y, this.height);
-    }; /* }}} */
+    } /* }}} */
     private incrementCurrentMarker() { /* {{{ */
         ++__currentMarker;
         /*
@@ -526,12 +526,12 @@ export class GoEngine {
            }
            }
          */
-    }; /* }}} */
+    } /* }}} */
     private markGroup(group) { /* {{{ */
         for (let i = 0; i < group.length; ++i) {
             this.marks[group[i].y][group[i].x] = __currentMarker;
         }
-    }; /* }}} */
+    } /* }}} */
 
 
     private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) {
@@ -592,7 +592,7 @@ export class GoEngine {
         function addToCheck(x, y) { toCheckX.push(x); toCheckY.push(y); }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     /** Returns an array of groups connected to the given group */
     private getConnectedGroups(group) { /* {{{ */
         let gr = group;
@@ -613,7 +613,7 @@ export class GoEngine {
             }
         });
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private getConnectedOpenSpace(group) { /* {{{ */
         let gr = group;
         this.incrementCurrentMarker();
@@ -638,7 +638,7 @@ export class GoEngine {
             }
         });
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private countLiberties(group) { /* {{{ */
         let ct = 0;
         let counter = (x, y) => ct += this.board[y][x] ? 0 : 1;
@@ -646,7 +646,7 @@ export class GoEngine {
             this.foreachNeighbor(group[i], counter);
         }
         return ct;
-    }; /* }}} */
+    } /* }}} */
     private captureGroup(group) { /* {{{ */
         for (let i = 0; i < group.length; ++i) {
             let x = group[i].x;
@@ -659,19 +659,19 @@ export class GoEngine {
             }
         }
         return group.length;
-    }; /* }}} */
+    } /* }}} */
     public playerToMove() { /* {{{ */
         return this.player === 1 ? this.black_player_id : this.white_player_id;
-    }; /* }}} */
+    } /* }}} */
     public playerNotToMove() { /* {{{ */
         return this.player === 2 ? this.black_player_id : this.white_player_id;
-    }; /* }}} */
+    } /* }}} */
     public otherPlayer() { /* {{{ */
         return this.player === 2 ? 1 : 2;
-    }; /* }}} */
+    } /* }}} */
     private otherPlayerColorTranslated() { /* {{{ */
         return this.player === 2 ? _("Black") : _("White");
-    }; /* }}} */
+    } /* }}} */
     public playerColor(player_id?):'black'|'white'|'invalid' { /* {{{ */
         if (player_id) {
             return (player_id === this.black_player_id ? "black" :
@@ -679,10 +679,10 @@ export class GoEngine {
         } else {
             return this.colorToMove();
         }
-    }; /* }}} */
+    } /* }}} */
     private colorToMove() { /* {{{ */
         return this.player === 1 ? "black" : "white";
-    }; /* }}} */
+    } /* }}} */
     public playerByColor(color) { /* {{{ */
         if (color === 1 || color === 2) {
             return color;
@@ -690,7 +690,7 @@ export class GoEngine {
         if (color === "black") { return 1; }
         if (color === "white") { return 2; }
         return 0;
-    }; /* }}} */
+    } /* }}} */
     public place(x, y, checkForKo?, errorOnSuperKo?, dontCheckForSuperKo?, dontCheckForSuicide?, isTrunkMove?) { /* {{{ */
         try {
             if (x >= 0 && y >= 0 && x < this.width && y < this.height) {
@@ -791,7 +791,7 @@ export class GoEngine {
              */
             throw e;
         }
-    }; /* }}} */
+    } /* }}} */
     public isBoardRepeating() { /* {{{ */
         let MAX_SUPERKO_SEARCH = 30; /* any more than this is probably a waste of time. This may be overkill even. */
         let current_state = this.getState();
@@ -804,7 +804,7 @@ export class GoEngine {
             }
         }
         return false;
-    }; /* }}} */
+    } /* }}} */
     public editPlace(x, y, color, isTrunkMove?) { /* {{{ */
         let player = this.playerByColor(color);
 
@@ -818,7 +818,7 @@ export class GoEngine {
         let trunk = isTrunkMove ? true : false;
 
         this.cur_move = this.cur_move.move(x, y, trunk, true, player, this.cur_move.move_number, this.getState());
-    }; /* }}} */
+    } /* }}} */
     public initialStatePlace(x, y, color, dont_record_placement?) { /* {{{ */
         let moves = null;
         let p = this.player;
@@ -865,7 +865,7 @@ export class GoEngine {
         }
 
         this.resetMoveTree();
-    }; /* }}} */
+    } /* }}} */
     public resetMoveTree() { /* {{{ */
         let marks = null;
         if (this.move_tree) {
@@ -940,7 +940,7 @@ export class GoEngine {
         }
 
         return [0, []];
-    }; /* }}} */
+    } /* }}} */
     private setGroupForRemoval(x, y, toggle_set) { /* {{{ */
         /*
            If toggle_set === -1, toggle the selection from marked / unmarked.
@@ -963,7 +963,7 @@ export class GoEngine {
             return [removing, group];
         }
         return [0, []];
-    }; /* }}} */
+    } /* }}} */
     public setRemoved(x, y, removed) { /* {{{ */
         if (x < 0 || y < 0) { return; }
         if (x > this.width || y > this.height) { return; }
@@ -971,7 +971,7 @@ export class GoEngine {
         if (this.cb) {
             this.cb.setForRemoval(x, y, this.removal[y][x]);
         }
-    }; /* }}} */
+    } /* }}} */
     public clearRemoved() { /* {{{ */
         for (let y = 0; y < this.height; ++y) {
             for (let x = 0; x < this.width; ++x) {
@@ -980,7 +980,7 @@ export class GoEngine {
                 }
             }
         }
-    }; /* }}} */
+    } /* }}} */
     public getStoneRemovalString() { /* {{{ */
         let ret = "";
         let arr = [];
@@ -996,14 +996,14 @@ export class GoEngine {
         }
 
         return GoMath.sortMoves(ret);
-    }; /* }}} */
+    } /* }}} */
 
     public getMoveNumber() { /* {{{ */
         return this.cur_move ? this.cur_move.move_number : 0;
-    }; /* }}} */
+    } /* }}} */
     public getCurrentMoveNumber() { /* {{{ */
         return this.last_official_move.move_number;
-    }; /* }}} */
+    } /* }}} */
 
     /* Returns a details object containing the total score and the breakdown of the
      * scoring details */
@@ -1175,13 +1175,13 @@ export class GoEngine {
         this.jumpTo(this.cur_move);
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     public handicapMovesLeft() { /* {{{ */
         if (this.free_handicap_placement) {
             return Math.max(0, this.handicap - this.getMoveNumber());
         }
         return 0;
-    }; /* }}} */
+    } /* }}} */
     private computeAutoRemovedGroups(board) { /* {{{ */
         let self = this;
         let ret = [];
@@ -1201,7 +1201,7 @@ export class GoEngine {
             }
         });
         return ret;
-    }; /* }}} */
+    } /* }}} */
 
     private static normalizeConfig(config) {{{
         if (config.ladder !== config.ladder_id) {
@@ -1447,7 +1447,7 @@ export class GoEngine {
         }
 
         return game_obj;
-    }; /* }}} */
+    } /* }}} */
     public static clearRuleSettings(game_obj) { /* {{{ */
         delete game_obj.allow_self_capture;
         delete game_obj.automatic_stone_removal;
@@ -1462,7 +1462,7 @@ export class GoEngine {
         delete game_obj.white_must_pass_last;
         delete game_obj.komi;
         return game_obj;
-    }; /* }}} */
+    } /* }}} */
     private parseSGF(sgf) { /* {{{ */
         /* This callback is eventually returned after the parse. It is the function
          * that should be run which will perform the actual moves. This function is
@@ -1736,12 +1736,12 @@ export class GoEngine {
                 self.jumpTo(farthest_move);
             }
         };
-    }; /* }}} */
+    } /* }}} */
     public estimateScore(trials, tolerance) { /* {{{ */
         let se = new ScoreEstimator(this.cb);
         se.init(this, trials, tolerance);
         return se.score();
-    }; /* }}} */
+    } /* }}} */
     public getMoveByLocation(x, y) { /* {{{ */
         let m = this.cur_move;
         while (m) {
@@ -1752,7 +1752,7 @@ export class GoEngine {
             }
         }
         return null;
-    }; /* }}} */
+    } /* }}} */
 
     public exportAsPuzzle() { /* {{{ */
         return {

@@ -100,9 +100,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
     ladder_id: number;
     tournament_id: number;
     review_id: number;
-    goban_div: any; ;
-    white_clock: any; ;
-    black_clock: any; ;
+    goban_div: any;
+    white_clock: any;
+    black_clock: any;
     goban: Goban;
     resize_debounce: number = null;
     set_analyze_tool: any = {};
@@ -450,7 +450,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     window.document.title = title;
                 } else {
                     let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
-                    window.document.title = interpolate(_("(%s) moves made"), [diff]); ;
+                    window.document.title = interpolate(_("(%s) moves made"), [diff]);
                 }
             } else {
                 window.document.title = title;

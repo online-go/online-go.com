@@ -53,36 +53,36 @@ export class GoStoneGroup {
     } /* }}} */
     addStone(x, y) { /* {{{ */
         this.points.push({"x": x, "y": y});
-    }; /* }}} */
+    } /* }}} */
     addNeighborGroup(group) { /* {{{ */
         if (!(group.id in this.__added_neighbors)) {
             this.neighbors.push(group);
             this.__added_neighbors[group.id] = true;
         }
-    }; /* }}} */
+    } /* }}} */
     addCornerGroup(x, y, group) { /* {{{ */
         if (!(y in this.corner_groups)) { this.corner_groups[y]  = {}; }
         this.corner_groups[y][x] = group;
-    }; /* }}} */
+    } /* }}} */
     foreachStone(fn) { /* {{{ */
         for (let i = 0; i < this.points.length; ++i) {
             fn(this.points[i]);
         }
-    }; /* }}} */
+    } /* }}} */
     foreachNeighborGroup(fn) { /* {{{ */
         for (let i = 0; i < this.neighbors.length; ++i) {
             fn(this.neighbors[i]);
         }
-    }; /* }}} */
+    } /* }}} */
     computeIsEye() { /* {{{ */
         this.is_eye = false;
 
         if (this.points.length > 1) { return; }
         this.is_eye = this.is_territory;
-    }; /* }}} */
+    } /* }}} */
     size() { /* {{{ */
         return this.points.length;
-    }; /* }}} */
+    } /* }}} */
     computeIsStrongEye() { /* {{{ */
         /* If a single eye is surrounded by 7+ stones of the same color, 5 stones
          * for edges, and 3 stones for corners, or if any of those spots are
@@ -116,7 +116,7 @@ export class GoStoneGroup {
             }
         }
 
-    }; /* }}} */
+    } /* }}} */
     computeIsStrongString() { /* {{{ */
         /* A group is considered a strong string if it is adjacent to two strong eyes */
         let strong_eye_count = 0;
@@ -124,7 +124,7 @@ export class GoStoneGroup {
             strong_eye_count += gr.is_strong_eye;
         });
         this.is_strong_string = strong_eye_count >= 2;
-    }; /* }}} */
+    } /* }}} */
     computeIsTerritory() { /* {{{ */
         /* An empty group is considered territory if all of it's neighbors are of
          * the same color */
@@ -152,7 +152,7 @@ export class GoStoneGroup {
             this.is_territory = true;
             this.territory_color = color;
         }
-    }; /* }}} */
+    } /* }}} */
     computeIsTerritoryInSeki() { /* {{{ */
         /* An empty group is considered territory if all of it's neighbors are of
          * the same color */
@@ -178,7 +178,7 @@ export class GoStoneGroup {
                 });
             });
         }
-    }; /* }}} */
+    } /* }}} */
     computeProbableColor() { /* {{{ */
         /* For open area that has no definitive owner, compute the weight
          * of how much of who is touching the area */
@@ -192,7 +192,7 @@ export class GoStoneGroup {
         });
         if (this.adjacent_white >= this.adjacent_black * 3) { this.probable_color = 2; }
         if (this.adjacent_black >= this.adjacent_white * 3) { this.probable_color = 1; }
-    }; /* }}} */
+    } /* }}} */
     computeProbablyDead() { /* {{{ */
         this.is_probably_dead = false;
 
@@ -215,12 +215,12 @@ export class GoStoneGroup {
             this.is_probably_dead = !probably_alive;
         }
 
-    }; /* }}} */
+    } /* }}} */
     computeProbablyDame() { /* {{{ */
         this.is_probably_dame = false;
         if (!this.is_territory && this.color === 0 && this.size() < 2) {
             this.is_probably_dame = true;
         }
-    }; /* }}} */
+    } /* }}} */
 
 }

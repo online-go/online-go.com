@@ -149,7 +149,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                 lp.incoming_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                     <div key={idx}>
                                     <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span> 
+                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
                                         <Player nolink user={challenge.player} />
                                     </Link>
                                     </div>
@@ -172,7 +172,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                 lp.outgoing_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                     <div key={idx}>
                                     <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span> 
+                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
                                         <Player nolink user={challenge.player} />
                                     </Link>
                                     </div>

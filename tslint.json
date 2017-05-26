@@ -16,15 +16,6 @@
             true,
             "LF"
         ],
-        "member-ordering": [
-            true,
-            {
-                "order": [
-                    "variables-before-functions",
-                    "fields-first"
-                ]
-            }
-        ],
         "no-angle-bracket-type-assertion": true,
         "no-arg": true,
         "no-conditional-assignment": true,

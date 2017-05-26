@@ -158,7 +158,7 @@ class Schedule extends React.PureComponent<{}, any> { /* {{{ */
     render() {
         return (
             <div className="TournamentList-Schedule">
-            
+
                 <table className="schedule-table">
                     <thead>
                         <tr>
@@ -257,7 +257,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                 />
 
 
-                
+
             </div>
         );
     }

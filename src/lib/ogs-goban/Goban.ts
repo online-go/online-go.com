@@ -977,7 +977,7 @@ export abstract class Goban extends EventEmitter {
 
 
         return socket;
-    }; /* }}} */
+    } /* }}} */
     public destroy() { /* {{{ */
         this.emit("destroy");
         //delete window['active_gobans'][this.goban_id];
@@ -1004,7 +1004,7 @@ export abstract class Goban extends EventEmitter {
         }
         $(window).off("keydown", this.handleShiftKey);
         $(window).off("keyup", this.handleShiftKey);
-    }; /* }}} */
+    } /* }}} */
     private disconnect() { /* {{{ */
         this.emit("destroy");
         if (!this.disconnectedFromGame) {
@@ -1022,7 +1022,7 @@ export abstract class Goban extends EventEmitter {
             this.socket.off(pair[0], pair[1]);
         }
         this.socket_event_bindings = [];
-    }; /* }}} */
+    } /* }}} */
     private scheduleRedrawPenLayer() { /* {{{ */
         if (!this.__board_redraw_pen_layer_timer) {
             this.__board_redraw_pen_layer_timer = setTimeout(() => {
@@ -1034,7 +1034,7 @@ export abstract class Goban extends EventEmitter {
                 this.__board_redraw_pen_layer_timer = null;
             }, 100);
         }
-    }; /* }}} */
+    } /* }}} */
 
     public sendChat(msg_body, type) { /* {{{ */
         if (typeof(msg_body) === "string" && msg_body.length === 0) {
@@ -1061,7 +1061,7 @@ export abstract class Goban extends EventEmitter {
 
         console.log(where, msg);
         this.socket.send(where, msg);
-    }; /* }}} */
+    } /* }}} */
     public message(msg, timeout?) { /* {{{ */
         this.clearMessage();
 
@@ -1086,7 +1086,7 @@ export abstract class Goban extends EventEmitter {
                 this.clearMessage();
             }, timeout);
         }
-    }; /* }}} */
+    } /* }}} */
     private clearMessage() { /* {{{ */
         if (this.message_div) {
             this.message_div.remove();
@@ -1096,7 +1096,7 @@ export abstract class Goban extends EventEmitter {
             clearTimeout(this.message_timeout);
             this.message_timeout = null;
         }
-    }; /* }}} */
+    } /* }}} */
     private setTitle(title) { /* {{{ */
         this.title = title;
         if (this.title_div) {
@@ -1112,7 +1112,7 @@ export abstract class Goban extends EventEmitter {
 
     private getWidthForSquareSize(square_size) { /* {{{ */
         return (this.bounded_width + +this.draw_left_labels + +this.draw_right_labels) * square_size;
-    }; /* }}} */
+    } /* }}} */
     private xy2ij(x, y) { /* {{{ */
         if (x > 0 && y > 0) {
             if (this.bounds.left > 0) {
@@ -1131,7 +1131,7 @@ export abstract class Goban extends EventEmitter {
         let i = Math.floor(x / this.square_size);
         let j = Math.floor(y / this.square_size);
         return {"i": i, "j": j, "valid": i >= 0 && j >= 0 && i < this.width && j < this.height};
-    }; /* }}} */
+    } /* }}} */
     public setAnalyzeTool(tool, subtool) { /* {{{ */
         this.analyze_tool = tool;
         this.analyze_subtool = subtool;
@@ -1149,7 +1149,7 @@ export abstract class Goban extends EventEmitter {
         if (tool === "draw") {
             this.attachPenCanvas();
         }
-    }; /* }}} */
+    } /* }}} */
 
     private detachShadowLayer() { /* {{{ */
         if (this.shadow_layer) {
@@ -1157,7 +1157,7 @@ export abstract class Goban extends EventEmitter {
             this.shadow_layer = null;
             this.shadow_ctx = null;
         }
-    }; /* }}} */
+    } /* }}} */
     private attachShadowLayer() { /* {{{ */
         if (!this.shadow_layer) {
             this.shadow_layer = createDeviceScaledCanvas(this.metrics.width, this.metrics.height).attr("class", "shadow-canvas").addClass("ShadowLayer");
@@ -1166,14 +1166,14 @@ export abstract class Goban extends EventEmitter {
             this.shadow_ctx = this.shadow_layer[0].getContext("2d");
             this.bindPointerBindings(this.shadow_layer);
         }
-    }; /* }}} */
+    } /* }}} */
     public detachPenCanvas() { /* {{{ */
         if (this.pen_layer) {
             this.pen_layer.remove();
             this.pen_layer = null;
             this.pen_ctx = null;
         }
-    }; /* }}} */
+    } /* }}} */
     private attachPenCanvas() { /* {{{ */
         if (!this.pen_layer) {
             this.pen_layer = createDeviceScaledCanvas(this.metrics.width, this.metrics.height).attr("id", "pen-canvas").addClass("PenLayer");
@@ -1182,7 +1182,7 @@ export abstract class Goban extends EventEmitter {
             this.pen_ctx = this.pen_layer[0].getContext("2d");
             this.bindPointerBindings(this.pen_layer);
         }
-    }; /* }}} */
+    } /* }}} */
     private bindPointerBindings(canvas) { /* {{{ */
         if (!this.interactive) {
             return;
@@ -1368,29 +1368,29 @@ export abstract class Goban extends EventEmitter {
             $(document).off("touchend", onTouchEnd);
             $(document).off("touchmove", onTouchMove);
         });
-    }; /* }}} */
+    } /* }}} */
     public clearAnalysisDrawing() { /* {{{ */
         this.pen_marks = [];
         if (this.pen_ctx) {
             this.pen_ctx.clearRect(0, 0, this.metrics.width, this.metrics.height);
         }
-    }; /* }}} */
+    } /* }}} */
     private xy2pen(x, y) { /* {{{ */
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
         return [Math.round(((x / this.square_size) + lx) * 64), Math.round(((y / this.square_size) + ly) * 64)];
-    }; /* }}} */
+    } /* }}} */
     private pen2xy(x, y) { /* {{{ */
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
 
         return [((x / 64) - lx) * this.square_size, ((y / 64) - lx) * this.square_size];
-    }; /* }}} */
+    } /* }}} */
     private setPenStyle(color) { /* {{{ */
         this.pen_ctx.strokeStyle = color;
         this.pen_ctx.lineWidth = Math.max(1, Math.round(this.square_size * 0.1));
         this.pen_ctx.lineCap = "round";
-    }; /* }}} */
+    } /* }}} */
     private onPenStart(ev) { /* {{{ */
         this.attachPenCanvas();
 
@@ -1401,7 +1401,7 @@ export abstract class Goban extends EventEmitter {
         this.setPenStyle(this.analyze_subtool);
 
         this.syncReviewMove({"pen": this.analyze_subtool, "pp": this.xy2pen(pos.x, pos.y)});
-    }; /* }}} */
+    } /* }}} */
     private onPenMove(ev) { /* {{{ */
         let pos = getRelativeEventPosition(ev);
         let start = this.last_pen_position;
@@ -1424,7 +1424,7 @@ export abstract class Goban extends EventEmitter {
         this.pen_ctx.stroke();
 
         this.syncReviewMove({"pp": [dx, dy]});
-    }; /* }}} */
+    } /* }}} */
     public drawPenMarks(penmarks) { /* {{{ */
         if (this.review_id && !this.done_loading_review) { return; }
         if (!(penmarks.length || this.pen_layer)) {
@@ -1450,7 +1450,7 @@ export abstract class Goban extends EventEmitter {
             }
             this.pen_ctx.stroke();
         }
-    }; /* }}} */
+    } /* }}} */
 
 
     private putOrClearLabel(x, y, mode?) { /* {{{ */
@@ -1485,7 +1485,7 @@ export abstract class Goban extends EventEmitter {
 
         this.syncReviewMove();
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private onLabelingStart(ev) { /* {{{ */
         let pos = getRelativeEventPosition(ev);
         this.last_label_position = this.xy2ij(pos.x, pos.y);
@@ -1508,7 +1508,7 @@ export abstract class Goban extends EventEmitter {
         }
         this.__last_pt = this.xy2ij(-1, -1);
         this.drawSquare(this.last_label_position.i, this.last_label_position.j);
-    }; /* }}} */
+    } /* }}} */
     private onLabelingMove(ev) { /* {{{ */
         let pos = getRelativeEventPosition(ev);
         let cur = this.xy2ij(pos.x, pos.y);
@@ -1526,14 +1526,14 @@ export abstract class Goban extends EventEmitter {
             this.putOrClearLabel(cur.i, cur.j, this.labeling_mode);
             this.setLabelCharacterFromMarks();
         }
-    }; /* }}} */
+    } /* }}} */
     public setSquareSize(new_ss) { /* {{{ */
         let redraw = this.square_size !== new_ss;
         this.square_size = new_ss;
         if (redraw) {
             this.redraw(true);
         }
-    }; /* }}} */
+    } /* }}} */
     public setSquareSizeBasedOnDisplayWidth(display_width) {{{
         let n_squares = Math.max(
             this.bounded_width  + +this.draw_left_labels + +this.draw_right_labels,
@@ -1900,7 +1900,7 @@ export abstract class Goban extends EventEmitter {
             this.emit("error");
             this.emit("update");
         }
-    }; /* }}} */
+    } /* }}} */
     public setStrictSekiMode(tf) { /* {{{ */
         if (this.engine.phase !== "stone removal") {
             throw "Not in stone removal phase";
@@ -1914,7 +1914,7 @@ export abstract class Goban extends EventEmitter {
             "player_id"       : this.config.player_id,
             "strict_seki_mode": tf
         });
-    }; /* }}} */
+    } /* }}} */
     private onMouseMove(event) { /* {{{ */
         if (!(this.stone_placement_enabled &&
             (this.player_id || this.engine.black_player_id === 0 || this.mode === "analyze" || this.scoring_mode)
@@ -1942,7 +1942,7 @@ export abstract class Goban extends EventEmitter {
             this.last_hover_square = {"x": pt.i, "y": pt.j};
             this.drawSquare(pt.i, pt.j);
         }
-    }; /* }}} */
+    } /* }}} */
     private onMouseOut(event) { /* {{{ */
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
@@ -1950,12 +1950,12 @@ export abstract class Goban extends EventEmitter {
             this.drawSquare(last_hover.x, last_hover.y);
         }
         this.__last_pt = this.xy2ij(-1, -1);
-    }; /* }}} */
+    } /* }}} */
     private refreshHoverPosition() { /* {{{ */
         if (this.last_hover_square) {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
-    }; /* }}} */
+    } /* }}} */
     public computeMetrics() { /* {{{ */
         if (this.square_size <= 0) {
             //console.error("Non positive square size set", this.square_size);
@@ -1973,18 +1973,18 @@ export abstract class Goban extends EventEmitter {
         if (this.square_size % 2 === 0) { ret.mid -= 0.5; ret.offset = 0.5; }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private setSubmit(fn) { /* {{{ */
         this.submit_move = fn;
         this.emit("show-submit", fn != null);
-    }; /* }}} */
+    } /* }}} */
 
     private enableDrawing() { /* {{{ */
         this.drawing_enabled = true;
-    }; /* }}} */
+    } /* }}} */
     private disableDrawing() { /* {{{ */
         this.drawing_enabled = false;
-    }; /* }}} */
+    } /* }}} */
     private markDirty() { /* {{{ */
         if (!this.dirty_redraw) {
             this.dirty_redraw = setTimeout(() => {
@@ -1992,14 +1992,14 @@ export abstract class Goban extends EventEmitter {
                 this.redraw();
             }, 1);
         }
-    };  /* }}} */
+    }  /* }}} */
 
     private drawSquare(i, j) { /* {{{ */
         if (i < 0 || j < 0) { return; }
         if (this.__draw_state[j][i] !== this.drawingHash(i, j)) {
             this.__drawSquare(i, j);
         }
-    }; /* }}} */
+    } /* }}} */
     private __drawSquare(i, j) { /* {{{ */
         if (!this.drawing_enabled) { return; }
         if (this.no_display) { return; }
@@ -2600,7 +2600,7 @@ export abstract class Goban extends EventEmitter {
 
 
         this.__draw_state[j][i] = this.drawingHash(i, j);
-    }; /* }}} */
+    } /* }}} */
     private drawingHash(i, j) { /* {{{ */
         if (i < 0 || j < 0) {
             return "..";
@@ -2839,7 +2839,7 @@ export abstract class Goban extends EventEmitter {
         }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
 
     public redraw(force_clear?: boolean) { /* {{{ */
         if (!this.drawing_enabled) {
@@ -2964,7 +2964,7 @@ export abstract class Goban extends EventEmitter {
         if (this.move_tree_div) {
             this.redrawMoveTree();
         }
-    }; /* }}} */
+    } /* }}} */
     abstract getSelectedThemes();
 
     private computeThemeStoneRadius(metrics) {{{
@@ -3042,7 +3042,7 @@ export abstract class Goban extends EventEmitter {
                 this.redrawMoveTree();
             }
         }
-    }; /* }}} */
+    } /* }}} */
     public redrawMoveTree() { /* {{{ */
         let d = $(this.move_tree_div);
         let c = $(this.move_tree_canvas);
@@ -3054,17 +3054,17 @@ export abstract class Goban extends EventEmitter {
                 "canvas": c
             });
         }
-    }; /* }}} */
+    } /* }}} */
     private updateMoveTree() { /* {{{ */
         this.redrawMoveTree();
-    }; /* }}} */
+    } /* }}} */
     private updateOrRedrawMoveTree() { /* {{{ */
         if (MoveTree.layout_dirty) {
             this.redrawMoveTree();
         } else {
             this.updateMoveTree();
         }
-    }; /* }}} */
+    } /* }}} */
 
     public load(config) { /* {{{ */
 
@@ -3150,10 +3150,10 @@ export abstract class Goban extends EventEmitter {
         if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in this.engine)) {
             this.autoScore();
         }
-    }; /* }}} */
+    } /* }}} */
     private set(x, y, player) { /* {{{ */
         this.markDirty();
-    }; /* }}} */
+    } /* }}} */
     private setForRemoval(x, y, removed) { /* {{{ */
         if (removed) {
             this.getMarks(x, y).stone_removed = true;
@@ -3163,7 +3163,7 @@ export abstract class Goban extends EventEmitter {
             this.getMarks(x, y).remove = false;
         }
         this.drawSquare(x, y);
-    }; /* }}} */
+    } /* }}} */
     public showScores(score) { /* {{{ */
         this.hideScores();
         this.showing_scores = true;
@@ -3182,7 +3182,7 @@ export abstract class Goban extends EventEmitter {
                 }
             }
         }
-    }; /* }}} */
+    } /* }}} */
     public hideScores() { /* {{{ */
         this.showing_scores = false;
         for (let j = 0; j < this.height; ++j) {
@@ -3193,7 +3193,7 @@ export abstract class Goban extends EventEmitter {
                 }
             }
         }
-    }; /* }}} */
+    } /* }}} */
 
     public updatePlayerToMoveTitle() { /* {{{ */
         switch (this.engine.phase) {
@@ -3243,13 +3243,13 @@ export abstract class Goban extends EventEmitter {
                 this.setTitle(this.engine.phase);
                 break;
         }
-    }; /* }}} */
+    } /* }}} */
     private disableStonePlacement() { /* {{{ */
         this.stone_placement_enabled = false;
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
-    }; /* }}} */
+    } /* }}} */
     private enableStonePlacement() { /* {{{ */
         if (this.stone_placement_enabled) {
             this.disableStonePlacement();
@@ -3266,12 +3266,12 @@ export abstract class Goban extends EventEmitter {
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
-    }; /* }}} */
+    } /* }}} */
     public showFirst() { /* {{{ */
         this.engine.jumpTo(this.engine.move_tree);
         this.updateTitleAndStonePlacement();
         this.emit("update");
-    }; /* }}} */
+    } /* }}} */
     public showPrevious(dont_update_display?) { /* {{{ */
         if (this.mode === "conditional") {
             if (this.conditional_path.length >= 2) {
@@ -3292,7 +3292,7 @@ export abstract class Goban extends EventEmitter {
             this.updateTitleAndStonePlacement();
             this.emit("update");
         }
-    }; /* }}} */
+    } /* }}} */
     public showNext() { /* {{{ */
         if (this.mode === "conditional") {
             if (this.currently_my_cmove) {
@@ -3313,21 +3313,21 @@ export abstract class Goban extends EventEmitter {
         }
         this.updateTitleAndStonePlacement();
         this.emit("update");
-    }; /* }}} */
+    } /* }}} */
     public prevSibling() { /* {{{ */
         let sibling = this.engine.cur_move.prevSibling();
         if (sibling) {
             this.engine.jumpTo(sibling);
             this.emit("update");
         }
-    }; /* }}} */
+    } /* }}} */
     public nextSibling() { /* {{{ */
         let sibling = this.engine.cur_move.nextSibling();
         if (sibling) {
             this.engine.jumpTo(sibling);
             this.emit("update");
         }
-    }; /* }}} */
+    } /* }}} */
     public deleteBranch() { /* {{{ */
         if (!this.engine.cur_move.trunk) {
             if (this.isPlayerController()) {
@@ -3337,7 +3337,7 @@ export abstract class Goban extends EventEmitter {
             this.emit("update");
             this.redrawMoveTree();
         }
-    }; /* }}} */
+    } /* }}} */
 
     public jumpToLastOfficialMove() { /* {{{ */
         this.move_selected = false;
@@ -3351,14 +3351,14 @@ export abstract class Goban extends EventEmitter {
         }
 
         this.emit("update");
-    }; /* }}} */
+    } /* }}} */
     private setLastOfficialMove() { /* {{{ */
         this.engine.setLastOfficialMove();
         this.updateTitleAndStonePlacement();
-    }; /* }}} */
+    } /* }}} */
     private isLastOfficialMove() { /* {{{ */
         return this.engine.isLastOfficialMove();
-    }; /* }}} */
+    } /* }}} */
 
     public updateTitleAndStonePlacement() { /* {{{ */
         this.updatePlayerToMoveTitle();
@@ -3398,7 +3398,7 @@ export abstract class Goban extends EventEmitter {
                 this.enableStonePlacement();
             }
         }
-    }; /* }}} */
+    } /* }}} */
 
     public setConditionalTree(conditional_tree) { /* {{{ */
         if (conditional_tree == null) {
@@ -3408,14 +3408,14 @@ export abstract class Goban extends EventEmitter {
         this.current_cmove = conditional_tree;
 
         this.emit("update");
-    }; /* }}} */
+    } /* }}} */
     public followConditionalPath(movepath) { /* {{{ */
         let moves = this.engine.decodeMoves(movepath);
         for (let i = 0; i < moves.length; ++i) {
             this.engine.place(moves[i].x, moves[i].y);
             this.followConditionalSegment(moves[i].x, moves[i].y);
         }
-    }; /* }}} */
+    } /* }}} */
     private followConditionalSegment(x, y) { /* {{{ */
         let mv = encodeMove(x, y);
         this.conditional_path += mv;
@@ -3437,7 +3437,7 @@ export abstract class Goban extends EventEmitter {
         }
 
         this.currently_my_cmove = !this.currently_my_cmove;
-    }; /* }}} */
+    } /* }}} */
     private deleteConditionalSegment(x, y) { /* {{{ */
         this.conditional_path += encodeMove(x, y);
 
@@ -3466,7 +3466,7 @@ export abstract class Goban extends EventEmitter {
         }
 
         this.currently_my_cmove = !this.currently_my_cmove;
-    }; /* }}} */
+    } /* }}} */
     public deleteConditionalPath(movepath) { /* {{{ */
         let moves = this.engine.decodeMoves(movepath);
         if (moves.length) {
@@ -3478,10 +3478,10 @@ export abstract class Goban extends EventEmitter {
             }
             this.deleteConditionalSegment(moves[moves.length - 1].x, moves[moves.length - 1].y);
         }
-    }; /* }}} */
+    } /* }}} */
     public getCurrentConditionalPath() { /* {{{ */
         return this.conditional_path;
-    }; /* }}} */
+    } /* }}} */
     public saveConditionalMoves() { /* {{{ */
         this.socket.send("game/conditional_moves/set", {
             "auth"        : this.config.auth,
@@ -3490,11 +3490,11 @@ export abstract class Goban extends EventEmitter {
             "player_id"   : this.config.player_id,
             "cmoves"      : this.conditional_tree.encode()
         });
-    }; /* }}} */
+    } /* }}} */
 
     public setModeDeferred(mode) {  /* {{{ */
         setTimeout(() => { this.setMode(mode); }, 1);
-    }; /* }}} */
+    } /* }}} */
     public setMode(mode, dont_jump_to_official_move?) { /* {{{ */
         if (mode === "conditional" && this.player_id === this.engine.playerToMove()) {
             /* this shouldn't ever get called, but incase we screw up.. */
@@ -3547,40 +3547,40 @@ export abstract class Goban extends EventEmitter {
         this.updateTitleAndStonePlacement();
 
         return true;
-    }; /* }}} */
+    } /* }}} */
     public resign() { /* {{{ */
         this.socket.send("game/resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
     private sendPendingResignation() { /* {{{ */
         window["comm_socket"].send("game/delayed_resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id
         });
-    }; /* }}} */
+    } /* }}} */
     private clearPendingResignation() { /* {{{ */
         window["comm_socket"].send("game/clear_delayed_resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id
         });
-    }; /* }}} */
+    } /* }}} */
     public cancelGame() { /* {{{ */
         this.socket.send("game/cancel", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
     private annul() { /* {{{ */
         this.socket.send("game/annul", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
     public pass() { /* {{{ */
         this.engine.place(-1, -1);
         if (this.mode === "play") {
@@ -3596,7 +3596,7 @@ export abstract class Goban extends EventEmitter {
                 this.redrawMoveTree();
             }
         }
-    }; /* }}} */
+    } /* }}} */
     public requestUndo() { /* {{{ */
         this.socket.send("game/undo/request", {
             "auth": this.config.auth,
@@ -3604,7 +3604,7 @@ export abstract class Goban extends EventEmitter {
             "player_id": this.config.player_id,
             "move_number": this.engine.getCurrentMoveNumber()
         });
-    }; /* }}} */
+    } /* }}} */
     public acceptUndo() { /* {{{ */
         this.socket.send("game/undo/accept", {
             "auth": this.config.auth,
@@ -3612,21 +3612,21 @@ export abstract class Goban extends EventEmitter {
             "player_id": this.config.player_id,
             "move_number": this.engine.getCurrentMoveNumber()
         });
-    }; /* }}} */
+    } /* }}} */
     public pauseGame() { /* {{{ */
         this.socket.send("game/pause", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
     public resumeGame() { /* {{{ */
         this.socket.send("game/resume", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
 
     public acceptRemovedStones() { /* {{{ */
         let stones = this.engine.getStoneRemovalString();
@@ -3638,7 +3638,7 @@ export abstract class Goban extends EventEmitter {
             "stones": stones,
             "strict_seki_mode": this.engine.strict_seki_mode
         });
-    }; /* }}} */
+    } /* }}} */
     public rejectRemovedStones() { /* {{{ */
         let stones = this.engine.getStoneRemovalString();
         this.engine.players[this.engine.playerColor(this.config.player_id)].accepted_stones = null;
@@ -3647,11 +3647,11 @@ export abstract class Goban extends EventEmitter {
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    }; /* }}} */
+    } /* }}} */
     public setEditColor(color) { /* {{{ */
         this.edit_color = color;
         this.updateTitleAndStonePlacement();
-    }; /* }}} */
+    } /* }}} */
     private editSettings(changes) { /* {{{ */
         let need_to_change = false;
         for (let k in changes) {
@@ -3670,7 +3670,7 @@ export abstract class Goban extends EventEmitter {
                 "changes": changes
             });
         }
-    }; /* }}} */
+    } /* }}} */
     private playMovementSound() { /* {{{ */
         if (this.last_sound_played_for_a_stone_placement === this.engine.cur_move.x + "," + this.engine.cur_move.y) {
             return;
@@ -3690,7 +3690,7 @@ export abstract class Goban extends EventEmitter {
                 sfx.play("stone-" + (idx + 1));
             }
         }
-    }; /* }}} */
+    } /* }}} */
     private setState(state) { /* {{{ */
         if ((this.game_type === "review" || this.game_type === "demo") && this.engine) {
             this.drawPenMarks(this.engine.cur_move.pen_marks);
@@ -3701,15 +3701,15 @@ export abstract class Goban extends EventEmitter {
 
         this.setLabelCharacterFromMarks();
         this.markDirty();
-    }; /* }}} */
+    } /* }}} */
     private getState() { /* {{{ */
         /* This is a callback that gets called by GoEngine.getState to store board state in its state stack */
         let ret = { };
         return ret;
-    }; /* }}} */
+    } /* }}} */
     public giveReviewControl(player_id: number) { /* {{{ */
         this.syncReviewMove({ "controller": player_id });
-    }; /* }}} */
+    } /* }}} */
     private giveVoice(player_id: number) { /* {{{ */
         this.socket.send("review/voice/give", {
             "review_id": this.review_id,
@@ -3717,7 +3717,7 @@ export abstract class Goban extends EventEmitter {
                 "id": player_id,
             }
         });
-    }; /* }}} */
+    } /* }}} */
     private removeVoice(player_id: number) { /* {{{ */
         this.socket.send("review/voice/remove", {
             "review_id": this.review_id,
@@ -3725,7 +3725,7 @@ export abstract class Goban extends EventEmitter {
                 "id": player_id,
             }
         });
-    }; /* }}} */
+    } /* }}} */
 
     public setMarks(marks, dont_draw?) { /* {{{ */
         for (let key in marks) {
@@ -3735,7 +3735,7 @@ export abstract class Goban extends EventEmitter {
                 this.setMark(pt.x, pt.y, key, dont_draw);
             }
         }
-    }; /* }}} */
+    } /* }}} */
     private setMark(x, y, mark, dont_draw) { /* {{{ */
         try {
             if (x >= 0 && y >= 0) {
@@ -3756,7 +3756,7 @@ export abstract class Goban extends EventEmitter {
         } catch (e) {
             console.error(e.stack);
         }
-    }; /* }}} */
+    } /* }}} */
     private setTransientMark(x, y, mark, dont_draw) { /* {{{ */
         try {
             if (x >= 0 && y >= 0) {
@@ -3777,13 +3777,13 @@ export abstract class Goban extends EventEmitter {
         } catch (e) {
             console.error(e.stack);
         }
-    }; /* }}} */
+    } /* }}} */
     public getMarks(x, y) { /* {{{ */
         if (this.engine && this.engine.cur_move) {
             return this.engine.cur_move.getMarks(x, y);
         }
         return {};
-    }; /* }}} */
+    } /* }}} */
     private toggleMark(x, y, mark, force_label?, force_put?) { /* {{{ */
         let ret = true;
         let marktypes = ["letter", "circle", "square", "triangle", "cross"];
@@ -3817,7 +3817,7 @@ export abstract class Goban extends EventEmitter {
         }
         this.drawSquare(x, y);
         return ret;
-    }; /* }}} */
+    } /* }}} */
     private incrementLabelCharacter() { /* {{{ */
         let seq1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         if (parseInt(this.label_character)) {
@@ -3825,7 +3825,7 @@ export abstract class Goban extends EventEmitter {
         } else if (seq1.indexOf(this.label_character) !== -1) {
             this.label_character = seq1[(seq1.indexOf(this.label_character) + 1) % seq1.length];
         }
-    }; /* }}} */
+    } /* }}} */
     private setLabelCharacterFromMarks(set_override?) { /* {{{ */
         if (set_override === "letters" || /^[a-zA-Z]$/.test(this.label_character)) {
             let seq1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -3853,13 +3853,13 @@ export abstract class Goban extends EventEmitter {
 
             this.label_character = "" + (val + 1);
         }
-    }; /* }}} */
+    } /* }}} */
     public setLabelCharacter(ch) { /* {{{ */
         this.label_character = ch;
         if (this.last_hover_square) {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
-    }; /* }}} */
+    } /* }}} */
     private clearMark(x, y, mark) { /* {{{ */
         try {
             if (typeof(mark) === "number") {
@@ -3875,7 +3875,7 @@ export abstract class Goban extends EventEmitter {
         } catch (e) {
             console.error(e);
         }
-    }; /* }}} */
+    } /* }}} */
     private clearTransientMark(x, y, mark) { /* {{{ */
         try {
             if (typeof(mark) === "number") {
@@ -3891,10 +3891,10 @@ export abstract class Goban extends EventEmitter {
         } catch (e) {
             console.error(e);
         }
-    }; /* }}} */
+    } /* }}} */
     private heatmapUpdated() { /* {{{ */
         this.redraw(true);
-    }; /* }}} */
+    } /* }}} */
     private updateScoreEstimation() { /* {{{ */
         if (this.score_estimate) {
             let est = this.score_estimate.estimated_hard_score - this.engine.komi;
@@ -3903,7 +3903,7 @@ export abstract class Goban extends EventEmitter {
             else         { color = _("White"); }
             $("#score-estimation").text(interpolate(pgettext("Score estimation result", "Estimation: %s by %s"), [color, Math.abs(est).toFixed(1)]));
         }
-    }; /* }}} */
+    } /* }}} */
     public autoScore() { /* {{{ */
         try {
             if (!window["user"] || !this.on_game_screen  || !this.engine || (window["user"].id !== this.engine.black_player_id && window["user"].id !== this.engine.white_player_id)) {
@@ -3951,7 +3951,7 @@ export abstract class Goban extends EventEmitter {
 
             this.clearMessage();
         }, 10);
-    }; /* }}} */
+    } /* }}} */
     private sendMove(mv) { /* {{{ */
         let timeout = setTimeout(() => {
             this.message(_("Error submitting move"), -1);
@@ -3971,7 +3971,7 @@ export abstract class Goban extends EventEmitter {
             clearTimeout(timeout);
             this.clearMessage();
         });
-    }; /* }}} */
+    } /* }}} */
 
     public setGameClock(clock) { /* {{{ */
         //console.log('Setting clock: ', clock);
@@ -4304,7 +4304,7 @@ export abstract class Goban extends EventEmitter {
         } catch (e) {
             console.error(e);
         }
-    }; /* }}} */
+    } /* }}} */
     public syncReviewMove(msg_override?, node_text?) { /* {{{ */
         if (this.review_id && (this.isPlayerController() || (this.isPlayerOwner() && msg_override && msg_override.controller)) && this.done_loading_review) {
             if (this.isInPushedAnalysis()) {
@@ -4384,7 +4384,7 @@ export abstract class Goban extends EventEmitter {
 
             this.socket.send("review/append", msg);
         }
-    }; /* }}} */
+    } /* }}} */
     public setScoringMode(tf):MoveTree { /* {{{ */
         this.scoring_mode = tf;
         let ret = this.engine.cur_move;
@@ -4403,7 +4403,7 @@ export abstract class Goban extends EventEmitter {
         }
 
         return ret;
-    }; /* }}} */
+    } /* }}} */
     protected getShouldPlayVoiceCountdown():boolean {{{
         return false;
     }}}

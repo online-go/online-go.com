@@ -389,7 +389,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             };
             opts.puzzle_opponent_move_mode = "automatic";
             opts.puzzle_player_move_mode = "free";
-            opts.puzzle_rank = puzzle && puzzle.puzzle_rank ? puzzle.puzzle_rank : 0; ;
+            opts.puzzle_rank = puzzle && puzzle.puzzle_rank ? puzzle.puzzle_rank : 0;
             opts.puzzle_collection = (puzzle && puzzle.collection ? puzzle.collection.id : 0);
             opts.puzzle_type = (puzzle && puzzle.type ? puzzle.type : "");
             opts.move_tree_div = "#move-tree-container";

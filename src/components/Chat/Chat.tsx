@@ -117,7 +117,7 @@ function getChannel(channel) { /* {{{ */
         };
     }
     return channels[channel];
-}; /* }}} */
+} /* }}} */
 
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {

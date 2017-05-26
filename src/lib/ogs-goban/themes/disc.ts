@@ -47,11 +47,11 @@ export default function(GoThemes) {
     class Black extends Stone {
         preRenderBlack(radius, seed): any {
             return true;
-        };
+        }
 
         placeBlackStone(ctx, shadow_ctx, stone, cx, cy, radius) {
             this.placePlainStone(ctx, cx, cy, radius, this.getBlackStoneColor());
-        };
+        }
 
         public getBlackStoneColor() {
             return data.get("custom.black");
@@ -65,11 +65,11 @@ export default function(GoThemes) {
     class White extends Stone {
         preRenderWhite(radius, seed): any {
             return true;
-        };
+        }
 
         placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, radius) {
             this.placePlainStone(ctx, cx, cy, radius, this.getWhiteStoneColor());
-        };
+        }
 
         public getWhiteStoneColor() {
             return data.get("custom.white");

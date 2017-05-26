@@ -27,13 +27,13 @@ export default function(GoThemes) {
                 "background-color": "#DCB35C",
                 "background-image": "url('" + Goban.getCDNReleaseBase() + "/img/kaya.jpg')"
             };
-        };
-        getLineColor() { return "#000000"; };
-        getFadedLineColor() { return "#888888"; };
-        getStarColor() { return "#000000"; };
-        getFadedStarColor() { return "#888888"; };
-        getBlankTextColor() { return "#000000"; };
-        getLabelTextColor() { return "#444444"; };
+        }
+        getLineColor() { return "#000000"; }
+        getFadedLineColor() { return "#888888"; }
+        getStarColor() { return "#000000"; }
+        getFadedStarColor() { return "#888888"; }
+        getBlankTextColor() { return "#000000"; }
+        getLabelTextColor() { return "#444444"; }
     }
 
     _("Kaya"); // ensure translation
@@ -47,13 +47,13 @@ export default function(GoThemes) {
                 "background-color": "#DCB35C",
                 "background-image": "url('" + Goban.getCDNReleaseBase() + "/img/oak.jpg')"
             };
-        };
-        getLineColor() { return "#000000"; };
-        getFadedLineColor() { return "#888888"; };
-        getStarColor() { return "#000000"; };
-        getFadedStarColor() { return "#888888"; };
-        getBlankTextColor() { return "#000000"; };
-        getLabelTextColor() { return "#000000"; };
+        }
+        getLineColor() { return "#000000"; }
+        getFadedLineColor() { return "#888888"; }
+        getStarColor() { return "#000000"; }
+        getFadedStarColor() { return "#888888"; }
+        getBlankTextColor() { return "#000000"; }
+        getLabelTextColor() { return "#000000"; }
     }
 
 
@@ -69,13 +69,13 @@ export default function(GoThemes) {
                 "background-color": "#DCB35C",
                 "background-image": "url('" + Goban.getCDNReleaseBase() + "/img/persimmon.jpg')"
             };
-        };
-        getLineColor() { return "#000000"; };
-        getFadedLineColor() { return "#888888"; };
-        getStarColor() { return "#000000"; };
-        getFadedStarColor() { return "#888888"; };
-        getBlankTextColor() { return "#000000"; };
-        getLabelTextColor() { return "#000000"; };
+        }
+        getLineColor() { return "#000000"; }
+        getFadedLineColor() { return "#888888"; }
+        getStarColor() { return "#000000"; }
+        getFadedStarColor() { return "#888888"; }
+        getBlankTextColor() { return "#000000"; }
+        getLabelTextColor() { return "#000000"; }
     }
 
 
@@ -90,13 +90,13 @@ export default function(GoThemes) {
                 "background-color": "#DCB35C",
                 "background-image": "url('" + Goban.getCDNReleaseBase() + "/img/black_walnut.jpg')"
             };
-        };
-        getLineColor() { return "#000000"; };
-        getFadedLineColor() { return "#4A2F24"; };
-        getStarColor() { return "#000000"; };
-        getFadedStarColor() { return "#4A2F24"; };
-        getBlankTextColor() { return "#000000"; };
-        getLabelTextColor() { return "#000000"; };
+        }
+        getLineColor() { return "#000000"; }
+        getFadedLineColor() { return "#4A2F24"; }
+        getStarColor() { return "#000000"; }
+        getFadedStarColor() { return "#4A2F24"; }
+        getBlankTextColor() { return "#000000"; }
+        getLabelTextColor() { return "#000000"; }
     }
 
 
@@ -111,13 +111,13 @@ export default function(GoThemes) {
                 "background-color": "#DCB35C",
                 "background-image": "url('" + Goban.getCDNReleaseBase() + "/img/granite.jpg')"
             };
-        };
-        getLineColor() { return "#cccccc"; };
-        getFadedLineColor() { return "#888888"; };
-        getStarColor() { return "#cccccc"; };
-        getFadedStarColor() { return "#888888"; };
-        getBlankTextColor() { return "#cccccc"; };
-        getLabelTextColor() { return "#cccccc"; };
+        }
+        getLineColor() { return "#cccccc"; }
+        getFadedLineColor() { return "#888888"; }
+        getStarColor() { return "#cccccc"; }
+        getFadedStarColor() { return "#888888"; }
+        getBlankTextColor() { return "#cccccc"; }
+        getLabelTextColor() { return "#cccccc"; }
     }
 
 

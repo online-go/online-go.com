@@ -72,7 +72,7 @@ function subscribe(player_id, cb) {
     state[player_id] = false;
     listeners[player_id] = [cb];
     subscribe_queue.push(player_id);
-};
+}
 
 function unsubscribe(player_id, cb) {
     if (player_id in listeners) {

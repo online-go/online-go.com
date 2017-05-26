@@ -109,7 +109,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
             </span>
         );
     }
-};
+}
 
 export function close_friend_list() {
     if (friend_indicator_singleton && friend_indicator_singleton.state.show_friend_list) {
