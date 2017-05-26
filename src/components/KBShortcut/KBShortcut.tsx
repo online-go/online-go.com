@@ -17,6 +17,21 @@
 
 import * as React from "react";
 
+let binding_id = 0;
+
+class Binding {
+    id;
+    shortcut;
+    fn;
+    priority;
+
+    constructor(shortcut, fn, priority) {
+        this.id = ++binding_id;
+        this.shortcut = shortcut;
+        this.fn = fn;
+        this.priority = priority;
+    }
+}
 
 interface KBProps {
     shortcut: string;
@@ -104,21 +119,6 @@ let modifiers = {
 };
 
 let bound_shortcuts = {string: Binding};
-
-let binding_id = 0;
-class Binding {
-    id;
-    shortcut;
-    fn;
-    priority;
-
-    constructor(shortcut, fn, priority) {
-        this.id = ++binding_id;
-        this.shortcut = shortcut;
-        this.fn = fn;
-        this.priority = priority;
-    }
-}
 
 function sanitize_shortcut(shortcut) {
     let shift = shortcut.indexOf("shift-") >= 0;
