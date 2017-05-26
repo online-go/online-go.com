@@ -60,7 +60,7 @@ export interface AutomatchPreferences {
 
 
 class AutomatchToast extends React.PureComponent<{}, any> {
-    timer:number;
+    timer:any;
 
     constructor(props) {
         super(props);

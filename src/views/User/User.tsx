@@ -235,7 +235,7 @@ export class User extends Resolver<UserProperties, any> {
         }
     }
 
-    moderatorNotesSetTimeout: number;
+    moderatorNotesSetTimeout: any;
     updateModeratorNotes(event) {
         let notes = event.target.value;
         this.setState({moderator_notes: notes});

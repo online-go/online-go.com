@@ -1289,7 +1289,7 @@ export abstract class Goban extends EventEmitter {
             this.onMouseOut(ev);
         };
 
-        let mousedisabled = 0;
+        let mousedisabled:any = 0;
 
         canvas.on("click", (ev) => { if (!mousedisabled) { dragging = true; pointerUp(ev, false); } ev.preventDefault(); return false; });
         canvas.on("dblclick", (ev) => { if (!mousedisabled) { dragging = true; pointerUp(ev, true); } ev.preventDefault(); return false; });
