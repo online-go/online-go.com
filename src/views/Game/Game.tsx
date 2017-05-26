@@ -2554,7 +2554,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                                 let ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
-                                return <GameChatLine key={idx} line={line} lastline={ll} gameview={this.props.gameview} />;
+                                return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
                             })}
                         </div>
                     </div>
