@@ -702,7 +702,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 
             case "timecop":
                 let now = (Date.now()) / 1000;
-                let left = Math.floor(notification.expiration / 1000 - now);
+                let left = Math.floor(notification.time / 1000 - now);
                 return <div>{interpolate(_("You have {{time_left}} to make your move!"), {"time_left": formatTime(left)})}</div>;
 
             case "gameEnteredStoneRemoval":
