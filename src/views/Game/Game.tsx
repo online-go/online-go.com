@@ -20,7 +20,7 @@ import device from "device";
 import preferences from "preferences";
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
-import {_, pgettext, interpolate} from "translate";
+import {_, ngettext, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
@@ -2205,13 +2205,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                           {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
                             goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
                               <div className="points">
-                                  {interpolate(_("{{total}} points"), {"total": this.state.score[color].total})}
+                                  {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
                               </div>
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
                               <div className="captures">
-                                  {interpolate(_("{{captures}} captures"), {"captures": this.state.score[color].prisoners})}
+                                  {interpolate(_("{{captures}} {{unit}}"), {"captures": this.state.score[color].prisoners, "unit": ngettext("capture", "captures", this.state.score[color].prisoners)})}
                               </div>
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
