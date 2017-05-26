@@ -31,7 +31,7 @@ export class GoConditionalMove {
             ret[ch] = this.children[ch].encode();
         }
         return [this.move, ret];
-    };
+    }
     static decode(data) {
         let move = data[0];
         let children = data[1];
@@ -42,7 +42,7 @@ export class GoConditionalMove {
             ret.children[ch] = child;
         }
         return ret;
-    };
+    }
     getChild(mv) {
         if (mv in this.children) {
             return this.children[mv];
@@ -50,7 +50,7 @@ export class GoConditionalMove {
         //console.log("Didn't have child " + mv);
         //console.log(this.children);
         return new GoConditionalMove(null, this);
-    };
+    }
     duplicate():GoConditionalMove {
         return GoConditionalMove.decode(this.encode());
     }

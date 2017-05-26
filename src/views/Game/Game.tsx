@@ -100,21 +100,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
     ladder_id: number;
     tournament_id: number;
     review_id: number;
-    goban_div: any; ;
-    white_clock: any; ;
-    black_clock: any; ;
+    goban_div: any;
+    white_clock: any;
+    black_clock: any;
     goban: Goban;
-    resize_debounce: number = null;
+    resize_debounce: any = null;
     set_analyze_tool: any = {};
     score_popups: any = { };
     ad: HTMLElement;
     ad_class: AdClass = null;
     autoplay_timer = null;
-    stone_removal_accept_timeout: number = null;
+    stone_removal_accept_timeout: any = null;
     conditional_move_list = [];
     selected_conditional_move = null;
     chat_log = [];
-    chat_update_debounce: number = null;
+    chat_update_debounce: any = null;
     last_variation_number: number = 0;
     in_pushed_analysis: boolean = false;
     chat_proxy;
@@ -450,7 +450,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     window.document.title = title;
                 } else {
                     let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
-                    window.document.title = interpolate(_("(%s) moves made"), [diff]); ;
+                    window.document.title = interpolate(_("(%s) moves made"), [diff]);
                 }
             } else {
                 window.document.title = title;
@@ -1547,6 +1547,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             volume: volume,
             sound_enabled: enabled,
         });
+        let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
+        sfx.play("stone-" + (idx + 1));
     }}}
     saveVolume = () => {{{
         let enabled = this.state.volume > 0;
@@ -2552,7 +2554,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                                 let ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
-                                return <GameChatLine key={idx} line={line} lastline={ll} gameview={this.props.gameview} />;
+                                return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
                             })}
                         </div>
                     </div>

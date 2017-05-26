@@ -74,14 +74,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.`
         "react": "React",
         "react-dom": "ReactDOM",
         "react-router": "ReactRouter",
+        "react-datetime": "Datetime",
+        "react-autosuggest": "Autosuggest",
+        "react-redux": "ReactRedux",
+        "redux": "Redux",
         "blueimp-md5": "md5",
         "eventemitter3": "EventEmitter",
         "markdown-it": "markdownit",
         "moment": "moment",
-        "redux": "Redux",
-        "react-redux": "ReactRedux",
         "d3": "d3",
+        "es6-promise": "ES6Promise",
 
-        "swal": "swal", // can't seem to import anytways
+        "swal": "swal", // can't seem to import anyways
     },
 };

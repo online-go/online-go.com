@@ -259,7 +259,7 @@ class PrivateChat {
             //ITC.send("private-chat-open", {"user_id": this.user_id, "username": this.player.username});
             data.set("pm.read-" + this.user_id, this.last_uid);
         }
-    }; /* }}} */
+    } /* }}} */
     updateInputPlaceholder() {
         if (!this.input) {
             return;
@@ -306,7 +306,7 @@ class PrivateChat {
         if (send_itc) {
             ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": this.player.username});
         }
-    }; /* }}} */
+    } /* }}} */
     close(send_itc, dont_send_pm_close?) { /* {{{ */
         this.display_state = "closed";
         for (let i = 0; i < private_chats.length; ++i) {
@@ -329,7 +329,7 @@ class PrivateChat {
         if (comm_socket && !dont_send_pm_close) {
             comm_socket.send("chat/pm/close", this.user_id);
         }
-    }; /* }}} */
+    } /* }}} */
     addChat(from, txt, user_id, timestamp) { /* {{{ */
         let line = $("<div>").addClass("chat-line");
         line.addClass("chat-user-" + user_id);
@@ -370,7 +370,7 @@ class PrivateChat {
             }
         }
         this.updateInputPlaceholder();
-    }; /* }}} */
+    } /* }}} */
     addSystem(message) { /* {{{ */
         let line = $("<div>").addClass("chat-line system");
         line.text(message.message);
@@ -389,17 +389,17 @@ class PrivateChat {
                 body.scrollTop = body.scrollHeight;
             }
         }
-    }; /* }}} */
+    } /* }}} */
     hilight() { /* {{{ */
         if (this.dom) {
             this.dom.addClass("highlighted");
         }
-    }; /* }}} */
+    } /* }}} */
     removeHilight() { /* {{{ */
         if (this.dom) {
             this.dom.removeClass("highlighted");
         }
-    }; /* }}} */
+    } /* }}} */
     handleChat(line) { /* {{{ */
 
         if (line.message.i) {
@@ -440,7 +440,7 @@ class PrivateChat {
         if (this.last_uid === data.get("pm.read-" + this.user_id, "-")) {
             this.removeHilight();
         }
-    }; /* }}} */
+    } /* }}} */
     sendChat(msg) { /* {{{ */
 
         while (msg.length) {
@@ -460,7 +460,7 @@ class PrivateChat {
             });
         }
         this.input.val("");
-    }; /* }}} */
+    } /* }}} */
 
     startFloating() { /* {{{ */
         if (!this.floating) {
@@ -529,7 +529,7 @@ function update_chat_layout() {{{
         docked_chats[i].dom.css({"right": pos, maxWidth: max_width});
         pos += docked_chats[i].dom.width() + 3;
     }
-}}};
+}}}
 
 export function getPrivateChat(user_id, username?) { /* {{{ */
     if (user_id in instances) {

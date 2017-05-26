@@ -413,10 +413,10 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 10,
                 "specular_light_distance": 8,
             });
-        };
+        }
         getBlackTextColor(color) {
             return "#ffffff";
-        };
+        }
     }
 
     _("Slate"); // ensure translation
@@ -441,11 +441,11 @@ export default function(GoThemes) {
                 }));
             }
             return ret;
-        };
+        }
 
         getWhiteTextColor(color) {
             return "#000000";
-        };
+        }
     }
     _("Shell"); // ensure translation
     GoThemes["white"]["Shell"] = Shell;
@@ -465,10 +465,10 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 10,
                 "specular_light_distance": 10,
             });
-        };
+        }
         getBlackTextColor(color) {
             return "#ffffff";
-        };
+        }
     }
 
     _("Glass"); // ensure translation
@@ -487,11 +487,11 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 7,
                 "specular_light_distance": 100,
             });
-        };
+        }
 
         getWhiteTextColor(color) {
             return "#000000";
-        };
+        }
     }
 
     GoThemes["white"]["Glass"] = GlassWhite;
@@ -512,10 +512,10 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 10,
                 "specular_light_distance": 10,
             });
-        };
+        }
         getBlackTextColor(color) {
             return "#ffffff";
-        };
+        }
     }
 
     _("Worn Glass"); // ensure translation
@@ -533,11 +533,11 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 7,
                 "specular_light_distance": 100,
             });
-        };
+        }
 
         getWhiteTextColor(color) {
             return "#000000";
-        };
+        }
     }
     GoThemes["white"]["Worn Glass"] = WornGlassWhite;
     /* }}} */
@@ -555,10 +555,10 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 10,
                 "specular_light_distance": 10,
             });
-        };
+        }
         getBlackTextColor(color) {
             return "#888888";
-        };
+        }
     }
 
     _("Night"); // ensure translation
@@ -577,11 +577,11 @@ export default function(GoThemes) {
                 "diffuse_light_distance": 7,
                 "specular_light_distance": 100,
             });
-        };
+        }
 
         getWhiteTextColor(color) {
             return "#000000";
-        };
+        }
     }
     GoThemes["white"]["Night"] = NightWhite;
     /* }}} */

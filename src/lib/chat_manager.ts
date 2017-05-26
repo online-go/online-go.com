@@ -242,7 +242,7 @@ class ChatManager {
             return;
         }
 
-        this.channels[part.channel].handlePart(part.user); ;
+        this.channels[part.channel].handlePart(part.user);
     }}}
     join(channel: string, display_name: string): ChatChannelProxy {{{
         if (!(channel in this.channels)) {

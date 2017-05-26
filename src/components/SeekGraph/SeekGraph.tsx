@@ -36,7 +36,7 @@ let MAX_RATIO = 0.99;
 interface SeekGraphConfig  {
     canvas: any;
     show_live_games?: boolean;
-};
+}
 
 
 function dist(C, pos) {

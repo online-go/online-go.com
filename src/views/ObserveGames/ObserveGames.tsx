@@ -31,7 +31,7 @@ interface ObserveGamesProperties {
 
 export class ObserveGames extends React.PureComponent<ObserveGamesProperties, any> {
     last_refresh: number;
-    next_refresh: number;
+    next_refresh: any;
     auto_refresh: number;
 
     constructor(props) {

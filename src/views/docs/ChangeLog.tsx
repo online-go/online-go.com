@@ -31,22 +31,22 @@ export let ChangeLog = (props) => (
 
             <h3>General Update</h3>
             <ul>
-                <li>The game observation page now sorts games by combined rank of the players so higher ranked games are at the top of the list.</li> 
-                <li>Correspondence games are now browsable on the game observation page.</li> 
-                <li>The long standing game invalid game notification bug has finally been fixed for good</li> 
-                <li>The long standing infamous tablet stone placement bug has finally been fixed for good</li> 
+                <li>The game observation page now sorts games by combined rank of the players so higher ranked games are at the top of the list.</li>
+                <li>Correspondence games are now browsable on the game observation page.</li>
+                <li>The long standing game invalid game notification bug has finally been fixed for good</li>
+                <li>The long standing infamous tablet stone placement bug has finally been fixed for good</li>
                 <li>The generic user icon has been replaced with a unique icon
                     per user. This can still be overridden to a user supplied icon using
                     either Gravatar or uploading an icon on the settings page.
-                </li> 
+                </li>
                 <li>The game pattern searching functionality has been removed
                     until we can figure out how to implement it more effeciently
-                    and provide more useful results</li> 
+                    and provide more useful results</li>
             </ul>
             <h3>Server Side</h3>
             <ul>
                 <li>
-                    Refactored real-time server code base to operate in a simpler, faster, sharded 
+                    Refactored real-time server code base to operate in a simpler, faster, sharded
                     topology as opposed to the slower and problematic clustering topology
                     we had before.
                 </li>
@@ -81,7 +81,7 @@ export let ChangeLog = (props) => (
             <li>
             The underlying format for game moves has been altered to
             enable per-move timestamps and other meta data for future
-            features such as Rengo. 
+            features such as Rengo.
             </li>
         </ul>
         </dd>
@@ -198,7 +198,7 @@ export let ChangeLog = (props) => (
                 <li>We have documentation! <a href="http://ogs.readme.io/">http://ogs.readme.io/</a></li>
                 <li>The site has been re-skinned a bit. If you have any problems finding
                 anything check out the site documentation.</li>
-                <li>A new omni-search box has been added. This can be used to find users, groups, tournaments, various site topics, 
+                <li>A new omni-search box has been added. This can be used to find users, groups, tournaments, various site topics,
                 and hopefully more in the future. This has replaced the generic players search screen.</li>
                 <li>You can view a your win/loss statistics vs a particular player by viewing their profile page</li>
             </ul>
@@ -223,12 +223,12 @@ export let ChangeLog = (props) => (
             <ul>
                 <li>The real-time API is now stabilized sufficiently and
                 we're opening it up for anyone wishing to make an
-                alternative game client or otherwise use the system. Documentation is here: 
+                alternative game client or otherwise use the system. Documentation is here:
                 <a href="http://ogs.readme.io/v4.2/docs/real-time-api">http://ogs.readme.io/v4.2/docs/real-time-api</a>
 
                 <i>Note: While the API is free for light non-commercial use, please contact
                     us if you are planning on using it for commercial purposes so we can
-                    work together to form a mutually beneficial agreement. For heavy non-commercial use 
+                    work together to form a mutually beneficial agreement. For heavy non-commercial use
                     please contact us so we can ensure the system can adequately handle the load or
                     help figure out an alternative solution.
                 </i>
@@ -247,7 +247,7 @@ export let ChangeLog = (props) => (
                 you will now need to wait for a couple of minutes before
                 accepting a new open challenge.</li>
             </ul>
-            <h4>Supporting OGS</h4> 
+            <h4>Supporting OGS</h4>
             <ul>
                 <li>Users can now support OGS using Bitcoin</li>
                 <li>Sadly, google is shutting down their google wallet purchase system, so we have to remove this support mechanism. The system will still work for supporters using this mechanism until early Q2 2015, afterwhich it will be shutdown for good. Anyone wishing to continue to support us will have to transition to a different system before then (simply cancel your OGS google wallet subscription on your wallet page then head on over to OGS and select the new support method of your choice :))</li>
@@ -365,7 +365,7 @@ export let ChangeLog = (props) => (
             <li>New "Auto-Play" feature is available when viewing games. If you start from an old move and hit "play", it will
             slowly progress through the game (one move every 10 seconds.)</li>
             <li>Hopefully fixed the "Yin-Yang" stone bug that plagued us for over a year - let me know if you see it again.</li>
-            <li>Handicap and komi information will now be displayed in open challenge requests in the chat</li> 
+            <li>Handicap and komi information will now be displayed in open challenge requests in the chat</li>
             <li>Several iOS fixes and Safari fixes and improvements</li>
             <li>Over 50 other bug fixes</li>
         </ul>
@@ -376,7 +376,7 @@ export let ChangeLog = (props) => (
         <dd>
             <ul>
                 <li>
-                Overhauled system to be completely API driven, any developers interested in 
+                Overhauled system to be completely API driven, any developers interested in
                 interfacing with OGS should begin with the developers link in the left nav.
                 </li>
 

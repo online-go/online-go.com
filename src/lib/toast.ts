@@ -24,7 +24,7 @@ let toast_meta_container = null;
 
 export class Toast extends EventEmitter {
     container: HTMLElement;
-    timeout: number = null;
+    timeout: any = null;
 
     constructor(container: HTMLElement, timeout: number) {
         super();

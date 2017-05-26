@@ -438,7 +438,7 @@ function bigtoast() {
     .on("close", () => {
         console.log("Toast closed");
     });
-    ;
+
 }
 function swal_popup() {
     swal({

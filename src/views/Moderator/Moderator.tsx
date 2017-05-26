@@ -97,7 +97,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                                  <span className="monospace small clip"><b>BID:</b> {X.last_browser_id}</span>
                                  <span className="monospace small clip"><b>Fingerprint:</b> {X.last_fingerprint}</span>
                                  <span className="monospace small clip"><b>Plugins:</b> {X.last_plugin_hash}</span>
-                                 <span className="monospace small clip"><b>Screen:</b> 
+                                 <span className="monospace small clip"><b>Screen:</b>
                                     {`${X.last_screen_width}x${X.last_screen_height}+${X.last_screen_avail_left}x${X.last_screen_avail_top}`}
                                  </span>
                              </div>
