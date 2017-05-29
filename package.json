@@ -51,6 +51,8 @@
     "@types/react-tap-event-plugin": "0.0.30",
     "@types/socket.io-client": "^1.4.29",
     "@types/sweetalert": "^1.1.27",
+    "react-autosuggest": "^8.0.1",
+    "eventemitter3": "^2.0.2",
     "react-datetime": "^2.8.10",
     "react-dropzone": "^3.7.3",
     "react-tap-event-plugin": "^1.0.0"
