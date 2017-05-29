@@ -166,6 +166,7 @@ function dev_server(done) {
     });
 
     devserver.use('/api', beta_proxy('/api'));
+    devserver.use('/termination-api', beta_proxy('/termination-api'));
     devserver.use('/merchant', beta_proxy('/merchant'));
     devserver.use('/sso', beta_proxy('/sso'));
     devserver.use('/oauth2', beta_proxy('/oauth2'));
