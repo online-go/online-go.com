@@ -244,6 +244,7 @@ const routes = (
         <Route path="/settings" component={Settings}/>
         <Route path="/user/settings" component={Settings}/>
         <Route path="/user/supporter" component={Supporter}/>
+        <Route path="/user/verifyEmail" component={VerifyEmail}/>
         <Route path="/u/:username" component={UserByName}/>
         <Route path="/user/:username" component={UserByName}/>
 
@@ -298,7 +299,6 @@ const routes = (
         <Route path="/docs/changelog" component={docs.ChangeLog}/>
         <Route path="/docs/team" component={docs.Team}/>
         <Route path="/docs/other-go-resources" component={docs.GoResources}/>
-        <Route path="/user/verifyEmail" component={VerifyEmail}/>
 
         <Route path="/*" component={PageNotFound}/>
     </Route>
