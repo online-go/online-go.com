@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {_} from "translate";
+
 // Basic player types.
 export type Player = GuestPlayer | RegisteredPlayer;
 export type PlayerLookup = { [id: number]: Player; };
@@ -68,9 +70,25 @@ export function is_registered(player: Player): player is RegisteredPlayer {
 
 
 
+// What is the player's name?
+export function player_name (player: Player) : string {
+    if is_guest(player) {
+        return _("Guest");
+    }
+    if is_registered(player) {
+        return player.username;
+    }
+}
+
+
+
 // Compare players so that they sort into order. Guests sort last. In
 // the event that two players sort equal, we then sort by id. This
 // ensures that we get a consistent sort order in all cases.
+//
+// Typical usage:
+//     players.sort(by_username);
+//     players.sort(by_rating);
 //
 // Although slightly less efficient, we carry out all four type checks.
 // This is because it makes the code more obviously correct, and
