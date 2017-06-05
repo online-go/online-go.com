@@ -26,6 +26,7 @@ import data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
+import {openSupporterAdminModal} from "SupporterAdmin";
 import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
@@ -156,7 +157,10 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeBan = (_ev) => {{{
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
-
+    openSupporterAdmin = () => {
+        this.close_all_modals_and_popovers();
+        openSupporterAdminModal(this.props.playerId);
+    }
     render() {
         let user = data.get("user");
 
@@ -197,6 +201,11 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.removeBan}><i className="fa fa-thumbs-o-up"/>{pgettext("Allow user on the server", "Un-Ban")}</button>
                         <button className="xs noshadow" onClick={this.removeShadowban}><i className="fa fa-commenting-o"/>{pgettext("Remove chat ban", "Un-Shadowban")}</button>
+                    </div>
+                }
+                { ((user.is_superuser && this.props.playerId > 0) || null) &&
+                    <div className="actions">
+                        <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                     </div>
                 }
             </div>

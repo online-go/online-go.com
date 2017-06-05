@@ -1,0 +1,78 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.SupporterAdmin {
+    min-width: 40rem;
+
+    input[type='number'] {
+        width: 4rem;
+        margin-left: 0.2rem;
+    }
+
+    h3 {
+        margin: 0;
+        text-align: center;
+    }
+
+    dl.horizontal.left {
+        dt {
+            width: 70%;
+        }
+        dd {
+            width: 30%;
+        }
+    }
+    dl.horizontal.right {
+        dt {
+            width: 40%;
+        }
+        dd {
+            width: 60%;
+            text-align: left;
+        }
+    }
+
+
+
+    .PaymentAccount {
+        @extend .monospace;
+        font-size: font-size-small;
+
+        table.account-info, table.method-info,
+        table.purchase-info, table.transaction-info {
+            max-width: 100%;
+
+            td {
+                text-align: center;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            th {
+                min-width: 5rem;
+                text-align: center;
+
+            }
+        }
+
+        table.account-info     { themed background-color shade5; margin-left: 0rem; margin-top: 2rem; }
+        table.method-info      { themed background-color shade5; margin-left: 0.5rem; }
+        table.purchase-info    { themed background-color shade5; margin-left: 1.0rem; }
+        table.transaction-info { themed background-color shade4; margin-left: 1.5rem; }
+    }
+
+}

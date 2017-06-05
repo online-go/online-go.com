@@ -31,6 +31,7 @@ import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
 import {longRankString, rankString} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
+import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
 import {challenge} from "ChallengeModal";
 import {errorAlerter} from "misc";
@@ -716,6 +717,7 @@ export class User extends Resolver<UserProperties, any> {
             <div className="row">
                 <div className="col-sm-8">
                     { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                    { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
                     <h1>{user.username}
                         {((global_user.id === user.id || global_user.is_moderator) || null)   &&
                             <button onClick={this.toggleEdit} className='xs edit-button'>
