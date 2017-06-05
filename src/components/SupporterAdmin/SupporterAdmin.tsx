@@ -21,6 +21,7 @@ import {put, get, post, del} from "requests";
 import {Player} from "Player";
 import {errorAlerter, ignore} from "misc";
 import {Modal, openModal} from "Modal";
+import {PrettyTransactionInfo} from 'Supporter/PrettyTransactionInfo';
 import * as moment from 'moment';
 
 interface SupporterAdminProperties {
@@ -46,10 +47,27 @@ export class SupporterAdmin extends Modal<SupporterAdminProperties, any> {
         super.componentWillMount();
         get(`supporter_center/player/${this.props.playerId}`)
         .then((res) => {
+
+            let last_transaction = null;
+            let transactions = [];
+            for (let account of res.payment_accounts) {
+                for (let method of account.payment_methods) {
+                    for (let purchase of method.purchases) {
+                        for (let transaction of purchase.transactions) {
+                            transactions.push(transaction);
+                        }
+                    }
+                }
+            }
+            transactions.sort((a, b) => b.created.localeCompare(a.created));
+
+            console.log(transactions);
+
             this.setState({
                 supporter: res.supporter,
                 supporter_expiration: res.supporter_expiration,
                 payment_accounts: res.payment_accounts,
+                last_transaction: transactions.length > 0 ? transactions[0] : null,
                 loading: false,
             });
             //console.log(dets);
@@ -76,6 +94,8 @@ export class SupporterAdmin extends Modal<SupporterAdminProperties, any> {
                 </div>
                 {(this.state.loading === false || null) &&
                     <div className="body">
+                        <PrettyTransactionInfo transaction={this.state.last_transaction} />
+                        <hr/>
 
 
                         {(this.state.payment_accounts.length === 0 || null) &&

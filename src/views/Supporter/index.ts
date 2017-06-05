@@ -17,3 +17,4 @@
 
 
 export * from "./Supporter";
+export * from "./PrettyTransactionInfo.tsx";

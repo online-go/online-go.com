@@ -21,6 +21,7 @@ import {del, post, get} from "requests";
 import {errorAlerter} from "misc";
 import data from "data";
 import {LineText} from "misc-ui";
+import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 
 declare var Braintree;
 declare var swal;
@@ -74,6 +75,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 fname: "",
                 lname: "",
                 email: "",
+                last_transaction: null,
             };
         }
 
@@ -107,11 +109,18 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         if (!data.get('user').anonymous) {
-            get("me/supporter")
-            .then((supporter) => {
-                braintree_js_promise
-                .then(() => {
+            braintree_js_promise.then(() => {
+                get("me/supporter")
+                .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
+                })
+                .catch(errorAlerter);
+
+                get("me/purchase_transactions", {order_by: "-created", page_size:1})
+                .then((res) => {
+                    this.setState({
+                        last_transaction: res.results.length ? res.results[0] : null
+                    });
                 })
                 .catch(errorAlerter);
             })
@@ -499,14 +508,21 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         {(this.state.payment_account.payment_vendor === "braintree" || null) &&
                             <div>
                                 <p>
-                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}}, thanks!"),
+                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
                                         {
                                             "amount": parseFloat(this.state.purchase.price).toFixed(2),
                                             "card_type": this.state.payment_method.card_type,
                                             "last_four": this.state.payment_method.card_number,
+                                            "month": this.state.payment_method.expiration_month,
+                                            "year": this.state.payment_method.expiration_year,
                                         })
                                     }
                                 </p>
+
+                                <div style={{margin: '1rem'}}>
+                                    <PrettyTransactionInfo transaction={this.state.last_transaction}/>
+                                </div>
+
                                 <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
                                     {_("Cancel this support")}
                                 </button>
@@ -520,18 +536,27 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                         {
                                             "amount": parseFloat(this.state.purchase.price).toFixed(2),
                                         })
-                                    }</p>
+                                    }
+                                </p>
+
+                                <div style={{margin: '1rem'}}>
+                                    <PrettyTransactionInfo transaction={this.state.last_transaction}/>
+                                </div>
+
                                 <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
                                     {_("Cancel this support")}
                                 </button>
                             </div>
                         }
+
                       </div>
             }
         </div>
         );
     }
 }
+
+
 
 // https://gist.github.com/2134376
 // Phil Green (ShirtlessKirk)
