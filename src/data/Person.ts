@@ -16,6 +16,7 @@
  */
 
 import {_} from "translate";
+import {Ranking, compare_rankings} from "Ranking";
 
 // Basic player types.
 export type Player = GuestPlayer | RegisteredPlayer;
@@ -38,13 +39,9 @@ export interface RegisteredPlayer {
     readonly id: number;    // The player's unique id number.
     username: string;       // The player's chosen username.
     icon: string;           // The URL of the player's chosen icon.
-    country: string;        // The player's country of origin
-    rating: {               // The player's ratings according to the European Go Federation system.
-        overall: number;        // Rating over all games played.
-        blitz: number;          // Rating over blitz games only.
-        live: number;           // Rating over live games only.
-        correspondence: number; // Rating over correspondence games only.
-    };
+    country: string;        // The player's country of origin.
+    ranking: Ranking;       // The player's overall ranking.
+    controller?: number;    // The id of a human controlling this player, if it is a robot.
     is: {                   // The player's attributes
         superuser?: boolean;    // Can the player alter everything in the system?
         moderator?: boolean;    // Can the player enforce discipline?
@@ -53,7 +50,7 @@ export interface RegisteredPlayer {
         provisional?: boolean;  // Has the player only recently joined OGS?
         timeout?: boolean;      // Has the player recently timed out of a game?
         online?: boolean;       // Is the player currently logged on to the site?
-        bot?: boolean;          // Is the player an artificial intelligence?
+        robot?: boolean;        // Is the player an artificial intelligence?
     };
 }
 
@@ -71,11 +68,11 @@ export function is_registered(player: Player): player is RegisteredPlayer {
 
 
 // What is the player's name?
-export function player_name (player: Player) : string {
-    if is_guest(player) {
+export function player_name(player: Player): string {
+    if (is_guest(player)) {
         return _("Guest");
     }
-    if is_registered(player) {
+    if (is_registered(player)) {
         return player.username;
     }
 }
@@ -88,7 +85,7 @@ export function player_name (player: Player) : string {
 //
 // Typical usage:
 //     players.sort(by_username);
-//     players.sort(by_rating);
+//     etc...
 //
 // Although slightly less efficient, we carry out all four type checks.
 // This is because it makes the code more obviously correct, and
@@ -117,14 +114,14 @@ export function by_username(a: Player, b: Player): number {
         return b.id - a.id;
     }
     if (is_registered(a) && is_registered(b)) {
-        let cmp: number = 0;
+        let cmp = 0;
         cmp = cmp || a.username.localeCompare(b.username);
-        cmp = cmp || b.id - a.id;
+        cmp = cmp || a.id - b.id;
         return cmp;
     }
 }
 
-export function by_rating(a: Player, b: Player): number {
+export function by_ranking(a: Player, b: Player): number {
     // Sort players by overall rating. If they are of equal rating, then
     // sort alphabetically by username. If they still compare equal then
     // sort by id.
@@ -138,10 +135,32 @@ export function by_rating(a: Player, b: Player): number {
         return b.id - a.id;
     }
     if (is_registered(a) && is_registered(b)) {
-        let cmp: number = 0;
-        cmp = cmp || b.rating.overall - a.rating.overall;
+        let cmp = 0;
+        cmp = cmp || compare_rankings(a.ranking, b.ranking);
         cmp = cmp || a.username.localeCompare(b.username);
-        cmp = cmp || b.id - a.id;
+        cmp = cmp || a.id - b.id;
+        return cmp;
+    }
+}
+
+export function by_nationality(a: Player, b: Player): number {
+    // Sort players by nationality so that players of the same nationality
+    // are grouped together. If they have the same nationality then sort by
+    // username. If they still compare equal then sort by id.
+    if (is_guest(a) && is_registered(b)) {
+        return 1;
+    }
+    if (is_registered(a) && is_guest(b)) {
+        return -1;
+    }
+    if (is_guest(a) && is_guest(b)) {
+        return b.id - a.id;
+    }
+    if (is_registered(a) && is_registered(b)) {
+        let cmp = 0;
+        cmp = cmp || a.country.localeCompare(b.country);
+        cmp = cmp || a.username.localeCompare(b.username);
+        cmp = cmp || a.id - b.id;
         return cmp;
     }
 }
