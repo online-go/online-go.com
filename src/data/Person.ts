@@ -41,7 +41,6 @@ export interface RegisteredPlayer {
     icon: string;           // The URL of the player's chosen icon.
     country: string;        // The player's country of origin.
     ranking: Ranking;       // The player's overall ranking.
-    controller?: number;    // The id of a human controlling this player, if it is a robot.
     is: {                   // The player's attributes
         superuser?: boolean;    // Can the player alter everything in the system?
         moderator?: boolean;    // Can the player enforce discipline?
@@ -51,6 +50,7 @@ export interface RegisteredPlayer {
         timeout?: boolean;      // Has the player recently timed out of a game?
         online?: boolean;       // Is the player currently logged on to the site?
         robot?: boolean;        // Is the player an artificial intelligence?
+        on_vacation?: boolean;  // Is the player pausing all his or her games?
     };
 }
 
@@ -111,7 +111,7 @@ export function by_username(a: Player, b: Player): number {
         return -1;
     }
     if (is_guest(a) && is_guest(b)) {
-        return b.id - a.id;
+        return a.id - b.id;
     }
     if (is_registered(a) && is_registered(b)) {
         let cmp = 0;
@@ -132,7 +132,7 @@ export function by_ranking(a: Player, b: Player): number {
         return -1;
     }
     if (is_guest(a) && is_guest(b)) {
-        return b.id - a.id;
+        return a.id - b.id;
     }
     if (is_registered(a) && is_registered(b)) {
         let cmp = 0;
@@ -154,7 +154,7 @@ export function by_nationality(a: Player, b: Player): number {
         return -1;
     }
     if (is_guest(a) && is_guest(b)) {
-        return b.id - a.id;
+        return a.id - b.id;
     }
     if (is_registered(a) && is_registered(b)) {
         let cmp = 0;
