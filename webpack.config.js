@@ -14,11 +14,12 @@ module.exports = {
     },
     resolve: {
         modules: [
-            'src/lib', 
-            'src/lib/goban', 
-            'src/components', 
-            'src/views', 
-            'src', 
+            'src/lib',
+            'src/lib/goban',
+            'src/components',
+            'src/views',
+            'src/data',
+            'src',
             'node_modules'
         ],
         extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
@@ -30,8 +31,8 @@ module.exports = {
     module: {
         loaders: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
-            { 
-                test: /\.tsx?$/, 
+            {
+                test: /\.tsx?$/,
                 loader: "ts-loader",
                 exclude: /node_modules/,
             }
