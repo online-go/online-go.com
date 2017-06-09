@@ -18,25 +18,25 @@
 import {_} from "translate";
 import {Ranking, compare_rankings} from "Ranking";
 
-// Basic player types.
-export type Player = GuestPlayer | RegisteredPlayer;
-export type PlayerLookup = { [id: number]: Player; };
+// Basic player type. All players have a unique id number.
+export interface Player {
+    type: "Guest" | "Registered";
+    id: number;             // A unique number identifying each individual player.
+}
 
 // A player that has no OGS credentials, and limited access.
 // Guests cannot play games (but can watch) and cannot participate
 // in OGS's social life.
-export interface GuestPlayer {
-    readonly type: "Guest";
-    readonly id: number;    // The player's unique id number.
+export interface GuestPlayer extends Player {
+    type: "Guest";
 }
 
-// A player that has registered with OGS with a unique username and password.
+// A player that has registered with OGS with a username and password.
 // This interface contains the player details that are used pervasively
 // throughout the site. Further information can optionally be recorded in the
 // player's profile.
-export interface RegisteredPlayer {
-    readonly type: "Registered";
-    readonly id: number;    // The player's unique id number.
+export interface RegisteredPlayer extends Player {
+    type: "Registered";
     username: string;       // The player's chosen username.
     icon: string;           // The URL of the player's chosen icon.
     country: string;        // The player's country of origin.
