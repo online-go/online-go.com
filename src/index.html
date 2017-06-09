@@ -136,26 +136,7 @@
         var cdn_service = '{{CDN_SERVICE}}';
 
         /* Detect prefered language {{{ */
-        var supported_languages = {
-            "en": true, 
-            //"eo": true,
-            "fi": true,
-            "fr": true,
-            "de": true,
-            "it": true,
-            "ja": true,
-            "pl": true,
-            "pt": true,
-            "ro": true,
-            "ru": true,
-            "es": true,
-            "sv": true,
-            "ru": true,
-            "nl": true,
-            //"zh": true,
-            "zh-cn": true,
-            "debug": true,
-        };
+        var supported_languages = {{SUPPORTED_LANGUAGES}};
 
         function isSupportedLanguage(lang) {
             if (!lang) {
