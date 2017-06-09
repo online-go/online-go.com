@@ -568,7 +568,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             checked={this.state.notifications[k].value.email}
                             onChange={this.updateNotification(k)}
                         />
-                        <label htmlFor={k}>{this.state.notifications[k].description}</label>
+                        <label htmlFor={k}>{_(this.state.notifications[k].description)}</label>
                     </div>
                 )}
             </Card>
