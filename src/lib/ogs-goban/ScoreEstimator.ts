@@ -24,6 +24,14 @@ import {_} from "./translate";
 declare var OGSScoreEstimator;
 let OGSScoreEstimator_initialized = false;
 
+let OGSScoreEstimatorModule;
+
+
+
+export function set_OGSScoreEstimator(mod) {
+    OGSScoreEstimatorModule = mod;
+}
+
 class SEGroup {
     points;
     neighboring_enemy;
@@ -194,8 +202,12 @@ export class ScoreEstimator {
     } /* }}} */
     estimateScore(trials, tolerance) { /* {{{ */
         if (!OGSScoreEstimator_initialized) {
+            try {
+                OGSScoreEstimatorModule = OGSScoreEstimator;
+            } catch (e) {
+            }
             OGSScoreEstimator_initialized = true;
-            OGSScoreEstimator = OGSScoreEstimator();
+            OGSScoreEstimatorModule = OGSScoreEstimatorModule();
         }
 
         /* NEW STUFF */
@@ -212,8 +224,8 @@ export class ScoreEstimator {
          * executing. (it's loaded async)
          */
         let nbytes = 4 * this.engine.width * this.engine.height;
-        let ptr = OGSScoreEstimator._malloc(nbytes);
-        let ints = new Int32Array(OGSScoreEstimator.HEAP32.buffer,  ptr, nbytes);
+        let ptr = OGSScoreEstimatorModule._malloc(nbytes);
+        let ints = new Int32Array(OGSScoreEstimatorModule.HEAP32.buffer,  ptr, nbytes);
         let i = 0;
         for (let y = 0; y < this.height; ++y) {
             for (let x = 0; x < this.width; ++x) {
@@ -224,7 +236,7 @@ export class ScoreEstimator {
                 ++i;
             }
         }
-        let _estimate = OGSScoreEstimator.cwrap("estimate", "number", ["number", "number", "number", "number", "number", "number"]);
+        let _estimate = OGSScoreEstimatorModule.cwrap("estimate", "number", ["number", "number", "number", "number", "number", "number"]);
         let estimate = _estimate as (w, h, p, c, tr, to) => number;
         let st = Date.now();
         let estimated_score = estimate(
@@ -241,7 +253,7 @@ export class ScoreEstimator {
                 ++i;
             }
         }
-        OGSScoreEstimator._free(ptr);
+        OGSScoreEstimatorModule._free(ptr);
 
 
         /* Build up our heat map and result */
