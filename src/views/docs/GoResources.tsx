@@ -185,7 +185,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="http://weiqitogo.blogspot.com/">Weiqi to go!</a></span>,
                 <span><Flag country={en}/> <a href="http://mysanrensei.wordpress.com/">My Sanransei</a></span>,
                 <span><Flag country={en}/> <a href="http://onelibertyshort.wordpress.com/">One Liberty Short</a></span>,
-                <span><Flag country={en}/> <a href="http://gooften.net/">Go of Ten</a></span>
+                <span><Flag country={en}/> <a href="http://gooften.net/">Go of Ten</a></span>,
+                <span><Flag country={es}/> <a href="http://361puntos.blogspot.com/">361 Puntos</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
