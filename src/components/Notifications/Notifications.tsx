@@ -104,13 +104,15 @@ export function emitNotification(title, body, cb?) {{{
             let t = toast(
                 <div>
                     {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
-                    <FabCheck onClick={() => {
-                        Notification.requestPermission().then((perm) => {
-                            emitNotification(title, body, cb);
-                        }).catch((err) => console.error(err));
-                        t.close();
-                    }}/>
-                    <FabX onClick={() => t.close()}/>
+                    <div>
+                        <FabCheck onClick={() => {
+                            Notification.requestPermission().then((perm) => {
+                                emitNotification(title, body, cb);
+                            }).catch((err) => console.error(err));
+                            t.close();
+                        }}/>
+                        <FabX onClick={() => t.close()}/>
+                    </div>
                 </div>
             );
 
