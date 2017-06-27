@@ -261,7 +261,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <span className="head">{_("Rules")}</span>
                             </div>
                         }
-                        {corr_automatchers.map((m, idx) => (
+                        {corr_automatchers.map((m) => (
                             <div className='challenge-row automatch-challenge-row' key={m.uuid}>
                                 <span className='cell'>
                                     <button className='reject xs' onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
@@ -413,8 +413,8 @@ export class Play extends React.Component<PlayProperties, any> {
 
         let gameList = isLive ? this.state.live_list : this.state.correspondence_list;
 
-        return gameList.map((C, idx) => (
-            <div key={idx} className="challenge-row">
+        return gameList.map((C) => (
+            <div key={C.challenge_id} className="challenge-row">
                 <span className="cell" style={{textAlign: "center"}}>
                     {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
                     {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
