@@ -16,185 +16,192 @@
  */
 
 import {get} from "requests";
+import {Player, RegisteredPlayer, player_attributes} from "data/Player";
+import {Rank} from "data/Rank";
 
-const player_cache_debug_enabled = false;
-let cache: {[id: number]: any} = {};
-let cache_by_username: {[username: string]: any} = {};
+const player_cache_debug_enabled = true;
+let cache_by_id: {[id: number]: RegisteredPlayer} = {};
+let cache_by_username: {[username: string]: RegisteredPlayer} = {};
 let active_fetches: {[id: number]: Promise<any>} = {};
+let incomplete_entries: {[id: number]: boolean} = {};
 let nicknames: Array<string> = [];
 
-let listeners = {};
-let last_id = 0;
 
-class Listener {
-    player_id: number;
-    id: number;
-    cb: (player: any, player_id?: number) => void;
-    remove_callbacks: Array<() => void>;
 
-    constructor(player_id: number, cb: (user: any, player_id?: number) => void) {
-        this.player_id = player_id;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
-
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
-
-    remove() {
-        delete listeners[this.player_id][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-}
-
-function update(player: any, dont_overwrite?: boolean): any {
-    if (Array.isArray(player)) {
-        for (let p of player) {
-            update(p, dont_overwrite);
-        }
-        return;
-    }
-
-    let id = "user_id" in player ? player.user_id : player.id;
-    if (!(id in cache)) {
-        cache[id] = {};
-    }
-    for (let k in player) {
-        if (dont_overwrite && k in cache[id]) {
-            continue;
-        }
-        cache[id][k] = player[k];
-    }
-    if (cache[id].username && !(cache[id].username in cache_by_username)) {
-        nicknames.push(cache[id]["username"]);
-    }
-    if (cache[id].username) {
-        cache_by_username[cache[id].username] = cache[id];
-    }
-
-    if (id in listeners) {
-        for (let l in listeners[id]) {
-            listeners[id][l].cb(cache[id], id);
-        }
-    }
-
-    return cache[id];
-}
-
+// Look up functions in the player cache. If the user id is for a guest player,
+// then simply create the guest player on the fly. Registered players only are
+// stored in the cache.
 function lookup(player_id: number): any {
-    if (player_id in cache) {
-        return cache[player_id];
-    }
-
-    return null;
+    return lookup_by_id(player_id);
 }
 
-function lookup_by_username(username: string): any {
-    if (username in cache_by_username) {
-        return cache_by_username[username];
+function lookup_by_id(player_id: number): Player | undefined {
+    if (player_id <= 0) {
+        return {type: "Guest", id: player_id};
     }
-
-    return null;
+    else {
+        return cache_by_id[player_id];
+    }
 }
 
-function watch(player_id: number, cb: (player: any, player_id?: number) => void): Listener {
-    let listener = new Listener(player_id, cb);
-    if (!(player_id in listeners)) {
-        listeners[player_id] = {};
+function lookup_by_username(username: string): Player | undefined {
+    let player: RegisteredPlayer = cache_by_username[username];
+    if (player && player.username === username) {
+        return player;
     }
-    listeners[player_id][listener.id] = listener;
-
-    let val = lookup(player_id);
-    if (val) {
-        cb(val, player_id);
-    }
-
-    return listener;
 }
 
-function fetch(player_id: number, required_fields?: Array<string>): Promise<any> {
-    if (!player_id) {
-        console.error("Attempted to fetch invalid player id: ", player_id);
-        return Promise.reject("invalid player id");
+
+
+// Fetch a player's details from the server.
+function fetch(player_id: number, required_fields?: Array<string>): Promise<Player> {
+    // If the player is a guest, then simply create the player on the fly and return
+    // it. If the player is registered and in the cache, then return the cached copy.
+    // If the player has a fetch pending, then return the pending fetch.
+    if (player_id <= 0) {
+        return Promise.resolve({type: "Guest", id: player_id});
     }
-
-    let missing_fields = [];
-
-    if (player_id in cache) {
-        let have_cached_copy = true;
-
-        if (required_fields) {
-            for (let f of required_fields) {
-                if (!(f in cache[player_id])) {
-                    missing_fields.push(f);
-                    have_cached_copy = false;
-                    break;
-                }
-            }
-        }
-
-        if (have_cached_copy) {
-            return Promise.resolve(cache[player_id]);
-        }
-
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " for fields ", missing_fields);
-        }
-    } else {
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " because no user information was in our cache");
-        }
+    if (player_id in cache_by_id && !incomplete_entries[player_id]) {
+        return Promise.resolve(cache_by_id[player_id]);
     }
-
     if (player_id in active_fetches) {
         return active_fetches[player_id];
     }
 
+    // We can't return the player details stright away, so fetch them from the server.
     return active_fetches[player_id] = new Promise((resolve, reject) => {
         get(`/termination-api/player/${player_id}`)
         .then((player) => {
-            if ('icon-url' in player) {
-                player.icon = player['icon-url']; /* handle stupid inconsistency in API */
-            }
             delete active_fetches[player_id];
-            update(player);
-            if (required_fields) {
-                for (let field of required_fields) {
-                    if (!(field in cache[player.id])) {
-                        console.warn("Required field ", field, " was not resolved by fetch");
-                        cache[player.id][field] = "[ERROR]";
-                    }
-                }
-            }
-            resolve(cache[player.id]);
+            resolve(update(player));
         })
         .catch((err) => {
             delete active_fetches[player_id];
-            console.error(err);
             reject(err);
         });
     });
 }
 
+// By fair means or foul, we have obtained a player's details from the server. We now need
+// to convert the player details to fit into a Player type, and cache the result. For
+// compatibility, we add some extra fields that do not exist in the Player type. Untyped
+// parts of the code can still use these, but you will get an error if you try to use them
+// on type Player. This ensures that the Player type is used correctly in typed code.
+function update(player: any, dont_overwrite?: boolean): Player {
+    if (player.id <= 0) {
+        return {type: "Guest", id: player.id};
+    }
+    else {
+        // Translate the player's rank to the new system.
+        let rank: Rank;
+        if (player.ranking > 36 && (player.pro || player.professional)) {
+            rank = {level: player.ranking - 36, type: "Pro"};
+        }
+        else if (player.ranking > 29) {
+            rank = {level: player.ranking - 29, type: "Dan"};
+        }
+        else {
+            rank = {level: 30 - player.ranking, type: "Kyu"};
+        }
+        if (isNaN(rank.level)) {
+            rank = undefined;
+        }
+
+        // Translate the data to the Player type.
+        let new_style_player: RegisteredPlayer = {
+            type: "Registered",
+            id: player.id || player.player_Id || player.playerId,
+            username: player.username,
+            icon: player['icon-url'] || player.icon,
+            country: player.country,
+            rank: rank,
+            rating: player.rating,
+            is: typeof player.ui_class !== "string" ? undefined : {
+                admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
+                moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
+                professional: player.pro || player.professional || false,
+                supporter: player.ui_class.indexOf("supporter") !== -1,
+                provisional: player.ui_class.indexOf("provisional") !== -1,
+                timeout: player.ui_class.indexOf("timeout") !== -1,
+                bot: player.ui_class.indexOf("bot") !== -1
+            }
+        };
+        if (new_style_player.is) {
+            for (let attribute in new_style_player.is) {
+                if (!new_style_player.is[attribute]) {
+                    delete new_style_player.is[attribute];
+                }
+            }
+        }
+
+        // Add compatibility fields to the Player object.
+        let compatibility: any = new_style_player;
+        compatibility.ui_class = player_attributes(new_style_player).join(" ");
+        compatibility.ranking = player.ranking;
+
+        // Copy any new or changed information to the cache. Note that this will
+        // update everybody's copy of the cached data. Note also that under some
+        // circumstances, the server will send us incomplete data. If this has
+        // happened, then we run with what we've got and immediately put in a
+        // request for the rest of it. This is to ensure that the Player type is
+        // (almost) always fully-populated and so usable wherever it is needed.
+        let cached = cache_by_id[new_style_player.id] || {} as RegisteredPlayer;
+        let incomplete = false;
+        for (let name in new_style_player) {
+            if (new_style_player[name] !== undefined) {
+                cached[name] = new_style_player[name];
+            }
+            if (!(name in cached)) {
+                incomplete = true;
+            }
+        }
+        cache_by_id[new_style_player.id] = cached;
+
+        if (cached.username) {
+            if (!(cached.username in cache_by_username)) {
+                nicknames.push(cached.username);
+            }
+            cache_by_username[cached.username] = cached;
+        }
+
+        if (incomplete) {
+            incomplete_entries[new_style_player.id] = true;
+            fetch(new_style_player.id);
+        }
+        else {
+            delete incomplete_entries[new_style_player.id];
+        }
+
+        // If we've requested player cache debugging, then log the transaction to
+        // the console.
+        if (player_cache_debug_enabled) {
+            let message = "Converted " + (incomplete ? "incomplete " : "") + "old-style player";
+            console.log(message, player, incomplete ? new_style_player : cached);
+        }
+
+        return cached;
+    }
+}
+
+
 
 export const player_cache = {
-    update: update,
     lookup: lookup,
+    lookup_by_id: lookup_by_id,
     lookup_by_username: lookup_by_username,
-    nicknames: nicknames,
     fetch: fetch,
-    watch: watch,
-    Listener: Listener,
+    update: update,
+    nicknames: nicknames
 };
 
 export default player_cache;
 
-window['player_cache'] = player_cache;
+if (player_cache_debug_enabled) {
+    window['player_cache'] = Object.assign({}, player_cache, {
+        cache_by_id: cache_by_id,
+        cache_by_username: cache_by_username,
+        active_fetches: active_fetches,
+        incomplete_entries: incomplete_entries
+    });
+
+}

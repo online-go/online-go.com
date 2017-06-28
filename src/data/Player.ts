@@ -16,7 +16,7 @@
  */
 
 import {_} from "translate";
-import {Rank, compare_ranks} from "Ranking";
+import {Rank, compare_ranks} from "Rank";
 
 // Basic player type. All players have a unique id number.
 export interface Player {
@@ -33,14 +33,15 @@ export interface GuestPlayer extends Player {
 
 // A player that has registered with OGS with a username and password.
 // This interface contains the player details that are used pervasively
-// throughout the site. Further information can optionally be recorded in the
-// player's profile.
+// throughout the site. The player's rating and rank are calculated according
+// to the European Go Federation's system.
 export interface RegisteredPlayer extends Player {
     type: "Registered";
     username: string;       // The player's chosen username.
     icon: string;           // The URL of the player's chosen icon.
     country: string;        // The player's country of origin.
-    rank: Rank;          // The player's overall rank.
+    rank: Rank;             // The player's overall rank.
+    rating: number;         // The player's overall rating.
     is: {                   // The player's attributes
         admin?: boolean;        // Can the player alter everything in the system?
         moderator?: boolean;    // Can the player enforce discipline?

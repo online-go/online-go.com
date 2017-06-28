@@ -80,7 +80,7 @@ class PrivateChat {
 
 
         player_cache.fetch(this.user_id, ["username", "ui_class"])
-        .then((player) => {
+        .then((player: any) => {
             this.player = player;
             this.player_dom.text(player.username);
             this.player_dom.addClass(player.ui_class);

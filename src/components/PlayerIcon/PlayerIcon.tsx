@@ -33,7 +33,7 @@ export function icon_size_url(url, size) {
 
 export function getPlayerIconURL(id, size): Promise<string> {{{
     return new Promise((resolve, reject) => {
-        player_cache.fetch(id, ["icon"]).then((user) => {
+        player_cache.fetch(id, ["icon"]).then((user: any) => {
             resolve(icon_size_url(user.icon, size));
         })
         .catch(reject);
@@ -62,11 +62,6 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         if (!this.state.url) {
             this.fetch(id, props);
         }
-        if (id && id > 0) {
-            this.listener = player_cache.watch(id, (_user) => {
-                this.fetch(id, this.props);
-            });
-        }
     }
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
@@ -90,12 +85,6 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         if (current_id !== next_id) {
             this.setState({url: null});
             this.listener.remove();
-            if (next_id && next_id > 0) {
-                this.listener = player_cache.watch(next_id, (_user) => {
-                    this.fetch(next_id, next_props);
-                });
-            }
-
 
             if (!next_id || isNaN(next_id)) {
                 return;

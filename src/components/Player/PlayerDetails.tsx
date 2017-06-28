@@ -184,10 +184,10 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 </div>
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
-                        <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
-                        <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
+                        <button className="xs noshadow primary" disabled={!this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
                 {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
