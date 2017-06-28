@@ -16,35 +16,35 @@
  */
 
 // A player's ranking
-export interface Ranking {
+export interface Rank {
     level: number;
     type: "Kyu" | "Dan" | "Pro";
 }
 
-export interface AmateurRanking extends Ranking {
+export interface AmateurRank extends Rank {
     type: "Kyu" | "Dan";
 }
 
-export interface ProfessionalRanking extends Ranking {
+export interface ProfessionalRank extends Rank {
     type: "Pro";
 }
 
 
 
-// Run-time type checks for rankings.
-export function is_amateur(ranking: Ranking): ranking is AmateurRanking {
-    return ranking.type === "Kyu" || ranking.type === "Dan";
+// Run-time type checks for ranks.
+export function is_amateur(rank: Rank): rank is AmateurRank {
+    return rank.type === "Kyu" || rank.type === "Dan";
 }
 
-export function is_professional(ranking: Ranking): ranking is ProfessionalRanking {
-    return ranking.type === "Pro";
+export function is_professional(rank: Rank): rank is ProfessionalRank {
+    return rank.type === "Pro";
 }
 
 
 
 // Calculate an amateur player's ranking from a rating (which is simply a number).
 // On OGS, we use the European Go Federation's system.
-export function make_amateur_ranking(rating: number): AmateurRanking {
+export function make_amateur_rank(rating: number): AmateurRank {
     let kyu = Math.ceil((2100 - rating) / 100);
     let dan = Math.floor((rating - 2100) / 100) + 1;
     if (kyu >= 1) {
@@ -55,10 +55,15 @@ export function make_amateur_ranking(rating: number): AmateurRanking {
     }
 }
 
+// A professional's ranking is assigned to them rahter than calculated.
+export function make_professional_rank(dan: number): ProfessionalRank {
+    return {level: dan, type: "Pro"};
+}
+
 
 
 // Increase or decrease amateur rankings
-export function next_higher_ranking(ranking: AmateurRanking): AmateurRanking {
+export function next_higher_rank(ranking: AmateurRank): AmateurRank {
     let level = ranking.level;
     if (ranking.level === 1 && ranking.type === "Kyu") {
         return {level: 1, type: "Dan"};
@@ -71,7 +76,7 @@ export function next_higher_ranking(ranking: AmateurRanking): AmateurRanking {
     }
 }
 
-export function next_lower_ranking(ranking: AmateurRanking): AmateurRanking {
+export function next_lower_rank(ranking: AmateurRank): AmateurRank {
     let level = ranking.level;
     if (ranking.level === 1 && ranking.type === "Dan") {
         return {level: 1, type: "Kyu"};
@@ -87,18 +92,18 @@ export function next_lower_ranking(ranking: AmateurRanking): AmateurRanking {
 
 
 // Convert a ranking to a string
-export function ranking_long_string(ranking: Ranking): string {
-    return Math.floor (ranking.level) + " " + ranking.type;
+export function ranking_long_string(rank: Rank): string {
+    return Math.floor (rank.level) + " " + rank.type;
 }
 
-export function ranking_short_string(ranking: Ranking): string {
-    return Math.floor(ranking.level) + ranking.type[0].toLowerCase();
+export function ranking_short_string(rank: Rank): string {
+    return Math.floor(rank.level) + rank.type[0].toLowerCase();
 }
 
 
 
 // Compare two rankings to find which is better.
-export function compare_rankings(a: Ranking, b: Ranking): number {
+export function compare_ranks(a: Rank, b: Rank): number {
     let ordering = ["Kyu", "Dan", "Pro"];
     let cmp = 0;
     cmp = cmp || ordering.indexOf(a.type) - ordering.indexOf(b.type);

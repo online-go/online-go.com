@@ -16,7 +16,7 @@
  */
 
 import {_} from "translate";
-import {Ranking, compare_rankings} from "Ranking";
+import {Rank, compare_ranks} from "Ranking";
 
 // Basic player type. All players have a unique id number.
 export interface Player {
@@ -40,17 +40,15 @@ export interface RegisteredPlayer extends Player {
     username: string;       // The player's chosen username.
     icon: string;           // The URL of the player's chosen icon.
     country: string;        // The player's country of origin.
-    ranking: Ranking;       // The player's overall ranking.
+    rank: Rank;          // The player's overall rank.
     is: {                   // The player's attributes
-        superuser?: boolean;    // Can the player alter everything in the system?
+        admin?: boolean;        // Can the player alter everything in the system?
         moderator?: boolean;    // Can the player enforce discipline?
         professional?: boolean; // Does the player have a professional diploma?
         supporter?: boolean;    // Does the player support OGS financially?
         provisional?: boolean;  // Has the player only recently joined OGS?
         timeout?: boolean;      // Has the player recently timed out of a game?
-        online?: boolean;       // Is the player currently logged on to the site?
-        robot?: boolean;        // Is the player an artificial intelligence?
-        on_vacation?: boolean;  // Is the player pausing all his or her games?
+        bot?: boolean;          // Is the player an artificial intelligence?
     };
 }
 
@@ -63,18 +61,6 @@ export function is_guest(player: Player): player is GuestPlayer {
 
 export function is_registered(player: Player): player is RegisteredPlayer {
     return player.type === "Registered";
-}
-
-
-
-// What is the player's name?
-export function player_name(player: Player): string {
-    if (is_guest(player)) {
-        return _("Guest");
-    }
-    if (is_registered(player)) {
-        return player.username;
-    }
 }
 
 
@@ -136,7 +122,7 @@ export function by_ranking(a: Player, b: Player): number {
     }
     if (is_registered(a) && is_registered(b)) {
         let cmp = 0;
-        cmp = cmp || compare_rankings(a.ranking, b.ranking);
+        cmp = cmp || compare_ranks(a.rank, b.rank);
         cmp = cmp || a.username.localeCompare(b.username);
         cmp = cmp || a.id - b.id;
         return cmp;
@@ -163,4 +149,28 @@ export function by_nationality(a: Player, b: Player): number {
         cmp = cmp || a.id - b.id;
         return cmp;
     }
+}
+
+
+
+// What is the player's name? What are the player's attributes?
+export function player_name(player: Player): string {
+    if (is_guest(player)) {
+        return _("Guest");
+    }
+    if (is_registered(player)) {
+        return player.username;
+    }
+}
+
+export function player_attributes(player: Player): Array<string> {
+    let attributes: Array<string> = [];
+    if (is_registered(player)) {
+        for (let attribute in player.is) {
+            if (player.is[attribute]) {
+                attributes.push(attribute);
+            }
+        }
+    }
+    return attributes;
 }
