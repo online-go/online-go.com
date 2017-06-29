@@ -160,6 +160,13 @@ function update(player: any, dont_overwrite?: boolean): Player {
             compatibility.ranking = 30 - rank.level;
         }
 
+        // If the data we're fed might be inconsistent with the current state
+        // of the player in question, then the caller will set dont_overwrite
+        // to be true. In this case, just return the new_style_player, as it
+        // will contain all th information the caller needs.
+        if (!dont_overwrite) {
+            return new_style_player;
+        }
 
         // Copy any new or changed information to the cache. Note that this will
         // update everybody's copy of the cached data. The data is cached both by
