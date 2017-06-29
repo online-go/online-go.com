@@ -24,7 +24,11 @@ import player_cache from "player_cache";
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
-    name_match_regex = new RegExp("\b" + user.username.replace(/[\\^$*+?.()|[\]{}]/g, "\$&") + "\b", "i");
+    try {
+        name_match_regex = new RegExp("\b" + user.username.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "\b", "i");
+    } catch (e) {
+        console.error("Failed to construct name matching regular expression", e);
+    }
 });
 
 
