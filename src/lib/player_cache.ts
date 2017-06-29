@@ -17,7 +17,7 @@
 
 import {get} from "requests";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
-import {Rank} from "data/Rank";
+import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
 
 const player_cache_debug_enabled = true;
 let cache_by_id: {[id: number]: RegisteredPlayer} = {};
@@ -94,61 +94,87 @@ function update(player: any, dont_overwrite?: boolean): Player {
     else {
         // Translate the player's rank to the new system.
         let rank: Rank;
-        if (player.ranking > 36 && (player.pro || player.professional)) {
-            rank = {level: player.ranking - 36, type: "Pro"};
+        if (player.ranking !== undefined) {
+            if (player.ranking > 36 && (player.pro || player.professional)) {
+                rank = make_professional_rank(player.ranking - 36);
+            }
+            else {
+                rank = make_amateur_rank(player.rating);
+            }
         }
-        else if (player.ranking > 29) {
-            rank = {level: player.ranking - 29, type: "Dan"};
+        if (!rank || isNaN(rank.level)) {
+            rank = player.rank;
         }
-        else {
-            rank = {level: 30 - player.ranking, type: "Kyu"};
+
+        // Ensure that the rating is in a suitable form for the new system.
+        let rating: number;
+        rating = +player.rating;
+        if (isNaN(rating)) {
+            rating = undefined;
         }
-        if (isNaN(rank.level)) {
-            rank = undefined;
-        }
+
+        // If the ui_class is undefined, then give it a sensible default value.
+        let ui_class: string = player.ui_class || "";
 
         // Translate the data to the Player type.
         let new_style_player: RegisteredPlayer = {
             type: "Registered",
-            id: player.id || player.player_Id || player.playerId,
+            id: player.id || player.player_id || player.user_id,
             username: player.username,
-            icon: player['icon-url'] || player.icon,
+            icon: player.icon || player['icon-url'],
             country: player.country,
             rank: rank,
-            rating: player.rating,
-            is: typeof player.ui_class !== "string" ? undefined : {
-                admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
-                moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
-                professional: player.pro || player.professional || false,
-                supporter: player.ui_class.indexOf("supporter") !== -1,
-                provisional: player.ui_class.indexOf("provisional") !== -1,
-                timeout: player.ui_class.indexOf("timeout") !== -1,
-                bot: player.ui_class.indexOf("bot") !== -1
+            rating: rating,
+            is: player.is || {
+                admin: (player.is_superuser && true) || ui_class.indexOf("admin") !== -1,
+                moderator: (player.is_moderator && true) || ui_class.indexOf("moderator") !== -1,
+                professional: (player.pro || player.professional || false) && player.ranking > 36,
+                supporter: ui_class.indexOf("supporter") !== -1,
+                provisional: ui_class.indexOf("provisional") !== -1,
+                timeout: ui_class.indexOf("timeout") !== -1,
+                bot: ui_class.indexOf("bot") !== -1
             }
         };
-        if (new_style_player.is) {
-            for (let attribute in new_style_player.is) {
-                if (!new_style_player.is[attribute]) {
-                    delete new_style_player.is[attribute];
-                }
+        for (let attribute in new_style_player.is) {
+            if (!new_style_player.is[attribute]) {
+                delete new_style_player.is[attribute];
             }
         }
 
-        // Add compatibility fields to the Player object.
+        // Add compatibility fields to the Player object. These fields are
+        // inaccessible when the object is accessed as an instance of Player,
+        // but are accessible when it is accessed as an instance of any.
         let compatibility: any = new_style_player;
         compatibility.ui_class = player_attributes(new_style_player).join(" ");
-        compatibility.ranking = player.ranking;
+        compatibility.player_id = compatibility.user_id = new_style_player.id;
+        compatibility["icon-url"] = new_style_player.icon;
+        compatibility.is_superuser = !!new_style_player.is.admin;
+        compatibility.is_moderator = !!new_style_player.is.moderator;
+        if (rank && rank.type === "Pro") {
+            compatibility.ranking = rank.level + 36;
+        }
+        if (rank && rank.type === "Dan") {
+            compatibility.ranking = rank.level + 29;
+        }
+        if (rank && rank.type === "Kyu") {
+            compatibility.ranking = 30 - rank.level;
+        }
+
 
         // Copy any new or changed information to the cache. Note that this will
-        // update everybody's copy of the cached data. Note also that under some
-        // circumstances, the server will send us incomplete data. If this has
-        // happened, then we run with what we've got and immediately put in a
-        // request for the rest of it. This is to ensure that the Player type is
-        // (almost) always fully-populated and so usable wherever it is needed.
+        // update everybody's copy of the cached data. The data is cached both by
+        // username and by id. Along the way, we take note of whether any
+        // information is still missing from the cache.
         let cached = cache_by_id[new_style_player.id] || {} as RegisteredPlayer;
         let incomplete = false;
+        if (player.ui_class !== undefined || player.is !== undefined) {
+            cached.is = new_style_player.is;
+        }
+        else {
+            incomplete = true;
+        }
         for (let name in new_style_player) {
-            if (new_style_player[name] !== undefined) {
+            if (name !== "is" && new_style_player[name] !== undefined) {
                 cached[name] = new_style_player[name];
             }
             if (!(name in cached)) {
@@ -164,9 +190,18 @@ function update(player: any, dont_overwrite?: boolean): Player {
             cache_by_username[cached.username] = cached;
         }
 
+        // Under some circumstances, the server will send us incomplete data. If
+        // this has happened, then we run with what we've got and immediately put
+        // in a request for the rest of it. This is to ensure that the Player type
+        // is (almost) always fully-populated and so usable wherever it is needed.
+        // Note that there is potential for an infinite loop if the server were to
+        // return incomplete data in response to a call to fetch. Hence, we have
+        // to check that a fetch of the data is not already in progress.
         if (incomplete) {
-            incomplete_entries[new_style_player.id] = true;
-            fetch(new_style_player.id);
+            if (!incomplete_entries[new_style_player.id]) {
+                incomplete_entries[new_style_player.id] = true;
+                fetch(new_style_player.id);
+            }
         }
         else {
             delete incomplete_entries[new_style_player.id];

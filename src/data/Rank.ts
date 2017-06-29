@@ -92,11 +92,11 @@ export function next_lower_rank(ranking: AmateurRank): AmateurRank {
 
 
 // Convert a ranking to a string
-export function ranking_long_string(rank: Rank): string {
+export function rank_long_string(rank: Rank): string {
     return Math.floor (rank.level) + " " + rank.type;
 }
 
-export function ranking_short_string(rank: Rank): string {
+export function rank_short_string(rank: Rank): string {
     return Math.floor(rank.level) + rank.type[0].toLowerCase();
 }
 
