@@ -33,7 +33,7 @@ import {NotificationIndicator, TurnIndicator, NotificationList} from "Notificati
 import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 let body = $(document.body);
 

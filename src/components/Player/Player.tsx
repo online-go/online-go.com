@@ -23,7 +23,7 @@ import {close_all_popovers, popover} from "popover";
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 
 interface PlayerProperties {

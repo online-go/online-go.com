@@ -25,7 +25,7 @@ const player_cache_debug_enabled = false;
 
 let cache_by_id: {[player_id: number]: RegisteredPlayer} = {};
 let cache_by_username: {[player_username: string]: RegisteredPlayer} = {};
-let nicknames: Array<string> = [];
+export let nicknames: Array<string> = [];
 
 let active_fetches: {[player_id: number]: Promise<Player>} = {};
 let incomplete_entries: {[player_id: number]: boolean} = {};
@@ -37,9 +37,9 @@ let subscription_next_serial = 0;
 
 // We can use a PlayerSubscription to ensure that we are informed when a Player
 // changes state.
-type SubscriptionCallback = (this: void, player: Player) => void;
+export type SubscriptionCallback = (this: void, player: Player) => void;
 
-class PlayerSubscription {
+export class PlayerSubscription {
     private player_id: number;
     private serial: number;
     private callback: SubscriptionCallback;
@@ -69,11 +69,11 @@ class PlayerSubscription {
 // Look up functions in the player cache. If the user id is for a guest player,
 // then simply create the guest player on the fly. Registered players only are
 // stored in the cache.
-function lookup(player_id: number): any {
+export function lookup(player_id: number): any {
     return lookup_by_id(player_id);
 }
 
-function lookup_by_id(player_id: number): Player | void {
+export function lookup_by_id(player_id: number): Player | void {
     if (player_id <= 0) {
         return {type: "Guest", id: player_id};
     }
@@ -82,7 +82,7 @@ function lookup_by_id(player_id: number): Player | void {
     }
 }
 
-function lookup_by_username(player_username: string): Player | void {
+export function lookup_by_username(player_username: string): Player | void {
     let player: RegisteredPlayer = cache_by_username[player_username];
     if (player && player.username === player_username) {
         return player;
@@ -92,7 +92,7 @@ function lookup_by_username(player_username: string): Player | void {
 
 
 // Fetch a player's details from the server.
-function fetch(player_id: number): Promise<Player> {
+export function fetch(player_id: number): Promise<Player> {
     // If the player is a guest, then simply create the player on the fly and return
     // it. If the player is registered and in the cache, then return the cached copy.
     // If the player has a fetch pending, then return the pending fetch.
@@ -130,7 +130,7 @@ function fetch(player_id: number): Promise<Player> {
 // of player.is has changed. Therefore, we can do a bulk comparison of player.is using
 // the === operator. No need to loop over its contents to look for changes. Note that
 // player1.is === player2.is is true if and only if player1 === player2.
-function update(player: any, dont_overwrite?: boolean): Player {
+export function update(player: any, dont_overwrite?: boolean): Player {
     if (player.id <= 0) {
         return {type: "Guest", id: player.id};
     }
@@ -338,27 +338,24 @@ function update(player: any, dont_overwrite?: boolean): Player {
     }
 }
 
-
-
-export const player_cache = {
-    PlayerSubscription: PlayerSubscription,
-    lookup: lookup,
-    lookup_by_id: lookup_by_id,
-    lookup_by_username: lookup_by_username,
-    fetch: fetch,
-    update: update,
-    nicknames: nicknames
-};
-
-export default player_cache;
-
 if (player_cache_debug_enabled) {
-    window['player_cache'] = Object.assign({}, player_cache, {
+    window['player_cache'] = {
         cache_by_id: cache_by_id,
         cache_by_username: cache_by_username,
+        nicknames: nicknames,
+
         active_fetches: active_fetches,
         incomplete_entries: incomplete_entries,
-        subscriptions: subscriptions
-    });
+        subscriptions: subscriptions,
+
+        PlayerSubscription: PlayerSubscription,
+
+        lookup: lookup,
+        lookup_by_id: lookup_by_id,
+        lookup_by_username: lookup_by_username,
+
+        fetch: fetch,
+        update: update
+    };
 
 }

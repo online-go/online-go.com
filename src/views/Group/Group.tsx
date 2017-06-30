@@ -29,7 +29,7 @@ import {LadderComponent} from "LadderComponent";
 import {UIPush} from "UIPush";
 import {TournamentList} from "TournamentList";
 import {close_all_popovers} from "popover";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
