@@ -28,7 +28,6 @@ let cache_by_username: {[player_username: string]: RegisteredPlayer} = {};
 export let nicknames: Array<string> = [];
 
 let active_fetches: {[player_id: number]: Promise<Player>} = {};
-let incomplete_entries: {[player_id: number]: boolean} = {};
 
 let subscriptions: {[player_id: number]: {[serial: number]: SubscriptionCallback}} = {};
 let subscription_next_serial = 0;
@@ -52,7 +51,9 @@ export class PlayerSubscription {
         if (!(player_id in subscriptions)) {
             subscriptions[player_id] = {};
         }
-        fetch(player_id);
+        if (!(player_id in cache_by_id)) {
+            fetch(player_id);
+        }
     }
 
     subscribe(): void {
@@ -99,7 +100,7 @@ export function fetch(player_id: number): Promise<Player> {
     if (player_id <= 0) {
         return Promise.resolve<Player>({type: "Guest", id: player_id});
     }
-    if (player_id in cache_by_id && !incomplete_entries[player_id]) {
+    if (player_id in cache_by_id) {
         return Promise.resolve<Player>(cache_by_id[player_id]);
     }
     if (player_id in active_fetches) {
@@ -262,22 +263,11 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // Copy any new or changed information to the cache. Note that this will
         // update everybody's copy of the cached data. The data is cached both by
         // username and by id. Along the way, we take note of whether any
-        // information is still missing from the cache, and whether any information
-        // is changed in the cache.
-        let incomplete = false;
+        // information is changed in the cache.
         let changed = false;
-        if (player.ui_class === undefined && player.is === undefined) {
-            // The only way to prove that cached.is is complete is by checking whether the
-            // player is already in the cache and the cached copy is complete. Otherwise,
-            // we have to assume that it's incomplete.
-            incomplete = incomplete || new_style_player.id in cache_by_id && new_style_player.id in incomplete_entries;
-        }
         for (let name in new_style_player) {
             if (cached[name] !== new_style_player[name]) {
                 changed = true;
-            }
-            if (new_style_player[name] === undefined) {
-                incomplete = true;
             }
             cached[name] = new_style_player[name];
         }
@@ -288,23 +278,6 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 nicknames.push(cached.username);
             }
             cache_by_username[cached.username] = cached;
-        }
-
-        // Under some circumstances, the server will send us incomplete data. If
-        // this has happened, then we run with what we've got and immediately put
-        // in a request for the rest of it. This is to ensure that the Player type
-        // is (almost) always fully-populated and so usable wherever it is needed.
-        // Note that there is potential for an infinite loop if the server were to
-        // return incomplete data in response to a call to fetch. Hence, we have
-        // to check that we have not already attempted to fill in the blanks.
-        if (incomplete) {
-            if (!(new_style_player.id in incomplete_entries)) {
-                incomplete_entries[new_style_player.id] = true;
-                fetch(new_style_player.id);
-            }
-        }
-        else {
-            delete incomplete_entries[new_style_player.id];
         }
 
         // If the cached information has changed, then inform everyone who is
@@ -321,17 +294,11 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         if (player_cache_debug_enabled) {
             let message: Array<string> = [];
             message.push("Converted");
-            if (incomplete) {
-                message.push("incomplete");
-            }
-            if (incomplete && changed) {
-                message.push("and");
-            }
             if (changed) {
                 message.push("changed");
             }
             message.push("old-style player");
-            console.log(message.join(" "), player, incomplete ? new_style_player : cached);
+            console.log(message.join(" "), player, cached);
         }
 
         return cached;
@@ -345,7 +312,6 @@ if (player_cache_debug_enabled) {
         nicknames: nicknames,
 
         active_fetches: active_fetches,
-        incomplete_entries: incomplete_entries,
         subscriptions: subscriptions,
 
         PlayerSubscription: PlayerSubscription,
