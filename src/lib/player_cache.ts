@@ -19,12 +19,50 @@ import {get} from "requests";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
 
+
+
 const player_cache_debug_enabled = false;
-let cache_by_id: {[id: number]: RegisteredPlayer} = {};
-let cache_by_username: {[username: string]: RegisteredPlayer} = {};
-let active_fetches: {[id: number]: Promise<any>} = {};
-let incomplete_entries: {[id: number]: boolean} = {};
+
+let cache_by_id: {[player_id: number]: RegisteredPlayer} = {};
+let cache_by_username: {[player_username: string]: RegisteredPlayer} = {};
 let nicknames: Array<string> = [];
+
+let active_fetches: {[player_id: number]: Promise<Player>} = {};
+let incomplete_entries: {[player_id: number]: boolean} = {};
+
+let subscriptions: {[player_id: number]: {[serial: number]: SubscriptionCallback}} = {};
+let subscription_next_serial = 0;
+
+
+
+// We can use a PlayerSubscription to ensure that we are informed when a Player
+// changes state.
+type SubscriptionCallback = (this: void, player: Player) => void;
+
+class PlayerSubscription {
+    private player_id: number;
+    private serial: number;
+    private callback: SubscriptionCallback;
+
+    constructor(player_id: number, callback: SubscriptionCallback) {
+        this.player_id = player_id;
+        this.serial = subscription_next_serial++;
+        this.callback = callback;
+
+        if (!(player_id in subscriptions)) {
+            subscriptions[player_id] = {};
+        }
+        fetch(player_id);
+    }
+
+    subscribe(): void {
+        subscriptions[this.player_id][this.serial] = this.callback;
+    }
+
+    unsubscribe(): void {
+        delete subscriptions[this.player_id][this.serial];
+    }
+}
 
 
 
@@ -35,7 +73,7 @@ function lookup(player_id: number): any {
     return lookup_by_id(player_id);
 }
 
-function lookup_by_id(player_id: number): Player | undefined {
+function lookup_by_id(player_id: number): Player | void {
     if (player_id <= 0) {
         return {type: "Guest", id: player_id};
     }
@@ -44,9 +82,9 @@ function lookup_by_id(player_id: number): Player | undefined {
     }
 }
 
-function lookup_by_username(username: string): Player | undefined {
-    let player: RegisteredPlayer = cache_by_username[username];
-    if (player && player.username === username) {
+function lookup_by_username(player_username: string): Player | void {
+    let player: RegisteredPlayer = cache_by_username[player_username];
+    if (player && player.username === player_username) {
         return player;
     }
 }
@@ -89,59 +127,109 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<Play
 // compatibility, we add some extra fields that do not exist in the Player type. Untyped
 // parts of the code can still use these, but you will get an error if you try to use them
 // on type Player. This ensures that the Player type is used correctly in typed code.
+//
+// The cached value of player.is is replaced with a new object if and only if the contents
+// of player.is has changed. Therefore, we can do a bulk comparison of player.is using
+// the === operator. No need to loop over its contents to look for changes. Note that
+// player1.is === player2.is is true if and only if player1 === player2.
 function update(player: any, dont_overwrite?: boolean): Player {
     if (player.id <= 0) {
         return {type: "Guest", id: player.id};
     }
     else {
-        // Translate the player's rank to the new system.
-        let rank: Rank;
-        if (player.ranking !== undefined) {
-            if (player.ranking > 36 && (player.pro || player.professional)) {
-                rank = make_professional_rank(player.ranking - 36);
-            }
-            else {
-                rank = make_amateur_rank(player.rating);
-            }
-        }
-        if (!rank || isNaN(rank.level)) {
-            rank = player.rank;
-        }
+        // Work out which player we're referring to and fetch them from the cache.
+        let player_id = player.id || player.player_id || player.user_id;
+        let cached = cache_by_id[player_id] || {is: {}} as RegisteredPlayer;
 
         // Ensure that the rating is in a suitable form for the new system.
         let rating: number;
         rating = +player.rating;
         if (isNaN(rating)) {
-            rating = undefined;
+            rating = cached.rating;
         }
 
-        // If the ui_class is undefined, then give it a sensible default value.
-        let ui_class: string = player.ui_class || "";
+        // Translate the player's rank to the new system.
+        let rank: Rank;
+        if (player.rank) {
+            rank = player.rank;
+        }
+        else if (player.ranking > 36 && (player.pro || player.professional)) {
+            rank = make_professional_rank(player.ranking - 36);
+        }
+        else if (rating !== undefined) {
+            rank = make_amateur_rank(rating);
+        }
+        else if (player.ranking !== undefined) {
+            if (player.ranking > 29) {
+                rank = {level: player.ranking - 29, type: "Dan"};
+            }
+            else {
+                rank = {level: 30 - player.ranking, type: "Kyu"};
+            }
+        }
+        else {
+            rank = cached.rank;
+        }
+        if (rank && cached.rank && rank.level === cached.rank.level && rank.type === cached.rank.type) {
+            rank = cached.rank;
+        }
+
+        // Prepare the player's attributes.
+        let is: RegisteredPlayer["is"];
+        if (player.is) {
+            is = player.is;
+        }
+        else if (player.ui_class !== undefined) {
+            // Prepare the attributes object.
+            is = {
+                admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
+                moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
+                professional: (player.pro || player.professional) && player.ranking > 36,
+                supporter: player.ui_class.indexOf("supporter") !== -1,
+                provisional: player.ui_class.indexOf("provisional") !== -1,
+                timeout: player.ui_class.indexOf("timeout") !== -1,
+                bot: player.ui_class.indexOf("bot") !== -1
+            };
+
+            // Only keep attributes that are true.
+            for (let attribute in is) {
+                if (is[attribute]) {
+                    is[attribute] = true;
+                }
+                else {
+                    delete is[attribute];
+                }
+            }
+
+            // If the object is the same as the cached version, then replace it with
+            // the cached version. This enables us to compare all of the attributes
+            // at once using the === operator.
+            let same = true;
+            for (let attribute in is) {
+                same = same && cached.is[attribute];
+            }
+            for (let attribute in cached.is) {
+                same = same && is[attribute];
+            }
+            if (same) {
+                is = cached.is;
+            }
+        }
+        else {
+            is = cached.is;
+        }
 
         // Translate the data to the Player type.
         let new_style_player: RegisteredPlayer = {
             type: "Registered",
-            id: player.id || player.player_id || player.user_id,
-            username: player.username,
-            icon: player.icon || player['icon-url'],
-            country: player.country,
+            id: player_id,
+            username: player.username || cached.username,
+            icon: player.icon || player['icon-url'] || cached.icon,
+            country: player.country || cached.country,
             rank: rank,
             rating: rating,
-            is: player.is || {
-                admin: (player.is_superuser && true) || ui_class.indexOf("admin") !== -1,
-                moderator: (player.is_moderator && true) || ui_class.indexOf("moderator") !== -1,
-                professional: (player.pro || player.professional || false) && player.ranking > 36,
-                supporter: ui_class.indexOf("supporter") !== -1,
-                provisional: ui_class.indexOf("provisional") !== -1,
-                timeout: ui_class.indexOf("timeout") !== -1,
-                bot: ui_class.indexOf("bot") !== -1
-            }
+            is: is
         };
-        for (let attribute in new_style_player.is) {
-            if (!new_style_player.is[attribute]) {
-                delete new_style_player.is[attribute];
-            }
-        }
 
         // Add compatibility fields to the Player object. These fields are
         // inaccessible when the object is accessed as an instance of Player,
@@ -166,29 +254,34 @@ function update(player: any, dont_overwrite?: boolean): Player {
         // of the player in question, then the caller will set dont_overwrite
         // to be true. In this case, just return the new_style_player, as it
         // will contain all the information the caller needs.
-        if (!dont_overwrite) {
+        if (dont_overwrite) {
+            if (player_cache_debug_enabled) {
+                console.log("Converted old-style player without caching the result", player, new_style_player);
+            }
             return new_style_player;
         }
 
         // Copy any new or changed information to the cache. Note that this will
         // update everybody's copy of the cached data. The data is cached both by
         // username and by id. Along the way, we take note of whether any
-        // information is still missing from the cache.
-        let cached = cache_by_id[new_style_player.id] || {} as RegisteredPlayer;
+        // information is still missing from the cache, and whether any information
+        // is changed in the cache.
         let incomplete = false;
-        if (player.ui_class !== undefined || player.is !== undefined) {
-            cached.is = new_style_player.is;
-        }
-        else {
-            incomplete = true;
+        let changed = false;
+        if (player.ui_class === undefined && player.is === undefined) {
+            // The only way to prove that cached.is is complete is by checking whether the
+            // player is already in the cache and the cached copy is complete. Otherwise,
+            // we have to assume that it's incomplete.
+            incomplete = incomplete || new_style_player.id in cache_by_id && new_style_player.id in incomplete_entries;
         }
         for (let name in new_style_player) {
-            if (name !== "is" && new_style_player[name] !== undefined) {
-                cached[name] = new_style_player[name];
+            if (cached[name] !== new_style_player[name]) {
+                changed = true;
             }
-            if (!(name in cached)) {
+            if (new_style_player[name] === undefined) {
                 incomplete = true;
             }
+            cached[name] = new_style_player[name];
         }
         cache_by_id[new_style_player.id] = cached;
 
@@ -207,7 +300,7 @@ function update(player: any, dont_overwrite?: boolean): Player {
         // return incomplete data in response to a call to fetch. Hence, we have
         // to check that we have not already attempted to fill in the blanks.
         if (incomplete) {
-            if (!incomplete_entries[new_style_player.id]) {
+            if (!(new_style_player.id in incomplete_entries)) {
                 incomplete_entries[new_style_player.id] = true;
                 fetch(new_style_player.id);
             }
@@ -216,11 +309,31 @@ function update(player: any, dont_overwrite?: boolean): Player {
             delete incomplete_entries[new_style_player.id];
         }
 
+        // If the cached information has changed, then inform everyone who is
+        // subscribed to the player.
+        if (changed) {
+            let player_subscriptions = subscriptions[new_style_player.id];
+            for (let serial in player_subscriptions) {
+                player_subscriptions[serial](cached);
+            }
+        }
+
         // If we've requested player cache debugging, then log the transaction to
         // the console.
         if (player_cache_debug_enabled) {
-            let message = "Converted " + (incomplete ? "incomplete " : "") + "old-style player";
-            console.log(message, player, incomplete ? new_style_player : cached);
+            let message: Array<string> = [];
+            message.push("Converted");
+            if (incomplete) {
+                message.push("incomplete");
+            }
+            if (incomplete && changed) {
+                message.push("and");
+            }
+            if (changed) {
+                message.push("changed");
+            }
+            message.push("old-style player");
+            console.log(message.join(" "), player, incomplete ? new_style_player : cached);
         }
 
         return cached;
@@ -230,6 +343,7 @@ function update(player: any, dont_overwrite?: boolean): Player {
 
 
 export const player_cache = {
+    PlayerSubscription: PlayerSubscription,
     lookup: lookup,
     lookup_by_id: lookup_by_id,
     lookup_by_username: lookup_by_username,
@@ -245,7 +359,8 @@ if (player_cache_debug_enabled) {
         cache_by_id: cache_by_id,
         cache_by_username: cache_by_username,
         active_fetches: active_fetches,
-        incomplete_entries: incomplete_entries
+        incomplete_entries: incomplete_entries,
+        subscriptions: subscriptions
     });
 
 }
