@@ -25,7 +25,6 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
-import online_status from "online_status";
 import {Player as PlayerType, RegisteredPlayer, is_guest, is_registered, player_name, player_attributes} from "data/Player";
 import {Rank, rank_short_string} from "data/Rank";
 
@@ -49,7 +48,6 @@ interface PlayerProperties {
 }
 
 interface PlayerState {
-    online: boolean;        // Is the player online?
     guest: boolean;         // Is the player a guest?
     username: string;       // What is the player's name?
     icon: string;           // What is the player's icon?
@@ -65,7 +63,6 @@ interface PlayerState {
 function update_state(continuation: (state: PlayerState) => void, player: PlayerType | void): void {
     if (!player) {
         continuation({
-            online: false,
             guest: true,
             username: "...",
             icon: "",
@@ -76,7 +73,6 @@ function update_state(continuation: (state: PlayerState) => void, player: Player
     }
     else if (is_guest(player)) {
         continuation({
-            online: true,
             guest: true,
             username: player_name(player),
             icon: "",
@@ -88,7 +84,6 @@ function update_state(continuation: (state: PlayerState) => void, player: Player
     else if (is_registered(player)) {
         let suffix = (player.is.provisional ? "?" : "") + (player.is.timeout ? "T" : "");
         continuation({
-            online: false,
             guest: false,
             username: player_name(player),
             icon: player.icon,
@@ -166,7 +161,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         props.nodetails && classes.push("nodetails");
         props.noextracontrols && classes.push("noextracontrols");
         props.flare && classes.push("with-flare");
-        props.online && classes.push(this.state.online ? " online" : " offline");
+        props.online && classes.push("show-online");
 
         let className = classes.join(" ");
         if (state.className) {

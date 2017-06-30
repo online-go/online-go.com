@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {comm_socket} from "sockets";
 import {get} from "requests";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
@@ -31,6 +32,9 @@ let active_fetches: {[player_id: number]: Promise<Player>} = {};
 
 let subscriptions: {[player_id: number]: {[serial: number]: SubscriptionCallback}} = {};
 let subscription_next_serial = 0;
+
+let new_player_ids: Array<number> | void;
+let players_online: {[player_id: number]: boolean} = {};
 
 
 
@@ -63,6 +67,73 @@ export class PlayerSubscription {
     unsubscribe(): void {
         delete subscriptions[this.player_id][this.serial];
     }
+}
+
+// Notify anyone who's listening that a player has changed state.
+function notify_subscribers(player_id) {
+    let player = cache_by_id[player_id];
+    let player_subscriptions = subscriptions[player_id];
+    if (player && player_subscriptions) {
+        for (let serial in player_subscriptions) {
+            player_subscriptions[serial](player);
+        }
+    }
+}
+
+
+
+// Perform updates of the player.is.online attribute as instructed by
+// the comm socket. When we initially connect, we need to tell the server
+// which players we're interested in. When we lose the connection, all
+// players go offline. Otherwise, we update the players as required.
+comm_socket.on("connect", () => {
+    let players = [];
+    for (let player_id in cache_by_id) {
+        players.push(player_id);
+    }
+    if (players.length) {
+        comm_socket.send("user/monitor", players);
+    }
+});
+comm_socket.on("user/state", (states) => {
+    for (let player_id in states) {
+        let player = cache_by_id[player_id];
+        if (player) {
+            players_online[player_id] = !!states[player_id];
+            if (!states[player_id] !== !player.is.online) {
+                if (states[player_id]) {
+                    player.is.online = true;
+                }
+                else {
+                    delete player.is.online;
+                }
+                notify_subscribers(player_id);
+            }
+        }
+    }
+});
+comm_socket.on("disconnect", () => {
+    players_online = {};
+    for (let player_id in cache_by_id) {
+        if (cache_by_id[player_id].is.online) {
+            delete cache_by_id[player_id].is.online;
+            notify_subscribers(player_id);
+        }
+    }
+});
+
+// The first time a new player id is encountered, we make a note of it
+// so we can batch up requests to be kept informed of the player's
+// online status.
+function connect_online(player_id: number) {
+    if (!new_player_ids) {
+        new_player_ids = [];
+        setTimeout(() => {
+            comm_socket.send("user/monitor", new_player_ids);
+            new_player_ids = undefined;
+        });
+    }
+    new_player_ids.push(player_id);
 }
 
 
@@ -181,6 +252,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         else if (player.ui_class !== undefined) {
             // Prepare the attributes object.
             is = {
+                online: players_online[player_id],
                 admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
                 moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
                 professional: (player.pro || player.professional) && player.ranking > 36,
@@ -190,7 +262,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 bot: player.ui_class.indexOf("bot") !== -1
             };
 
-            // Only keep attributes that are true.
+            // Only keep attributes that are applicable.
             for (let attribute in is) {
                 if (is[attribute]) {
                     is[attribute] = true;
@@ -271,6 +343,8 @@ export function update(player: any, dont_overwrite?: boolean): Player {
             }
             cached[name] = new_style_player[name];
         }
+
+        let was_cached = new_style_player.id in cache_by_id;
         cache_by_id[new_style_player.id] = cached;
 
         if (cached.username) {
@@ -283,10 +357,13 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // If the cached information has changed, then inform everyone who is
         // subscribed to the player.
         if (changed) {
-            let player_subscriptions = subscriptions[new_style_player.id];
-            for (let serial in player_subscriptions) {
-                player_subscriptions[serial](cached);
-            }
+            notify_subscribers(cached.id);
+        }
+
+        // If the player is new to us, then request to be kept informed
+        // of their online status.
+        if (!was_cached) {
+            connect_online(cached.id);
         }
 
         // If we've requested player cache debugging, then log the transaction to

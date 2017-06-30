@@ -43,6 +43,7 @@ export interface RegisteredPlayer extends Player {
     rank: Rank;             // The player's overall rank.
     rating: number;         // The player's overall rating.
     is: {                   // The player's attributes
+        online?: boolean;       // Is the player currently logged into OGS?
         admin?: boolean;        // Can the player alter everything in the system?
         moderator?: boolean;    // Can the player enforce discipline?
         professional?: boolean; // Does the player have a professional diploma?
