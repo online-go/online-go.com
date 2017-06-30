@@ -22,9 +22,74 @@ interface IRankInfo {
     label: string;
 }
 
-export const MaxRank: number = 36;
+class Rating {
+    unset:boolean;
+    rating:number;
+    deviation:number;
+    volatility:number;
+    rank:number;
+    rank_label:string;
+    partial_rank:number;
+    partial_rank_label:string;
+    rank_deviation_labels:Array<string>;
+    rank_deviation:number;
+}
 
-export function rankString(r) {
+export const MaxRank: number = 39;
+
+
+const MIN_RATING = 100;
+const MAX_RATING = 6000;
+
+export function rank_to_rating(rank:number) {
+    return 900 * Math.exp(0.032 * rank);
+}
+
+export function rating_to_rank(rating:number) {
+    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / 900.0) / 0.032;
+}
+
+export function get_handicap_adjustment(rating:number, handicap:number):number {
+    return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
+}
+
+export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
+    let ret = new Rating();
+    let ratings = user.ratings || {};
+
+    let key = speed;
+    if (size > 0) {
+        key += `-${size}x${size}`;
+    }
+
+    let rating = {
+        rating: 1500,
+        deviation: 350,
+        volatility: 0.06,
+    };
+    ret.unset = true;
+    if (key in ratings) {
+        ret.unset = false;
+        rating = ratings[key];
+    }
+
+    ret.rating = rating.rating;
+    ret.deviation = rating.deviation;
+    ret.volatility = rating.volatility;
+    ret.rank = Math.floor(rating_to_rank(ret.rating));
+    ret.rank_deviation = rating_to_rank(ret.rating + ret.deviation) - rating_to_rank(ret.rating);
+    ret.partial_rank = rating_to_rank(ret.rating);
+    ret.rank_label = rankString(ret.rank, false);
+    ret.partial_rank_label = rankString(ret.partial_rank, true);
+    ret.rank_deviation_labels = [
+        rankString(rating_to_rank(ret.rating - ret.deviation), true),
+        rankString(rating_to_rank(ret.rating + ret.deviation), true),
+    ];
+    return ret;
+}
+
+
+export function rankString(r, with_tenths?:boolean) {
     if (typeof(r) === "object") {
         let ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
@@ -40,9 +105,9 @@ export function rankString(r) {
     }
 
     if (r < 30) {
-        return interpolate(pgettext("Kyu", "%sk"), [(30 - r)]);
+        return interpolate(pgettext("Kyu", "%sk"), [(30 - r).toFixed(with_tenths ? 1 : 0)]);
     }
-    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1)]);
+    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1).toFixed(with_tenths ? 1 : 0)]);
 }
 
 export function longRankString(r) {

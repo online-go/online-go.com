@@ -28,7 +28,7 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString} from "rank_utils";
+import {longRankString, rankString, getUserRating} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
@@ -42,6 +42,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
+import {RatingsChart} from 'RatingsChart';
 
 
 declare let swal;
@@ -89,6 +90,7 @@ export class User extends Resolver<UserProperties, any> {
         this.state = {
             user: null,
             vs: {},
+            ratings: {},
             ip: null,
             vacation_left: null,
             vacation_left_text: "",
@@ -99,6 +101,8 @@ export class User extends Resolver<UserProperties, any> {
             bot_apikey: null,
             bot_ai: null,
             editing: /edit/.test(window.location.hash),
+            selected_speed: 'overall',
+            selected_size: 0,
         };
 
         this.on("mount", () => {
@@ -141,6 +145,7 @@ export class User extends Resolver<UserProperties, any> {
         state.moderator_notes = state.user.moderator_notes;
         state.bot_apikey = state.user.bot_apikey;
 
+        state.user.ratings = state.user.ratings;
         state.user.rating = parseFloat(state.user.rating);
         state.user.rating_live = parseFloat(state.user.rating_live);
         state.user.rating_blitz = parseFloat(state.user.rating_blitz);
@@ -714,200 +719,259 @@ export class User extends Resolver<UserProperties, any> {
 
         return (
           <div className="User container">
-            <div className="row">
-                <div className="col-sm-8">
-                    { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
-                    { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
-                    <h1>{user.username}
-                        {((global_user.id === user.id || global_user.is_moderator) || null)   &&
-                            <button onClick={this.toggleEdit} className='xs edit-button'>
-                                <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
-                            </button>
-                        }
-                    </h1>
-                    <Card className="profile-card">
-                        <div className="row">
-                            <div className="col-sm-2" style={{minWidth: "128px"}}>
-                                {this.state.editing
-                                    ?  <Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
-                                        {this.state.new_icon
-                                            ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
-                                            : <PlayerIcon id={user.id} size={128} />
-                                        }
-                                       </Dropzone>
-                                    : <PlayerIcon id={user.id} size={128} />
-                                }
-                                {this.state.editing &&
+            <div>{/* Profile card {{{ */}
+                <div className="profile-card">
+                    <div className="row">
+                        <div className="col-sm-3 avatar-container">{/* Avatar container{{{ */}
+                            {this.state.editing
+                                ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
+                                    {this.state.new_icon
+                                        ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
+                                        : <PlayerIcon id={user.id} size={128} />
+                                    }
+                                   </Dropzone></div>
+                                : <PlayerIcon id={user.id} size={128} />
+                            }
+                            {this.state.editing &&
+                                <div className='clear-icon-container'>
                                     <button className='xs' onClick={this.clearIcon}>{_("Clear icon")}</button>
-                                }
+                                </div>
+                            }
+
+                            <div className='avatar-subtext'>
+                                {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
+
+                                {(user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
+
+                                {(!user.is_superuser && user.is_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-gavel"></i> {_("Moderator")}</h3></div>}
+
+                                {(!user.is_moderator && user.supporter) && <div ><h3 style={inlineBlock}><i className="fa fa-star"></i> {_("Site Supporter")} <i className="fa fa-star"></i></h3></div>}
+
+                                {(user.is_superuser) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
+
+                                {(!user.is_superuser && user.is_tournament_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-trophy"></i> {_("Tournament Moderator")} <i className="fa fa-trophy"></i></h3></div>}
+
+                                {(user.on_vacation) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
                             </div>
 
-                            <div className="col-sm-10">
-                                <dl className="horizontal">
-                                    {(global_user.is_moderator && user.is_watched) && <dt ></dt>}
-                                    {(global_user.is_moderator && user.is_watched) && <dd ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></dd>}
+                            <div className='avatar-buttons'>
+                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                                    <button onClick={this.toggleEdit} className='xs edit-button'>
+                                        <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
+                                    </button>
+                                }
 
-                                    {(user.timeout_provisional) && <dt ></dt>}
-                                    {(user.timeout_provisional) && <dd ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></dd>}
-
-                                    {(!user.is_superuser && user.is_moderator) && <dt ></dt>}
-                                    {(!user.is_superuser && user.is_moderator) && <dd ><h3 style={inlineBlock}><i className="fa fa-gavel"></i> {_("Moderator")}</h3></dd>}
-
-                                    {(!user.is_moderator && user.supporter) && <dt ></dt>}
-                                    {(!user.is_moderator && user.supporter) && <dd ><h3 style={inlineBlock}><i className="fa fa-star"></i> {_("Site Supporter")} <i className="fa fa-star"></i></h3></dd>}
-
-                                    {(user.is_superuser) && <dt ></dt>}
-                                    {(user.is_superuser) && <dd ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")} <i className="fa fa-smile-o fa-spin"></i></h3></dd>}
-
-                                    {(!user.is_superuser && user.is_tournament_moderator) && <dt ></dt>}
-                                    {(!user.is_superuser && user.is_tournament_moderator) && <dd ><h3 style={inlineBlock}><i className="fa fa-trophy"></i> {_("Tournament Moderator")} <i className="fa fa-trophy"></i></h3></dd>}
-
-                                    {(user.is_bot) && <dt ></dt>}
-                                    {(user.is_bot) && <dd ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></dd>}
-                                    {(user.is_bot) && <dt >{pgettext("Bot AI engine", "Engine")}</dt>}
-                                    {(user.is_bot) && <dd  id="bot-ai-name">{user.bot_ai}</dd>}
-                                    {(user.is_bot) && <dt >{_("Administrator")}</dt>}
-                                    {(user.is_bot) && <dd ><Player user={user.bot_owner}/></dd>}
-
-                                    {(user.on_vacation) && <dt ></dt>}
-                                    {(user.on_vacation) && <dd ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></dd>}
-
-                                    <dt>{_("User Name")}</dt>
-                                    {editing
-                                        ? <dd><input value={user.username} onChange={this.saveUsername} /></dd>
-                                        : <dd>{user.username}</dd>
-                                    }
-
-                                    {(editing || user.name) && <dt >{_("Real Name")}</dt>}
-                                    {(!editing && user.name) && <dd className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</dd>}
-                                    {(editing || null) &&
-                                        <dd>
-                                            <input placeholder={_("First") /* translators: First name */} value={user.first_name || ""} onChange={this.saveRealFirstName}/>
-                                            &nbsp;
-                                            <input placeholder={_("Last") /* translators: Last name */} value={user.last_name || ""} onChange={this.saveRealLastName}/>
-                                        </dd>
-                                    }
-                                    {(editing || null) && <dt></dt>}
-                                    {(editing || null) && <dd ><input type="checkbox" id="real-name-is-private" checked={user.real_name_is_private} onChange={this.saveRealNameIsPrivate}/> <label htmlFor="real-name-is-private">{_("Hide real name")}</label></dd>}
-
-                                    {(!(user.professional)) && <dt >{_("Rating")}</dt>}
-                                    {(!(user.professional)) && <dd ><b><span className="rating_details text-color"><UserRating rating={user.rating}/></span></b>
-                                        [
-                                        <span className="rating_details" title={_("Blitz")}><i className="fa fa-bolt"></i> <UserRating rating={user.rating_blitz}/></span>
-                                        <span className="rating_details" title={_("Live")}><i className="fa fa-clock-o"></i>  <UserRating rating={user.rating_live}/></span>
-                                        <span className="rating_details" style={marginRight0} title={_("Correspondence")}><i className="ogs-turtle"></i> <UserRating rating={user.rating_correspondence}/></span>
-                                        ]
-                                    </dd>}
-
-                                    <dt>{_("Rank")}</dt>
-                                    {(user.professional) && <dd ><b><span className="rating_details text-color"><Rank ranking={user.ranking} pro={user.professional}></Rank></span></b></dd>}
-                                    {(!(user.professional)) && <dd ><b><span className="rating_details text-color"><Rank ranking={user.ranking}></Rank></span></b>
-                                        [
-                                        <span className="rating_details"  title={_("Blitz")}><i className="fa fa-bolt"></i> <Rank ranking={user.ranking_blitz}></Rank></span>
-                                        <span className="rating_details" title={_("Live")}><i className="fa fa-clock-o"></i> <Rank ranking={user.ranking_live}></Rank></span>
-                                        <span className="rating_details" style={marginRight0} title={_("Correspondence")}><i className="ogs-turtle"></i> <Rank ranking={user.ranking_correspondence}></Rank></span>
-                                        ]
-                                    </dd>}
-
-                                    <dt>{_("Country")}</dt>
-                                    {this.state.editing
-                                      ? <dd>
-                                            <Flag country={user.country} big/>
-                                            <select value={user.country} onChange={this.saveCountry}>
-                                                {sorted_locale_countries.map((C) => (
-                                                    <option key={C.cc} value={C.cc}>{C.name}</option>
-                                                ))}
-                                            </select>
-                                        </dd>
-                                      : <dd>
-                                            <Flag country={user.country} big/>
-                                            <span>{cc_to_country_name(user.country)}</span>
-                                        </dd>
-                                    }
-
-                                    {(editing || user.about) && <dt>{_("About")}</dt>}
-                                    {(!editing && user.about) && <dd className='about-markdown'><Markdown source={user.about}/></dd>}
-                                    {(editing || null) && <dd><textarea rows={6} onChange={this.saveAbout} value={user.about}/></dd>}
-
-                                    {(editing || user.website) && <dt >{_("Website")}</dt>}
-                                    {(!editing && user.website) && <dd >
-                                        <a target="_blank" href={cleaned_website}>{user.website}</a>
-                                    </dd>}
-                                    {(editing || null) &&
-                                        <dd><input type="url" value={user.website} onChange={this.saveWebsite} /></dd>
-                                    }
-
-
-                                    {(this.state.titles.length > 0) && <dt >{_("Titles")}</dt>}
-                                    {(this.state.titles.length > 0) && <dd className="trophies">
-                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
-                                    </dd>}
-
-                                    <dt>{_("Trophies")}</dt>
-                                    {(this.state.trophies.length > 0) && <dd className="trophies">
-                                        {this.state.trophies.map((trophy, idx) => (
-                                            <a key={idx} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
-                                                <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
-                                            </a>
-                                        ))}
-                                    </dd>}
-                                    {(this.state.trophies.length === 0) && <dd >
-                                        {_("None")}
-                                    </dd>}
-                                </dl>
+                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                                { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
                             </div>
                         </div>
-                        {((window["user"] && window["user"].is_moderator) || null) && <div >
-                            <b>Users with the same IP or Browser ID</b>
-                            <PaginatedTable
-                                className="aliases"
-                                name="aliases"
-                                source={`players/${this.user_id}/aliases/`}
-                                columns={[
-                                    {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
-                                    {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
-                                    {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
-                                    {header: "User",         className: "",           render: (X) => (
-                                        <span>
-                                            <Player user={X}/>
-                                            {(X.has_notes || null) && <i className="fa fa-file-text-o"/>}
-                                        </span>
-                                    )},
-                                    {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
-                                    {header: "Shadowbanned", className: "banned",     render: (X) => X.is_shadowbanned ? _("Yes") : _("No")},
-                                ]}
-                            />
-                            <textarea className="moderator-notes" ref="moderator_notes" onChange={this.updateModeratorNotes.bind(this)} placeholder="Moderator notes" value={this.state.moderator_notes}/>
-                        </div>}
+                        {/* }}} */}
+                        <div className="col-sm-3 user-details" style={{minWidth: "350px"}}>{/* User details {{{ */}
+                            {editing
+                                ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
+                                : <span className='username'><Player user={user}/></span>
+                            }
+                            {(!editing && user.name) && <div className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</div>}
 
-                        {((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
-                            {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
-                            {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
-                                    onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
-                            {(!this.state.is_friend && this.state.friend_request_sent) && <span  className="btn btn-success disabled">{_("Friend request sent")}</span>}
-                            {(!this.state.is_friend && this.state.friend_request_received) && <button  className="btn btn-success"
-                                    onClick={() => this.acceptFriend(this.user_id)}>{_("Accept Friend Request")}</button> }
-                            <button id="challenge" type="submit" className="btn btn-default" onClick={() => challenge(this.state.user.id)}>{_("Challenge to a Match")}</button>
-                            <button type="submit" className="btn btn-default" onClick={() => this.pm()}>{_("Send Message")}</button>
-                            {/* <a type="button" className="btn btn-default" href={`/library/${user.id}`}>{_("View Library")}</a> */}
-                            <div style={right}>
-                                <span className="fakelink" onClick={() => alertModerator({user: this.user_id})}>{_("Report User")}</span>
-                            </div>
-                        </div>}
-                    </Card>
-                    {(user.provisional_games_left || null) && <b >{interpolate(_("Note: This account is currently marked as provisional until {{user.provisional_games_left}} more games have been played"), {"user.provisional_games_left": user.provisional_games_left})}</b>}
+                            {(editing || null) &&
+                                <div>
+                                    <input className='name-input' placeholder={_("First") /* translators: First name */} value={user.first_name || ""} onChange={this.saveRealFirstName}/>
+                                    &nbsp;
+                                    <input className='name-input' placeholder={_("Last") /* translators: Last name */} value={user.last_name || ""} onChange={this.saveRealLastName}/>
+                                </div>
+                            }
+                            {(editing || null) && <div ><input type="checkbox" id="real-name-is-private" checked={user.real_name_is_private} onChange={this.saveRealNameIsPrivate}/> <label htmlFor="real-name-is-private">{_("Hide real name")}</label></div>}
+
+                            {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
+                            {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
+                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
 
 
-                    <h2>{_("Active Games")}</h2>
-                    <GameList list={this.state.active_games} player={user}/>
+                            {this.state.editing
+                              ? <div className='country-line'>
+                                    <Flag country={user.country} big/>
+                                    <select value={user.country} onChange={this.saveCountry}>
+                                        {sorted_locale_countries.map((C) => (
+                                            <option key={C.cc} value={C.cc}>{C.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                              : <div className='country-line'>
+                                    <Flag country={user.country} big/>
+                                    <span>{cc_to_country_name(user.country)}</span>
+                                </div>
+                            }
+
+
+                            {(!editing && user.website) &&
+                                <div ><a target="_blank" href={cleaned_website}>{user.website}</a></div>
+                            }
+                            {(editing || null) &&
+                                <div><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
+                            }
+
+
+                            {(this.state.titles.length > 0) &&
+                                <div className="trophies">
+                                    {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
+                                </div>
+                            }
+
+                            {(this.state.trophies.length > 0) &&
+                                <div className="trophies">
+                                    {this.state.trophies.map((trophy) => (
+                                        <a key={trophy.tournament_id} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
+                                            <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
+                                        </a>
+                                    ))}
+                                </div>
+                            }
+                        </div>
+                        {/* }}} */}
+                        <div className='col-sm-6'>{/* Ratings {{{ */}
+                            {this.renderRatingGrid()}
+                        </div>
+                        {/* }}} */}
+                    </div>
+
+                    {/* ((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
+                        {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
+                        {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
+                                onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
+                        {(!this.state.is_friend && this.state.friend_request_sent) && <span  className="btn btn-success disabled">{_("Friend request sent")}</span>}
+                        {(!this.state.is_friend && this.state.friend_request_received) && <button  className="btn btn-success"
+                                onClick={() => this.acceptFriend(this.user_id)}>{_("Accept Friend Request")}</button> }
+                        <button id="challenge" type="submit" className="btn btn-default" onClick={() => challenge(this.state.user.id)}>{_("Challenge to a Match")}</button>
+                        <button type="submit" className="btn btn-default" onClick={() => this.pm()}>{_("Send Message")}</button>
+                        <div style={right}>
+                            <span className="fakelink" onClick={() => alertModerator({user: this.user_id})}>{_("Report User")}</span>
+                        </div>
+                    </div> */}
                 </div>
-                {/* end left col */}
+                {(user.provisional_games_left || null) && <b >{interpolate(_("Note: This account is currently marked as provisional until {{user.provisional_games_left}} more games have been played"), {"user.provisional_games_left": user.provisional_games_left})}</b>}
 
-                <div className="col-sm-4">
+
+            </div>
+            {/* }}} */}
+
+            <div className='ratings-row'>
+                <div className='ratings-chart'>
+                    <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                </div>
+            </div>
+
+            {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
+            <GameList list={this.state.active_games} player={user}/>
+
+            <div className="row">
+                <div className='col-sm-8'>{/* {{{ */}
+                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
+                        <b>Users with the same IP or Browser ID</b>
+                        <PaginatedTable
+                            className="aliases"
+                            name="aliases"
+                            source={`players/${this.user_id}/aliases/`}
+                            columns={[
+                                {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
+                                {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
+                                {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
+                                {header: "User",         className: "",           render: (X) => (
+                                    <span>
+                                        <Player user={X}/>
+                                        {(X.has_notes || null) && <i className="fa fa-file-text-o"/>}
+                                    </span>
+                                )},
+                                {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
+                                {header: "Shadowbanned", className: "banned",     render: (X) => X.is_shadowbanned ? _("Yes") : _("No")},
+                            ]}
+                        />
+                        <textarea className="moderator-notes" ref="moderator_notes" onChange={this.updateModeratorNotes.bind(this)} placeholder="Moderator notes" value={this.state.moderator_notes}/>
+                    </Card>
+                    /* }}} */}
+
+                    <div className="row">{/* Game History {{{ */}
+                        <div className="col-sm-12">
+                            <h2>{_("Game History")}</h2>
+                            <Card>
+                            <div>{/* loading-container="game_history.settings().$loading" */}
+                                <div className="search">
+                                    <PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                </div>
+
+                                <PaginatedTable
+                                    className=""
+                                    ref="game_table"
+                                    name="game-history"
+                                    method="get"
+                                    source={`players/${this.user_id}/games/`}
+                                    filter={{
+                                        "source": "play",
+                                        "ended__isnull": false,
+                                    }}
+                                    orderBy={["-ended"]}
+                                    groom={game_history_groomer}
+                                    columns={[
+                                        {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                        {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
+                                        {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
+                                        {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
+                                        {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                        {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
+                                    ]}
+                                />
+                            </div>
+                            </Card>
+                        </div>
+                    </div>
+                    {/* }}} */}
+                    <div className="row">{/* Reviews and Demos{{{ */}
+                        <div className="col-sm-12">
+                            <h2>{_("Reviews and Demos")}</h2>
+                            <Card>
+                                <div>{/* loading-container="game_history.settings().$loading" */}
+                                    <div className="search">
+                                        <PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                    </div>
+
+                                    <PaginatedTable
+                                        className=""
+                                        ref="review_table"
+                                        name="review-history"
+                                        method="get"
+                                        source={`reviews/`}
+                                        filter={{
+                                            "owner_id": this.user_id,
+                                        }}
+                                        orderBy={["-created"]}
+                                        groom={review_history_groomer}
+                                        columns={[
+                                            {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                            {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
+                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
+                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                        ]}
+                                    />
+                                </div>
+                            </Card>
+                        </div>
+                    </div>
+                    {/* }}} */}
+                </div>
+                {/* }}} */}
+
+                <div className="col-sm-4">{/* {{{ */}
                     {(!(user.professional)) &&
                         <div >
-                        <h1>{_("Statistics")}</h1>
+
                         <Card>
+                            <div className='about-container'>
+                                {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
+                                {(editing || null) && <textarea className='about-editor' rows={6} onChange={this.saveAbout} value={user.about}/>}
+                            </div>
+                        </Card>
+
+                        <Card>
+                            <h3>{_("Statistics")}</h3>
                             <h5>{_("Ranked games played")}: {this.state.statistics.total}</h5>
                             <h5>{_("Won")}: {this.state.statistics.wins}  &nbsp;&nbsp; {_("Lost")}: {this.state.statistics.losses}  &nbsp;&nbsp; {_("Draws")}: {this.state.statistics.draws}</h5>
 
@@ -1098,77 +1162,10 @@ export class User extends Resolver<UserProperties, any> {
                         </div>}
                     </Card>
                 </div>
-                {/* end right col */}
+                {/* end right col }}} */}
             </div>
 
-            <div className="row">{/* Game History {{{ */}
-                <div className="col-sm-12">
-                    <h2>{_("Game History")}</h2>
-                    <Card>
-                    <div>{/* loading-container="game_history.settings().$loading" */}
-                        <div className="search">
-                            <PlayerAutocomplete onComplete={this.updateGameSearch}/>
-                        </div>
 
-                        <PaginatedTable
-                            className=""
-                            ref="game_table"
-                            name="game-history"
-                            method="get"
-                            source={`players/${this.user_id}/games/`}
-                            filter={{
-                                "source": "play",
-                                "ended__isnull": false,
-                            }}
-                            orderBy={["-ended"]}
-                            groom={game_history_groomer}
-                            columns={[
-                                {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
-                                {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
-                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
-                                {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
-                            ]}
-                        />
-                    </div>
-                    </Card>
-                </div>
-            </div>
-            {/* }}} */}
-
-            <div className="row">{/* Reviews and Demos{{{ */}
-                <div className="col-sm-12">
-                    <h2>{_("Reviews and Demos")}</h2>
-                    <Card>
-                        <div>{/* loading-container="game_history.settings().$loading" */}
-                            <div className="search">
-                                <PlayerAutocomplete onComplete={this.updateReviewSearch}/>
-                            </div>
-
-                            <PaginatedTable
-                                className=""
-                                ref="review_table"
-                                name="review-history"
-                                method="get"
-                                source={`reviews/`}
-                                filter={{
-                                    "owner_id": this.user_id,
-                                }}
-                                orderBy={["-created"]}
-                                groom={review_history_groomer}
-                                columns={[
-                                    {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                    {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                    {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                    {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
-                                ]}
-                            />
-                        </div>
-                    </Card>
-                </div>
-            </div>
-            {/* }}} */}
           </div>
         );
     }
@@ -1189,4 +1186,65 @@ export class User extends Resolver<UserProperties, any> {
         </div>
         );
     }
+
+
+    renderRatingGrid() {
+        return (
+            <div className='ratings-grid'>
+                <div className='title-row'>
+                    <span className='title'></span>
+                    {['overall', 'blitz', 'live', 'correspondence'].map((speed) => (
+                        <span key={speed} className='title'>
+                            {(speed === 'correspondence' || null) && <i className="speed-icon ogs-turtle"  title={_("Correspondence")} /> }
+                            {(speed === 'overall' || null) && <i className="speed-icon fa fa-circle-o" title={_("Overall")} /> }
+                            {(speed === 'blitz' || null) && <i className="speed-icon fa fa-bolt"  title={_("Blitz")} /> }
+                            {(speed === 'live' || null) && <i className="speed-icon fa fa-clock-o" title={_("Live")} /> }
+                        </span>
+                    ))}
+                </div>
+                {[0, 9, 13, 19].map((size) => (
+                    <div key={size} className='speed'>
+                        {size > 0
+                            ?  <span className='title'>
+                                 {size}x{size}
+                               </span>
+                            :  <span className='title'>
+                                 <i className="speed-icon fa fa-circle-o" title={_("Overall")} />
+                               </span>
+                        }
+
+                        {['overall', 'blitz', 'live', 'correspondence'].map((speed) => (
+                            <span key={speed} className='cell'>
+                                {this.renderRating(speed, size)}
+                            </span>
+                        ))}
+                    </div>
+                 ))
+                }
+            </div>
+        );
+    }
+    renderRating(speed, size) {
+        let r = getUserRating(this.state.user, speed, size);
+
+        /*
+        if (r.unset) {
+            return (<div>--</div>);
+        }
+        */
+
+        return (
+            <div className={'rating-entry ' + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
+                 onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
+                >
+                <div className='rating'>
+                    <span className='left'>{r.rating.toFixed(0)}</span>&plusmn;<span className='right'>{r.deviation.toFixed(0)}</span>
+                </div>
+                <div className='ranking'>
+                    <span className='left'>{r.partial_rank_label}</span>&plusmn;<span className='right'>{r.rank_deviation.toFixed(1)}</span>
+                </div>
+            </div>
+        );
+    }
+
 }

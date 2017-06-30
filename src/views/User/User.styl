@@ -16,6 +16,8 @@
  */
 
 .User {
+    padding-top: 3rem;
+
     dt, dd {
         margin-bottom: 0.5em;
     }
@@ -24,9 +26,7 @@
         margin: 0;
     }
 
-    dd {
-        display: inline-flex !important;
-        align-items: center;
+    div {
         .f32 {
             display: inline-flex !important;
             align-items: flex-end;
@@ -37,8 +37,44 @@
         }
     }
 
+    .name-input {
+        width: 6rem;
+    }
+
+    .dropzone-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .username-input {
+        font-size: font-size-big;
+    }
+
+    .username {
+        font-size: font-size-big;
+    }
+
+    .country-line {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
     .trophies {
-        flex-wrap: wrap;
+        height: 24px;
+        a {
+            height: 24px;
+        }
+    }
+
+    .clear-icon-container {
+        text-align: center;
     }
 
     #rating-history {
@@ -62,10 +98,6 @@
     }
 
     .edit-button {
-        //position: absolute;
-        //top: 0rem;
-        //right: 1rem;
-        margin-left: 1rem;
         .fa-save, .fa-pencil {
             padding-right: 0.3rem;
         }
@@ -75,7 +107,6 @@
         width: 7em;
         text-align: left;
         margin-right: 1em;
-        //display: inline-block;
     }
 
     td.banned, th.banned {
@@ -200,10 +231,120 @@
         text-align: right;
     }
 
+    .avatar-container {
+        padding-top: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        min-width: 128px;
+        padding-right: 0.5rem;
+        justify-content: space-between;
+    }
+
+    .avatar-subtext {
+        text-align: center;
+    }
+
+    .avatar-button {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .about-container {
+        display: flex;
+        justify-content: stretch;
+        align-items: stretch;
+        max-height: 13rem;
+    }
+
     .about-markdown {
+        overflow-y: auto;
         > div :first-child {
             margin-top: 0;
             padding-top: 0;
         }
     }
+
+    .ratings-grid {
+        display: table;
+        margin-right: 1rem;
+        .speed {
+            display: table-row;
+            .cell {
+                display: table-cell;
+                padding: 0.3rem;
+                text-align: center;
+            }
+        }
+        .title-row {
+            display: table-row;
+
+        }
+
+        .title {
+            display: table-cell;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle; 
+        }
+        .speed-icon {
+            width: 1.5rem !important;
+            text-align: center;
+        }
+
+        .rating-entry {
+            white-space: nowrap;
+            cursor: pointer;
+
+            border: 1px solid transparent;
+            border-radius: 0.3rem;
+
+            &.unset {
+                themed color shade3;
+            }
+
+            &.active {
+                themed background-color chart-area;
+                themed border-color chart-line;
+            }
+
+            &:hover {
+                themed background-color chart-area;
+            }
+
+            .rating {
+            }
+            .ranking {
+                font-size: font-size-small;
+            }
+
+            .left, .right {
+                display: inline-block;
+                margin: 0;
+                padding: 0;
+            }
+            .left {
+                width: 3rem;
+                padding-right: 0.3rem;
+            }
+            .right {
+                width: 3rem;
+                padding-left: 0.3rem;
+            }
+        }
+    }
+
+    .ratings-row {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+
+        .ratings-chart {
+            flex-grow: 1;
+        }
+    }
+
 }
