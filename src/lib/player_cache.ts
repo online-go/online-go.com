@@ -91,10 +91,8 @@ function lookup_by_username(player_username: string): Player | void {
 
 
 
-// Fetch a player's details from the server. The required_fields parameter is
-// deprecated and will be removed once it is no longer used anywhere. It currently
-// serves no function.
-function fetch(player_id: number, required_fields?: Array<string>): Promise<Player> {
+// Fetch a player's details from the server.
+function fetch(player_id: number): Promise<Player> {
     // If the player is a guest, then simply create the player on the fly and return
     // it. If the player is registered and in the cache, then return the cached copy.
     // If the player has a fetch pending, then return the pending fetch.

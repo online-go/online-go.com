@@ -74,18 +74,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     }}}
     resolve(player_id) {{{
         this.setState({resolved: false});
-        player_cache.fetch(
-            this.props.playerId,
-            [
-                "username",
-                "icon",
-                "rating",
-                "ranking",
-                "professional",
-                "country",
-                "ui_class",
-            ]
-        )
+        player_cache.fetch(this.props.playerId)
         .then((player) => {
             this.setState(Object.assign({resolved: true}, player));
         })

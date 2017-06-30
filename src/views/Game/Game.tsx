@@ -2165,7 +2165,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
                   if (engine.players[color].id) {
-                      player_cache.fetch(engine.players[color].id, ["country", "ui_class"]).then((player) => {
+                      player_cache.fetch(engine.players[color].id).then((player) => {
                           Object.assign(engine.players[color], player);
                       }).catch(ignore);
                   } else {
