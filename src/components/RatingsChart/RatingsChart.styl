@@ -1,0 +1,148 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.RatingsChart {
+    .chart__grid {
+        stroke: #e7eef4
+        opacity: 0.3
+    }
+
+    svg {
+        font: 10px sans-serif
+    }
+
+    .area {
+        fill: rgba(255,100,100,0.5)
+        clip-path: url("#clip")
+    }
+
+    .axis path, .axis line {
+        fill: none
+        stroke: #e7eef4
+        shape-rendering: crispEdges
+    }
+
+    .brush .extent {
+        stroke: #fff
+        fill-opacity 0.125
+        shape-rendering crispEdges
+    }
+
+
+    /*New*/
+    .chart {
+        text {
+            fill: #7F8FAF
+        }
+        &__line {
+            fill: none
+            stroke-width: 1.2px
+            clip-path: url("#clip")
+        }
+        &__rating--focus {
+            stroke-width: 2px
+            stroke #2980b9
+        }
+        &__deviation--focus {
+          stroke-width: 2px
+          stroke: red
+          opacity: 0.3
+        }
+        &__overlay {
+            opacity: 0
+            pointer-events: all
+        }
+        &__tooltip--rating {
+            fill: none
+            stroke: red
+        }
+        &__tooltip--deviation {
+            fill: none
+            stroke: red
+        }
+        &__bars {
+            //fill: #99C5DF
+            //fill: red
+            opacity: 1
+        }
+        &__range-selection {
+            text {
+                cursor: pointer
+                text-decoration: underline
+                fill: #2980B9
+            }
+        }
+    }
+
+    .deviation-area {
+        fill: #E6F6FE;
+        color: white;
+    }
+
+    .chart__axis--context {
+        text {
+            fill: #7F8FAF
+        }
+    }
+
+    .chart__axis--context .tick:nth-child(odd) {
+        display: none
+    }
+
+    .chart__axis--context path, .chart__axis--context line {
+        display: none
+    }
+
+    .chart__area {
+        fill: #E6F6FE
+        stroke: #3587BC
+    }
+
+    .extent {
+        fill: #E2F0FF
+        fill: #3587BC
+        fill-opacity: 0.3
+    }
+
+    .y.axis {
+        .tick {
+            text {
+                text-anchor: start !important
+                fill: #7F8FAF
+            }
+            line {
+                display: none
+            }
+        }
+        path {
+            display: none
+        }
+    }
+
+    .weak_wins {
+        fill: #A6CBA6;
+    }
+    .strong_wins {
+        fill: #0ECB0E;
+    }
+    .strong_losses {
+        fill: #C49191;
+    }
+    .weak_losses {
+        fill: #FD1111;
+    }
+}
