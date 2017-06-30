@@ -25,6 +25,7 @@ interface PlayerIconProps {
     user?: any;
     size?: number | string;
     className?: string;
+    icon?: string;
 }
 
 export function icon_size_url(url, size) {
@@ -47,20 +48,27 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
 
     constructor(props) {
         super(props);
-        let id = parseInt(props.id || props.user.id || props.user.user_id);
-        if (isNaN(id)) {
-            console.log("bailing", props);
-            this.state = { url: null };
-            return;
+        if (props.icon) {
+            this.state = {
+                url: icon_size_url(props.icon, props.size)
+            };
         }
+        else {
+            let id = parseInt(props.id || props.user.id || props.user.user_id);
+            if (isNaN(id)) {
+                console.log("bailing", props);
+                this.state = { url: null };
+                return;
+            }
 
-        let user = player_cache.lookup(id);
-        let size = props.size;
-        this.state = {
-            url: user && user.icon ? icon_size_url(user.icon, size) : null
-        };
-        if (!this.state.url) {
-            this.fetch(id, props);
+            let user = player_cache.lookup(id);
+            let size = props.size;
+            this.state = {
+                url: user && user.icon ? icon_size_url(user.icon, size) : null
+            };
+            if (!this.state.url) {
+                this.fetch(id, props);
+            }
         }
     }
     fetch(id, props) {
@@ -80,17 +88,24 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         this.mounted = false;
     }
     componentWillReceiveProps(next_props) {
-        let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
-        let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
-        if (current_id !== next_id) {
-            this.setState({url: null});
-            this.listener.remove();
+        if (next_props.icon) {
+            this.setState({
+                url: icon_size_url(next_props.icon, next_props.size)
+            });
+        }
+        else {
+            let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
+            let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
+            if (current_id !== next_id) {
+                this.setState({ url: null });
+                this.listener.remove();
 
-            if (!next_id || isNaN(next_id)) {
-                return;
+                if (!next_id || isNaN(next_id)) {
+                    return;
+                }
+
+                this.fetch(next_id, next_props);
             }
-
-            this.fetch(next_id, next_props);
         }
     }
     render() {

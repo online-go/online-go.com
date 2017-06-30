@@ -323,5 +323,4 @@ if (player_cache_debug_enabled) {
         fetch: fetch,
         update: update
     };
-
 }
