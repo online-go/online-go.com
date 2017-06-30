@@ -81,7 +81,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 "icon",
                 "rating",
                 "ranking",
-                "professional",
+                "pro",
                 "country",
                 "ui_class",
             ]
