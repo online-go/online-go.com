@@ -19,7 +19,7 @@ import {get} from "requests";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
 
-const player_cache_debug_enabled = true;
+const player_cache_debug_enabled = false;
 let cache_by_id: {[id: number]: RegisteredPlayer} = {};
 let cache_by_username: {[username: string]: RegisteredPlayer} = {};
 let active_fetches: {[id: number]: Promise<any>} = {};
@@ -53,16 +53,18 @@ function lookup_by_username(username: string): Player | undefined {
 
 
 
-// Fetch a player's details from the server.
+// Fetch a player's details from the server. The required_fields parameter is
+// deprecated and will be removed once it is no longer used anywhere. It currently
+// serves no function.
 function fetch(player_id: number, required_fields?: Array<string>): Promise<Player> {
     // If the player is a guest, then simply create the player on the fly and return
     // it. If the player is registered and in the cache, then return the cached copy.
     // If the player has a fetch pending, then return the pending fetch.
     if (player_id <= 0) {
-        return Promise.resolve({type: "Guest", id: player_id});
+        return Promise.resolve<Player>({type: "Guest", id: player_id});
     }
     if (player_id in cache_by_id && !incomplete_entries[player_id]) {
-        return Promise.resolve(cache_by_id[player_id]);
+        return Promise.resolve<Player>(cache_by_id[player_id]);
     }
     if (player_id in active_fetches) {
         return active_fetches[player_id];
@@ -163,7 +165,7 @@ function update(player: any, dont_overwrite?: boolean): Player {
         // If the data we're fed might be inconsistent with the current state
         // of the player in question, then the caller will set dont_overwrite
         // to be true. In this case, just return the new_style_player, as it
-        // will contain all th information the caller needs.
+        // will contain all the information the caller needs.
         if (!dont_overwrite) {
             return new_style_player;
         }
@@ -203,7 +205,7 @@ function update(player: any, dont_overwrite?: boolean): Player {
         // is (almost) always fully-populated and so usable wherever it is needed.
         // Note that there is potential for an infinite loop if the server were to
         // return incomplete data in response to a call to fetch. Hence, we have
-        // to check that a fetch of the data is not already in progress.
+        // to check that we have not already attempted to fill in the blanks.
         if (incomplete) {
             if (!incomplete_entries[new_style_player.id]) {
                 incomplete_entries[new_style_player.id] = true;
