@@ -203,12 +203,14 @@ export function fetch(player_id: number): Promise<Player> {
 // the === operator. No need to loop over its contents to look for changes. Note that
 // player1.is === player2.is is true if and only if player1 === player2.
 export function update(player: any, dont_overwrite?: boolean): Player {
-    if (player.id <= 0) {
+    // Work out which player we're referring to.
+    let player_id = player.id || player.player_id || player.user_id || 0;
+
+    if (player_id <= 0) {
         return {type: "Guest", id: player.id};
     }
     else {
-        // Work out which player we're referring to and fetch them from the cache.
-        let player_id = player.id || player.player_id || player.user_id;
+        // Fetch the player from the cache.
         let cached = cache_by_id[player_id] || {is: {}} as RegisteredPlayer;
 
         // Ensure that the rating is in a suitable form for the new system.
