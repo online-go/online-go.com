@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {browserHistory} from "react-router";
 import {shouldOpenNewTab, errorLogger} from "misc";
 import {rankString} from "rank_utils";
@@ -201,11 +200,9 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             return;
         }
         else {
-            let rectangle = ReactDOM.findDOMNode(this.refs.player).getBoundingClientRect();
-
             popover({
                 elt: (<PlayerDetails playerId={this.player_id} noextracontrols={this.props.noextracontrols} />),
-                at: {x: rectangle.left, y: rectangle.bottom},
+                below: this.refs.player,
                 minWidth: 240,
                 minHeight: 250,
             });
