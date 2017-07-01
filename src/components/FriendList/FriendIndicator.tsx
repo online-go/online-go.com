@@ -67,13 +67,13 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
         for (let friend of this.friends) {
             new_subscriptions[friend.id] =
                 this.subscriptions[friend.id] ||
-                new PlayerSubscription(friend.id, this.updateFriendCount);
+                new PlayerSubscription(friend.id, this.updateFriendCount).subscribe();
         }
 
         // Update the component.
         this.friends = new_style_friends;
         this.subscriptions = new_subscriptions;
-        this.setState({has_friends: !!this.friends.length, online_count: this.friends.length});
+        this.updateFriendCount();
 
         // Unsubscribe from lost friends. Weep softly and mourn.
         for (let friend of this.friends) {
@@ -85,7 +85,14 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
     }
 
     updateFriendCount = () => {
-        this.setState({online_count: this.friends.length});
+        let count = 0;
+        for (let friend of this.friends) {
+            count += (is_registered(friend) && friend.is.online) ? 1 : 0;
+        }
+        this.setState({
+            has_friends: this.friends.length > 0,
+            online_count: count
+        });
     }
 
     refresh() {

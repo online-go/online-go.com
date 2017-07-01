@@ -60,8 +60,9 @@ export class PlayerSubscription {
         }
     }
 
-    subscribe(): void {
+    subscribe(): PlayerSubscription {
         subscriptions[this.player_id][this.serial] = this.callback;
+        return this;
     }
 
     unsubscribe(): void {
