@@ -24,6 +24,7 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
+import {Subscription} from "pubsub";
 import {Player as PlayerType, RegisteredPlayer, is_guest, is_registered, player_name, player_attributes} from "data/Player";
 import {Rank, rank_short_string} from "data/Rank";
 
@@ -100,11 +101,11 @@ function update_state(continuation: (state: PlayerState) => void, player: Player
 // up a PlayerDetails box enabling more actions to be taken.
 export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
     private player_id: number;
-    private subscription: player_cache.PlayerSubscription | void;
+    private subscription: Subscription | void;
 
     constructor(props) {
         super(props);
-        this.setup(props, (state) => {this.state = state;});
+        this.setup(props, (state) => { this.state = state; });
     }
 
     componentWillReceiveProps(new_props) {
@@ -141,7 +142,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         // Set up the subscription to the player.
         if (!props.disableCacheUpdate) {
             let callback = update_state.bind(undefined, this.setState.bind(this));
-            this.subscription = new player_cache.PlayerSubscription(player_id, callback);
+            this.subscription = player_cache.player_subscription(player_id, callback);
         }
     }
 

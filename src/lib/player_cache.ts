@@ -17,6 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {get} from "requests";
+import {Publisher, Subscription, MultiSub} from "pubsub";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
 
@@ -30,55 +31,20 @@ export let nicknames: Array<string> = [];
 
 let active_fetches: {[player_id: number]: Promise<Player>} = {};
 
-let subscriptions: {[player_id: number]: {[serial: number]: SubscriptionCallback}} = {};
-let subscription_next_serial = 0;
-
 let new_player_ids: Array<number> | void;
 let players_online: {[player_id: number]: boolean} = {};
 
 
 
-// We can use a PlayerSubscription to ensure that we are informed when a Player
-// changes state.
-export type SubscriptionCallback = (this: void, player: Player) => void;
-
-export class PlayerSubscription {
-    private player_id: number;
-    private serial: number;
-    private callback: SubscriptionCallback;
-
-    constructor(player_id: number, callback: SubscriptionCallback) {
-        this.player_id = player_id;
-        this.serial = subscription_next_serial++;
-        this.callback = callback;
-
-        if (!(player_id in subscriptions)) {
-            subscriptions[player_id] = {};
-        }
-        if (!(player_id in cache_by_id)) {
-            fetch(player_id);
-        }
+let publisher = new Publisher<Player>((player) => player.id.toString());
+export function player_subscription(player_id: number, callback: (player: Player) => void): Subscription {
+    if (!lookup_by_id(player_id)) {
+        fetch(player_id);
     }
-
-    subscribe(): PlayerSubscription {
-        subscriptions[this.player_id][this.serial] = this.callback;
-        return this;
-    }
-
-    unsubscribe(): void {
-        delete subscriptions[this.player_id][this.serial];
-    }
+    return publisher.subscription(player_id.toString(), callback);
 }
-
-// Notify anyone who's listening that a player has changed state.
-function notify_subscribers(player_id) {
-    let player = cache_by_id[player_id];
-    let player_subscriptions = subscriptions[player_id];
-    if (player && player_subscriptions) {
-        for (let serial in player_subscriptions) {
-            player_subscriptions[serial](player);
-        }
-    }
+export function player_multiple_subscription(callback: (player: Player) => void): MultiSub<Player> {
+    return new MultiSub(publisher, callback);
 }
 
 
@@ -108,7 +74,7 @@ comm_socket.on("user/state", (states) => {
                 else {
                     delete player.is.online;
                 }
-                notify_subscribers(player_id);
+                publisher.publish(cache_by_id[player_id]);
             }
         }
     }
@@ -118,7 +84,7 @@ comm_socket.on("disconnect", () => {
     for (let player_id in cache_by_id) {
         if (cache_by_id[player_id].is.online) {
             delete cache_by_id[player_id].is.online;
-            notify_subscribers(player_id);
+            publisher.publish(cache_by_id[player_id]);
         }
     }
 });
@@ -360,7 +326,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // If the cached information has changed, then inform everyone who is
         // subscribed to the player.
         if (changed) {
-            notify_subscribers(cached.id);
+            publisher.publish(cached);
         }
 
         // If the player is new to us, then request to be kept informed
@@ -392,9 +358,6 @@ if (player_cache_debug_enabled) {
         nicknames: nicknames,
 
         active_fetches: active_fetches,
-        subscriptions: subscriptions,
-
-        PlayerSubscription: PlayerSubscription,
 
         lookup: lookup,
         lookup_by_id: lookup_by_id,

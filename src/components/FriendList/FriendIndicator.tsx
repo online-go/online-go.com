@@ -19,11 +19,12 @@ import * as React from "react";
 import data from "data";
 import {get} from "requests";
 import * as player_cache from "player_cache";
-import {PlayerSubscription} from "player_cache";
+import {player_subscription} from "player_cache";
 import {FriendList} from "./FriendList";
 import {UIPush} from "UIPush";
 import {KBShortcut} from "KBShortcut";
 import {Player, is_registered} from "data/Player";
+import {Subscription} from "pubsub";
 
 
 
@@ -37,7 +38,7 @@ interface FriendIndicatorState {
 
 export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorState> {
     friends: Array<Player> = [];
-    subscriptions: {[player_id: number]: PlayerSubscription} = {};
+    subscriptions: {[player_id: number]: Subscription} = {};
 
     constructor(props) {
         super(props);
@@ -62,12 +63,12 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
         }
 
         // Calculate the new set of subscriptions.
-        let new_subscriptions: {[player_id: number]: PlayerSubscription} = {};
-        let old_subscriptions: {[player_id: number]: PlayerSubscription} = this.subscriptions;
+        let new_subscriptions: {[player_id: number]: Subscription} = {};
+        let old_subscriptions: {[player_id: number]: Subscription} = this.subscriptions;
         for (let friend of this.friends) {
             new_subscriptions[friend.id] =
                 this.subscriptions[friend.id] ||
-                new PlayerSubscription(friend.id, this.updateFriendCount).subscribe();
+                player_subscription(friend.id, this.updateFriendCount).subscribe();
         }
 
         // Update the component.
