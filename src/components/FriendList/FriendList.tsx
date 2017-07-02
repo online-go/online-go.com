@@ -43,7 +43,7 @@ export class FriendList extends React.PureComponent<{}, any> {
         this.subscribe = new player_cache.Subscription(this.resortFriends);
     }
 
-    updateFriends = (friends) => {
+    updateFriends = (friends: Array<any>) => {
         let new_style_friends = friends.map((friend) => player_cache.update(friend));
         new_style_friends.sort(by_status);
         this.subscribe.to(new_style_friends);

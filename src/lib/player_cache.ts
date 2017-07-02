@@ -38,7 +38,19 @@ let players_online: {[player_id: number]: boolean} = {};
 let publisher = new Publisher<number, Player>((player) => {
     return typeof player === "number" ? player.toString() : player.id.toString();
 });
-export class Subscription extends publisher.Subscription { }
+export class Subscription extends publisher.Subscription {
+    to(players: Array<number | Player>) {
+        super.to(players);
+        for (let player of players) {
+            if (typeof player === "number") {
+                fetch(player);  // The fetch will publish the new details
+            }                   // as soon as they arrive.
+            else {
+                fetch(player.id);
+            }
+        }
+    }
+}
 
 
 // Perform updates of the player.is.online attribute as instructed by
