@@ -18,10 +18,11 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
-import online_status from "online_status";
 import data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
+import {Player as PlayerType, is_registered, by_username} from "data/Player";
+import * as player_cache from "player_cache";
 
 
 interface FriendListProperties {
@@ -31,46 +32,37 @@ interface FriendListProperties {
 }
 
 export class FriendList extends React.PureComponent<{}, any> {
+    subscribe: player_cache.Subscription;
+
     constructor(props) {
         super(props);
         this.state = {
             friends: [],
             resolved: false
         };
+        this.subscribe = new player_cache.Subscription(this.resortFriends);
     }
 
     updateFriends = (friends) => {
+        let new_style_friends = friends.map((friend) => player_cache.update(friend));
+        new_style_friends.sort(by_status);
+        this.subscribe.to(new_style_friends);
         this.setState({
-            friends: this.sortFriends(friends),
+            friends: new_style_friends,
             resolved: true
         });
     }
 
     componentDidMount() {{{
         data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
-        online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
-        online_status.event_emitter.off("users-online-updated", this.resortFriends);
+        this.subscribe.to([]);
     }}}
     resortFriends = () => {
-        this.setState({"friends": this.sortFriends(this.state.friends)});
+        this.state.friends.sort(by_status);
+        this.setState({"friends": this.state.friends});
     }
-    sortFriends(lst) {{{
-        let ret = [].concat(lst);
-        ret.sort((a, b) => {
-            let a_online = online_status.is_player_online(a.id);
-            let b_online = online_status.is_player_online(b.id);
-            if (a_online && !b_online) {
-                return -1;
-            }
-            if (b_online && !a_online) {
-                return 1;
-            }
-            return a.username.localeCompare(b.username);
-        });
-        return ret;
-    }}}
     render() {
         if (!this.state.resolved) {
             return null;
@@ -91,3 +83,10 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 }
 
+function by_status(a: PlayerType, b: PlayerType): number {
+    let result = 0;
+    if (is_registered(a) && is_registered(b)) {
+        result = (b.is.online ? 1 : 0) - (a.is.online ? 1 : 0);
+    }
+    return result || by_username(a, b);
+}
