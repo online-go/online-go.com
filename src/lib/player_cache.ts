@@ -17,7 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {get} from "requests";
-import {Publisher, Subscription, MultiSub} from "pubsub";
+import {Publisher} from "pubsub";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
 
@@ -35,18 +35,10 @@ let new_player_ids: Array<number> | void;
 let players_online: {[player_id: number]: boolean} = {};
 
 
-
-let publisher = new Publisher<Player>((player) => player.id.toString());
-export function player_subscription(player_id: number, callback: (player: Player) => void): Subscription {
-    if (!lookup_by_id(player_id)) {
-        fetch(player_id);
-    }
-    return publisher.subscription(player_id.toString(), callback);
-}
-export function player_multiple_subscription(callback: (player: Player) => void): MultiSub<Player> {
-    return new MultiSub(publisher, callback);
-}
-
+let publisher = new Publisher<number, Player>((player) => {
+    return typeof player === "number" ? player.toString() : player.id.toString();
+});
+export class Subscription extends publisher.Subscription { }
 
 
 // Perform updates of the player.is.online attribute as instructed by

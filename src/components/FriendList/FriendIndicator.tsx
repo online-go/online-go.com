@@ -19,12 +19,10 @@ import * as React from "react";
 import data from "data";
 import {get} from "requests";
 import * as player_cache from "player_cache";
-import {player_subscription} from "player_cache";
 import {FriendList} from "./FriendList";
 import {UIPush} from "UIPush";
 import {KBShortcut} from "KBShortcut";
 import {Player, is_registered} from "data/Player";
-import {Subscription} from "pubsub";
 
 
 
@@ -38,7 +36,7 @@ interface FriendIndicatorState {
 
 export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorState> {
     friends: Array<Player> = [];
-    subscriptions: {[player_id: number]: Subscription} = {};
+    subscribe: player_cache.Subscription;
 
     constructor(props) {
         super(props);
@@ -47,42 +45,27 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
             online_count: 0,
             show_friend_list: false
         };
+        this.subscribe = new player_cache.Subscription(this.updateFriendCount);
         friend_indicator_singleton = this;
     }
 
-    componentWillMount() {
+    componentDidMount() {
         data.watch("friends", this.updateFriends);
         this.refresh();
     }
 
+    componentWillUnmount() {
+        this.subscribe.to([]);
+    }
+
     updateFriends = (friends: Array<any>) => {
         // Convert the server's data to the new format.
-        let new_style_friends: Array<Player> = [];
-        for (let friend of friends) {
-            new_style_friends.push(player_cache.update(friend));
-        }
-
-        // Calculate the new set of subscriptions.
-        let new_subscriptions: {[player_id: number]: Subscription} = {};
-        let old_subscriptions: {[player_id: number]: Subscription} = this.subscriptions;
-        for (let friend of this.friends) {
-            new_subscriptions[friend.id] =
-                this.subscriptions[friend.id] ||
-                player_subscription(friend.id, this.updateFriendCount).subscribe();
-        }
+        let new_style_friends = friends.map((friend) => player_cache.update(friend));
 
         // Update the component.
+        this.subscribe.to(new_style_friends);
         this.friends = new_style_friends;
-        this.subscriptions = new_subscriptions;
         this.updateFriendCount();
-
-        // Unsubscribe from lost friends. Weep softly and mourn.
-        for (let friend of this.friends) {
-            delete old_subscriptions[friend.id];
-        }
-        for (let player_id in old_subscriptions) {
-            old_subscriptions[player_id].unsubscribe();
-        }
     }
 
     updateFriendCount = () => {

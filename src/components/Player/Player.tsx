@@ -24,7 +24,6 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
-import {Subscription} from "pubsub";
 import {Player as PlayerType, RegisteredPlayer, is_guest, is_registered, player_name, player_attributes} from "data/Player";
 import {Rank, rank_short_string} from "data/Rank";
 
@@ -101,25 +100,33 @@ function update_state(continuation: (state: PlayerState) => void, player: Player
 // up a PlayerDetails box enabling more actions to be taken.
 export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
     private player_id: number;
-    private subscription: Subscription | void;
+    private subscribe: player_cache.Subscription;
 
     constructor(props) {
         super(props);
+
+        let callback: (player: PlayerType) => void;
+        if (props.disableCacheUpdate) {
+            callback = (player) => undefined;
+        }
+        else {
+            callback = update_state.bind(undefined, this.setState.bind(this));
+        }
+        this.subscribe = new player_cache.Subscription(callback);
+
         this.setup(props, (state) => { this.state = state; });
     }
 
     componentWillReceiveProps(new_props) {
-        this.subscription && this.subscription.unsubscribe();
         this.setup(new_props, this.setState.bind(this));
-        this.subscription && this.subscription.subscribe();
     }
 
     componentDidMount() {
-        this.subscription && this.subscription.subscribe();
+        this.subscribe.to([this.player_id]);
     }
 
     componentWillUnmount() {
-        this.subscription && this.subscription.unsubscribe();
+        this.subscribe.to([]);
     }
 
     // Perform the setup after the component has been created or received new props.
@@ -135,15 +142,10 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             player = player_cache.lookup_by_id(player_id);
         }
         this.player_id = player_id;
+        this.subscribe.to([this.player_id]);
 
         // Set up the state of the component.
         update_state(how_to_update, player);
-
-        // Set up the subscription to the player.
-        if (!props.disableCacheUpdate) {
-            let callback = update_state.bind(undefined, this.setState.bind(this));
-            this.subscription = player_cache.player_subscription(player_id, callback);
-        }
     }
 
 
