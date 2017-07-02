@@ -25,7 +25,7 @@ import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
-import online_status from "online_status";
+import {Player as PlayerType, is_registered} from "data/Player";
 
 let last_id: number = 0;
 
@@ -70,14 +70,13 @@ class PrivateChat {
             this.player.username = username;
         }
 
-        online_status.subscribe(user_id, (_, tf) => {
-            if (tf) {
-                this.player_dom.removeClass("offline").addClass("online");
+        new player_cache.Subscription((player) => {
+            if (is_registered(player) && player.is.online) {
+                this.player_dom.addClass("online");
             } else {
-                this.player_dom.addClass("offline").removeClass("online");
+                this.player_dom.removeClass("online");
             }
-        });
-
+        }).to([user_id]);
 
         player_cache.fetch(this.user_id)
         .then((player: any) => {

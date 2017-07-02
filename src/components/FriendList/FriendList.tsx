@@ -61,7 +61,7 @@ export class FriendList extends React.PureComponent<{}, any> {
     }}}
     resortFriends = () => {
         this.state.friends.sort(by_status);
-        this.setState({"friends": this.state.friends});
+        this.forceUpdate();
     }
     render() {
         if (!this.state.resolved) {
