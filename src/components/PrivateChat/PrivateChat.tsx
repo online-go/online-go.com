@@ -64,7 +64,7 @@ class PrivateChat {
         comm_socket.send("chat/pm/load", user_id);
 
         //.append(makePlayerLink(['online', 'nolink'], this))
-        this.player_dom = $("<span class='user Player nolink'>...</span>");
+        this.player_dom = $("<span class='user Player nolink show-online'>...</span>");
         if (username) {
             this.player_dom.text(username);
             this.player.username = username;
