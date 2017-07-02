@@ -55,7 +55,7 @@ export function make_amateur_rank(rating: number): AmateurRank {
     }
 }
 
-// A professional's ranking is assigned to them rahter than calculated.
+// A professional's ranking is assigned to them rather than calculated.
 export function make_professional_rank(dan: number): ProfessionalRank {
     return {level: dan, type: "Pro"};
 }
