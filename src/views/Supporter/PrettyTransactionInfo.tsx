@@ -51,7 +51,6 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
                     break;
 
                 case 'subscription_charged_successfully':
-                    message = interpolate(_(`There was a problem processing your support on {{date}}`), {date: date});
                     break;
 
                 case 'subscription_charged_unsuccessfully':

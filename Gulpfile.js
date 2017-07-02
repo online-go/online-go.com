@@ -205,6 +205,7 @@ function dev_server(done) {
         console.info(`GET ${req.path}`);
 
         let _index = fs.readFileSync('src/index.html', {encoding: 'utf-8'});
+        let supported_langages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
 
         let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
             switch (parameter) {
@@ -216,6 +217,7 @@ function dev_server(done) {
                 case 'OG_URL': return '';
                 case 'OG_IMAGE': return '';
                 case 'OG_DESCRIPTION': return '';
+                case 'SUPPORTED_LANGUAGES': return JSON.stringify(supported_langages);
 
                 case 'RELEASE': return '';
                 case 'VERSION': return '';

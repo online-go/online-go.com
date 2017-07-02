@@ -20,6 +20,7 @@ import {browserHistory} from "react-router";
 import {shouldOpenNewTab, errorLogger} from "misc";
 import {rankString} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
+import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";

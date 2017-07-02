@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
-import {del, post, get} from "requests";
+import {del, put, post, get} from "requests";
 import {errorAlerter} from "misc";
 import data from "data";
 import {LineText} from "misc-ui";
@@ -66,6 +66,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             this.state = {
                 loading: true,
                 processing: false,
+                show_update_cc: false,
                 amount: 5.0,
                 amount_step: 4,
 
@@ -136,7 +137,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         });
 
     }}}
-
 
     updateCardNumber = (ev) => {{{
         let groomed = ev.target.value;
@@ -236,18 +236,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .catch(errorAlerter);
     }}}
-    processCC = () => {{{
-        let amount = this.state.amount;
-
-        if (amount < 1.0) {
-            return;
-        }
-
+    validateCC = () => {{{
         let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
 
         if (ccnum.length < 12 || ccnum.length > 19 || !luhnChk(ccnum)) {
             this.refs.ccnum.focus();
-            return;
+            return false;
         }
 
         let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
@@ -258,41 +252,58 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             || (parseInt("20" + m[2]) === (new Date().getFullYear()) && parseInt(m[1]) - 1 < (new Date().getMonth()))
         ) {
             this.refs.ccexp.focus();
-            return;
+            return false;
         }
         exp_month = parseInt(m[1]);
         exp_year = parseInt("20" + m[2]);
 
         if (this.state.cvc.length < 3) {
             this.refs.cccvc.focus();
-            return;
+            return false;
         }
 
         if (this.state.fname.trim().length < 1) {
             this.refs.fname.focus();
-            return;
+            return false;
         }
         if (this.state.lname.trim().length < 1) {
             this.refs.lname.focus();
-            return;
+            return false;
         }
 
         if (this.state.email.trim().length < 1) {
             this.refs.email.focus();
-            return;
+            return false;
         }
 
         if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/.test(this.state.email)) {
             this.refs.email.focus();
+            return false;
+        }
+
+        return true;
+    }}}
+    processCC = () => {{{
+        let amount = this.state.amount;
+
+        if (amount < 1.0) {
             return;
         }
 
+        if (!this.validateCC()) {
+            return;
+        }
 
         if (this.state.processing) {
             console.log("Already clicked");
             return;
         }
         this.setState({processing: true});
+
+        let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
+        let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
+        let exp_month = parseInt(m[1]);
+        let exp_year = parseInt("20" + m[2]);
 
         this.createPaymentAccountAndMethod("braintree", {
             "fname": this.state.fname.trim(),
@@ -311,6 +322,38 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 window.location.reload();
             })
             .catch(errorAlerter);
+        })
+        .catch(errorAlerter);
+    }}}
+    updateCC = () => {{{
+        if (!this.validateCC()) {
+            return;
+        }
+
+        if (this.state.processing) {
+            console.log("Already clicked");
+            return;
+        }
+        this.setState({processing: true});
+
+        let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
+        let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
+        let exp_month = parseInt(m[1]);
+        let exp_year = parseInt("20" + m[2]);
+
+        return put(`me/payment_methods/${this.state.payment_method.id}` , {
+            "first_name": this.state.fname.trim(),
+            "last_name": this.state.lname.trim(),
+            "email": this.state.email,
+            "number": braintree.encrypt(ccnum),
+            "expiration_month": braintree.encrypt(exp_month),
+            "expiration_year": braintree.encrypt(exp_year),
+            "cvv": braintree.encrypt(this.state.cvc),
+        })
+        .then((res) => {
+            //console.log(res);
+            //this.setState({processing: false});
+            window.location.reload();
         })
         .catch(errorAlerter);
     }}}
@@ -447,38 +490,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                 <h3>{`$${this.state.amount.toFixed(2)}/` + _("month")}</h3>
                             </div>
 
+                            {this.cc_form()}
 
-                            <div className="cc-form">
-                                <form acceptCharset="UTF-8" action="/payment" className="cardInfo" role="form" method="post" autoComplete="on">
-                                    <div className="cc-number">
-                                        <input ref="ccnum" name="cc-number" type="tel" className="cc-number" placeholder="•••• •••• •••• ••••"
-                                            autoComplete="cc-number" required={true}
-                                            value={this.state.card_number_spaced} onChange={this.updateCardNumber}/>
-                                    </div>
-
-                                    <div className="exp-cvc">
-                                        <input ref="ccexp" name="cc-exp" type="tel" className="cc-exp" placeholder="MM / YY" autoComplete="cc-exp" required={true}
-                                            value={this.state.card_exp_spaced} onChange={this.updateExp}/>
-                                        <input ref="cccvc" name="cvc" type="tel" className="cc-cvc" placeholder={_("CVC")} autoComplete="cc-csc" required={true}
-                                            value={this.state.cvc} onChange={this.updateCvc}/>
-                                    </div>
-
-                                    <div className="name">
-                                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("First Name")} autoComplete="fname" required={true}
-                                            value={this.state.fname} onChange={this.updateFname}/>
-                                        <input ref="lname" name="lname" type="text" className="lname" placeholder={_("Last Name")} autoComplete="lname" required={true}
-                                            value={this.state.lname} onChange={this.updateLname}/>
-                                    </div>
-                                    <div className="email">
-                                        <input ref="email" name="email" type="email" className="fname" placeholder={_("Email")} autoComplete="email" required={true}
-                                            value={this.state.email} onChange={this.updateEmail}/>
-                                    </div>
-                                </form>
-
-                                <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
-                                    {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${this.state.amount.toFixed(2)}`})}
-                                </button>
-                            </div>
 
                             <LineText>{_("or")}</LineText>
 
@@ -523,9 +536,22 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <PrettyTransactionInfo transaction={this.state.last_transaction}/>
                                 </div>
 
-                                <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
-                                    {_("Cancel this support")}
-                                </button>
+
+                                {(this.state.show_update_cc || null) &&
+                                    this.cc_form(true)
+                                }
+
+                                {(!this.state.show_update_cc || null) &&
+                                    <button className="btn primary" style={{marginTop: "3em"}} onClick={() => this.setState({show_update_cc: true})}  disabled={this.state.processing}>
+                                        {_("Update card information")}
+                                    </button>
+                                }
+
+                                {(!this.state.show_update_cc || null) &&
+                                    <button className="btn" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
+                                        {_("Cancel this support")}
+                                    </button>
+                                }
                             </div>
                         }
 
@@ -543,7 +569,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <PrettyTransactionInfo transaction={this.state.last_transaction}/>
                                 </div>
 
-                                <button className="btn btn-danger btn-sm" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
+                                <button className="btn" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
                                     {_("Cancel this support")}
                                 </button>
                             </div>
@@ -554,6 +580,49 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         </div>
         );
     }
+
+    cc_form(update?:boolean) {
+        return (
+            <div className="cc-form">
+                <form acceptCharset="UTF-8" action="/payment" className="cardInfo" role="form" method="post" autoComplete="on">
+                    <div className="cc-number">
+                        <input ref="ccnum" name="cc-number" type="tel" className="cc-number" placeholder="•••• •••• •••• ••••"
+                            autoComplete="cc-number" required={true}
+                            value={this.state.card_number_spaced} onChange={this.updateCardNumber}/>
+                    </div>
+
+                    <div className="exp-cvc">
+                        <input ref="ccexp" name="cc-exp" type="tel" className="cc-exp" placeholder="MM / YY" autoComplete="cc-exp" required={true}
+                            value={this.state.card_exp_spaced} onChange={this.updateExp}/>
+                        <input ref="cccvc" name="cvc" type="tel" className="cc-cvc" placeholder={_("CVC")} autoComplete="cc-csc" required={true}
+                            value={this.state.cvc} onChange={this.updateCvc}/>
+                    </div>
+
+                    <div className="name">
+                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("First Name")} autoComplete="fname" required={true}
+                            value={this.state.fname} onChange={this.updateFname}/>
+                        <input ref="lname" name="lname" type="text" className="lname" placeholder={_("Last Name")} autoComplete="lname" required={true}
+                            value={this.state.lname} onChange={this.updateLname}/>
+                    </div>
+                    <div className="email">
+                        <input ref="email" name="email" type="email" className="fname" placeholder={_("Email")} autoComplete="email" required={true}
+                            value={this.state.email} onChange={this.updateEmail}/>
+                    </div>
+                </form>
+
+                {update
+                    ? <button className="primary" onClick={this.updateCC} disabled={this.state.processing}>
+                        {_(`Save new card information`)}
+                      </button>
+                    : <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
+                        {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${this.state.amount.toFixed(2)}`})}
+                      </button>
+                }
+            </div>
+        );
+    }
+
+
 }
 
 

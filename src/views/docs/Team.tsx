@@ -66,23 +66,16 @@ export class Team extends React.PureComponent<{}, any> {
         let se = getLanguageFlag("swedish", country, "se");
 
         let moderators = [
-            //{'id': 57612, 'username': 'Franzisa', 'country': ['de', 'fr'], 'languages': [ de,fr,en ]},
-            //{'id': 914, 'username': 'pathogenix', 'country': ['gb'], 'languages': [en]},
-            {"id": 784, "username": "mlopezviedma", "country": ["ar"], "languages": [es, en]},
-            {"id": 781, "username": "crodgers", "country": ["us"], "languages": [en]},
-            //{'id': 963, 'username': 'thouis', 'country': ['us'], 'languages': [fr, en]},
-            {"id": 69627, "username": "xhu98", "country": ["us"], "languages": [cn, en]},
-            {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
-            {"id": 1, "username": "anoek", "country": ["us"], "languages": [en]},
-
-            //{'id': 444, 'username': 'calantir', 'country': ['us'], 'languages': [en]},
-            {"id": 52, "username": "trohde", "country": ["de"], "languages": [de, en]},
-            //{'id': 94496, 'username': 'tinuviel', 'country': ['us'], 'languages': [en]},
-            //{'id': 1367, 'username': 'Fairgo', 'country': ['us'], 'languages': [hi, en]},
-            {"id": 64817, "username": "mark5000", "country": ["us"], "languages": [en]},
-            {"id": 66091, "username": "Revar Isavé", "country": ["de"], "languages": [de, gb]},
-            {"id": 441, "username": "VincentCB", "country": ["ca"], "languages": [en, fr]},
-            {"id": 55415, "username": "sousys", "country": ["se"], "languages": [se, en]},
+            {"id": 784   , "username": "mlopezviedma" , "country": ["ar"] , "languages": [es, en]} ,
+            {"id": 781   , "username": "crodgers"     , "country": ["us"] , "languages": [en]} ,
+            {"id": 69627 , "username": "xhu98"        , "country": ["us"] , "languages": [cn, en]} ,
+            {"id": 4     , "username": "matburt"      , "country": ["us"] , "languages": [en]} ,
+            {"id": 1     , "username": "anoek"        , "country": ["us"] , "languages": [en]} ,
+            {"id": 52    , "username": "trohde"       , "country": ["de"] , "languages": [de, en]} ,
+            {"id": 64817 , "username": "mark5000"     , "country": ["us"] , "languages": [en]} ,
+            {"id": 66091 , "username": "Revar Isavé"  , "country": ["de"] , "languages": [de, gb]} ,
+            {"id": 441   , "username": "VincentCB"    , "country": ["ca"] , "languages": [en, fr]} ,
+            {"id": 55415 , "username": "sousys"       , "country": ["se"] , "languages": [se, en]} ,
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
@@ -102,31 +95,31 @@ export class Team extends React.PureComponent<{}, any> {
 
                     <h3>{_("Moderators")}</h3>
                     {moderators.map((u, idx) => (
-                        <div key={idx} >
+                        <div key={u.id} >
                             <span style={{display: "inline-block", width: "3em"}}>
-                                {u.country.map((c, idx) => (<Flag key={idx} country={c}/>))}
+                                {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
                                 <Player user={u} />
                             </span>
-                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={idx} ><Flag country={c}/></span>) )}
+                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                         </div>
                     ))}
                     <h3>{_("Lead Developers")}</h3>
                     {developers.map((u, idx) => (
-                        <div key={idx}>
+                        <div key={u.id}>
                             <span style={{display: "inline-block", width: "3em"}}>
-                                {u.country.map((c, idx) => (<span key={idx} ><Flag country={c}/></span>) )}
+                                {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
                                 <Player user={u} />
                             </span>
-                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={idx} ><Flag country={c}/></span>))}
+                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
                         </div>
                     ))}
                     <h3>{_("Github Contributors")}</h3>
                     {this.state.contributors.map((u, idx) => (
-                        <div key={idx}>
+                        <div key={u.id}>
                             <span style={{display: "inline-block", width: "3em"}}>
                                 <img src={u.avatar_url} width={15} height={15}/>
                             </span>

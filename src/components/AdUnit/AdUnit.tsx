@@ -17,8 +17,10 @@
 
 import * as React from "react";
 import {Link} from "react-router";
+import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import data from "data";
+import {FAdBlock} from 'fab';
 
 declare var factorem;
 
@@ -39,6 +41,7 @@ interface AdUnitProperties {
 
 
 const never_load_ads = false;
+let ads_are_blocked = false;
 let zone_end = null;
 let refresh_delay_timeout = null;
 let rotate_timer = null;
@@ -49,11 +52,13 @@ if (never_load_ads) {
 
 
 function should_show_ads() {
-    if (data.get("user").supporter && data.get("user").id !== 1) {
+    let user = data.get("user");
+
+    if (user && (user.supporter && user.id !== 1)) {
         return false;
     }
 
-    if (data.get("user").is_superuser || data.get("user").is_moderator) {
+    if (user && (user.is_superuser || user.is_moderator)) {
         return data.get("ad-override", false);
     }
 
@@ -61,7 +66,7 @@ function should_show_ads() {
         return false;
     }
 
-    if (data.get("user").anonymous) {
+    if (!user || user.anonymous) {
         return true;
     }
 
@@ -71,6 +76,7 @@ function should_show_ads() {
 
 function refresh_ads() {
     if (!should_show_ads()) {
+        termination_socket.emit('ad', 'supporter');
         return;
     }
 
@@ -89,8 +95,22 @@ function refresh_ads() {
         $(document.body).append(zone_end);
     }
 
+
     refresh_delay_timeout = setTimeout(() => {
+        if (ads_are_blocked) {
+            try {
+                termination_socket.emit('ad', 'blocked');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         if (window["factorem"]) {
+            try {
+                termination_socket.emit('ad', 'refresh');
+            } catch (e) {
+                console.error(e);
+            }
             //console.info("Refreshing ads. Current adZones ", factorem.adZones);
             //factorem.minimumRefresh = 0;
             factorem.refreshAds([1, 2], true);
@@ -98,6 +118,12 @@ function refresh_ads() {
             clearTimeout(failsafe);
             refresh_delay_timeout = null;
             return;
+        }
+
+        try {
+            termination_socket.emit('ad', 'first');
+        } catch (e) {
+            console.error(e);
         }
 
         let script = document.createElement("script");
@@ -114,9 +140,9 @@ function refresh_ads() {
         script.onload = () => {
             clearTimeout(failsafe);
             refresh_delay_timeout = null;
-            console.info("CDM Loaded");
+            //console.info("CDM Loaded");
             setTimeout(() => {
-                console.info("Ad zones: ", factorem.adZones);
+                //console.info("Ad zones: ", factorem.adZones);
             }, 100);
         };
         document.head.appendChild(script);
@@ -172,4 +198,40 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
             </div>
         );
     }
+}
+
+
+
+function set_fab(state) {
+    if (termination_socket.connected) {
+        termination_socket.emit('adblock', state);
+    }
+    termination_socket.on('connect', () => {
+        termination_socket.emit('adblock', state);
+    });
+}
+
+
+if (should_show_ads()) {
+    let fab = new FAdBlock({
+        checkOnLoad: true,
+        resetOnEnd: true,
+    });
+    let timeout = setTimeout(() => {
+        set_fab('timeout');
+        ads_are_blocked = true;
+        clearTimeout(timeout);
+    }, 10000);
+    fab.onDetected(() => {
+        clearTimeout(timeout);
+        ads_are_blocked = true;
+        set_fab('blocked');
+    });
+    fab.onNotDetected(() => {
+        clearTimeout(timeout);
+        set_fab('not_blocked');
+    });
+
+} else {
+    set_fab('not_checked');
 }

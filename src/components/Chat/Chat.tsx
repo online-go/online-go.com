@@ -897,6 +897,8 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}#${m[2] || ""}${m[4] || ""}`}</Link>)},
         {split: /(player [0-9]+)/gi, pattern: /(player ([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/user/view/${m[2]}`}>{m[1]}</Link>)},
+        {split: /(issue [0-9]+)/gi, pattern: /(issue ([0-9]+))/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1]}</a>)},
+        {split: /(pr [0-9]+)/gi, pattern: /(pr ([0-9]+))/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{m[1]}</a>)},
         {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
     ];
 

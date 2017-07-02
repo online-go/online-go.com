@@ -106,7 +106,7 @@
       <script defer src="https://cdn.online-go.com/lib/es6-promise/4.0.5/es6-promise.auto{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/socket.io/1.5.1/socket.io{{MIN}}.js"></script>
+      <script defer src="https://cdn.online-go.com/lib/socket.io/2.0.3/socket.io{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/moment.js/2.18.1/moment-with-locales{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/redux/3.6.0/redux{{MIN}}.js"></script>
 
@@ -136,26 +136,7 @@
         var cdn_service = '{{CDN_SERVICE}}';
 
         /* Detect prefered language {{{ */
-        var supported_languages = {
-            "en": true, 
-            //"eo": true,
-            "fi": true,
-            "fr": true,
-            "de": true,
-            "it": true,
-            "ja": true,
-            "pl": true,
-            "pt": true,
-            "ro": true,
-            "ru": true,
-            "es": true,
-            "sv": true,
-            "ru": true,
-            "nl": true,
-            //"zh": true,
-            "zh-cn": true,
-            "debug": true,
-        };
+        var supported_languages = {{SUPPORTED_LANGUAGES}};
 
         function isSupportedLanguage(lang) {
             if (!lang) {

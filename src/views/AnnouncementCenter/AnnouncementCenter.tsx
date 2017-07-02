@@ -37,10 +37,14 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
 
     constructor(props) {
         super(props);
+        let exp = new Date();
+        exp.setSeconds(exp.getSeconds() + 300);
+
         this.state = {
             announcements: [],
             type: "system",
-            expiration: null,
+            expiration_date: exp,
+            expiration: moment(exp).toISOString(),
             text: "",
             link: "",
         };
@@ -54,7 +58,10 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         this.setState({type: ev.target.value});
     }}}
     setExpiration = (moment_date) => {{{
-        this.setState({expiration: moment_date._d.toISOString()});
+        this.setState({
+            expiration_date: moment_date._d,
+            expiration: moment_date._d.toISOString()
+        });
     }}}
     setText = (ev) => {{{
         this.setState({text: ev.target.value});
@@ -112,7 +119,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
 
                     <dt>{_("Expiration")}</dt>
                     <dd>
-                        <Datetime onChange={this.setExpiration} />
+                        <Datetime value={this.state.expiration_date} onChange={this.setExpiration} />
                     </dd>
 
                     <dt>{_("Text")}</dt>

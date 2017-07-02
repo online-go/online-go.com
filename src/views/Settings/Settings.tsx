@@ -66,7 +66,8 @@ export class Settings extends React.PureComponent<{}, any> {
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
             desktop_notifications_enabled: desktop_notifications_enabled,
-            desktop_notifications_enableable: typeof(Notification) !== "undefined"
+            desktop_notifications_enableable: typeof(Notification) !== "undefined",
+            hide_ui_class: false,
         };
     }
 
@@ -94,6 +95,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 profile: settings.profile,
                 notifications: settings.notifications,
                 vacation_left: durationString(settings.profile.vacation_left),
+                hide_ui_class: settings.site_preferences.hide_ui_class,
             });
         })
         .catch(errorAlerter);
@@ -259,6 +261,15 @@ export class Settings extends React.PureComponent<{}, any> {
             console.error(e);
         }
     }}}
+    updateHideUIClass = (ev) => {{{
+        let checked = ev.target.checked;
+        this.setState({'hide_ui_class': !checked});
+        put(`me/settings`, {
+            'site_preferences': {
+                'hide_ui_class': !checked
+            }
+        });
+    }}}
 
     updatePassword1 = (ev) => {{{
         this.setState({password1: ev.target.value});
@@ -357,6 +368,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
 
+
     render() {
         let user = data.get("user");
         let aga_ratings_enabled = null;
@@ -420,6 +432,20 @@ export class Settings extends React.PureComponent<{}, any> {
                             </i></div>
                         }
                     </dd>
+
+                    {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
+                    {(user.supporter || null) &&
+                        <dd>
+                            <input type="checkbox"
+                                    checked={!this.state.hide_ui_class}
+                                    onChange={this.updateHideUIClass}
+                                    id='hide_ui_class'
+                                    />
+                            <label htmlFor="hide_ui_class">
+                                {!this.state.hide_ui_class ? _("Enabled") : _("Disabled")}
+                            </label>
+                        </dd>
+                    }
                 </dl>
             </Card>
 
@@ -568,7 +594,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             checked={this.state.notifications[k].value.email}
                             onChange={this.updateNotification(k)}
                         />
-                        <label htmlFor={k}>{this.state.notifications[k].description}</label>
+                        <label htmlFor={k}>{_(this.state.notifications[k].description)}</label>
                     </div>
                 )}
             </Card>
