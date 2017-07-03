@@ -22,12 +22,13 @@ import data from "data";
 data.setDefault("theme", "light");
 data.setDefault("config", {
     "user": {
-        "anonymous": true,
-        "id": 0,
-        "username": "Guest",
-        "ranking": -100,
-        "country": "un",
-        "pro": 0,
+        type: "Guest",
+        id: 0,
+        anonymous: true,
+        username: "Guest",
+        ranking: -100,
+        country: "un",
+        pro: 0,
     }
 });
 
@@ -88,9 +89,10 @@ data.watch("config", (config) => {
 });
 get("ui/config").then((config) => data.set("config", config));
 data.watch("config.user", (user) => {
-    player_cache.update(user);
-    data.set("user", user);
-    window["user"] = user;
+    let new_style_user = player_cache.update(user);
+    Object.assign(new_style_user, user);
+    data.set("user", new_style_user);
+    window["user"] = new_style_user;
 });
 
 
