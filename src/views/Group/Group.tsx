@@ -582,7 +582,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         <h3>{_("Finished Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: false,
-                            ended__isnull: true,
+                            ended__isnull: false,
                             group: this.props.params.group_id,
                         }}/>
                     </Card>
