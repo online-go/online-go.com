@@ -721,8 +721,14 @@ export class User extends Resolver<UserProperties, any> {
           <div className="User container">
             <div>{/* Profile card {{{ */}
                 <div className="profile-card">
-                    <div className="row">
-                        <div className="col-sm-3 avatar-container">{/* Avatar container{{{ */}
+                    <div className="avatar-and-ratings-row">
+                        <div className="avatar-container">{/* Avatar container{{{ */}
+                            {editing
+                                ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
+                                : <span className='username'><Player user={user}/></span>
+                            }
+
+
                             {this.state.editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
@@ -754,24 +760,8 @@ export class User extends Resolver<UserProperties, any> {
                                 {(user.on_vacation) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
                             </div>
 
-                            <div className='avatar-buttons'>
-                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
-                                    <button onClick={this.toggleEdit} className='xs edit-button'>
-                                        <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
-                                    </button>
-                                }
 
-                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
-                                { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
-                            </div>
-                        </div>
-                        {/* }}} */}
-                        <div className="col-sm-3 user-details" style={{minWidth: "350px"}}>{/* User details {{{ */}
-                            {editing
-                                ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
-                                : <span className='username'><Player user={user}/></span>
-                            }
-                            {(!editing && user.name) && <div className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</div>}
+
 
                             {(editing || null) &&
                                 <div>
@@ -780,6 +770,9 @@ export class User extends Resolver<UserProperties, any> {
                                     <input className='name-input' placeholder={_("Last") /* translators: Last name */} value={user.last_name || ""} onChange={this.saveRealLastName}/>
                                 </div>
                             }
+                            {(!editing && user.name) && <div className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</div>}
+
+
                             {(editing || null) && <div ><input type="checkbox" id="real-name-is-private" checked={user.real_name_is_private} onChange={this.saveRealNameIsPrivate}/> <label htmlFor="real-name-is-private">{_("Hide real name")}</label></div>}
 
                             {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
@@ -811,24 +804,22 @@ export class User extends Resolver<UserProperties, any> {
                             }
 
 
-                            {(this.state.titles.length > 0) &&
-                                <div className="trophies">
-                                    {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
-                                </div>
-                            }
 
-                            {(this.state.trophies.length > 0) &&
-                                <div className="trophies">
-                                    {this.state.trophies.map((trophy) => (
-                                        <a key={trophy.tournament_id} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
-                                            <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
-                                        </a>
-                                    ))}
-                                </div>
-                            }
+
+                            <div className='avatar-buttons'>
+                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                                    <button onClick={this.toggleEdit} className='xs edit-button'>
+                                        <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
+                                    </button>
+                                }
+
+                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                            </div>
                         </div>
                         {/* }}} */}
-                        <div className='col-sm-6'>{/* Ratings {{{ */}
+                        {/* }}} */}
+                        <div className='ratings-container'>{/* Ratings {{{ */}
+                            <h3 className='ratings-title'>{_("Ratings and Rankings")}</h3>
                             {this.renderRatingGrid()}
                         </div>
                         {/* }}} */}
@@ -860,9 +851,6 @@ export class User extends Resolver<UserProperties, any> {
                 </div>
             </div>
 
-            {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
-            <GameList list={this.state.active_games} player={user}/>
-
             <div className="row">
                 <div className='col-sm-8'>{/* {{{ */}
                     {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
@@ -888,6 +876,19 @@ export class User extends Resolver<UserProperties, any> {
                         <textarea className="moderator-notes" ref="moderator_notes" onChange={this.updateModeratorNotes.bind(this)} placeholder="Moderator notes" value={this.state.moderator_notes}/>
                     </Card>
                     /* }}} */}
+
+                {(user.about || editing || null) &&
+                    <Card>
+                        <div className='about-container'>
+                            {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
+                            {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
+                        </div>
+                    </Card>
+                }
+
+                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
+                <GameList list={this.state.active_games} player={user}/>
+
 
                     <div className="row">{/* Game History {{{ */}
                         <div className="col-sm-12">
@@ -963,12 +964,27 @@ export class User extends Resolver<UserProperties, any> {
                     {(!(user.professional)) &&
                         <div >
 
-                        <Card>
-                            <div className='about-container'>
-                                {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
-                                {(editing || null) && <textarea className='about-editor' rows={6} onChange={this.saveAbout} value={user.about}/>}
-                            </div>
-                        </Card>
+                        {(this.state.titles.length > 0 || this.state.trophies.length > 0 || null) &&
+                            <Card>
+                                <h3>{_("Trophies")}</h3>
+
+                                {(this.state.titles.length > 0) &&
+                                    <div className="trophies">
+                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
+                                    </div>
+                                }
+
+                                {(this.state.trophies.length > 0) &&
+                                    <div className="trophies">
+                                        {this.state.trophies.map((trophy, idx) => (
+                                            <a key={idx} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
+                                                <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
+                                            </a>
+                                        ))}
+                                    </div>
+                                }
+                            </Card>
+                        }
 
                         <Card>
                             <h3>{_("Statistics")}</h3>

@@ -396,16 +396,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_axis_labels .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
         this.brush.extent([[0, 0], [width, secondary_charts_height]]);
 
-        try {
-
+        if (this.games_by_day) {
             this.timeline_chart
                 .datum(this.games_by_day)
                 .attr('d', this.timeline_area as any);
 
             this.onTimelineBrush();
-
-        } catch (e) {
-            console.error(e);
         }
     }}}
     setData = (err, data) => {{{

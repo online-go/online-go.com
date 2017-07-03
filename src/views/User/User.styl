@@ -67,7 +67,7 @@
     }
 
     .trophies {
-        height: 24px;
+        //height: 24px;
         a {
             height: 24px;
         }
@@ -231,15 +231,32 @@
         text-align: right;
     }
 
+
+    .avatar-and-ratings-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        align-items: center;
+    }
     .avatar-container {
         padding-top: 0.5rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         align-content: center;
-        min-width: 128px;
+        min-width: 20rem;
+        flex: 0;
         padding-right: 0.5rem;
         justify-content: space-between;
+    }
+    .ratings-container {
+        display: flex;
+        flex-direction: column;
+        min-width: 30rem;
+
+        .ratings-title {
+            text-align: center;
+        }
     }
 
     .avatar-subtext {
@@ -255,10 +272,12 @@
         display: flex;
         justify-content: stretch;
         align-items: stretch;
-        max-height: 13rem;
+        align-content: stretch;
+        max-height: 90rem;
     }
 
     .about-markdown {
+        flex: 1;
         overflow-y: auto;
         > div :first-child {
             margin-top: 0;
