@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// A player's ranking
+// A player's rank
 export interface Rank {
     level: number;
     type: "Kyu" | "Dan" | "Pro";
@@ -42,73 +42,92 @@ export function is_professional(rank: Rank): rank is ProfessionalRank {
 
 
 
-// Calculate an amateur player's ranking from a rating (which is simply a number).
-// On OGS, we use the European Go Federation's system.
-export function make_amateur_rank(rating: number): AmateurRank {
-    let kyu = Math.ceil((2100 - rating) / 100);
-    let dan = Math.floor((rating - 2100) / 100) + 1;
-    if (kyu >= 1) {
-        return {level: kyu, type: "Kyu"};
-    }
-    if (dan >= 1) {
-        return {level: dan, type: "Dan"};
-    }
+// Utility functions to create ranks.
+export function kyu(level: number): AmateurRank {
+    return validate_rank({level: level, type: "Kyu"});
 }
 
-// A professional's ranking is assigned to them rather than calculated.
-export function make_professional_rank(dan: number): ProfessionalRank {
-    return {level: dan, type: "Pro"};
+export function dan(level: number): AmateurRank {
+    return validate_rank({level: level, type: "Dan"});
+}
+
+export function pro(level: number): ProfessionalRank {
+    return validate_rank({level: level, type: "Pro"});
 }
 
 
 
-// Increase or decrease amateur rankings
-export function next_higher_rank(ranking: AmateurRank): AmateurRank {
-    let level = ranking.level;
-    if (ranking.level === 1 && ranking.type === "Kyu") {
-        return {level: 1, type: "Dan"};
-    }
-    if (ranking.type === "Kyu") {
-        return {level: level - 1, type: "Kyu"};
-    }
-    if (ranking.type === "Dan") {
-        return {level: level + 1, type: "Dan"};
-    }
-}
-
-export function next_lower_rank(ranking: AmateurRank): AmateurRank {
-    let level = ranking.level;
-    if (ranking.level === 1 && ranking.type === "Dan") {
-        return {level: 1, type: "Kyu"};
-    }
-    if (ranking.type === "Kyu") {
-        return {level: level + 1, type: "Kyu"};
-    }
-    if (ranking.type === "Dan") {
-        return {level: level - 1, type: "Dan"};
-    }
-}
-
-
-
-// Convert a ranking to a string
+// Convert a rank to a string
 export function rank_long_string(rank: Rank): string {
-    return Math.floor (rank.level) + " " + rank.type;
+    rank = validate_rank(rank);
+    return rank.level + " " + rank.type;
 }
 
 export function rank_short_string(rank: Rank): string {
-    return Math.floor(rank.level) + rank.type[0].toLowerCase();
+    rank = validate_rank(rank);
+    return rank.level + rank.type[0].toLowerCase();
 }
 
 
 
-// Compare two rankings to find which is better.
+// Rank arithmetic: add and compare.
+export function add_rank(rank: AmateurRank, amount: number): AmateurRank;
+export function add_rank(rank: ProfessionalRank, amount: number): ProfessionalRank;
+export function add_rank(rank: Rank, amount: number): Rank;
+export function add_rank(rank: Rank, amount: number): Rank {
+    rank = validate_rank(rank);
+    amount = Math.floor(amount);
+
+    if (rank.type === "Kyu") {
+        rank.level -= amount;
+    }
+    else {
+        rank.level += amount;
+    }
+
+    return validate_rank(rank);
+}
+
 export function compare_ranks(a: Rank, b: Rank): number {
+    a = validate_rank(a);
+    b = validate_rank(b);
+
     let ordering = ["Kyu", "Dan", "Pro"];
-    let cmp = 0;
-    cmp = cmp || ordering.indexOf(a.type) - ordering.indexOf(b.type);
-    cmp = cmp || a.type === "Kyu" && (b.level - a.level);
-    cmp = cmp || a.type === "Dan" && (a.level - b.level);
-    cmp = cmp || a.type === "Pro" && (a.level - b.level);
-    return cmp;
+    let cmp = ordering.indexOf(a.type) - ordering.indexOf(b.type);
+    if (a.type === "Kyu" && b.type === "Kyu") {
+        cmp = cmp || (b.level - a.level);
+    }
+    else {
+        cmp = cmp || (a.level - b.level);
+    }
+    return Math.sign(cmp);
+}
+
+
+
+// Rank validation. Ranks have integer levels, have level at least 1, and
+// have a set maximum level that depends on the type.
+let maximum_level: {readonly [type: string]: number} = {
+    "Kyu": 30,
+    "Dan": 7,
+    "Pro": 9,
+};
+let adjust_type: {readonly [type: string]: (level: number) => Rank} = {
+    "Kyu": (level) => ({level: 1 - level, type: "Dan"}),
+    "Dan": (level) => ({level: 1 - level, type: "Kyu"}),
+    "Pro": (level) => ({level: 1,         type: "Pro"})
+};
+function validate_rank(rank: AmateurRank): AmateurRank;
+function validate_rank(rank: ProfessionalRank): ProfessionalRank;
+function validate_rank(rank: Rank): Rank;
+function validate_rank(rank: Rank): Rank {
+    let level: number = rank.level;
+    level = Math.floor(level);
+    level = Math.min(level, maximum_level[rank.type]);
+    if (level < 1) {
+        return adjust_type[rank.type](level);
+    }
+    else {
+        return {level: level, type: rank.type};
+    }
 }

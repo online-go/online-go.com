@@ -19,7 +19,7 @@ import {comm_socket} from "sockets";
 import {get} from "requests";
 import {Publisher} from "pubsub";
 import {Player, RegisteredPlayer, player_attributes} from "data/Player";
-import {Rank, make_professional_rank, make_amateur_rank} from "data/Rank";
+import {Rank, kyu, dan, pro} from "data/Rank";
 
 
 
@@ -197,18 +197,18 @@ export function update(player: any, dont_overwrite?: boolean): Player {
             rank = player.rank;
         }
         else if (player.ranking > 36 && (player.pro || player.professional)) {
-            rank = make_professional_rank(player.ranking - 36);
+            rank = pro(player.ranking - 36);
+        }
+        else if (player.ranking > 29) {
+            rank = dan(player.ranking - 29);
+        }
+        else if (player.ranking > 0) {
+            rank = kyu(30 - player.ranking);
         }
         else if (rating !== undefined) {
-            rank = make_amateur_rank(rating);
-        }
-        else if (player.ranking !== undefined) {
-            if (player.ranking > 29) {
-                rank = {level: player.ranking - 29, type: "Dan"};
-            }
-            else {
-                rank = {level: 30 - player.ranking, type: "Kyu"};
-            }
+            // Calculate the rank from the rating. On OGS, we use the
+            // European Go Federation's system.
+            rank = dan((rating - 2000) / 100);
         }
         else {
             rank = cached.rank;
@@ -272,7 +272,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
             country: player.country || cached.country,
             rank: rank,
             rating: rating,
-            is: is
+            is: is,
         };
 
         // Add compatibility fields to the Player object. These fields are
