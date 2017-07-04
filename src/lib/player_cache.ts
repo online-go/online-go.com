@@ -18,7 +18,7 @@
 import {comm_socket} from "sockets";
 import {get} from "requests";
 import {Publisher} from "pubsub";
-import {Player, RegisteredPlayer, player_attributes} from "data/Player";
+import {Player, RegisteredPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
 
 
@@ -43,10 +43,10 @@ export class Subscription extends publisher.Subscription {
         super.to(players);
         for (let player of players) {
             if (typeof player === "number") {
-                fetch(player);  // The fetch will publish the new details
+                fetch(player, true);  // The fetch will publish the new details
             }                   // as soon as they arrive.
             else {
-                fetch(player.id);
+                fetch(player.id, true);
             }
         }
     }
@@ -113,14 +113,14 @@ function connect_online(player_id: number) {
 // then simply create the guest player on the fly. Registered players only are
 // stored in the cache.
 export function lookup(player_id: number): any {
-    return lookup_by_id(player_id);
+    return lookup_by_id(player_id, true);
 }
 
-export function lookup_by_id(player_id: number): Player | void {
+export function lookup_by_id(player_id: number, allow_incomplete?: boolean): Player | void {
     if (player_id <= 0) {
         return {type: "Guest", id: player_id};
     }
-    else {
+    else if (allow_incomplete || is_complete(cache_by_id[player_id])) {
         return cache_by_id[player_id];
     }
 }
@@ -135,14 +135,14 @@ export function lookup_by_username(player_username: string): Player | void {
 
 
 // Fetch a player's details from the server.
-export function fetch(player_id: number): Promise<Player> {
+export function fetch(player_id: number, require_complete?: boolean): Promise<Player> {
     // If the player is a guest, then simply create the player on the fly and return
     // it. If the player is registered and in the cache, then return the cached copy.
     // If the player has a fetch pending, then return the pending fetch.
     if (player_id <= 0) {
         return Promise.resolve<Player>({type: "Guest", id: player_id});
     }
-    if (player_id in cache_by_id) {
+    if (player_id in cache_by_id && (!require_complete || is_complete(cache_by_id[player_id]))) {
         return Promise.resolve<Player>(cache_by_id[player_id]);
     }
     if (player_id in active_fetches) {
@@ -161,6 +161,29 @@ export function fetch(player_id: number): Promise<Player> {
             reject(err);
         });
     });
+}
+
+function is_complete(player: Player): boolean {
+    if (typeof player !== "object" || !player.type) { return false; }
+    if (is_guest(player) && typeof player.id === "number" && isFinite(player.id)) { return true; }
+    if (is_registered(player)) {
+        let ranks = { "Kyu": true, "Dan": true, "Pro": true };
+
+        if (player.id !== + player.id) { return false; }
+        for (let attribute of ["username", "icon", "country"]) {
+            if (!player[attribute] || typeof player[attribute] !== "string") { return false; }
+        }
+        if (!player.rating && player.rating !== 0 || typeof player.rating !== "number") { return false; }
+        if (!player.rank || typeof player.rank !== "object") { return false; }
+        if (typeof player.rank.level !== "number" || !isFinite(player.rank.level)) { return false; }
+        if (typeof player.rank.type !== "string" || !(ranks[player.rank.type])) { return false; }
+        if (typeof player.is !== "object") { return false; }
+        for (let attribute in player.is) {
+            if (player.is[attribute] !== true) { return false; }
+        }
+        return true;
+    }
+    return false;
 }
 
 // By fair means or foul, we have obtained a player's details from the server. We now need
