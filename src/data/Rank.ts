@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// A player's rank
+// A player's rank.
 export interface Rank {
     level: number;
     type: "Kyu" | "Dan" | "Pro";
@@ -57,7 +57,7 @@ export function pro(level: number): ProfessionalRank {
 
 
 
-// Convert a rank to a string
+// Convert between ranks and strings.
 export function rank_long_string(rank: Rank): string {
     rank = validate_rank(rank);
     return rank.level + " " + rank.type;
@@ -68,9 +68,24 @@ export function rank_short_string(rank: Rank): string {
     return rank.level + rank.type[0].toLowerCase();
 }
 
+export function parse_rank(rank_string: string): Rank | void {
+    let re = /\s*([0-9]+)\s*(K(yu)?|D(an)?|P(ro)?)\s*/iy;
+    let result = re.exec(rank_string);
+
+    if (!result) { return; }
+
+    let [_, level_string, type_string] = result;
+    let level = parseInt(level_string, 10);
+    let type = { "k": "Kyu", "d": "Dan", "p": "Pro" }[type_string[0].toLowerCase()];
+
+    if (isNaN(level) || !type) { return; }
+
+    return validate_rank({level: level, type: type});
+}
 
 
-// Rank arithmetic: add and compare.
+
+// Rank arithmetic: addition, subtraction, equality and constraint.
 export function add_rank(rank: AmateurRank, amount: number): AmateurRank;
 export function add_rank(rank: ProfessionalRank, amount: number): ProfessionalRank;
 export function add_rank(rank: Rank, amount: number): Rank;
@@ -88,31 +103,51 @@ export function add_rank(rank: Rank, amount: number): Rank {
     return validate_rank(rank);
 }
 
-export function compare_ranks(a: Rank, b: Rank): number {
+export function subtract_rank(a: Rank, b: Rank): number {
     a = validate_rank(a);
     b = validate_rank(b);
 
-    let ordering = ["Kyu", "Dan", "Pro"];
-    let cmp = ordering.indexOf(a.type) - ordering.indexOf(b.type);
-    if (a.type === "Kyu" && b.type === "Kyu") {
-        cmp = cmp || (b.level - a.level);
+    if (is_professional(a) && is_professional(b)) {
+        return a.level - b.level;
+    }
+    else if (is_professional(a)) {
+        return +Infinity;
+    }
+    else if (is_professional(b)) {
+        return -Infinity;
     }
     else {
-        cmp = cmp || (a.level - b.level);
+        return (a.type === "Dan" ? a.level : 1 - a.level) - (b.type === "Dan" ? b.level : 1 - b.level);
     }
-    return Math.sign(cmp);
+}
+
+export function equal_rank(a: Rank, b: Rank): boolean {
+    a = validate_rank(a);
+    b = validate_rank(b);
+
+    return a.type === b.type && a.level === b.level;
+}
+
+export function constrain_rank(lower: Rank, middle: Rank, upper: Rank): Rank {
+    if (subtract_rank(lower, middle) > 0) {
+        return lower;
+    }
+    if (subtract_rank(middle, upper) > 0) {
+        return upper;
+    }
+    return middle;
 }
 
 
 
 // Rank validation. Ranks have integer levels, have level at least 1, and
 // have a set maximum level that depends on the type.
-let maximum_level: {readonly [type: string]: number} = {
+const maximum_level: {readonly [type: string]: number} = {
     "Kyu": 30,
     "Dan": 7,
     "Pro": 9,
 };
-let adjust_type: {readonly [type: string]: (level: number) => Rank} = {
+const adjust_type: {readonly [type: string]: (level: number) => Rank} = {
     "Kyu": (level) => ({level: 1 - level, type: "Dan"}),
     "Dan": (level) => ({level: 1 - level, type: "Kyu"}),
     "Pro": (level) => ({level: 1,         type: "Pro"})

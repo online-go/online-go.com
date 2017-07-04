@@ -193,17 +193,27 @@ export function update(player: any, dont_overwrite?: boolean): Player {
 
         // Translate the player's rank to the new system.
         let rank: Rank;
-        if (player.rank) {
+        let ranking: number;
+        if (typeof player.rank === "number" && !player.ranking) {
+            ranking = player.rank;
+        }
+        else {
+            ranking = player.ranking;
+        }
+        if (player.rank &&
+            typeof player.rank === "object" &&
+            { "Kyu": true, "Dan": true, "Pro": true }[player.rank.type] &&
+            typeof player.rank.level === "number") {
             rank = player.rank;
         }
-        else if (player.ranking > 36 && (player.pro || player.professional)) {
-            rank = pro(player.ranking - 36);
+        else if (ranking > 36 && (player.pro || player.professional)) {
+            rank = pro(ranking - 36);
         }
-        else if (player.ranking > 29) {
-            rank = dan(player.ranking - 29);
+        else if (ranking > 29) {
+            rank = dan(ranking - 29);
         }
-        else if (player.ranking > 0) {
-            rank = kyu(30 - player.ranking);
+        else if (ranking > 0) {
+            rank = kyu(30 - ranking);
         }
         else if (rating !== undefined) {
             // Calculate the rank from the rating. On OGS, we use the

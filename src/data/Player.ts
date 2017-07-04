@@ -16,7 +16,7 @@
  */
 
 import {_} from "translate";
-import {Rank, compare_ranks} from "Rank";
+import {Rank, subtract_rank} from "Rank";
 
 // Basic player type. All players have a unique id number.
 export interface Player {
@@ -124,7 +124,7 @@ export function by_ranking(a: Player, b: Player): number {
     }
     if (is_registered(a) && is_registered(b)) {
         let cmp = 0;
-        cmp = cmp || compare_ranks(a.rank, b.rank);
+        cmp = cmp || subtract_rank(a.rank, b.rank);
         cmp = cmp || a.username.localeCompare(b.username);
         cmp = cmp || a.id - b.id;
         return cmp;
