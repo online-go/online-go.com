@@ -23,7 +23,6 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
-import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
@@ -31,10 +30,34 @@ import preferences from "preferences";
 import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
+import {TimeControl} from "TimeControl";
+import {Player, is_registered} from "data/Player";
+import {Rank, kyu, dan, pro, add_rank, subtract_rank, equal_rank, constrain_rank, rank_short_string, rank_long_string, parse_rank} from "data/Rank";
 
 declare let swal;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
+
+interface Challenge {
+    initialized: boolean;
+    min_ranking: Rank;
+    max_ranking: Rank;
+    challenger_color: string;
+    game: {
+        name: string,
+        rules: string,
+        ranked: boolean,
+        width: number,
+        height: number,
+        handicap: number,
+        komi_auto: string,
+        komi: number,
+        disable_analysis: boolean,
+        initial_state: null,
+        "private": boolean,
+    };
+    aga_ranked?: boolean;
+}
 
 interface ChallengeModalProperties {
     mode: ChallengeModes;
@@ -42,6 +65,30 @@ interface ChallengeModalProperties {
     initialState?: any;
     config?: any;
     autoCreate?: boolean;
+}
+
+interface ChallengeModalState {
+    conf: {
+        mode: ChallengeModes,
+        username: string,
+        bot_id: number,
+        selected_board_size: string,
+        restrict_rank: boolean,
+    };
+    challenge: Challenge;
+    demo: {
+        name: string,
+        rules: string,
+        width: number,
+        height: number,
+        black_name: string,
+        black_ranking: Rank,
+        white_name: string,
+        white_ranking: Rank,
+        "private": boolean,
+    };
+    initial_time_control?: TimeControl;
+    player_username_resolved?: boolean;
 }
 
 function deepAssign(obj1: any, obj2: any) {{{
@@ -83,33 +130,48 @@ for (let i = 1; i <= 36; ++i) {
     handicapRanges.push(i);
 }
 
-let ranks = amateurRanks();
-let demo_ranks = allRanks();
-
+const ranks = (() => {
+    let ranks = [];
+    for (let i = -29; i <= 7; i++) {
+        let rank: Rank = dan(i);
+        ranks.push({rank: rank, label: rank_long_string(rank)});
+    }
+    return ranks;
+})();
+const demo_ranks = (() => {
+    let demo_ranks = [];
+    for (let i = 1; i <= 9; i++) {
+        let rank: Rank = pro(i);
+        demo_ranks.push({rank: rank, label: rank_long_string(rank)});
+    }
+    return demo_ranks;
+})();
 let ranked_ranks = (() => {
-    if (!data.get("user")) { return []; }
+    let user: Player = player_cache.update(data.get("user"));
 
-    let rankedMin = Math.max(0, data.get("user").ranking - 9);
-    let rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
+    if (!user || !is_registered(user)) { return []; }
 
-    return rankList(rankedMin, rankedMax, false);
+    let ranked_ranks = [];
+    for (let i = add_rank(user.rank, -9); !equal_rank(i, add_rank(user.rank, 9)); i = add_rank(i, 1)) {
+        ranked_ranks.push({rank: i, label: rank_long_string(i)});
+    }
+    return ranked_ranks;
 })();
 
 /* }}} */
 
-export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
+export class ChallengeModal extends Modal<ChallengeModalProperties, ChallengeModalState> {
     refs: {
         time_control_picker
     };
     constructor(props) { /* {{{ */
         super(props);
-
         let speed = data.get("challenge.speed", "live");
 
         let challenge = data.get(`challenge.challenge.${speed}`, {
             initialized: false,
-            min_ranking: 5,
-            max_ranking: 36,
+            min_ranking: kyu(25), //5,
+            max_ranking: dan(7), //36,
             challenger_color: "automatic",
             game: {
                 name: "",
@@ -139,7 +201,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
             challenge.game.height = preferences.get("new-game-board-size");
         }
 
-        this.state = {
+        let state: ChallengeModalState = {
             conf: {
                 mode: this.props.mode,
                 username: "",
@@ -155,9 +217,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 width: 19,
                 height: 19,
                 black_name: _("Black"),
-                black_ranking: 1039,
+                black_ranking: kyu(11), // 1039,
                 white_name: _("White"),
-                white_ranking: 1039,
+                white_ranking: kyu(11), // 1039,
                 "private": false,
             }),
         };
@@ -165,29 +227,30 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
 
         if (this.props.config) {
             if (this.props.config.challenge) {
-                this.state.challenge = Object.assign(this.state.challenge, this.props.config.challenge);
+                state.challenge = Object.assign(state.challenge, this.props.config.challenge);
             }
 
             if (this.props.config.conf) {
-                this.state.conf = Object.assign(this.state.conf, this.props.config.conf);
+                state.conf = Object.assign(state.conf, this.props.config.conf);
             }
 
             if (this.props.config.time_control) {
-                this.state.initial_time_control = this.props.config.time_control;
+                state.initial_time_control = this.props.config.time_control;
             }
         }
 
-        if (this.state.conf.mode === "computer" && bot_count()) {
+        if (state.conf.mode === "computer" && bot_count()) {
             let found_bot = false;
             for (let bot of bots_list()) {
-                if (this.state.conf.bot_id === bot.id) {
+                if (state.conf.bot_id === bot.id) {
                     found_bot = true;
                 }
             }
             if (!found_bot)  {
-                this.state.conf.bot_id = bots_list()[0].id;
+                state.conf.bot_id = bots_list()[0].id;
             }
         }
+        this.state = state;
 
         if (this.props.autoCreate) {
             setTimeout(() => {
@@ -216,7 +279,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         next.challenge.aga_ranked = tf;
         if (tf && this.state.challenge && data.get("user")) {
             next.challenge.game.ranked = true;
-            this.state.setRanked(true);
+            this.setRanked(true); // Formerly this.state.setRanked(true); That should never have worked!
         } else {
             this.setState({challenge: next.challenge});
         }
@@ -224,21 +287,19 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
 
     setRanked(tf) { /* {{{ */
         let next = this.nextState();
+        let challenge = next.challenge;
 
         next.challenge.game.ranked = tf;
         if (tf && this.state.challenge && data.get("user")) {
-            next.challenge.game.handicap = Math.min(9, this.state.challenge.game.handicap);
-            next.challenge.game.komi_auto = "automatic";
-            next.challenge.min_ranking = Math.max(this.state.challenge.min_ranking, data.get("user").ranking - 9);
-            next.challenge.min_ranking = Math.min(this.state.challenge.min_ranking, data.get("user").ranking + 9);
-            next.challenge.max_ranking = Math.max(this.state.challenge.max_ranking, data.get("user").ranking - 9);
-            next.challenge.max_ranking = Math.min(this.state.challenge.max_ranking, data.get("user").ranking + 9);
+            challenge.game.handicap = Math.min(9, this.state.challenge.game.handicap);
+            challenge.game.komi_auto = "automatic";
 
-            if (
-                this.state.conf.selected_board_size !== "19x19" &&
-                this.state.conf.selected_board_size !== "13x13" &&
-                this.state.conf.selected_board_size !== "9x9"
-            ) {
+            let min_rank = add_rank(data.get("user").rank, -9);
+            let max_rank = add_rank(data.get("user").rank, +9);
+            challenge.min_ranking = constrain_rank(min_rank, this.state.challenge.min_ranking, max_rank);
+            challenge.max_ranking = constrain_rank(min_rank, this.state.challenge.max_ranking, max_rank);
+
+            if (!{"19x19": true, "13x13": true, "9x9": true}[this.state.conf.selected_board_size]) {
                 next.conf.selected_board_size = "19x19";
             }
         } else {
@@ -285,16 +346,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
             demo[k] = next.demo[k];
         }
 
-        console.log(demo);
-
-        demo.black_pro = demo.black_ranking > 1000 ? 1 : 0;
-        if (demo.black_pro) {
-            demo.black_ranking -= 1000;
-        }
-        demo.white_pro = demo.white_ranking > 1000 ? 1 : 0;
-        if (demo.white_pro) {
-            demo.white_ranking -= 1000;
-        }
         console.log("Sending", demo);
 
         this.close();
@@ -367,8 +418,8 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
 
 
         if (!conf.restrict_rank) {
-            challenge.min_ranking = -1000;
-            challenge.max_ranking = 1000;
+            challenge.min_ranking = kyu(30);
+            challenge.max_ranking = pro(9);
         }
 
         challenge.game.width = parseInt(challenge.game.width);
@@ -508,9 +559,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     update_disable_analysis     = (ev) => this.upstate("challenge.game.disable_analysis", ev);
     update_restrict_rank        = (ev) => this.upstate("conf.restrict_rank", ev);
     update_min_rank             = (ev) => {
-        let min_ranking = parseInt(ev.target.value);
-        let max_ranking = this.state.challenge.max_ranking;
-        if (min_ranking > max_ranking) {
+        let min_ranking: Rank = parse_rank(ev.target.value) || this.state.challenge.min_ranking;
+        let max_ranking: Rank = this.state.challenge.max_ranking;
+        if (subtract_rank(min_ranking, max_ranking) > 0) {
             max_ranking = min_ranking;
         }
         this.setState({
@@ -526,8 +577,8 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     }
     update_max_rank             = (ev) => {
         let min_ranking = this.state.challenge.min_ranking;
-        let max_ranking = parseInt(ev.target.value);
-        if (max_ranking < min_ranking) {
+        let max_ranking = parse_rank(ev.target.value) || this.state.challenge.max_ranking;
+        if (subtract_rank(min_ranking, max_ranking) > 0) {
             min_ranking = max_ranking;
         }
         this.setState({
@@ -558,7 +609,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="engine">{_("Engine")}</label>
                     <div className="controls">
                     <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
+                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rank_short_string(bot.ranking)})</option>) )}
                     </select>
                     </div>
                 </div>
@@ -707,9 +758,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
+                            <select value={rank_long_string(this.state.demo.black_ranking)} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
                                 {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                    <option key={idx} value={r.label}>{r.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -729,9 +780,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
+                            <select value={rank_long_string(this.state.demo.white_ranking)} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
                                 {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                    <option key={idx} value={r.label}>{r.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -858,9 +909,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                                             <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
                                             <div className="controls">
                                                 <div className="checkbox">
-                                                    <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
+                                                    <select value={rank_long_string(this.state.challenge.min_ranking)} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
                                                         {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                            <option key={idx} value={r.label}>{r.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -871,9 +922,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                                             <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
                                             <div className="controls">
                                                 <div className="checkbox">
-                                                    <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
+                                                    <select value={rank_long_string(this.state.challenge.max_ranking)} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
                                                         {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                            <option key={idx} value={r.label}>{r.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -922,10 +973,8 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                               <ogs-goban id='challenge-goban' config='config' no-link='true'></ogs-goban>
                           </div>
                       ))}
-                      */}
-                      {(!this.state.initial_state || null) && /* {{{ */
-                          this.additionalSettings()
-                      }{/* }}} */}
+                      }*/}
+                      { this.additionalSettings() }
                     </div>
 
                     <hr/>
@@ -1209,3 +1258,4 @@ export let correspondence_config = { /* {{{ */
         pause_on_weekends : true,
     }
 }; /* }}} */
+window["challenge"] = challenge;
