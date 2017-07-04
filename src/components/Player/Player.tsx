@@ -25,14 +25,13 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
+import {AbstractPlayer, AbstractPlayerProperties, AbstractPlayerState} from "./AbstractPlayer";
 import {Player as PlayerType, RegisteredPlayer, is_guest, is_registered, player_name, player_attributes} from "data/Player";
-import {Rank, rank_short_string} from "data/Rank";
+import {Rank, rank_short_string, rank_long_string} from "data/Rank";
 
 
 
-interface PlayerProperties {
-    user: any;              // The player to be displayed or their player id.
-
+interface PlayerProperties extends AbstractPlayerProperties {
     icon?: boolean;         // Should we display the player's icon?
     iconSize?: number;      // And if we should, how big do we want it?
     flag?: boolean;         // Should we display the player's flag?
@@ -41,127 +40,24 @@ interface PlayerProperties {
     online?: boolean;       // Should we display the user's online status?
 
     nolink?: boolean;       // Disable the link to the player's profile page.
-    nodetails?: boolean;    // Don't open the details box, instead just open player page.
-    noextracontrols?: boolean;      // Disable extra controls, such as appear in a game review.
-    disableCacheUpdate?: boolean;   // Don't update the player cache as the player details are known to be out-of-date.
-                            // Also don't update our state if the cache changes.
-}
-
-interface PlayerState {
-    guest: boolean;         // Is the player a guest?
-    username: string;       // What is the player's name?
-    icon: string;           // What is the player's icon?
-    country: string;        // What is the player's country?
-    rank: string;           // What is the short string representation of the player's rank?
-    className: string;      // The list of CSS classes that should be applied to the player.
-}
-
-
-
-// Given a PlayerType object, calculate what state the Player component should have.
-// Bonus points if you like Continuation monads.
-function update_state(continuation: (state: PlayerState) => void, player: PlayerType | void): void {
-    if (!player) {
-        continuation({
-            guest: true,
-            username: "...",
-            icon: "",
-            country: "un",
-            rank: "",
-            className: ""
-        });
-    }
-    else if (is_guest(player)) {
-        continuation({
-            guest: true,
-            username: player_name(player),
-            icon: "",
-            country: "un",
-            rank: "",
-            className: ""
-        });
-    }
-    else if (is_registered(player)) {
-        let suffix = (player.is.provisional ? "?" : "") + (player.is.timeout ? "T" : "");
-        continuation({
-            guest: false,
-            username: player_name(player),
-            icon: player.icon,
-            country: player.country || "un",
-            rank: "[" + rank_short_string(player.rank) + suffix + "]",
-            className: player_attributes(player).join(" ")
-        });
-    }
-}
-
-
+    noextracontrols?: boolean;  // Disable extra controls, such as appear in a game review.
+ }
 
 // A standard component for displaying brief player details. This component is
 // used pervasively throughout the site. Clicking on the component will bring
 // up a PlayerDetails box enabling more actions to be taken.
-export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
-    private player_id: number;
-    private subscribe: player_cache.Subscription;
-
-    constructor(props) {
-        super(props);
-
-        let callback: (player: PlayerType) => void;
-        if (props.disableCacheUpdate) {
-            callback = (player) => undefined;
-        }
-        else {
-            callback = update_state.bind(undefined, this.setState.bind(this));
-        }
-        this.subscribe = new player_cache.Subscription(callback);
-
-        this.setup(props, (state) => { this.state = state; });
-    }
-
-    componentWillReceiveProps(new_props) {
-        this.setup(new_props, this.setState.bind(this));
-    }
-
-    componentDidMount() {
-        this.subscribe.to([this.player_id]);
-    }
-
-    componentWillUnmount() {
-        this.subscribe.to([]);
-    }
-
-    // Perform the setup after the component has been created or received new props.
-    setup(props: PlayerProperties, how_to_update: (state: PlayerState) => void): void {
-        // Work out who we're subscribing to.
-        let player_id = +props.user;
-        let player: PlayerType | void;
-        if (isNaN(player_id)) {
-            player = player_cache.update(props.user, props.disableCacheUpdate);
-            player_id = player.id;
-        }
-        else {
-            player = player_cache.lookup_by_id(player_id);
-        }
-        this.player_id = player_id;
-        this.subscribe.to([this.player_id]);
-
-        // Set up the state of the component.
-        update_state(how_to_update, player);
-    }
-
-
+export class Player extends AbstractPlayer<PlayerProperties, AbstractPlayerState> {
+    protected player_id: number;
 
     render() {
         let props = this.props;
         let state = this.state;
-        let player_id = this.player_id;
         let classes: Array<string> = [];
 
         classes.push("Player");
         props.icon && classes.push("Player-with-icon");
         state.guest && classes.push("guest");
         props.nolink && classes.push("nolink");
-        props.nodetails && classes.push("nodetails");
         props.noextracontrols && classes.push("noextracontrols");
         props.flare && classes.push("with-flare");
         props.online && classes.push("show-online");
@@ -177,7 +73,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                 {(props.icon || null) && <PlayerIcon icon={state.icon} size={props.iconSize || 16}/>}
                 {(props.flag || null) && <Flag country={state.country}/>}
                 <span className="username">{state.username}</span>
-                {(props.rank || null) && <span className="rank">{state.rank}</span>}
+                {(props.rank || null) && <span className="rank">{state.short_rank}</span>}
             </span>
         );
     }
@@ -198,14 +94,9 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             }
             window.open(uri, "_blank");
         }
-        else if (this.props.nodetails) {
-            close_all_popovers();
-            browserHistory.push(`/player/${this.player_id}/`);
-            return;
-        }
         else {
             popover({
-                elt: (<PlayerDetails playerId={this.player_id} noextracontrols={this.props.noextracontrols} />),
+                elt: (<PlayerDetails user={this.props.user} disableCacheUpdate={this.props.disableCacheUpdate} noextracontrols={this.props.noextracontrols} />),
                 below: this.refs.player,
                 minWidth: 240,
                 minHeight: 250,
