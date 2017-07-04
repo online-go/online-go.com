@@ -229,6 +229,9 @@ export function update(player: any, dont_overwrite?: boolean): Player {
             typeof player.rank.level === "number") {
             rank = player.rank;
         }
+        else if (ranking > 1036 && (player.pro || player.professional)) {
+            rank = pro(ranking - 1036);
+        }
         else if (ranking > 36 && (player.pro || player.professional)) {
             rank = pro(ranking - 36);
         }
@@ -317,6 +320,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         compatibility["icon-url"] = new_style_player.icon;
         compatibility.is_superuser = !!new_style_player.is.admin;
         compatibility.is_moderator = !!new_style_player.is.moderator;
+        compatibility.is_bot = !!new_style_player.is.bot;
         if (rank && rank.type === "Pro") {
             compatibility.ranking = rank.level + 36;
         }

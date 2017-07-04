@@ -28,7 +28,6 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
@@ -42,6 +41,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
+import {Rank, kyu, dan, pro, rank_short_string, rank_long_string} from "data/Rank";
 
 
 declare let swal;
@@ -57,6 +57,36 @@ let UserRating = (props: {rating: number}) => {
     let wholeRating = Math.floor(props.rating);
     return <span className="UserRating">{wholeRating}</span>;
 };
+
+function from_numerical_ranking(ranking: any, to_string: (rank: Rank) => string): string {
+    if (typeof ranking === "object") {
+        ranking = ranking.ranking || ranking.rank;
+    }
+    ranking = +ranking;
+    if (isNaN(ranking)) {
+        return "?";
+    }
+
+    if (ranking > 1036) {
+        return to_string(pro(ranking - 1036));
+    }
+    else if (ranking > 36) {
+        return to_string(pro(ranking - 36));
+    }
+    else if (ranking > 29) {
+        return to_string(dan(ranking - 29));
+    }
+    else {
+        return to_string(kyu(30 - ranking));
+    }
+}
+function rankString(r: any): string {
+    return from_numerical_ranking(r, rank_short_string);
+}
+function longRankString(r: any): string {
+    return from_numerical_ranking(r, rank_long_string);
+}
+
 
 let rating_percentage = (rating: number) => {
     rating %= 100;
