@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Rank, kyu, dan, pro} from "data/Rank";
+import {Rank, kyu, dan, pro, rank_short_string, rank_long_string} from "data/Rank";
 
 // Given a thing that might be a number, a new-style Rank, an object
 // containing a new-style Rank or an object containing a number that
@@ -52,4 +52,14 @@ export function find_rank(thing: any): Rank | void {
             return kyu(30 - thing);
         }
     }
+}
+
+export function find_rank_short_string(thing: any): string {
+    let rank = find_rank(thing);
+    return rank ? rank_short_string(rank) : "?";
+}
+
+export function find_rank_long_string(thing: any): string {
+    let rank = find_rank(thing);
+    return rank ? rank_long_string(rank) : "?";
 }

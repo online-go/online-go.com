@@ -31,7 +31,7 @@ import {Resizable} from "Resizable";
 import preferences from "preferences";
 import data from "data";
 import {Rank, dan, rank_long_string} from "data/Rank";
-import {find_rank} from "compatibility";
+import {find_rank_long_string} from "compatibility";
 
 declare var swal;
 
@@ -970,8 +970,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         let squashed = goban_view_squashed();
         let puzzle = this.state;
         let goban = this.goban;
-        let rank: Rank | void = find_rank(puzzle);
-        let difficulty = rank ? rank_long_string(rank) : "?";
+        let difficulty = find_rank_long_string(puzzle);
 
         let next_id = 0;
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
@@ -1096,8 +1095,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         let squashed = goban_view_squashed();
         let puzzle = this.state;
         let goban = this.goban;
-        let rank: Rank | void = find_rank(puzzle);
-        let difficulty = rank ? rank_long_string(rank) : "?";
+        let difficulty = find_rank_long_string(puzzle);
         let show_warning = false;
 
         let next_id = 0;

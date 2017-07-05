@@ -30,11 +30,11 @@ import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import data from "data";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
+import {find_rank_long_string} from "compatibility";
 
 
 
@@ -107,7 +107,7 @@ export class Overview extends React.Component<{}, any> {
                             <span className="username">{user.username}</span>
 
                             <div className="rank-and-progress">
-                                <span className="rank">{longRankString(user)} &nbsp;</span>
+                                <span className="rank">{find_rank_long_string(user)} &nbsp;</span>
                                 <div className="progress">
                                     <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
                                 </div>

@@ -23,10 +23,10 @@ import config from "config";
 import data from "data";
 import * as moment from "moment";
 import {Resolver} from "Resolver";
-import {rankString} from "rank_utils";
 import {errorAlerter} from "misc";
 import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
+import {find_rank_short_string} from "compatibility";
 
 
 interface UserProperties {
@@ -251,7 +251,7 @@ export class RatingHistory extends Resolver<UserProperties, any> {
 
                         let body = "" +
                             "<div style='text-align: center;'>" +
-                            '<span class="pull-left">' + parseFloat(obj.e).toFixed(1) + "</span><i class='" + series_class + "'></i><span class='pull-right'>" + rankString(obj.r) + "</span>" + "</div>" +
+                            '<span class="pull-left">' + parseFloat(obj.e).toFixed(1) + "</span><i class='" + series_class + "'></i><span class='pull-right'>" + find_rank_short_string(obj.r) + "</span>" + "</div>" +
                             (obj.g ? "<a href='/game/" + obj.g + "'>" + _("Game") + " " + obj.g + "</a>" : how) + "<br/>" +
                             extra +
                             "<i>" + (new Date(obj.t * 1000).toLocaleString()) + "</i>";

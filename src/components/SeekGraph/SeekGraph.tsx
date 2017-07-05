@@ -26,9 +26,9 @@ import data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";
-import {rankString} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
+import {find_rank_short_string} from "compatibility";
 
 declare let swal;
 
@@ -183,10 +183,10 @@ export class SeekGraph extends EventEmitter {
                     e.eligible = false;
 
                     if (e.min_rank > data.get("user").ranking) {
-                        e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
+                        e.ineligible_reason = interpolate(_("min. rank: %s"), [find_rank_short_string(e.min_rank)]);
                     }
                     else if (e.max_rank < data.get("user").ranking) {
-                        e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
+                        e.ineligible_reason = interpolate(_("max. rank: %s"), [find_rank_short_string(e.max_rank)]);
                     }
                 }
 
@@ -596,7 +596,7 @@ export class SeekGraph extends EventEmitter {
 
         let first_hit = this.list_hits[0];
         let header = $("<div>").addClass("header");
-        header.append($("<span>").html(rankString({"ranking": first_hit.rank, "pro": first_hit.pro})));
+        header.append($("<span>").html(find_rank_short_string(first_hit)));
         header.append($("<i>").addClass("fa fa-times pull-right").click(() => {
             this.list_locked = false;
             this.closeChallengeList();
@@ -721,10 +721,10 @@ export class SeekGraph extends EventEmitter {
 
                 if (!data.get("user").anonymous) {
                     if (C.min_rank > data.get("user").ranking) {
-                        details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) + "</span>";
+                        details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [find_rank_short_string(C.min_rank)]) + "</span>";
                     }
                     else if (C.max_rank < data.get("user").ranking) {
-                        details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) + "</span>";
+                        details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [find_rank_short_string(C.max_rank)]) + "</span>";
                     }
                     else if (C.ranked && Math.abs(data.get("user").ranking - C.rank) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";

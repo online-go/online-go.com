@@ -198,6 +198,10 @@ function is_complete(player: Player): boolean {
 // the === operator. No need to loop over its contents to look for changes. Note that
 // player1.is === player2.is is true if and only if player1 === player2.
 export function update(player: any, dont_overwrite?: boolean): Player {
+    if (!player) {
+        return undefined;
+    }
+
     // Work out which player we're referring to.
     let player_id = player.id || player.player_id || player.user_id || 0;
 

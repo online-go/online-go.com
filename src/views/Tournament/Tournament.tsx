@@ -21,7 +21,6 @@ import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
-import {longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
 import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
 import {Markdown} from "Markdown";
@@ -41,12 +40,19 @@ import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import * as d3 from "d3";
-
+import {Rank, dan, rank_short_string, rank_long_string} from "data/Rank";
+import {find_rank_short_string, find_rank_long_string} from "compatibility";
 
 
 declare var swal;
 
-let ranks = amateurRanks();
+let ranks = (() => {
+    let ranks: Array<Rank> = [];
+    for (let i = -29; i <= 7; i++) {
+        ranks.push(dan(i));
+    }
+    return ranks;
+})();
 
 interface TournamentProperties {
     params: any;
@@ -1036,8 +1042,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let num_rounds = 0;
         let group_size = 0;
         try {
-            min_bar = rankString(parseInt(tournament.settings.lower_bar));
-            max_bar = rankString(parseInt(tournament.settings.upper_bar));
+            min_bar = find_rank_short_string(tournament.settings.lower_bar);
+            max_bar = find_rank_short_string(tournament.settings.upper_bar);
         } catch (e) { }
         try { maximum_players = parseInt(tournament.settings.maximum_players); } catch (e) { console.error(e); }
         try { num_rounds = parseInt(tournament.settings.num_rounds); } catch (e) { }
@@ -1196,13 +1202,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     : <span>
                                         <select className="rank-selection" value={tournament.settings.lower_bar} onChange={this.setLowerBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                         -
                                         <select className="rank-selection" value={tournament.settings.upper_bar} onChange={this.setUpperBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                       </span>
@@ -1366,13 +1372,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     : <span>
                                         <select className="rank-selection" value={tournament.min_ranking} onChange={this.setMinRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                         -
                                         <select className="rank-selection" value={tournament.max_ranking} onChange={this.setMaxRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                       </span>
@@ -1804,13 +1810,13 @@ export function rankRestrictionText(min_ranking, max_ranking) {{{
         if (max_ranking >= 36) {
             return _("None");
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s and below"), [longRankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s and below"), [find_rank_long_string(max_ranking)]);
         }
     } else {
         if (max_ranking >= 36) {
-            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s and above"), [longRankString(min_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s and above"), [find_rank_long_string(min_ranking)]);
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s - %s"), [longRankString(min_ranking), longRankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s - %s"), [find_rank_long_string(min_ranking), find_rank_long_string(max_ranking)]);
         }
     }
 }}}
@@ -1819,13 +1825,13 @@ export function shortRankRestrictionText(min_ranking, max_ranking) {{{
         if (max_ranking >= 36) {
             return _("All");
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [rankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [find_rank_short_string(max_ranking)]);
         }
     } else {
         if (max_ranking >= 36) {
-            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [rankString(min_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [find_rank_short_string(min_ranking)]);
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [rankString(min_ranking), rankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [find_rank_short_string(min_ranking), find_rank_short_string(max_ranking)]);
         }
     }
 }}}

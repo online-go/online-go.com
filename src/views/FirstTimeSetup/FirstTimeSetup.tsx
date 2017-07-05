@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put} from "requests";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
+import {Rank, kyu, rank_long_string} from "data/Rank";
 
 import data from "data";
 
@@ -103,7 +103,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
 
                         {durations.map((elt, idx) => (
                             <option key={idx} value={idx}>
-                                {longRankString(idx + 5)} : {elt.time}
+                                {rank_long_string(kyu(25 - idx))} : {elt.time}
                             </option>
                         ))}
                     </select>
