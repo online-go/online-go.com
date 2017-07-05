@@ -1137,8 +1137,8 @@ export class User extends Resolver<UserProperties, any> {
                                 {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                 {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                 {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
-                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} rank/>},
+                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} rank/>},
                                 {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
                             ]}
                         />
@@ -1171,8 +1171,8 @@ export class User extends Resolver<UserProperties, any> {
                                 columns={[
                                     {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                     {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                    {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                    {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                    {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} rank/>},
+                                    {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} rank/>},
                                 ]}
                             />
                         </div>

@@ -92,8 +92,8 @@ export function popover(config: PopoverConfig): PopOver {
     }
     else if (config.below) {
         let rectangle = ReactDOM.findDOMNode(config.below).getBoundingClientRect();
-        x = rectangle.left;
-        y = rectangle.bottom;
+        x = rectangle.left + window.scrollX;
+        y = rectangle.bottom + window.scrollY;
     }
 
     x = Math.min(x, bounds.x - minWidth);
