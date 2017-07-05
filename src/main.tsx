@@ -77,6 +77,7 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
+import {is_registered} from "data/Player";
 
 declare const swal;
 
@@ -182,9 +183,9 @@ browserHistory.listen(location => {
         let user_type = 'error';
         let user = data.get('user');
 
-        if (!user || user.anonymous) {
+        if (!user || !is_registered(user)) {
             user_type = 'anonymous';
-        } else if (user.supporter) {
+        } else if (user.is.supporter) {
             user_type = 'supporter';
         } else {
             user_type = 'non-supporter';

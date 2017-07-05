@@ -42,6 +42,7 @@ import {close_all_popovers} from "popover";
 import * as d3 from "d3";
 import {Rank, dan, rank_short_string, rank_long_string} from "data/Rank";
 import {find_rank_short_string, find_rank_long_string} from "compatibility/Rank";
+import {is_registered} from "data/Player";
 
 
 declare var swal;
@@ -1056,6 +1057,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             case "invite": tournament_exclusivity = pgettext("Group tournament", "Invite only"); break;
         }
 
+        let is_tournament_moderator = user.is.tournament_moderator || tournament.director.id === user.id;
+
 
         /* TODO */
         //let is_joined = user && (user.id in players) && !players[global_user.id].disqualified && !players[global_user.id].resigned && !players[global_user.id].eliminated;
@@ -1063,7 +1066,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let can_join = true;
         let cant_join_reason = "";
 
-        if (data.get("user").anonymous) {
+        if (!is_registered(user)) {
             can_join = false;
             cant_join_reason = _("You must sign in to join this tournament.");
         } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
@@ -1072,7 +1075,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         } else if (!tournament.is_open || tournament.exclusivity === "invite") {
             can_join = false;
             cant_join_reason = _("This is a closed tournament, you must be invited to join.");
-        } else if (tournament.exclude_provisional && data.get("user").provisional > 0) {
+        } else if (tournament.exclude_provisional && user.is.provisional) {
             can_join = false;
             cant_join_reason = _("This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.");
         }
@@ -1099,15 +1102,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     }
                     {!editing && !loading &&
                         <div>
-                            {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
+                            {((is_tournament_moderator
                                && !tournament.started && !tournament.start_waiting) || null) &&
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
 
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && is_tournament_moderator || null) &&
                                 <button className="danger xs" onClick={this.startTournament}>{_("Start Tournament Now")}</button>
                             }
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && is_tournament_moderator || null) &&
                                 <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
                             }
 
@@ -1452,7 +1455,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         </div>
                     }
                     <div className="player-list">
-                        {(tournament.exclusivity !== "invite" || data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id || null) &&
+                        {(tournament.exclusivity !== "invite" || is_tournament_moderator || null) &&
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
@@ -1780,7 +1783,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
     renderExtraPlayerActions = (player_id: number, user: any) => {{{
         let user = data.get("user");
-        if (!(user.is_tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
+        if (!(user.is.tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
             return null;
         }
 

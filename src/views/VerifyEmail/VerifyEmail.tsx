@@ -45,7 +45,7 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
         .then(() => {
             this.setState({verifying: false, message: _("Great, your email address has been verified!")});
             let user = data.get('user');
-            user.email_validated = new Date().toString();
+            user.is.validated = true;
             data.set('user', user);
         })
         .catch((err) => {

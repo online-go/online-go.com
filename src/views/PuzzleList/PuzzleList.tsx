@@ -29,6 +29,7 @@ import {navigateTo} from "misc";
 import data from "data";
 import * as moment from "moment";
 import {find_rank_long_string,  find_rank_short_string} from "compatibility/Rank";
+import {is_registered} from "data/Player";
 
 interface PuzzleListProperties {
 }
@@ -129,7 +130,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                         ]}
                     />
 
-                    {((!user.anonymous) || null) &&
+                    {(is_registered(user) || null) &&
                         <div className="create-a-new-puzzle-link-container">
                             <a href="/puzzle/new"><i className="fa fa-plus-square" /> {_("Create a new puzzle")}</a>
                         </div>

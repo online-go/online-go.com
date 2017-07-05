@@ -71,7 +71,7 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
     updateFriendCount = () => {
         let count = 0;
         for (let friend of this.friends) {
-            count += (is_registered(friend) && friend.is.online) ? 1 : 0;
+            count += friend.is.online ? 1 : 0;
         }
         this.setState({
             has_friends: this.friends.length > 0,

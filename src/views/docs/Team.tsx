@@ -21,6 +21,7 @@ import {get} from "requests";
 import {Flag} from "Flag";
 import {Player} from "Player";
 import data from "data";
+import {is_registered} from "data/Player";
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
@@ -52,9 +53,7 @@ export class Team extends React.PureComponent<{}, any> {
 
     render() {
         let user = data.get("user");
-
-
-        let country = user ? user.country : "gb";
+        let country = is_registered(user) ? user.country : "gb";
 
         let fr = getLanguageFlag("french", country, "fr");
         let en = getLanguageFlag("english", country, "us");

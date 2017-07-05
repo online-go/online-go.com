@@ -34,7 +34,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
-
+import {is_registered} from "data/Player";
 
 
 declare var swal;
@@ -381,7 +381,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             <div className="row">
                 <div className="col-sm-9">
                     <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card {{{ */}
-                        {(this.state.is_admin || user.is_moderator || null) &&
+                        {(this.state.is_admin || user.is.moderator || null) &&
                             <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit}/>
                         }
 
@@ -412,7 +412,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                         ? this.state.is_admin
                                             ? (editing
                                                 ? (
-                                                    (((user.id === (group.founder && group.founder.id)) || user.is_moderator) || null) &&
+                                                    (((user.id === (group.founder && group.founder.id)) || user.is.moderator) || null) &&
                                                         <div>
                                                             <button className="reject" onClick={this.deleteGroup}>{_("Delete Group")}</button>
                                                         </div>
@@ -435,12 +435,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                  </button>
                                               </div>
                                         : group.is_public
-                                            ? <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
+                                            ? <button className="primary xs" disabled={!is_registered(user)} onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
                                                 ? <i>{_("This is a private group, you must be invited to join")}</i>
                                                 : this.state.invitation_request_pending
                                                     ? <i>{_("A request to join this group has been sent to the group administrators")}</i>
-                                                    : <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
+                                                    : <button className="primary xs" disabled={!is_registered(user)} onClick={this.joinGroup}>{_("Request to join this group")}</button>
                                     )
                                 }
 
@@ -636,7 +636,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         );
     }}}
     renderExtraPlayerActions = (player_id: number, user: any) => {{{
-        if (!this.state.is_admin && !data.get("user").is_moderator) {
+        if (!this.state.is_admin && !data.get("user").is.moderator) {
             return null;
         }
 

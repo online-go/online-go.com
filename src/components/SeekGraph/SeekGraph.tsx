@@ -28,7 +28,9 @@ import {shortDurationString, shortShortTimeControl, timeControlSystemText, compu
 import {getRelativeEventPosition, errorAlerter} from "misc";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
-import {find_rank_short_string} from "compatibility/Rank";
+import {Rank, is_professional, kyu, subtract_rank, rank_short_string} from "data/Rank";
+import {from_old_style_rank, find_rank, find_rank_short_string} from "compatibility/Rank";
+import {is_registered} from "data/Player";
 
 declare let swal;
 
@@ -153,8 +155,12 @@ export class SeekGraph extends EventEmitter {
         }
     }}}
     onSeekgraphGlobal = (lst) => {{{
+        let user = data.get("user");
         for (let i = 0; i < lst.length; ++i) {
             let e = lst[i];
+            let rank = find_rank(e.rank) as Rank;
+            let min_rank = find_rank(e.min_rank) as Rank;
+            let max_rank = find_rank(e.max_rank) as Rank;
             if ("game_started" in e) {
                 //console.log(e);
             }
@@ -167,26 +173,26 @@ export class SeekGraph extends EventEmitter {
                 }
             } else {
                 e.user_challenge = false;
-                if (data.get("user").anonymous) {
+                if (!is_registered(user)) {
                     e.eligible = false;
                     e.ineligible_reason = _("Not logged in");
                 } else if (e.user_id === data.get("user").id) {
                     e.eligible = false;
                     e.user_challenge = true;
                     e.ineligible_reason = _("This is your challenge");
-                } else if (e.ranked && Math.abs(data.get("user").ranking - e.rank) > 9) {
+                } else if (e.ranked && Math.abs(subtract_rank(user.rank, rank)) > 9) {
                     e.eligible = false;
                     e.ineligible_reason = _("This is a ranked game and the rank difference is more than 9");
-                } else if (e.min_rank <= data.get("user").ranking && e.max_rank >= data.get("user").ranking) {
+                } else if (subtract_rank(min_rank, user.rank) <= 0 && subtract_rank(max_rank, user.rank) >= 0) {
                     e.eligible = true;
                 } else {
                     e.eligible = false;
 
-                    if (e.min_rank > data.get("user").ranking) {
-                        e.ineligible_reason = interpolate(_("min. rank: %s"), [find_rank_short_string(e.min_rank)]);
+                    if (subtract_rank(min_rank, user.rank) > 0) {
+                        e.ineligible_reason = interpolate(_("min. rank: %s"), [rank_short_string(min_rank)]);
                     }
-                    else if (e.max_rank < data.get("user").ranking) {
-                        e.ineligible_reason = interpolate(_("max. rank: %s"), [find_rank_short_string(e.max_rank)]);
+                    else if (subtract_rank(max_rank, user.rank) < 0) {
+                        e.ineligible_reason = interpolate(_("max. rank: %s"), [rank_short_string(max_rank)]);
                     }
                 }
 
@@ -498,8 +504,15 @@ export class SeekGraph extends EventEmitter {
         ctx.stroke();
 
         /* player rank line */
-        if (!data.get("user").anonymous) {
-            let rank_ratio = (Math.min(MAX_RATIO, (data.get("user").ranking + 1) / 40));
+        let user = data.get("user");
+        if (is_registered(user)) {
+            let rank_ratio: number;
+            if (is_professional(user.rank)) {
+                rank_ratio = (Math.min(MAX_RATIO, (user.rank.level + 37) / 40));
+            }
+            else {
+                rank_ratio = (Math.min(MAX_RATIO, (subtract_rank(user.rank, kyu(30)) + 1) / 40));
+            }
             let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
@@ -587,6 +600,8 @@ export class SeekGraph extends EventEmitter {
         this.list.css({"left": pos.x, "top": pos.y});
     }}}
     popupChallengeList(ev) {{{
+        let user = data.get("user");
+
         if (this.list_open) { return; }
         this.list_open = true;
 
@@ -614,6 +629,10 @@ export class SeekGraph extends EventEmitter {
             if (i >= 5 && !C.user_challenge) {
                 continue;
             }
+
+            let rank = from_old_style_rank(C.rank);
+            let min_rank = from_old_style_rank(C.min_rank);
+            let max_rank = from_old_style_rank(C.max_rank);
 
             /* process hit */
             let e = $("<div>").addClass("challenge");
@@ -719,14 +738,14 @@ export class SeekGraph extends EventEmitter {
                 }
 
 
-                if (!data.get("user").anonymous) {
-                    if (C.min_rank > data.get("user").ranking) {
+                if (is_registered(user)) {
+                    if (subtract_rank(min_rank, user.rank) > 0) {
                         details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [find_rank_short_string(C.min_rank)]) + "</span>";
                     }
-                    else if (C.max_rank < data.get("user").ranking) {
+                    else if (subtract_rank(max_rank, user.rank) < 0) {
                         details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [find_rank_short_string(C.max_rank)]) + "</span>";
                     }
-                    else if (C.ranked && Math.abs(data.get("user").ranking - C.rank) > 9) {
+                    else if (C.ranked && Math.abs(subtract_rank(user.rank, rank)) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }

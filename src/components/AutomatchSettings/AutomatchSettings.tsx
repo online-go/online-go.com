@@ -321,7 +321,7 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
 
 
 export function openAutomatchSettings() {{{
-    if (!data.get("user").setup_rank_set) {
+    if (!data.get("user")) {
         browserHistory.push("/");
         return;
     }

@@ -21,7 +21,7 @@ import {errorAlerter} from "misc";
 import data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
-import {Player as PlayerType, is_registered, by_username} from "data/Player";
+import {Player as PlayerType, by_username} from "data/Player";
 import * as player_cache from "player_cache";
 
 
@@ -85,8 +85,6 @@ export class FriendList extends React.PureComponent<{}, any> {
 
 function by_status(a: PlayerType, b: PlayerType): number {
     let result = 0;
-    if (is_registered(a) && is_registered(b)) {
-        result = (b.is.online ? 1 : 0) - (a.is.online ? 1 : 0);
-    }
+    result = (b.is.online ? 1 : 0) - (a.is.online ? 1 : 0);
     return result || by_username(a, b);
 }

@@ -70,7 +70,7 @@ class PrivateChat {
         }
 
         new player_cache.Subscription((player) => {
-            if (is_registered(player) && player.is.online) {
+            if (player.is.online) {
                 this.player_dom.addClass("online");
             } else {
                 this.player_dom.removeClass("online");
@@ -103,7 +103,7 @@ class PrivateChat {
             .append(this.player_dom)
         ;
 
-        if (data.get("user").is_moderator) {
+        if (data.get("user").is.moderator) {
             let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
@@ -226,7 +226,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+            if (!data.get('user').is.validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
                 return;
             }
 
@@ -262,7 +262,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+        if (!data.get('user').is.validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
@@ -440,13 +440,14 @@ class PrivateChat {
         }
     } /* }}} */
     sendChat(msg) { /* {{{ */
+        let user = data.get("user");
 
         while (msg.length) {
             let arr = splitOnBytes(msg, 500);
             let line = arr[0];
             msg = arr[1];
 
-            this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
+            this.addChat(is_registered(user) && user.username, line, this.user_id, Date.now() / 1000);
             comm_socket.send("chat/pm", {
                 "player_id": this.user_id,
                 "username": this.player.username,
@@ -562,7 +563,7 @@ comm_socket.on("private-superchat", (config) => {{{
         pc = getPrivateChat(config.moderator_id, config.moderator_username);
         if (pc) {
             pc.open();
-            if (!data.get("user").is_superuser) {
+            if (!data.get("user").is.admin) {
                 pc.superchat(config.enable);
             } else {
                 pc.addSystem({

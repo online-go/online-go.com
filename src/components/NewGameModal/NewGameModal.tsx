@@ -144,7 +144,7 @@ export class NewGameModal extends Modal<NewGameModalProperties, any> {
 }
 
 export function openNewGameModal() {{{
-    if (!data.get("user").setup_rank_set) {
+    if (!data.get("user")) {
         browserHistory.push("/");
         return;
     }

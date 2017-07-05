@@ -74,7 +74,7 @@ export function get(key: string): any {
 export function set(key: string, value: any): any {
     return data.set(`preferences.${key}`, value);
 }
-export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener {
+export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener<string> {
     return data.watch(`preferences.${key}`, cb, call_on_undefined);
 }
 

@@ -23,6 +23,7 @@ import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
 import {AdUnit} from "AdUnit";
 import data from "data";
+import {is_registered} from "data/Player";
 
 declare var swal;
 
@@ -99,7 +100,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                     <div className="actions">
                         {(this.state.ladder && this.state.ladder.player_rank > 0)
                           ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
-                          : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
+                          : <button className="primary" disabled={!is_registered(user)} onClick={this.join}>{_("Join Ladder")}</button>
                         }
                     </div>
 

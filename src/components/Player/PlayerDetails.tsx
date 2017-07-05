@@ -32,7 +32,7 @@ import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {AbstractPlayer, AbstractPlayerProperties, AbstractPlayerState} from "./AbstractPlayer";
-import {Player, RegisteredPlayer} from "data/Player";
+import {Player, RegisteredPlayer, is_registered} from "data/Player";
 
 
 interface PlayerDetailsProperties extends AbstractPlayerProperties {
@@ -129,7 +129,7 @@ export class PlayerDetails extends AbstractPlayer<PlayerDetailsProperties, Abstr
                         </div>
                     </div>
                 </div>
-                {!user.anonymous && (user.id !== this.player_id || null) &&
+                {is_registered(user) && (user.id !== this.player_id || null) &&
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={!this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
@@ -137,20 +137,20 @@ export class PlayerDetails extends AbstractPlayer<PlayerDetailsProperties, Abstr
                         <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.player_id, this.state)}
-                { ((user.is_moderator && this.player_id > 0) || null) &&
+                {is_registered(user) && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.player_id, this.state)}
+                { ((user.is.moderator && this.player_id > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
                         <button className="xs noshadow danger" onClick={this.shadowban}><i className="fa fa-commenting"/>{pgettext("Disallow user to chat", "Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_moderator && this.player_id > 0) || null) &&
+                { ((user.is.moderator && this.player_id > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.removeBan}><i className="fa fa-thumbs-o-up"/>{pgettext("Allow user on the server", "Un-Ban")}</button>
                         <button className="xs noshadow" onClick={this.removeShadowban}><i className="fa fa-commenting-o"/>{pgettext("Remove chat ban", "Un-Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_superuser && this.player_id > 0) || null) &&
+                { ((user.is.admin && this.player_id > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                     </div>

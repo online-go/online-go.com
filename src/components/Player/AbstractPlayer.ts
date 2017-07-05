@@ -29,7 +29,7 @@ export interface AbstractPlayerProperties {
 }
 
 export interface AbstractPlayerState {
-    resolved: boolean;
+    resolved: boolean;      // Have the player's details been retrieved?
     guest: boolean;         // Is the player a guest?
     username: string;       // What is the player's name?
     icon: string;           // What is the player's icon?

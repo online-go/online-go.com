@@ -20,6 +20,7 @@ import data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
 import * as player_cache from "player_cache";
+import {is_registered} from "data/Player";
 
 let ignores = {};
 let block_state = {};
@@ -71,7 +72,7 @@ export function player_is_ignored(user_id) {
 function update_blocks() {
     let user = data.get("user");
 
-    if (!user.anonymous) {
+    if (is_registered(user)) {
         get("me/blocks")
         .then((entries) => {
             block_state = {};

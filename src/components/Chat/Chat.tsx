@@ -32,6 +32,7 @@ import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
+import {Player as PlayerType, is_registered} from "data/Player";
 
 declare let swal;
 
@@ -644,6 +645,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     }}}
 
     render() {{{
+        let user = data.get("user");
         let sorted_user_list = this.sortedUserList();
 
         let chan_class = (chan: string): string => {
@@ -765,9 +767,9 @@ export class Chat extends React.Component<ChatProperties, any> {
 
                         <TabCompleteInput ref="input" type="text" className={this.state.rtl_mode ? "rtl" : ""}
                                placeholder={
-                                   !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated") :
+                                   (is_registered(user) && !user.is.validated) ? _("Chat will be enabled once your email address has been validated") :
                                        this.state.show_say_hi_placeholder ? _("Say hi!") : ""}
-                               disabled={data.get("user").anonymous || !data.get('user').email_validated}
+                               disabled={!user.is.validated}
                                onKeyPress={this.onKeyPress}
                                />
 

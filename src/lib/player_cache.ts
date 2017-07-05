@@ -233,23 +233,33 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         }
 
         // Prepare the player's attributes.
+        let ui_class = player.ui_class || "";
+        let validated = player.email_validated;
+        if (validated === undefined) {
+            if (player.is) {
+                validated = player.is.validated;
+            }
+            else {
+                validated = cached.is.validated;
+            }
+        }
         let is: RegisteredPlayer["is"];
         if (player.is) {
             is = player.is;
         }
-        else if (player.ui_class !== undefined) {
+        else {
             // Prepare the attributes object.
             is = {
                 online: players_online[player_id],
-                admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
-                moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
+                admin: player.is_superuser || ui_class.indexOf("admin") !== -1,
+                moderator: player.is_moderator || ui_class.indexOf("moderator") !== -1,
                 tournament_moderator: player.is_tournament_moderator,
-                validated: player.email_validated,
+                validated: validated,
                 professional: (player.pro || player.professional) && player.ranking > 36,
-                supporter: player.ui_class.indexOf("supporter") !== -1,
-                provisional: player.ui_class.indexOf("provisional") !== -1,
-                timeout: player.ui_class.indexOf("timeout") !== -1,
-                bot: player.is_bot || player.ui_class.indexOf("bot") !== -1
+                supporter: ui_class.indexOf("supporter") !== -1,
+                provisional: ui_class.indexOf("provisional") !== -1,
+                timeout: ui_class.indexOf("timeout") !== -1,
+                bot: player.is_bot || ui_class.indexOf("bot") !== -1
             };
 
             // Only keep attributes that are applicable.
@@ -275,9 +285,6 @@ export function update(player: any, dont_overwrite?: boolean): Player {
             if (same) {
                 is = cached.is;
             }
-        }
-        else {
-            is = cached.is;
         }
 
         // Translate the data to the Player type.

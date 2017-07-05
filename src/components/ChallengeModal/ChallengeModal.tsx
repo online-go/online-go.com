@@ -31,33 +31,15 @@ import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
 import {TimeControl} from "TimeControl";
-import {Player, is_registered} from "data/Player";
+import {Player, RegisteredPlayer, is_registered} from "data/Player";
 import {Rank, kyu, dan, pro, add_rank, subtract_rank, equal_rank, constrain_rank, rank_short_string, rank_long_string, parse_rank} from "data/Rank";
+import {from_old_style_rank} from "compatibility/Rank";
+import {Challenge} from "data/Challenge";
+import {to_old_style_challenge} from "compatibility/Challenge";
 
 declare let swal;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
-
-interface Challenge {
-    initialized: boolean;
-    min_ranking: Rank;
-    max_ranking: Rank;
-    challenger_color: string;
-    game: {
-        name: string,
-        rules: string,
-        ranked: boolean,
-        width: number,
-        height: number,
-        handicap: number,
-        komi_auto: string,
-        komi: number,
-        disable_analysis: boolean,
-        initial_state: null,
-        "private": boolean,
-    };
-    aga_ranked?: boolean;
-}
 
 interface ChallengeModalProperties {
     mode: ChallengeModes;
@@ -288,14 +270,15 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, ChallengeMod
     setRanked(tf) { /* {{{ */
         let next = this.nextState();
         let challenge = next.challenge;
+        let user = data.get("user");
 
         next.challenge.game.ranked = tf;
-        if (tf && this.state.challenge && data.get("user")) {
+        if (tf && this.state.challenge && user && is_registered(user)) {
             challenge.game.handicap = Math.min(9, this.state.challenge.game.handicap);
             challenge.game.komi_auto = "automatic";
 
-            let min_rank = add_rank(data.get("user").rank, -9);
-            let max_rank = add_rank(data.get("user").rank, +9);
+            let min_rank = add_rank(user.rank, -9);
+            let max_rank = add_rank(user.rank, +9);
             challenge.min_ranking = constrain_rank(min_rank, this.state.challenge.min_ranking, max_rank);
             challenge.max_ranking = constrain_rank(min_rank, this.state.challenge.max_ranking, max_rank);
 
@@ -454,7 +437,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, ChallengeMod
         this.saveSettings();
         this.close();
 
-        post(player_id ? `players/${player_id}/challenge` : "challenges", challenge)
+        post(player_id ? `players/${player_id}/challenge` : "challenges", to_old_style_challenge(challenge))
         .then((res) => {
                 console.log("Challenge response: ", res);
                 let challenge_id = res.challenge;
@@ -609,7 +592,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, ChallengeMod
                     <label className="control-label" htmlFor="engine">{_("Engine")}</label>
                     <div className="controls">
                     <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rank_short_string(bot.ranking)})</option>) )}
+                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rank_short_string(from_old_style_rank(bot.ranking))})</option>) )}
                     </select>
                     </div>
                 </div>
@@ -1097,28 +1080,28 @@ export function challengeRematch(goban, player, original_game_meta) { /* {{{ */
     challenge(player.id, null, false, config);
 } /* }}} */
 export function createBlitz() {{{
-    let user = data.get("user");
+    let user = data.get("user") as RegisteredPlayer;
     let config = dup(blitz_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
+    config.challenge.min_ranking = add_rank(user.rank, -3);
+    config.challenge.max_ranking = add_rank(user.rank, +3);
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
 }}}
 export function createLive() {{{
-    let user = data.get("user");
+    let user = data.get("user") as RegisteredPlayer;
     let config = dup(live_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
+    config.challenge.min_ranking = add_rank(user.rank, -3);
+    config.challenge.max_ranking = add_rank(user.rank, +3);
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
 }}}
 export function createCorrespondence() {{{
-    let user = data.get("user");
+    let user = data.get("user") as RegisteredPlayer;
     let config = dup(correspondence_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
+    config.challenge.min_ranking = add_rank(user.rank, -3);
+    config.challenge.max_ranking = add_rank(user.rank, +3);
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);

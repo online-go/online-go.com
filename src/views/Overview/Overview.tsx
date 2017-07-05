@@ -70,7 +70,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
+        if (!data.get("user")) {
             return <FirstTimeSetup/>;
         }
 

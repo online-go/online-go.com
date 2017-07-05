@@ -105,8 +105,8 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         <div className="AnnouncementCenter container">
             <Card>
                 <dl className="horizontal">
-                    {(user.is_superuser || null) && <dt>Type</dt> }
-                    {(user.is_superuser || null) &&
+                    {(user.is.admin || null) && <dt>Type</dt> }
+                    {(user.is.admin || null) &&
                         <dd>
                             <select>
                                 <option value="system">System</option>

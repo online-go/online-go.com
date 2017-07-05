@@ -241,7 +241,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         let group_invites = this.state.group_invites;
         let groups = this.state.groups;
 
-        let show_debug = data.get("user").is_superuser;
+        let show_debug = data.get("user").is.admin;
         let debug = data.get("debug", false);
         let no_results = false;
 
