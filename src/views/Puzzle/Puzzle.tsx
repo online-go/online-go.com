@@ -23,7 +23,6 @@ import {KBShortcut} from "KBShortcut";
 import {goban_view_mode, goban_view_squashed} from "Game";
 import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
-import {longRankString} from "rank_utils";
 import {Goban, GoMath} from "goban";
 import {Markdown} from "Markdown";
 import {Player} from "Player";
@@ -31,6 +30,8 @@ import {StarRating} from "StarRating";
 import {Resizable} from "Resizable";
 import preferences from "preferences";
 import data from "data";
+import {Rank, dan, rank_long_string} from "data/Rank";
+import {find_rank} from "compatibility";
 
 declare var swal;
 
@@ -40,8 +41,8 @@ interface PuzzleProperties {
     };
 }
 let ranks = [];
-for (let i = 0; i < 39; ++i) {
-    ranks.push({"value": i, "text": longRankString(i)});
+for (let i = -29; i <= 7; ++i) {
+    ranks.push({"value": i, "text": rank_long_string(dan(i))});
 }
 
 export class Puzzle extends React.Component<PuzzleProperties, any> {
@@ -969,7 +970,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         let squashed = goban_view_squashed();
         let puzzle = this.state;
         let goban = this.goban;
-        let difficulty = longRankString(puzzle.rank);
+        let rank: Rank | void = find_rank(puzzle);
+        let difficulty = rank ? rank_long_string(rank) : "?";
 
         let next_id = 0;
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
@@ -1094,7 +1096,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         let squashed = goban_view_squashed();
         let puzzle = this.state;
         let goban = this.goban;
-        let difficulty = longRankString(puzzle.rank);
+        let rank: Rank | void = find_rank(puzzle);
+        let difficulty = rank ? rank_long_string(rank) : "?";
         let show_warning = false;
 
         let next_id = 0;
