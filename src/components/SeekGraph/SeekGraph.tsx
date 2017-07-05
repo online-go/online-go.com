@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
@@ -26,8 +27,8 @@ import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";
 import {rankString} from "rank_utils";
-import {makePlayerLink} from "Player";
 import {kb_bind, kb_unbind} from "KBShortcut";
+import {Player} from "Player";
 
 declare let swal;
 
@@ -666,11 +667,17 @@ export class SeekGraph extends EventEmitter {
             }
 
             if (C.live_game) {
-                e.append(makePlayerLink(["name", "rank", "nolink"], {"user_id": 0, "ranking": C.black_rank, "username": C.black_username}));
+                let f = $("<span>");
+                e.append(f);
+                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.black_rank, "username": C.black_username }} rank nolink />), f[0]);
                 e.append($("<span>").text(" " + _("vs.") + " "));
-                e.append(makePlayerLink(["name", "rank", "nolink"], {"user_id": 0, "ranking": C.white_rank, "username": C.white_username}));
+                f = $("<span>");
+                e.append(f);
+                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.white_rank, "username": C.white_username }} rank nolink />), f[0]);
             } else {
-                e.append(makePlayerLink(["name", "rank"], {"user_id": C.user_id, "ranking": C.rank, "username": C.username}));
+                let f = $("<span>");
+                e.append(f);
+                ReactDOM.render((<Player user={{"user_id": C.user_id, "ranking": C.rank, "username": C.username}} rank />), f[0]);
 
                 let details_html = ", " +
                     (C.ranked ? _("Ranked") : _("Unranked"))

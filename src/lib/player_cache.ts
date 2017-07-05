@@ -318,26 +318,29 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // username and by id. Along the way, we take note of whether any
         // information is changed in the cache.
         let changed = false;
-        for (let name in new_style_player) {
-            if (cached[name] !== new_style_player[name]) {
-                changed = true;
+        let was_cached = true;
+        if (player_id !== 0) {
+            for (let name in new_style_player) {
+                if (cached[name] !== new_style_player[name]) {
+                    changed = true;
+                }
+                cached[name] = new_style_player[name];
             }
-            cached[name] = new_style_player[name];
-        }
 
-        let was_cached = new_style_player.id in cache_by_id;
-        cache_by_id[new_style_player.id] = cached;
+            was_cached = new_style_player.id in cache_by_id;
+            cache_by_id[new_style_player.id] = cached;
 
-        if (cached.username) {
-            if (!(cached.username in cache_by_username)) {
-                nicknames.push(cached.username);
+            if (cached.username) {
+                if (!(cached.username in cache_by_username)) {
+                    nicknames.push(cached.username);
+                }
+                cache_by_username[cached.username] = cached;
             }
-            cache_by_username[cached.username] = cached;
         }
 
         // If the cached information has changed, then inform everyone who is
         // subscribed to the player.
-        if (changed) {
+        if (changed && !dont_overwrite) {
             publisher.publish(cached);
         }
 
