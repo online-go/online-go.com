@@ -18,7 +18,7 @@
 import {comm_socket} from "sockets";
 import {get} from "requests";
 import {Publisher} from "pubsub";
-import {Player, RegisteredPlayer, is_guest, is_registered, player_attributes} from "data/Player";
+import {Player, RegisteredPlayer, GuestPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
 import {find_rank} from "compatibility/Rank";
 
@@ -52,6 +52,7 @@ export class Subscription extends publisher.Subscription {
         }
     }
 }
+
 
 
 // Perform updates of the player.is.online attribute as instructed by
@@ -110,6 +111,9 @@ function connect_online(player_id: number) {
 
 
 
+// All guests have an identical empty set of attributes.
+let guest_attributes: GuestPlayer["is"] = {};
+
 // Look up functions in the player cache. If the user id is for a guest player,
 // then simply create the guest player on the fly. Registered players only are
 // stored in the cache.
@@ -119,7 +123,7 @@ export function lookup(player_id: number): any {
 
 export function lookup_by_id(player_id: number, allow_incomplete?: boolean): Player | void {
     if (player_id <= 0) {
-        return {type: "Guest", id: player_id};
+        return {type: "Guest", id: player_id, is: guest_attributes};
     }
     else if (allow_incomplete || is_complete(cache_by_id[player_id])) {
         return cache_by_id[player_id];
@@ -141,7 +145,7 @@ export function fetch(player_id: number, require_complete?: boolean): Promise<Pl
     // it. If the player is registered and in the cache, then return the cached copy.
     // If the player has a fetch pending, then return the pending fetch.
     if (player_id <= 0) {
-        return Promise.resolve<Player>({type: "Guest", id: player_id});
+        return Promise.resolve<Player>({type: "Guest", id: player_id, is: guest_attributes});
     }
     if (player_id in cache_by_id && (!require_complete || is_complete(cache_by_id[player_id]))) {
         return Promise.resolve<Player>(cache_by_id[player_id]);
@@ -206,7 +210,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
     let player_id = player.id || player.player_id || player.user_id || 0;
 
     if (player_id <= 0) {
-        return {type: "Guest", id: player.id};
+        return {type: "Guest", id: player.id, is: guest_attributes};
     }
     else {
         // Fetch the player from the cache.
@@ -239,6 +243,8 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 online: players_online[player_id],
                 admin: player.is_superuser || player.ui_class.indexOf("admin") !== -1,
                 moderator: player.is_moderator || player.ui_class.indexOf("moderator") !== -1,
+                tournament_moderator: player.is_tournament_moderator,
+                validated: player.email_validated,
                 professional: (player.pro || player.professional) && player.ranking > 36,
                 supporter: player.ui_class.indexOf("supporter") !== -1,
                 provisional: player.ui_class.indexOf("provisional") !== -1,
@@ -295,7 +301,11 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         compatibility["icon-url"] = new_style_player.icon;
         compatibility.is_superuser = !!new_style_player.is.admin;
         compatibility.is_moderator = !!new_style_player.is.moderator;
+        compatibility.tournament_moderator = !!new_style_player.is.tournament_moderator;
+        compatibility.email_validated = !!new_style_player.is.validated;
         compatibility.is_bot = !!new_style_player.is.bot;
+        compatibility.anonymous = false;
+        compatibility.supporter = new_style_player.is.supporter;
         if (rank && rank.type === "Pro") {
             compatibility.ranking = rank.level + 36;
         }

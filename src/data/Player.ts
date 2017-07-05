@@ -19,39 +19,43 @@ import {_} from "translate";
 import {Rank, subtract_rank} from "Rank";
 
 // Basic player type. All players have a unique id number.
-export interface Player {
-    type: "Guest" | "Registered";
-    id: number;             // A unique number identifying each individual player.
-}
+export type Player = GuestPlayer | RegisteredPlayer;
 
 // A player that has no OGS credentials, and limited access.
 // Guests cannot play games (but can watch) and cannot participate
 // in OGS's social life.
-export interface GuestPlayer extends Player {
+export interface GuestPlayer {
     type: "Guest";
+    id: number;             // A unique number identifying each individual player.
+    is: Attributes<never>;  // A guest player can have no attributes.
 }
 
 // A player that has registered with OGS with a username and password.
 // This interface contains the player details that are used pervasively
 // throughout the site. The player's rating and rank are calculated according
 // to the European Go Federation's system.
-export interface RegisteredPlayer extends Player {
+export interface RegisteredPlayer {
     type: "Registered";
+    id: number;             // A unique number identifying each individual player.
     username: string;       // The player's chosen username.
     icon: string;           // The URL of the player's chosen icon.
     country: string;        // The player's country of origin.
     rank: Rank;             // The player's overall rank.
     rating: number;         // The player's overall rating.
-    is: {                   // The player's attributes
-        online?: boolean;       // Is the player currently logged into OGS?
-        admin?: boolean;        // Can the player alter everything in the system?
-        moderator?: boolean;    // Can the player enforce discipline?
-        professional?: boolean; // Does the player have a professional diploma?
-        supporter?: boolean;    // Does the player support OGS financially?
-        provisional?: boolean;  // Has the player only recently joined OGS?
-        timeout?: boolean;      // Has the player recently timed out of a game?
-        bot?: boolean;          // Is the player an artificial intelligence?
-    };
+    is: Attributes<boolean>; // The player's attributes.
+}
+
+interface Attributes<T> {
+    online?: T;             // Is the player currently logged into OGS?
+    admin?: T;              // Can the player alter everything in the system?
+    moderator?: T;          // Can the player enforce discipline?
+    tournament_moderator?: T; // Can the player organise tournaments?
+    validated?: T;          // Has the player validated their e-mail address?
+    professional?: T;       // Does the player have a professional diploma?
+    supporter?: T;          // Does the player support OGS financially?
+    provisional?: T;        // Has the player only recently joined OGS?
+    timeout?: T;            // Has the player recently timed out of a game?
+    bot?: T;                // Is the player an artificial intelligence?
 }
 
 
