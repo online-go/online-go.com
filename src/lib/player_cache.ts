@@ -20,6 +20,7 @@ import {get} from "requests";
 import {Publisher} from "pubsub";
 import {Player, RegisteredPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
+import {find_rank} from "compatibility";
 
 
 
@@ -215,41 +216,11 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         }
 
         // Translate the player's rank to the new system.
-        let rank: Rank;
-        let ranking: number;
-        if (typeof player.rank === "number" && !player.ranking) {
-            ranking = player.rank;
-        }
-        else {
-            ranking = player.ranking;
-        }
-        if (player.rank &&
-            typeof player.rank === "object" &&
-            { "Kyu": true, "Dan": true, "Pro": true }[player.rank.type] &&
-            typeof player.rank.level === "number") {
-            rank = player.rank;
-        }
-        else if (ranking > 1036 && (player.pro || player.professional)) {
-            rank = pro(ranking - 1036);
-        }
-        else if (ranking > 36 && (player.pro || player.professional)) {
-            rank = pro(ranking - 36);
-        }
-        else if (ranking > 29) {
-            rank = dan(ranking - 29);
-        }
-        else if (ranking > 0) {
-            rank = kyu(30 - ranking);
-        }
-        else if (rating !== undefined) {
-            // Calculate the rank from the rating. On OGS, we use the
-            // European Go Federation's system.
-            rank = dan((rating - 2000) / 100);
-        }
-        else {
+        let rank: Rank | void = find_rank(player);
+        if (!rank) {
             rank = cached.rank;
         }
-        if (rank && cached.rank && rank.level === cached.rank.level && rank.type === cached.rank.type) {
+        else if (cached.rank && rank.level === cached.rank.level && rank.type === cached.rank.type) {
             rank = cached.rank;
         }
 
@@ -268,7 +239,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 supporter: player.ui_class.indexOf("supporter") !== -1,
                 provisional: player.ui_class.indexOf("provisional") !== -1,
                 timeout: player.ui_class.indexOf("timeout") !== -1,
-                bot: player.ui_class.indexOf("bot") !== -1
+                bot: player.is_bot || player.ui_class.indexOf("bot") !== -1
             };
 
             // Only keep attributes that are applicable.
