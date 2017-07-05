@@ -15,7 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Rank, kyu, dan, pro, rank_short_string, rank_long_string} from "data/Rank";
+import {Rank, kyu, dan, pro, is_amateur, is_professional, subtract_rank, rank_short_string, rank_long_string} from "data/Rank";
+
+
+
+// Basic rank-conversion functions.
+export function from_old_style_rank(ranking: number): Rank {
+    if (ranking > 1036) {
+        return pro(ranking - 1036);
+    }
+    else if (ranking > 36) {
+        return pro(ranking - 36);
+    }
+    else if (ranking > 29) {
+        return dan(ranking - 29);
+    }
+    else {
+        return kyu(30 - ranking);
+    }
+}
+
+export function to_old_style_rank(rank: Rank): number {
+    if (is_amateur(rank)) {
+        return subtract_rank(rank, kyu(30));
+    }
+    if (is_professional(rank)) {
+        return subtract_rank(rank, pro(1)) + 37;
+    }
+}
+
+
 
 // Given a thing that might be a number, a new-style Rank, an object
 // containing a new-style Rank or an object containing a number that
@@ -39,18 +68,7 @@ export function find_rank(thing: any): Rank | void {
     }
     thing = +thing;
     if (!isNaN(thing)) {
-        if (thing > 1036) {
-            return pro(thing - 1036);
-        }
-        else if (thing > 36) {
-            return pro(thing - 36);
-        }
-        else if (thing > 29) {
-            return dan(thing - 29);
-        }
-        else {
-            return kyu(30 - thing);
-        }
+        return from_old_style_rank(thing);
     }
 }
 
