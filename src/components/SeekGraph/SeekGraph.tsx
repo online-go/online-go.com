@@ -28,7 +28,7 @@ import {shortDurationString, shortShortTimeControl, timeControlSystemText, compu
 import {getRelativeEventPosition, errorAlerter} from "misc";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
-import {find_rank_short_string} from "compatibility";
+import {find_rank_short_string} from "compatibility/Rank";
 
 declare let swal;
 

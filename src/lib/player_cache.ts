@@ -20,7 +20,7 @@ import {get} from "requests";
 import {Publisher} from "pubsub";
 import {Player, RegisteredPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
-import {find_rank} from "compatibility";
+import {find_rank} from "compatibility/Rank";
 
 
 

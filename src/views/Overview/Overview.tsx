@@ -34,7 +34,7 @@ import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
-import {find_rank_long_string} from "compatibility";
+import {find_rank_long_string} from "compatibility/Rank";
 
 
 

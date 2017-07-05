@@ -22,7 +22,7 @@ import data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
 import {Player} from "Player";
-import {find_rank_short_string} from "compatibility";
+import {find_rank_short_string} from "compatibility/Rank";
 
 interface GobanLineSummaryProps {
     id: number;

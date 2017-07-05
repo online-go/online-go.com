@@ -28,7 +28,7 @@ import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
 import data from "data";
 import * as moment from "moment";
-import {find_rank_long_string,  find_rank_short_string} from "compatibility";
+import {find_rank_long_string,  find_rank_short_string} from "compatibility/Rank";
 
 interface PuzzleListProperties {
 }

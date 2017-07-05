@@ -26,7 +26,7 @@ import {Resolver} from "Resolver";
 import {errorAlerter} from "misc";
 import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
-import {find_rank_short_string} from "compatibility";
+import {find_rank_short_string} from "compatibility/Rank";
 
 
 interface UserProperties {

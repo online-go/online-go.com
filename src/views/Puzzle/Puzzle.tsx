@@ -31,7 +31,7 @@ import {Resizable} from "Resizable";
 import preferences from "preferences";
 import data from "data";
 import {Rank, dan, rank_long_string} from "data/Rank";
-import {find_rank_long_string} from "compatibility";
+import {find_rank_long_string} from "compatibility/Rank";
 
 declare var swal;
 

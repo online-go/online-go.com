@@ -24,7 +24,7 @@ import {termination_socket} from "sockets";
 import data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
-import {find_rank_short_string} from "compatibility";
+import {find_rank_short_string} from "compatibility/Rank";
 
 interface MiniGobanProps {
     id: number;

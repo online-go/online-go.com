@@ -42,7 +42,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {Rank, rank_short_string, rank_long_string} from "data/Rank";
-import {find_rank} from "compatibility";
+import {find_rank} from "compatibility/Rank";
 
 
 declare let swal;

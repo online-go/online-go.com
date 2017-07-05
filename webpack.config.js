@@ -19,6 +19,7 @@ module.exports = {
             'src/components',
             'src/views',
             'src/data',
+            'src/compatibility',
             'src',
             'node_modules'
         ],

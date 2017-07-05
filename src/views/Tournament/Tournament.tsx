@@ -41,7 +41,7 @@ import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import * as d3 from "d3";
 import {Rank, dan, rank_short_string, rank_long_string} from "data/Rank";
-import {find_rank_short_string, find_rank_long_string} from "compatibility";
+import {find_rank_short_string, find_rank_long_string} from "compatibility/Rank";
 
 
 declare var swal;
