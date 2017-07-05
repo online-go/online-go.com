@@ -103,7 +103,17 @@ export abstract class AbstractPlayer<S extends AbstractPlayerProperties, T exten
             callback = (player) => undefined;
         }
         else {
-            callback = update_state.bind(undefined, this.setState.bind(this));
+            callback = (player) => {
+                setTimeout(() => {
+                    // We must do this asynchronously to avoid an error
+                    // from within React. It complains bitterly if we
+                    // attempt to update our state during another
+                    // component's constructor. This can happen if
+                    // the other component's constructor causes our
+                    // player to be republished after we've been mounted.
+                    update_state(this.setState.bind(this), player);
+                });
+            };
         }
         this.subscribe = new player_cache.Subscription(callback);
         this.setup(props, (state) => { this.state = state; });
