@@ -24,7 +24,8 @@ import {find_rank} from "compatibility/Rank";
 
 
 
-const player_cache_debug_enabled = false;
+const player_cache_debug_logs  = false;
+const player_cache_debug_state = true;
 
 let cache_by_id: {[player_id: number]: RegisteredPlayer} = {};
 let cache_by_username: {[player_username: string]: RegisteredPlayer} = {};
@@ -328,7 +329,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // to be true. In this case, just return the new_style_player, as it
         // will contain all the information the caller needs.
         if (dont_overwrite) {
-            if (player_cache_debug_enabled) {
+            if (player_cache_debug_logs) {
                 console.log("Converted old-style player without caching the result", player, new_style_player);
             }
             return new_style_player;
@@ -373,7 +374,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
 
         // If we've requested player cache debugging, then log the transaction to
         // the console.
-        if (player_cache_debug_enabled) {
+        if (player_cache_debug_logs) {
             let message: Array<string> = [];
             message.push("Converted");
             if (changed) {
@@ -387,7 +388,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
     }
 }
 
-if (player_cache_debug_enabled) {
+if (player_cache_debug_state) {
     window['player_cache'] = {
         cache_by_id: cache_by_id,
         cache_by_username: cache_by_username,
