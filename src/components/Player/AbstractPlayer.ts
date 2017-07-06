@@ -73,6 +73,7 @@ function update_state(continuation: (state: AbstractPlayerState) => void, player
     }
     else if (is_registered(player)) {
         let suffix = (player.is.provisional ? "?" : "") + (player.is.timeout ? "T" : "");
+        let rating = Math.round(player.rating);
         continuation({
             resolved: true,
             guest: false,
@@ -81,7 +82,7 @@ function update_state(continuation: (state: AbstractPlayerState) => void, player
             country: player.country || "un",
             short_rank: "[" + rank_short_string(player.rank) + suffix + "]",
             long_rank: rank_long_string(player.rank),
-            rating: "" + Math.round(player.rating),
+            rating: !isNaN(rating) ? "" + rating : "...",
             className: player_attributes(player).join(" ")
         });
     }

@@ -78,7 +78,7 @@ export class Player extends AbstractPlayer<PlayerProperties, AbstractPlayerState
     }
 
     display_details = (event) => {
-        if (this.props.nolink) {
+        if (this.props.nolink || this.state.guest) {
             return;
         }
         else {
