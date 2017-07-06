@@ -76,7 +76,7 @@ export function is_registered(player: Player): player is RegisteredPlayer {
 // ensures that we get a consistent sort order in all cases.
 //
 // Typical usage:
-//     players.sort(by_username);
+//     players.sort(by_name);
 //     etc...
 //
 // Although slightly less efficient, we carry out all four type checks.
@@ -93,7 +93,7 @@ export function is_registered(player: Player): player is RegisteredPlayer {
 // seem a little odd to some. In my experience, it's extremely easy
 // to rearrange the conditions and forget that the first one is written
 // differently. It saves developer time in the long run to do it this way.
-export function by_username(a: Player, b: Player): number {
+export function by_name(a: Player, b: Player): number {
     // Sort players alphabetically by username, respecting the current
     // locale setting. If they sort equal, then compare by id.
     if (is_guest(a) && is_registered(b)) {
@@ -113,7 +113,7 @@ export function by_username(a: Player, b: Player): number {
     }
 }
 
-export function by_ranking(a: Player, b: Player): number {
+export function by_rank(a: Player, b: Player): number {
     // Sort players by overall rating. If they are of equal rating, then
     // sort alphabetically by username. If they still compare equal then
     // sort by id.

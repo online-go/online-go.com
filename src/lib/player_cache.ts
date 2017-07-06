@@ -17,8 +17,8 @@
 
 import {comm_socket} from "sockets";
 import {get} from "requests";
-import {Publisher} from "pubsub";
-import {Player, RegisteredPlayer, GuestPlayer, is_guest, is_registered, player_attributes} from "data/Player";
+import {Publisher, PublisherSubscription} from "pubsub";
+import { Player, RegisteredPlayer, GuestPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
 import {find_rank} from "compatibility/Rank";
 
@@ -36,21 +36,23 @@ let active_fetches: {[player_id: number]: Promise<Player>} = {};
 let new_player_ids: Array<number> | void;
 let players_online: {[player_id: number]: boolean} = {};
 
+type PublishedPlayer = {[player_id: string]: Player};
+let publisher = new Publisher<PublishedPlayer>();
+export class Subscription {
+    private subscribe: PublisherSubscription<PublishedPlayer>;
 
-let publisher = new Publisher<number, Player>((player) => {
-    return typeof player === "number" ? player.toString() : player.id.toString();
-});
-export class Subscription extends publisher.Subscription {
+    constructor(callback: (item: Player) => void) {
+        this.subscribe = new publisher.Subscription((channel, item) => callback(item));
+    }
+
     to(players: Array<number | Player>) {
-        super.to(players);
-        for (let player of players) {
-            if (typeof player === "number") {
-                fetch(player, true);  // The fetch will publish the new details
-            }                   // as soon as they arrive.
-            else {
-                fetch(player.id, true);
-            }
-        }
+        let ids = players.map(
+            (player) => typeof player === "number" ? player : player.id
+        );
+        this.subscribe.to(ids.map((id) => id.toString()));
+        for (let id of ids) {
+            fetch(id, true);    // The fetch will publish the new details
+        }                       // as soon as they arrive.
     }
 }
 
@@ -81,7 +83,7 @@ comm_socket.on("user/state", (states) => {
                 else {
                     delete player.is.online;
                 }
-                publisher.publish(cache_by_id[player_id]);
+                publisher.publish(player_id.toString(), cache_by_id[player_id]);
             }
         }
     }
@@ -91,7 +93,7 @@ comm_socket.on("disconnect", () => {
     for (let player_id in cache_by_id) {
         if (cache_by_id[player_id].is.online) {
             delete cache_by_id[player_id].is.online;
-            publisher.publish(cache_by_id[player_id]);
+            publisher.publish(player_id.toString(), cache_by_id[player_id]);
         }
     }
 });
@@ -363,7 +365,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // If the cached information has changed, then inform everyone who is
         // subscribed to the player.
         if (changed && !dont_overwrite) {
-            publisher.publish(cached);
+            publisher.publish(cached.id.toString(), cached);
         }
 
         // If the player is new to us, then request to be kept informed

@@ -18,12 +18,13 @@
 import { Player } from "data/Player";
 
 interface LocalData {
-    "user"?: Player;
+    "user": Player;
+    "config.user": any;
     [name: string]: any;
 }
 
-let defaults: LocalData = {};
-let store: LocalData = {};
+let defaults: Partial<LocalData> = {};
+let store: Partial<LocalData> = {};
 let listeners: {[name in keyof LocalData]?: {[id: number]: Listener<LocalData[name]>}} = {};
 let last_id = 0;
 

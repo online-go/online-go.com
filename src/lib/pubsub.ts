@@ -16,51 +16,37 @@
  */
 
 // Basic types used the the pubsub module. Saves typing and allows for easy modification.
-type WhichChannel<S, T> = (item: S | T) => string;
-type CallbackTable<T> = { [channel: string]: { [serial: number]: Callback<T> } };
-type Callback<T> = (item: T) => void;
+type CallbackTable<T> = {[K in keyof T]?: {[serial: number]: Callback<T, K>}};
+type Callback<T, K extends keyof T> = (channel: K, item: T[K]) => void;
 
 
 
-// A Publisher<S, T> is an object that publishes information of type T to its subscribers.
+// A Publisher<T> is an object that publishes information of type T to its subscribers.
 //
 // Each object that can be published has a channel assigned to it, and all the subscribers
-// on that channel are informed of the publication. The channel name is a string that is
-// calculated by the which_channel function.
-//
-// It is often the case that the channel name can be calculated using only partial
-// information about the item to be published. The type S represents this partial
-// information. If the full item is required to calculate its channel, then S can
-// be assigned the type never.
-//
-// The first example of this we came across is the Player type, where a Player is the
-// published information, but the channel name can be calculated from the Player itself
-// or the player's unique id. Hence, the publisher for this type has type
-// Publisher<number, Player>.
-export class Publisher<S, T> {
-    private which_channel: WhichChannel<S, T>;
+// on that channel are informed of the publication. The channel name is a key of T, and
+// the publication is the corresponding value.
+export class Publisher<T> {
     private callback_table: CallbackTable<T>;
-    public readonly Subscription: new (callback: Callback<T>) => PublisherSubscription<S, T>;
+    public readonly Subscription: new (callback: Callback<T, keyof T>) => PublisherSubscription<T>;
 
-    constructor(which_channel: WhichChannel<S, T>) {
+    constructor() {
         let callback_table: CallbackTable<T> = {};
-        class Subscription extends AbstractPublisherSubscription<S, T> {
-            constructor(callback: Callback<T>) {
-                super(which_channel, callback_table, callback);
+        class Subscription extends AbstractPublisherSubscription<T> {
+            constructor(callback: Callback<T, keyof T>) {
+                super(callback_table, callback);
             }
         }
 
-        this.which_channel = which_channel;
         this.callback_table = callback_table;
         this.Subscription = Subscription;
     }
 
     // Publish a piece of information to anyone who is listening.
-    publish(item: T): T {
-        let channel = this.which_channel(item);
+    publish<K extends keyof T>(channel: K, item: T[K]): T[K] {
         let callbacks = this.callback_table[channel];
         for (let serial in callbacks || {}) {
-            callbacks[serial](item);
+            callbacks[serial](channel, item);
         }
         return item;
     }
@@ -69,22 +55,19 @@ export class Publisher<S, T> {
 // A subscription to some of the publisher's channels. Every time an item is published that
 // we are interested in, our callback will be called with the item as its only parameter.
 // This class is used as an inner class of the Publisher.
-export interface PublisherSubscription<S, T> {
-    to(items: Array<S | T>);
+export interface PublisherSubscription<T> {
+    to(channels: Array<keyof T>): void;
 }
 
-abstract class AbstractPublisherSubscription<S, T> implements PublisherSubscription<S, T> {
-    private which_channel: WhichChannel<S, T>;
-    private callback_table: CallbackTable<T>;
-
+abstract class AbstractPublisherSubscription<T> implements PublisherSubscription<T> {
     private static next_serial = 0;
     private serial: number;
 
-    private callback: Callback<T>;
-    private channels: Array<string>;
+    private callback: Callback<T, keyof T>;
+    private channels: Array<keyof T>;
+    private callback_table: CallbackTable<T>;
 
-    constructor(which_channel: WhichChannel<S, T>, callback_table: CallbackTable<T>, callback: Callback<T>) {
-        this.which_channel = which_channel;
+    constructor(callback_table: CallbackTable<T>, callback: Callback<T, keyof T>) {
         this.callback_table = callback_table;
         this.callback = callback;
         this.serial = AbstractPublisherSubscription.next_serial++;
@@ -100,10 +83,11 @@ abstract class AbstractPublisherSubscription<S, T> implements PublisherSubscript
     // old publications and then subscribe to all the new ones. If a subscription is still
     // required then the subscription will be dropped and re-created. This is guaranteed not
     // to lose any publications.
-    to(items: Array<S | T>) {
+    to(channels: Array<keyof T>): void {
+        channels.forEach((channel) => this.callback_table[channel] = this.callback_table[channel] || {});
+
         this.channels.forEach((channel) => delete this.callback_table[channel][this.serial]);
-        this.channels = items.map((item) => this.which_channel(item));
-        this.channels.forEach((channel) => this.callback_table[channel] = this.callback_table[channel] || {});
+        this.channels = channels;
         this.channels.forEach((channel) => this.callback_table[channel][this.serial] = this.callback);
     }
 }
