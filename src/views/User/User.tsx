@@ -721,7 +721,7 @@ export class User extends Resolver<UserProperties, any> {
         }
 
 
-        let global_user = data.get("config.user");
+        let global_user = data.get("user");
 
         return (
           <div className="User container">
@@ -730,7 +730,7 @@ export class User extends Resolver<UserProperties, any> {
                     { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
                     { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
                     <h1>{user.username}
-                        {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                        {((global_user.id === user.id || global_user.is.moderator) || null)   &&
                             <button onClick={this.toggleEdit} className='xs edit-button'>
                                 <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
                             </button>
@@ -755,8 +755,8 @@ export class User extends Resolver<UserProperties, any> {
 
                             <div className="col-sm-10">
                                 <dl className="horizontal">
-                                    {(global_user.is_moderator && user.is_watched) && <dt ></dt>}
-                                    {(global_user.is_moderator && user.is_watched) && <dd ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></dd>}
+                                    {(global_user.is.moderator && user.is_watched) && <dt ></dt>}
+                                    {(global_user.is.moderator && user.is_watched) && <dd ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></dd>}
 
                                     {(user.timeout_provisional) && <dt ></dt>}
                                     {(user.timeout_provisional) && <dd ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></dd>}
