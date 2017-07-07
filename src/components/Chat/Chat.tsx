@@ -71,7 +71,11 @@ interface ChatState {
 let name_match_regex = /^loading...$/;
 new data.Subscription((channel, user) => {
     if (is_registered(user)) {
-        name_match_regex = new RegExp("\\b" + user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&") + "\\b", "i");
+        let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
+        name_match_regex = new RegExp(
+            "\\b" + cleaned_username_regex + "([?:.!*\\s])"
+            + "|\\b" + cleaned_username_regex + "$"
+            , "i");
     }
     if (is_guest(user)) {
         name_match_regex = /(?!x)x/;    // Never matches.

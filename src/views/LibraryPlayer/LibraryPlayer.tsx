@@ -21,7 +21,7 @@ import {_, pgettext, interpolate} from "translate";
 import {Link, browserHistory} from "react-router";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
-import {errorAlerter, ignore} from "misc";
+import {errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {Player} from "Player";
 import {Card} from "material";
 import * as Dropzone from "react-dropzone";
@@ -411,13 +411,9 @@ function outcome_formatter(entry) {{{
             ret = "W";
         }
 
-        let outcome = entry.outcome;
+        let outcome = getOutcomeTranslation(entry.outcome);
         if (/^[0-9.]+$/.test(outcome)) {
             outcome = parseFloat(outcome);
-        }
-
-        if (outcome === "r") {
-            outcome = _("Resignation");
         }
 
         ret += "+" + outcome;

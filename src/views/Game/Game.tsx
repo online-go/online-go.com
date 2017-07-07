@@ -24,7 +24,7 @@ import {_, ngettext, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
-import {alertModerator, errorAlerter, ignore} from "misc";
+import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {LineText} from "misc-ui";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
 import {Goban, GoEngine, GoMath, MoveTree} from "goban";
@@ -1817,7 +1817,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 ?
                                 (interpolate(pgettext("Game winner", "%s wins by %s"), [
                                     (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
-                                    pgettext("Game outcome", this.goban.engine.outcome)
+                                    getOutcomeTranslation(this.goban.engine.outcome)
                                 ]))
                                 :
                                 (interpolate(pgettext("Game winner", "Tie by %s"), [ pgettext("Game outcome", this.goban.engine.outcome)]))

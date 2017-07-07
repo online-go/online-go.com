@@ -151,6 +151,31 @@ export function uuid(): string { /* {{{ */
         return v.toString(16);
     });
 } /* }}} */
+export function getOutcomeTranslation(outcome:string) { /* {{{ */
+    /* Note: for the case statements, don't simply do `pgettext("Game outcome", outcome)`,
+     * the system to parse out strings to translate needs the text. */
+    switch (outcome) {
+        case 'resign':
+        case 'r':
+        case 'Resignation':
+            return pgettext("Game outcome", 'Resignation');
+
+        case 'Stone Removal Timeout':
+            return pgettext("Game outcome", 'Stone Removal Timeout');
+        case 'Timeout':
+            return pgettext("Game outcome", 'Timeout');
+        case 'Cancellation':
+            return pgettext("Game outcome", 'Cancellation');
+        case 'Disqualification':
+            return pgettext("Game outcome", 'Disqualification');
+        case 'Moderator Decision':
+            return pgettext("Game outcome", 'Moderator Decision');
+        case 'Abandonment':
+            return pgettext("Game outcome", 'Abandonment');
+    }
+
+    return outcome;
+} /* }}} */
 export function getGameResultText(game) { /* {{{ */
     /* SGFs will encode the full result in the outcome */
     if (/[+]/.test(game.outcome)) {
@@ -170,7 +195,7 @@ export function getGameResultText(game) { /* {{{ */
     }
 
     game.outcome = game.outcome.replace(" points", "");
-    result += winner + "+"  + pgettext("Game outcome", game.outcome);
+    result += winner + "+"  + getOutcomeTranslation(game.outcome);
 
     if (game.ranked) {
         result += ", ";

@@ -589,8 +589,13 @@ ITC.register("private-chat-close", (data) => { /* {{{ */
 function chat_markup(body) { /* {{{ */
     if (typeof(body) === "string") {
         let ret = $("<div>").text(body).html();
+        // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
+        // and email_matcher to overlap! See for example
+        // https://www.google.co.uk/maps/place/Platform+9%C2%BE/@51.5321578,-0.1261661
         let link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
-        ret = ret.replace(link_matcher, "<a target='_blank' href='$1'>$1</a>");
+        ret = ret.replace(link_matcher, (match) => "<a target='_blank' href='" +
+            match.replace("@", "%40") + "'>" +
+            match.replace("@", "&commat;") + "</a>");
         let email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
         ret = ret.replace(email_matcher, "<a target='_blank' href='mailto:$1'>$1</a>");
         let review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
