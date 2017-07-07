@@ -38,7 +38,7 @@ function sanitize(src) {
         transformTags: {
             'script': 'error'
         }
-    })
+    });
 }
 
 export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
