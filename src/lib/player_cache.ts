@@ -24,8 +24,7 @@ import {find_rank} from "compatibility/Rank";
 
 
 
-const player_cache_debug_logs  = false;
-const player_cache_debug_state = true;
+const player_cache_debug  = false;
 
 let cache_by_id: {[player_id: number]: RegisteredPlayer} = {};
 let cache_by_username: {[player_username: string]: RegisteredPlayer} = {};
@@ -41,7 +40,7 @@ let players_online: {[player_id: number]: boolean} = {};
 // Publish new player details as required.
 let publisher = new Publisher<{[player_id: string]: Player}>();
 export class Subscription {
-    private subscribe: PublisherSubscription<{[player_id: string]: Player}>;
+    private subscribe: PublisherSubscription<{[player_id: string]: Player}, string>;
     private subscribed_to: Array<number>;
     private callback: (item: Player) => void;
 
@@ -352,7 +351,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // to be true. In this case, just return the new_style_player, as it
         // will contain all the information the caller needs.
         if (dont_overwrite) {
-            if (player_cache_debug_logs) {
+            if (player_cache_debug) {
                 console.log("Converted old-style player without caching the result", player, new_style_player);
             }
             return new_style_player;
@@ -397,7 +396,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
 
         // If we've requested player cache debugging, then log the transaction to
         // the console.
-        if (player_cache_debug_logs) {
+        if (player_cache_debug) {
             let message: Array<string> = [];
             message.push("Converted");
             if (changed) {
@@ -409,21 +408,4 @@ export function update(player: any, dont_overwrite?: boolean): Player {
 
         return cached;
     }
-}
-
-if (player_cache_debug_state) {
-    window['player_cache'] = {
-        cache_by_id: cache_by_id,
-        cache_by_username: cache_by_username,
-        nicknames: nicknames,
-
-        active_fetches: active_fetches,
-
-        lookup: lookup,
-        lookup_by_id: lookup_by_id,
-        lookup_by_username: lookup_by_username,
-
-        fetch: fetch,
-        update: update
-    };
 }

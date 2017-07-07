@@ -18,21 +18,17 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
-import data from "data";
+import * as data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 import {Player as PlayerType, by_name} from "data/Player";
 import * as player_cache from "player_cache";
 
 
-interface FriendListProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
-}
 
 export class FriendList extends React.PureComponent<{}, any> {
-    subscribe: player_cache.Subscription;
+    friends_subscribe: player_cache.Subscription;
+    data_subscribe: data.Subscription<"friends">;
 
     constructor(props) {
         super(props);
@@ -40,13 +36,14 @@ export class FriendList extends React.PureComponent<{}, any> {
             friends: [],
             resolved: false
         };
-        this.subscribe = new player_cache.Subscription(this.resortFriends);
+        this.friends_subscribe = new player_cache.Subscription(this.resortFriends);
+        this.data_subscribe = new data.Subscription(this.updateFriends);
     }
 
-    updateFriends = (friends: Array<any>) => {
+    updateFriends = (channel: "friends", friends: Array<any>) => {
         let new_style_friends = friends.map((friend) => player_cache.update(friend));
         new_style_friends.sort(by_status);
-        this.subscribe.to(new_style_friends);
+        this.friends_subscribe.to(new_style_friends);
         this.setState({
             friends: new_style_friends,
             resolved: true
@@ -54,10 +51,11 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
-        data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
+        this.data_subscribe.to(["friends"]); /* This is managed by our FriendIndicator */
     }}}
     componentWillUnmount() {{{
-        this.subscribe.to([]);
+        this.data_subscribe.to([]);
+        this.friends_subscribe.to([]);
     }}}
     resortFriends = () => {
         this.state.friends.sort(by_status);

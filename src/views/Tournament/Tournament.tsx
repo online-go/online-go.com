@@ -30,7 +30,7 @@ import * as Datetime from "react-datetime";
 import {UIPush} from "UIPush";
 import {Card} from "material";
 import {EmbeddedChat} from "Chat";
-import data from "data";
+import * as data from "data";
 import {PaginatedTable} from "PaginatedTable";
 import {PersistentElement} from "PersistentElement";
 import {PlayerAutocomplete} from "PlayerAutocomplete";

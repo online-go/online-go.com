@@ -22,7 +22,7 @@ import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
@@ -69,14 +69,14 @@ interface ChatState {
 }
 
 let name_match_regex = /^loading...$/;
-data.watch("user", (user) => {
+new data.Subscription((channel, user) => {
     if (is_registered(user)) {
         name_match_regex = new RegExp("\\b" + user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&") + "\\b", "i");
     }
     if (is_guest(user)) {
         name_match_regex = /(?!x)x/;    // Never matches.
     }
-});
+}).to(["user"]);
 
 let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-english" , "name": "English", "country": "us"},
@@ -116,11 +116,11 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
 ]; /* }}} */
 
-data.watch("config.ogs", (settings) => {
+new data.Subscription((channel, settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
-});
+}).to(["config.ogs"]);
 
 
 let rtl_mode = {};

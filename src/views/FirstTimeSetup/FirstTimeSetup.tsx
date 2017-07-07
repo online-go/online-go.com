@@ -21,7 +21,7 @@ import {post, get, put} from "requests";
 import {errorAlerter} from "misc";
 import {Rank, kyu, rank_long_string} from "data/Rank";
 
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 

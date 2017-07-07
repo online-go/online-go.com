@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
-import data from "data";
+import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -66,8 +66,8 @@ let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
     get("/api/v0/logout").then((config) => {
-        data.set("config", config, true);
-        window.location.reload();
+        data.set("config", config);
+        window.location.reload(); // Shouldn't be necessary if the subscribers know about the change.
     });
 }
 
@@ -78,6 +78,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         notification_list: NotificationList;
         omnisearch_input;
     };
+    subscribe: data.Subscription<"config.user">;
 
     constructor(props) {
         super(props);
@@ -106,15 +107,21 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleLeftNav = this.toggleLeftNav.bind(this);
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
+
+        this.subscribe = new data.Subscription((channel, user) => this.setState({"user": user}));
     }
 
     componentWillMount() {
-        data.watch("config.user", (user) => this.setState({"user": user}));
+        this.subscribe.to(["config.user"]);
 
         browserHistory.listen(location => {
             this.closeNavbar();
             this.setState({path: location.pathname});
         });
+    }
+
+    compnentWillUnmount() {
+        this.subscribe.to([]);
     }
 
     closeNavbar() {

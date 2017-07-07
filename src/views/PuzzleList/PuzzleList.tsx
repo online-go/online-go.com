@@ -26,7 +26,7 @@ import {SearchInput} from "misc-ui";
 import {StarRating} from "StarRating";
 import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 import {find_rank_long_string,  find_rank_short_string} from "compatibility/Rank";
 import {is_registered} from "data/Player";

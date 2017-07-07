@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
 import {AdUnit} from "AdUnit";
-import data from "data";
+import * as data from "data";
 import {is_registered} from "data/Player";
 
 declare var swal;

@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {comm_socket} from "sockets";
 import {EventEmitter} from "eventemitter3";
-import data from "data";
+import * as data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";

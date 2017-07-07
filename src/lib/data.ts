@@ -15,50 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Player } from "data/Player";
+import {Player} from "data/Player";
+import {Publisher} from "pubsub";
 
-interface LocalData {
+export interface LocalData {
     "user": Player;
     "config.user": any;
+    "friends": Array<any>;
     [name: string]: any;
 }
 
 let defaults: Partial<LocalData> = {};
 let store: Partial<LocalData> = {};
-let listeners: {[name in keyof LocalData]?: {[id: number]: Listener<LocalData[name]>}} = {};
-let last_id = 0;
 
-export class Listener<K extends keyof LocalData> {
-    key: K;
-    id: number;
-    cb: (data: LocalData[K], key?: K) => void;
-    remove_callbacks: Array<() => void>;
 
-    constructor(key: K, cb: (data: LocalData[K], key?: K) => void) {
-        this.key = key;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
 
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
+let publisher = new Publisher<LocalData>();
+export class Subscription<K extends keyof LocalData> extends publisher.Subscription<K> { }
 
-    remove() {
-        delete listeners[this.key][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-}
 
-export function set<K extends keyof LocalData>(key: K, value: LocalData[K], dontTriggerListeners?:boolean): any {
-    if (typeof(value) === "undefined") {
+
+export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | undefined): LocalData[K] {
+    if (value === undefined) {
         remove(key);
         return value;
     }
@@ -70,52 +48,26 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K], dont
         console.error(e);
     }
 
-    if (dontTriggerListeners) {
-        return value;
-    }
-
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            listeners[key][id].cb(value, key);
-        }
-    }
+    publisher.publish(key, value);
     return value;
 }
 export function setDefault<K extends keyof LocalData>(key: K, value: LocalData[K]): LocalData[K] {
     defaults[key] = value;
     if (!(key in store)) {
-        if (key in listeners) {
-            for (let id in listeners[key]) {
-                listeners[key][id].cb(value, key);
-            }
-        }
+        publisher.publish(key, value);
     }
     return value;
 }
 export function remove<K extends keyof LocalData>(key: K): LocalData[K] {
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            try {
-                if (key in defaults) {
-                    listeners[key][id].cb(defaults[key], key);
-                } else {
-                    listeners[key][id].cb(undefined, key);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
     try {
         localStorage.removeItem(`ogs.${key}`);
     } catch (e) {
         console.error(e);
     }
-    if (key in store) {
-        let val = store[key];
-        delete store[key];
-        return val;
-    }
+    let val: LocalData[K] | undefined = get(key);
+    delete store[key];
+    publisher.publish(key, defaults[key]);
+    return val;
 }
 export function removeAll(): void {
     let keys = [];
@@ -123,61 +75,36 @@ export function removeAll(): void {
         keys.push(key);
     }
     for (let key of keys) {
-        try {
-            remove(key);
-        } catch (e) {
-            console.error(e);
-        }
+        remove(key);
     }
 }
-export function get<K extends keyof LocalData>(key: K, _default?: LocalData[K]): LocalData[K] {
+
+export function get<K extends keyof LocalData>(key: K, default_value?: LocalData[K]): LocalData[K] | undefined {
     if (key in store) {
         return store[key];
     }
     if (key in defaults) {
         return defaults[key];
     }
-    return _default;
+    return default_value;
 }
 
-export function ensureDefaultAndGet<K extends keyof LocalData>(key: K): LocalData[K] {
+export function ensureDefaultAndGet<K extends keyof LocalData>(key: K): LocalData[K] | undefined {
     if (!(key in defaults)) {
         throw new Error(`Undefined default: ${key}`);
     }
     return get(key);
 }
 
-export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K], key?: string) => void, call_on_undefined?: boolean): Listener<K> {
-    let listener = new Listener<K>(key, cb);
-    if (!(key in listeners)) {
-        listeners[key] = {};
-    }
-    listeners[key][listener.id] = listener;
-
-    let val = get(key);
-    if (val != undefined || call_on_undefined) {
-        cb(val, key);
-    }
-
-    return listener;
-}
-export function dump(key_prefix?: string, strip_prefix?: boolean) {
-    if (!key_prefix) {
-        key_prefix = "";
-    }
+export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     let ret = {};
+    let data = Object.assign({}, defaults, store);
+    let keys = Object.keys(data);
 
-    let keys = Object.keys(store).concat(Object.keys(defaults));
-
-    let last_key = null;
     keys.sort().map((key) => {
-        if (last_key === key) {
-            return;
-        }
-        last_key = key;
         if (key.indexOf(key_prefix) === 0) {
             let k = strip_prefix ? key.substr(key_prefix.length) : key;
-            ret[k] = {"union": get(key), value: store[key], "default": defaults[key]};
+            ret[k] = {"union": data[key], value: store[key], "default": defaults[key]};
         }
     });
     console.table(ret);
@@ -191,7 +118,7 @@ try {
             key = key.substr(4);
             try {
                 let item = localStorage.getItem(`ogs.${key}`);
-                if (typeof(item) === "undefined") {
+                if (item === "undefined") {
                     localStorage.removeItem(`ogs.${key}`);
                     continue;
                 }
@@ -206,15 +133,3 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-
-export default window["data"] = {
-    set                 : set,
-    get                 : get,
-    ensureDefaultAndGet : ensureDefaultAndGet,
-    setDefault          : setDefault,
-    remove              : remove,
-    removeAll           : removeAll,
-    watch               : watch,
-    dump                : dump,
-};

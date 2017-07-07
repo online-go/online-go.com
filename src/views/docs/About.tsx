@@ -19,7 +19,7 @@ import * as React from "react";
 import {_} from "translate";
 import {Link} from "react-router";
 import {termination_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 
 declare var ogs_release;
 declare var ogs_version;

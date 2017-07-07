@@ -19,7 +19,7 @@ import * as React from "react";
 import {_} from "translate";
 import {Card} from "material";
 import {del, post, get} from "requests";
-import data from "data";
+import * as data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";

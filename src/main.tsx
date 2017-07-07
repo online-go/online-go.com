@@ -17,7 +17,7 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 
-import data from "data";
+import * as data from "data";
 
 data.setDefault("theme", "light");
 data.setDefault("config", {
@@ -83,18 +83,18 @@ declare const swal;
 
 
 /*** Load our config ***/
-data.watch("config", (config) => {
+new data.Subscription((channel, config) => {
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
-});
+}).to(["config"]);
 get("ui/config").then((config) => data.set("config", config));
-data.watch("config.user", (user) => {
+new data.Subscription((channel, user) => {
     let new_style_user = player_cache.update(user);
     Object.assign(new_style_user, user);
     data.set("user", new_style_user);
     window["user"] = new_style_user;
-});
+}).to(["config.user"]);
 
 
 /*** SweetAlert setup ***/
@@ -137,7 +137,7 @@ const Default = () => (
 
 /** Connect to the chat service */
 let auth_connect_fn = () => {return; };
-data.watch("config.user", (user) => {
+new data.Subscription((channel, user) => {
     if (!user.anonymous) {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("authenticate", {
@@ -166,7 +166,7 @@ data.watch("config.user", (user) => {
     if (sockets.comm_socket.connected) {
         auth_connect_fn();
     }
-});
+}).to(["config.user"]);
 sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
 
@@ -308,3 +308,6 @@ const routes = (
 </Router>);
 
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+window["data"] = data;
+window["player_cache"] = player_cache;

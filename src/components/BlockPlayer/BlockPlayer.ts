@@ -16,7 +16,7 @@
  */
 
 import {get, put} from "requests";
-import data from "data";
+import * as data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
 import * as player_cache from "player_cache";
@@ -121,5 +121,5 @@ function unIgnoreUser(uid) {
     $("<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>").appendTo("head");
 }
 
-data.watch("user", update_blocks);
+new data.Subscription(update_blocks).to(["user"]);
 ITC.register("update-blocks", update_blocks);

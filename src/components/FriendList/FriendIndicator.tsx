@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {get} from "requests";
 import * as player_cache from "player_cache";
 import {FriendList} from "./FriendList";
@@ -36,7 +36,8 @@ interface FriendIndicatorState {
 
 export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorState> {
     friends: Array<Player> = [];
-    subscribe: player_cache.Subscription;
+    friends_subscribe: player_cache.Subscription;
+    data_subscribe: data.Subscription<"friends">;
 
     constructor(props) {
         super(props);
@@ -45,25 +46,26 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
             online_count: 0,
             show_friend_list: false
         };
-        this.subscribe = new player_cache.Subscription(this.updateFriendCount);
+        this.friends_subscribe = new player_cache.Subscription(this.updateFriendCount);
+        this.data_subscribe = new data.Subscription(this.updateFriends);
         friend_indicator_singleton = this;
     }
 
     componentDidMount() {
-        data.watch("friends", this.updateFriends);
+        this.data_subscribe.to(["friends"]);
         this.refresh();
     }
 
     componentWillUnmount() {
-        this.subscribe.to([]);
+        this.friends_subscribe.to([]);
     }
 
-    updateFriends = (friends: Array<any>) => {
+    updateFriends = (channel: "friends", friends: Array<any>) => {
         // Convert the server's data to the new format.
         let new_style_friends = friends.map((friend) => player_cache.update(friend));
 
         // Update the component.
-        this.subscribe.to(new_style_friends);
+        this.friends_subscribe.to(new_style_friends);
         this.friends = new_style_friends;
         this.updateFriendCount();
     }

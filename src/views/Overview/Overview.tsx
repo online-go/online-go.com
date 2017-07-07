@@ -28,7 +28,7 @@ import {Goban} from "goban";
 import {toast} from "toast";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
-import data from "data";
+import * as data from "data";
 import {errorAlerter} from "misc";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
-import {Listener} from "data";
+import * as data from "data";
 import {GoThemes} from "goban";
 
 let defaults = {
@@ -74,10 +73,6 @@ export function get(key: string): any {
 export function set(key: string, value: any): any {
     return data.set(`preferences.${key}`, value);
 }
-export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener<string> {
-    return data.watch(`preferences.${key}`, cb, call_on_undefined);
-}
-
 export function dump(): void {
     data.dump("preferences.", true);
 }
@@ -109,24 +104,17 @@ export function watchSelectedThemes(cb) {
         }
         cb(getSelectedThemes());
     };
+    let subscribe = new data.Subscription<any>(call_cb);
 
-    let a = watch("goban-theme-board", call_cb);
-    let b = watch("goban-theme-black", call_cb);
-    dont_call_right_away = false;
-    let c = watch("goban-theme-white", call_cb);
-    return {
-        remove: () => {
-            a.remove();
-            b.remove();
-            c.remove();
-        }
-    };
+    subscribe.to(["goban-theme-board", "goban-theme-black"]);
+    dont_call_right_away = false;   // dont_call_ever ???
+    subscribe.to(["goban-theme-board", "goban-theme-black", "goban-theme-white", call_cb]);
+    return { remove: () => subscribe.to([]) };
 }
 
 
 export default window["preferences"] = {
     get: get,
     set: set,
-    watch: watch,
     dump: dump,
 };

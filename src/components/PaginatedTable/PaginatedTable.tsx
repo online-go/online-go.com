@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import data from "data";
+import * as data from "data";
 
 interface PaginatedTableColumnProperties {
     cellProps?: any;

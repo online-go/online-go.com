@@ -16,7 +16,7 @@
 
 import GoTheme from "../GoTheme";
 import {_} from "../translate";
-import data from "data";
+import * as data from "data";
 
 data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");

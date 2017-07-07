@@ -20,7 +20,7 @@ import {_, getLanguageFlag} from "translate";
 import {get} from "requests";
 import {Flag} from "Flag";
 import {Player} from "Player";
-import data from "data";
+import * as data from "data";
 import {is_registered} from "data/Player";
 
 function shuffleArray(array) {

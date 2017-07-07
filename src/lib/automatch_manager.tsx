@@ -20,7 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
 import {EventEmitter} from "eventemitter3";
 import {browserHistory} from 'react-router';
-import data from "data";
+import * as data from "data";
 import {Toast, toast} from 'toast';
 
 export type Speed = 'blitz' | 'live' | 'correspondence';
