@@ -36,23 +36,44 @@ let active_fetches: {[player_id: number]: Promise<Player>} = {};
 let new_player_ids: Array<number> | void;
 let players_online: {[player_id: number]: boolean} = {};
 
-type PublishedPlayer = {[player_id: string]: Player};
-let publisher = new Publisher<PublishedPlayer>();
+
+
+// Publish new player details as required.
+let publisher = new Publisher<{[player_id: string]: Player}>();
 export class Subscription {
-    private subscribe: PublisherSubscription<PublishedPlayer>;
+    private subscribe: PublisherSubscription<{[player_id: string]: Player}>;
+    private subscribed_to: Array<number>;
+    private callback: (item: Player) => void;
 
     constructor(callback: (item: Player) => void) {
         this.subscribe = new publisher.Subscription((channel, item) => callback(item));
+        this.subscribed_to = [];
+        this.callback = callback;
     }
 
     to(players: Array<number | Player>) {
         let ids = players.map(
             (player) => typeof player === "number" ? player : player.id
         );
+
+        let old_subscriptions = this.subscribed_to;
+        this.subscribed_to = ids;
         this.subscribe.to(ids.map((id) => id.toString()));
-        for (let id of ids) {
-            fetch(id, true);    // The fetch will publish the new details
-        }                       // as soon as they arrive.
+        let new_subscriptions = this.subscribed_to;
+
+        // Publish to any new subscribers as soon as possible so they can
+        // initialise themselves fully.
+        let publish_to: {[id: number]: boolean} = {};
+        new_subscriptions.map((id) => publish_to[id] = true);
+        old_subscriptions.map((id) => delete publish_to[id]);
+        for (let id in publish_to) {
+            if (is_complete(cache_by_id[id])) {
+                this.callback(cache_by_id[id]);
+            }
+            else {
+                fetch(+id, true);   // The fetch will publish the details.
+            }
+        }
     }
 }
 

@@ -19,6 +19,13 @@
 type CallbackTable<T> = {[K in keyof T]?: {[serial: number]: Callback<T, K>}};
 type Callback<T, K extends keyof T> = (channel: K, item: T[K]) => void;
 
+// A subscription to some of the publisher's channels. Every time an item is published that
+// we are interested in, our callback will be called with the item as its only parameter.
+// This class is used as an inner class of the Publisher.
+export interface PublisherSubscription<T> {
+    to(channels: Array<keyof T>): void;
+}
+
 
 
 // A Publisher<T> is an object that publishes information of type T to its subscribers.
@@ -32,9 +39,12 @@ export class Publisher<T> {
 
     constructor() {
         let callback_table: CallbackTable<T> = {};
+        let first_subscriber_joined = this.first_subscriber_joined.bind(this);
+        let last_subscriber_left = this.last_subscriber_left.bind(this);
+
         class Subscription extends AbstractPublisherSubscription<T> {
             constructor(callback: Callback<T, keyof T>) {
-                super(callback_table, callback);
+                super(callback_table, first_subscriber_joined, last_subscriber_left, callback);
             }
         }
 
@@ -50,27 +60,42 @@ export class Publisher<T> {
         }
         return item;
     }
+
+    // The first subscriber has joined a channel. Override if required.
+    protected first_subscriber_joined(channel: keyof T): void { }
+
+    // The last subscriber has left a channel. Override if required.
+    protected last_subscriber_left(channel: keyof T): void { }
 }
 
-// A subscription to some of the publisher's channels. Every time an item is published that
-// we are interested in, our callback will be called with the item as its only parameter.
-// This class is used as an inner class of the Publisher.
-export interface PublisherSubscription<T> {
-    to(channels: Array<keyof T>): void;
-}
 
+
+// A subscription to a Publisher. This class is inherited by the Publisher's
+// inner Subscription class.
 abstract class AbstractPublisherSubscription<T> implements PublisherSubscription<T> {
     private static next_serial = 0;
     private serial: number;
 
+    private callback_table: CallbackTable<T>;
+    private first_subscriber_joined: (channel: keyof T) => void;
+    private last_subscriber_left: (channel: keyof T) => void;
+
     private callback: Callback<T, keyof T>;
     private channels: Array<keyof T>;
-    private callback_table: CallbackTable<T>;
 
-    constructor(callback_table: CallbackTable<T>, callback: Callback<T, keyof T>) {
-        this.callback_table = callback_table;
-        this.callback = callback;
+    constructor(
+        callback_table: CallbackTable<T>,
+        first_subscriber_joined: (channel: keyof T) => void,
+        last_subscriber_left: (channel: keyof T) => void,
+        callback: Callback<T, keyof T>
+    ) {
         this.serial = AbstractPublisherSubscription.next_serial++;
+
+        this.callback_table = callback_table;
+        this.first_subscriber_joined = first_subscriber_joined;
+        this.last_subscriber_left = last_subscriber_left;
+
+        this.callback = callback;
         this.channels = [];
     }
 
@@ -84,10 +109,48 @@ abstract class AbstractPublisherSubscription<T> implements PublisherSubscription
     // required then the subscription will be dropped and re-created. This is guaranteed not
     // to lose any publications.
     to(channels: Array<keyof T>): void {
-        channels.forEach((channel) => this.callback_table[channel] = this.callback_table[channel] || {});
+        let last_left: {[channel in keyof T]?: boolean} = {};
+        let first_joined: {[channel in keyof T]?: boolean} = {};
 
-        this.channels.forEach((channel) => delete this.callback_table[channel][this.serial]);
-        this.channels = channels;
-        this.channels.forEach((channel) => this.callback_table[channel][this.serial] = this.callback);
+        // Check that a callback table exists on every channel.
+        for (let channel of channels) {
+            this.callback_table[channel] = this.callback_table[channel] || {};
+        }
+
+        // Delete the old subscriptions, checking whether we're the last one.
+        for (let channel of this.channels) {
+            delete this.callback_table[channel][this.serial];
+            last_left[channel] = true;
+            for (let serial in this.callback_table[channel]) {
+                delete last_left[channel];
+                break;
+            }
+        }
+
+        // Record the new subscriptions. Make a defensive copy of the array.
+        this.channels = channels.slice();
+
+        // Create the new subscriptions, checking whether we're the first one.
+        for (let channel of this.channels) {
+            first_joined[channel] = true;
+            for (let serial in this.callback_table[channel]) {
+                delete first_joined[channel];
+                break;
+            }
+            this.callback_table[channel][this.serial] = this.callback;
+        }
+
+        // Inform the publisher of any channels that are now in use for the first
+        // time, or have fallen out of use for the first time.
+        for (let channel in first_joined) {
+            if (!(channel in last_left)) {
+                this.first_subscriber_joined(channel);
+            }
+        }
+        for (let channel in last_left) {
+            if (!(channel in first_joined)) {
+                this.last_subscriber_left(channel);
+            }
+        }
     }
 }
