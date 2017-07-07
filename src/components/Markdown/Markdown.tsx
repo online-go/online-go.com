@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as markdownit from "markdown-it";
+import * as sanitizeHtml from 'sanitize-html';
 
 interface MarkdownProps {
     source: string;
@@ -28,24 +29,35 @@ const md = markdownit({
     typographer: true,
 });
 
+function sanitize(src) {
+    return sanitizeHtml(src, {
+        allowedTags: false, /* this means "all" */
+        allowedAttributes: {
+            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay']
+        },
+        transformTags: {
+            'script': 'error'
+        }
+    })
+}
+
 export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
     constructor(props) {
         super(props);
         this.state = {
-            html: this.props.source ? md.render(this.massage(this.props.source)) : ""
+            html: this.props.source ? sanitize(md.render(this.massage(this.props.source))) : ""
         };
     }
 
     massage(source: string): string {
         source = source.split('\n').map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
-        source = source.replace(/<script/ig, "(script"); // hasnt' been exploitable yet with how react works i don't think, but they leave most html intact for some stupid reason, this string shouldn't exist anyways
         return source;
     }
 
     componentWillReceiveProps(next_props) {{{
         if (next_props.source !== this.props.source) {
             this.setState({
-                html: next_props.source ? md.render(this.massage(next_props.source)) : ""
+                html: next_props.source ? sanitize(md.render(this.massage(next_props.source))) : ""
             });
         }
     }}}

@@ -49,12 +49,14 @@
     "@types/react-redux": "^4.4.35",
     "@types/react-router": "^2.0.41",
     "@types/react-tap-event-plugin": "0.0.30",
+    "@types/sanitize-html": "^1.13.31",
     "@types/socket.io-client": "^1.4.29",
     "@types/sweetalert": "^1.1.27",
     "eventemitter3": "^2.0.3",
     "react-autosuggest": "^8.0.1",
     "react-datetime": "^2.8.10",
     "react-dropzone": "^3.7.3",
-    "react-tap-event-plugin": "^1.0.0"
+    "react-tap-event-plugin": "^1.0.0",
+    "sanitize-html": "^1.14.1"
   }
 }
