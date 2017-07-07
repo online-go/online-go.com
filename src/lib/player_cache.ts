@@ -17,7 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {get} from "requests";
-import {Publisher, PublisherSubscription} from "pubsub";
+import {Publisher} from "pubsub";
 import { Player, RegisteredPlayer, GuestPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
 import {find_rank} from "compatibility/Rank";
@@ -39,40 +39,29 @@ let players_online: {[player_id: number]: boolean} = {};
 
 // Publish new player details as required.
 let publisher = new Publisher<{[player_id: string]: Player}>();
+class PlayerCacheSubscription extends publisher.Subscription<string> {
+    protected new_subscriber(channel: string): void {
+        let id: number = +channel;
+        if (is_complete(cache_by_id[id])) {
+            this.callback(channel, cache_by_id[id]);
+        }
+        else {
+            fetch(id, true);   // The fetch will publish the details.
+        }
+    }
+}
 export class Subscription {
-    private subscribe: PublisherSubscription<{[player_id: string]: Player}, string>;
-    private subscribed_to: Array<number>;
-    private callback: (item: Player) => void;
+    private subscribe: PlayerCacheSubscription;
 
-    constructor(callback: (item: Player) => void) {
-        this.subscribe = new publisher.Subscription((channel, item) => callback(item));
-        this.subscribed_to = [];
-        this.callback = callback;
+    constructor(callback: (player: Player) => void) {
+        this.subscribe = new PlayerCacheSubscription((channel, player) => callback(player));
     }
 
     to(players: Array<number | Player>) {
         let ids = players.map(
-            (player) => typeof player === "number" ? player : player.id
+            (player) => typeof player === "number" ? player.toString() : player.id.toString()
         );
-
-        let old_subscriptions = this.subscribed_to;
-        this.subscribed_to = ids;
-        this.subscribe.to(ids.map((id) => id.toString()));
-        let new_subscriptions = this.subscribed_to;
-
-        // Publish to any new subscribers as soon as possible so they can
-        // initialise themselves fully.
-        let publish_to: {[id: number]: boolean} = {};
-        new_subscriptions.map((id) => publish_to[id] = true);
-        old_subscriptions.map((id) => delete publish_to[id]);
-        for (let id in publish_to) {
-            if (is_complete(cache_by_id[id])) {
-                this.callback(cache_by_id[id]);
-            }
-            else {
-                fetch(+id, true);   // The fetch will publish the details.
-            }
-        }
+        this.subscribe.to(ids);
     }
 }
 

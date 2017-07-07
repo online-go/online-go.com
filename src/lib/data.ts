@@ -22,6 +22,12 @@ export interface LocalData {
     "user": Player;
     "config.user": any;
     "friends": Array<any>;
+    "ad-override": boolean;
+    "email-banner-dismissed": boolean;
+    "theme": "dark" | "light";
+    "announcements.cleared": {[announcement: string]: number};
+    "chat.joined": {[channel: string]: boolean};
+    "chat.active_channel": string;
     [name: string]: any;
 }
 
@@ -31,7 +37,14 @@ let store: Partial<LocalData> = {};
 
 
 let publisher = new Publisher<LocalData>();
-export class Subscription<K extends keyof LocalData> extends publisher.Subscription<K> { }
+export class Subscription<K extends keyof LocalData> extends publisher.Subscription<K> {
+    protected new_subscriber(channel: K): void {
+        let value = get(channel);
+        if (value !== undefined) {
+            this.callback(channel, value);
+        }
+    }
+}
 
 
 
