@@ -250,7 +250,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').is.validated && this.player.is.moderator && this.lines.length === 0) {
+        if (!data.get('user').is.validated && !this.player.is.moderator && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
