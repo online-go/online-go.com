@@ -21,6 +21,7 @@ import {Publisher} from "pubsub";
 import { Player, RegisteredPlayer, GuestPlayer, is_guest, is_registered, player_attributes} from "data/Player";
 import {Rank, kyu, dan, pro} from "data/Rank";
 import {find_rank} from "compatibility/Rank";
+import {to_old_style_player} from "compatibility/Player";
 
 
 
@@ -314,25 +315,8 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         // Add compatibility fields to the Player object. These fields are
         // inaccessible when the object is accessed as an instance of Player,
         // but are accessible when it is accessed as an instance of any.
-        let compatibility: any = new_style_player;
-        compatibility.ui_class = player_attributes(new_style_player).join(" ");
-        compatibility.player_id = compatibility.user_id = new_style_player.id;
-        compatibility["icon-url"] = new_style_player.icon;
-        compatibility.is_superuser = !!new_style_player.is.admin;
-        compatibility.is_moderator = !!new_style_player.is.moderator;
-        compatibility.tournament_moderator = !!new_style_player.is.tournament_moderator;
-        compatibility.email_validated = !!new_style_player.is.validated;
-        compatibility.is_bot = !!new_style_player.is.bot;
-        compatibility.anonymous = false;
-        if (rank && rank.type === "Pro") {
-            compatibility.ranking = rank.level + 36;
-        }
-        if (rank && rank.type === "Dan") {
-            compatibility.ranking = rank.level + 29;
-        }
-        if (rank && rank.type === "Kyu") {
-            compatibility.ranking = 30 - rank.level;
-        }
+        let compatibility: any = to_old_style_player(new_style_player);
+        Object.assign(new_style_player, compatibility);
 
         // If the data we're fed might be inconsistent with the current state
         // of the player in question, then the caller will set dont_overwrite
