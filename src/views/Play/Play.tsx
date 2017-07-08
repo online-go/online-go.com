@@ -212,7 +212,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
 
     render() {
-        if (!data.get("user")) {
+        if (!data.get("config.user").setup_rank_set) {
             return <FirstTimeSetup/>;
         }
 

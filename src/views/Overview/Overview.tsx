@@ -71,7 +71,7 @@ export class Overview extends React.Component<{}, any> {
 
     render() {
         let user = data.get("user");
-        if (!data.get("user")) {
+        if (!data.get("config.user").setup_rank_set) {
             return <FirstTimeSetup/>;
         }
         if (!is_registered(user)) {
