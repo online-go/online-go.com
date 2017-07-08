@@ -93,7 +93,6 @@ new data.Subscription((channel, user) => {
     let new_style_user = player_cache.update(user);
     Object.assign(new_style_user, user);
     data.set("user", new_style_user);
-    data.set("user_is_supporter", user.supporter);
 }).to(["config.user"]);
 
 

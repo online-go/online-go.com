@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2012-2017  Online-Go.com
  *
@@ -375,7 +376,10 @@ export class Settings extends React.PureComponent<{}, any> {
         // If the user disables showing that they are a supporter, then
         // user.is.supporter = false while the user *is* still a supporter.
         // Hence, the data cache needs to record the user's true status.
-        let user_is_supporter = data.get("user_is_supporter");
+        // Note that this really needs to get "config.user", not "user" as
+        // data.get("user").is.supporter = false if the player is not telling
+        // the world about their supporter status.
+        let user_is_supporter = data.get("config.user").supporter;
 
         let aga_ratings_enabled = null;
 

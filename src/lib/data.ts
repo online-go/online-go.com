@@ -20,7 +20,6 @@ import {Publisher} from "pubsub";
 
 export interface LocalData {
     "user": Player;
-    "user_is_supporter": boolean;
     "config.user": any;
     "friends": Array<any>;
     "ad-override": boolean;
