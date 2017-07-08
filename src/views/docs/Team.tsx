@@ -99,7 +99,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
+                                <Player user={u.id} />
                             </span>
                             {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                         </div>
@@ -111,7 +111,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
+                                <Player user={u.id} />
                             </span>
                             {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
                         </div>

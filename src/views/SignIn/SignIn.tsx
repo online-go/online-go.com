@@ -62,10 +62,12 @@ export function get_ebi() {
     return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." +   tzoffset;
 }
 
-export class SignIn extends React.PureComponent<{}, any> {
+
+
+export class SignIn extends React.PureComponent<{}, {}> {
     refs: {
-        username: any;
-        password: any;
+        username: HTMLInputElement;
+        password: HTMLInputElement;
     };
 
     constructor(props) {

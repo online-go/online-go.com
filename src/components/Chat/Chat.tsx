@@ -331,14 +331,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
         c.chat_ids[obj.message.i] = true;
 
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
+        player_cache.update(obj, true);
 
         c.chat_log.push(obj);
         if (this.state.active_channel === obj.channel) {
@@ -373,7 +366,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
     onChatJoin = (joins) => {{{
         let c = getChannel(joins.channel);
         for (let i = 0; i < joins.users.length; ++i) {
-            player_cache.update(joins.users[i]);
+            player_cache.update(joins.users[i], true);
             if (!(joins.users[i].id in c.user_list)) {
                 c.user_count++;
             }
@@ -425,7 +418,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
 
         let joined = data.get("chat.joined");
-        joined[channel] = 1;
+        joined[channel] = true;
         if (!this.props.channel) {
             data.set("chat.joined", joined);
         }

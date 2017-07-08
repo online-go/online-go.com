@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as player_cache from "player_cache";
 import {errorLogger} from "misc";
+import {Player, is_registered, is_guest} from "data/Player";
 
 
 interface PlayerIconProps {
@@ -28,14 +29,21 @@ interface PlayerIconProps {
     icon?: string;
 }
 
+let guest_icon_url = ""; //TODO: Maybe give guests icons too?
+
 export function icon_size_url(url, size) {
     return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
 }
 
 export function getPlayerIconURL(id, size): Promise<string> {{{
     return new Promise((resolve, reject) => {
-        player_cache.fetch(id).then((user: any) => {
-            resolve(icon_size_url(user.icon, size));
+        player_cache.fetch(id).then((player) => {
+            if (is_registered(player)) {
+                resolve(icon_size_url(player.icon, size));
+            }
+            if (is_guest(player)) {
+                resolve(icon_size_url(guest_icon_url, size));
+            }
         })
         .catch(reject);
     });

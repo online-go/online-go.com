@@ -29,6 +29,7 @@ import {Player} from "Player";
 import {FabX, FabCheck} from "material";
 import {EventEmitter} from "eventemitter3";
 import {toast} from 'toast';
+import {Player as PlayerType} from "data/Player";
 
 
 declare let Notification: any;
@@ -201,7 +202,7 @@ class NotificationManager {
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
-    setUser(user) {{{
+    setUser(user: PlayerType) {{{
         if (this.user && (user.id === this.user.id)) {
             return;
         }
@@ -853,4 +854,4 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 } /* }}} */
 
 
-new data.Subscription<"config.user">((channel, user) => notification_manager.setUser(user)).to(["config.user"]);
+new data.Subscription<"user">((channel, user) => notification_manager.setUser(user)).to(["user"]);

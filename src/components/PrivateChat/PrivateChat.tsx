@@ -25,7 +25,7 @@ import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
-import {Player as PlayerType, is_registered} from "data/Player";
+import {Player, is_registered, player_name, player_attributes} from "data/Player";
 
 let last_id: number = 0;
 
@@ -50,7 +50,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "...", "ui_class": ""};
+    player?: Player;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -64,10 +64,6 @@ class PrivateChat {
         comm_socket.send("chat/pm/load", user_id);
 
         this.player_dom = $("<span class='user Player nolink show-online'>...</span>");
-        if (username) {
-            this.player_dom.text(username);
-            this.player.username = username;
-        }
 
         new player_cache.Subscription((player) => {
             if (player.is.online) {
@@ -75,19 +71,12 @@ class PrivateChat {
             } else {
                 this.player_dom.removeClass("online");
             }
-        }).to([user_id]);
-
-        player_cache.fetch(this.user_id)
-        .then((player: any) => {
             this.player = player;
-            this.player_dom.text(player.username);
-            this.player_dom.addClass(player.ui_class);
+            this.player_dom.text(player_name(player));
+            this.player_dom.addClass(player_attributes(player).join(" "));
             this.updateInputPlaceholder();
-        })
-        .catch((err) => {
-            console.error(err);
-            this.player_dom.text("[error]");
-        });
+       }).to([user_id]);
+
     } /* }}} */
 
     open(send_itc?) { /* {{{ */
@@ -108,10 +97,9 @@ class PrivateChat {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
                     superchat.addClass("enabled");
-
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
-                        "username": this.player.username,
+                        "username": player_name(this.player),
                         "auth": data.get("config.superchat_auth"),
                         "enable": true
                     });
@@ -119,7 +107,7 @@ class PrivateChat {
                     superchat.removeClass("enabled");
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
-                        "username": this.player.username,
+                        "username": player_name(this.player),
                         "auth": data.get("config.superchat_auth"),
                         "enable": false
                     });
@@ -137,7 +125,7 @@ class PrivateChat {
             challenge(this.user_id);
         }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
+            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(player_name(this.player)), "_blank");
         }));
         title.append($("<i>").addClass("fa fa-minus").click(() => { this.minimize(true); }));
         title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
@@ -226,7 +214,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').is.validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+            if (!data.get('user').is.validated && this.player.is.moderator && this.lines.length === 0) {
                 return;
             }
 
@@ -262,7 +250,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').is.validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+        if (!data.get('user').is.validated && this.player.is.moderator && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
@@ -285,7 +273,7 @@ class PrivateChat {
             challenge(this.user_id);
         }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
+            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(player_name(this.player)), "_blank");
         }));
         title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
 
@@ -302,7 +290,7 @@ class PrivateChat {
         }
 
         if (send_itc) {
-            ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": player_name(this.player)});
         }
     } /* }}} */
     close(send_itc, dont_send_pm_close?) { /* {{{ */
@@ -321,7 +309,7 @@ class PrivateChat {
         this.body = null;
         update_chat_layout();
         if (send_itc) {
-            ITC.send("private-chat-close", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-close", {"user_id": this.user_id, "username": player_name(this.player)});
             data.set("pm.close-" + this.user_id, this.last_uid);
         }
         if (comm_socket && !dont_send_pm_close) {
@@ -450,7 +438,7 @@ class PrivateChat {
             this.addChat(is_registered(user) && user.username, line, this.user_id, Date.now() / 1000);
             comm_socket.send("chat/pm", {
                 "player_id": this.user_id,
-                "username": this.player.username,
+                "username": player_name(this.player),
                 "uid": this.chatbase + "." + (++this.chatnum).toString(36),
                 "message": line
             }, (line) => {

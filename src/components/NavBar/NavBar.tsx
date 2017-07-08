@@ -78,12 +78,12 @@ export class NavBar extends React.PureComponent<{}, any> {
         notification_list: NotificationList;
         omnisearch_input;
     };
-    subscribe: data.Subscription<"config.user">;
+    subscribe: data.Subscription<"user">;
 
     constructor(props) {
         super(props);
         this.state = {
-            user: data.get("config.user"),
+            user: data.get("user"),
             left_nav_active: false,
             right_nav_active: false,
             tournament_invites: [],
@@ -112,7 +112,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
 
     componentWillMount() {
-        this.subscribe.to(["config.user"]);
+        this.subscribe.to(["user"]);
 
         browserHistory.listen(location => {
             this.closeNavbar();

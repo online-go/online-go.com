@@ -48,7 +48,7 @@ export class RatingHistory extends Resolver<UserProperties, any> {
 
     resolve(props) {
         this.setState({"user": null});
-        this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
+        this.user_id = parseInt(props.params.user_id || data.get("user").id);
         return get(`players/${this.user_id}/full`).then((state) => {
             try {
                 //console.log(state);

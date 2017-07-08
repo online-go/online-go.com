@@ -63,16 +63,14 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
         }
 
         let m = Math.floor(t / 60);
-        let s: any = Math.floor(t - (m * 60));
-        if (s < 10) {
-            s = "0" + s;
-        }
+        let s = Math.floor(t - (m * 60));
+        let time: string = m + ":" + ("0" + s).slice(-2);
 
         return (
             <Link to={this.state.tournament.link} className="TournamentIndicator"
                 title={this.state.tournament.text} >
                 <i className="fa fa-trophy"/>
-                <span className="time">{m}:{s}</span>
+                <span className="time">{time}</span>
             </Link>
        );
     }

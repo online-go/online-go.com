@@ -77,7 +77,8 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
-import {is_registered} from "data/Player";
+import {is_registered, is_guest, player_name, player_attributes} from "data/Player";
+import {to_old_style_rank} from "compatibility/Rank";
 
 declare const swal;
 
@@ -129,15 +130,15 @@ try {
 const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
 const PageNotFound = () => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
 const Default = () => (
-    data.get("config.user").anonymous
+    is_guest(data.get("user"))
         ?  <ObserveGames/>
         :  <Overview/>
 );
 
 /** Connect to the chat service */
 let auth_connect_fn = () => {return; };
-new data.Subscription((channel, user) => {
-    if (!user.anonymous) {
+new data.Subscription<"user">((channel, user) => {
+    if (is_registered(user)) {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("authenticate", {
                 auth: data.get("config.chat_auth"),
@@ -147,25 +148,24 @@ new data.Subscription((channel, user) => {
             sockets.comm_socket.send("chat/connect", {
                 auth: data.get("config.chat_auth"),
                 player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
+                ranking: to_old_style_rank(user.rank),
+                username: player_name(user),
+                ui_class: player_attributes(user).join(" "),
             });
         };
-    } else if (user.id < 0) {
+    } else {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("chat/connect", {
                 player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
+                username: player_name(user),
+                ui_class: player_attributes(user).join(" "),
             });
         };
     }
     if (sockets.comm_socket.connected) {
         auth_connect_fn();
     }
-}).to(["config.user"]);
+}).to(["user"]);
 sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
 

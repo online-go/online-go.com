@@ -35,7 +35,7 @@ import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
 import {find_rank_long_string} from "compatibility/Rank";
-
+import {Player as PlayerType, is_registered, player_name} from "data/Player";
 
 
 let UserRating = (props: {rating: number}) => {
@@ -70,11 +70,14 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
+        let user = data.get("user");
         if (!data.get("user")) {
             return <FirstTimeSetup/>;
         }
+        if (!is_registered(user)) {
+            return null;
+        }
 
-        let user = data.get("config.user");
 
         return (
         <div id="Overview-Container">
@@ -104,7 +107,7 @@ export class Overview extends React.Component<{}, any> {
                         <PlayerIcon id={user.id} size={80} />
 
                         <div className="profile-right">
-                            <span className="username">{user.username}</span>
+                            <span className="username">{player_name(user)}</span>
 
                             <div className="rank-and-progress">
                                 <span className="rank">{find_rank_long_string(user)} &nbsp;</span>

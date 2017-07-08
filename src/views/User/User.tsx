@@ -132,7 +132,7 @@ export class User extends Resolver<UserProperties, any> {
 
     resolve(props) {
         this.setState({"user": null});
-        this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
+        this.user_id = parseInt(props.params.user_id || data.get("user").id);
         return get(`players/${this.user_id}/full`).then((state) => {
             try {
                 //console.log(state);
@@ -195,7 +195,7 @@ export class User extends Resolver<UserProperties, any> {
 
         this.on("unmount", () => $("#rating-history-tooltip").remove());
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("user").is.moderator) /* aliases {{{ */ {
             state.ip = null;
             state.host_ip_settings = null;
          } /* }}} */
