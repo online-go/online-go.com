@@ -94,7 +94,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
                     <p><i>{_("Tip: If you are coming from another server, using your rank from the other server is a good place to start")}</i></p>
                 </div>
 
-                <h4>{_("Pick your starting rank if you know it, or select how long you've been playin go for")}</h4>
+                <h4>{_("Pick your starting rank if you know it, or select how long you've been playing go for")}</h4>
                 <div className="play-range-selector">
                     <select value={this.state.rank} onChange={this.setRank}>
                         <option value={-1}>
