@@ -93,7 +93,7 @@ new data.Subscription((channel, user) => {
     let new_style_user = player_cache.update(user);
     Object.assign(new_style_user, user);
     data.set("user", new_style_user);
-    window["user"] = new_style_user;
+    data.set("user_is_supporter", user.supporter);
 }).to(["config.user"]);
 
 
@@ -309,5 +309,7 @@ const routes = (
 
 ReactDOM.render(routes, document.getElementById("main-content"));
 
+// Set up our global variables.
 window["data"] = data;
 window["player_cache"] = player_cache;
+new data.Subscription<"user">((channel, user) => window["user"] = user).to(["user"]);

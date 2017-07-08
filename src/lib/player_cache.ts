@@ -324,7 +324,6 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         compatibility.email_validated = !!new_style_player.is.validated;
         compatibility.is_bot = !!new_style_player.is.bot;
         compatibility.anonymous = false;
-        compatibility.supporter = new_style_player.is.supporter;
         if (rank && rank.type === "Pro") {
             compatibility.ranking = rank.level + 36;
         }

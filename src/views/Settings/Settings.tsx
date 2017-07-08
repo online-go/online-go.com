@@ -371,6 +371,12 @@ export class Settings extends React.PureComponent<{}, any> {
 
     render() {
         let user = data.get("user");
+
+        // If the user disables showing that they are a supporter, then
+        // user.is.supporter = false while the user *is* still a supporter.
+        // Hence, the data cache needs to record the user's true status.
+        let user_is_supporter = data.get("user_is_supporter");
+
         let aga_ratings_enabled = null;
 
         _("I receive an invitation to a group");
@@ -433,8 +439,8 @@ export class Settings extends React.PureComponent<{}, any> {
                         }
                     </dd>
 
-                    {(user.is.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
-                    {(user.is.supporter || null) &&
+                    {(user_is_supporter || null) && <dt>{_("Golden supporter name")}</dt>}
+                    {(user_is_supporter || null) &&
                         <dd>
                             <input type="checkbox"
                                     checked={!this.state.hide_ui_class}
