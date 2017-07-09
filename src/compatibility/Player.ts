@@ -21,11 +21,12 @@ import {Player, RegisteredPlayer, player_attributes} from "data/Player";
 export function to_old_style_player(player: RegisteredPlayer): any {
     let old_player: any = {};
 
+    //NUIFE = Not used in front end.
     old_player.id = old_player.player_id = player.id;
     old_player.username = player.username;
-    old_player.icon = old_player["icon-url"] = player.icon;
+    old_player.icon = old_player["icon-url"] /* NUIFE */ = player.icon;
     old_player.country = player.country;
-    old_player.ui_class = player_attributes(player).join(" ");
+    old_player.ui_class /* NUIFE */ = player_attributes(player).join(" ");
     old_player.is_superuser = !!player.is.admin;
     old_player.is_moderator = !!player.is.moderator;
     old_player.tournament_moderator = !!player.is.tournament_moderator;

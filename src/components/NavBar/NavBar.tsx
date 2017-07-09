@@ -34,6 +34,7 @@ import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
 import * as player_cache from "player_cache";
+import {Player as PlayerType, is_registered, is_guest} from "data/Player";
 
 let body = $(document.body);
 
@@ -71,8 +72,28 @@ function logout() {
     });
 }
 
+interface NavBarState {
+    user: PlayerType;
+    left_nav_active: boolean;
+    right_nav_active: boolean;
+    tournament_invites: Array<any>;
+    tournaments: Array<any>;
+    ladders: Array<any>;
+    group_invites: Array<any>;
+    groups: Array<any>;
 
-export class NavBar extends React.PureComponent<{}, any> {
+    omnisearch_string: string;
+    omnisearch_loading: boolean;
+    omnisearch_sitemap: Array<any>;
+    omnisearch_players: Array<any>;
+    omnisearch_groups: Array<any>;
+    omnisearch_tournaments: Array<any>;
+
+    path: string;
+}
+
+
+export class NavBar extends React.PureComponent<{}, NavBarState> {
     refs: {
         input: any;
         notification_list: NotificationList;
@@ -193,7 +214,8 @@ export class NavBar extends React.PureComponent<{}, any> {
             if (q === "") {
                 this.setState({
                     omnisearch_string: q,
-                    sitemap: [],
+                    // sitemap: [],         // This should never have worked.
+                    omnisearch_sitemap: [], // I assume you meant omnisearch_sitemap.
                 });
             } else {
                 this.setState({
@@ -240,8 +262,8 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
     render() {
-        let user = this.state.user.anonymous ? null : this.state.user;
-        let anon = this.state.user.anonymous;
+        let user = is_registered(this.state.user) ? this.state.user : null;
+        let anon = is_guest(this.state.user);
         let tournament_invites = this.state.tournament_invites;
         let tournaments = this.state.tournaments;
         let ladders = this.state.ladders;
@@ -279,7 +301,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
             <section className="left">
-                {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
+                {(!anon || null) && <Link to="/overview">{_("Home")}</Link>}
                 {user && <Link to="/play">{_("Play")}</Link>}
                 <Link to="/observe-games">{_("Games")}</Link>
                 <Link to="/chat">{_("Chat")}</Link>
@@ -294,7 +316,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 */}
             </section>
 
-            { this.state.user.anonymous ?
+            {anon ?
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
@@ -407,10 +429,10 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
 
-                        {user && user.is_moderator && <li className="divider"></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
-                        {user && user.is_superuser && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
+                        {user && user.is.moderator && <li className="divider"></li>}
+                        {user && user.is.moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
+                        {user && user.is.moderator && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
+                        {user && user.is.admin && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
 
                         {(tournament_invites.length || tournaments.length || false) && <li className="divider"></li>}
                         {(tournament_invites.length || tournaments.length || false) &&
