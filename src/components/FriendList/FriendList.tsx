@@ -40,12 +40,12 @@ export class FriendList extends React.PureComponent<{}, any> {
         this.data_subscribe = new data.Subscription(this.updateFriends);
     }
 
-    updateFriends = (channel: "friends", friends: Array<any>) => {
-        let new_style_friends = friends.map((friend) => player_cache.update(friend));
-        new_style_friends.sort(by_status);
-        this.friends_subscribe.to(new_style_friends);
+    updateFriends = (channel: "friends", friends: Array<PlayerType>) => {
+        friends = friends.slice();
+        friends.sort(by_status);
+        this.friends_subscribe.to(friends);
         this.setState({
-            friends: new_style_friends,
+            friends: friends,
             resolved: true
         });
     }

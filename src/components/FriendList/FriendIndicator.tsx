@@ -60,13 +60,10 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
         this.friends_subscribe.to([]);
     }
 
-    updateFriends = (channel: "friends", friends: Array<any>) => {
-        // Convert the server's data to the new format.
-        let new_style_friends = friends.map((friend) => player_cache.update(friend));
-
+    updateFriends = (channel: "friends", friends: Array<Player>) => {
         // Update the component.
-        this.friends_subscribe.to(new_style_friends);
-        this.friends = new_style_friends;
+        this.friends_subscribe.to(friends);
+        this.friends = friends;
         this.updateFriendCount();
     }
 
@@ -82,8 +79,9 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
     }
 
     refresh() {
-        get("ui/friends").then((res) => {
-            data.set("friends", res.friends);
+        get("ui/friends").then((res: {friends: Array<any>}) => {
+            let friends = res.friends.map((friend) => player_cache.update(friend));
+            data.set("friends", friends);
         }).catch((err) => {
             console.error("Error resolving friends list: ", err);
         });

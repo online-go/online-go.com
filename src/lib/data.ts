@@ -21,7 +21,7 @@ import {Publisher} from "pubsub";
 export interface LocalData {
     "user": Player;
     "config.user": any;
-    "friends": Array<any>;
+    "friends": Array<Player>;
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "theme": "dark" | "light";
