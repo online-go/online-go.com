@@ -54,15 +54,16 @@ if (never_load_ads) {
 
 function should_show_ads() {
     let user = data.get("user");
+    let config = data.get("config.user");
 
     if (!user || !is_registered(user)) {
         return true;
     }
-    else if (user.is.supporter && user.id !== 1) {
-        return false;
-    }
     else if (user.is.admin || user.is.moderator) {
         return data.get("ad-override", false);
+    }
+    else if (config && config.supporter) {
+        return false;
     }
     else if (/beta|dev/.test(window.location.hostname)) {
         return false;
