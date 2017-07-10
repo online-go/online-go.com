@@ -50,3 +50,7 @@ export function to_old_style_player(player: RegisteredPlayer): any {
 export function from_old_style_player(player: any): Player {
     return player_cache.update(player, true);
 }
+
+export function from_old_style_friends(result: { friends: Array<any> }): Array<Player> {
+    return result.friends.map((friend) => player_cache.update(friend));
+}

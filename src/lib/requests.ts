@@ -16,6 +16,9 @@
  */
 
 import {deepCompare} from "misc";
+import {URLType, URLDataType, URLResultType, translate_from_server, translate_to_server} from "compatibility";
+
+
 
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
@@ -71,12 +74,21 @@ function initialize() {
 let requests_in_flight = {};
 let last_request_id = 0;
 
-export function request(type: string, url: string, data: any): Promise<any> {
+export function request<K extends keyof URLType>(type: string, url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
     initialize();
+
+    let real_url: string = url.replace("%%", id.toString());
+    let real_data: any;
+    if (url in translate_to_server) {
+        real_data = translate_to_server[url](data);
+    }
+    else {
+        real_data = data;
+    }
 
     for (let id in requests_in_flight) {
         let req = requests_in_flight[id];
-        if (req.promise && (req.url === url) && (type === req.type) && deepCompare(req.data, data)) {
+        if (req.promise && (req.url === real_url) && (type === req.type) && deepCompare(req.data, real_data)) {
             //console.log("Duplicate in flight request, chaining");
             return req.promise;
         }
@@ -87,26 +99,31 @@ export function request(type: string, url: string, data: any): Promise<any> {
 
     requests_in_flight[request_id] = {
         type: type,
-        url: url,
-        data: data,
+        url: real_url,
+        data: real_data,
     };
 
 
     requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
         let opts = {
-            url: api1ify(url),
+            url: api1ify(real_url),
             type: type,
             data: undefined,
             dataType: "json",
             contentType: "application/json",
             success: (res) => {
                 delete requests_in_flight[request_id];
-                resolve(res);
+                if (url in translate_from_server) {
+                    resolve(translate_from_server[url](res));
+                }
+                else {
+                    resolve(res);
+                }
             },
             error: (err) => {
                 delete requests_in_flight[request_id];
                 if (err.status !== 0) { /* Ignore aborts */
-                    console.warn(api1ify(url), err.status, err.statusText);
+                    console.warn(api1ify(real_url), err.status, err.statusText);
                     console.warn(traceback.stack);
                 }
                 console.error(err);
@@ -140,11 +157,21 @@ export function request(type: string, url: string, data: any): Promise<any> {
     return requests_in_flight[request_id].promise;
 }
 
-export function get(url: string, data?: any): Promise<any> { return request("GET", url, data); }
-export function post(url: string, data: any): Promise<any> { return request("POST", url, data); }
-export function put(url: string, data: any): Promise<any> { return request("PUT", url, data); }
-export function patch(url: string, data: any): Promise<any> { return request("PATCH", url, data); }
-export function del(url: string): Promise<any> { return request("DELETE", url, null); }
+export function get<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("GET", url, 0, data);
+}
+export function post<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("POST", url, 0, data);
+}
+export function put<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("PUT", url, 0, data);
+}
+export function patch<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("PATCH", url, 0, data);
+}
+export function del<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("DELETE", url, 0, data);
+}
 export function abort_requests_in_flight(url, type?) {
     for (let id in requests_in_flight) {
         let req = requests_in_flight[id];
