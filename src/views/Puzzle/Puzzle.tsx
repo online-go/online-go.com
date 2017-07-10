@@ -42,7 +42,7 @@ interface PuzzleProperties {
 }
 let ranks = [];
 for (let i = -29; i <= 7; ++i) {
-    ranks.push({"value": i, "text": rank_long_string(dan(i))});
+    ranks.push({"value": i + 29, "text": rank_long_string(dan(i))});
 }
 
 export class Puzzle extends React.Component<PuzzleProperties, any> {
