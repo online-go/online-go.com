@@ -161,8 +161,8 @@ export function request<K extends keyof URLCommunication>(type: string, url: K, 
 export function get<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
     return request("GET", url, id, data);
 }
-export function post<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
-    return request("POST", url, 0, data);
+export function post<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("POST", url, id, data);
 }
 export function put<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
     return request("PUT", url, 0, data);

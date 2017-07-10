@@ -399,10 +399,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         console.log("Creating payment account for vendor ", vendor, details);
-        return post("me/payment_accounts", obj);
+        return post("me/payment_accounts", 0, obj);
     }}}
     processSupporterSignup(payment_method, amount) {{{
-        let promise = post("me/supporter", {
+        let promise = post("me/supporter", 0, {
             "payment_method": payment_method,
             "price": amount,
         });

@@ -175,7 +175,7 @@ function moderate(player_id, prompt, obj) {{{
 }}}
 export function ban(player_id) {{{
     if (player_id < 0) {
-        return post("moderation/shadowban_anonymous_user", {
+        return post("moderation/shadowban_anonymous_user", 0, {
             "ban": 1,
             "user_id": player_id,
         });
@@ -185,7 +185,7 @@ export function ban(player_id) {{{
 }}}
 export function shadowban(player_id) {{{
     if (player_id < 0) {
-        return post("moderation/shadowban_anonymous_user", {
+        return post("moderation/shadowban_anonymous_user", 0, {
             "ban": 1,
             "user_id": player_id
         });
@@ -195,7 +195,7 @@ export function shadowban(player_id) {{{
 }}}
 export function remove_ban(player_id) {{{
     if (player_id < 0) {
-        return post("moderation/shadowban_anonymous_user", {
+        return post("moderation/shadowban_anonymous_user", 0, {
             "ban": 0,
             "user_id": player_id,
         });
@@ -205,7 +205,7 @@ export function remove_ban(player_id) {{{
 }}}
 export function remove_shadowban(player_id) {{{
     if (player_id < 0) {
-        return post("moderation/shadowban_anonymous_user", {
+        return post("moderation/shadowban_anonymous_user", 0, {
             "ban": 0,
             "user_id": player_id,
         });

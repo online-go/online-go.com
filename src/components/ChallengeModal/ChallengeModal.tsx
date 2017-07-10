@@ -298,7 +298,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         console.log("Sending", demo);
 
         this.close();
-        post("demos", demo).then((res) => {
+        post("demos", 0, demo).then((res) => {
             console.log("Demo create response: ", res);
             browserHistory.push(`/demo/view/${res.id}`);
         }).catch(errorAlerter);
@@ -403,7 +403,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         this.saveSettings();
         this.close();
 
-        post(player_id ? `players/${player_id}/challenge` : "challenges", challenge)
+        post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
         .then((res) => {
                 console.log("Challenge response: ", res);
                 let challenge_id = res.challenge;

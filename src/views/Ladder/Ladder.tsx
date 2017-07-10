@@ -59,7 +59,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     join = () => {
-        post(`ladders/${this.props.params.ladder_id}/players`, {})
+        post("ladders/%%/players", this.props.params.ladder_id, {})
         .then(() => {
             this.resolve(this.props.params.ladder_id);
             this.refs.ladder_component.updatePlayers();

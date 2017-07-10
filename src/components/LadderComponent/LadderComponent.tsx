@@ -99,7 +99,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             "cancelButtonText": _("No"),
         })
         .then(() => {
-            post(`ladders/${this.props.ladderId}/players/challenge`, {
+            post("ladders/%%/players/challenge", this.props.ladderId, {
                 "player_id": ladder_player.player.id,
             })
             .then((res) => {
