@@ -102,7 +102,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     resolve(group_id: number) {{{
         let user = data.get("user");
 
-        get(`groups/${group_id}`).then((group) => {
+        get("groups/%%", group_id).then((group) => {
             let is_admin = false;
 
             for (let admin of group.admins) {
@@ -117,7 +117,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 group_loaded: true,
             });
         }).catch(errorAlerter);
-        get(`groups/${group_id}/news/`).then((news) => {
+        get("groups/%%/news/", group_id).then((news) => {
             this.setState({news: news.results});
         }).catch(errorAlerter);
     }}}

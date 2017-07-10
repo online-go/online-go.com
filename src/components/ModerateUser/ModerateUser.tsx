@@ -48,7 +48,7 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
 
     componentWillMount() {
         super.componentWillMount();
-        get(`players/${this.props.playerId}/full`)
+        get("players/%%/full", this.props.playerId)
         .then((dets) => {
             console.log(dets);
             this.setState(Object.assign({loading: false}, dets.user, {bot_owner: dets.user.bot_owner ? dets.user.bot_owner.id : null}));

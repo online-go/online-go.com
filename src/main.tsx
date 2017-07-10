@@ -89,7 +89,7 @@ new data.Subscription((channel, config) => {
         data.set(`config.${key}`, config[key]);
     }
 }).to(["config"]);
-get("ui/config").then((config) => data.set("config", config));
+get("ui/config", 0).then((config) => data.set("config", config));
 new data.Subscription((channel, user) => {
     let new_style_user = player_cache.update(user);
     Object.assign(new_style_user, user);

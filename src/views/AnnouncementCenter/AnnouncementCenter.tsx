@@ -84,7 +84,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         .catch(errorAlerter);
     }}}
     refresh = () => {{{
-        get("announcements")
+        get("announcements", 0)
         .then((list) => {
             this.setState({announcements: list});
         })

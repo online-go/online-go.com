@@ -54,7 +54,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     resolve(ladder_id) {
-        get(`ladders/${ladder_id}`)
+        get("ladders/%%", ladder_id)
         .then((ladder) => this.setState({ladder: ladder}))
         .catch(errorAlerter);
     }

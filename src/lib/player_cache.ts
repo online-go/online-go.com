@@ -169,10 +169,10 @@ export function fetch(player_id: number, require_complete?: boolean): Promise<Pl
 
     // We can't return the player details stright away, so fetch them from the server.
     return active_fetches[player_id] = new Promise((resolve, reject) => {
-        get(`/termination-api/player/${player_id}`)
+        get("/termination-api/player/%%", player_id)
         .then((player) => {
             delete active_fetches[player_id];
-            resolve(update(player));
+            resolve(player);
         })
         .catch((err) => {
             delete active_fetches[player_id];

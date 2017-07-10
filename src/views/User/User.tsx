@@ -133,7 +133,7 @@ export class User extends Resolver<UserProperties, any> {
     resolve(props) {
         this.setState({"user": null});
         this.user_id = parseInt(props.params.user_id || data.get("user").id);
-        return get(`players/${this.user_id}/full`).then((state) => {
+        return get("players/%%/full", this.user_id).then((state) => {
             try {
                 //console.log(state);
                 player_cache.update(state);
@@ -210,7 +210,7 @@ export class User extends Resolver<UserProperties, any> {
         }
 
         let last_ip = this.state.user.last_ip;
-        get("host_ip_settings/", {"address": last_ip})
+        get("host_ip_settings/", 0, {"address": last_ip})
         .then((lst) => {
             this.setState({"host_ip_settings": lst.count ? lst.results[0] : {
                 "id": 0,

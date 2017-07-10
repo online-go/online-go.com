@@ -66,7 +66,7 @@ function toggleTheme() {
 let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
-    get("/api/v0/logout").then((config) => {
+    get("/api/v0/logout", 0).then((config) => {
         data.set("config", config);
         window.location.reload(); // Shouldn't be necessary if the subscribers know about the change.
     });
@@ -227,7 +227,7 @@ export class NavBar extends React.PureComponent<{}, NavBarState> {
                     omnisearch_groups: [],
                 });
 
-                get("ui/omniSearch", {q: q.trim()})
+                get("ui/omniSearch", 0, {q: q.trim()})
                 .then((res) => {
                     player_cache.update(res.players);
                     this.setState({

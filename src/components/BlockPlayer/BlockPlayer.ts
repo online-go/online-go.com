@@ -73,7 +73,7 @@ function update_blocks() {
     let user = data.get("user");
 
     if (is_registered(user)) {
-        get("me/blocks")
+        get("me/blocks", 0)
         .then((entries) => {
             block_state = {};
             let new_ignores = {};

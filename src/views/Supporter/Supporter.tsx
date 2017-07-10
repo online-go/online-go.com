@@ -112,13 +112,13 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         if (is_registered(data.get('user'))) {
             braintree_js_promise.then(() => {
-                get("me/supporter")
+                get("me/supporter", 0)
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
                 })
                 .catch(errorAlerter);
 
-                get("me/purchase_transactions", {order_by: "-created", page_size:1})
+                get("me/purchase_transactions", 0, {order_by: "-created", page_size:1})
                 .then((res) => {
                     this.setState({
                         last_transaction: res.results.length ? res.results[0] : null

@@ -145,7 +145,7 @@ class Schedule extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {
-        get("tournament_schedules/", {page_size: 100})
+        get("tournament_schedules/", 0, {page_size: 100})
         .then((res) => {
             res.results.sort((a, b) => {
                 return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();

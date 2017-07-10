@@ -93,7 +93,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         this.current_search = value;
 
         if (value.length > 1) {
-            get("players/", {username__istartswith: value, page_size: 10})
+            get("players/", 0, {username__istartswith: value, page_size: 10})
             .then((res) => {
                 //console.log("RESULTS: ", res.results);
                 for (let user of res.results) {

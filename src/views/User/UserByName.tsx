@@ -58,7 +58,7 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
     }
 
     doFetch(username:string) {
-        get('players', {username: username})
+        get("players", 0, {username: username})
         .then((res) => {
             if (res.results.length) {
                 this.setState({
