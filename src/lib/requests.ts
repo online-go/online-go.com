@@ -169,8 +169,8 @@ export function put<K extends keyof URLType>(url: K, id: number, data?: URLDataT
 export function patch<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
     return request("PATCH", url, id, data);
 }
-export function del<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
-    return request("DELETE", url, 0, data);
+export function del<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("DELETE", url, id, data);
 }
 export function abort_requests_in_flight(url, type?) {
     for (let id in requests_in_flight) {

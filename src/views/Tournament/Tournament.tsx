@@ -307,7 +307,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then(() => {
-            del("tournaments/" + this.state.tournament.id)
+            del("tournaments/%%", this.state.tournament.id)
             .then(() => {
                 browserHistory.push("/");
             })

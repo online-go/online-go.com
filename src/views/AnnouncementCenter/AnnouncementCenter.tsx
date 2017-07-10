@@ -91,7 +91,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         .catch(errorAlerter);
     }}}
     deleteAnnouncement(announcement) {{{
-        del(`announcements/${announcement.id}`)
+        del("announcements/%%", announcement.id)
         .then(this.refresh)
         .catch(errorAlerter);
     }}}

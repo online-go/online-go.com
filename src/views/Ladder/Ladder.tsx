@@ -77,7 +77,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             "focusCancel": true
         })
         .then(() => {
-            del(`ladders/${this.props.params.ladder_id}/players`)
+            del("ladders/%%/players", this.props.params.ladder_id)
             .then(() => {
                 this.resolve(this.props.params.ladder_id);
                 this.refs.ladder_component.updatePlayers();

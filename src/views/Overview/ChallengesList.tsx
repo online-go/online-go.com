@@ -60,7 +60,7 @@ export class ChallengesList extends React.PureComponent<{}, any> {
     }}}
 
     deleteChallenge(challenge) {{{
-        del(`me/challenges/${challenge.id}`)
+        del("me/challenges/%%", challenge.id)
         .then(ignore)
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});

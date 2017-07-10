@@ -124,7 +124,7 @@ export class Play extends React.Component<PlayProperties, any> {
         }).catch(errorAlerter);
     }}}
     cancelOpenChallenge(challenge) {{{
-        del(`challenges/${challenge.challenge_id}`).then(() => 0).catch(errorAlerter);
+        del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
     }}}
     extractUser(challenge) {{{
         return {

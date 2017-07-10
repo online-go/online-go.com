@@ -676,7 +676,7 @@ export class SeekGraph extends EventEmitter {
             else if (C.user_challenge) {
                 e.append($("<i>").addClass("fa fa-trash-o").attr("title", _("Remove challenge")).click((ev) => {
                     //console.log("Remove");
-                    del("challenges/" + C.challenge_id)
+                    del("challenges/%%", C.challenge_id)
                     .then((ev) => e.html(_("Challenge removed")))
                     .catch((response) => swal(_("Error removing challenge")));
                 }));

@@ -945,7 +945,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             showCancelButton: true,
         })
         .then(() => {
-            del(`puzzles/${this.props.params.puzzle_id}`)
+            del("puzzles/%%", +this.props.params.puzzle_id)
             .then(() => browserHistory.push(`/puzzles`))
             .catch(errorAlerter);
         })

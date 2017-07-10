@@ -667,7 +667,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            del(`groups/${this.state.group.id}`)
+            del("groups/%%", this.state.group.id)
             .then(() => {
                 browserHistory.push("/groups/");
             })
