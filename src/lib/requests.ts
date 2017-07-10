@@ -170,8 +170,8 @@ export function put<K extends keyof URLCommunication>(url: K, id: number, data?:
 export function patch<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
     return request("PATCH", url, id, data);
 }
-export function del<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
-    return request("DELETE", url, 0, data);
+export function del<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("DELETE", url, id, data);
 }
 export function abort_requests_in_flight(url, type?) {
     for (let id in requests_in_flight) {

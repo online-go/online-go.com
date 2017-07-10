@@ -74,7 +74,7 @@ export class ACLModal extends Modal<ACLModalProperties, any> {
         }
         this.setState({acl: new_acl});
 
-        del(this.props.gameId ? `games/acl/${obj.id}` : `reviews/acl/${obj.id}`)
+        del((this.props.gameId ? "games/acl/%%" : "reviews/acl/%%"), obj.id)
         .then(this.refresh)
         .catch((e) => { this.refresh(); errorAlerter(e); });
     }

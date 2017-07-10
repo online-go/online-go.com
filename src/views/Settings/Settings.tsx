@@ -101,7 +101,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     endVacation = () => {{{
-        del("me/vacation")
+        del("me/vacation", 0)
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({

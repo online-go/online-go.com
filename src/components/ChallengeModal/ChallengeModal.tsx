@@ -423,7 +423,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     .then(() => {
                         off();
                         /* cancel challenge */
-                        del(this.props.mode === "open" ? `challenges/${challenge_id}` : `me/challenges/${challenge_id}`)
+                        del((this.props.mode === "open" ? "challenges/%%" : "me/challenges/%%"), challenge_id)
                         .then(ignore)
                         .catch(ignore);
                     })

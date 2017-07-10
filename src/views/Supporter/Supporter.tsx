@@ -224,7 +224,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .then(() => {
             this.setState({processing: true});
-            del("me/supporter")
+            del("me/supporter", 0)
             .then(() => {
                 window.location.reload();
             })
