@@ -68,7 +68,7 @@ for (let k in defaults) {
 
 
 export function get(key: string): any {
-    return data.ensureDefaultAndGet(`preferences.${key}`);
+    return data.get(`preferences.${key}`);
 }
 export function set(key: string, value: any): any {
     return data.set(`preferences.${key}`, value);

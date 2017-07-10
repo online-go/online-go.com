@@ -102,13 +102,6 @@ export function get<K extends keyof LocalData>(key: K, default_value?: LocalData
     return default_value;
 }
 
-export function ensureDefaultAndGet<K extends keyof LocalData>(key: K): LocalData[K] | undefined {
-    if (!(key in defaults)) {
-        throw new Error(`Undefined default: ${key}`);
-    }
-    return get(key);
-}
-
 export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     let ret = {};
     let data = Object.assign({}, defaults, store);
