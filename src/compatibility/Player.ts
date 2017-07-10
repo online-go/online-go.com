@@ -30,9 +30,9 @@ export function to_old_style_player(player: RegisteredPlayer): any {
     old_player.is_superuser = !!player.is.admin;
     old_player.is_moderator = !!player.is.moderator;
     old_player.tournament_moderator = !!player.is.tournament_moderator;
-    old_player.email_validated = !!player.is.validated;
+    old_player.email_validated /* NUIFE */ = !!player.is.validated;
     old_player.is_bot = !!player.is.bot;
-    old_player.anonymous = false;
+    old_player.anonymous /* NUIFE */ = false;
     old_player.supporter = player.is.supporter;
     if (player.rank && player.rank.type === "Pro") {
         old_player.ranking = player.rank.level + 36;

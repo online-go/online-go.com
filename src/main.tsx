@@ -311,4 +311,4 @@ ReactDOM.render(routes, document.getElementById("main-content"));
 // Set up our global variables.
 window["data"] = data;
 window["player_cache"] = player_cache;
-new data.Subscription<"user">((channel, user) => window["user"] = user).to(["user"]);
+new data.Subscription<"user">((channel, data) => window[channel] = data).to(["user"]);

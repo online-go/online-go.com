@@ -27,6 +27,8 @@ import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingR
 import {EventEmitter} from "eventemitter3";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
+import {is_registered} from "data/Player";
+import * as data from "data";
 
 
 export const GOBAN_FONT =  "Verdana,Arial,sans-serif";
@@ -489,7 +491,7 @@ export abstract class Goban extends EventEmitter {
                 sfx.play("beepbeep", true);
             }
             if (msg.message) {
-                if (!window["has_focus"] && !window["user"].anonymous && /^\/game\//.test(this.getLocation())) {
+                if (!window["has_focus"] && is_registered(data.get("user")) && /^\/game\//.test(this.getLocation())) {
                     swal(_(msg.message));
                 } else {
                     console.info(msg.message);
