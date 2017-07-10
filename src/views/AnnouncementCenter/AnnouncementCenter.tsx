@@ -70,7 +70,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         this.setState({link: ev.target.value});
     }}}
     create = () => {{{
-        post("announcements", {
+        post("announcements", 0, {
             "type": this.state.type,
             "user_ids": "",
             "text": this.state.text,

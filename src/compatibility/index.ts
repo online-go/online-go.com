@@ -26,6 +26,9 @@ import {from_old_style_friends} from "compatibility/Player";
 // URLDataType and URLResultType declare the type of the data that will be fed to
 // and returned from an HTTP Ajax request. The translation functions then translate
 // to and from the server's format.
+//
+// Note that we sometimes have a numerical parameter in the URL itself. In these cases,
+// we substitute %% for the parameter so that we can perform the lookup.
 export type URLType = URLDataType | URLResultType;
 export interface URLDataType {
     "ui/friends": never;
@@ -37,10 +40,17 @@ export interface URLResultType {
     "/termination-api/player/%%": Player;
     [url: string]: any;
 }
-export const translate_from_server: {[url in keyof URLResultType]?: (result: any) => URLResultType[url]} = {
+
+type TranslateFromServerType = {[url in keyof URLResultType]?: (result: any) => URLResultType[url]};
+type TranslateToServerType = {[url in keyof URLDataType]?: (data: URLDataType[url]) => any};
+
+
+
+// The translation function tables.
+export const translate_to_server: TranslateToServerType = {
+
+};
+export const translate_from_server: TranslateFromServerType = {
     "ui/friends": from_old_style_friends,
     "/termination-api/player/%%": player_cache.update
-};
-export const translate_to_server: {[url in keyof URLDataType]?: (data: URLDataType[url]) => any} = {
-
 };

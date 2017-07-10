@@ -238,7 +238,7 @@ export class User extends Resolver<UserProperties, any> {
             patch(`host_ip_settings/${this.state.host_ip_settings.id}`, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
-            post(`host_ip_settings/`, obj)
+            post("host_ip_settings/", 0, obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();
@@ -261,7 +261,7 @@ export class User extends Resolver<UserProperties, any> {
     }
 
     addFriend(id) { /* {{{ */
-        post("me/friends", { "player_id": id })
+        post("me/friends", 0, { "player_id": id })
         .then(() => this.setState({friend_request_sent: true}));
     } /* }}} */
     removeFriend(id) { /* {{{ */
@@ -269,7 +269,7 @@ export class User extends Resolver<UserProperties, any> {
             text: _("Are you sure you wish to remove this friend?"),
             showCancelButton: true,
         }).then(() => {
-            post("me/friends", { "delete": true, "player_id": id })
+            post("me/friends", 0, { "delete": true, "player_id": id })
             .then(() => this.setState({
                 friend_request_sent: false,
                 friend_request_received: false,
@@ -279,7 +279,7 @@ export class User extends Resolver<UserProperties, any> {
         .catch(ignore);
     } /* }}} */
     acceptFriend(id) { /* {{{ */
-        post("me/friends/invitations", { "from_user": id })
+        post("me/friends/invitations", 0, { "from_user": id })
         .then(() => this.setState({
             friend_request_sent: false,
             friend_request_received: false,
@@ -290,7 +290,7 @@ export class User extends Resolver<UserProperties, any> {
         if (!confirm("Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?")) {
             return;
         }
-        post("ui/bot/generateAPIKey", { "bot_id": this.state.user.id })
+        post("ui/bot/generateAPIKey", 0, { "bot_id": this.state.user.id })
         .then((res) => this.setState({
             bot_apikey: res.bot_apikey
         }));

@@ -208,22 +208,22 @@ export function getGameResultText(game) { /* {{{ */
     return result;
 } /* }}} */
 export function acceptGroupInvite(invite_id) { /* {{{ */
-    return post("me/groups/invitations", { request_id: invite_id }).catch(errorAlerter);
+    return post("me/groups/invitations", 0, { request_id: invite_id }).catch(errorAlerter);
 } /* }}} */
 export function rejectGroupInvite(invite_id) { /* {{{ */
-    return post("me/groups/invitations", { "delete": true, request_id: invite_id }).catch(errorAlerter);
+    return post("me/groups/invitations", 0, { "delete": true, request_id: invite_id }).catch(errorAlerter);
 } /* }}} */
 export function acceptFriendRequest(id) { /* {{{ */
-    return post("me/friends/invitations", { "from_user": id }).catch(errorAlerter);
+    return post("me/friends/invitations", 0, { "from_user": id }).catch(errorAlerter);
 } /* }}} */
 export function rejectFriendRequest(id) { /* {{{ */
-    return post("me/friends/invitations", { "delete": true, "from_user": id }).catch(errorAlerter);
+    return post("me/friends/invitations", 0, { "delete": true, "from_user": id }).catch(errorAlerter);
 } /* }}} */
 export function acceptTournamentInvite(id) { /* {{{ */
-    return post("me/tournaments/invitations", { "request_id": id }).catch(errorAlerter);
+    return post("me/tournaments/invitations", 0, { "request_id": id }).catch(errorAlerter);
 } /* }}} */
 export function rejectTournamentInvite(id) { /* {{{ */
-    return post("me/tournaments/invitations", { "delete": true, "request_id": id }).catch(errorAlerter);
+    return post("me/tournaments/invitations", 0, { "delete": true, "request_id": id }).catch(errorAlerter);
 } /* }}} */
 
 function lengthInUtf8Bytes(str) { /* {{{ */
@@ -412,7 +412,7 @@ export function alertModerator(obj) {{{
             return;
         }
         obj.note = description;
-        post("moderation/incident", obj)
+        post("moderation/incident", 0, obj)
         .then(() => {
             swal({text: _("Thanks for the report!")});
         })

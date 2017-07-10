@@ -535,7 +535,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             .catch(errorAlerter);
         } else {
             /* create */
-            post("puzzles/", {"puzzle": puzzle})
+            post("puzzles/", 0, {"puzzle": puzzle})
             .then((res) => {
                 browserHistory.push("/puzzles");
             })
@@ -828,7 +828,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     return;
                 }
 
-                post("puzzles/collections/", {
+                post("puzzles/collections/", 0, {
                     "name": name,
                     "private": false,
                     "price": "0.00",

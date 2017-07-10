@@ -127,7 +127,7 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
         if (this.source_method === "get") {
             return get(this.source_url, 0, query); // TODO: Check the URLs and typify the result
         }
-        return post(this.source_url, query);
+        return post(this.source_url, 0, query); // TODO: Check the URLs and typify the result again
     }
 
 

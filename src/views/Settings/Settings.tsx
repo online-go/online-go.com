@@ -321,7 +321,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     savePassword = () => {{{
         if (this.state.profile.no_password_set) { // ie social auth account
-            post("/api/v0/changePassword", {
+            post("/api/v0/changePassword", 0, {
                 "new_password": this.state.password1,
                 "old_password": "!",
             })
@@ -335,7 +335,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 text: _("Enter your current password"),
                 input: "password",
             }).then((password) => {
-                post("/api/v0/changePassword", {
+                post("/api/v0/changePassword", 0, {
                     "old_password": password,
                     "new_password": this.state.password1,
                 })
@@ -361,7 +361,7 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
     resendValidationEmail = () => {{{
-        post(`me/validateEmail`, {})
+        post("me/validateEmail", 0, {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })

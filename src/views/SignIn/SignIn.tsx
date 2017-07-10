@@ -80,7 +80,7 @@ export class SignIn extends React.PureComponent<{}, {}> {
         let actually_login = () => {
             console.log("Should be logging in");
 
-            post("/api/v0/login", {
+            post("/api/v0/login", 0, {
                 "username": this.refs.username.value.trim(),
                 "password": this.refs.password.value,
                 "ebi": get_ebi()
@@ -144,7 +144,7 @@ export class SignIn extends React.PureComponent<{}, {}> {
             showCancelButton: true,
         })
         .then((username) => {
-            post("/api/v0/reset", {username: username})
+            post("/api/v0/reset", 0, {username: username})
             .then((res) => {
                 if (res.success) {
                     swal(_("An email with your new password has been emailed to you."));

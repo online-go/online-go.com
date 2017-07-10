@@ -294,7 +294,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then(() => {
-            post("tournaments/" + this.state.tournament.id + "/start", {})
+            post("tournaments/%%/start", this.state.tournament.id, {})
             .then(ignore)
             .catch(errorAlerter);
         })
@@ -319,7 +319,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({user_to_invite: user});
     }}}
     inviteUser = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {"username": this.state.user_to_invite.username })
+        post("tournaments/%%/players", this.state.tournament_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
             _("Player invited"); /* for translations */
@@ -337,14 +337,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         });
     }}}
     joinTournament = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {})
+        post("tournaments/%%/players", this.state.tournament_id, {})
         .then((res) => {
             this.setState({is_joined: true});
         })
         .catch(errorAlerter);
     }}}
     partTournament = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {"delete": true})
+        post("tournaments/%%/players", this.state.tournament_id, {"delete": true})
         .then((res) => {
             this.setState({is_joined: false});
         })
@@ -939,7 +939,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             .then(() => this.resolve(this.state.tournament_id))
             .catch(errorAlerter);
         } else {
-            post(`tournaments/`, tournament)
+            post("tournaments/", 0, tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
             .catch(errorAlerter);
         }
@@ -1722,7 +1722,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then((val) => {
-            post(`tournaments/${this.state.tournament.id}/players`, {
+            post("tournaments/%%/players", this.state.tournament.id, {
                 "delete": true,
                 "player_id": user.id,
             })

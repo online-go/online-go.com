@@ -66,7 +66,7 @@ export class ChallengesList extends React.PureComponent<{}, any> {
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
     }}}
     acceptChallenge(challenge) {{{
-        post(`me/challenges/${challenge.id}/accept`, {})
+        post("me/challenges/%%/accept", challenge.id, {})
         .then(ignore)
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});

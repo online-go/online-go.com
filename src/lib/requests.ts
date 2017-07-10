@@ -160,8 +160,8 @@ export function request<K extends keyof URLType>(type: string, url: K, id: numbe
 export function get<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
     return request("GET", url, id, data);
 }
-export function post<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
-    return request("POST", url, 0, data);
+export function post<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("POST", url, id, data);
 }
 export function put<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
     return request("PUT", url, 0, data);

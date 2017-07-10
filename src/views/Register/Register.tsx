@@ -43,7 +43,7 @@ export class Register extends React.PureComponent<{}, any> {
         let actually_register = () => {
             console.log("Should be logging in");
 
-            post("/api/v0/register", {
+            post("/api/v0/register", 0, {
                 "username": this.refs.username.value.trim(),
                 "password": this.refs.password.value,
                 "email": this.refs.email.value.trim(),
