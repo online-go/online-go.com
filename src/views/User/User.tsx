@@ -246,7 +246,7 @@ export class User extends Resolver<UserProperties, any> {
         }
         this.moderatorNotesSetTimeout = setTimeout(() => {
             this.moderatorNotesSetTimeout = null;
-            put(`players/${this.user_id}/moderate/notes`, { "moderator_notes": notes.trim() });
+            put("players/%%/moderate/notes", this.user_id, { "moderator_notes": notes.trim() });
         }, 500);
     }
 
@@ -286,7 +286,7 @@ export class User extends Resolver<UserProperties, any> {
         }));
     } /* }}} */
     saveBot() { /* {{{ */
-        put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
+        put("ui/bot/saveBotInfo", 0, { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
             swal("Bot Engine updated");
             this.resolve(this.props);
@@ -306,7 +306,7 @@ export class User extends Resolver<UserProperties, any> {
         } while (moderation_note === "");
 
 
-        put(`players/${this.user_id}/moderate`, {
+        put("players/%%/moderate", this.user_id, {
             "player_id": this.user_id,
             "is_bot": $("#user-su-is-bot").is(":checked") ? 1 : 0,
             "bot_owner": $("#user-su-bot-owner").val(),
@@ -343,7 +343,7 @@ export class User extends Resolver<UserProperties, any> {
         console.log(files);
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`players/${this.user_id}/icon`, file)
+            put("players/%%/icon", this.user_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
                 player_cache.update({
@@ -356,7 +356,7 @@ export class User extends Resolver<UserProperties, any> {
     }}}
     clearIcon = () => {{{
         this.setState({new_icon: null});
-        del(`players/${this.user_id}/icon`)
+        del("players/%%/icon", this.user_id)
         .then((res) => {
             console.log("Cleared icon", res);
             player_cache.update({
@@ -402,7 +402,7 @@ export class User extends Resolver<UserProperties, any> {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
     }}}
     saveEditChanges() {{{
-        put(`players/${this.user_id}`, {
+        put("players/%%", this.user_id, {
             "username": this.state.user.username,
             "first_name": this.state.user.first_name,
             "last_name": this.state.user.last_name,

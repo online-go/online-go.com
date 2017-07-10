@@ -341,7 +341,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let exp_month = parseInt(m[1]);
         let exp_year = parseInt("20" + m[2]);
 
-        return put(`me/payment_methods/${this.state.payment_method.id}` , {
+        return put("me/payment_methods/%%", this.state.payment_method.id, {
             "first_name": this.state.fname.trim(),
             "last_name": this.state.lname.trim(),
             "email": this.state.email,
