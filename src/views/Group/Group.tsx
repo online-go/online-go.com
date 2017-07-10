@@ -176,7 +176,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateIcon = (files) => {{{
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/icon`, file)
+            put("group/%%/icon", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -187,7 +187,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateBanner = (files) => {{{
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/banner`, file)
+            put("group/%%/banner", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -679,7 +679,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     makeAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to make this user an administrator of the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: true
             })
@@ -692,7 +692,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     unAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to remove administrator privileges from this user?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: false
             })

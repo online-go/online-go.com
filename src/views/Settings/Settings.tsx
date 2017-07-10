@@ -114,7 +114,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     startVacation = () => {{{
-        put("me/vacation", {})
+        put("me/vacation", 0, {})
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -203,7 +203,7 @@ export class Settings extends React.PureComponent<{}, any> {
             }
         };
         this.setState({notifications: Object.assign({}, this.state.notifications, up)});
-        put("me/settings", {
+        put("me/settings", 0, {
             notifications: up
         })
         .then(() => 0)
@@ -264,7 +264,7 @@ export class Settings extends React.PureComponent<{}, any> {
     updateHideUIClass = (ev) => {{{
         let checked = ev.target.checked;
         this.setState({'hide_ui_class': !checked});
-        put(`me/settings`, {
+        put(`me/settings`, 0, {
             'site_preferences': {
                 'hide_ui_class': !checked
             }
@@ -296,7 +296,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     saveEmail = () => {{{
-        put(`players/${this.state.profile.id}`, {
+        put("players/%%", this.state.profile.id, {
             "email": this.state.profile.email
         })
         .then(() => {

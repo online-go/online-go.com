@@ -1751,7 +1751,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let adjustments = {};
             adjustments[user.id] = v;
 
-            put(`tournaments/${this.state.tournament.id}/players`, {
+            put("tournaments/%%/players", this.state.tournament.id, {
                 adjust: adjustments
             })
             .then(ignore)
@@ -1769,7 +1769,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then((val) => {
-            put(`tournaments/${this.state.tournament.id}/players`, {
+            put("tournaments/%%/players", this.state.tournament.id, {
                 disqualify: user.id,
             })
             .then(ignore)

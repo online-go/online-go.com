@@ -71,7 +71,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
     save = () => {
         let user = data.get("user");
         let rank = this.state.rank + 5;
-        put(`players/${user.id}`, {ranking: rank})
+        put("players/%%", user.id, {ranking: rank})
         .then((player) => {
             data.set("config.user", Object.assign({}, data.get("config.user"), player, {setup_rank_set : true}));
             setTimeout(() => {

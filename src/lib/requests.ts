@@ -163,8 +163,8 @@ export function get<K extends keyof URLType>(url: K, id: number, data?: URLDataT
 export function post<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
     return request("POST", url, id, data);
 }
-export function put<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
-    return request("PUT", url, 0, data);
+export function put<K extends keyof URLType>(url: K, id: number, data?: URLDataType[K]): Promise<URLResultType[K]> {
+    return request("PUT", url, id, data);
 }
 export function patch<K extends keyof URLType>(url: K, data?: URLDataType[K]): Promise<URLResultType[K]> {
     return request("PATCH", url, 0, data);

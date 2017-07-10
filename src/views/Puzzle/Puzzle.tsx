@@ -464,7 +464,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }}}
 
     ratePuzzle = (value) => {{{
-        put(`puzzles/${this.props.params.puzzle_id}/rate`, {rating: value})
+        put("puzzles/%%/rate", +this.props.params.puzzle_id, {rating: value})
         .then(ignore)
         .catch(errorAlerter);
         this.setState({
@@ -528,7 +528,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
         if (parseInt(this.props.params.puzzle_id)) {
             /* save */
-            put(`puzzles/${this.props.params.puzzle_id}`, {"puzzle": puzzle})
+            put("puzzles/%%", +this.props.params.puzzle_id, {"puzzle": puzzle})
             .then((res) => {
                 window.location.reload();
             })
