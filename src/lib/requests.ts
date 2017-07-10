@@ -167,8 +167,8 @@ export function post<K extends keyof URLCommunication>(url: K, id: number, data?
 export function put<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
     return request("PUT", url, id, data);
 }
-export function patch<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
-    return request("PATCH", url, 0, data);
+export function patch<K extends keyof URLCommunication>(url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("PATCH", url, id, data);
 }
 export function del<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
     return request("DELETE", url, 0, data);

@@ -225,7 +225,7 @@ export class User extends Resolver<UserProperties, any> {
         $("#host-ip-saved").addClass("hidden");
 
         if (this.state.host_ip_settings.id) {
-            patch(`host_ip_settings/${this.state.host_ip_settings.id}`, obj)
+            patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
             post("host_ip_settings/", 0, obj)
