@@ -95,6 +95,7 @@ new data.Subscription((channel, user) => {
     Object.assign(new_style_user, user);
     data.set("user", new_style_user);
 }).to(["config.user"]);
+data.setDefault("friends", []);
 let friends = data.get("friends").slice() as Array<any>;
 let new_style_friends = friends.map((friend) => player_cache.update(friend));
 data.set("friends", new_style_friends);
