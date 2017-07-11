@@ -72,10 +72,10 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
         for (let friend of this.friends) {
             count += friend.is.online ? 1 : 0;
         }
-        this.setState({
+        setTimeout(this.setState.bind(this, {
             has_friends: this.friends.length > 0,
             online_count: count
-        });
+        }));
     }
 
     refresh() {
@@ -87,9 +87,9 @@ export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorStat
     }
 
     toggleFriendList = () => {
-        this.setState({
+        setTimeout(this.setState.bind(this, {
             show_friend_list: !this.state.show_friend_list
-        });
+        }));
     }
 
     render() {

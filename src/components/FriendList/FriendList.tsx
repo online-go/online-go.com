@@ -44,10 +44,10 @@ export class FriendList extends React.PureComponent<{}, any> {
         friends = friends.slice();
         friends.sort(by_status);
         this.friends_subscribe.to(friends);
-        this.setState({
+        setTimeout(this.setState.bind(this, {
             friends: friends,
             resolved: true
-        });
+        }));
     }
 
     componentDidMount() {{{
@@ -59,7 +59,7 @@ export class FriendList extends React.PureComponent<{}, any> {
     }}}
     resortFriends = () => {
         this.state.friends.sort(by_status);
-        this.forceUpdate();
+        setTimeout(this.forceUpdate.bind(this));
     }
     render() {
         if (!this.state.resolved) {
