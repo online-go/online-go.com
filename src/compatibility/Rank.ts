@@ -20,11 +20,8 @@ import {Rank, kyu, dan, pro, is_amateur, is_professional, subtract_rank, rank_sh
 
 
 // Basic rank-conversion functions.
-export function from_old_style_rank(ranking: number): Rank {
-    if (ranking > 1036) {
-        return pro(ranking - 1036);
-    }
-    else if (ranking > 36) {
+export function from_old_style_rank(ranking: number, professional?: boolean): Rank {
+    if (professional) {
         return pro(ranking - 36);
     }
     else if (ranking > 29) {
@@ -52,6 +49,7 @@ export function to_old_style_rank(rank: Rank): number {
 // new-style Rank is.
 export function find_rank(thing: any): Rank | void {
     const types = { "Kyu": true, "Dan": true, "Pro": true };
+    let professional = false;
     if (typeof thing === "object") {
         if (typeof thing.rank === "object" && thing.rank.type in types && typeof thing.rank.level === "number") {
             return thing.rank;
@@ -60,15 +58,17 @@ export function find_rank(thing: any): Rank | void {
             return thing;
         }
         else if (!isNaN(+thing.ranking)) {
+            professional = thing.pro || thing.professional;
             thing = thing.ranking;
         }
         else if (!isNaN(+thing.rank)) {
+            professional = thing.pro || thing.professional;
             thing = thing.rank;
         }
     }
     thing = +thing;
     if (!isNaN(thing)) {
-        return from_old_style_rank(thing);
+        return from_old_style_rank(thing, professional);
     }
 }
 

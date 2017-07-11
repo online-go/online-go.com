@@ -268,7 +268,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 moderator: player.is_moderator || ui_class.indexOf("moderator") !== -1,
                 tournament_moderator: player.is_tournament_moderator,
                 validated: validated,
-                professional: (player.pro || player.professional) && player.ranking > 36,
+                professional: player.pro || player.professional,
                 supporter: ui_class.indexOf("supporter") !== -1,
                 provisional: ui_class.indexOf("provisional") !== -1,
                 timeout: ui_class.indexOf("timeout") !== -1,
