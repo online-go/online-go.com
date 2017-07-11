@@ -33,7 +33,6 @@ import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {Player as PlayerType, is_registered, is_guest, by_name, by_rank} from "data/Player";
-import {ChatMessage} from "data/Chat";
 import {to_old_style_rank} from "compatibility/Rank";
 
 

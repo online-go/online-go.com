@@ -16,7 +16,6 @@
  */
 
 import {Rank} from "data/Rank";
-import {Color, Rules} from "data/Game";
 
 export interface Challenge {
     initialized: boolean;
