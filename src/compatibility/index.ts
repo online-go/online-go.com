@@ -17,8 +17,9 @@
 
 import * as player_cache from "player_cache";
 import {Player} from "data/Player";
+import {Challenge} from "data/Challenge";
 import {from_old_style_friends} from "compatibility/Player";
-
+import {to_old_style_challenge} from "compatibility/Challenge";
 
 // Translate data from the server's loosely-typed schemas to our strongly-typed ones.
 // There are two places where communication with the server happens: the request
@@ -33,11 +34,15 @@ export type URLType = URLDataType | URLResultType;
 export interface URLDataType {
     "ui/friends": never;
     "/termination-api/player/%%": never;
+    "players/%%/challenge": Challenge;
+    "challenges": Challenge;
     [url: string]: any;
 }
 export interface URLResultType {
     "ui/friends": Array<Player>;
     "/termination-api/player/%%": Player;
+    "players/%%/challenge": any;
+    "challenges": any;
     [url: string]: any;
 }
 
@@ -48,7 +53,8 @@ type TranslateToServerType = {[url in keyof URLDataType]?: (data: URLDataType[ur
 
 // The translation function tables.
 export const translate_to_server: TranslateToServerType = {
-
+    "players/%%/challenge": to_old_style_challenge,
+    "challenges": to_old_style_challenge,
 };
 export const translate_from_server: TranslateFromServerType = {
     "ui/friends": from_old_style_friends,

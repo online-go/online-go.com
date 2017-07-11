@@ -437,7 +437,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, ChallengeMod
         this.saveSettings();
         this.close();
 
-        post(player_id ? `players/${player_id}/challenge` : "challenges", to_old_style_challenge(challenge))
+        post(player_id ? "players/%%/challenge" : "challenges", player_id || 0, challenge)
         .then((res) => {
                 console.log("Challenge response: ", res);
                 let challenge_id = res.challenge;

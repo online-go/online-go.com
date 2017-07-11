@@ -130,13 +130,13 @@ export function request<K extends keyof URLType>(type: string, url: K, id: numbe
                 reject(err);
             }
         };
-        if (data) {
-            if ((data instanceof Blob) || (Array.isArray(data) && data[0] instanceof Blob)) {
+        if (real_data) {
+            if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
                 opts.data = new FormData();
-                if (data instanceof Blob) {
-                    opts.data.append("file", data);
+                if (real_data instanceof Blob) {
+                    opts.data.append("file", real_data);
                 } else {
-                    for (let file of (data as Array<Blob>)) {
+                    for (let file of (real_data as Array<Blob>)) {
                         opts.data.append("file", file);
                     }
                 }
@@ -144,9 +144,9 @@ export function request<K extends keyof URLType>(type: string, url: K, id: numbe
                 (opts as any).contentType = false;
             } else {
                 if (type === "GET") {
-                    opts.data = data;
+                    opts.data = real_data;
                 } else {
-                    opts.data = JSON.stringify(data);
+                    opts.data = JSON.stringify(real_data);
                 }
             }
         }
