@@ -760,9 +760,6 @@ export class User extends Resolver<UserProperties, any> {
                                 {(user.on_vacation) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
                             </div>
 
-
-
-
                             {(editing || null) &&
                                 <div>
                                     <input className='name-input' placeholder={_("First") /* translators: First name */} value={user.first_name || ""} onChange={this.saveRealFirstName}/>
@@ -802,9 +799,6 @@ export class User extends Resolver<UserProperties, any> {
                             {(editing || null) &&
                                 <div><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
                             }
-
-
-
 
                             <div className='avatar-buttons'>
                                 {((global_user.id === user.id || global_user.is_moderator) || null)   &&
