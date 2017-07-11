@@ -1042,7 +1042,6 @@ export class User extends Resolver<UserProperties, any> {
                             </tr></tbody></table>
 
                             <div id="rating-history"></div>
-                            <div className="text-align-center"><Link to={interpolate("/ratinghistory/{{user_id}}", {"user_id": this.user_id})} target="_blank"><i className="fa fa-arrows-alt"></i>{" " + _("Full View")}</Link></div>
                         </Card>
                         </div>
                     }
@@ -1202,15 +1201,11 @@ export class User extends Resolver<UserProperties, any> {
         return (
             <div className='ratings-grid'>
                 <div className='title-row'>
-                    <span className='title'></span>
-                    {['overall', 'blitz', 'live', 'correspondence'].map((speed) => (
-                        <span key={speed} className='title'>
-                            {(speed === 'correspondence' || null) && <i className="speed-icon ogs-turtle"  title={_("Correspondence")} /> }
-                            {(speed === 'overall' || null) && <i className="speed-icon fa fa-circle-o" title={_("Overall")} /> }
-                            {(speed === 'blitz' || null) && <i className="speed-icon fa fa-bolt"  title={_("Blitz")} /> }
-                            {(speed === 'live' || null) && <i className="speed-icon fa fa-clock-o" title={_("Live")} /> }
-                        </span>
-                    ))}
+                    <span className='title'/>
+                    <span className='title'><i className="speed-icon ogs-turtle" title={_("Correspondence")} /></span>
+                    <span className='title'><i className="speed-icon fa fa-circle-o" title={_("Overall")} /></span>
+                    <span className='title'><i className="speed-icon fa fa-bolt" title={_("Blitz")} /></span>
+                    <span className='title'><i className="speed-icon fa fa-clock-o" title={_("Live")} /></span>
                 </div>
                 {[0, 9, 13, 19].map((size) => (
                     <div key={size} className='speed'>
