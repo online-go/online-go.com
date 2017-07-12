@@ -106,9 +106,10 @@ export function watchSelectedThemes(cb) {
     };
     let subscribe = new data.Subscription<any>(call_cb);
 
-    subscribe.to(["goban-theme-board", "goban-theme-black"]);
+    let prefix = "preferences.goban-theme";
+    subscribe.to([`${prefix}-board`, `${prefix}-black`]);
     dont_call_right_away = false;   // dont_call_ever ???
-    subscribe.to(["goban-theme-board", "goban-theme-black", "goban-theme-white", call_cb]);
+    subscribe.to([`${prefix}-board`, `${prefix}-black`, `${prefix}-white`]);
     return { remove: () => subscribe.to([]) };
 }
 
