@@ -35,7 +35,7 @@ import {PaginatedTable} from "PaginatedTable";
 import {PersistentElement} from "PersistentElement";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {MiniGoban} from "MiniGoban";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";

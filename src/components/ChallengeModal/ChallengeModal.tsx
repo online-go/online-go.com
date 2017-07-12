@@ -16,7 +16,7 @@
  */
 
 import data from "data";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import * as React from "react";
 import {browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";

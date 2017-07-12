@@ -41,7 +41,7 @@ import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {toast} from 'toast';
 
 import {NavBar} from "NavBar";
@@ -305,3 +305,6 @@ const routes = (
 </Router>);
 
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+// Set up debugging globals.
+window["player_cache"] = player_cache;

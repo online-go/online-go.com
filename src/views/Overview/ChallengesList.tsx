@@ -23,7 +23,7 @@ import data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
-import {player_cache} from "player_cache";
+import * as player_cache from "player_cache";
 import {profanity_filter} from "profanity_filter";
 import {challenge_text_description} from "ChallengeModal";
 import {FabX, FabCheck} from "material";
