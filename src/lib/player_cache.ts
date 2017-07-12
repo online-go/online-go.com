@@ -221,7 +221,6 @@ export function update(player: any, dont_overwrite?: boolean): Player {
 
     // Work out which player we're referring to.
     let player_id = player.id || player.player_id || player.user_id || 0;
-
     if (player_id <= 0) {
         return {type: "Guest", id: player.id, is: guest_attributes};
     }
@@ -246,7 +245,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         }
 
         // Prepare the player's attributes.
-        let ui_class = player.ui_class || "";
+        let ui_class = player.ui_class;
         let validated = player.email_validated;
         if (validated === undefined) {
             if (player.is) {
@@ -260,8 +259,7 @@ export function update(player: any, dont_overwrite?: boolean): Player {
         if (player.is) {
             is = player.is;
         }
-        else {
-            // Prepare the attributes object.
+        else if ("ui_class" in player) {
             is = {
                 online: players_online[player_id],
                 admin: player.is_superuser || ui_class.indexOf("admin") !== -1,
@@ -274,30 +272,46 @@ export function update(player: any, dont_overwrite?: boolean): Player {
                 timeout: ui_class.indexOf("timeout") !== -1,
                 bot: player.is_bot || ui_class.indexOf("bot") !== -1
             };
-
-            // Only keep attributes that are applicable.
-            for (let attribute in is) {
-                if (is[attribute]) {
-                    is[attribute] = true;
+        }
+        else {
+            let flags = {
+                online: players_online[player_id],
+                validated: validated,
+                professional: player.pro || player.professional,
+            };
+            is = Object.assign({}, cached.is, flags);
+            if ("is_superuser" in player) {
+                is.admin = !!player.is_superuser;
+            }
+            for (let title in ["moderator", "tournament_moderator", "bot"]) {
+                if ("is_" + title in player) {
+                    is[title] = !!player["is_" + title];
                 }
-                else {
-                    delete is[attribute];
-                }
             }
+        }
 
-            // If the object is the same as the cached version, then replace it with
-            // the cached version. This enables us to compare all of the attributes
-            // at once using the === operator.
-            let same = true;
-            for (let attribute in is) {
-                same = same && cached.is[attribute];
+        // Only keep attributes that are applicable.
+        for (let attribute in is) {
+            if (is[attribute]) {
+                is[attribute] = true;
             }
-            for (let attribute in cached.is) {
-                same = same && is[attribute];
+            else {
+                delete is[attribute];
             }
-            if (same) {
-                is = cached.is;
-            }
+        }
+
+        // If the object is the same as the cached version, then replace it with
+        // the cached version. This enables us to compare all of the attributes
+        // at once using the === operator.
+        let same = true;
+        for (let attribute in is) {
+            same = same && cached.is[attribute];
+        }
+        for (let attribute in cached.is) {
+            same = same && is[attribute];
+        }
+        if (same) {
+            is = cached.is;
         }
 
         // Translate the data to the Player type.
