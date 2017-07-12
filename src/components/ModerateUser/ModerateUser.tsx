@@ -202,9 +202,9 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
                                 <dl className="horizontal right">
                                     <dt><label htmlFor="rank-overall">Overall</label></dt>
                                     <dd>
-                                        <select id="rank-overall" value={user.ranking} onChange={this.setRanking}>
+                                        <select id="rank-overall" onChange={this.setRanking}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.value}>{r.text}</option>
+                                                <option selected={user.ranking === r.value} key={idx} value={r.value}>{r.text}</option>
                                             ))}
                                         </select>
                                         <input type="number" id="rating-overall" value={user.rating} onChange={this.setRating}/>
@@ -212,27 +212,27 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
 
                                     <dt><label htmlFor="rank-blitz">Blitz</label></dt>
                                     <dd>
-                                        <select id="rank-blitz" value={user.ranking_blitz} onChange={this.setRankingBlitz}>
+                                        <select id="rank-blitz" onChange={this.setRankingBlitz}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.value}>{r.text}</option>
+                                                <option selected={user.ranking_blitz === r.value} key={idx} value={r.value}>{r.text}</option>
                                             ))}
                                         </select>
                                         <input type="number" id="rating-blitz" value={user.rating_blitz} onChange={this.setRatingBlitz}/>
                                     </dd>
                                     <dt><label htmlFor="rank-live">Live</label></dt>
                                     <dd>
-                                        <select id="rank-live" value={user.ranking_live} onChange={this.setRankingLive}>
+                                        <select id="rank-live" onChange={this.setRankingLive}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.value}>{r.text}</option>
+                                                <option selected={user.ranking_live === r.value} key={idx} value={r.value}>{r.text}</option>
                                             ))}
                                         </select>
                                         <input type="number" id="rating-live" value={user.rating_live} onChange={this.setRatingLive}/>
                                     </dd>
                                     <dt><label htmlFor="rank-correspondence">Corr.</label></dt>
                                     <dd>
-                                        <select id="rank-correspondence" value={user.ranking_correspondence} onChange={this.setRankingCorrespondence}>
+                                        <select id="rank-correspondence" onChange={this.setRankingCorrespondence}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.value}>{r.text}</option>
+                                                <option selected={user.ranking_correspondence === r.value} key={idx} value={r.value}>{r.text}</option>
                                             ))}
                                         </select>
                                         <input type="number" id="rating-correspondence" value={user.rating_correspondence} onChange={this.setRatingCorrespondence}/>

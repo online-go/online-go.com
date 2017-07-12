@@ -96,13 +96,13 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
 
                 <h4>{_("Pick your starting rank if you know it, or select how long you've been playin go for")}</h4>
                 <div className="play-range-selector">
-                    <select value={this.state.rank} onChange={this.setRank}>
-                        <option value={-1}>
+                    <select onChange={this.setRank}>
+                        <option selected={this.state.rank === -1} value={-1}>
                             {_("Select Rank")}
                         </option>
 
                         {durations.map((elt, idx) => (
-                            <option key={idx} value={idx}>
+                            <option selected={this.state.rank === idx} key={idx} value={idx}>
                                 {longRankString(idx + 5)} : {elt.time}
                             </option>
                         ))}

@@ -813,9 +813,9 @@ export class User extends Resolver<UserProperties, any> {
                                     {this.state.editing
                                       ? <dd>
                                             <Flag country={user.country} big/>
-                                            <select value={user.country} onChange={this.saveCountry}>
+                                            <select onChange={this.saveCountry}>
                                                 {sorted_locale_countries.map((C) => (
-                                                    <option key={C.cc} value={C.cc}>{C.name}</option>
+                                                    <option selected={user.country === C.cc} key={C.cc} value={C.cc}>{C.name}</option>
                                                 ))}
                                             </select>
                                         </dd>

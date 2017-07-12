@@ -266,9 +266,9 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                                     <ConditionSelect value={settings.handicap.condition} onChange={this.setHandicapCondition} />
                                     {settings.handicap.condition === 'no-preference'
                                         ? <i>{tab === 'blitz' ? _("Default is disabled") : _("Default is enabled")} </i>
-                                        : <select value={settings.handicap.value} onChange={this.setHandicapValue} >
-                                            <option value='enabled'>{_("Handicaps enabled")}</option>
-                                            <option value='disabled'>{_("Handicaps disabled")}</option>
+                                        : <select onChange={this.setHandicapValue} >
+                                                <option selected={settings.handicap.value === "enabled"} value='enabled'>{_("Handicaps enabled")}</option>
+                                                <option selected={settings.handicap.value === "disabled"}value='disabled'>{_("Handicaps disabled")}</option>
                                           </select>
                                     }
                                 </td>
@@ -280,10 +280,10 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                                     <ConditionSelect value={settings.time_control.condition} onChange={this.setTimeControlCondition} />
                                     {settings.time_control.condition === 'no-preference'
                                         ? <i>{tab === 'correspondence' ? _("Default is to use Fischer") : _("Default is to use Byo-Yomi")}</i>
-                                        : <select value={settings.time_control.value.system} onChange={this.setTimeControlSystem} >
-                                            <option value='byoyomi'>{_("Byo-Yomi")}</option>
-                                            <option value='fischer'>{_("Fischer")}</option>
-                                            <option value='canadian'>{_("Canadian")}</option>
+                                        : <select onChange={this.setTimeControlSystem} >
+                                            <option selected={settings.time_control.value.system === "byoyomi"} value='byoyomi'>{_("Byo-Yomi")}</option>
+                                            <option selected={settings.time_control.value.system === "fischer"} value='fischer'>{_("Fischer")}</option>
+                                            <option selected={settings.time_control.value.system === "canadian"} value='canadian'>{_("Canadian")}</option>
                                           </select>
                                     }
                                 </td>
@@ -295,13 +295,13 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
                                     <ConditionSelect value={settings.rules.condition} onChange={this.setRulesCondition} />
                                     {settings.rules.condition === 'no-preference'
                                         ? <i>{_("Default is to use Japanese rules")}</i>
-                                        : <select value={settings.rules.value} onChange={this.setRulesValue} >
-                                            <option value='japanese'>{_("Japanese")}</option>
-                                            <option value='chinese'>{_("Chinese")}</option>
-                                            <option value='aga'>{_("AGA")}</option>
-                                            <option value='korean'>{_("Korean")}</option>
-                                            <option value='nz'>{_("New Zealand")}</option>
-                                            <option value='ing'>{_("Ing")}</option>
+                                        : <select onChange={this.setRulesValue} >
+                                            <option selected={settings.rules.value === "japanese"} value='japanese'>{_("Japanese")}</option>
+                                            <option selected={settings.rules.value === "chinese"} value='chinese'>{_("Chinese")}</option>
+                                            <option selected={settings.rules.value === "aga"} value='aga'>{_("AGA")}</option>
+                                            <option selected={settings.rules.value === "korean"} value='korean'>{_("Korean")}</option>
+                                            <option selected={settings.rules.value === "nz"} value='nz'>{_("New Zealand")}</option>
+                                            <option selected={settings.rules.value === "ing"} value='ing'>{_("Ing")}</option>
                                           </select>
                                     }
                                 </td>
