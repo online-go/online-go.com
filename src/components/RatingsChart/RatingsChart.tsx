@@ -34,9 +34,11 @@ import {
     rankString
 } from 'rank_utils';
 
+type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
+
 interface RatingsChartProperties {
     playerId: number;
-    speed: 'overall' | 'blitz' | 'live' | 'correspondence';
+    speed: speed_t;
     size: 0 | 9 | 13 | 19;
 }
 
@@ -51,7 +53,6 @@ const winloss_bars_height = 155;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-
 export class RatingsChart extends React.PureComponent<RatingsChartProperties, any> {
     container;
     chart_div;
@@ -65,6 +66,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     dateLegendBackground;
     dateLegendText;
     range_label;
+    legend_label;
     date_extents;
     winloss_graphs:Array<any> = [];
     winloss_bars:Array<any> = [];
@@ -110,7 +112,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     helperText;
     ratingTooltip;
     mouseArea;
-    verticalCrosshairLine;
+    //verticalCrosshairLine;
     horizontalCrosshairLine;
     timeline_chart;
     timeline_axis_labels;
@@ -134,6 +136,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.deinitialize();
     }}}
     componentWillReceiveProps(nextProps) {{{
+        let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
+        this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }}}
     initialize() {{{
         let sizes = this.chart_sizes();
@@ -146,14 +150,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
 
-
         this.rank_axis.tickFormat((rating:number) => rankString(Math.round(rating_to_rank(rating))));
         this.svg = d3.select(this.chart_div)
             .append('svg')
             .attr('class', 'chart')
             .attr('width', width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom + 60);
-
 
         this.clip = this.svg.append('defs')
             .append('clipPath')
@@ -162,40 +164,32 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('width', width)
             .attr('height', height);
 
-
         this.rating_graph = this.svg.append('g')
-            .attr('class', 'focus')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
 
         for (let i = 0; i < 4; ++i) {
             this.winloss_graphs.push(this.svg.append('g')
-                .attr('class', 'volume')
                 .attr('clip-path', 'url(#clip)')
                 .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
             );
         }
 
         this.timeline_graph = this.svg.append('g')
-            .attr('class', 'context')
+            .attr('class', 'timeline')
             .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + 60) + ')');
 
         this.legend = this.svg.append('g')
-            .attr('class', 'chart__legend')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
             .attr('width', width)
             .attr('height', 30);
 
         this.dateLegend = this.svg.append('g')
-            .attr('class', 'chart__dateLegend')
             .style('text-anchor', 'middle')
             .style('display', 'none')
             .attr('width', width)
             .attr('height', 30);
 
-
         this.dateLegendBackground = this.dateLegend.append('rect')
-            .attr('class', 'chart__dateLegendBackground')
             .attr('width', 70)
             .attr('height', 20)
             .attr('x', -35)
@@ -203,12 +197,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('rx', 10);
 
         this.dateLegendText = this.dateLegend.append('text')
-            .attr('class', 'chart__dateLegendText')
             .attr('y', 3);
 
-        this.legend.append('text')
-            .attr('class', 'chart__symbol')
-            .text('NASDAQ: AAPL');
+        let size_text = this.props.size ? `${this.props.size}x${this.props.size}` : '';
+        this.legend_label = this.legend.append('text')
+            .text(`${speed_translation(this.props.speed)} ${size_text}`);
 
         this.range_label = this.legend.append('text')
             .style('text-anchor', 'end')
@@ -220,7 +213,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('class', 'deviation-area');
 
         this.rating_chart = this.rating_graph.append('path')
-            .attr('class', 'chart__line line chart__rating--focus');
+            .attr('class', 'rating line');
 
         this.x_axis_date_labels = this.rating_graph.append('g')
             .attr('class', 'x axis')
@@ -234,8 +227,6 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('class', 'y axis')
             .attr('transform', 'translate(' + (width - 10) + ', 0)');
 
-
-
         this.helper = this.rating_graph.append('g')
             .attr('class', 'chart__helper')
             .style('text-anchor', 'end')
@@ -243,37 +234,36 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
         this.helperText = this.helper.append('text');
 
-        this.ratingTooltip = this.rating_graph.append('g')
-            .attr('class', 'chart__tooltip--rating')
-            .append('circle')
-            .style('display', 'none')
-            .attr('r', 2.5);
-
+        /*
         this.verticalCrosshairLine = this.rating_graph.append('g')
-            .attr('class', 'chart__tooltip--rating-crosshairs')
+            .attr('class', 'crosshairs')
             .append('line')
             .style('display', 'none')
             .attr('x0', 0)
             .attr('y0', 0)
             .attr('x1', 0)
             .attr('y1', height);
+        */
 
         this.horizontalCrosshairLine = this.rating_graph.append('g')
-            .attr('class', 'chart__tooltip--rating-crosshairs')
+            .attr('class', 'crosshairs')
             .append('line')
             .style('display', 'none')
             .attr('x0', 0)
             .attr('y0', 0)
             .attr('y1', 0)
-            .attr("stroke-width", 2)
-            .attr("stroke", "black")
             .attr('x1', width);
+
+        this.ratingTooltip = this.rating_graph.append('g')
+            .attr('class', 'data-point-circle')
+            .append('circle')
+            .style('display', 'none')
+            .attr('r', 2.5);
 
         let self = this;
         this.mouseArea = this.svg.append('g')
-            .attr('class', 'chart__mouse')
             .append('rect')
-            .attr('class', 'chart__overlay')
+            .attr('class', 'overlay')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
             .attr('width', width)
             .attr('height', height)
@@ -282,7 +272,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 this.dateLegend.style('display', null);
                 this.ratingTooltip.style('display', null);
                 //deviationTooltip.style('display', null);
-                this.verticalCrosshairLine.style('display', null);
+                //this.verticalCrosshairLine.style('display', null);
                 this.horizontalCrosshairLine.style('display', null);
             })
             .on('mouseout', () => {
@@ -290,7 +280,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 this.dateLegend.style('display', 'none');
                 this.ratingTooltip.style('display', 'none');
                 //deviationTooltip.style('display', 'none');
-                this.verticalCrosshairLine.style('display', 'none');
+                //this.verticalCrosshairLine.style('display', 'none');
                 this.horizontalCrosshairLine.style('display', 'none');
             })
             .on('mousemove', function() {
@@ -312,14 +302,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 self.dateLegend.attr('transform', 'translate(' + (self.ratings_x(d.ended) + margin.left)  + ',' + (margin.top + height + 10) + ')');
                 self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
-                self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
+                //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
                 self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(d.rating) + ')');
             });
 
         this.timeline_chart = this.timeline_graph.append('path')
-            .attr('class', 'chart__area area');
+            .attr('class', 'area');
+
         this.timeline_axis_labels = this.timeline_graph.append('g')
-            .attr('class', 'x axis chart__axis--context')
+            .attr('class', 'x axis')
             .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')')
             .attr('y', 0);
 
@@ -388,7 +379,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
         this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 10) + ', 0)');
 
-        this.verticalCrosshairLine.attr('y1', height);
+        //this.verticalCrosshairLine.attr('y1', height);
         this.helper.attr('transform', 'translate(' + width + ', 0)');
         this.horizontalCrosshairLine.attr('x1', width);
         this.mouseArea.attr('width', width);
@@ -465,7 +456,6 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return d.rating; })) as any);
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
         this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
-        this.rating_graph.append('g').attr('class', 'y chart__grid'); /* TODO: can we remove this? */
         this.deviation_chart
             .datum(this.games_by_day)
             .attr('d', this.deviation_area as any);
@@ -506,7 +496,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.winloss_graphs[0].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'weak_wins')
+                .attr('class', 'winloss-bar weak_wins')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(d.count))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)))
@@ -516,7 +506,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.winloss_graphs[1].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'strong_wins')
+                .attr('class', 'winloss-bar strong_wins')
                 .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
                 .attr('y', (d:RatingEntry) => Y(d.count))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)))
@@ -526,7 +516,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.winloss_graphs[2].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'weak_losses')
+                .attr('class', 'winloss-bar weak_losses')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(d.count - d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)))
@@ -536,7 +526,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.winloss_graphs[3].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'strong_losses')
+                .attr('class', 'winloss-bar strong_losses')
                 .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
                 .attr('y', (d:RatingEntry) => Y(d.count - d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)))
@@ -610,4 +600,14 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             </div>
         );
     }}}
+}
+
+
+function speed_translation(speed:speed_t) {
+    switch (speed) {
+        case 'overall': return _("Overall");
+        case 'blitz' : return _("Blitz");
+        case 'live' : return _("Live");
+        case 'correspondence' : return _("Correspondence");
+    }
 }
