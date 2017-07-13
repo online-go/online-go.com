@@ -125,8 +125,7 @@ export class User extends Resolver<UserProperties, any> {
         this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
         return get(`players/${this.user_id}/full`).then((state) => {
             try {
-                //console.log(state);
-                player_cache.update(state);
+                player_cache.update(state.user);
                 this.update(state);
             } catch (err) {
                 console.error(err.stack);
