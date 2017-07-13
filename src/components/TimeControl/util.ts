@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 

@@ -22,7 +22,7 @@ import {shouldOpenNewTab, errorAlerter, alertModerator} from "misc";
 import {rankString} from "rank_utils";
 import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
-import data from "data";
+import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";

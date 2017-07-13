@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 import {FAdBlock} from 'fab';
 
 declare var factorem;

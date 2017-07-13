@@ -196,15 +196,3 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-
-export default window["data"] = {
-    set                 : set,
-    get                 : get,
-    ensureDefaultAndGet : ensureDefaultAndGet,
-    setDefault          : setDefault,
-    remove              : remove,
-    removeAll           : removeAll,
-    watch               : watch,
-    dump                : dump,
-};

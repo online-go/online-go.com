@@ -18,7 +18,7 @@
 import * as React from "react";
 import {pgettext, _, getLanguageFlag, interpolate} from "translate";
 import {Flag} from "Flag";
-import data from "data";
+import * as data from "data";
 import {Markdown} from "Markdown";
 
 /*

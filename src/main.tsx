@@ -17,7 +17,7 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 
-import data from "data";
+import * as data from "data";
 
 data.setDefault("theme", "light");
 data.setDefault("config", {
@@ -308,3 +308,4 @@ ReactDOM.render(routes, document.getElementById("main-content"));
 
 // Set up debugging globals.
 window["player_cache"] = player_cache;
+window["data"] = data;

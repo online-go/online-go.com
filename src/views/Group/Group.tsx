@@ -20,7 +20,7 @@ import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, del, put, get, abort_requests_in_flight} from "requests";
 import {errorAlerter, ignore} from "misc";
-import data from "data";
+import * as data from "data";
 import {Card} from "material";
 import {Player, setExtraActionCallback} from "Player";
 import {PaginatedTable} from "PaginatedTable";

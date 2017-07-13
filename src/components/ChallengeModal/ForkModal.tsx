@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {Goban} from "goban";

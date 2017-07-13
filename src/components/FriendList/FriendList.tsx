@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 

@@ -20,7 +20,7 @@ import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} f
 import {Link} from "react-router";
 import {post, get, put, del, patch} from "requests";
 import config from "config";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
 import {Resolver} from 'Resolver';

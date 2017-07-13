@@ -30,7 +30,7 @@ import {Player} from "Player";
 import {StarRating} from "StarRating";
 import {Resizable} from "Resizable";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 

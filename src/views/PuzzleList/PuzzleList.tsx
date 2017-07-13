@@ -27,7 +27,7 @@ import {StarRating} from "StarRating";
 import {longRankString, rankString} from "rank_utils";
 import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 
 interface PuzzleListProperties {

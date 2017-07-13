@@ -22,7 +22,7 @@ import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
