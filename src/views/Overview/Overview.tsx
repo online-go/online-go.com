@@ -71,11 +71,10 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
+        let user = data.get("user");
+        if (!user.setup_rank_set) {
             return <FirstTimeSetup/>;
         }
-
-        let user = data.get("config.user");
 
         return (
         <div id="Overview-Container">

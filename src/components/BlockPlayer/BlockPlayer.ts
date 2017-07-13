@@ -120,5 +120,5 @@ function unIgnoreUser(uid) {
     $("<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>").appendTo("head");
 }
 
-data.watch("user", update_blocks);
+new data.Subscription<"user">(update_blocks).to(["user"]);
 ITC.register("update-blocks", update_blocks);

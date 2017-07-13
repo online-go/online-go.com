@@ -32,6 +32,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     update_interval = null;
     friend_list = [];
     online_subscriptions = {};
+    data_subscribe: data.Subscription<"friends">;
 
     constructor(props) {
         super(props);
@@ -40,13 +41,19 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
             online_ct: 0,
             show_friend_list: false,
         };
+        this.data_subscribe = new data.Subscription<"friends">(this.updateFriends);
         friend_indicator_singleton = this;
+        window["friends"] = this;
     }
 
-    componentWillMount() {
-        data.watch("friends", this.updateFriends);
+    componentDidMount() {
+        this.data_subscribe.to(["friends"]);
         online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
         this.refresh();
+    }
+
+    componentWillUnmount() {
+        this.data_subscribe.to([]);
     }
 
     updateFriendCount = () => {
@@ -77,7 +84,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         });
     }
 
-    updateFriends = (friends) => {
+    updateFriends = (channel: "friends", friends) => {
         this.friend_list = friends;
         this.updateFriendCount();
     }

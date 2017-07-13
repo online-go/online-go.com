@@ -855,4 +855,4 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 } /* }}} */
 
 
-data.watch("config.user", (user) => notification_manager.setUser(user));
+new data.Subscription<"user">((channel, user) => notification_manager.setUser(user)).to(["user"]);

@@ -19,7 +19,6 @@ import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
 import {post, get, put, del, patch} from "requests";
-import config from "config";
 import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
@@ -839,14 +838,14 @@ export class User extends Resolver<UserProperties, any> {
 
                                     {(this.state.titles.length > 0) && <dt >{_("Titles")}</dt>}
                                     {(this.state.titles.length > 0) && <dd className="trophies">
-                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
+                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${data.get("config.cdn_release")}/img/trophies/${title.icon}`} title={title.title}/>))}
                                     </dd>}
 
                                     <dt>{_("Trophies")}</dt>
                                     {(this.state.trophies.length > 0) && <dd className="trophies">
                                         {this.state.trophies.map((trophy, idx) => (
                                             <a key={idx} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
-                                                <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
+                                                <img className="trophy" src={`${data.get("config.cdn_release")}/img/trophies/${trophy.icon}`} title={trophy.title}/>
                                             </a>
                                         ))}
                                     </dd>}

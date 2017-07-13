@@ -66,13 +66,15 @@ let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
     get("/api/v0/logout").then((config) => {
-        data.set("config", config, true);
+        data.set("config", config);
         window.location.reload();
     });
 }
 
 
 export class NavBar extends React.PureComponent<{}, any> {
+    subscribe: data.Subscription<"user">;
+
     refs: {
         input: any;
         notification_list: NotificationList;
@@ -106,15 +108,21 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleLeftNav = this.toggleLeftNav.bind(this);
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
+
+        this.subscribe = new data.Subscription<"user">((channel, user) => this.setState({"user": user}));
     }
 
-    componentWillMount() {
-        data.watch("config.user", (user) => this.setState({"user": user}));
+    componentDidMount() {
+        this.subscribe.to(["user"]);
 
         browserHistory.listen(location => {
             this.closeNavbar();
             this.setState({path: location.pathname});
         });
+    }
+
+    compnentWillUnmount() {
+        this.subscribe.to([]);
     }
 
     closeNavbar() {

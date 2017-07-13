@@ -19,7 +19,6 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {Link} from "react-router";
 import {post, get, put, patch} from "requests";
-import config from "config";
 import * as data from "data";
 import * as moment from "moment";
 import {Resolver} from "Resolver";
