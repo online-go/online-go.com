@@ -557,8 +557,8 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 <div className="form-group">
                     <label className="control-label" htmlFor="engine">{_("Engine")}</label>
                     <div className="controls">
-                    <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
+                    <select id="challenge-ai" onChange={this.update_conf_bot_id} required={true}>
+                        {bots_list().map((bot, idx) => (<option key={idx} selected={this.state.conf.bot_id === bot.id} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
                     </select>
                     </div>
                 </div>
@@ -637,13 +637,13 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="rules">{_("Rules")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.demo.rules} onChange={this.update_demo_rules} className="challenge-dropdown form-control">
-                                <option value="aga">{_("AGA")}</option>
-                                <option value="chinese">{_("Chinese")}</option>
-                                <option value="ing">{_("Ing SST")}</option>
-                                <option value="japanese">{_("Japanese")}</option>
-                                <option value="korean">{_("Korean")}</option>
-                                <option value="nz">{_("New Zealand")}</option>
+                            <select onChange={this.update_demo_rules} className="challenge-dropdown form-control">
+                                <option selected={this.state.demo.rules === "aga"} value="aga">{_("AGA")}</option>
+                                <option selected={this.state.demo.rules === "chinese"} value="chinese">{_("Chinese")}</option>
+                                <option selected={this.state.demo.rules === "ing"} value="ing">{_("Ing SST")}</option>
+                                <option selected={this.state.demo.rules === "japanese"} value="japanese">{_("Japanese")}</option>
+                                <option selected={this.state.demo.rules === "korean"} value="korean">{_("Korean")}</option>
+                                <option selected={this.state.demo.rules === "nz"} value="nz">{_("New Zealand")}</option>
                             </select>
                         </div>
                     </div>
@@ -654,23 +654,23 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                 <label className="control-label" htmlFor="challenge-board-size">{_("Board Size")}</label>
                 <div className="controls">
                     <div className="checkbox">
-                        <select id="challenge-board-size" value={this.state.conf.selected_board_size} onChange={this.update_board_size} className="challenge-dropdown form-control">
+                        <select id="challenge-board-size" onChange={this.update_board_size} className="challenge-dropdown form-control">
                             <optgroup label={_("Normal Sizes")}>
-                                <option value="19x19">19x19</option>
-                                <option value="13x13">13x13</option>
-                                <option value="9x9">9x9</option>
+                                <option selected={this.state.conf.selected_board_size === "19x19"} value="19x19">19x19</option>
+                                <option selected={this.state.conf.selected_board_size === "13x13"} value="13x13">13x13</option>
+                                <option selected={this.state.conf.selected_board_size === "9x9"} value="9x9">9x9</option>
                             </optgroup>
                             <optgroup label={_("Extreme Sizes")}>
-                                <option disabled={this.state.challenge.game.ranked} value="25x25">25x25</option>
-                                <option disabled={this.state.challenge.game.ranked} value="21x21">21x21</option>
-                                <option disabled={this.state.challenge.game.ranked} value="5x5">5x5</option>
+                                <option selected={this.state.conf.selected_board_size === "25x25"} disabled={this.state.challenge.game.ranked} value="25x25">25x25</option>
+                                <option selected={this.state.conf.selected_board_size === "21x21"} disabled={this.state.challenge.game.ranked} value="21x21">21x21</option>
+                                <option selected={this.state.conf.selected_board_size === "5x5"} disabled={this.state.challenge.game.ranked} value="5x5">5x5</option>
                             </optgroup>
                             <optgroup label={_("Non-Square")}>
-                                <option disabled={this.state.challenge.game.ranked} value="19x9">19x9</option>
-                                <option disabled={this.state.challenge.game.ranked} value="5x13">5x13</option>
+                                <option selected={this.state.conf.selected_board_size === "19x9"} disabled={this.state.challenge.game.ranked} value="19x9">19x9</option>
+                                <option selected={this.state.conf.selected_board_size === "5x13"} disabled={this.state.challenge.game.ranked} value="5x13">5x13</option>
                             </optgroup>
                             <optgroup label={_("Custom")}>
-                                <option disabled={this.state.challenge.game.ranked} value="custom">{_("Custom Size")}</option>
+                                <option selected={this.state.conf.selected_board_size === "custom"}disabled={this.state.challenge.game.ranked} value="custom">{_("Custom Size")}</option>
                             </optgroup>
                         </select>
                     </div>
@@ -707,9 +707,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
+                            <select onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
                                 {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                    <option selected={this.state.demo.black_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -729,9 +729,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
+                            <select onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
                                 {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                    <option selected={this.state.demo.white_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -755,13 +755,13 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                             <label className="control-label" htmlFor="rules">{_("Rules")}</label>
                             <div className="controls">
                                 <div className="checkbox">
-                                    <select value={this.state.challenge.game.rules} onChange={this.update_rules} id="challenge.game.rules" className="challenge-dropdown form-control">
-                                        <option value="aga">{_("AGA")}</option>
-                                        <option value="chinese">{_("Chinese")}</option>
-                                        <option value="ing">{_("Ing SST")}</option>
-                                        <option value="japanese">{_("Japanese")}</option>
-                                        <option value="korean">{_("Korean")}</option>
-                                        <option value="nz">{_("New Zealand")}</option>
+                                    <select onChange={this.update_rules} id="challenge.game.rules" className="challenge-dropdown form-control">
+                                        <option selected={this.state.challenge.game.rules === "aga"} value="aga">{_("AGA")}</option>
+                                        <option selected={this.state.challenge.game.rules === "chinese"} value="chinese">{_("Chinese")}</option>
+                                        <option selected={this.state.challenge.game.rules === "ing"} value="ing">{_("Ing SST")}</option>
+                                        <option selected={this.state.challenge.game.rules === "japanese"} value="japanese">{_("Japanese")}</option>
+                                        <option selected={this.state.challenge.game.rules === "korean"} value="korean">{_("Korean")}</option>
+                                        <option selected={this.state.challenge.game.rules === "nz"} value="nz">{_("New Zealand")}</option>
                                     </select>
                                 </div>
                             </div>
@@ -777,14 +777,14 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label">{_("Handicap")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.challenge.game.handicap} onChange={this.update_handicap} className="challenge-dropdown form-control">
-                                <option value="-1"
+                            <select onChange={this.update_handicap} className="challenge-dropdown form-control">
+                                <option selected={this.state.challenge.game.handicap === "-1"} value="-1"
                                         /*{disabled={!this.state.conf.handicap_enabled}}*/
                                         >{_("Automatic")}</option>
-                                <option value="0"
+                                <option selected={this.state.challenge.game.handicap === "0"} value="0"
                                         >{_("None")}</option>
                                 {handicapRanges.map((n, idx) => (
-                                    <option key={idx} value={n}
+                                    <option selected={this.state.challenge.game.handicap === n} key={idx} value={n}
                                         disabled={n > 9 && challenge.game.ranked}
                                         >{n}</option>
                                 ))}
@@ -797,9 +797,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label">{_("Komi")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.challenge.game.komi_auto} onChange={this.update_komi_auto} className="challenge-dropdown form-control">
-                                <option value="automatic">{_("Automatic")}</option>
-                                <option value="custom" disabled={this.state.challenge.game.ranked}>{_("Custom")}</option>
+                            <select onChange={this.update_komi_auto} className="challenge-dropdown form-control">
+                                <option selected={this.state.challenge.game.komi_auto === "automatic"} value="automatic">{_("Automatic")}</option>
+                                <option selected={this.state.challenge.game.komi_auto === "custom"} value="custom" disabled={this.state.challenge.game.ranked}>{_("Custom")}</option>
                             </select>
                         </div>
                     </div>
@@ -819,11 +819,11 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                     <label className="control-label" htmlFor="color">{_("Your Color")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select value={this.state.challenge.challenger_color} onChange={this.update_challenge_color} id="challenge-color" className="challenge-dropdown form-control">
-                                <option value="automatic">{_("Automatic")}</option>
-                                <option value="black">{_("Black")}</option>
-                                <option value="white">{_("White")}</option>
-                                <option value="random">{_("Random")}</option>
+                            <select onChange={this.update_challenge_color} id="challenge-color" className="challenge-dropdown form-control">
+                                <option selected={this.state.challenge.challenger_color === "automatic"} value="automatic">{_("Automatic")}</option>
+                                <option selected={this.state.challenge.challenger_color === "black"} value="black">{_("Black")}</option>
+                                <option selected={this.state.challenge.challenger_color === "white"} value="white">{_("White")}</option>
+                                <option selected={this.state.challenge.challenger_color === "random"} value="random">{_("Random")}</option>
                             </select>
                         </div>
                     </div>
@@ -858,9 +858,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                                             <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
                                             <div className="controls">
                                                 <div className="checkbox">
-                                                    <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
+                                                    <select onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
                                                         {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                            <option selected={this.state.challenge.min_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -871,9 +871,9 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                                             <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
                                             <div className="controls">
                                                 <div className="checkbox">
-                                                    <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
+                                                    <select onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
                                                         {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
+                                                            <option selected={this.state.challenge.max_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                                         ))}
                                                     </select>
                                                 </div>

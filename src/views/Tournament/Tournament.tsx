@@ -1151,10 +1151,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <td >
                             {!editing
                                 ? tournament_exclusivity
-                                : <select className="tournament-dropdown form-control" value={tournament.exclusivity} onChange={this.setTournamentExclusivity}>
-                                    <option value="open">{pgettext("Open tournament", "Open")}</option>
-                                    <option value="group">{pgettext("Group tournament", "Members only")}</option>
-                                    <option value="invite">{pgettext("Group tournament", "Invite only")}</option>
+                                : <select className="tournament-dropdown form-control" onChange={this.setTournamentExclusivity}>
+                                    <option selected={tournament.exclusivity === "open"} value="open">{pgettext("Open tournament", "Open")}</option>
+                                    <option selected={tournament.exclusivity === "group"} value="group">{pgettext("Group tournament", "Members only")}</option>
+                                    <option selected={tournament.exclusivity === "invite"} value="invite">{pgettext("Group tournament", "Invite only")}</option>
                                   </select>
                             }
                             </td>
@@ -1167,16 +1167,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             {!editing
                                 ? tournament_type_name
                                 : <select id="tournament-type"
-                                        value={this.state.tournament.tournament_type}
                                         onChange={this.setTournamentType}
                                         disabled={this.state.tournament.id > 0}
                                         >
-                                    <option value="mcmahon">{_("McMahon")}</option>
-                                    <option value="s_mcmahon">{_("Simultaneous McMahon")}</option>
-                                    <option value="roundrobin">{_("Round Robin")}</option>
-                                    <option value="swiss">{_("Swiss")}</option>
-                                    <option value="elimination">{_("Single Elimination")}</option>
-                                    <option value="double_elimination">{_("Double Elimination")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "mcmahon"} value="mcmahon">{_("McMahon")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "s_mcmahon"} value="s_mcmahon">{_("Simultaneous McMahon")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "roundrobin"} value="roundrobin">{_("Round Robin")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "swiss"} value="swiss">{_("Swiss")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "elimination"} value="elimination">{_("Single Elimination")}</option>
+                                    <option selected={this.state.tournament.tournament_type === "double_elimination"} value="double_elimination">{_("Double Elimination")}</option>
                                  </select>
                             }
                             </td>
@@ -1189,15 +1188,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 {!editing
                                     ? <span>{min_bar} - {max_bar}</span>
                                     : <span>
-                                        <select className="rank-selection" value={tournament.settings.lower_bar} onChange={this.setLowerBar}>
+                                        <select className="rank-selection" onChange={this.setLowerBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option selected={tournament.settings.lower_bar === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                             ))}
                                         </select>
                                         -
-                                        <select className="rank-selection" value={tournament.settings.upper_bar} onChange={this.setUpperBar}>
+                                        <select className="rank-selection" onChange={this.setUpperBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option selected={tournament.settings.upper_bar === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                             ))}
                                         </select>
                                       </span>
@@ -1237,14 +1236,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <td >
                                     {!editing
                                         ? <span>{first_pairing_method_text}</span>
-                                        : <select
-                                            value={tournament.first_pairing_method}
-                                            onChange={this.setFirstPairingMethod}
-                                            >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                        : <select onChange={this.setFirstPairingMethod}>
+                                             <option selected={tournament.first_pairing_method === "random"} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option selected={tournament.first_pairing_method === "slaughter"} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option selected={tournament.first_pairing_method === "slide"} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option selected={tournament.first_pairing_method === "strength"} value="strength">{pgettext("Tournament type", "Strength")}</option>
                                           </select>
 
 
@@ -1258,14 +1254,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <td >
                                     {!editing
                                         ? <span>{subsequent_pairing_method_text}</span>
-                                        : <select
-                                            value={tournament.subsequent_pairing_method}
-                                            onChange={this.setSubsequentPairingMethod}
-                                            >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                        : <select onChange={this.setSubsequentPairingMethod}>
+                                             <option selected={tournament.subsequent_pairing_method === "random"} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option selected={tournament.subsequent_pairing_method === "slaughter"} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option selected={tournament.subsequent_pairing_method === "slide"} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option selected={tournament.subsequent_pairing_method === "strength"} value="strength">{pgettext("Tournament type", "Strength")}</option>
                                           </select>
                                     }
                                 </td>
@@ -1277,9 +1270,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                  <td>
                                     {!editing
                                         ? num_rounds
-                                        : <select value={tournament.settings.num_rounds} onChange={this.setNumberOfRounds}>
+                                        : <select onChange={this.setNumberOfRounds}>
                                             {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((v) => (
-                                                <option key={v} value={v}>{v}</option>
+                                                <option selected={tournament.settings.num_rounds === v} key={v} value={v}>{v}</option>
                                             ))}
                                           </select>
                                     }
@@ -1292,9 +1285,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <td>
                                     {!editing
                                         ? group_size
-                                        : <select value={tournament.settings.group_size} onChange={this.setGroupSize}>
+                                        : <select onChange={this.setGroupSize}>
                                             {[3, 4, 5].map((v) => (
-                                                <option key={v} value={v}>{v}</option>
+                                                <option selected={tournament.settings.group_size === v} key={v} value={v}>{v}</option>
                                             ))}
                                           </select>
                                     }
@@ -1306,13 +1299,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <td>
                                 {!editing
                                     ? tournament_rules_name
-                                    : <select value={tournament.rules} onChange={this.setRules}>
-                                        <option value="aga">{_("AGA")}</option>
-                                        <option value="japanese">{_("Japanese")}</option>
-                                        <option value="chinese">{_("Chinese")}</option>
-                                        <option value="korean">{_("Korean")}</option>
-                                        <option value="ing">{_("Ing SST")}</option>
-                                        <option value="nz">{_("New Zealand")}</option>
+                                    : <select onChange={this.setRules}>
+                                            <option selected={tournament.rules === "aga"} value="aga">{_("AGA")}</option>
+                                            <option selected={tournament.rules === "japanese"} value="japanese">{_("Japanese")}</option>
+                                            <option selected={tournament.rules === "chinese"} value="chinese">{_("Chinese")}</option>
+                                            <option selected={tournament.rules === "korean"} value="korean">{_("Korean")}</option>
+                                            <option selected={tournament.rules === "ing"} value="ing">{_("Ing SST")}</option>
+                                            <option selected={tournament.rules === "nz"} value="nz">{_("New Zealand")}</option>
                                       </select>
                                 }
                             </td>
@@ -1322,10 +1315,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <td>
                                 {!editing
                                     ? `${tournament.board_size}x${tournament.board_size}`
-                                    : <select value={tournament.board_size} onChange={this.setBoardSize}>
-                                        <option value="19">19x19</option>
-                                        <option value="13">13x13</option>
-                                        <option value="9">9x9</option>
+                                    : <select onChange={this.setBoardSize}>
+                                        <option selected={tournament.board_size === "19"} value="19">19x19</option>
+                                        <option selected={tournament.board_size === "13"} value="13">13x13</option>
+                                        <option selected={tournament.board_size === "9"} value="9">9x9</option>
                                       </select>
                                 }
                             </td>
@@ -1335,9 +1328,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <td>
                                 {!editing
                                     ? handicap_text
-                                    : <select value={tournament.handicap} onChange={this.setHandicap}>
-                                        <option value="0">{_("None")}</option>
-                                        <option value="-1">{_("Automatic")}</option>
+                                    : <select onChange={this.setHandicap}>
+                                        <option selected={tournament.handicap === "0"} value="0">{_("None")}</option>
+                                        <option selected={tournament.handicap === "-1"} value="-1">{_("Automatic")}</option>
                                       </select>
                                 }
                             </td>
@@ -1359,15 +1352,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 {!editing
                                     ? <span>{rank_restriction_text}</span>
                                     : <span>
-                                        <select className="rank-selection" value={tournament.min_ranking} onChange={this.setMinRank}>
+                                        <select className="rank-selection" onChange={this.setMinRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option selected={tournament.min_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                             ))}
                                         </select>
                                         -
-                                        <select className="rank-selection" value={tournament.max_ranking} onChange={this.setMaxRank}>
+                                        <select className="rank-selection" onChange={this.setMaxRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option selected={tournament.max_ranking === r.rank} key={idx} value={r.rank}>{r.label}</option>
                                             ))}
                                         </select>
                                       </span>

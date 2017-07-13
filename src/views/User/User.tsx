@@ -813,9 +813,9 @@ export class User extends Resolver<UserProperties, any> {
                                     {this.state.editing
                                       ? <dd>
                                             <Flag country={user.country} big/>
-                                            <select value={user.country} onChange={this.saveCountry}>
+                                            <select onChange={this.saveCountry}>
                                                 {sorted_locale_countries.map((C) => (
-                                                    <option key={C.cc} value={C.cc}>{C.name}</option>
+                                                    <option selected={user.country === C.cc} key={C.cc} value={C.cc}>{C.name}</option>
                                                 ))}
                                             </select>
                                         </dd>
@@ -921,7 +921,7 @@ export class User extends Resolver<UserProperties, any> {
                             <table><tbody><tr>
                                     <td style={{verticalAlign: "top"}}><i className="fa fa-circle-o" title={_("Overall")} style={{width: "1.5rem !important", textAlign: "center"}}></i></td>
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking}></Rank>&nbsp;</td>
-                                    <td width="99%">
+                                    <td style={{width: "99%"}}>
                                         <div className="progress">
                                             <div className={"progress-bar primary " + (rating_percentage(user.rating) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating) + "%"}} >
                                                 <UserRating rating={user.rating} />
@@ -933,7 +933,7 @@ export class User extends Resolver<UserProperties, any> {
                             <table><tbody><tr>
                                     <td style={{verticalAlign: "top"}}><i className="fa fa-bolt"  title={_("Blitz")} style={{width: "1.5rem !important", textAlign: "center"}}></i></td>
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_blitz}></Rank>&nbsp;</td>
-                                    <td width="99%">
+                                    <td style={{width: "99%"}}>
                                         <div className="progress">
                                             <div className={"progress-bar reject " + (rating_percentage(user.rating_blitz) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_blitz) + "%"}} >
                                                 <UserRating rating={user.rating_blitz} />
@@ -945,7 +945,7 @@ export class User extends Resolver<UserProperties, any> {
                             <table><tbody><tr>
                                     <td style={{verticalAlign: "top"}}><i className="fa fa-clock-o" title={_("Live")} style={{width: "1.5rem !important", textAlign: "center"}}></i></td>
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_live}></Rank>&nbsp;</td>
-                                    <td width="99%">
+                                    <td style={{width: "99%"}}>
                                         <div className="progress">
                                             <div className={"progress-bar danger " + (rating_percentage(user.rating_live) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_live) + "%"}} >
                                                 <UserRating rating={user.rating_live} />
@@ -957,7 +957,7 @@ export class User extends Resolver<UserProperties, any> {
                             <table><tbody><tr>
                                     <td style={{verticalAlign: "top"}}><i className="ogs-turtle"  title={_("Correspondence")} style={{width: "1.5rem !important", textAlign: "center"}}></i></td>
                                     <td style={nowrapAlignTop}><Rank ranking={user.ranking_correspondence}></Rank>&nbsp;</td>
-                                    <td width="99%">
+                                    <td style={{width: "99%"}}>
                                         <div className="progress">
                                             <div className={"progress-bar info " + (rating_percentage(user.rating_correspondence) >= 50 ? "right" : "left") } style={{width: rating_percentage(user.rating_correspondence) + "%"}} >
                                                 <UserRating rating={user.rating_correspondence} />

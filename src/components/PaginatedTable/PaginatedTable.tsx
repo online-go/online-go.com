@@ -281,8 +281,8 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
                         </div>
                         <div className="right">
                             {(page_sizes.length > 1 || null) &&
-                                <select onChange={this._setPageSize} value={this.state.page_size}>
-                                    {page_sizes.map((v, idx) => <option key={idx} value={v}>{v}</option>)}
+                                <select onChange={this._setPageSize}>
+                                    {page_sizes.map((v, idx) => <option selected={this.state.page_size === v} key={idx} value={v}>{v}</option>)}
                                 </select>
                             }
                         </div>

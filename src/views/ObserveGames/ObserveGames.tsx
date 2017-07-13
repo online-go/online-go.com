@@ -173,16 +173,16 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                                 {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
                             </div>
                             <div className="right">
-                                <select onChange={this.setPageSize} value={this.state.page_size}>
-                                    <option value="3">{_("Show 3")}</option>
-                                    <option value="4">{_("Show 4")}</option>
-                                    <option value="6">{_("Show 6")}</option>
-                                    <option value="8">{_("Show 8")}</option>
-                                    <option value="9">{_("Show 9")}</option>
-                                    <option value="12">{_("Show 12")}</option>
-                                    <option value="16">{_("Show 16")}</option>
-                                    <option value="20">{_("Show 20")}</option>
-                                    <option value="28">{_("Show 28")}</option>
+                                <select onChange={this.setPageSize}>
+                                    <option selected={this.state.page_size === 3} value="3">{_("Show 3")}</option>
+                                    <option selected={this.state.page_size === 4} value="4">{_("Show 4")}</option>
+                                    <option selected={this.state.page_size === 6} value="6">{_("Show 6")}</option>
+                                    <option selected={this.state.page_size === 8} value="8">{_("Show 8")}</option>
+                                    <option selected={this.state.page_size === 9} value="9">{_("Show 9")}</option>
+                                    <option selected={this.state.page_size === 12} value="12">{_("Show 12")}</option>
+                                    <option selected={this.state.page_size === 16} value="16">{_("Show 16")}</option>
+                                    <option selected={this.state.page_size === 20} value="20">{_("Show 20")}</option>
+                                    <option selected={this.state.page_size === 28} value="28">{_("Show 28")}</option>
                                 </select>
                             </div>
                         </div>

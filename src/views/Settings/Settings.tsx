@@ -408,10 +408,10 @@ export class Settings extends React.PureComponent<{}, any> {
 
                     <dt>{_("Game thumbnail list threshold")}</dt>
                     <dd>
-                        <select onChange={this.updateGameListThreshold} value={this.state.game_list_threshold}>
+                        <select onChange={this.updateGameListThreshold}>
                             <option value={0}>{_("Always show list")}</option>
                             {[3, 5, 10, 25, 50, 100, 200].map((value, idx) =>
-                                <option key={idx} value={value}>{value}</option>
+                                    <option selected={this.state.game_list_threshold === value} key={idx} value={value}>{value}</option>
                             )}
                         </select>
                     </dd>
@@ -503,18 +503,18 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
                     <dt>{_("Live game submit mode")}</dt>
                     <dd>
-                        <select value={this.state.live_submit_mode} onChange={this.setLiveSubmitMode}>
-                            <option value="single">{_("One-click to move")}</option>
-                            <option value="double">{_("Double-click to move")}</option>
-                            <option value="button">{_("Submit-move button")}</option>
+                        <select onChange={this.setLiveSubmitMode}>
+                            <option selected={this.state.live_submit_mode === "single"} value="single">{_("One-click to move")}</option>
+                            <option selected={this.state.live_submit_mode === "double"} value="double">{_("Double-click to move")}</option>
+                            <option selected={this.state.live_submit_mode === "button"} value="button">{_("Submit-move button")}</option>
                         </select>
                     </dd>
                     <dt>{_("Correspondence submit mode")}</dt>
                     <dd>
-                        <select value={this.state.corr_submit_mode} onChange={this.setCorrSubmitMode}>
-                            <option value="single">{_("One-click to move")}</option>
-                            <option value="double">{_("Double-click to move")}</option>
-                            <option value="button">{_("Submit-move button")}</option>
+                        <select onChange={this.setCorrSubmitMode}>
+                            <option selected={this.state.corr_submit_mode === "single"} value="single">{_("One-click to move")}</option>
+                            <option selected={this.state.corr_submit_mode === "double"} value="double">{_("Double-click to move")}</option>
+                            <option selected={this.state.corr_submit_mode === "button"} value="button">{_("Submit-move button")}</option>
                         </select>
                     </dd>
                     <dt><label htmlFor="autoadvance">{_("Auto-advance to next game after making a move")}</label></dt>
