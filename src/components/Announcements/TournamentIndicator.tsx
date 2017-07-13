@@ -47,7 +47,7 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
     }
 
     componentWillUnmount() {
-        this.data_subscribe.to([]);
+        this.data_subscribe.to();
     }
 
     render() {

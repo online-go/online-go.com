@@ -122,7 +122,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
 
     compnentWillUnmount() {
-        this.subscribe.to([]);
+        this.subscribe.to();
     }
 
     closeNavbar() {

@@ -110,7 +110,7 @@ export function watchSelectedThemes(cb) {
     subscribe.to([`${prefix}-board`, `${prefix}-black`]);
     dont_call_right_away = false;
     subscribe.to([`${prefix}-board`, `${prefix}-black`, `${prefix}-white`]);
-    return { remove: () => subscribe.to([]) };
+    return { remove: () => subscribe.to() };
 }
 
 

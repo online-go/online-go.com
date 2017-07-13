@@ -94,7 +94,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
                 this.subscribe.to([next_id]);
             }
             else {
-                this.subscribe.to([]);
+                this.subscribe.to();
             }
 
 

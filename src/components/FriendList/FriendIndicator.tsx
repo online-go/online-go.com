@@ -53,7 +53,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     }
 
     componentWillUnmount() {
-        this.data_subscribe.to([]);
+        this.data_subscribe.to();
     }
 
     updateFriendCount = () => {

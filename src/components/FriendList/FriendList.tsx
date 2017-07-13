@@ -54,7 +54,7 @@ export class FriendList extends React.PureComponent<{}, any> {
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
-        this.data_subscribe.to([]);
+        this.data_subscribe.to();
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
     }}}
     resortFriends = () => {
