@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
@@ -24,7 +25,7 @@ import {longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
 import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
 import {Markdown} from "Markdown";
-import {Player, setExtraActionCallback, makePlayerLink} from "Player";
+import {Player, setExtraActionCallback} from "Player";
 import * as moment from "moment";
 import * as Datetime from "react-datetime";
 import {UIPush} from "UIPush";
@@ -396,8 +397,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     let match = round.matches[match_num];
                     let matchdiv = $("<div>").addClass("matchdiv");
 
-                    let black = $("<div>").addClass("black").addClass("elimination-player-" + match.black).append(makePlayerLink(["icon", "name", "rank"], players[match.black]));
-                    let white = $("<div>").addClass("white").addClass("elimination-player-" + match.white).append(makePlayerLink(["icon", "name", "rank"], players[match.white]));
+                    let black = $("<div>").addClass("black").addClass("elimination-player-" + match.black);
+                    let white = $("<div>").addClass("white").addClass("elimination-player-" + match.white);
+                    ReactDOM.render((<Player user={players[match.black]} icon rank />), black[0]);
+                    ReactDOM.render((<Player user={players[match.white]} icon rank />), white[0]);
+
 
                     black.prepend($("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr("href", "/game/view/" + match.gameid));
                     white.prepend($("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr("href", "/game/view/" + match.gameid));
@@ -438,7 +442,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
                     let bye = round.byes[bye_num];
                     let byediv = $("<div>").addClass("byediv");
-                    let byee = $("<div>").addClass("bye").addClass("elimination-player-" + bye).append(makePlayerLink(["icon", "name", "rank"], players[bye]));
+                    let byee = $("<div>").addClass("bye").addClass("elimination-player-" + bye);
+                    ReactDOM.render((<Player user={players[bye]} icon rank />), byee[0]);
                     bindHovers(byee, bye);
                     byediv.append(byee);
                     let obj = {

@@ -20,7 +20,6 @@ import {_, pgettext, interpolate} from "translate";
 import preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
-import {makePlayerLink} from "Player";
 import {MiniGoban} from "MiniGoban";
 import {GobanLineSummary} from "GobanLineSummary";
 import * as data from "data";
