@@ -887,7 +887,7 @@ function ChatLine(props) {{{
              + (mentions ? " mentions" : "")
         }>
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
-            {(user.id || null) && <Player user={user} flare rank={false} noextracontrols />}{(third_person ? " " : ": ")}
+            {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
             <span className="body">{chat_markup(body)}</span>
         </div>
     );
