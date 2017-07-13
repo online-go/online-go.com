@@ -32,7 +32,7 @@ export function icon_size_url(url, size) {
 }
 
 export function getPlayerIconURL(id, size): Promise<string> {{{
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         player_cache.fetch(id, ["icon"]).then((user) => {
             resolve(icon_size_url(user.icon, size));
         })
