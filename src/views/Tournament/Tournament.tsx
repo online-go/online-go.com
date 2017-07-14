@@ -137,7 +137,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             this.resolve(this.state.tournament_id);
         }
         if (this.state.new_tournament_group_id) {
-            get(`groups/${this.state.new_tournament_group_id}`)
+            get("groups/%%", this.state.new_tournament_group_id)
             .then((group) => {
                 this.setState({tournament: Object.assign({}, this.state.tournament, {group: group})});
             })
@@ -163,8 +163,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.abort_requests();
 
         Promise.all([
-            get(`tournaments/${tournament_id}`),
-            get(`tournaments/${tournament_id}/rounds`),
+            get("tournaments/%%", tournament_id),
+            get("tournaments/%%/rounds", tournament_id),
             this.refreshPlayerList(tournament_id),
         ])
         .then((res) => {
@@ -206,7 +206,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         }
         let user = data.get("user");
 
-        let ret = get(`tournaments/${tournament_id}/players/all`);
+        let ret = get("tournaments/%%/players/all", tournament_id);
         ret
         .then((players) => {
             for (let id in players) {

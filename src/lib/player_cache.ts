@@ -159,7 +159,7 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
     }
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
-        get(`/termination-api/player/${player_id}`)
+        get("/termination-api/player/%%", player_id)
         .then((player) => {
             if ('icon-url' in player) {
                 player.icon = player['icon-url']; /* handle stupid inconsistency in API */

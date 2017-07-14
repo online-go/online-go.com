@@ -59,7 +59,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     componentDidMount() {
-        return get("ui/overview").then((overview) => {
+        return get("ui/overview", 0).then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -160,7 +160,7 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/groups", {}).then((res) => {
+        get("me/groups", 0, {}).then((res) => {
             this.setState({"groups": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -196,13 +196,13 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
+        get("me/tournaments", 0, {ended__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"my_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
-        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
+        get("tournaments", 0, {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -246,7 +246,7 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/ladders", {}).then((res) => {
+        get("me/ladders", 0, {}).then((res) => {
             this.setState({"ladders": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});

@@ -538,7 +538,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         if (this.game_id) {
-            get(`games/${this.game_id}`)
+            get("games/%%", this.game_id)
             .then((game) => {
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);

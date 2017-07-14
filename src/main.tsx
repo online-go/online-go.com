@@ -86,7 +86,7 @@ data.watch("config", (config) => {
         data.set(`config.${key}`, config[key]);
     }
 });
-get("ui/config").then((config) => data.set("config", config));
+get("ui/config", 0).then((config) => data.set("config", config));
 data.watch("config.user", (user) => {
     player_cache.update(user);
     data.set("user", user);

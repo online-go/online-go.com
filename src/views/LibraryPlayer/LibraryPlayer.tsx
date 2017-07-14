@@ -79,7 +79,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         abort_requests_in_flight("library/");
     }
     refresh(player_id: number) {
-        let promise = get(`library/${player_id}`);
+        let promise = get("library/%%", player_id);
 
         promise
         .then((library) => {

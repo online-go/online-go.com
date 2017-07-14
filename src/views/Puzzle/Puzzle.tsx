@@ -255,7 +255,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     fetchPuzzle(puzzle_id: number) {{{
         abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
-            get(`puzzles/collections/`, {page_size: 100, owner: data.get("user").id})
+            get("puzzles/collections/", 0, {page_size: 100, owner: data.get("user").id})
             .then((collections) => {
                 this.setState({
                     puzzle_collections: collections.results
@@ -267,9 +267,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
 
         Promise.all([
-            get(`puzzles/${puzzle_id}`),
-            get(`puzzles/${puzzle_id}/collection_summary`),
-            get(`puzzles/${puzzle_id}/rate`),
+            get("puzzles/%%", puzzle_id),
+            get("puzzles/%%/collection_summary", puzzle_id),
+            get("puzzles/%%/rate", puzzle_id),
         ])
         .then((arr) => {
             let rating = arr[2];
@@ -542,7 +542,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
     }}}
     edit = () => {{{
-        get(`puzzles/collections/`, {page_size: 100, owner: data.get("user").id})
+        get("puzzles/collections/", 0, {page_size: 100, owner: data.get("user").id})
         .then((collections) => {
             this.setState({
                 editing: true,
@@ -833,7 +833,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     "price": "0.00",
                 })
                 .then((res) => {
-                    get(`puzzles/collections/`, {page_size: 100, owner: data.get("user").id})
+                    get("puzzles/collections/", 0, {page_size: 100, owner: data.get("user").id})
                     .then((collections) => {
                         this.setState({
                             puzzle: Object.assign({}, this.state.puzzle, {puzzle_collection: res.id}),

@@ -46,7 +46,7 @@ export class ChallengesList extends React.PureComponent<{}, any> {
     }}}
 
     refresh = () => {{{
-        get("me/challenges", {page_size: 30}).then((res) => {
+        get("me/challenges", 0, {page_size: 30}).then((res) => {
             for (let challenge of res.results) {
                 player_cache.update(challenge.challenger);
                 player_cache.update(challenge.challenged);

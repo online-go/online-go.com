@@ -72,7 +72,7 @@ function update_blocks() {
     let user = data.get("user");
 
     if (!user.anonymous) {
-        get("me/blocks")
+        get("me/blocks", 0)
         .then((entries) => {
             block_state = {};
             let new_ignores = {};

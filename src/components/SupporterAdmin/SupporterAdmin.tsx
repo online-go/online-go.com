@@ -45,7 +45,7 @@ export class SupporterAdmin extends Modal<SupporterAdminProperties, any> {
 
     componentWillMount() {
         super.componentWillMount();
-        get(`supporter_center/player/${this.props.playerId}`)
+        get("supporter_center/player/%%", this.props.playerId)
         .then((res) => {
 
             let last_transaction = null;

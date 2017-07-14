@@ -174,8 +174,8 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     resolve() {{{
-        if (!data.get("config.user").anonymous) {
-            get("me/groups", {page_size: 30})
+        if (data.get("user").anonymous) {
+            get("me/groups", 0, {page_size: 30})
             .then((groups) => {
                 this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
                 groups.results.map((g) => {
@@ -184,7 +184,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             })
             .catch((err) => 0);
 
-            get("me/tournaments", {ended__isnull:true, page_size: 30})
+            get("me/tournaments", 0, {ended__isnull:true, page_size: 30})
             .then((tournaments) => {
                 this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))});
                 tournaments.results.map((t) => {

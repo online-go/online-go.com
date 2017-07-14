@@ -70,7 +70,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     }
 
     refresh() {
-        get("ui/friends").then((res) => {
+        get("ui/friends", 0).then((res) => {
             data.set("friends", res.friends);
         }).catch((err) => {
             console.error("Error resolving friends list: ", err);

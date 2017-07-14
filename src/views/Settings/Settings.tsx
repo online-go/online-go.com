@@ -89,7 +89,7 @@ export class Settings extends React.PureComponent<{}, any> {
         }
     }}}
     resolve() {{{
-        get("me/settings")
+        get("me/settings", 0)
         .then((settings) => {
             this.setState({
                 profile: settings.profile,
