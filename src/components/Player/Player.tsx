@@ -224,6 +224,11 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             window.open(uri, "_blank");
         }
+        else if (this.props.nodetails) {
+            close_all_popovers();
+            browserHistory.push(`/player/${player_id}/`);
+            return;
+        }
         else {
             popover({
                 elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} />),
