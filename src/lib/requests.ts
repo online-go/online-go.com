@@ -16,6 +16,10 @@
  */
 
 import {deepCompare} from "misc";
+import {URLCommunication, URLData, URLResult} from "data/Communication";
+import {translate_from_server, translate_to_server} from "compatibility/Communication";
+
+
 
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
@@ -69,14 +73,23 @@ function initialize() {
 
 
 let requests_in_flight = {};
-let last_request_id = 0;
+let last_request_id: number = 0;
 
-export function request(type: string, url: string, data: any): Promise<any> {
+export function request<K extends keyof URLCommunication>(type: string, url: K, id: number, data?: URLData[K]): Promise<URLResult[K]> {
     initialize();
+
+    let real_url: string = url.replace("%%", id.toString());
+    let real_data: any;
+    if (url in translate_to_server) {
+        real_data = translate_to_server[url](data);
+    }
+    else {
+        real_data = data;
+    }
 
     for (let id in requests_in_flight) {
         let req = requests_in_flight[id];
-        if (req.promise && (req.url === url) && (type === req.type) && deepCompare(req.data, data)) {
+        if (req.promise && (req.url === real_url) && (type === req.type) && deepCompare(req.data, real_data)) {
             //console.log("Duplicate in flight request, chaining");
             return req.promise;
         }
@@ -87,39 +100,44 @@ export function request(type: string, url: string, data: any): Promise<any> {
 
     requests_in_flight[request_id] = {
         type: type,
-        url: url,
-        data: data,
+        url: real_url,
+        data: real_data,
     };
 
 
     requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
         let opts = {
-            url: api1ify(url),
+            url: api1ify(real_url),
             type: type,
             data: undefined,
             dataType: "json",
             contentType: "application/json",
             success: (res) => {
                 delete requests_in_flight[request_id];
-                resolve(res);
+                if (url in translate_from_server) {
+                    resolve(translate_from_server[url](res));
+                }
+                else {
+                    resolve(res);
+                }
             },
             error: (err) => {
                 delete requests_in_flight[request_id];
                 if (err.status !== 0) { /* Ignore aborts */
-                    console.warn(api1ify(url), err.status, err.statusText);
+                    console.warn(api1ify(real_url), err.status, err.statusText);
                     console.warn(traceback.stack);
                 }
                 console.error(err);
                 reject(err);
             }
         };
-        if (data) {
-            if ((data instanceof Blob) || (Array.isArray(data) && data[0] instanceof Blob)) {
+        if (real_data) {
+            if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
                 opts.data = new FormData();
-                if (data instanceof Blob) {
-                    opts.data.append("file", data);
+                if (real_data instanceof Blob) {
+                    opts.data.append("file", real_data);
                 } else {
-                    for (let file of (data as Array<Blob>)) {
+                    for (let file of (real_data as Array<Blob>)) {
                         opts.data.append("file", file);
                     }
                 }
@@ -127,9 +145,9 @@ export function request(type: string, url: string, data: any): Promise<any> {
                 (opts as any).contentType = false;
             } else {
                 if (type === "GET") {
-                    opts.data = data;
+                    opts.data = real_data;
                 } else {
-                    opts.data = JSON.stringify(data);
+                    opts.data = JSON.stringify(real_data);
                 }
             }
         }
@@ -140,11 +158,21 @@ export function request(type: string, url: string, data: any): Promise<any> {
     return requests_in_flight[request_id].promise;
 }
 
-export function get(url: string, data?: any): Promise<any> { return request("GET", url, data); }
-export function post(url: string, data: any): Promise<any> { return request("POST", url, data); }
-export function put(url: string, data: any): Promise<any> { return request("PUT", url, data); }
-export function patch(url: string, data: any): Promise<any> { return request("PATCH", url, data); }
-export function del(url: string): Promise<any> { return request("DELETE", url, null); }
+export function get<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("GET", url, 0, data);
+}
+export function post<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("POST", url, 0, data);
+}
+export function put<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("PUT", url, 0, data);
+}
+export function patch<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("PATCH", url, 0, data);
+}
+export function del<K extends keyof URLCommunication>(url: K, data?: URLData[K]): Promise<URLResult[K]> {
+    return request("DELETE", url, 0, data);
+}
 export function abort_requests_in_flight(url, type?) {
     for (let id in requests_in_flight) {
         let req = requests_in_flight[id];
