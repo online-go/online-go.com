@@ -282,6 +282,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 <Link to="/groups">{_("Groups")}</Link>
                 <Link to="/leaderboards">{_("Leaderboards")}</Link>
                 <a target="_blank" href="https://forums.online-go.com/">{_("Forums")}</a>
+                {user && <Link to={`/user/view/${user.id}`}>{_("Profile")}</Link>}
                 {/*
                 <a href='https://ogs.readme.io/'>{_("Help")}</a>
                 */}
