@@ -67,7 +67,10 @@ for (let k in defaults) {
 
 
 
-export function get(key: string): any {
+export function get(key: keyof typeof defaults): any {
+    if (!(key in defaults)) {
+        console.warn(`Undefined default: preferences.${key}`);
+    }
     return data.get(`preferences.${key}`);
 }
 export function set(key: string, value: any): any {
