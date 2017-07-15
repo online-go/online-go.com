@@ -79,8 +79,7 @@ class PublisherSubscription<T, K extends keyof T> {
     private callback_table: CallbackTable<T>;
     protected readonly callback: Callback<T, K>;
 
-    constructor(callback_table: CallbackTable<T>, callback: Callback<T, K>
-    ) {
+    constructor(callback_table: CallbackTable<T>, callback: Callback<T, K>) {
         this.serial = next_serial++;
         this.channels = [];
         this.callback_table = callback_table;
