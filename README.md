@@ -22,7 +22,7 @@ then simply clone the repository and within the working directory run the follow
 
 ```
 # You only need to run this the first time
-npm install yarn
+sudo npm install -g yarn
 yarn install
 
 # Run this to start the development server and build system
