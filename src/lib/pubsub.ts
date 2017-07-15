@@ -37,14 +37,12 @@ export class Publisher<T> {
     constructor() {
         let callback_table: CallbackTable<T> = {};
 
-        class Subscription<K extends keyof T> extends PublisherSubscription<T, K> {
+        this.callback_table = callback_table;
+        this.Subscription = class <K extends keyof T> extends PublisherSubscription<T, K> {
             constructor(callback: Callback<T, K>) {
                 super(callback_table, callback);
             }
-        }
-
-        this.callback_table = callback_table;
-        this.Subscription = Subscription;
+        };
     }
 
     // Publish a piece of information to anyone who is listening.
