@@ -85,13 +85,13 @@ new data.Subscription<"config">((channel, config) => {
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
-}).to(["config"]);
+}).to("config");
 get("ui/config").then((config) => data.set("config", config));
 new data.Subscription((channel, user) => {
     player_cache.update(user);
     data.set("user", user);
     window["user"] = user;
-}).to(["config.user"]);
+}).to("config.user");
 
 
 /*** SweetAlert setup ***/
@@ -163,7 +163,7 @@ new data.Subscription<"user">((channel, user) => {
     if (sockets.comm_socket.connected) {
         auth_connect_fn();
     }
-}).to(["user"]);
+}).to("user");
 sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
 

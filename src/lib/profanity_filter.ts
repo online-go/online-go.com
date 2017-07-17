@@ -33,7 +33,7 @@ new data.Subscription<"preferences.profanity-filter">((channel, _filters) => {
             }
         }
     }
-}).to(["preferences.profanity-filter"]);
+}).to("preferences.profanity-filter");
 
 export function profanity_filter(str) {
     for (let k in filters) {

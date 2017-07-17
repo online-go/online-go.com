@@ -93,7 +93,7 @@ class PublisherSubscription<T, K extends keyof T> {
     // old publications and then subscribe to all the new ones. If a subscription is still
     // required then the subscription will be dropped and re-created. This is guaranteed not
     // to lose any publications.
-    to(channels: Array<K> = []): this {
+    to(...channels: Array<K>): this {
         let table = this.callback_table;
 
         // Check that a callback table exists on every channel.

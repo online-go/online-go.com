@@ -47,7 +47,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {
-        this.data_subscribe.to(["friends"]);
+        this.data_subscribe.to("friends");
         online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
         this.refresh();
     }

@@ -53,7 +53,7 @@ new data.Subscription<"user">((channel, user) => {
           "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
         + "|\\b" + cleaned_username_regex + "$"
         , "i");
-}).to(["user"]);
+}).to("user");
 
 let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-english" , "name": "English", "country": "us"},
@@ -97,7 +97,7 @@ new data.Subscription<"config.ogs">((channel, settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
-}).to(["config.ogs"]);
+}).to("config.ogs");
 
 
 let rtl_mode = {};

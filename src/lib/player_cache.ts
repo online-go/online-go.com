@@ -47,11 +47,11 @@ export class Subscription {
         this.subscribe = new PlayerCacheSubscription((channel, player) => callback(player));
     }
 
-    to(players: Array<number | Player> = []): this {
+    to(...players: Array<number | Player>): this {
         let ids = players.map(
             (player) => typeof player === "number" ? player.toString() : player.id.toString()
         );
-        this.subscribe.to(ids);
+        this.subscribe.to(...ids);
         return this;
     }
 }

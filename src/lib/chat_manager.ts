@@ -29,7 +29,7 @@ new data.Subscription<"user">((channel, user) => {
     } catch (e) {
         console.error("Failed to construct name matching regular expression", e);
     }
-}).to(["user"]);
+}).to("user");
 
 
 const rtl_channels = {

@@ -50,7 +50,7 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
-        this.data_subscribe.to(["friends"]); /* This is managed by our FriendIndicator */
+        this.data_subscribe.to("friends"); /* This is managed by our FriendIndicator */
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{

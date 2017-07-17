@@ -113,7 +113,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {
-        this.subscribe.to(["user"]);
+        this.subscribe.to("user");
 
         browserHistory.listen(location => {
             this.closeNavbar();
