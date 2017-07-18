@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-rating-chart-height=350px;
+rating-chart-height=380px;
 
 .RatingsChart {
     height: rating-chart-height;
@@ -82,7 +82,7 @@ rating-chart-height=350px;
             stroke-width: 1px;
             shape-rendering: crispEdges;
         }
-        .winloss-bar {
+        .win-loss-bar {
             shape-rendering: crispEdges;
         }
     }
@@ -112,17 +112,47 @@ rating-chart-height=350px;
         }
     }
 
-    .weak_wins {
+    .weak-wins {
         themed-lighten fill win 25%
+        themed-lighten background-color win 25%
     }
-    .strong_wins {
+    .strong-wins {
         themed-darken fill win 25%
+        themed-darken background-color win 25%
     }
-    .strong_losses {
-        themed-darken fill loss 25%
-    }
-    .weak_losses {
+    .strong-losses {
         themed-lighten fill loss 25%
+        themed-lighten background-color loss 25%
+    }
+    .weak-losses {
+        themed-darken fill loss 25%
+        themed-darken background-color loss 25%
+    }
+    .transparent {
+        fill: transparent;
+    }
+
+    .win-loss-stats {
+        font-size: font-size-small;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: stretch;
+        align-content: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        div {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+    }
+    .win-loss-legend-block {
+        border: 1px solid transparent;
+        themed border-color bg
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        margin-right: 0.2rem;
     }
 
     .date-legend-background {

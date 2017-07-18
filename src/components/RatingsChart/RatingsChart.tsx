@@ -51,8 +51,8 @@ const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
 const chart_height = 283;
 const date_legend_width = 70;
-const winloss_bars_start_y = 155;
-const winloss_bars_height = 65;
+const win_loss_bars_start_y = 155;
+const win_loss_bars_height = 65;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
@@ -71,11 +71,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     range_label;
     legend_label;
     date_extents;
-    winloss_graphs:Array<any> = [];
-    winloss_bars:Array<any> = [];
+    win_loss_graphs:Array<any> = [];
+    win_loss_bars:Array<any> = [];
     game_entries:Array<RatingEntry>;
     games_by_month:Array<RatingEntry>;
     games_by_day:Array<RatingEntry>;
+    max_games_played_in_a_month:number;
 
     ratings_x      = d3.scaleTime();
     timeline_x     = d3.scaleTime();
@@ -128,6 +129,9 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.state = {
             loading: true,
             nodata: false,
+            hovered_date: null,
+            hovered_month: null,
+            date_extents: [],
         };
         this.chart_div = $("<div>")[0];
     }
@@ -160,6 +164,37 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
         if (this.state.loading !== nextState.loading || this.state.nodata !== nextState.nodata) {
             return true;
+        }
+
+
+        /* Otherwise, we only need to update if our win/loss stats needs updating */
+        if (this.state.hovered_date !== null && nextState.hovered_date !== null) {
+            if (this.state.hovered_date.getTime() !== nextState.hovered_date.getTime()) {
+                return true;
+            }
+        }
+        else if (this.state.hovered_date !== nextState.hovered_date) {
+            return true;
+        }
+        else if (this.state.hovered_month !== null && nextState.hovered_month !== null) {
+            if (is_same_month(this.state.hovered_month, nextState.hovered_month)) {
+                return true;
+            }
+        }
+        else if (this.state.hovered_month !== nextState.hovered_month) {
+            return true;
+        }
+        else {
+            if (this.state.date_extents.length !== nextState.date_extents.length) {
+                return true;
+            }
+            if (this.state.date_extents.length === 2) {
+                if (this.state.date_extents[0].getTime() !== nextState.date_extents[0].getTime()
+                    || this.state.date_extents[1].getTime() !== nextState.date_extents[1].getTime()
+                ) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -198,8 +233,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        for (let i = 0; i < 4; ++i) {
-            this.winloss_graphs.push(this.svg.append('g')
+        for (let i = 0; i < 5; ++i) {
+            this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
                 .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
                 .on('mouseover', () => {
@@ -209,6 +244,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 .on('mouseout', () => {
                     this.helper.style('display', 'none');
                     this.dateLegend.style('display', 'none');
+                    this.setState({hovered_month: null});
                 })
                 .on('mousemove', function() {
                     /* tslint:disable */
@@ -218,8 +254,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                     let d = null;
 
                     for (let entry of self.games_by_month) {
-                        if (x0.getUTCFullYear() === entry.ended.getUTCFullYear()
-                            && x0.getUTCMonth() === entry.ended.getUTCMonth()) {
+                        if (is_same_month(x0, entry.ended)) {
                             d = new Date(entry.ended);
                             break;
                         }
@@ -233,6 +268,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                     let endOfMonth = new Date(d);
                     startOfMonth.setDate(1);
                     startOfMonth.setHours(0, 0, 0, 0);
+                    endOfMonth.setDate(1);
                     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
                     endOfMonth.setDate(-1);
                     endOfMonth.setHours(23, 59, 59, 0);
@@ -240,7 +276,9 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
                     self.helperText.text(format_month(new Date(d)));
                     self.dateLegendText.text(format_month(new Date(d)));
-                    self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(midDate)) + margin.left)  + ',' + (margin.top + winloss_bars_start_y + winloss_bars_height + 23) + ')');
+                    self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(midDate)) + margin.left)  + ',' + (margin.top + win_loss_bars_start_y + win_loss_bars_height + 23) + ')');
+
+                    self.setState({hovered_month: d});
                 })
             );
         }
@@ -353,6 +391,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 //deviationTooltip.style('display', 'none');
                 //this.verticalCrosshairLine.style('display', 'none');
                 this.horizontalCrosshairLine.style('display', 'none');
+                this.setState({hovered_date: null});
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -386,6 +425,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
                 self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(d.rating) + ')');
+
+                self.setState({hovered_date: new Date(d.ended)});
             });
 
         this.timeline_chart = this.timeline_graph.append('path')
@@ -504,6 +545,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.games_by_month = new Array<RatingEntry>();
         const daykey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
         const monthkey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+        this.max_games_played_in_a_month = 0;
 
         if (this.game_entries.length > 0) {
             let last_month_key = '';
@@ -541,6 +583,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 } else {
                     cur_month.increase = null;
                 }
+
+                this.max_games_played_in_a_month = Math.max(this.max_games_played_in_a_month, cur_month.count);
             }
         }
 
@@ -555,6 +599,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_x.domain(this.ratings_x.domain());
         this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return d.rating; })) as any);
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
+        this.setState({date_extents: this.date_extents.slice()});
         this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
         this.deviation_chart
             .datum(this.games_by_day)
@@ -586,66 +631,86 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             return isFinite(x) ? x : 0;
         };
         const H = (count:number) => {
-            return Math.max(0, winloss_bars_height - this.outcomes_y(count));
+            return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
         };
         const Y = (count:number) => {
-            return winloss_bars_start_y - Math.max(0, winloss_bars_height - this.outcomes_y(count));
+            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.outcomes_y(count));
         };
 
-        for (let bars of this.winloss_bars) {
+        for (let bars of this.win_loss_bars) {
             bars.remove();
         }
-        this.winloss_bars.length = 0;
+        this.win_loss_bars.length = 0;
 
-        this.winloss_bars.push(
-            this.winloss_graphs[0].selectAll('rect')
+        this.win_loss_bars.push(
+            this.win_loss_graphs[0].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'winloss-bar weak_wins')
+                .attr('class', 'win-loss-bar weak-wins')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(d.count))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)))
                 .attr('height', (d:RatingEntry) => H(d.wins))
         );
-        this.winloss_bars.push(
-            this.winloss_graphs[1].selectAll('rect')
+        this.win_loss_bars.push(
+            this.win_loss_graphs[1].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'winloss-bar strong_wins')
+                .attr('class', 'win-loss-bar strong-wins')
                 .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
                 .attr('y', (d:RatingEntry) => Y(d.count))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)))
                 .attr('height', (d:RatingEntry) => H(d.wins))
         );
-        this.winloss_bars.push(
-            this.winloss_graphs[2].selectAll('rect')
+        this.win_loss_bars.push(
+            this.win_loss_graphs[2].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'winloss-bar weak_losses')
+                .attr('class', 'win-loss-bar weak-losses')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
-        this.winloss_bars.push(
-            this.winloss_graphs[3].selectAll('rect')
+        this.win_loss_bars.push(
+            this.win_loss_graphs[3].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'winloss-bar strong_losses')
+                .attr('class', 'win-loss-bar strong-losses')
                 .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
                 .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
+        this.win_loss_bars.push(
+            this.win_loss_graphs[4].selectAll('rect')
+                .data(this.games_by_month)
+                .enter().append('rect')
+                .attr('class', 'win-loss-bar transparent')
+                .attr('x', (d:RatingEntry) => X(d, 0))
+                .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
+                .attr('width', (d:RatingEntry) => W(d, 1))
+                .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
+        );
     }}}
     getUTCMonthWidth(d:Date):number {{{
-        //let days_in_month = Math.round((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-        let days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        let days_in_month;
+
+        let today = new Date();
+        today.setHours(23, 59, 59);
+        if (is_same_month(d, today)) {
+            days_in_month = ((today.getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        } else {
+            days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        }
 
         let s = this.date_extents[0];
         let e = this.date_extents[1];
         s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
         e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
+        if (e.getTime() > Date.now()) {
+            e = new Date();
+        }
         //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
         let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
@@ -656,6 +721,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
         this.date_extents[0].setHours(0, 0, 0, 0);    /* start of day */
         this.date_extents[1].setHours(23, 59, 59, 0); /* end of day   */
+        this.setState({date_extents: this.date_extents.slice()});
 
         this.ratings_x.domain(this.date_extents);
 
@@ -676,22 +742,28 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
+            let today = new Date();
+            if (is_same_month(d.ended, today)) {
+                end = today;
+                end.setHours(23, 59, 59);
+            }
+
             let s = start.getTime();
             let e = end.getTime();
             let x = this.ratings_x(s * (1 - alpha) + e * alpha);
             return isFinite(x) ? x : 0;
         };
 
-        this.winloss_bars[0]
+        this.win_loss_bars[0]
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)));
-        this.winloss_bars[1]
+        this.win_loss_bars[1]
                 .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)));
-        this.winloss_bars[2]
+        this.win_loss_bars[2]
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)));
-        this.winloss_bars[3]
+        this.win_loss_bars[3]
                 .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)));
 
@@ -711,17 +783,101 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                         ? <div className='nodata'>{_("No rated games played yet")}</div>
                         : <PersistentElement elt={this.chart_div}/>
                 }
+                {this.renderWinLossNumbers()}
+            </div>
+        );
+    }}}
+    renderWinLossNumbers() {{{
+        if (this.state.loading || this.state.nodata || !this.game_entries) {
+            return <div className='win-loss-stats' />;
+        }
+
+        let date_extents = [];
+
+        if (this.state.hovered_date) {
+            date_extents[0] = new Date(this.state.hovered_date);
+            date_extents[1] = new Date(this.state.hovered_date);
+            date_extents[0].setHours(0, 0, 0, 0);
+            date_extents[1].setHours(23, 59, 59, 0);
+        }
+        else if (this.state.hovered_month) {
+            date_extents[0] = new Date(this.state.hovered_month);
+            date_extents[1] = new Date(this.state.hovered_month);
+
+            date_extents[0].setDate(1);
+            date_extents[0].setHours(0, 0, 0, 0);
+
+            date_extents[1].setDate(1);
+            date_extents[1].setMonth(date_extents[1].getMonth() + 1);
+            date_extents[1].setDate(-1);
+            date_extents[1].setHours(23, 59, 59, 0);
+        }
+        else {
+            if (this.state.date_extents && this.state.date_extents.length === 2) {
+                date_extents = this.state.date_extents;
+            } else {
+                date_extents[0] = new Date(0);
+                date_extents[1] = new Date();
+            }
+        }
+
+
+        let agg = null;
+        let start_time = date_extents[0].getTime();
+        let end_time = date_extents[1].getTime();
+
+        for (let entry of this.game_entries) {
+            let time = entry.ended.getTime();
+            if (time >= start_time && time <= end_time) {
+                if (!agg) {
+                    agg = new RatingEntry(entry);
+                } else {
+                    agg.merge(entry);
+                }
+            }
+        }
+
+        if (agg === null) {
+            agg = {
+                weak_wins: 0,
+                strong_wins: 0,
+                weak_losses: 0,
+                strong_losses: 0,
+            };
+        }
+
+        return (
+            <div className='win-loss-stats'>
+                <div>
+                    <span className='win-loss-legend-block weak-wins' />
+                    {interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins})}
+                </div>
+                <div>
+                    <span className='win-loss-legend-block strong-wins' />
+                    {interpolate(pgettext("Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins})}
+                </div>
+                <div>
+                    <span className='win-loss-legend-block weak-losses' />
+                    {interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses})}
+                </div>
+                <div>
+                    <span className='win-loss-legend-block strong-losses' />
+                    {interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses})}
+                </div>
             </div>
         );
     }}}
 }
 
 
-function speed_translation(speed:speed_t) {
+function speed_translation(speed:speed_t) {{{
     switch (speed) {
         case 'overall': return _("Overall");
         case 'blitz' : return _("Blitz");
         case 'live' : return _("Live");
         case 'correspondence' : return _("Correspondence");
     }
-}
+}}}
+function is_same_month(d1:Date, d2:Date):boolean {{{
+    return d1.getUTCFullYear() == d2.getUTCFullYear() && d1.getUTCMonth() == d2.getUTCMonth();
+}}}
