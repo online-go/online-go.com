@@ -879,5 +879,5 @@ function speed_translation(speed:speed_t) {{{
     }
 }}}
 function is_same_month(d1:Date, d2:Date):boolean {{{
-    return d1.getUTCFullYear() == d2.getUTCFullYear() && d1.getUTCMonth() == d2.getUTCMonth();
+    return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
 }}}
