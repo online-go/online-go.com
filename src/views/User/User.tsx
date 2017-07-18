@@ -1205,10 +1205,10 @@ export class User extends Resolver<UserProperties, any> {
             <div className='ratings-grid'>
                 <div className='title-row'>
                     <span className='title'/>
-                    <span className='title'><i className="speed-icon ogs-turtle" title={_("Correspondence")} /></span>
                     <span className='title'><i className="speed-icon fa fa-circle-o" title={_("Overall")} /></span>
                     <span className='title'><i className="speed-icon fa fa-bolt" title={_("Blitz")} /></span>
                     <span className='title'><i className="speed-icon fa fa-clock-o" title={_("Live")} /></span>
+                    <span className='title'><i className="speed-icon ogs-turtle" title={_("Correspondence")} /></span>
                 </div>
                 {[0, 9, 13, 19].map((size) => (
                     <div key={size} className='speed'>
