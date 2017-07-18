@@ -45,11 +45,14 @@ interface RatingsChartProperties {
 
 const date_bisector = d3.bisector((d:RatingEntry) => { return d.ended; }).left;
 let format_date = (d:Date) => moment(d).format('ll');
+let format_month = (d:Date) => moment(d).format('MMM YYYY');
 const margin   = {top: 30, right: 20, bottom: 100, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
 const chart_height = 283;
-const winloss_bars_height = 155;
+const date_legend_width = 70;
+const winloss_bars_start_y = 155;
+const winloss_bars_height = 65;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
@@ -149,6 +152,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     }}}
 
     initialize() {{{
+        let self = this;
         let sizes = this.chart_sizes();
         let width = this.width = sizes.width;
         this.height = height;
@@ -159,6 +163,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
         this.rank_axis.tickFormat((rating:number) => rankString(Math.round(rating_to_rank(rating))));
+
+        let boundDataLegendX = (x:number) => {
+            return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
+        };
 
         this.svg = d3.select(this.chart_div)
             .append('svg')
@@ -180,6 +188,46 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.winloss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
                 .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
+                .on('mouseover', () => {
+                    this.helper.style('display', null);
+                    this.dateLegend.style('display', null);
+                })
+                .on('mouseout', () => {
+                    this.helper.style('display', 'none');
+                    this.dateLegend.style('display', 'none');
+                })
+                .on('mousemove', function() {
+                    /* tslint:disable */
+                    let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                    /* tslint:enable */
+
+                    let d = null;
+
+                    for (let entry of self.games_by_month) {
+                        if (x0.getUTCFullYear() === entry.ended.getUTCFullYear()
+                            && x0.getUTCMonth() === entry.ended.getUTCMonth()) {
+                            d = new Date(entry.ended);
+                            break;
+                        }
+                    }
+
+                    if (!d) {
+                        return;
+                    }
+
+                    let startOfMonth = new Date(d);
+                    let endOfMonth = new Date(d);
+                    startOfMonth.setDate(1);
+                    startOfMonth.setHours(0, 0, 0, 0);
+                    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+                    endOfMonth.setDate(-1);
+                    endOfMonth.setHours(23, 59, 59, 0);
+                    let midDate = new Date(startOfMonth.getTime() + (endOfMonth.getTime() - startOfMonth.getTime()) / 2);
+
+                    self.helperText.text(format_month(new Date(d)));
+                    self.dateLegendText.text(format_month(new Date(d)));
+                    self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(midDate)) + margin.left)  + ',' + (margin.top + winloss_bars_start_y + winloss_bars_height + 23) + ')');
+                })
             );
         }
 
@@ -199,13 +247,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('height', 30);
 
         this.dateLegendBackground = this.dateLegend.append('rect')
-            .attr('width', 70)
+            .attr('class', 'date-legend-background')
+            .attr('width', date_legend_width)
             .attr('height', 20)
-            .attr('x', -35)
+            .attr('x', -(date_legend_width / 2))
             .attr('y', -10)
             .attr('rx', 10);
 
         this.dateLegendText = this.dateLegend.append('text')
+            .attr('class', 'date-legend-text')
             .attr('y', 3);
 
         let size_text = this.props.size ? `${this.props.size}x${this.props.size}` : '';
@@ -233,8 +283,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('transform', 'translate(0, 0)');
 
         this.y_axis_rank_labels = this.rating_graph.append('g')
-            .attr('class', 'y axis')
-            .attr('transform', 'translate(' + (width - 10) + ', 0)');
+            .attr('class', 'y axis');
 
         this.helper = this.rating_graph.append('g')
             .attr('class', 'chart__helper')
@@ -269,7 +318,6 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .style('display', 'none')
             .attr('r', 2.5);
 
-        let self = this;
         this.mouseArea = this.svg.append('g')
             .append('rect')
             .attr('class', 'overlay')
@@ -306,9 +354,20 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 }
 
                 let d = x0.getTime() - d0.ended.getTime() > d1.ended.getTime() - x0.getTime() ? d1 : d0;
-                self.helperText.text(format_date(new Date(d.ended)) + ' - rating: ' + d.rating + ' Dev.: ' + d.deviation);
+                self.helperText.text(format_date(new Date(d.ended)) + '  ' +
+                    interpolate(pgettext(
+                        "Glicko-2 rating +- rating deviation text on the ratings chart",
+                        "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}"),
+                        {
+                            rating: Math.floor(d.rating),
+                            deviation: Math.round(d.deviation),
+                            rank: rankString(rating_to_rank(d.rating), true),
+                            rank_deviation: (rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)).toFixed(1),
+                        }
+                    )
+                );
                 self.dateLegendText.text(format_date(new Date(d.ended)));
-                self.dateLegend.attr('transform', 'translate(' + (self.ratings_x(d.ended) + margin.left)  + ',' + (margin.top + height + 10) + ')');
+                self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(d.ended)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
                 self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
@@ -390,7 +449,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.range_label.attr('transform', 'translate(' + width + ', 0)');
         this.x_axis_date_labels.attr('transform', 'translate(0 ,' + height + ')');
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
-        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 10) + ', 0)');
+        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 5) + ', 0)');
 
         //this.verticalCrosshairLine.attr('y1', height);
         this.helper.attr('transform', 'translate(' + width + ', 0)');
@@ -513,10 +572,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             return isFinite(x) ? x : 0;
         };
         const H = (count:number) => {
-            return Math.max(0, 65 - this.outcomes_y(count));
+            return Math.max(0, winloss_bars_height - this.outcomes_y(count));
         };
         const Y = (count:number) => {
-            return winloss_bars_height - Math.max(0, 65 - this.outcomes_y(count));
+            return winloss_bars_start_y - Math.max(0, winloss_bars_height - this.outcomes_y(count));
         };
 
         for (let bars of this.winloss_bars) {
@@ -635,7 +694,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
-                        ? <div className='loading'>{_("No ratings data yet")}</div>
+                        ? <div className='nodata'>{_("No rated games played yet")}</div>
                         : <PersistentElement elt={this.chart_div}/>
                 }
             </div>
