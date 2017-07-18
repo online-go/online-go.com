@@ -794,10 +794,10 @@ export class User extends Resolver<UserProperties, any> {
 
 
                             {(!editing && user.website) &&
-                                <div ><a target="_blank" href={cleaned_website}>{user.website}</a></div>
+                                <div className='website-url'><a target="_blank" href={cleaned_website}>{user.website}</a></div>
                             }
                             {(editing || null) &&
-                                <div><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
+                                <div className='website-url'><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
                             }
 
                             <div className='avatar-buttons'>
