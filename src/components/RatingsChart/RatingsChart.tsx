@@ -122,7 +122,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
     constructor(props) {
         super(props);
-        this.state = { };
+        this.state = {
+            loading: true,
+            nodata: false,
+        };
         this.chart_div = $("<div>")[0];
     }
     componentDidMount() {{{
@@ -130,7 +133,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.resize(true);
     }}}
     componentDidUpdate(prevProps, prevState) {{{
-        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.setData);
+        if (this.props.playerId !== prevProps.playerId
+            || this.props.speed !== prevProps.speed
+            || this.props.size  !== prevProps.size
+        ) {
+            this.refreshData();
+        }
     }}}
     componentWillUnmount() {{{
         this.deinitialize();
@@ -139,6 +147,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }}}
+
     initialize() {{{
         let sizes = this.chart_sizes();
         let width = this.width = sizes.width;
@@ -149,8 +158,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
-
         this.rank_axis.tickFormat((rating:number) => rankString(Math.round(rating_to_rank(rating))));
+
         this.svg = d3.select(this.chart_div)
             .append('svg')
             .attr('class', 'chart')
@@ -325,7 +334,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
         $(window).on("resize", this.resize as () => void);
 
-        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.setData);
+        this.refreshData();
     }}}
     deinitialize() {{{
         $(window).off("resize", this.resize as () => void);
@@ -334,6 +343,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.resize_debounce = null;
         }
 
+    }}}
+    refreshData() {{{
+        this.setState({loading: true});
+        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.setData);
     }}}
     chart_sizes() {{{
         let width = Math.max(chart_min_width, $(this.container).width()  - margin.left - margin.right);
@@ -396,6 +409,20 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         }
     }}}
     setData = (err, data) => {{{
+        /* There's always a starting 1500 rating entry at least, so if that's all there
+         * is let's just zero out the array and show a "No data" text */
+        if (data.length === 1) {
+            this.setState({
+                loading: false,
+                nodata: true,
+            });
+        } else {
+            this.setState({
+                loading: false,
+                nodata: false,
+            });
+        }
+
         this.game_entries = data;
         this.game_entries.reverse();
 
@@ -492,6 +519,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             return winloss_bars_height - Math.max(0, 65 - this.outcomes_y(count));
         };
 
+        for (let bars of this.winloss_bars) {
+            bars.remove();
+        }
+        this.winloss_bars.length = 0;
+
         this.winloss_bars.push(
             this.winloss_graphs[0].selectAll('rect')
                 .data(this.games_by_month)
@@ -518,7 +550,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 .enter().append('rect')
                 .attr('class', 'winloss-bar weak_losses')
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count - d.wins))
+                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
@@ -528,25 +560,29 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 .enter().append('rect')
                 .attr('class', 'winloss-bar strong_losses')
                 .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count - d.wins))
+                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
                 .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
     }}}
     getUTCMonthWidth(d:Date):number {{{
-        let days_in_month = Math.round((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        //let days_in_month = Math.round((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        let days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
 
         let s = this.date_extents[0];
         let e = this.date_extents[1];
         s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
         e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
-        let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
+        //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
+        let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
         return this.width * (days_in_month / days_in_range);
     }}}
     onTimelineBrush = () => {{{
         this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
+        this.date_extents[0].setHours(0, 0, 0, 0);    /* start of day */
+        this.date_extents[1].setHours(23, 59, 59, 0); /* end of day   */
 
         this.ratings_x.domain(this.date_extents);
 
@@ -596,7 +632,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     render() {{{
         return (
             <div ref={(e) => this.container = e} className="RatingsChart">
-                <PersistentElement elt={this.chart_div}/>
+                {this.state.loading
+                    ? <div className='loading'>{_("Loading")}</div>
+                    : this.state.nodata
+                        ? <div className='loading'>{_("No ratings data yet")}</div>
+                        : <PersistentElement elt={this.chart_div}/>
+                }
             </div>
         );
     }}}

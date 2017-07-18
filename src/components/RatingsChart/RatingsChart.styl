@@ -15,7 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+rating-chart-height=350px;
+
 .RatingsChart {
+    height: rating-chart-height;
+
     svg {
         font-size: font-size-smaller;
     }
@@ -42,6 +46,13 @@
         }
     }
 
+    .loading, .nodata {
+        height: rating-chart-height;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        themed color shade2
+    }
 
 
 

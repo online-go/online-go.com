@@ -833,7 +833,10 @@ export class User extends Resolver<UserProperties, any> {
                         </div>
                     </div> */}
                 </div>
-                {(user.provisional_games_left || null) && <b >{interpolate(_("Note: This account is currently marked as provisional until {{user.provisional_games_left}} more games have been played"), {"user.provisional_games_left": user.provisional_games_left})}</b>}
+
+                {/*
+                (user.provisional_games_left || null) && <b >{interpolate(_("Note: This account is currently marked as provisional until {{user.provisional_games_left}} more games have been played"), {"user.provisional_games_left": user.provisional_games_left})}</b>
+                */}
 
 
             </div>
