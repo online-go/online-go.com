@@ -150,6 +150,20 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }}}
+    shouldComponentUpdate(nextProps, nextState) {{{
+        if (this.props.playerId !== nextProps.playerId
+            || this.props.speed !== nextProps.speed
+            || this.props.size  !== nextProps.size
+        ) {
+            return true;
+        }
+
+        if (this.state.loading !== nextState.loading || this.state.nodata !== nextState.nodata) {
+            return true;
+        }
+
+        return false;
+    }}}
 
     initialize() {{{
         let self = this;
