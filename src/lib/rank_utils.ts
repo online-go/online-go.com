@@ -42,11 +42,11 @@ const MIN_RATING = 100;
 const MAX_RATING = 6000;
 
 export function rank_to_rating(rank:number) {
-    return 900 * Math.exp(0.032 * rank);
+    return 850 * Math.exp(0.032 * rank);
 }
 
 export function rating_to_rank(rating:number) {
-    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / 900.0) / 0.032;
+    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / 850.0) / 0.032;
 }
 
 export function get_handicap_adjustment(rating:number, handicap:number):number {
