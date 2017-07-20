@@ -4017,14 +4017,14 @@ export abstract class Goban extends EventEmitter {
             }
         }
 
-        let nextClockUpdate = 60000;
         let now;
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
         this.last_sound_played = null;
 
-        let formatTime = (clock_div, time, base_time: number, player_id?: number) => { /* {{{ */
+        let formatTime = (clock_div, time, base_time: number, player_id?: number):number => { /* {{{ */
+            let next_clock_update = 60000;
             let ms;
             let time_suffix = "";
             let periods_left = 0;
@@ -4127,34 +4127,33 @@ export abstract class Goban extends EventEmitter {
                 ms = time - now;
             }
 
-
-
             let seconds = Math.ceil((ms - 1) / 1000);
-            //let weeks = Math.floor(seconds / (86400*7)); seconds -= weeks * 86400*7;
             let days = Math.floor(seconds / 86400); seconds -= days * 86400;
             let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
             let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
-
             let html = "";
             let cls = "plenty_of_time";
             if (ms <= 0 || isNaN(ms)) {
-                nextClockUpdate = 0;
+                next_clock_update = 0;
                 cls = "out_of_time";
                 html = "0.0";
             } else if (days > 1) {
                 html = plurality(days, _("Day"), _("Days")) + " " + (hours ? plurality(hours, _("Hour"), _("Hours")) : "");
-                nextClockUpdate = 60000;
+                next_clock_update = 60000;
             } else if (hours || days === 1) {
-                nextClockUpdate = 60000;
+                next_clock_update = 60000;
                 if (days === 1) {
                     hours += 24;
                 }
                 html = days === 0 ? interpolate(pgettext("Game clock: Hours and minutes", "%sh %sm"), [hours, minutes]) : interpolate(pgettext("Game clock: hours", "%sh"), [hours]);
             } else {
-                nextClockUpdate = Math.max(50, (ms % 1000) + 1); /* once per second, right after the clock rolls over */
+                next_clock_update = ms % 1000; /* once per second, right after the clock rolls over */
+                if (next_clock_update === 0) {
+                    next_clock_update = 1000;
+                }
                 if (this.engine.paused_since) {
-                    nextClockUpdate = 60000;
+                    next_clock_update = 60000;
                 }
                 html = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
                 if (minutes === 0 && seconds <= 10) {
@@ -4206,6 +4205,7 @@ export abstract class Goban extends EventEmitter {
                 main_time_div.html(html);
             }
             clock_div.html(`<span class='clock ${cls}'>${html}<span>${(use_short_format ? "" : time_suffix)}`);
+            return next_clock_update;
         }; /* }}} */
 
         let updateTime = () => { /* {{{ */
@@ -4225,16 +4225,12 @@ export abstract class Goban extends EventEmitter {
                 return;
             }
 
-            if (this.__clock_timer) {
-                clearTimeout(this.__clock_timer);
-                this.__clock_timer = null;
-            }
-
             black_clock.empty();
             white_clock.empty();
+            let next_clock_update = 1000;
 
             if (clock.start_mode) {
-                formatTime(clock.black_player_id === clock.current_player ? _black_clock : _white_clock, clock.expiration + now_delta, clock.last_move);
+                next_clock_update = formatTime(clock.black_player_id === clock.current_player ? _black_clock : _white_clock, clock.expiration + now_delta, clock.last_move);
             } else if (clock.stone_removal_mode) {
                 if (this.stone_removal_clock) {
                     let sr_clock = $(this.stone_removal_clock);
@@ -4283,19 +4279,29 @@ export abstract class Goban extends EventEmitter {
                 }
 
                 if (clock.white_time) {
-                    formatTime(_white_clock, clock.white_time, white_base_time, clock.white_player_id);
+                    let white_next_update = formatTime(_white_clock, clock.white_time, white_base_time, clock.white_player_id);
+                    if (clock.current_player === clock.white_player_id) {
+                        next_clock_update = white_next_update;
+                    }
                 }
                 if (clock.black_time) {
-                    formatTime(_black_clock, clock.black_time, black_base_time, clock.black_player_id);
+                    let black_next_update = formatTime(_black_clock, clock.black_time, black_base_time, clock.black_player_id);
+                    if (clock.current_player === clock.black_player_id) {
+                        next_clock_update = black_next_update;
+                    }
                 }
             }
 
             if (this.engine.phase === "stone removal") {
-                nextClockUpdate = 1000;
+                next_clock_update = 1000;
             }
 
-            if (nextClockUpdate) {
-                this.__clock_timer = setTimeout(updateTime, nextClockUpdate);
+            if (next_clock_update) {
+                if (this.__clock_timer) {
+                    clearTimeout(this.__clock_timer);
+                    this.__clock_timer = null;
+                }
+                this.__clock_timer = setTimeout(updateTime, next_clock_update);
             }
         }; /* }}} */
 
