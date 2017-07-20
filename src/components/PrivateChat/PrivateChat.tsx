@@ -18,13 +18,13 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {_} from 'translate';
-import data from "data";
+import * as data from "data";
 import ITC from "ITC";
 import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 
 let last_id: number = 0;

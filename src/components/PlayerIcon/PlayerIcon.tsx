@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {errorLogger} from "misc";
 
 
@@ -43,7 +43,7 @@ export function getPlayerIconURL(id, size): Promise<string> {{{
 
 export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     mounted: boolean = false;
-    listener;
+    subscribe: player_cache.Subscription;
 
     constructor(props) {
         super(props);
@@ -63,9 +63,10 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
             this.fetch(id, props);
         }
         if (id && id > 0) {
-            this.listener = player_cache.watch(id, (_user) => {
+            this.subscribe = new player_cache.Subscription((_user) => {
                 this.fetch(id, this.props);
             });
+            this.subscribe.to([id]);
         }
     }
     fetch(id, props) {
@@ -89,11 +90,11 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
         if (current_id !== next_id) {
             this.setState({url: null});
-            this.listener.remove();
             if (next_id && next_id > 0) {
-                this.listener = player_cache.watch(next_id, (_user) => {
-                    this.fetch(next_id, next_props);
-                });
+                this.subscribe.to([next_id]);
+            }
+            else {
+                this.subscribe.to();
             }
 
 

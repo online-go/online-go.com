@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, interpolate} from "translate";
 import {Goban} from "goban";
-import data from "data";
+import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
 import {rankString} from "rank_utils";

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
+import * as data from "data";
 import device from "device";
 import preferences from "preferences";
 import * as React from "react";
@@ -33,7 +33,7 @@ import {termination_socket, get_network_latency, get_clock_drift} from "sockets"
 import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {getPlayerIconURL} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";

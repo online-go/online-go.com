@@ -25,7 +25,7 @@ import {Card} from "material";
 import {sfx} from "goban";
 import {LanguagePicker} from "LanguagePicker";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 import {current_language} from "translate";
 import {toast} from 'toast';
 
@@ -153,8 +153,8 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     getSubmitMode(speed) {{{
-        let single = preferences.get(`one-click-submit-${speed}`);
-        let dbl = preferences.get(`double-click-submit-${speed}`);
+        let single = preferences.get(`one-click-submit-${speed}` as any);
+        let dbl = preferences.get(`double-click-submit-${speed}` as any);
         return single ? "single" : (dbl ? "double" : "button");
     }}}
     setSubmitMode(speed, mode) {{{

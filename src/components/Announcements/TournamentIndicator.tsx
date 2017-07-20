@@ -17,22 +17,21 @@
 
 import * as React from "react";
 import {Link} from "react-router";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 
 
 
 export class TournamentIndicator extends React.PureComponent<{}, any> {
     update_interval = null;
+    data_subscribe: data.Subscription<"active-tournament">;
 
     constructor(props) {
         super(props);
         this.state = {
             tournament: null
         };
-    }
-    componentWillMount() {
-        data.watch("active-tournament", (tournament) => {
+        this.data_subscribe = new data.Subscription<"active-tournament">((channel, tournament) => {
             this.setState({tournament: tournament});
             if (this.update_interval) {
                 clearInterval(this.update_interval);
@@ -41,6 +40,14 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
                 this.update_interval = setInterval(this.forceUpdate.bind(this), 1000);
             }
         });
+    }
+
+    componentWillMount() {
+        this.data_subscribe.to("active-tournament");
+    }
+
+    componentWillUnmount() {
+        this.data_subscribe.to();
     }
 
     render() {

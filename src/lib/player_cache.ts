@@ -16,46 +16,49 @@
  */
 
 import {get} from "requests";
+import {Publisher} from "pubsub";
 
 const player_cache_debug_enabled = false;
 let cache: {[id: number]: any} = {};
 let cache_by_username: {[username: string]: any} = {};
 let active_fetches: {[id: number]: Promise<any>} = {};
-let nicknames: Array<string> = [];
+export let nicknames: Array<string> = [];
 
-let listeners = {};
-let last_id = 0;
 
-class Listener {
-    player_id: number;
-    id: number;
-    cb: (player: any, player_id?: number) => void;
-    remove_callbacks: Array<() => void>;
 
-    constructor(player_id: number, cb: (user: any, player_id?: number) => void) {
-        this.player_id = player_id;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
-
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
-
-    remove() {
-        delete listeners[this.player_id][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
+// Publish new player details as required.
+type Player = any;
+let publisher = new Publisher<{[player_id: string]: Player}>();
+class PlayerCacheSubscription extends publisher.Subscription<string> {
+    protected new_subscriber(channel: string): void {
+        let id: number = +channel;
+        if (id in cache) {
+            this.callback(channel, cache[id]);
+        }
+        else {
+            fetch(id, []);   // The fetch will publish the details.
         }
     }
 }
+export class Subscription {
+    private subscribe: PlayerCacheSubscription;
 
-function update(player: any, dont_overwrite?: boolean): any {
+    constructor(callback: (player: Player) => void) {
+        this.subscribe = new PlayerCacheSubscription((channel, player) => callback(player));
+    }
+
+    to(...players: Array<number | Player>): this {
+        let ids = players.map(
+            (player) => typeof player === "number" ? player.toString() : player.id.toString()
+        );
+        this.subscribe.to(...ids);
+        return this;
+    }
+}
+
+
+
+export function update(player: any, dont_overwrite?: boolean): any {
     if (Array.isArray(player)) {
         for (let p of player) {
             update(p, dont_overwrite);
@@ -67,10 +70,12 @@ function update(player: any, dont_overwrite?: boolean): any {
     if (!(id in cache)) {
         cache[id] = {};
     }
+    let changed = false;
     for (let k in player) {
-        if (dont_overwrite && k in cache[id]) {
+        if (dont_overwrite || cache[id][k] === player[k]) {
             continue;
         }
+        changed = true;
         cache[id][k] = player[k];
     }
     if (cache[id].username && !(cache[id].username in cache_by_username)) {
@@ -80,16 +85,13 @@ function update(player: any, dont_overwrite?: boolean): any {
         cache_by_username[cache[id].username] = cache[id];
     }
 
-    if (id in listeners) {
-        for (let l in listeners[id]) {
-            listeners[id][l].cb(cache[id], id);
-        }
+    if (changed) {
+        publisher.publish(id.toString(), cache[id]);
     }
-
     return cache[id];
 }
 
-function lookup(player_id: number): any {
+export function lookup(player_id: number): any {
     if (player_id in cache) {
         return cache[player_id];
     }
@@ -97,7 +99,7 @@ function lookup(player_id: number): any {
     return null;
 }
 
-function lookup_by_username(username: string): any {
+export function lookup_by_username(username: string): any {
     if (username in cache_by_username) {
         return cache_by_username[username];
     }
@@ -105,22 +107,7 @@ function lookup_by_username(username: string): any {
     return null;
 }
 
-function watch(player_id: number, cb: (player: any, player_id?: number) => void): Listener {
-    let listener = new Listener(player_id, cb);
-    if (!(player_id in listeners)) {
-        listeners[player_id] = {};
-    }
-    listeners[player_id][listener.id] = listener;
-
-    let val = lookup(player_id);
-    if (val) {
-        cb(val, player_id);
-    }
-
-    return listener;
-}
-
-function fetch(player_id: number, required_fields?: Array<string>): Promise<any> {
+export function fetch(player_id: number, required_fields?: Array<string>): Promise<any> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);
         return Promise.reject("invalid player id");
@@ -184,17 +171,3 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
     });
 }
 
-
-export const player_cache = {
-    update: update,
-    lookup: lookup,
-    lookup_by_username: lookup_by_username,
-    nicknames: nicknames,
-    fetch: fetch,
-    watch: watch,
-    Listener: Listener,
-};
-
-export default player_cache;
-
-window['player_cache'] = player_cache;

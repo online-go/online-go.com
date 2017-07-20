@@ -19,13 +19,12 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {Link} from "react-router";
 import {post, get, put, patch} from "requests";
-import config from "config";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 import {Resolver} from "Resolver";
 import {rankString} from "rank_utils";
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
 
 

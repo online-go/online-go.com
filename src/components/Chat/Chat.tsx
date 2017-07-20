@@ -22,13 +22,13 @@ import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
@@ -47,13 +47,13 @@ interface ChatProperties {
 }
 
 let name_match_regex = /^loading...$/;
-data.watch("config.user", (user) => {
+new data.Subscription<"user">((channel, user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
           "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
         + "|\\b" + cleaned_username_regex + "$"
         , "i");
-});
+}).to("user");
 
 let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-english" , "name": "English", "country": "us"},
@@ -93,11 +93,11 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
 ]; /* }}} */
 
-data.watch("config.ogs", (settings) => {
+new data.Subscription<"config.ogs">((channel, settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
-});
+}).to("config.ogs");
 
 
 let rtl_mode = {};

@@ -15,41 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {Publisher} from "pubsub";
+
 let defaults = {};
 let store = {};
-let listeners = {};
-let last_id = 0;
 
-export class Listener {
-    key: string;
-    id: number;
-    cb: (data: any, key?: string) => void;
-    remove_callbacks: Array<() => void>;
 
-    constructor(key: string, cb: (data: any, key?: string) => void) {
-        this.key = key;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
 
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
-
-    remove() {
-        delete listeners[this.key][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
+type LocalData = any;
+let publisher = new Publisher<LocalData>();
+export class Subscription<K extends keyof LocalData> extends publisher.Subscription<K> {
+    protected new_subscriber(channel: K): void {
+        let value = get(channel);
+        if (value !== undefined) {
+            this.callback(channel, value);
         }
     }
 }
 
-export function set(key: string, value: any, dontTriggerListeners?:boolean): any {
+
+
+export function set(key: string, value: any): any {
     if (typeof(value) === "undefined") {
         remove(key);
         return value;
@@ -62,42 +48,17 @@ export function set(key: string, value: any, dontTriggerListeners?:boolean): any
         console.error(e);
     }
 
-    if (dontTriggerListeners) {
-        return value;
-    }
-
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            listeners[key][id].cb(value, key);
-        }
-    }
+    publisher.publish(key, value);
     return value;
 }
 export function setDefault(key: string, value: any): any {
     defaults[key] = value;
     if (!(key in store)) {
-        if (key in listeners) {
-            for (let id in listeners[key]) {
-                listeners[key][id].cb(value, key);
-            }
-        }
+        publisher.publish(key, value);
     }
     return value;
 }
 export function remove(key: string): any {
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            try {
-                if (key in defaults) {
-                    listeners[key][id].cb(defaults[key], key);
-                } else {
-                    listeners[key][id].cb(undefined, key);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
     try {
         localStorage.removeItem(`ogs.${key}`);
     } catch (e) {
@@ -106,6 +67,7 @@ export function remove(key: string): any {
     if (key in store) {
         let val = store[key];
         delete store[key];
+        publisher.publish(key, defaults[key]);
         return val;
     }
 }
@@ -115,42 +77,20 @@ export function removeAll(): void {
         keys.push(key);
     }
     for (let key of keys) {
-        try {
-            remove(key);
-        } catch (e) {
-            console.error(e);
-        }
+        remove(key);
     }
 }
-export function get(key: string, _default?: any): any {
+
+export function get(key: string, default_value?: any): any {
     if (key in store) {
         return store[key];
     }
     if (key in defaults) {
         return defaults[key];
     }
-    return _default;
+    return default_value;
 }
-export function ensureDefaultAndGet(key: string): any {
-    if (!(key in defaults)) {
-        throw new Error(`Undefined default: ${key}`);
-    }
-    return get(key);
-}
-export function watch(key: string, cb: (data: any, key?: string) => void, call_on_undefined?: boolean): Listener {
-    let listener = new Listener(key, cb);
-    if (!(key in listeners)) {
-        listeners[key] = {};
-    }
-    listeners[key][listener.id] = listener;
 
-    let val = get(key);
-    if (val != undefined || call_on_undefined) {
-        cb(val, key);
-    }
-
-    return listener;
-}
 export function dump(key_prefix?: string, strip_prefix?: boolean) {
     if (!key_prefix) {
         key_prefix = "";
@@ -196,15 +136,3 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-
-export default window["data"] = {
-    set                 : set,
-    get                 : get,
-    ensureDefaultAndGet : ensureDefaultAndGet,
-    setDefault          : setDefault,
-    remove              : remove,
-    removeAll           : removeAll,
-    watch               : watch,
-    dump                : dump,
-};

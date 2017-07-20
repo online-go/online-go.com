@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 
@@ -31,15 +31,18 @@ interface FriendListProperties {
 }
 
 export class FriendList extends React.PureComponent<{}, any> {
+    data_subscribe: data.Subscription<"friends">;
+
     constructor(props) {
         super(props);
         this.state = {
             friends: [],
             resolved: false
         };
+        this.data_subscribe = new data.Subscription<"friends">(this.updateFriends);
     }
 
-    updateFriends = (friends) => {
+    updateFriends = (channel: "friends", friends) => {
         this.setState({
             friends: this.sortFriends(friends),
             resolved: true
@@ -47,10 +50,11 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
-        data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
+        this.data_subscribe.to("friends"); /* This is managed by our FriendIndicator */
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
+        this.data_subscribe.to();
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
     }}}
     resortFriends = () => {

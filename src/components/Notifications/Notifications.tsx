@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
@@ -855,4 +855,4 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 } /* }}} */
 
 
-data.watch("config.user", (user) => notification_manager.setUser(user));
+new data.Subscription<"user">((channel, user) => notification_manager.setUser(user)).to("user");
