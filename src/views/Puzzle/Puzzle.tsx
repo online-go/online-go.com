@@ -23,7 +23,7 @@ import {KBShortcut} from "KBShortcut";
 import {goban_view_mode, goban_view_squashed} from "Game";
 import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
-import {longRankString} from "rank_utils";
+import {longRankString, rankList} from "rank_utils";
 import {Goban, GoMath} from "goban";
 import {Markdown} from "Markdown";
 import {Player} from "Player";
@@ -31,6 +31,9 @@ import {StarRating} from "StarRating";
 import {Resizable} from "Resizable";
 import preferences from "preferences";
 import data from "data";
+import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
+import {PuzzleNavigation} from './PuzzleNavigation';
+import {PuzzleEditor} from './PuzzleEditing';
 
 declare var swal;
 
@@ -39,10 +42,8 @@ interface PuzzleProperties {
         puzzle_id: string
     };
 }
-let ranks = [];
-for (let i = 0; i < 39; ++i) {
-    ranks.push({"value": i, "text": longRankString(i)});
-}
+
+let ranks = rankList(0, 38, false);
 
 export class Puzzle extends React.Component<PuzzleProperties, any> {
     refs: {
@@ -57,19 +58,19 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
     goban: Goban;
     goban_div: any;
-    orig_puzzle: any = null;
-    puzzle: any = null;
     goban_opts: any = {};
 
-    zoom: boolean;
-    transform_color: boolean;
-    transform_h: boolean;
-    transform_x: boolean;
-    transform_v: boolean;
+    transform = new PuzzleTransform(new TransformSettings());
+    navigation = new PuzzleNavigation();
+    editor: PuzzleEditor;
+
     set_analyze_tool: any = {};
 
     constructor(props) { /* {{{ */
         super(props);
+
+        this.editor  = new PuzzleEditor(this.transform);
+
         this.state = {
             loaded: false,
             edit_step: "setup",
@@ -146,14 +147,14 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         if (this.goban) {
             this.goban.destroy();
             this.goban = null;
+            this.navigation.goban = null;
         }
         this.goban_div.empty();
-        this.orig_puzzle = null;
-        this.puzzle = null;
+        this.editor.clearPuzzles();
     }}}
 
     setAnalyzeTool(tool, subtool) {{{
-        if (this.checkAndEnterAnalysis()) {
+        if (this.navigation.checkAndEnterAnalysis()) {
             $("#game-analyze-button-bar .active").removeClass("active");
             $("#game-analyze-" + tool + "-tool").addClass("active");
             switch (tool) {
@@ -167,11 +168,11 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     this.goban.setAnalyzeTool(tool, subtool);
                 break;
                 case "stone":
-                    if (subtool == null) {
                     //subtool = goban.engine.colorToMove() === "black" ? "black-white" : "white-black"
-                    subtool = "alternate";
-                }
-                this.goban.setAnalyzeTool(tool, subtool);
+                    if (subtool == null) {
+                        subtool = "alternate";
+                    }
+                    this.goban.setAnalyzeTool(tool, subtool);
                 break;
             }
         }
@@ -180,227 +181,37 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         return false;
     }}}
 
-    checkAndEnterAnalysis() {{{
-        if (this.goban.mode === "puzzle") {
-            this.goban.setMode("analyze", true);
-            return true;
-        }
-        if (this.goban.mode === "analyze") {
-            return true;
-        }
-        return false;
-    }}}
-    checkAndEnterPuzzleMode() {{{
-        if (this.goban.mode !== "puzzle") {
-            this.goban.setAnalyzeTool("stone", "alternate");
-            this.goban.setMode("puzzle", true);
-        }
-        return true;
-    }}}
+    fetchPuzzle(puzzleId: number) {
+        this.editor.fetchPuzzle(
+            puzzleId,
+            (state, editing) => {
+                this.reset(editing);
+                this.setState(state);
+                this.onResize(true);
+            }
+        );
+    }
 
-    editPuzzle(new_puzzle: boolean) {{{
-        this.zoom = false;
-        this.transform_color = false;
-        this.transform_h = false;
-        this.transform_v = false;
-        this.transform_x = false;
-
-        let obj: any = {
-            editing: true,
-            edit_step: "setup",
-            setup_color: "black",
-            loaded: true,
-        };
-
-        if (new_puzzle) {
-            obj = Object.assign(obj, {
-                "id": 242,
-                "owner": data.get("user"),
-                "name": "",
-                "created": "",
-                "modified": "",
-                "puzzle": {
-                    "puzzle_player_move_mode": "free",
-                    "puzzle_rank": "18",
-                    "name": "",
-                    //"move_tree": { },
-                    "initial_player": "black",
-                    "puzzle_opponent_move_mode": "automatic",
-                    "height": 19,
-                    "width": 19,
-                    "mode": "puzzle",
-                    "puzzle_collection": 0,
-                    "puzzle_type": "life_and_death",
-                    "initial_state": {
-                        "white": "",
-                        "black": ""
-                    },
-                    "puzzle_description": ""
-                },
-                "private": false,
-                "width": 19,
-                "height": 19,
-                "type": "life_and_death",
-                "has_solution": false,
-                "rank": 18,
-                "collection": { },
-            });
-            this.orig_puzzle = obj.puzzle;
-            obj.puzzle_collection_summary = [];
-        }
-        this.reset(true);
-
-        this.setState(obj);
-    }}}
-    fetchPuzzle(puzzle_id: number) {{{
-        abort_requests_in_flight(`puzzles/`, "GET");
-        if (isNaN(puzzle_id)) {
-            get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
-            .then((collections) => {
-                this.setState({
-                    puzzle_collections: collections.results
-                });
-                this.editPuzzle(true);
-            })
-            .catch(errorAlerter);
-            return;
-        }
-
-        Promise.all([
-            get("puzzles/%%", puzzle_id),
-            get("puzzles/%%/collection_summary", puzzle_id),
-            get("puzzles/%%/rate", puzzle_id),
-        ])
-        .then((arr) => {
-            let rating = arr[2];
-            let puzzle = arr[0].puzzle;
-
-            let randomize_transform = preferences.get("puzzle.randomize.transform"); /* only randomize when we are getting a new puzzle */
-            let randomize_color = preferences.get("puzzle.randomize.color"); /* only randomize when we are getting a new puzzle */
-            this.zoom = preferences.get("puzzle.zoom");
-            this.transform_color = randomize_color && Math.random() > 0.5;
-            this.transform_h = randomize_transform && Math.random() > 0.5;
-            this.transform_v = randomize_transform && Math.random() > 0.5;
-            this.transform_x = randomize_transform && Math.random() > 0.5;
-
-            let new_state = Object.assign({
-                puzzle_collection_summary: arr[1],
-                loaded: true,
-                my_rating: rating.rating,
-                rated: !("error" in rating),
-                zoom: this.zoom,
-                transform_color: this.transform_color,
-                transform_h: this.transform_h,
-                transform_v: this.transform_v,
-                transform_x: this.transform_x,
-            }, arr[0]);
-
-            console.log("==>", puzzle);
-
-            this.orig_puzzle = puzzle;
-            this.reset();
-
-            let bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
-            new_state.zoomable = bounds && (bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1);
-
-            this.setState(new_state);
-            this.onResize(true);
-        })
-        .catch(errorAlerter);
-    }}}
-    reset = (editing?: boolean) => {{{
-        let puzzle = this.puzzle = dup(this.orig_puzzle);
-
-        if (!puzzle) {
-            throw new Error("No puzzle loaded");
-        }
-
-        if (!editing) {
-            this.transformPuzzle();
-        }
-        let bounds = this.zoom ? this.getBounds(puzzle, puzzle.width, puzzle.height) : null;
-        if (editing) {
-            bounds = null;
-        }
-
-        let label_position = preferences.get("label-positioning");
-
-        this.goban_div.empty();
-
-        let opts: any = Object.assign({
-            "board_div": this.goban_div,
-            "interactive": true,
-            //"onUpdate": sync,
-            "mode": "puzzle",
-            "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
-            "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
-            "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
-            "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            //"move_tree_div": "#game-move-tree-container",
-            //"move_tree_canvas": "#game-move-tree-canvas",
-            "getPuzzlePlacementSetting": () => {
-                return {"mode": "play"};
-            },
-            "bounds": bounds,
-            "player_id": 0,
-            "server_socket": null,
-
-            //"square_size": function(goban) { return getGobanSquareSize(goban); },
-            /*
-            "onCorrectAnswer": function() {
-                $scope.show_correct = true;
-                $scope.show_wrong = false;
-                if (!$scope.$$phase) $scope.$digest();
-                console.log("Correct");
-                setTimeout(function() {
-                    $("#next_link").focus();
-                }, 1);
-                logSuccess();
-            },
-            "onWrongAnswer": function() {
-                $scope.show_wrong = true;
-                $scope.show_correct = false;
-                if (!$scope.$$phase) $scope.$digest();
-                console.log("Wrong");
-                attempts++;
-            },
-            */
-
-           square_size: 4
-
-            //"display_width": Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight),
-        }, puzzle);
-
-        if (editing) {
-            opts.getPuzzlePlacementSetting = () => {
-                if (this.state.edit_step === "setup") {
-                    return {
-                        "mode": "setup",
-                        "color": this.state.setup_color === "black" ? 1 : 2,
-                    };
-                }
-                if (this.state.edit_step === "moves") {
-                    this.setState({show_warning: true});
-                    return {
-                        "mode": "place",
-                        "color": 0,
-                    };
-                }
+    replacementSettingFunction(): object {
+        if (this.state.edit_step === "setup") {
+            return {
+                "mode": "setup",
+                "color": this.state.setup_color === "black" ? 1 : 2,
             };
-            opts.puzzle_opponent_move_mode = "automatic";
-            opts.puzzle_player_move_mode = "free";
-            opts.puzzle_rank = puzzle && puzzle.puzzle_rank ? puzzle.puzzle_rank : 0;
-            opts.puzzle_collection = (puzzle && puzzle.collection ? puzzle.collection.id : 0);
-            opts.puzzle_type = (puzzle && puzzle.type ? puzzle.type : "");
-            opts.move_tree_div = "#move-tree-container";
-            opts.move_tree_canvas = "#move-tree-canvas";
-
-
         }
+        if (this.state.edit_step === "moves") {
+            this.setState({show_warning: true});
+            return {
+                "mode": "place",
+                "color": 0,
+            };
+        }
+    }
+
+    reset(editing?: boolean) {{{
+        let opts = this.editor.reset(this.goban_div, editing, this.replacementSettingFunction.bind(this));
 
         this.goban_opts = opts;
-
-
 
         this.goban = new Goban(opts);
         this.goban.setMode("puzzle");
@@ -410,7 +221,10 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
         this.goban.on("puzzle-wrong-answer", this.onWrongAnswer);
         this.goban.on("puzzle-correct-answer", this.onCorrectAnswer);
+
+        this.navigation.goban = this.goban;
     }}}
+
     sync_state() {{{
         let new_state: any = {};
         let goban = this.goban;
@@ -471,45 +285,37 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             my_rating: value,
         });
     }}}
-    transform = (what): void => {{{
-        console.log("Transforming", what);
+    setTransformation(what): void {{{
+        console.log("[Puzzle] Transforming", what);
 
-        switch (what) {
-            case "h"     : this.setState({transform_h     : this.transform_h     = !this.transform_h});     break;
-            case "v"     : this.setState({transform_v     : this.transform_v     = !this.transform_v});     break;
-            case "x"     : this.setState({transform_x     : this.transform_x     = !this.transform_x});     break;
-            case "color" : this.setState({transform_color : this.transform_color = !this.transform_color}); break;
-            case "zoom"  :
-                this.setState({zoom: this.zoom = !this.zoom});
-                preferences.set("puzzle.zoom", this.zoom);
-            break;
+        let state = this.transform.stateForTransformation(what);
+        if (state) {
+            this.setState(state);
+            if (state.zoom) {
+                preferences.set("puzzle.zoom", this.transform.settings.zoom);
+            }
         }
-        console.log(
-            this.transform_x
-           , this.transform_h
-           , this.transform_v
-           , this.transform_color
-           , this.zoom
-       );
+
+       this.transform.settings.log();
 
         $("#selected_puzzle").focus().blur(); /* otherwise last button unselected will look kinda like it's selected still */
         this.reset();
         this.onResize();
     }}}
     toggle_transform_x = () => {{{
-        this.transform("x");
+        this.setTransformation("x");
     }}}
     toggle_transform_h = () => {{{
-        this.transform("h");
+        this.setTransformation("h");
     }}}
     toggle_transform_v = () => {{{
-        this.transform("v");
+        this.setTransformation("v");
     }}}
     toggle_transform_color = () => {{{
-        this.transform("color");
+        this.setTransformation("color");
     }}}
     toggle_transform_zoom = () => {{{
-        this.transform("zoom");
+        this.setTransformation("zoom");
     }}}
 
     save = () => {{{
@@ -570,243 +376,6 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         });
     }}}
 
-    transformMoveText(puzzle, txt) {{{
-        if (this.transform_color) {
-            let colors = {
-                "White" : "Black",
-                "Musta" : "Valkoinen",
-                "Negro" : "Blanco",
-                "Noir" : "Blanc",
-                "Czarny" : "Biały",
-                "Svart" : "Vit",
-            };
-
-            let utf8_colors = {
-                "Schwarz" : "Weiß",
-                "黑" : "白",
-                "Черные" : "Белые",
-            };
-
-
-            let t = "tttttttttttt";
-            let T = "TTTTTTTTTTTT";
-            let tr = /tttttttttttt/g;
-            let Tr = /TTTTTTTTTTTT/g;
-            for (let c1 in colors) {
-                let c2 = colors[c1];
-
-                let c1r = new RegExp("\\b" + c1 + "\\b", "gm");
-                let c2r = new RegExp("\\b" + c2 + "\\b", "gm");
-
-                let c1caser = new RegExp("\\b" + c1 + "\\b", "gmi");
-                let c2caser = new RegExp("\\b" + c2 + "\\b", "gmi");
-
-                let c1case = c1.toLowerCase();
-                let c2case = c2.toLowerCase();
-
-                txt = txt
-                        .replace(c1r, T)
-                        .replace(c1, T)
-                        .replace(c1caser, t)
-                        .replace(c2r, c1)
-                        .replace(c2, c1)
-                        .replace(c2caser, c1case)
-                        .replace(tr, c2case)
-                        .replace(Tr, c2);
-            }
-            for (let c1 in utf8_colors) {
-                let c2 = utf8_colors[c1];
-
-                txt = txt
-                        .replace(c1, T)
-                        .replace(c2, c1)
-                        .replace(Tr, c2);
-            }
-        }
-
-        txt = txt.replace(/\b([a-zA-Z][0-9]{1,2})\b/g, (match, contents, offset, s) => {
-            let dec = GoMath.decodeMoves(contents, puzzle.width, puzzle.height);
-            this.transformCoordinate(puzzle, dec[0], puzzle.width, puzzle.height);
-            let ret = GoMath.prettyCoords(dec[0].x, dec[0].y, puzzle.height);
-            if (/[a-z]/.test(contents)) {
-                return ret.toLowerCase();
-            } else {
-                return ret.toUpperCase();
-            }
-        });
-
-        return txt;
-    }}}
-    transformCoordinate(puzzle, coord, width, height) {{{
-        if (coord.marks && Array.isArray(coord.marks)) {
-            for (let i = 0; i < coord.marks.length; ++i) {
-                this.transformCoordinate(puzzle, coord.marks[i], width, height);
-            }
-        }
-        if (coord.text) {
-            coord.text = this.transformMoveText(puzzle, coord.text);
-        }
-
-        if (coord.x < 0) { return; }
-
-        if (this.transform_x) {
-            let t = coord.y;
-            coord.y = coord.x;
-            coord.x = t;
-        }
-        if (this.transform_h) { coord.x = (width - 1) - coord.x; }
-        if (this.transform_v) { coord.y = (height - 1) - coord.y; }
-    }}}
-    transformCoordinates(puzzle, coords, width, height) {{{
-        if (Array.isArray(coords)) {
-            for (let i = 0; i < coords.length; ++i) {
-                this.transformCoordinate(puzzle, coords[i], width, height);
-                if (coords[i].branches) {
-                    this.transformCoordinates(puzzle, coords[i].branches, width, height);
-                }
-            }
-        } else {
-            this.transformCoordinate(puzzle, coords, width, height);
-            if (coords.branches) {
-                this.transformCoordinates(puzzle, coords.branches, width, height);
-            }
-        }
-        return coords;
-    }}}
-    transformPuzzle() {{{
-        let puzzle = this.puzzle;
-        let width = puzzle.width;
-        let height = puzzle.height;
-        console.log("puzzle: ", puzzle);
-
-        if (puzzle.initial_state && puzzle.initial_state.black && puzzle.initial_state.black.length) {
-            puzzle.initial_state.black = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.black), width, height));
-        }
-        if (puzzle.initial_state && puzzle.initial_state.white && puzzle.initial_state.white.length) {
-            puzzle.initial_state.white = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.white), width, height));
-        }
-        if (puzzle.move_tree) {
-            this.transformCoordinates(puzzle, puzzle.move_tree, width, height);
-        }
-
-        if (this.transform_color) {
-            let t = puzzle.initial_state.black;
-            puzzle.initial_state.black = puzzle.initial_state.white;
-            puzzle.initial_state.white = t;
-
-            if (puzzle.initial_player === "black") {
-                puzzle.initial_player = "white";
-            } else {
-                puzzle.initial_player = "black";
-            }
-        }
-
-        if (puzzle.puzzle_description) {
-            puzzle.puzzle_description = this.transformMoveText(puzzle, puzzle.puzzle_description);
-        }
-    }}}
-    getBounds(puzzle, width, height) {{{
-        let ret = {
-            top: 9999,
-            bottom: 0,
-            left: 9999,
-            right: 0,
-        };
-
-        let process = (pos, width, height) => {
-            if (Array.isArray(pos)) {
-                for (let i = 0; i < pos.length; ++i) {
-                    process(pos[i], width, height);
-                }
-                return;
-            }
-
-            if (pos.x >= 0) {
-                ret.left   = Math.min(pos.x, ret.left);
-                ret.right  = Math.max(pos.x, ret.right);
-                ret.top    = Math.min(pos.y, ret.top);
-                ret.bottom = Math.max(pos.y, ret.bottom);
-            }
-
-            if (pos.marks && Array.isArray(pos.marks)) {
-                for (let i = 0; i < pos.marks.length; ++i) {
-                    process(pos.marks[i], width, height);
-                }
-            }
-
-            if (pos.branches) {
-                process(pos.branches, width, height);
-            }
-        };
-
-        process(GoMath.decodeMoves(puzzle.initial_state.black), width, height);
-        process(GoMath.decodeMoves(puzzle.initial_state.white), width, height);
-        process(puzzle.move_tree, width, height);
-
-        if (ret.top > ret.bottom) {
-            return null;
-        }
-
-        let padding = 1;
-        ret.top = Math.max(0, ret.top - padding);
-        ret.bottom = Math.min(height - 1, ret.bottom + padding);
-        ret.left = Math.max(0, ret.left - padding);
-        ret.right = Math.min(width - 1, ret.right + padding);
-
-        let snap_to_edge = 3;
-        if (ret.top <= snap_to_edge) {
-            ret.top = 0;
-        }
-        if (ret.bottom >= height - snap_to_edge) {
-            ret.bottom = height - 1;
-        }
-        if (ret.left <= snap_to_edge) {
-            ret.left = 0;
-        }
-        if (ret.right >= width - snap_to_edge) {
-            ret.right = width - 1;
-        }
-
-        return ret;
-    }}}
-
-    nav_up = () => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.prevSibling();
-    }}}
-    nav_down = () => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.nextSibling();
-    }}}
-    nav_first = () => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.showFirst();
-    }}}
-    nav_prev_10 = () => {{{
-        this.checkAndEnterAnalysis();
-        for (let i = 0; i < 10; ++i) {
-            this.goban.showPrevious();
-        }
-    }}}
-    nav_prev = () => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.showPrevious();
-    }}}
-    nav_next = (event?: React.MouseEvent<any>) => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.showNext();
-    }}}
-    nav_next_10 = () => {{{
-        this.checkAndEnterAnalysis();
-        for (let i = 0; i < 10; ++i) {
-            this.goban.showNext();
-        }
-    }}}
-    nav_last = () => {{{
-        this.checkAndEnterAnalysis();
-        this.goban.jumpToLastOfficialMove();
-    }}}
-
     setPuzzleCollection = (ev) => {{{
         if (parseInt(ev.target.value) > 0) {
             this.setState({puzzle: Object.assign({}, this.state.puzzle, {puzzle_collection: parseInt(ev.target.value)})});
@@ -819,30 +388,14 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             })
             .then((name) => {
                 if (!name || name.length < 5) {
-                    swal({
-                        "text": _("Please provide a longer name for your new puzzle collection")
-                    })
-                    .then(ignore)
-                    .catch(ignore);
+                    swal({ "text": _("Please provide a longer name for your new puzzle collection") })
+                    .then(ignore).catch(ignore);
                     return;
                 }
 
-                post("puzzles/collections/", {
-                    "name": name,
-                    "private": false,
-                    "price": "0.00",
-                })
-                .then((res) => {
-                    get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
-                    .then((collections) => {
-                        this.setState({
-                            puzzle: Object.assign({}, this.state.puzzle, {puzzle_collection: res.id}),
-                            puzzle_collections: collections.results
-                        });
-                    })
+                this.editor.createPuzzleCollection(this.state.puzzle)
+                    .then((state) => this.setState(state))
                     .catch(errorAlerter);
-                })
-                .catch(errorAlerter);
             })
             .catch(ignore);
         }
@@ -886,7 +439,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.setState({puzzle: Object.assign({}, this.state.puzzle, {puzzle_description: ev.target.value})});
     }}}
     setSetupColor = (color) => {{{
-        this.checkAndEnterPuzzleMode();
+        this.navigation.checkAndEnterPuzzleMode();
         this.setState({setup_color: color});
     }}}
     setPuzzleSize = (ev) => {{{
@@ -1106,14 +659,14 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
         return (
         <div className={`Puzzle ${view_mode} ${squashed}`}>
-            <KBShortcut shortcut="up" action={this.nav_up}/>
-            <KBShortcut shortcut="down" action={this.nav_down}/>
-            <KBShortcut shortcut="left" action={this.nav_prev}/>
-            <KBShortcut shortcut="right" action={this.nav_next}/>
-            <KBShortcut shortcut="page-up" action={this.nav_prev_10}/>
-            <KBShortcut shortcut="page-down" action={this.nav_next_10}/>
-            <KBShortcut shortcut="home" action={this.nav_first}/>
-            <KBShortcut shortcut="end" action={this.nav_last}/>
+            <KBShortcut shortcut="up" action={this.navigation.nav_up}/>
+            <KBShortcut shortcut="down" action={this.navigation.nav_down}/>
+            <KBShortcut shortcut="left" action={this.navigation.nav_prev}/>
+            <KBShortcut shortcut="right" action={this.navigation.nav_next}/>
+            <KBShortcut shortcut="page-up" action={this.navigation.nav_prev_10}/>
+            <KBShortcut shortcut="page-down" action={this.navigation.nav_next_10}/>
+            <KBShortcut shortcut="home" action={this.navigation.nav_first}/>
+            <KBShortcut shortcut="end" action={this.navigation.nav_last}/>
 
             <KBShortcut shortcut="f1" action={this.set_analyze_tool.stone_null}/>
             <KBShortcut shortcut="f2" action={this.set_analyze_tool.stone_black}/>
@@ -1176,7 +729,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
                                 <select value={this.state.puzzle.puzzle_rank} onChange={this.setPuzzleRank}>
                                     {ranks.map((e, idx) => (
-                                        <option key={idx} value={e.value}>{e.text}</option>
+                                        <option key={idx} value={e.rank}>{e.label}</option>
                                     ))}
                                 </select>
                             </div>
@@ -1307,50 +860,11 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         </div>
         );
     }}}
-
-
 }
 
 
-import {PopOver, popover, close_all_popovers} from "popover";
-
-interface PuzzleSettingsModalProperties {
-}
-
-export class PuzzleSettingsModal extends React.PureComponent<PuzzleSettingsModalProperties, any> {
-    constructor(props) { /* {{{ */
-        super(props);
-        this.state = {
-            randomize_transform: preferences.get("puzzle.randomize.transform"),
-            randomize_color: preferences.get("puzzle.randomize.color"),
-        };
-    } /* }}} */
-
-    toggleTransform = () => {{{
-        preferences.set("puzzle.randomize.transform", !this.state.randomize_transform);
-        this.setState({randomize_transform: !this.state.randomize_transform});
-    }}}
-    toggleColor = () => {{{
-        preferences.set("puzzle.randomize.color", !this.state.randomize_color);
-        this.setState({randomize_color: !this.state.randomize_color});
-    }}}
-    render() {{{
-        return (
-            <div className="PuzzleSettingsModal">
-                <div className="details">
-                    <div className="option">
-                        <input id="transform" type="checkbox" checked={this.state.randomize_transform} onChange={this.toggleTransform} />
-                        <label htmlFor="transform">{_("Randomly transform puzzles")}</label>
-                    </div>
-                    <div className="option">
-                        <input id="color" type="checkbox" checked={this.state.randomize_color}  onChange={this.toggleColor} />
-                        <label htmlFor="color">{_("Randomize colors")}</label>
-                    </div>
-                </div>
-            </div>
-        );
-    }}}
-}
+import {PopOver, popover} from "popover";
+import {PuzzleSettingsModal} from './PuzzleSettingsModal';
 
 export function openPuzzleSettingsControls(ev): PopOver {{{
     let elt = $(ev.target);

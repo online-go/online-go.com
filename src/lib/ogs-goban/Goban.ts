@@ -3293,7 +3293,7 @@ export abstract class Goban extends EventEmitter {
             this.emit("update");
         }
     } /* }}} */
-    public showNext() { /* {{{ */
+    public showNext(dont_update_display?) { /* {{{ */
         if (this.mode === "conditional") {
             if (this.currently_my_cmove) {
                 if (this.current_cmove.move != null) {
@@ -3311,8 +3311,11 @@ export abstract class Goban extends EventEmitter {
             }
             this.engine.showNext();
         }
-        this.updateTitleAndStonePlacement();
-        this.emit("update");
+
+        if (!dont_update_display) {
+            this.updateTitleAndStonePlacement();
+            this.emit("update");
+        }
     } /* }}} */
     public prevSibling() { /* {{{ */
         let sibling = this.engine.cur_move.prevSibling();
