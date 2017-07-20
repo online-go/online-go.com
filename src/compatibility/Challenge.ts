@@ -15,14 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
+import {Challenge} from "data/Challenge";
+import {to_old_style_rank} from "compatibility/Rank";
 
-export let config = {
-    cdn_release: "",
-    user: {},
-};
-
-data.watch("config.cdn_release", (val) => { config.cdn_release = val; });
-data.watch("config.user", (val) => { config.user = val; });
-
-export default config;
+export function to_old_style_challenge(challenge: Challenge): any {
+    let result: any = Object.assign({}, challenge);
+    result.min_ranking = to_old_style_rank(challenge.min_ranking);
+    result.max_ranking = to_old_style_rank(challenge.max_ranking);
+    return result;
+}

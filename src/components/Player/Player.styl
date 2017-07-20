@@ -94,7 +94,7 @@
     }
 
 
-    &.online, &.offline{
+    &.show-online{
         &:before {
             display: inline-block;
             font-size: 0.5rem;
@@ -105,19 +105,14 @@
             text-shadow: 0 0 1px rgba(0,0,0,0.5);
             vertical-align: middle;
             padding-bottom: 0.5rem;
-            //position: absolute;
-            //top: 0.35em;
-            //left: -1.1em;
         }
-    }
-
-    &.online:before {
-        color: #33FF33;
+        &.online:before {
+            color: #3F3;
+        }
     }
 }
 
-.Player[data-rank]:after {
-    content: attr(data-rank)
+.Player .rank {
     font-size: 0.7em;
     padding-left: 0.15em;
     padding-top: 0.2em;

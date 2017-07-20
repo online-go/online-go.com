@@ -22,7 +22,7 @@ import {post, get} from "requests";
 import {UIPush} from "UIPush";
 import * as moment from "moment";
 import ITC from "ITC";
-import data from "data";
+import * as data from "data";
 
 interface AnnouncementsProperties {
 }
@@ -50,7 +50,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     }
 
     componentWillMount() {{{
-        get("announcements")
+        get("announcements", 0)
         .then((announcements) => {
             for (let announcement of announcements) {
                 this.announce(announcement);

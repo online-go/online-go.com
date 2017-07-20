@@ -18,7 +18,7 @@
 import * as React from "react";
 import {get} from 'requests';
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {User} from './User';
 
 
@@ -58,7 +58,7 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
     }
 
     doFetch(username:string) {
-        get('players', {username: username})
+        get("players", 0, {username: username})
         .then((res) => {
             if (res.results.length) {
                 this.setState({

@@ -20,7 +20,8 @@ import {_, getLanguageFlag} from "translate";
 import {get} from "requests";
 import {Flag} from "Flag";
 import {Player} from "Player";
-import data from "data";
+import * as data from "data";
+import {is_registered} from "data/Player";
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
@@ -41,7 +42,7 @@ export class Team extends React.PureComponent<{}, any> {
     }
 
     componentWillMount() {
-        get('https://api.github.com/repos/online-go/online-go.com/contributors')
+        get('https://api.github.com/repos/online-go/online-go.com/contributors', 0)
         .then((list) => {
             this.setState({contributors: list});
         })
@@ -52,9 +53,7 @@ export class Team extends React.PureComponent<{}, any> {
 
     render() {
         let user = data.get("user");
-
-
-        let country = user ? user.country : "gb";
+        let country = is_registered(user) ? user.country : "gb";
 
         let fr = getLanguageFlag("french", country, "fr");
         let en = getLanguageFlag("english", country, "us");
@@ -100,7 +99,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
+                                <Player user={u.id} />
                             </span>
                             {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                         </div>
@@ -112,7 +111,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
+                                <Player user={u.id} />
                             </span>
                             {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
                         </div>

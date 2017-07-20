@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import preferences from "preferences";
+import * as data from "data";
 import {current_language} from "translate";
 
 let warned = false;
 let profanity_regex: any = {};
 let filters: any = {};
 
-preferences.watch("profanity-filter", (_filters) => {
+new data.Subscription<"preferences.profanity-filter">((channel, _filters) => {
     filters = {};
     for (let k in _filters) {
         if (_filters[k]) {

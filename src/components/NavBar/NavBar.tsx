@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
-import data from "data";
+import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -33,7 +33,8 @@ import {NotificationIndicator, TurnIndicator, NotificationList} from "Notificati
 import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
+import {Player as PlayerType, is_registered, is_guest} from "data/Player";
 
 let body = $(document.body);
 
@@ -65,24 +66,45 @@ function toggleTheme() {
 let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
-    get("/api/v0/logout").then((config) => {
-        data.set("config", config, true);
-        window.location.reload();
+    get("/api/v0/logout", 0).then((config) => {
+        data.set("config", config);
+        window.location.reload(); // Shouldn't be necessary if the subscribers know about the change.
     });
 }
 
+interface NavBarState {
+    user: PlayerType;
+    left_nav_active: boolean;
+    right_nav_active: boolean;
+    tournament_invites: Array<any>;
+    tournaments: Array<any>;
+    ladders: Array<any>;
+    group_invites: Array<any>;
+    groups: Array<any>;
 
-export class NavBar extends React.PureComponent<{}, any> {
+    omnisearch_string: string;
+    omnisearch_loading: boolean;
+    omnisearch_sitemap: Array<any>;
+    omnisearch_players: Array<any>;
+    omnisearch_groups: Array<any>;
+    omnisearch_tournaments: Array<any>;
+
+    path: string;
+}
+
+
+export class NavBar extends React.PureComponent<{}, NavBarState> {
     refs: {
         input: any;
         notification_list: NotificationList;
         omnisearch_input;
     };
+    subscribe: data.Subscription<"user">;
 
     constructor(props) {
         super(props);
         this.state = {
-            user: data.get("config.user"),
+            user: data.get("user"),
             left_nav_active: false,
             right_nav_active: false,
             tournament_invites: [],
@@ -106,15 +128,21 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleLeftNav = this.toggleLeftNav.bind(this);
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
+
+        this.subscribe = new data.Subscription((channel, user) => this.setState({"user": user}));
     }
 
     componentWillMount() {
-        data.watch("config.user", (user) => this.setState({"user": user}));
+        this.subscribe.to(["user"]);
 
         browserHistory.listen(location => {
             this.closeNavbar();
             this.setState({path: location.pathname});
         });
+    }
+
+    compnentWillUnmount() {
+        this.subscribe.to([]);
     }
 
     closeNavbar() {
@@ -186,7 +214,8 @@ export class NavBar extends React.PureComponent<{}, any> {
             if (q === "") {
                 this.setState({
                     omnisearch_string: q,
-                    sitemap: [],
+                    // sitemap: [],         // This should never have worked.
+                    omnisearch_sitemap: [], // I assume you meant omnisearch_sitemap.
                 });
             } else {
                 this.setState({
@@ -198,7 +227,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                     omnisearch_groups: [],
                 });
 
-                get("ui/omniSearch", {q: q.trim()})
+                get("ui/omniSearch", 0, {q: q.trim()})
                 .then((res) => {
                     player_cache.update(res.players);
                     this.setState({
@@ -233,15 +262,15 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
     render() {
-        let user = this.state.user.anonymous ? null : this.state.user;
-        let anon = this.state.user.anonymous;
+        let user = is_registered(this.state.user) ? this.state.user : null;
+        let anon = is_guest(this.state.user);
         let tournament_invites = this.state.tournament_invites;
         let tournaments = this.state.tournaments;
         let ladders = this.state.ladders;
         let group_invites = this.state.group_invites;
         let groups = this.state.groups;
 
-        let show_debug = data.get("user").is_superuser;
+        let show_debug = data.get("user").is.admin;
         let debug = data.get("debug", false);
         let no_results = false;
 
@@ -272,7 +301,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
             <section className="left">
-                {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
+                {(!anon || null) && <Link to="/overview">{_("Home")}</Link>}
                 {user && <Link to="/play">{_("Play")}</Link>}
                 <Link to="/observe-games">{_("Games")}</Link>
                 <Link to="/chat">{_("Chat")}</Link>
@@ -288,7 +317,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 */}
             </section>
 
-            { this.state.user.anonymous ?
+            {anon ?
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
@@ -401,10 +430,10 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
 
-                        {user && user.is_moderator && <li className="divider"></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
-                        {user && user.is_superuser && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
+                        {user && user.is.moderator && <li className="divider"></li>}
+                        {user && user.is.moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
+                        {user && user.is.moderator && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
+                        {user && user.is.admin && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
 
                         {(tournament_invites.length || tournaments.length || false) && <li className="divider"></li>}
                         {(tournament_invites.length || tournaments.length || false) &&

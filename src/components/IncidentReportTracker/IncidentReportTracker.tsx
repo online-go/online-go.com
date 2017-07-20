@@ -20,10 +20,11 @@ import {Link} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {comm_socket} from "sockets";
 import {post, get} from "requests";
-import data from "data";
+import * as data from "data";
 import {Player} from "Player";
 import {ignore, errorAlerter} from "misc";
 import * as moment from "moment";
+import {is_registered} from "data/Player";
 
 declare var swal;
 
@@ -50,7 +51,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             this.active_incident_reports = {};
             this.setState({ reports: [] });
 
-            if (!user.anonymous) {
+            if (is_registered(user)) {
                 comm_socket.send("incident/connect", {
                     "player_id": user.id,
                     "auth": data.get("config.incident_auth"),
@@ -72,27 +73,27 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             delete this.active_incident_reports[report.id];
         } else {
             report.unclaim = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "unclaim"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "unclaim"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.good_report = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "resolve", was_helpful: true})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "resolve", was_helpful: true})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.bad_report = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "resolve", was_helpful: false})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "resolve", was_helpful: false})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.claim = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "claim"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "claim"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.cancel = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "cancel"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "cancel"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
@@ -103,7 +104,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                     showCancelButton: true,
                 })
                 .then((txt) => {
-                    post("moderation/incident/" + report.id, {"id": report.id, "action": "note", note: txt})
+                    post("moderation/incident/%%", report.id, {"id": report.id, "action": "note", note: txt})
                     .then(ignore)
                     .catch(errorAlerter);
                 })
@@ -192,10 +193,10 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                     </div>
 
                                     <div className="spread">
-                                        {((!report.moderator && user.is_moderator) || null) &&
+                                        {((!report.moderator && user.is.moderator) || null) &&
                                             <button className="primary xs" onClick={report.claim}>{_("Claim")}</button>
                                         }
-                                        {((report.moderator && user.is_moderator && user.id !== report.moderator.id) || null) &&
+                                        {((report.moderator && user.is.moderator && user.id !== report.moderator.id) || null) &&
                                             <button className="danger xs" onClick={report.claim}>{_("Steal")}</button>
                                         }
                                         {((!report.moderator && report.reporting_user && user.id === report.reporting_user.id) || null) &&
@@ -203,7 +204,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         }
                                     </div>
 
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                    {((report.moderator && user.is.moderator && user.id === report.moderator.id) || null) &&
                                         <div className="spread">
                                             <button className="success xs"  onClick={report.good_report}>{_("Good report")}</button>
                                             <button className="info xs"  onClick={report.set_note}>{_("Note")}</button>

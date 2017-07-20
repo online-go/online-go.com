@@ -17,19 +17,21 @@
 
 import {comm_socket} from "sockets";
 import {EventEmitter} from "eventemitter3";
-import data from "data";
+import * as data from "data";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
+import {Player, is_registered, is_guest, player_name, player_attributes} from "data/Player";
 
 
 let name_match_regex = /^loading...$/;
-data.watch("config.user", (user) => {
-    try {
-        name_match_regex = new RegExp("\b" + user.username.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "\b", "i");
-    } catch (e) {
-        console.error("Failed to construct name matching regular expression", e);
+new data.Subscription<"user">((channel, user) => {
+    if (is_registered(user)) {
+        name_match_regex = new RegExp("\b" + player_name(user).replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "\b", "i");
     }
-});
+    if (is_guest(user)) {
+        name_match_regex = /(?!x)x/;    // Never matches.
+    }
+}).to(["user"]);
 
 
 const rtl_channels = {
@@ -219,14 +221,7 @@ class ChatManager {
             return;
         }
 
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
+        player_cache.update(obj, true);
 
         this.channels[obj.channel].handleChat(obj);
     }}}

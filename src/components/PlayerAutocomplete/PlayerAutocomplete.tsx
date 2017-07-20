@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, abort_requests_in_flight} from "requests";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 import _Autosuggest = require("react-autosuggest");
 let Autosuggest = _Autosuggest as any;
@@ -93,7 +93,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         this.current_search = value;
 
         if (value.length > 1) {
-            get("players/", {username__istartswith: value, page_size: 10})
+            get("players/", 0, {username__istartswith: value, page_size: 10})
             .then((res) => {
                 //console.log("RESULTS: ", res.results);
                 for (let user of res.results) {

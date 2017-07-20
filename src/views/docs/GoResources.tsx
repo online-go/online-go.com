@@ -18,8 +18,9 @@
 import * as React from "react";
 import {pgettext, _, getLanguageFlag, interpolate} from "translate";
 import {Flag} from "Flag";
-import data from "data";
+import * as data from "data";
 import {Markdown} from "Markdown";
+import {is_registered} from "data/Player";
 
 /*
                     <div className='about-links'>
@@ -43,7 +44,8 @@ function scramble(...args) {
 }
 
 export let GoResources = (props) => {
-    let country = data.get("user").country || "us";
+    let user = data.get("user");
+    let country = is_registered(user) ? user.country : "un";
     let fr = getLanguageFlag("french", country, "fr");
     let en = getLanguageFlag("english", country, "us");
     let es = getLanguageFlag("spanish", country, "es");

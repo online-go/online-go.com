@@ -28,15 +28,14 @@ import {Goban} from "goban";
 import {toast} from "toast";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
-import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
-
+import {find_rank_long_string} from "compatibility/Rank";
+import {Player as PlayerType, is_registered, player_name} from "data/Player";
 
 
 let UserRating = (props: {rating: number}) => {
@@ -59,7 +58,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     componentDidMount() {
-        return get("ui/overview").then((overview) => {
+        return get("ui/overview", 0).then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -71,11 +70,14 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
+        let user = data.get("user");
+        if (!data.get("config.user").setup_rank_set) {
             return <FirstTimeSetup/>;
         }
+        if (!is_registered(user)) {
+            return null;
+        }
 
-        let user = data.get("config.user");
 
         return (
         <div id="Overview-Container">
@@ -105,10 +107,10 @@ export class Overview extends React.Component<{}, any> {
                         <PlayerIcon id={user.id} size={80} />
 
                         <div className="profile-right">
-                            <span className="username">{user.username}</span>
+                            <span className="username">{player_name(user)}</span>
 
                             <div className="rank-and-progress">
-                                <span className="rank">{longRankString(user)} &nbsp;</span>
+                                <span className="rank">{find_rank_long_string(user)} &nbsp;</span>
                                 <div className="progress">
                                     <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
                                 </div>
@@ -160,7 +162,7 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/groups", {}).then((res) => {
+        get("me/groups", 0, {}).then((res) => {
             this.setState({"groups": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -196,13 +198,13 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
+        get("me/tournaments", 0, {ended__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"my_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
-        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
+        get("tournaments", 0, {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -246,7 +248,7 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/ladders", {}).then((res) => {
+        get("me/ladders", 0, {}).then((res) => {
             this.setState({"ladders": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});

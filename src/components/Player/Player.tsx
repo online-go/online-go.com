@@ -18,191 +18,61 @@
 import * as React from "react";
 import {browserHistory} from "react-router";
 import {shouldOpenNewTab, errorLogger} from "misc";
-import {rankString} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
-import player_cache from "player_cache";
-import online_status from "online_status";
-
-interface PlayerProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
-    icon?: boolean;
-    iconSize?: number;
-    user: any;
-    flag?: boolean;
-    rank?: boolean;
-    flare?: boolean;
-    online?: boolean;
-    nolink?: boolean;
-    nodetails?: boolean; /* don't open the detials box, instead just open player page */
-    noextracontrols?: boolean; /* Disable extra controls */
-    disableCacheUpdate?: boolean;
-}
-
-
-export class Player extends React.PureComponent<PlayerProperties, any> {
-    refs: {
-        elt
-    };
-
-    online_subscription_user_id = null;
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            is_online: false,
-            user: null,
-        };
-        if (typeof(props.user) === "object") {
-            this.state.user = props.user;
-        }
-    }
-
-    componentDidMount() {{{
-        if (this.state.user) {
-            if (!this.props.disableCacheUpdate) {
-                player_cache.update(this.props.user);
-            }
-        }
-        let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
-        }
-
-        this.syncUpdateOnline(this.props.user);
-    }}}
-
-    updateOnline = (_player_id, tf) => {{{
-        this.setState({is_online: tf});
-    }}}
-
-    syncUpdateOnline(user_or_id) {{{
-        let id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
-
-        if (!this.props.online || id !== this.online_subscription_user_id) {
-            if (this.online_subscription_user_id) {
-                this.online_subscription_user_id = null;
-                online_status.unsubscribe(this.online_subscription_user_id, this.updateOnline);
-            }
-        }
-        if (this.props.online && id && id !== this.online_subscription_user_id) {
-            this.online_subscription_user_id = id;
-            online_status.subscribe(this.online_subscription_user_id, this.updateOnline);
-        }
-
-    }}}
+import * as player_cache from "player_cache";
+import {AbstractPlayer, AbstractPlayerProperties, AbstractPlayerState} from "./AbstractPlayer";
+import {Player as PlayerType, RegisteredPlayer, is_guest, is_registered, player_name, player_attributes} from "data/Player";
+import {Rank, rank_short_string, rank_long_string} from "data/Rank";
 
 
 
-    componentWillReceiveProps(new_props) {{{
-        if (typeof(new_props.user) === "object") {
-            player_cache.update(new_props.user);
-            this.setState({user: new_props.user});
-        }
+interface PlayerProperties extends AbstractPlayerProperties {
+    icon?: boolean;         // Should we display the player's icon?
+    iconSize?: number;      // And if we should, how big do we want it?
+    flag?: boolean;         // Should we display the player's flag?
+    rank?: boolean;         // Should we display the player's rank?
+    flare?: boolean;        // Should we display the spanner and gavel icons that appear beside a user in the main chat?
+    online?: boolean;       // Should we display the user's online status?
 
-        let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
-        }
-        this.syncUpdateOnline(new_props.user);
-    }}}
-    componentDidUpdate() {{{
-        this.syncUpdateOnline(this.props.user);
-    }}}
-    componentWillUnmount() {{{
-        this.syncUpdateOnline(null);
-    }}}
+    nolink?: boolean;       // Disable the link to the player's profile page.
+    noextracontrols?: boolean;  // Disable extra controls, such as appear in a game review.
+ }
 
+// A standard component for displaying brief player details. This component is
+// used pervasively throughout the site. Clicking on the component will bring
+// up a PlayerDetails box enabling more actions to be taken.
+export class Player extends AbstractPlayer<PlayerProperties, AbstractPlayerState> {
+    protected player_id: number;
 
     render() {
-        if (!this.state.user) {
-            if (typeof(this.props.user) === "number") {
-                return <span className="Player" data-player-id={0}>...</span>;
-            } else {
-                return <span className="Player" data-player-id={0}>[NULL USER]</span>;
-            }
-        }
-
         let props = this.props;
-        let player = this.state.user;
-        let player_id = player.id || player.player_id;
-        let nolink = !!this.props.nolink;
+        let state = this.state;
+        let classes: Array<string> = [];
 
+        classes.push("Player");
+        props.icon && classes.push("Player-with-icon");
+        state.guest && classes.push("guest");
+        props.nolink && classes.push("nolink");
+        props.noextracontrols && classes.push("noextracontrols");
+        props.flare && classes.push("with-flare");
+        props.online && classes.push("show-online");
 
-        let main_attrs: any = {
-            "className": "Player",
-            "data-player-id": player_id,
-        };
-
-        if (props.icon) {
-            main_attrs.className += " Player-with-icon";
+        let className = classes.join(" ");
+        if (state.className) {
+            className += " ";
+            className += state.className;
         }
-
-        if (player.ui_class) {
-            main_attrs.className += " " + player.ui_class;
-        }
-
-        if (player_id < 0) {
-            main_attrs.className += " guest";
-        }
-
-        if (!player_id || nolink) {
-            main_attrs.className += " nolink";
-        }
-
-        if (this.props.nodetails) {
-            main_attrs.className += " nodetails";
-        }
-
-        if (this.props.noextracontrols) {
-            main_attrs.className += " noextracontrols";
-        }
-
-        if (this.props.rank !== false) {
-            if ("rank" in player && !("ranking" in player)) {
-                player.ranking = player.rank;
-            }
-            if (player.ranking > 0) {
-                let suffix = "";
-                if (player.ui_class && player.ui_class.indexOf("provisional") >= 0) {
-                    suffix += "?";
-                }
-                if (player.ui_class && player.ui_class.indexOf("timeout") >= 0) {
-                    suffix += "T";
-                }
-                main_attrs["data-rank"] = " [" + rankString(player) + suffix + "]";
-            }
-        }
-
-        if (props.flare) {
-            main_attrs.className += " with-flare";
-        }
-
-        if (props.online) {
-            main_attrs.className += this.state.is_online ? " online" : " offline";
-        }
-
 
         return (
-            <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                {(props.flag || null) && <Flag country={player.country}/>}
-                {player.username || player.name}
+            <span ref="player" className={className} onMouseDown={this.display_details}>
+                {(props.icon || null) && <PlayerIcon icon={state.icon} size={props.iconSize || 16}/>}
+                {(props.flag || null) && <Flag country={state.country}/>}
+                <span className="username">{state.username}</span>
+                {(props.rank || null) && <span className="rank">{state.short_rank}</span>}
             </span>
         );
     }
@@ -215,10 +85,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             event.stopPropagation();
         }
 
-        let player_id = this.state.user.id || this.state.user.player_id;
         if (shouldOpenNewTab(event)) {
-            let uri = `/player/${player_id}`;
-            let player = player_cache.lookup(player_id);
+            let uri = `/player/${this.player_id}`;
+            let player = player_cache.lookup(this.player_id);
             if (player) {
                 uri += "/" + encodeURIComponent(player.username);
             }
@@ -231,8 +100,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
         else {
             popover({
-                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} />),
-                below: this.refs.elt,
+                elt: (<PlayerDetails user={this.props.user} disableCacheUpdate={this.props.disableCacheUpdate} noextracontrols={this.props.noextracontrols} />),
+                below: this.refs.player,
                 minWidth: 240,
                 minHeight: 250,
             });

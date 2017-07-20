@@ -25,7 +25,7 @@ import {Card} from "material";
 import {sfx} from "goban";
 import {LanguagePicker} from "LanguagePicker";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 import {current_language} from "translate";
 import {toast} from 'toast';
 
@@ -89,7 +89,7 @@ export class Settings extends React.PureComponent<{}, any> {
         }
     }}}
     resolve() {{{
-        get("me/settings")
+        get("me/settings", 0)
         .then((settings) => {
             this.setState({
                 profile: settings.profile,
@@ -101,7 +101,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     endVacation = () => {{{
-        del("me/vacation")
+        del("me/vacation", 0)
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -114,7 +114,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     startVacation = () => {{{
-        put("me/vacation", {})
+        put("me/vacation", 0, {})
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -203,7 +203,7 @@ export class Settings extends React.PureComponent<{}, any> {
             }
         };
         this.setState({notifications: Object.assign({}, this.state.notifications, up)});
-        put("me/settings", {
+        put("me/settings", 0, {
             notifications: up
         })
         .then(() => 0)
@@ -264,7 +264,7 @@ export class Settings extends React.PureComponent<{}, any> {
     updateHideUIClass = (ev) => {{{
         let checked = ev.target.checked;
         this.setState({'hide_ui_class': !checked});
-        put(`me/settings`, {
+        put(`me/settings`, 0, {
             'site_preferences': {
                 'hide_ui_class': !checked
             }
@@ -296,7 +296,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     saveEmail = () => {{{
-        put(`players/${this.state.profile.id}`, {
+        put("players/%%", this.state.profile.id, {
             "email": this.state.profile.email
         })
         .then(() => {
@@ -321,7 +321,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     savePassword = () => {{{
         if (this.state.profile.no_password_set) { // ie social auth account
-            post("/api/v0/changePassword", {
+            post("/api/v0/changePassword", 0, {
                 "new_password": this.state.password1,
                 "old_password": "!",
             })
@@ -335,7 +335,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 text: _("Enter your current password"),
                 input: "password",
             }).then((password) => {
-                post("/api/v0/changePassword", {
+                post("/api/v0/changePassword", 0, {
                     "old_password": password,
                     "new_password": this.state.password1,
                 })
@@ -361,7 +361,7 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
     resendValidationEmail = () => {{{
-        post(`me/validateEmail`, {})
+        post("me/validateEmail", 0, {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })
@@ -371,6 +371,15 @@ export class Settings extends React.PureComponent<{}, any> {
 
     render() {
         let user = data.get("user");
+
+        // If the user disables showing that they are a supporter, then
+        // user.is.supporter = false while the user *is* still a supporter.
+        // Hence, the data cache needs to record the user's true status.
+        // Note that this really needs to get "config.user", not "user" as
+        // data.get("user").is.supporter = false if the player is not telling
+        // the world about their supporter status.
+        let user_is_supporter = data.get("config.user").supporter;
+
         let aga_ratings_enabled = null;
 
         _("I receive an invitation to a group");
@@ -433,8 +442,8 @@ export class Settings extends React.PureComponent<{}, any> {
                         }
                     </dd>
 
-                    {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
-                    {(user.supporter || null) &&
+                    {(user_is_supporter || null) && <dt>{_("Golden supporter name")}</dt>}
+                    {(user_is_supporter || null) &&
                         <dd>
                             <input type="checkbox"
                                     checked={!this.state.hide_ui_class}
@@ -545,7 +554,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </button>
                     }
                     {this.state.email_message && <div>{this.state.email_message}</div>}
-                    {this.state.profile.email && !this.state.email_changed && !data.get('user').email_validated &&
+                    {this.state.profile.email && !this.state.email_changed && !data.get('user').is.validated &&
                         <div>
                             <div className='awaiting-validation-text'>
                                 {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}

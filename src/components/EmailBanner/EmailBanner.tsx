@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 import {Card} from 'material';
 
 interface EmailBannerProperties {
@@ -43,7 +43,8 @@ export class EmailBanner extends React.PureComponent<EmailBannerProperties, any>
     }
 
     render() {
-        if (data.get('user').email_validated) {
+        let user = data.get("user");
+        if (user.is.validated) {
             return null;
         }
 

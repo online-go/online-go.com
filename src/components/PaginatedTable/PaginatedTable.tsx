@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import data from "data";
+import * as data from "data";
 
 interface PaginatedTableColumnProperties {
     cellProps?: any;
@@ -125,9 +125,9 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             query["ordering"] = order_by.join(",");
         }
         if (this.source_method === "get") {
-            return get(this.source_url, query);
+            return get(this.source_url, 0, query); // TODO: Check the URLs and typify the result
         }
-        return post(this.source_url, query);
+        return post(this.source_url, 0, query); // TODO: Check the URLs and typify the result again
     }
 
 

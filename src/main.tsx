@@ -17,17 +17,18 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 
-import data from "data";
+import * as data from "data";
 
 data.setDefault("theme", "light");
 data.setDefault("config", {
     "user": {
-        "anonymous": true,
-        "id": 0,
-        "username": "Guest",
-        "ranking": -100,
-        "country": "un",
-        "pro": 0,
+        type: "Guest",
+        id: 0,
+        anonymous: true,
+        username: "Guest",
+        ranking: -100,
+        country: "un",
+        pro: 0,
     }
 });
 
@@ -41,7 +42,7 @@ import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {toast} from 'toast';
 
 import {NavBar} from "NavBar";
@@ -76,22 +77,28 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
+import {is_registered, is_guest, player_name, player_attributes} from "data/Player";
+import {to_old_style_rank} from "compatibility/Rank";
 
 declare const swal;
 
 
 /*** Load our config ***/
-data.watch("config", (config) => {
+new data.Subscription((channel, config) => {
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
-});
-get("ui/config").then((config) => data.set("config", config));
-data.watch("config.user", (user) => {
-    player_cache.update(user);
-    data.set("user", user);
-    window["user"] = user;
-});
+}).to(["config"]);
+get("ui/config", 0).then((config) => data.set("config", config));
+new data.Subscription((channel, user) => {
+    let new_style_user = player_cache.update(user);
+    Object.assign(new_style_user, user);
+    data.set("user", new_style_user);
+}).to(["config.user"]);
+data.setDefault("friends", []);
+let friends = data.get("friends").slice() as Array<any>;
+let new_style_friends = friends.map((friend) => player_cache.update(friend));
+data.set("friends", new_style_friends);
 
 
 /*** SweetAlert setup ***/
@@ -127,15 +134,15 @@ try {
 const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
 const PageNotFound = () => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
 const Default = () => (
-    data.get("config.user").anonymous
+    is_guest(data.get("user"))
         ?  <ObserveGames/>
         :  <Overview/>
 );
 
 /** Connect to the chat service */
 let auth_connect_fn = () => {return; };
-data.watch("config.user", (user) => {
-    if (!user.anonymous) {
+new data.Subscription<"user">((channel, user) => {
+    if (is_registered(user)) {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("authenticate", {
                 auth: data.get("config.chat_auth"),
@@ -145,25 +152,24 @@ data.watch("config.user", (user) => {
             sockets.comm_socket.send("chat/connect", {
                 auth: data.get("config.chat_auth"),
                 player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
+                ranking: to_old_style_rank(user.rank),
+                username: player_name(user),
+                ui_class: player_attributes(user).join(" "),
             });
         };
-    } else if (user.id < 0) {
+    } else {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("chat/connect", {
                 player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
+                username: player_name(user),
+                ui_class: player_attributes(user).join(" "),
             });
         };
     }
     if (sockets.comm_socket.connected) {
         auth_connect_fn();
     }
-});
+}).to(["user"]);
 sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
 
@@ -180,9 +186,9 @@ browserHistory.listen(location => {
         let user_type = 'error';
         let user = data.get('user');
 
-        if (!user || user.anonymous) {
+        if (!user || !is_registered(user)) {
             user_type = 'anonymous';
-        } else if (user.supporter) {
+        } else if (user.is.supporter) {
             user_type = 'supporter';
         } else {
             user_type = 'non-supporter';
@@ -305,3 +311,8 @@ const routes = (
 </Router>);
 
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+// Set up our global variables.
+window["data"] = data;
+window["player_cache"] = player_cache;
+new data.Subscription<"user">((channel, data) => window[channel] = data).to(["user"]);

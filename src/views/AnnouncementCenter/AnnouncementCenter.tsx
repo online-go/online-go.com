@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {Link} from "react-router";
 import {_, pgettext, interpolate, cc_to_country_name} from "translate";
 import {post, get, put, del} from "requests";
@@ -70,7 +70,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         this.setState({link: ev.target.value});
     }}}
     create = () => {{{
-        post("announcements", {
+        post("announcements", 0, {
             "type": this.state.type,
             "user_ids": "",
             "text": this.state.text,
@@ -84,14 +84,14 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         .catch(errorAlerter);
     }}}
     refresh = () => {{{
-        get("announcements")
+        get("announcements", 0)
         .then((list) => {
             this.setState({announcements: list});
         })
         .catch(errorAlerter);
     }}}
     deleteAnnouncement(announcement) {{{
-        del(`announcements/${announcement.id}`)
+        del("announcements/%%", announcement.id)
         .then(this.refresh)
         .catch(errorAlerter);
     }}}
@@ -105,8 +105,8 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         <div className="AnnouncementCenter container">
             <Card>
                 <dl className="horizontal">
-                    {(user.is_superuser || null) && <dt>Type</dt> }
-                    {(user.is_superuser || null) &&
+                    {(user.is.admin || null) && <dt>Type</dt> }
+                    {(user.is.admin || null) &&
                         <dd>
                             <select>
                                 <option value="system">System</option>

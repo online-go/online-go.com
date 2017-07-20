@@ -18,59 +18,49 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
-import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
+import {Player as PlayerType, by_name} from "data/Player";
+import * as player_cache from "player_cache";
 
 
-interface FriendListProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
-}
 
 export class FriendList extends React.PureComponent<{}, any> {
+    friends_subscribe: player_cache.Subscription;
+    data_subscribe: data.Subscription<"friends">;
+
     constructor(props) {
         super(props);
         this.state = {
             friends: [],
             resolved: false
         };
+        this.friends_subscribe = new player_cache.Subscription(this.resortFriends);
+        this.data_subscribe = new data.Subscription(this.updateFriends);
     }
 
-    updateFriends = (friends) => {
-        this.setState({
-            friends: this.sortFriends(friends),
+    updateFriends = (channel: "friends", friends: Array<PlayerType>) => {
+        friends = friends.slice();
+        friends.sort(by_status);
+        this.friends_subscribe.to(friends);
+        setTimeout(this.setState.bind(this, {
+            friends: friends,
             resolved: true
-        });
+        }));
     }
 
     componentDidMount() {{{
-        data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
-        online_status.event_emitter.on("users-online-updated", this.resortFriends);
+        this.data_subscribe.to(["friends"]); /* This is managed by our FriendIndicator */
     }}}
     componentWillUnmount() {{{
-        online_status.event_emitter.off("users-online-updated", this.resortFriends);
+        this.data_subscribe.to([]);
+        this.friends_subscribe.to([]);
     }}}
     resortFriends = () => {
-        this.setState({"friends": this.sortFriends(this.state.friends)});
+        this.state.friends.sort(by_status);
+        setTimeout(this.forceUpdate.bind(this));
     }
-    sortFriends(lst) {{{
-        let ret = [].concat(lst);
-        ret.sort((a, b) => {
-            let a_online = online_status.is_player_online(a.id);
-            let b_online = online_status.is_player_online(b.id);
-            if (a_online && !b_online) {
-                return -1;
-            }
-            if (b_online && !a_online) {
-                return 1;
-            }
-            return a.username.localeCompare(b.username);
-        });
-        return ret;
-    }}}
     render() {
         if (!this.state.resolved) {
             return null;
@@ -91,3 +81,8 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 }
 
+function by_status(a: PlayerType, b: PlayerType): number {
+    let result = 0;
+    result = (b.is.online ? 1 : 0) - (a.is.online ? 1 : 0);
+    return result || by_name(a, b);
+}

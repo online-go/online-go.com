@@ -18,11 +18,11 @@
 import * as React from "react";
 import {_, interpolate} from "translate";
 import {Goban} from "goban";
-import data from "data";
+import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
-import {rankString} from "rank_utils";
 import {Player} from "Player";
+import {find_rank_short_string} from "compatibility/Rank";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -107,11 +107,11 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             move_number: this.goban.engine.getMoveNumber(),
             game_name: this.goban.engine.config.game_name,
 
-            black_name: (typeof(black) === "object" ? (black.username + " [" + rankString(black) + "]") : black),
-            white_name: (typeof(white) === "object" ? (white.username + " [" + rankString(white) + "]") : white),
+            black_name: (typeof(black) === "object" ? (black.username + " [" + find_rank_short_string(black) + "]") : black),
+            white_name: (typeof(white) === "object" ? (white.username + " [" + find_rank_short_string(white) + "]") : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
-            current_users_move: player_to_move === data.get("config.user").id,
+            current_users_move: player_to_move === data.get("user").id,
             black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
             white_to_move_cls: (this.goban && white.id === player_to_move) ? "to-move" : "",
 

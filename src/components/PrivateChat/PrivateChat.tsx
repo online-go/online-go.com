@@ -18,14 +18,14 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {_} from 'translate';
-import data from "data";
+import * as data from "data";
 import ITC from "ITC";
 import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
-import online_status from "online_status";
+import * as player_cache from "player_cache";
+import {Player, is_registered, player_name, player_attributes} from "data/Player";
 
 let last_id: number = 0;
 
@@ -50,7 +50,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "...", "ui_class": ""};
+    player?: Player;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -63,32 +63,20 @@ class PrivateChat {
         this.user_id = user_id;
         comm_socket.send("chat/pm/load", user_id);
 
-        this.player_dom = $("<span class='user Player nolink'>...</span>");
-        if (username) {
-            this.player_dom.text(username);
-            this.player.username = username;
-        }
+        this.player_dom = $("<span class='user Player nolink show-online'>...</span>");
 
-        online_status.subscribe(user_id, (_, tf) => {
-            if (tf) {
-                this.player_dom.removeClass("offline").addClass("online");
+        new player_cache.Subscription((player) => {
+            if (player.is.online) {
+                this.player_dom.addClass("online");
             } else {
-                this.player_dom.addClass("offline").removeClass("online");
+                this.player_dom.removeClass("online");
             }
-        });
-
-
-        player_cache.fetch(this.user_id, ["username", "ui_class"])
-        .then((player) => {
             this.player = player;
-            this.player_dom.text(player.username);
-            this.player_dom.addClass(player.ui_class);
+            this.player_dom.text(player_name(player));
+            this.player_dom.addClass(player_attributes(player).join(" "));
             this.updateInputPlaceholder();
-        })
-        .catch((err) => {
-            console.error(err);
-            this.player_dom.text("[error]");
-        });
+       }).to([user_id]);
+
     } /* }}} */
 
     open(send_itc?) { /* {{{ */
@@ -104,15 +92,14 @@ class PrivateChat {
             .append(this.player_dom)
         ;
 
-        if (data.get("user").is_moderator) {
+        if (data.get("user").is.moderator) {
             let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
                     superchat.addClass("enabled");
-
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
-                        "username": this.player.username,
+                        "username": player_name(this.player),
                         "auth": data.get("config.superchat_auth"),
                         "enable": true
                     });
@@ -120,7 +107,7 @@ class PrivateChat {
                     superchat.removeClass("enabled");
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
-                        "username": this.player.username,
+                        "username": player_name(this.player),
                         "auth": data.get("config.superchat_auth"),
                         "enable": false
                     });
@@ -138,7 +125,7 @@ class PrivateChat {
             challenge(this.user_id);
         }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
+            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(player_name(this.player)), "_blank");
         }));
         title.append($("<i>").addClass("fa fa-minus").click(() => { this.minimize(true); }));
         title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
@@ -227,7 +214,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+            if (!data.get('user').is.validated && this.player.is.moderator && this.lines.length === 0) {
                 return;
             }
 
@@ -263,7 +250,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+        if (!data.get('user').is.validated && !this.player.is.moderator && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
@@ -286,7 +273,7 @@ class PrivateChat {
             challenge(this.user_id);
         }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
+            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(player_name(this.player)), "_blank");
         }));
         title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
 
@@ -303,7 +290,7 @@ class PrivateChat {
         }
 
         if (send_itc) {
-            ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": player_name(this.player)});
         }
     } /* }}} */
     close(send_itc, dont_send_pm_close?) { /* {{{ */
@@ -322,7 +309,7 @@ class PrivateChat {
         this.body = null;
         update_chat_layout();
         if (send_itc) {
-            ITC.send("private-chat-close", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-close", {"user_id": this.user_id, "username": player_name(this.player)});
             data.set("pm.close-" + this.user_id, this.last_uid);
         }
         if (comm_socket && !dont_send_pm_close) {
@@ -441,16 +428,17 @@ class PrivateChat {
         }
     } /* }}} */
     sendChat(msg) { /* {{{ */
+        let user = data.get("user");
 
         while (msg.length) {
             let arr = splitOnBytes(msg, 500);
             let line = arr[0];
             msg = arr[1];
 
-            this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
+            this.addChat(is_registered(user) && user.username, line, this.user_id, Date.now() / 1000);
             comm_socket.send("chat/pm", {
                 "player_id": this.user_id,
-                "username": this.player.username,
+                "username": player_name(this.player),
                 "uid": this.chatbase + "." + (++this.chatnum).toString(36),
                 "message": line
             }, (line) => {
@@ -563,7 +551,7 @@ comm_socket.on("private-superchat", (config) => {{{
         pc = getPrivateChat(config.moderator_id, config.moderator_username);
         if (pc) {
             pc.open();
-            if (!data.get("user").is_superuser) {
+            if (!data.get("user").is.admin) {
                 pc.superchat(config.enable);
             } else {
                 pc.addSystem({

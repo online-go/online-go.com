@@ -24,7 +24,7 @@ import {challenge, challengeComputer, createCorrespondence, createBlitz,
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore} from "misc";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 import {bot_count} from "bots";
 
 declare var swal;
@@ -144,7 +144,7 @@ export class NewGameModal extends Modal<NewGameModalProperties, any> {
 }
 
 export function openNewGameModal() {{{
-    if (!data.get("user").setup_rank_set) {
+    if (!data.get("config.user").setup_rank_set) {
         browserHistory.push("/");
         return;
     }

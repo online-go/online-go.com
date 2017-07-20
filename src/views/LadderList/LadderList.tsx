@@ -46,7 +46,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
     }
 
     resolve() {
-        get("ladders")
+        get("ladders", 0)
         .then((res) => {
             this.setState({ladders: res.results});
         })
@@ -54,7 +54,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
     }
 
     join(ladder_id: number) {
-        post(`ladders/${ladder_id}/players`, {})
+        post("ladders/%%/players", ladder_id, {})
         .then(() => {
             this.resolve();
         })

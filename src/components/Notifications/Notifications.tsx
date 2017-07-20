@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
@@ -29,6 +29,7 @@ import {Player} from "Player";
 import {FabX, FabCheck} from "material";
 import {EventEmitter} from "eventemitter3";
 import {toast} from 'toast';
+import {Player as PlayerType} from "data/Player";
 
 
 declare let Notification: any;
@@ -203,7 +204,7 @@ class NotificationManager {
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
-    setUser(user) {{{
+    setUser(user: PlayerType) {{{
         if (this.user && (user.id === this.user.id)) {
             return;
         }
@@ -657,13 +658,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                del("me/challenges/" + notification.challenge_id)
+                                del("me/challenges/%%", notification.challenge_id)
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post(`me/challenges/${notification.challenge_id}/accept`, {})
+                                post("me/challenges/%%/accept", notification.challenge_id, {})
                                 .then(() => {
                                     this.del();
                                     if (isLiveGame(notification.time_control)) {
@@ -726,13 +727,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                post("me/friends/invitations", { "delete": true, "from_user": notification.user.id })
+                                post("me/friends/invitations", 0, { "delete": true, "from_user": notification.user.id })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post("me/friends/invitations", { "from_user": notification.user.id })
+                                post("me/friends/invitations", 0, { "from_user": notification.user.id })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
@@ -754,13 +755,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                post("me/groups/invitations", { "delete": true, request_id: notification.rqid })
+                                post("me/groups/invitations", 0, { "delete": true, request_id: notification.rqid })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post("me/groups/invitations", { request_id: notification.rqid })
+                                post("me/groups/invitations", 0, { request_id: notification.rqid })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
@@ -782,13 +783,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                post("me/groups/invitations", { "delete": true, request_id: notification.grouprqid })
+                                post("me/groups/invitations", 0, { "delete": true, request_id: notification.grouprqid })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post("me/groups/invitations", { request_id: notification.grouprqid })
+                                post("me/groups/invitations", 0, { request_id: notification.grouprqid })
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
@@ -824,13 +825,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                post("me/tournaments/invitations", {"delete": true, "request_id": notification.tournamentrqid})
+                                post("me/tournaments/invitations", 0, {"delete": true, "request_id": notification.tournamentrqid})
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post("me/tournaments/invitations", {"request_id": notification.tournamentrqid})
+                                post("me/tournaments/invitations", 0, {"request_id": notification.tournamentrqid})
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
@@ -855,4 +856,4 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 } /* }}} */
 
 
-data.watch("config.user", (user) => notification_manager.setUser(user));
+new data.Subscription<"user">((channel, user) => notification_manager.setUser(user)).to(["user"]);

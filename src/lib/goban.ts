@@ -23,9 +23,9 @@ import {get_clock_drift, get_network_latency, termination_socket} from 'sockets'
 import {getSelectedThemes, watchSelectedThemes} from "preferences";
 import {_, pgettext, interpolate} from "translate";
 import preferences from "preferences";
-import data from "data";
-import player_cache from "player_cache";
-
+import * as data from "data";
+import * as player_cache from "player_cache";
+import {is_registered} from "data/Player";
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';
 export {MoveTree} from 'ogs-goban/MoveTree';
@@ -39,7 +39,7 @@ export class Goban extends OGSGoban {
     defaultConfig() {
         return {
             server_socket : termination_socket,
-            player_id     : (data.get("user").anonymous ? 0 : data.get("user").id),
+            player_id     : data.get("user").id,
         };
     }
 
@@ -79,7 +79,7 @@ export class Goban extends OGSGoban {
     autoadvance = () => {
         let user = data.get('user');
 
-        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
+        if (is_registered(user) && /^\/game\//.test(this.getLocation())) {
             /* if we just moved */
             if (this.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {

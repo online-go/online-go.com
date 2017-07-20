@@ -30,7 +30,7 @@ import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
-import data from "data";
+import * as data from "data";
 import {FirstTimeSetup} from "FirstTimeSetup";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
@@ -124,7 +124,7 @@ export class Play extends React.Component<PlayProperties, any> {
         }).catch(errorAlerter);
     }}}
     cancelOpenChallenge(challenge) {{{
-        del(`challenges/${challenge.challenge_id}`).then(() => 0).catch(errorAlerter);
+        del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
     }}}
     extractUser(challenge) {{{
         return {
@@ -212,7 +212,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
 
     render() {
-        if (!data.get("user").setup_rank_set) {
+        if (!data.get("config.user").setup_rank_set) {
             return <FirstTimeSetup/>;
         }
 

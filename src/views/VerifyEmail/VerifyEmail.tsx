@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router";
 import {post} from "requests";
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 
@@ -38,14 +38,14 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
     }
 
     componentDidMount() {
-        post('me/validateEmail', {
+        post("me/validateEmail", 0, {
             id: this.props.location.query.id,
             verification: this.props.location.query.v,
         })
         .then(() => {
             this.setState({verifying: false, message: _("Great, your email address has been verified!")});
             let user = data.get('user');
-            user.email_validated = new Date().toString();
+            user.is.validated = true;
             data.set('user', user);
         })
         .catch((err) => {

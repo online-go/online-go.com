@@ -19,8 +19,8 @@ import * as React from "react";
 import {_} from "translate";
 import {put, get} from "requests";
 import {errorAlerter, ignore} from "misc";
-import {longRankString} from "rank_utils";
 import {Modal, openModal} from "Modal";
+import {Rank, dan, pro, rank_long_string} from "data/Rank";
 
 interface ModerateUserProperties {
     playerId?: number;
@@ -30,11 +30,11 @@ declare var swal;
 
 
 let ranks = [];
-for (let i = 0; i < 40; ++i) {
-    ranks.push({"value": i, "text": longRankString({"ranking": i})});
+for (let i = -29; i <= 7; ++i) {
+    ranks.push({"value": i + 29, "text": rank_long_string(dan(i))});
 }
-for (let i = 37; i < 46; ++i) {
-    ranks.push({"value": i, "text": longRankString({"ranking": i, "pro": 1})});
+for (let i = 1; i <= 9; ++i) {
+    ranks.push({"value": i + 36, "text": rank_long_string(pro(i))});
 }
 
 export class ModerateUser extends Modal<ModerateUserProperties, any> {
@@ -48,7 +48,7 @@ export class ModerateUser extends Modal<ModerateUserProperties, any> {
 
     componentWillMount() {
         super.componentWillMount();
-        get(`players/${this.props.playerId}/full`)
+        get("players/%%/full", this.props.playerId)
         .then((dets) => {
             console.log(dets);
             this.setState(Object.assign({loading: false}, dets.user, {bot_owner: dets.user.bot_owner ? dets.user.bot_owner.id : null}));

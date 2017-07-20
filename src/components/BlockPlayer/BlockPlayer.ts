@@ -16,10 +16,11 @@
  */
 
 import {get, put} from "requests";
-import data from "data";
+import * as data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
-import player_cache from 'player_cache';
+import * as player_cache from "player_cache";
+import {is_registered} from "data/Player";
 
 let ignores = {};
 let block_state = {};
@@ -36,7 +37,7 @@ export function setIgnore(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_chat = tf;
-        put("players/" + player_id + "/block", {block_chat: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })
@@ -49,7 +50,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_games = tf;
-        put("players/" + player_id + "/block", {block_games: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })
@@ -71,8 +72,8 @@ export function player_is_ignored(user_id) {
 function update_blocks() {
     let user = data.get("user");
 
-    if (!user.anonymous) {
-        get("me/blocks")
+    if (is_registered(user)) {
+        get("me/blocks", 0)
         .then((entries) => {
             block_state = {};
             let new_ignores = {};
@@ -105,8 +106,8 @@ function ignoreUser(uid, dont_fetch = false) {
         $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
     }
     else {
-        player_cache.fetch(uid, ['ui_class']).then((obj) => {
-            if (obj.ui_class.indexOf('moderator') < 0) {
+        player_cache.fetch(uid).then((player) => {
+            if (!player.is.moderator) {
                 ignores[uid] = true;
                 $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
             } else {
@@ -120,5 +121,5 @@ function unIgnoreUser(uid) {
     $("<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>").appendTo("head");
 }
 
-data.watch("user", update_blocks);
+new data.Subscription(update_blocks).to(["user"]);
 ITC.register("update-blocks", update_blocks);

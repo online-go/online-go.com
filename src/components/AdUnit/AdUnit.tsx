@@ -19,8 +19,9 @@ import * as React from "react";
 import {Link} from "react-router";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 import {FAdBlock} from 'fab';
+import {is_registered} from "data/Player";
 
 declare var factorem;
 
@@ -53,24 +54,23 @@ if (never_load_ads) {
 
 function should_show_ads() {
     let user = data.get("user");
+    let config = data.get("config.user");
 
-    if (user && (user.supporter && user.id !== 1)) {
-        return false;
-    }
-
-    if (user && (user.is_superuser || user.is_moderator)) {
-        return data.get("ad-override", false);
-    }
-
-    if (/beta|dev/.test(window.location.hostname)) {
-        return false;
-    }
-
-    if (!user || user.anonymous) {
+    if (!user || !is_registered(user)) {
         return true;
     }
-
-    return true;
+    else if (user.is.admin || user.is.moderator) {
+        return data.get("ad-override", false);
+    }
+    else if (config && config.supporter) {
+        return false;
+    }
+    else if (/beta|dev/.test(window.location.hostname)) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 

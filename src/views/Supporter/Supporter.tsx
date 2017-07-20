@@ -19,9 +19,10 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {del, put, post, get} from "requests";
 import {errorAlerter} from "misc";
-import data from "data";
+import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
+import {is_registered} from "data/Player";
 
 declare var Braintree;
 declare var swal;
@@ -58,7 +59,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     constructor(props) {
         super(props);
-        if (data.get('user').anonymous) {
+        if (!is_registered(data.get('user'))) {
             this.state = {
                 loading: false
             };
@@ -109,15 +110,15 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
         }
 
-        if (!data.get('user').anonymous) {
+        if (is_registered(data.get('user'))) {
             braintree_js_promise.then(() => {
-                get("me/supporter")
+                get("me/supporter", 0)
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
                 })
                 .catch(errorAlerter);
 
-                get("me/purchase_transactions", {order_by: "-created", page_size:1})
+                get("me/purchase_transactions", 0, {order_by: "-created", page_size:1})
                 .then((res) => {
                     this.setState({
                         last_transaction: res.results.length ? res.results[0] : null
@@ -224,7 +225,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .then(() => {
             this.setState({processing: true});
-            del("me/supporter")
+            del("me/supporter", 0)
             .then(() => {
                 window.location.reload();
             })
@@ -341,7 +342,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let exp_month = parseInt(m[1]);
         let exp_year = parseInt("20" + m[2]);
 
-        return put(`me/payment_methods/${this.state.payment_method.id}` , {
+        return put("me/payment_methods/%%", this.state.payment_method.id, {
             "first_name": this.state.fname.trim(),
             "last_name": this.state.lname.trim(),
             "email": this.state.email,
@@ -399,10 +400,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         console.log("Creating payment account for vendor ", vendor, details);
-        return post("me/payment_accounts", obj);
+        return post("me/payment_accounts", 0, obj);
     }}}
     processSupporterSignup(payment_method, amount) {{{
-        let promise = post("me/supporter", {
+        let promise = post("me/supporter", 0, {
             "payment_method": payment_method,
             "price": amount,
         });
@@ -460,7 +461,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             </div>
         );
 
-        if (user.anonymous) {
+        if (!is_registered(user)) {
             return (
                 <div className="Supporter">
                     {supporter_text}

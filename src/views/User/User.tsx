@@ -19,8 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
 import {post, get, put, del, patch} from "requests";
-import config from "config";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
 import {Resolver} from 'Resolver';
@@ -28,20 +27,21 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
 import {challenge} from "ChallengeModal";
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
+import {Rank, rank_short_string, rank_long_string} from "data/Rank";
+import {find_rank} from "compatibility/Rank";
 
 
 declare let swal;
@@ -57,6 +57,16 @@ let UserRating = (props: {rating: number}) => {
     let wholeRating = Math.floor(props.rating);
     return <span className="UserRating">{wholeRating}</span>;
 };
+
+function rankString(r: any): string {
+    let rank: Rank | void = find_rank(r);
+    return rank ? rank_short_string(rank) : "?";
+}
+function longRankString(r: any): string {
+    let rank: Rank | void = find_rank(r);
+    return rank ? rank_long_string(rank) : "?";
+}
+
 
 let rating_percentage = (rating: number) => {
     rating %= 100;
@@ -122,8 +132,8 @@ export class User extends Resolver<UserProperties, any> {
 
     resolve(props) {
         this.setState({"user": null});
-        this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
-        return get(`players/${this.user_id}/full`).then((state) => {
+        this.user_id = parseInt(props.params.user_id || data.get("user").id);
+        return get("players/%%/full", this.user_id).then((state) => {
             try {
                 //console.log(state);
                 player_cache.update(state);
@@ -185,7 +195,7 @@ export class User extends Resolver<UserProperties, any> {
 
         this.on("unmount", () => $("#rating-history-tooltip").remove());
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("user").is.moderator) /* aliases {{{ */ {
             state.ip = null;
             state.host_ip_settings = null;
          } /* }}} */
@@ -200,7 +210,7 @@ export class User extends Resolver<UserProperties, any> {
         }
 
         let last_ip = this.state.user.last_ip;
-        get("host_ip_settings/", {"address": last_ip})
+        get("host_ip_settings/", 0, {"address": last_ip})
         .then((lst) => {
             this.setState({"host_ip_settings": lst.count ? lst.results[0] : {
                 "id": 0,
@@ -225,10 +235,10 @@ export class User extends Resolver<UserProperties, any> {
         $("#host-ip-saved").addClass("hidden");
 
         if (this.state.host_ip_settings.id) {
-            patch(`host_ip_settings/${this.state.host_ip_settings.id}`, obj)
+            patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
-            post(`host_ip_settings/`, obj)
+            post("host_ip_settings/", 0, obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();
@@ -246,12 +256,12 @@ export class User extends Resolver<UserProperties, any> {
         }
         this.moderatorNotesSetTimeout = setTimeout(() => {
             this.moderatorNotesSetTimeout = null;
-            put(`players/${this.user_id}/moderate/notes`, { "moderator_notes": notes.trim() });
+            put("players/%%/moderate/notes", this.user_id, { "moderator_notes": notes.trim() });
         }, 500);
     }
 
     addFriend(id) { /* {{{ */
-        post("me/friends", { "player_id": id })
+        post("me/friends", 0, { "player_id": id })
         .then(() => this.setState({friend_request_sent: true}));
     } /* }}} */
     removeFriend(id) { /* {{{ */
@@ -259,7 +269,7 @@ export class User extends Resolver<UserProperties, any> {
             text: _("Are you sure you wish to remove this friend?"),
             showCancelButton: true,
         }).then(() => {
-            post("me/friends", { "delete": true, "player_id": id })
+            post("me/friends", 0, { "delete": true, "player_id": id })
             .then(() => this.setState({
                 friend_request_sent: false,
                 friend_request_received: false,
@@ -269,7 +279,7 @@ export class User extends Resolver<UserProperties, any> {
         .catch(ignore);
     } /* }}} */
     acceptFriend(id) { /* {{{ */
-        post("me/friends/invitations", { "from_user": id })
+        post("me/friends/invitations", 0, { "from_user": id })
         .then(() => this.setState({
             friend_request_sent: false,
             friend_request_received: false,
@@ -280,13 +290,13 @@ export class User extends Resolver<UserProperties, any> {
         if (!confirm("Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?")) {
             return;
         }
-        post("ui/bot/generateAPIKey", { "bot_id": this.state.user.id })
+        post("ui/bot/generateAPIKey", 0, { "bot_id": this.state.user.id })
         .then((res) => this.setState({
             bot_apikey: res.bot_apikey
         }));
     } /* }}} */
     saveBot() { /* {{{ */
-        put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
+        put("ui/bot/saveBotInfo", 0, { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
             swal("Bot Engine updated");
             this.resolve(this.props);
@@ -306,7 +316,7 @@ export class User extends Resolver<UserProperties, any> {
         } while (moderation_note === "");
 
 
-        put(`players/${this.user_id}/moderate`, {
+        put("players/%%/moderate", this.user_id, {
             "player_id": this.user_id,
             "is_bot": $("#user-su-is-bot").is(":checked") ? 1 : 0,
             "bot_owner": $("#user-su-bot-owner").val(),
@@ -343,7 +353,7 @@ export class User extends Resolver<UserProperties, any> {
         console.log(files);
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`players/${this.user_id}/icon`, file)
+            put("players/%%/icon", this.user_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
                 player_cache.update({
@@ -356,7 +366,7 @@ export class User extends Resolver<UserProperties, any> {
     }}}
     clearIcon = () => {{{
         this.setState({new_icon: null});
-        del(`players/${this.user_id}/icon`)
+        del("players/%%/icon", this.user_id)
         .then((res) => {
             console.log("Cleared icon", res);
             player_cache.update({
@@ -402,7 +412,7 @@ export class User extends Resolver<UserProperties, any> {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
     }}}
     saveEditChanges() {{{
-        put(`players/${this.user_id}`, {
+        put("players/%%", this.user_id, {
             "username": this.state.user.username,
             "first_name": this.state.user.first_name,
             "last_name": this.state.user.last_name,
@@ -710,16 +720,17 @@ export class User extends Resolver<UserProperties, any> {
         }
 
 
-        let global_user = data.get("config.user");
+        let global_user = data.get("user");
+        let cdn_release = data.get("config.cdn_release");
 
         return (
           <div className="User container">
             <div className="row">
                 <div className="col-sm-8">
-                    { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
-                    { (window["user"].is_superuser) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
+                    { (global_user.is.moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                    { (global_user.is.admin) && <button className="default xs pull-right" onClick={() => openSupporterAdminModal(user.id)}>{_("Supporter Controls")}</button> }
                     <h1>{user.username}
-                        {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                        {((global_user.id === user.id || global_user.is.moderator) || null)   &&
                             <button onClick={this.toggleEdit} className='xs edit-button'>
                                 <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
                             </button>
@@ -744,8 +755,8 @@ export class User extends Resolver<UserProperties, any> {
 
                             <div className="col-sm-10">
                                 <dl className="horizontal">
-                                    {(global_user.is_moderator && user.is_watched) && <dt ></dt>}
-                                    {(global_user.is_moderator && user.is_watched) && <dd ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></dd>}
+                                    {(global_user.is.moderator && user.is_watched) && <dt ></dt>}
+                                    {(global_user.is.moderator && user.is_watched) && <dd ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></dd>}
 
                                     {(user.timeout_provisional) && <dt ></dt>}
                                     {(user.timeout_provisional) && <dd ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></dd>}
@@ -840,14 +851,14 @@ export class User extends Resolver<UserProperties, any> {
 
                                     {(this.state.titles.length > 0) && <dt >{_("Titles")}</dt>}
                                     {(this.state.titles.length > 0) && <dd className="trophies">
-                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
+                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
                                     </dd>}
 
                                     <dt>{_("Trophies")}</dt>
                                     {(this.state.trophies.length > 0) && <dd className="trophies">
                                         {this.state.trophies.map((trophy, idx) => (
                                             <a key={idx} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
-                                                <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
+                                                <img className="trophy" src={`${cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
                                             </a>
                                         ))}
                                     </dd>}
@@ -857,7 +868,7 @@ export class User extends Resolver<UserProperties, any> {
                                 </dl>
                             </div>
                         </div>
-                        {((window["user"] && window["user"].is_moderator) || null) && <div >
+                        {((global_user.is.moderator) || null) && <div >
                             <b>Users with the same IP or Browser ID</b>
                             <PaginatedTable
                                 className="aliases"
@@ -880,7 +891,7 @@ export class User extends Resolver<UserProperties, any> {
                             <textarea className="moderator-notes" ref="moderator_notes" onChange={this.updateModeratorNotes.bind(this)} placeholder="Moderator notes" value={this.state.moderator_notes}/>
                         </div>}
 
-                        {((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
+                        {((global_user.id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
                             {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
                             {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
                                     onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
@@ -992,7 +1003,7 @@ export class User extends Resolver<UserProperties, any> {
                         </Card>
                     </div>}
 
-                    {(user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id) && <div >
+                    {(user.is_bot && user.bot_owner && user.bot_owner.id === global_user.id) && <div >
                         <h2>{_("Bot Controls")}</h2>
                         <div className="well">
                             <h5>{_("API Key")}
@@ -1126,8 +1137,8 @@ export class User extends Resolver<UserProperties, any> {
                                 {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                 {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                 {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
-                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} rank/>},
+                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} rank/>},
                                 {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
                             ]}
                         />
@@ -1160,8 +1171,8 @@ export class User extends Resolver<UserProperties, any> {
                                 columns={[
                                     {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                     {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                    {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                    {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                    {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} rank/>},
+                                    {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} rank/>},
                                 ]}
                             />
                         </div>

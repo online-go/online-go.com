@@ -22,16 +22,19 @@ import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
+import {Player as PlayerType, is_registered, is_guest, by_name, by_rank} from "data/Player";
+import {to_old_style_rank} from "compatibility/Rank";
+
 
 declare let swal;
 
@@ -46,14 +49,37 @@ interface ChatProperties {
     updateTitle: boolean;
 }
 
+interface ChatState {
+    online_count: number;
+    chat_log: Array<any>;
+    user_list: Array<PlayerType>;
+    joined_channels: any;
+    active_channel: string;
+    group_channels: Array<any>;
+    tournament_channels: Array<any>;
+    show_all_global_channels: boolean;
+    show_all_group_channels: boolean;
+    show_all_tournament_channels: boolean;
+    user_sort_order: string;
+    force_show_channels: boolean;
+    force_show_users: boolean;
+    show_say_hi_placeholder: boolean;
+    rtl_mode?: boolean;
+}
+
 let name_match_regex = /^loading...$/;
-data.watch("config.user", (user) => {
-    let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
-    name_match_regex = new RegExp(
-          "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
-        + "|\\b" + cleaned_username_regex + "$"
-        , "i");
-});
+new data.Subscription((channel, user) => {
+    if (is_registered(user)) {
+        let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
+        name_match_regex = new RegExp(
+            "\\b" + cleaned_username_regex + "([?:.!*\\s])"
+            + "|\\b" + cleaned_username_regex + "$"
+            , "i");
+    }
+    if (is_guest(user)) {
+        name_match_regex = /(?!x)x/;    // Never matches.
+    }
+}).to(["user"]);
 
 let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-english" , "name": "English", "country": "us"},
@@ -93,11 +119,11 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
 ]; /* }}} */
 
-data.watch("config.ogs", (settings) => {
+new data.Subscription((channel, settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
-});
+}).to(["config.ogs"]);
 
 
 let rtl_mode = {};
@@ -130,7 +156,7 @@ export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
     }
 }
 
-export class Chat extends React.Component<ChatProperties, any> {
+export class Chat extends React.Component<ChatProperties, ChatState> {
     refs: {
         input;
         chat_log;
@@ -174,8 +200,8 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     resolve() {{{
-        if (!data.get("config.user").anonymous) {
-            get("me/groups", {page_size: 30})
+        if (is_registered(data.get("user"))) {
+            get("me/groups", 0, {page_size: 30})
             .then((groups) => {
                 this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
                 groups.results.map((g) => {
@@ -184,7 +210,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             })
             .catch((err) => 0);
 
-            get("me/tournaments", {ended__isnull:true, page_size: 30})
+            get("me/tournaments", 0, {ended__isnull:true, page_size: 30})
             .then((tournaments) => {
                 this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))});
                 tournaments.results.map((t) => {
@@ -304,14 +330,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         c.chat_ids[obj.message.i] = true;
 
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
+        player_cache.update(obj, true);
 
         c.chat_log.push(obj);
         if (this.state.active_channel === obj.channel) {
@@ -346,7 +365,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     onChatJoin = (joins) => {{{
         let c = getChannel(joins.channel);
         for (let i = 0; i < joins.users.length; ++i) {
-            player_cache.update(joins.users[i]);
+            player_cache.update(joins.users[i], true);
             if (!(joins.users[i].id in c.user_list)) {
                 c.user_count++;
             }
@@ -398,7 +417,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
 
         let joined = data.get("chat.joined");
-        joined[channel] = 1;
+        joined[channel] = true;
         if (!this.props.channel) {
             data.set("chat.joined", joined);
         }
@@ -495,35 +514,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.scrollChats();
         */
     } /* }}} */
-    sortedUserList(): Array<any> {{{
-        let lst = [];
+    sortedUserList(): Array<PlayerType> {{{
+        let list = [];
         for (let id in this.state.user_list) {
-            lst.push(this.state.user_list[id]);
+            list.push(this.state.user_list[id]);
         }
         let sort_order = this.state.user_sort_order;
         if (sort_order === "rank") {
-            lst.sort((a, b) => {
-                if (!a.ranking && b.ranking) {
-                    return 1;
-                }
-                if (a.ranking && !b.ranking) {
-                    return -1;
-                }
-                if (!a.ranking && !b.ranking) {
-                    return a.username.localeCompare(b.username);
-                }
-
-                if (a.ranking - b.ranking === 0)  {
-                    return a.username.localeCompare(b.username);
-                }
-                return b.ranking - a.ranking;
-            });
+            list.sort(by_rank);
         } else {
-            lst.sort((a, b) => {
-                return a.username.localeCompare(b.username);
-            });
+            list.sort(by_name);
         }
-        return lst;
+        return list;
     }}}
     toggleSortOrder = () => {{{
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
@@ -557,10 +559,10 @@ export class Chat extends React.Component<ChatProperties, any> {
 
             if (this.send_tokens <= 0) {
                 let chillout_time = 20;
-                if (data.get("config.user").supporter) {
+                if (data.get("user").is.supporter) {
                     chillout_time = 10;
                 }
-                if (data.get("config.user").is_moderator) {
+                if (data.get("user").is.moderator) {
                     chillout_time = 2;
                 }
 
@@ -583,11 +585,15 @@ export class Chat extends React.Component<ChatProperties, any> {
             --this.send_tokens;
             setTimeout(() => { this.send_tokens = Math.min(5, this.send_tokens + 1); }, 2000);
 
-            let user = data.get("config.user");
+            let user = data.get("user");
+            if (!is_registered(user)) {
+                return;
+            }
 
+            let now = Date.now();
             let obj: any = {
                 "channel": channel,
-                "uuid": n2s(user.id) + "." + n2s(Date.now()),
+                "uuid": n2s(user.id) + "." + n2s(now),
                 "message": txt
             };
 
@@ -595,10 +601,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             obj = dup(obj);
             obj.username = user.username;
             obj.id = user.id;
-            obj.ranking = user.ranking;
-            obj.professional = user.professional;
-            obj.ui_class = user.ui_class;
-            obj.message = {"i": obj.uuid, "t": Math.floor(Date.now() / 1000), "m": txt};
+            obj.ranking = to_old_style_rank(user.rank);
+            obj.professional = user.is.professional;
+            obj.message = {"i": obj.uuid, "t": Math.floor(now / 1000), "m": txt};
             this.onChatMessage(obj);
         };
 
@@ -648,6 +653,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     }}}
 
     render() {{{
+        let user = data.get("user");
         let sorted_user_list = this.sortedUserList();
 
         let chan_class = (chan: string): string => {
@@ -769,9 +775,9 @@ export class Chat extends React.Component<ChatProperties, any> {
 
                         <TabCompleteInput ref="input" type="text" className={this.state.rtl_mode ? "rtl" : ""}
                                placeholder={
-                                   !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated") :
+                                   (is_registered(user) && !user.is.validated) ? _("Chat will be enabled once your email address has been validated") :
                                        this.state.show_say_hi_placeholder ? _("Say hi!") : ""}
-                               disabled={data.get("user").anonymous || !data.get('user').email_validated}
+                               disabled={!user.is.validated}
                                onKeyPress={this.onKeyPress}
                                />
 
@@ -883,7 +889,7 @@ function ChatLine(props) {{{
     return (
         <div className={
              (third_person ? "chat-line third-person" : "chat-line")
-             + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
+             + (user.id === data.get("user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
         }>
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}

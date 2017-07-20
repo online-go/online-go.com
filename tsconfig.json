@@ -16,6 +16,8 @@
                 "src/lib/*",
                 "src/components/*",
                 "src/views/*",
+                "src/data/*",
+                "src/compatibility/*",
                 "src/*"
             ],
             "requests": [

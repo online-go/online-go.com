@@ -21,7 +21,6 @@ import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
-import {longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
 import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
 import {Markdown} from "Markdown";
@@ -31,22 +30,30 @@ import * as Datetime from "react-datetime";
 import {UIPush} from "UIPush";
 import {Card} from "material";
 import {EmbeddedChat} from "Chat";
-import data from "data";
+import * as data from "data";
 import {PaginatedTable} from "PaginatedTable";
 import {PersistentElement} from "PersistentElement";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {MiniGoban} from "MiniGoban";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import * as d3 from "d3";
-
+import {Rank, dan, rank_short_string, rank_long_string} from "data/Rank";
+import {find_rank_short_string, find_rank_long_string} from "compatibility/Rank";
+import {is_registered} from "data/Player";
 
 
 declare var swal;
 
-let ranks = amateurRanks();
+let ranks = (() => {
+    let ranks: Array<Rank> = [];
+    for (let i = -29; i <= 7; i++) {
+        ranks.push(dan(i));
+    }
+    return ranks;
+})();
 
 interface TournamentProperties {
     params: any;
@@ -137,7 +144,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             this.resolve(this.state.tournament_id);
         }
         if (this.state.new_tournament_group_id) {
-            get(`groups/${this.state.new_tournament_group_id}`)
+            get("groups/%%", this.state.new_tournament_group_id)
             .then((group) => {
                 this.setState({tournament: Object.assign({}, this.state.tournament, {group: group})});
             })
@@ -163,8 +170,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.abort_requests();
 
         Promise.all([
-            get(`tournaments/${tournament_id}`),
-            get(`tournaments/${tournament_id}/rounds`),
+            get("tournaments/%%", tournament_id),
+            get("tournaments/%%/rounds", tournament_id),
             this.refreshPlayerList(tournament_id),
         ])
         .then((res) => {
@@ -206,7 +213,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         }
         let user = data.get("user");
 
-        let ret = get(`tournaments/${tournament_id}/players/all`);
+        let ret = get("tournaments/%%/players/all", tournament_id);
         ret
         .then((players) => {
             for (let id in players) {
@@ -287,7 +294,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then(() => {
-            post("tournaments/" + this.state.tournament.id + "/start", {})
+            post("tournaments/%%/start", this.state.tournament.id, {})
             .then(ignore)
             .catch(errorAlerter);
         })
@@ -300,7 +307,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then(() => {
-            del("tournaments/" + this.state.tournament.id)
+            del("tournaments/%%", this.state.tournament.id)
             .then(() => {
                 browserHistory.push("/");
             })
@@ -312,7 +319,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({user_to_invite: user});
     }}}
     inviteUser = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {"username": this.state.user_to_invite.username })
+        post("tournaments/%%/players", this.state.tournament_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
             _("Player invited"); /* for translations */
@@ -330,14 +337,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         });
     }}}
     joinTournament = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {})
+        post("tournaments/%%/players", this.state.tournament_id, {})
         .then((res) => {
             this.setState({is_joined: true});
         })
         .catch(errorAlerter);
     }}}
     partTournament = () => {{{
-        post(`tournaments/${this.state.tournament_id}/players`, {"delete": true})
+        post("tournaments/%%/players", this.state.tournament_id, {"delete": true})
         .then((res) => {
             this.setState({is_joined: false});
         })
@@ -932,7 +939,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             .then(() => this.resolve(this.state.tournament_id))
             .catch(errorAlerter);
         } else {
-            post(`tournaments/`, tournament)
+            post("tournaments/", 0, tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
             .catch(errorAlerter);
         }
@@ -1036,8 +1043,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let num_rounds = 0;
         let group_size = 0;
         try {
-            min_bar = rankString(parseInt(tournament.settings.lower_bar));
-            max_bar = rankString(parseInt(tournament.settings.upper_bar));
+            min_bar = find_rank_short_string(tournament.settings.lower_bar);
+            max_bar = find_rank_short_string(tournament.settings.upper_bar);
         } catch (e) { }
         try { maximum_players = parseInt(tournament.settings.maximum_players); } catch (e) { console.error(e); }
         try { num_rounds = parseInt(tournament.settings.num_rounds); } catch (e) { }
@@ -1050,6 +1057,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             case "invite": tournament_exclusivity = pgettext("Group tournament", "Invite only"); break;
         }
 
+        let is_tournament_moderator = user.is.tournament_moderator || tournament.director.id === user.id;
+
 
         /* TODO */
         //let is_joined = user && (user.id in players) && !players[global_user.id].disqualified && !players[global_user.id].resigned && !players[global_user.id].eliminated;
@@ -1057,7 +1066,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let can_join = true;
         let cant_join_reason = "";
 
-        if (data.get("user").anonymous) {
+        if (!is_registered(user)) {
             can_join = false;
             cant_join_reason = _("You must sign in to join this tournament.");
         } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
@@ -1066,7 +1075,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         } else if (!tournament.is_open || tournament.exclusivity === "invite") {
             can_join = false;
             cant_join_reason = _("This is a closed tournament, you must be invited to join.");
-        } else if (tournament.exclude_provisional && data.get("user").provisional > 0) {
+        } else if (tournament.exclude_provisional && user.is.provisional) {
             can_join = false;
             cant_join_reason = _("This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.");
         }
@@ -1093,15 +1102,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     }
                     {!editing && !loading &&
                         <div>
-                            {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
+                            {((is_tournament_moderator
                                && !tournament.started && !tournament.start_waiting) || null) &&
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
 
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && is_tournament_moderator || null) &&
                                 <button className="danger xs" onClick={this.startTournament}>{_("Start Tournament Now")}</button>
                             }
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && is_tournament_moderator || null) &&
                                 <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
                             }
 
@@ -1196,13 +1205,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     : <span>
                                         <select className="rank-selection" value={tournament.settings.lower_bar} onChange={this.setLowerBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                         -
                                         <select className="rank-selection" value={tournament.settings.upper_bar} onChange={this.setUpperBar}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                       </span>
@@ -1366,13 +1375,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     : <span>
                                         <select className="rank-selection" value={tournament.min_ranking} onChange={this.setMinRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                         -
                                         <select className="rank-selection" value={tournament.max_ranking} onChange={this.setMaxRank}>
                                             {ranks.map((r, idx) => (
-                                                <option key={idx} value={r.rank}>{r.label}</option>
+                                                <option key={idx} value={rank_long_string(r)}>{rank_long_string(r)}</option>
                                             ))}
                                         </select>
                                       </span>
@@ -1446,7 +1455,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         </div>
                     }
                     <div className="player-list">
-                        {(tournament.exclusivity !== "invite" || data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id || null) &&
+                        {(tournament.exclusivity !== "invite" || is_tournament_moderator || null) &&
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
@@ -1713,7 +1722,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then((val) => {
-            post(`tournaments/${this.state.tournament.id}/players`, {
+            post("tournaments/%%/players", this.state.tournament.id, {
                 "delete": true,
                 "player_id": user.id,
             })
@@ -1742,7 +1751,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let adjustments = {};
             adjustments[user.id] = v;
 
-            put(`tournaments/${this.state.tournament.id}/players`, {
+            put("tournaments/%%/players", this.state.tournament.id, {
                 adjust: adjustments
             })
             .then(ignore)
@@ -1760,7 +1769,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             focusCancel: true
         })
         .then((val) => {
-            put(`tournaments/${this.state.tournament.id}/players`, {
+            put("tournaments/%%/players", this.state.tournament.id, {
                 disqualify: user.id,
             })
             .then(ignore)
@@ -1774,7 +1783,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
     renderExtraPlayerActions = (player_id: number, user: any) => {{{
         let user = data.get("user");
-        if (!(user.is_tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
+        if (!(user.is.tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
             return null;
         }
 
@@ -1804,13 +1813,13 @@ export function rankRestrictionText(min_ranking, max_ranking) {{{
         if (max_ranking >= 36) {
             return _("None");
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s and below"), [longRankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s and below"), [find_rank_long_string(max_ranking)]);
         }
     } else {
         if (max_ranking >= 36) {
-            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s and above"), [longRankString(min_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s and above"), [find_rank_long_string(min_ranking)]);
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s - %s"), [longRankString(min_ranking), longRankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s - %s"), [find_rank_long_string(min_ranking), find_rank_long_string(max_ranking)]);
         }
     }
 }}}
@@ -1819,13 +1828,13 @@ export function shortRankRestrictionText(min_ranking, max_ranking) {{{
         if (max_ranking >= 36) {
             return _("All");
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [rankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [find_rank_short_string(max_ranking)]);
         }
     } else {
         if (max_ranking >= 36) {
-            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [rankString(min_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [find_rank_short_string(min_ranking)]);
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [rankString(min_ranking), rankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [find_rank_short_string(min_ranking), find_rank_short_string(max_ranking)]);
         }
     }
 }}}

@@ -19,10 +19,9 @@ import * as React from "react";
 import {browserHistory} from "react-router";
 import {_, pgettext} from "translate";
 import {shouldOpenNewTab, errorAlerter, alertModerator} from "misc";
-import {rankString} from "rank_utils";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
-import data from "data";
+import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
@@ -30,87 +29,19 @@ import {openSupporterAdminModal} from "SupporterAdmin";
 import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
-import {Player} from "./Player";
 import {close_friend_list} from 'FriendList/FriendIndicator';
+import {AbstractPlayer, AbstractPlayerProperties, AbstractPlayerState} from "./AbstractPlayer";
+import {Player, RegisteredPlayer, is_registered} from "data/Player";
 
 
-interface PlayerDetailsProperties {
-    playerId: number;
+interface PlayerDetailsProperties extends AbstractPlayerProperties {
     noextracontrols?: boolean;
 }
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
-export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, any> {
-    refs: {
-    };
-
-    constructor(props) {
-        super(props);
-        this.state = this.blankState();
-        let player = player_cache.lookup(this.props.playerId);
-        if (player) {
-            this.state = Object.assign(this.state, player);
-        }
-    }
-
-    componentWillMount()  {
-        this.resolve(this.props.playerId);
-    }
-
-    blankState() {{{
-        return {
-            resolved: false,
-            resolving: 0,
-            username: "...",
-            //icon: data.get('config.cdn_release') + '/img/default-user.svg',
-            icon: "",
-            ranking: "...",
-            rating: "...",
-            ui_class: "...",
-            country: "un",
-            error: null,
-        };
-    }}}
-    resolve(player_id) {{{
-        this.setState({resolved: false});
-        player_cache.fetch(
-            this.props.playerId,
-            [
-                "username",
-                "icon",
-                "rating",
-                "ranking",
-                "pro",
-                "country",
-                "ui_class",
-            ]
-        )
-        .then((player) => {
-            this.setState(Object.assign({resolved: true}, player));
-        })
-        .catch((err) => {
-            if (player_id === this.props.playerId) {
-                this.setState({resolved: true, error: _("Error loading player information")});
-                console.error(err);
-            }
-        });
-    }}}
-    componentWillReceiveProps(new_props) {{{
-        if (new_props.playerId !== this.props.playerId) {
-            let player = player_cache.lookup(new_props.playerId);
-            let new_state = this.blankState();
-            if (player) {
-                new_state = Object.assign(this.state, player);
-            }
-            this.setState(new_state);
-            setTimeout(() => {
-                this.resolve(new_props.playerId);
-            }, 1);
-        }
-    }}}
-    componentWillUnmount() {{{
-    }}}
+export class PlayerDetails extends AbstractPlayer<PlayerDetailsProperties, AbstractPlayerState> {
+    protected player_id: number;
 
     close_all_modals_and_popovers = () => {
         close_all_popovers();
@@ -120,7 +51,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     gotoPlayerView = (ev) => {{{
         this.close_all_modals_and_popovers();
 
-        let url = `/player/${this.props.playerId}/${this.state.username}`;
+        let url = `/player/${this.player_id}/`;
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -128,41 +59,54 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         }
     }}}
     challenge = (_ev) => {{{
-        challenge(this.props.playerId);
+        challenge(this.player_id);
         this.close_all_modals_and_popovers();
     }}}
     message = (_ev) => {{{
-        getPrivateChat(this.props.playerId).open();
+        getPrivateChat(this.player_id).open();
         this.close_all_modals_and_popovers();
     }}}
     report = (_ev) => {{{
-        alertModerator({user: this.props.playerId});
+        alertModerator({user: this.player_id});
         this.close_all_modals_and_popovers();
     }}}
     block = (ev) => {{{
-        let controls = openBlockPlayerControls(ev, this.props.playerId);
+        let controls = openBlockPlayerControls(ev, this.player_id);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
     }}}
     ban = (_ev) => {{{
-        ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        ban(this.player_id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     shadowban = (_ev) => {{{
-        shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        shadowban(this.player_id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeShadowban = (_ev) => {{{
-        remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_shadowban(this.player_id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeBan = (_ev) => {{{
-        remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_ban(this.player_id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     openSupporterAdmin = () => {
         this.close_all_modals_and_popovers();
-        openSupporterAdminModal(this.props.playerId);
+        openSupporterAdminModal(this.player_id);
     }
     render() {
         let user = data.get("user");
+        let props = this.props;
+        let state = this.state;
+        let classes: Array<string> = [];
+
+        classes.push("Player");
+        state.guest && classes.push("guest");
+        props.noextracontrols && classes.push("noextracontrols");
+
+        let className = classes.join(" ");
+        if (state.className) {
+            className += " ";
+            className += state.className;
+        }
 
         return (
             <div className="PlayerDetails">
@@ -172,44 +116,63 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                     </div>
                     <div>
                         <div>
-                            <Player user={this.state} nodetails rank={false} />
+                            <span className={className} onClick={this.click}>
+                                <span className="username">{state.username}</span>
+                            </span>
                         </div>
                         <div>
-                            <span className="rating">{Math.round(this.state.rating) || "..."}</span>
+                            <span className="rating">{this.state.rating}</span>
                         </div>
                         <div>
-                            <span className="rank">{rankString(this.state) || "..."}</span>
+                            <span className="rank">{this.state.long_rank}</span>
                         </div>
                     </div>
                 </div>
-                {!user.anonymous && (user.id !== this.props.playerId || null) &&
+                {!this.state.guest && (user.id !== this.player_id || null) &&
                     <div className="actions">
-                        <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
-                        <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
+                        <button className="xs noshadow primary" disabled={!this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
-                { ((user.is_moderator && this.props.playerId > 0) || null) &&
+                {!this.state.guest && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.player_id, this.state)}
+                { ((user.is.moderator && this.player_id > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
                         <button className="xs noshadow danger" onClick={this.shadowban}><i className="fa fa-commenting"/>{pgettext("Disallow user to chat", "Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_moderator && this.props.playerId > 0) || null) &&
+                { ((user.is.moderator && !this.state.guest) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.removeBan}><i className="fa fa-thumbs-o-up"/>{pgettext("Allow user on the server", "Un-Ban")}</button>
                         <button className="xs noshadow" onClick={this.removeShadowban}><i className="fa fa-commenting-o"/>{pgettext("Remove chat ban", "Un-Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_superuser && this.props.playerId > 0) || null) &&
+                { ((user.is.admin && !this.state.guest) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                     </div>
                 }
             </div>
         );
+    }
+
+    click = (event) => {
+        event.stopPropagation();
+        if (shouldOpenNewTab(event)) {
+            let uri = `/player/${this.player_id}`;
+            let player = player_cache.lookup(this.player_id);
+            if (player) {
+                uri += "/" + encodeURIComponent(player.username);
+            }
+            window.open(uri, "_blank");
+        }
+        else {
+            close_all_popovers();
+            browserHistory.push(`/player/${this.player_id}/`);
+            return;
+        }
     }
 }
 

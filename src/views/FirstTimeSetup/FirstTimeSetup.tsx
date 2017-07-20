@@ -19,9 +19,9 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put} from "requests";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
+import {Rank, kyu, rank_long_string} from "data/Rank";
 
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 
@@ -71,7 +71,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
     save = () => {
         let user = data.get("user");
         let rank = this.state.rank + 5;
-        put(`players/${user.id}`, {ranking: rank})
+        put("players/%%", user.id, {ranking: rank})
         .then((player) => {
             data.set("config.user", Object.assign({}, data.get("config.user"), player, {setup_rank_set : true}));
             setTimeout(() => {
@@ -94,7 +94,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
                     <p><i>{_("Tip: If you are coming from another server, using your rank from the other server is a good place to start")}</i></p>
                 </div>
 
-                <h4>{_("Pick your starting rank if you know it, or select how long you've been playin go for")}</h4>
+                <h4>{_("Pick your starting rank if you know it, or select how long you've been playing go for")}</h4>
                 <div className="play-range-selector">
                     <select value={this.state.rank} onChange={this.setRank}>
                         <option value={-1}>
@@ -103,7 +103,7 @@ export class FirstTimeSetup extends React.PureComponent<FirstTimeSetupProperties
 
                         {durations.map((elt, idx) => (
                             <option key={idx} value={idx}>
-                                {longRankString(idx + 5)} : {elt.time}
+                                {rank_long_string(kyu(25 - idx))} : {elt.time}
                             </option>
                         ))}
                     </select>

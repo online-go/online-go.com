@@ -24,11 +24,12 @@ import {Player} from "Player";
 import {MiniGoban} from "MiniGoban";
 import {SearchInput} from "misc-ui";
 import {StarRating} from "StarRating";
-import {longRankString, rankString} from "rank_utils";
 import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
-import data from "data";
+import * as data from "data";
 import * as moment from "moment";
+import {find_rank_long_string,  find_rank_short_string} from "compatibility/Rank";
+import {is_registered} from "data/Player";
 
 interface PuzzleListProperties {
 }
@@ -86,10 +87,10 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                         groom={
                             (arr) => {
                                 for (let e of arr) {
-                                    e.min_rank_string = longRankString(e.min_rank);
-                                    e.max_rank_string = longRankString(e.max_rank);
-                                    e.min_rank_short = rankString(e.min_rank);
-                                    e.max_rank_short = rankString(e.max_rank);
+                                    e.min_rank_string = find_rank_long_string(e.min_rank);
+                                    e.max_rank_string = find_rank_long_string(e.max_rank);
+                                    e.min_rank_short = find_rank_short_string(e.min_rank);
+                                    e.max_rank_short = find_rank_short_string(e.max_rank);
                                 }
                                 return arr;
                             }
@@ -129,7 +130,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                         ]}
                     />
 
-                    {((!user.anonymous) || null) &&
+                    {(is_registered(user) || null) &&
                         <div className="create-a-new-puzzle-link-container">
                             <a href="/puzzle/new"><i className="fa fa-plus-square" /> {_("Create a new puzzle")}</a>
                         </div>

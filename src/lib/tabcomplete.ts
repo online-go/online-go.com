@@ -7,7 +7,7 @@
  *
  */
 
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 declare var $;
 
