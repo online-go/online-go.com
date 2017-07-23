@@ -153,8 +153,8 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     getSubmitMode(speed) {{{
-        let single = preferences.get(`one-click-submit-${speed}`);
-        let dbl = preferences.get(`double-click-submit-${speed}`);
+        let single = preferences.get(`one-click-submit-${speed}` as any);
+        let dbl = preferences.get(`double-click-submit-${speed}` as any);
         return single ? "single" : (dbl ? "double" : "button");
     }}}
     setSubmitMode(speed, mode) {{{
