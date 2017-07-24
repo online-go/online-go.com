@@ -18,6 +18,7 @@
 import data from "data";
 import {Listener} from "data";
 import {GoThemes} from "goban";
+import {current_language} from "translate";
 
 let defaults = {
     "one-click-submit-live": true,
@@ -43,7 +44,7 @@ let defaults = {
     "goban-theme-white": null,
 
     "language": "auto",
-    "profanity-filter": {"en": true, "locale": true},
+    "profanity-filter": {"en": true},
     "chat.user-sort-order": "rank",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
@@ -61,6 +62,9 @@ let defaults = {
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
 };
+
+defaults['profanity-filter'][current_language] = true;
+
 
 for (let k in defaults) {
     data.setDefault(`preferences.${k}`, defaults[k]);
