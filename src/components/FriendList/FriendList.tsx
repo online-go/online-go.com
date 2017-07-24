@@ -38,6 +38,7 @@ export class FriendList extends React.PureComponent<{}, any> {
             resolved: false
         };
     }
+    friends_listener:any;
 
     updateFriends = (friends) => {
         this.setState({
@@ -47,10 +48,11 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
-        data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
+        this.friends_listener = data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
+        this.friends_listener.remove();
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
     }}}
     resortFriends = () => {

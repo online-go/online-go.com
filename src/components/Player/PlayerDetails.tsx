@@ -16,9 +16,11 @@
  */
 
 import * as React from "react";
+import {toast} from "toast";
 import {browserHistory} from "react-router";
 import {_, pgettext} from "translate";
-import {shouldOpenNewTab, errorAlerter, alertModerator} from "misc";
+import {post} from "requests";
+import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
 import {rankString} from "rank_utils";
 import player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
@@ -38,6 +40,14 @@ interface PlayerDetailsProperties {
     playerId: number;
     noextracontrols?: boolean;
 }
+
+let friends = {};
+data.watch('friends', (friends_arr) => {
+    friends = {};
+    for (let friend of friends_arr) {
+        friends[friend.id] = true;
+    }
+});
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
@@ -157,10 +167,20 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeBan = (_ev) => {{{
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
-    openSupporterAdmin = () => {
+    openSupporterAdmin = () => {{{
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
-    }
+    }}}
+    addFriend = () => {{{
+        toast(<div>{_("Sent friend request")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
+    removeFriend = () => {{{
+        toast(<div>{_("Removed friend")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
     render() {
         let user = data.get("user");
 
@@ -186,6 +206,10 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        {friends[this.props.playerId]
+                            ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
+                            : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
+                        }
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
