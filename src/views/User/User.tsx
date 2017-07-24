@@ -125,7 +125,7 @@ export class User extends Resolver<UserProperties, any> {
     }
 
     resolve(props) {
-        this.setState({"user": null});
+        this.setState({"user": null, editing:  /edit/.test(window.location.hash)});
         this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
         return get(`players/${this.user_id}/full`).then((state) => {
             try {
