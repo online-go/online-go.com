@@ -155,20 +155,39 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
         super(props);
         this.state = {
             groups: [],
+            invitations: [],
             resolved: false
         };
     }
 
     componentDidMount() {{{
+        this.refresh();
+    }}}
+    refresh() {{{
         get("me/groups", {}).then((res) => {
             this.setState({"groups": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
+        get("me/groups/invitations", {page_size: 100}).then((res) => {
+            this.setState({"invitations": res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation)});
+        }).catch((err) => {
+            console.info("Caught", err);
+        });
     }}}
     componentWillUnmount() {{{
         abort_requests_in_flight("me/groups");
+    }}}
+    acceptInvite(invite) {{{
+        post("me/groups/invitations", {"request_id": invite.id})
+        .then(() => this.refresh())
+        .catch(() => this.refresh());
+    }}}
+    rejectInvite(invite) {{{
+        post("me/groups/invitations", {"request_id": invite.id, "delete": true})
+        .then(() => this.refresh())
+        .catch(() => this.refresh());
     }}}
     render() {
         if (!this.state.resolved) {
@@ -177,10 +196,14 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
 
         return (
             <div className="Overview-GroupList">
+                {this.state.invitations.map((invite) => (
+                    <div className='invite' key={invite.id}>
+                        <i className='fa fa-times' onClick={this.rejectInvite.bind(this, invite)} />
+                        <i className='fa fa-check' onClick={this.acceptInvite.bind(this, invite)} />
+                        <Link key={invite.group.id} to={`/group/${invite.group.id}`}><img src={invite.group.icon}/> {invite.group.name}</Link>
+                    </div>
+                ))}
                 {this.state.groups.map((group) => <Link key={group.id} to={`/group/${group.id}`}><img src={group.icon}/> {group.name}</Link>)}
-                {(this.state.groups.length === 0 || null) &&
-                    null
-                }
             </div>
         );
     }
