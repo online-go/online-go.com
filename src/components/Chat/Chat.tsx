@@ -676,7 +676,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         let showUserList = !!this.props.showUserList;
 
         return (
-            <div className="Chat">
+            <div className={"Chat" + (this.state.force_show_users ? " force-show-users" : "")}>
                 {this.props.showChannels &&
                     <div className={"channel-container" + (this.state.force_show_channels ? " force-show" : "")}>
 
