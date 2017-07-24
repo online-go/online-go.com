@@ -441,7 +441,7 @@ export class GoEngine {
         if (this.dontStoreBoardHistory) { return; }
 
         if (this.cur_move.prev()) {
-            this.jumpTo(this.cur_move.index(-1));
+            this.jumpTo(this.cur_move.prev());
             return true;
         }
 
@@ -451,7 +451,7 @@ export class GoEngine {
         if (this.dontStoreBoardHistory) { return; }
 
         if (this.cur_move.next()) {
-            this.jumpTo(this.cur_move.index(1));
+            this.jumpTo(this.cur_move.next());
         }
     } /* }}} */
     public jumpTo(node) { /* {{{ */

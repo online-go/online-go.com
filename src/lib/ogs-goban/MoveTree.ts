@@ -315,10 +315,15 @@ export class MoveTree {
         return m;
     } /* }}} */
     next(dont_follow_hints?:boolean) { /* {{{ */
+        if (this.trunk_next) {
+            /* always follow a trunk first if it's available */
+            return this.trunk_next;
+        }
+
+        /* Remember what branch we were on and follow that by default.. but
+         * because we sometimes delete things, we're gonna check to make sure it's
+         * still in our list of branches before blindly following it */
         if (this.hint_next && !dont_follow_hints) {
-            /* Remember what branch we were on and follow that by default.. but
-             * because we sometimes delete things, we're gonna check to make sure it's
-             * still in our list of branches before blindly following it */
             if (this.trunk_next && this.hint_next.id === this.trunk_next.id) {
                 return this.hint_next;
             }
@@ -329,9 +334,7 @@ export class MoveTree {
             }
         }
 
-        if (this.trunk_next) {
-            return this.trunk_next;
-        }
+        /* If nothing else, follow the first branch we find */
         if (this.branches.length) {
             return this.branches[0];
         }
