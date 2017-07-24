@@ -84,6 +84,7 @@ export class User extends Resolver<UserProperties, any> {
     };
     user_id: number;
     vacation_left: string;
+    original_username: string;
 
     constructor(props) {
         super(props);
@@ -130,6 +131,7 @@ export class User extends Resolver<UserProperties, any> {
         return get(`players/${this.user_id}/full`).then((state) => {
             try {
                 //console.log(state);
+                this.original_username = state.user.username;
                 player_cache.update(state);
                 this.update(state);
             } catch (err) {
@@ -374,7 +376,6 @@ export class User extends Resolver<UserProperties, any> {
     toggleEdit = () => {{{
         if (this.state.editing) {
             this.saveEditChanges();
-            this.setState({editing: false});
         } else {
             this.setState({editing: true});
         }
@@ -407,19 +408,34 @@ export class User extends Resolver<UserProperties, any> {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
     }}}
     saveEditChanges() {{{
-        put(`players/${this.user_id}`, {
-            "username": this.state.user.username,
-            "first_name": this.state.user.first_name,
-            "last_name": this.state.user.last_name,
-            "about": this.state.user.about,
-            "website": this.state.user.website,
-            "country": this.state.user.country,
-            "real_name_is_private": this.state.user.real_name_is_private,
-        })
-        .then((res) => {
-            console.log(res);
-        })
-        .catch(errorAlerter);
+        let do_save = () => {
+            this.setState({editing: false});
+            put(`players/${this.user_id}`, {
+                "username": this.state.user.username,
+                "first_name": this.state.user.first_name,
+                "last_name": this.state.user.last_name,
+                "about": this.state.user.about,
+                "website": this.state.user.website,
+                "country": this.state.user.country,
+                "real_name_is_private": this.state.user.real_name_is_private,
+            })
+            .then((res) => {
+                console.log(res);
+            })
+            .catch(errorAlerter);
+        };
+
+        if (!data.get('user').is_moderator && (this.original_username !== this.state.user.username)) {
+            swal({
+                text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
+                showCancelButton: true,
+            }).then(() => {
+                do_save();
+            })
+            .catch(ignore);
+        } else {
+            do_save();
+        }
     }}}
     openModerateUser = () => {{{
         let modal = openModerateUserModal(this.state.user);
