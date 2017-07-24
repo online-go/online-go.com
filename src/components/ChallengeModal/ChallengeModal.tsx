@@ -555,7 +555,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         return <div id="challenge-basic-settings" className="left-pane pane form-horizontal" role="form">
             {(mode === "computer" || null) &&
                 <div className="form-group">
-                    <label className="control-label" htmlFor="engine">{_("Engine")}</label>
+                    <label className="control-label" htmlFor="engine">{pgettext("Computer opponent", "AI Player")}</label>
                     <div className="controls">
                     <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
                         {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
