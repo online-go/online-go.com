@@ -597,7 +597,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
         let game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
         game_count_extent[0] = 0;
-        this.outcomes_y.domain(d3.extent(game_count_extent))
+        this.outcomes_y.domain(d3.extent(game_count_extent));
         this.timeline_x.domain(this.ratings_x.domain());
         this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return d.rating; })) as any);
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
