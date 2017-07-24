@@ -1151,7 +1151,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.phase = engine.phase;
             new_state.title = goban.title;
             new_state.score_estimate = goban.score_estimate || {};
-            new_state.show_undo_requested = (engine.undo_requested === engine.getMoveNumber()) || (goban.submit_move != null && engine.undo_requested === engine.getMoveNumber() - 1) || null;
+            new_state.show_undo_requested = (engine.undo_requested === engine.last_official_move.move_number);
             new_state.show_accept_undo = (goban.engine.playerToMove() === data.get("user").id || (goban.submit_move != null && goban.engine.playerNotToMove() === data.get("user").id) || null);
             new_state.show_title = (!goban.submit_move || goban.engine.playerToMove() !== data.get("user").id || null);
             new_state.show_submit = !!goban.submit_move;
@@ -1784,7 +1784,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {(state.mode === "analyze" || null) &&
                         <span>
+                            {state.show_undo_requested
+                                ?
+                                <span>
+                                    {_("Undo Requested")}
+                                </span>
+                                :
+                                <span>
                             {_("Analyze Mode")}
+                                </span>
+                            }
                         </span>
                     }
 
