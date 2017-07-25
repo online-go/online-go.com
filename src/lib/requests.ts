@@ -89,9 +89,6 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
         let data: any;
         switch (typeof rest[0]) {
             case "number":
-                if (url.indexOf("%%") < 0) {
-                    console.warn("Url doesn't contain an id", url);
-                }
                 id = rest[0];
                 data = rest[1] || {};
                 break;
@@ -103,6 +100,14 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
                 id = undefined;
                 data = {};
                 break;
+        }
+        if (url.indexOf("%%") < 0 && id !== undefined) {
+            console.warn("Url doesn't contain an id but one was given.", url, id);
+            console.trace();
+        }
+        if (url.indexOf("%%") >= 0 && id === undefined) {
+            console.error("Url contains an id but none was given.", url);
+            console.trace();
         }
 
         let real_url: string = isFinite(id) ? url.replace("%%", id.toString()) : url;
