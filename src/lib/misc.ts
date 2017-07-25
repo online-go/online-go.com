@@ -174,6 +174,11 @@ export function getOutcomeTranslation(outcome:string) { /* {{{ */
             return pgettext("Game outcome", 'Abandonment');
     }
 
+    if (/[0-9.]+/.test(outcome)) {
+        let num = outcome.match(/([0-9.]+)/)[1];
+        return interpolate(pgettext("Game outcome", "{{number}} points"), {"number": num});
+    }
+
     return outcome;
 } /* }}} */
 export function getGameResultText(game) { /* {{{ */

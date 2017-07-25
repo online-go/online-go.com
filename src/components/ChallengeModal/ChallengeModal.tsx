@@ -285,8 +285,6 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
             demo[k] = next.demo[k];
         }
 
-        console.log(demo);
-
         demo.black_pro = demo.black_ranking > 1000 ? 1 : 0;
         if (demo.black_pro) {
             demo.black_ranking -= 1000;
@@ -296,6 +294,10 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
             demo.white_ranking -= 1000;
         }
         console.log("Sending", demo);
+
+        if (!demo.name) {
+            demo.name = _("Demo Board");
+        }
 
         this.close();
         post("demos", 0, demo).then((res) => {
@@ -555,7 +557,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         return <div id="challenge-basic-settings" className="left-pane pane form-horizontal" role="form">
             {(mode === "computer" || null) &&
                 <div className="form-group">
-                    <label className="control-label" htmlFor="engine">{_("Engine")}</label>
+                    <label className="control-label" htmlFor="engine">{pgettext("Computer opponent", "AI Player")}</label>
                     <div className="controls">
                     <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
                         {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
@@ -600,6 +602,8 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
     additionalSettings = () => {
         let mode = this.props.mode;
         let conf = this.state.conf;
+        let enable_custom_board_sizes = mode === 'demo' || this.state.challenge.game.ranked;
+        console.log(mode);
 
         return <div id="challenge-basic-settings" className="right-pane pane form-horizontal" role="form">
             {(mode !== "demo" || null) &&
@@ -661,16 +665,16 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
                                 <option value="9x9">9x9</option>
                             </optgroup>
                             <optgroup label={_("Extreme Sizes")}>
-                                <option disabled={this.state.challenge.game.ranked} value="25x25">25x25</option>
-                                <option disabled={this.state.challenge.game.ranked} value="21x21">21x21</option>
-                                <option disabled={this.state.challenge.game.ranked} value="5x5">5x5</option>
+                                <option disabled={!enable_custom_board_sizes} value="25x25">25x25</option>
+                                <option disabled={!enable_custom_board_sizes} value="21x21">21x21</option>
+                                <option disabled={!enable_custom_board_sizes} value="5x5">5x5</option>
                             </optgroup>
                             <optgroup label={_("Non-Square")}>
-                                <option disabled={this.state.challenge.game.ranked} value="19x9">19x9</option>
-                                <option disabled={this.state.challenge.game.ranked} value="5x13">5x13</option>
+                                <option disabled={!enable_custom_board_sizes} value="19x9">19x9</option>
+                                <option disabled={!enable_custom_board_sizes} value="5x13">5x13</option>
                             </optgroup>
                             <optgroup label={_("Custom")}>
-                                <option disabled={this.state.challenge.game.ranked} value="custom">{_("Custom Size")}</option>
+                                <option disabled={!enable_custom_board_sizes} value="custom">{_("Custom Size")}</option>
                             </optgroup>
                         </select>
                     </div>

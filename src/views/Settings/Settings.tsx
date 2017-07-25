@@ -26,8 +26,10 @@ import {sfx} from "goban";
 import {LanguagePicker} from "LanguagePicker";
 import preferences from "preferences";
 import data from "data";
-import {current_language} from "translate";
+import {current_language, languages} from "translate";
 import {toast} from 'toast';
+import {profanity_regex} from 'profanity_filter';
+
 
 declare var swal;
 
@@ -61,7 +63,7 @@ export class Settings extends React.PureComponent<{}, any> {
             password2: "",
             email_changed: false,
             email_message: null,
-            profanity_filter: preferences.get("profanity-filter").locale,
+            profanity_filter: Object.keys(preferences.get("profanity-filter")),
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
@@ -210,15 +212,10 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     updateProfanityFilter = (ev) => {{{
-        this.setState({
-            profanity_filter: ev.target.checked
-        });
-
-        let obj: any = {};
-        obj[current_language] = ev.target.checked;
-        obj.locale = ev.target.checked;
-
-        preferences.set("profanity-filter", Object.assign({}, preferences.get("profanity-filter"), obj));
+        let new_profanity_settings = {};
+        Array.prototype.filter.apply(ev.target.options, [x => x.selected]).map(opt => new_profanity_settings[opt.value] = true);
+        preferences.set("profanity-filter", new_profanity_settings);
+        this.setState({profanity_filter: Object.keys(new_profanity_settings)});
     }}}
     setAutoAdvance = (ev) => {{{
         preferences.set("auto-advance-after-submit", ev.target.checked),
@@ -368,7 +365,6 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
 
-
     render() {
         let user = data.get("user");
         let aga_ratings_enabled = null;
@@ -388,7 +384,6 @@ export class Settings extends React.PureComponent<{}, any> {
         _("A tournament you have joined has finished");
         _("Someone sends me a friend request");
 
-
         return (
         <div className="Settings container">
             <Card>
@@ -399,11 +394,11 @@ export class Settings extends React.PureComponent<{}, any> {
 
                     <dt>{_("Profanity Filter")}</dt>
                     <dd>
-                        <input type="checkbox" checked={this.state.profanity_filter}
-                                onChange={this.updateProfanityFilter} id="profanity_filter"/>
-                        <label htmlFor="profanity_filter">
-                            {this.state.profanity_filter ? _("Enabled") : _("Disabled")}
-                        </label>
+                        <select multiple onChange={this.updateProfanityFilter} value={this.state.profanity_filter} >
+                            {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
+                                <option key={lang} value={lang}>{languages[lang]}</option>
+                            ))}
+                        </select>
                     </dd>
 
                     <dt>{_("Game thumbnail list threshold")}</dt>

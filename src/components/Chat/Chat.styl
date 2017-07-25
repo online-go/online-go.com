@@ -197,8 +197,7 @@ channel-width=12rem;
             flex-basis: 100%;
             flex-grow: 1;
             flex-shrink: 1;
-            max-width: 100vw;
-            //overflow-x: hidden;
+            max-width: "calc(100vw - %s * 2)" % channel-width;
             overflow-y: scroll;
             border-bottom: 1px solid transparent;
             themed border-bottom-color shade3
@@ -296,15 +295,27 @@ channel-width=12rem;
         .channel-container.force-show, .users.force-show {
             display: inline-block;
         }
+
+
+        .center-container {
+            .chat-log {
+                max-width: 100vw;
+            }
+        }
+
+        &.force-show-users {
+            .center-container {
+                .chat-log {
+                    max-width: "calc(100vw - %s)" % channel-width;
+                }
+            }
+        }
     }
 
     .chat-line {
-        //margin-top: 0.1rem;
-        //font-size: 12pt;
-        //line-height: 12pt;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
-        word-wrap: break-word;
-        word-break: break-all;
         white-space: normal;
     }
 }

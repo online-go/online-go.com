@@ -275,6 +275,7 @@ goban-view-bar-width=400px
             white-space: nowrap;
         }
         .move-number {
+            flex-basis: 1rem;
             text-align: right;
         }
 
@@ -287,9 +288,9 @@ goban-view-bar-width=400px
         }
 
         .controls {
-            flex-shrink: 0;
+            flex-shrink: 1;
             flex-grow: 1;
-            flex-basis: 50%;
+            flex-basis: 30rem;
             display: flex;
 
             .move-control {
@@ -307,7 +308,7 @@ goban-view-bar-width=400px
 
     &.portrait .action-bar {
         .icons {
-            padding-left: 1.0rem;
+            //padding-left: 1.0rem;
         }
         .move-number {
         }

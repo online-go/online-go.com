@@ -226,6 +226,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
         else if (this.props.nodetails) {
             close_all_popovers();
+            close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
             return;
         }
