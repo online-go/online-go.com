@@ -21,8 +21,16 @@
 // response to us.
 export type URLCommunication = URLData | URLResult;
 export interface URLData {
-    [url: string]: any;
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
 }
 export interface URLResult {
-    [url: string]: any;
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
 }

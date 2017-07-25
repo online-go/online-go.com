@@ -75,13 +75,13 @@ function initialize() {
 let requests_in_flight = {};
 let last_request_id: number = 0;
 
-export function request<K extends keyof URLCommunication>(type: string, url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function request<T extends keyof URLCommunication, U extends keyof URLCommunication[T]>(type: T, url: U, id?: number, data?: URLData[T][U]): Promise<URLResult[T][U]> {
     initialize();
 
     let real_url: string = isFinite(id) ? url.replace("%%", id.toString()) : url;
     let real_data: any;
     if (url in translate_to_server) {
-        real_data = translate_to_server[url](data);
+        real_data = translate_to_server[type][url](data);
     }
     else {
         real_data = data;
@@ -115,7 +115,7 @@ export function request<K extends keyof URLCommunication>(type: string, url: K, 
             success: (res) => {
                 delete requests_in_flight[request_id];
                 if (url in translate_from_server) {
-                    resolve(translate_from_server[url](res));
+                    resolve(translate_from_server[type][url](res));
                 }
                 else {
                     resolve(res);
@@ -158,19 +158,19 @@ export function request<K extends keyof URLCommunication>(type: string, url: K, 
     return requests_in_flight[request_id].promise;
 }
 
-export function get<K extends keyof URLCommunication>(url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function get<K extends keyof URLCommunication["GET"]>(url: K, id?: number, data?: URLData["GET"][K]): Promise<URLResult["GET"][K]> {
     return request("GET", url, id, data);
 }
-export function post<K extends keyof URLCommunication>(url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function post<K extends keyof URLCommunication["POST"]>(url: K, id?: number, data?: URLData["POST"][K]): Promise<URLResult["POST"][K]> {
     return request("POST", url, id, data);
 }
-export function put<K extends keyof URLCommunication>(url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function put<K extends keyof URLCommunication["PUT"]>(url: K, id?: number, data?: URLData["PUT"][K]): Promise<URLResult["PUT"][K]> {
     return request("PUT", url, id, data);
 }
-export function patch<K extends keyof URLCommunication>(url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function patch<K extends keyof URLCommunication["PATCH"]>(url: K, id?: number, data?: URLData["PATCH"][K]): Promise<URLResult["PATCH"][K]> {
     return request("PATCH", url, id, data);
 }
-export function del<K extends keyof URLCommunication>(url: K, id?: number, data?: URLData[K]): Promise<URLResult[K]> {
+export function del<K extends keyof URLCommunication["DELETE"]>(url: K, id?: number, data?: URLData["DELETE"][K]): Promise<URLResult["DELETE"][K]> {
     return request("DELETE", url, id, data);
 }
 export function abort_requests_in_flight(url, type?) {

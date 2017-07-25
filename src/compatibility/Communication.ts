@@ -27,10 +27,20 @@ import {URLData, URLResult} from "data/Communication";
 
 
 // The translation function tables.
-type TranslateToServerType = {[url in keyof URLData]?: (data: URLData[url]) => any};
-type TranslateFromServerType = {[url in keyof URLResult]?: (result: any) => URLResult[url]};
+type TranslateToServerType = {[type in keyof URLData]: {[url in keyof URLData[type]]?: (data: URLData[type][url]) => any}};
+type TranslateFromServerType = {[type in keyof URLResult]: {[url in keyof URLResult[type]]?: (result: any) => URLResult[type][url]}};
 
 export const translate_to_server: TranslateToServerType = {
+    GET: {},
+    POST: {},
+    PUT: {},
+    PATCH: {},
+    DELETE: {},
 };
 export const translate_from_server: TranslateFromServerType = {
+    GET: {},
+    POST: {},
+    PUT: {},
+    PATCH: {},
+    DELETE: {},
 };
