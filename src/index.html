@@ -93,7 +93,16 @@
           var loadDeferredStyles = function() {
             var addStylesNode = document.getElementById("deferred-styles");
             var replacement = document.createElement("div");
-            replacement.innerHTML = addStylesNode.textContent;
+            var inner = addStylesNode.textContent
+            try {
+                /* Allow the ability to override the css file we load for development / testing purposes */
+                if (localStorage.getItem('ogs-css')) {
+                    inner = inner.replace("{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}", "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-css'));
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            replacement.innerHTML = inner;
             document.body.appendChild(replacement)
             addStylesNode.parentElement.removeChild(addStylesNode);
           };
@@ -208,7 +217,7 @@
         /* Load OGS. We can override what script is loaded by setting the
          * 'ogs-script' entry in localStorage (useful for testing versions before they're
          * released to everyone) */
-        let ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}";
+        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}";
         try {
             if (localStorage.getItem('ogs-script')) {
                 ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
