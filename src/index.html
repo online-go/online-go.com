@@ -129,6 +129,7 @@
       <script defer src="https://cdn.online-go.com/lib/d3/4.4.0/d3{{MIN}}.js"></script>
 
 
+      <script defer src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
       <script type="text/javascript">
         var ogs_version='{{VERSION}}';
         var ogs_release='{{RELEASE}}';
@@ -199,14 +200,24 @@
         window['ogs_current_language'] = ogs_current_language || 'en';
         /* }}} */
 
-        /* Load our language */
+        /* Load our transations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
         language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
         document.write('<script defer src="' + language_path + '"><'+'/script>');
-      </script>
-      <script defer src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
-      <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}"></script>
 
+        /* Load OGS. We can override what script is loaded by setting the
+         * 'ogs-script' entry in localStorage (useful for testing versions before they're
+         * released to everyone) */
+        let ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}";
+        try {
+            if (localStorage.getItem('ogs-script')) {
+                ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
+      </script>
 
       <script type="text/javascript">
         /* Google analytics {{{ */
