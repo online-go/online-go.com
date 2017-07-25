@@ -1251,12 +1251,6 @@ export class User extends Resolver<UserProperties, any> {
     renderRating(speed, size) {
         let r = getUserRating(this.state.user, speed, size);
 
-        /*
-        if (r.unset) {
-            return (<div>--</div>);
-        }
-        */
-
         return (
             <div className={'rating-entry ' + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
                  onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}

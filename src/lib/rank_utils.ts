@@ -57,9 +57,13 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
     let ret = new Rating();
     let ratings = user.ratings || {};
 
-    let key = speed;
+    let key:string = speed;
     if (size > 0) {
-        key += `-${size}x${size}`;
+        if (speed !== 'overall') {
+            key += `-${size}x${size}`;
+        } else {
+            key = `${size}x${size}`;
+        }
     }
 
     let rating = {
