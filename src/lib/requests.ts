@@ -75,105 +75,124 @@ function initialize() {
 let requests_in_flight = {};
 let last_request_id: number = 0;
 
-export function request<T extends keyof URLCommunication, U extends keyof URLCommunication[T]>(type: T, url: U, id?: number, data?: URLData[T][U]): Promise<URLResult[T][U]> {
-    initialize();
+interface RequestFunction<T extends keyof URLCommunication> {
+    <U extends keyof URLCommunication[T]>(url: U): Promise<URLResult[T][U]>;
+    <U extends keyof URLCommunication[T]>(url: U, id_or_data: number | URLData[T][U]): Promise<URLResult[T][U]>;
+    <U extends keyof URLCommunication[T]>(url: U, id: number, data: URLData[T][U]): Promise<URLResult[T][U]>;
+}
 
-    let real_url: string = isFinite(id) ? url.replace("%%", id.toString()) : url;
-    let real_data: any;
-    if (url in translate_to_server) {
-        real_data = translate_to_server[type][url](data);
-    }
-    else {
-        real_data = data;
-    }
+export function request<T extends keyof URLCommunication>(type: T): RequestFunction<T> {
+    return (url, ...rest) => {
+        initialize();
 
-    for (let id in requests_in_flight) {
-        let req = requests_in_flight[id];
-        if (req.promise && (req.url === real_url) && (type === req.type) && deepCompare(req.data, real_data)) {
-            //console.log("Duplicate in flight request, chaining");
-            return req.promise;
+        let id: number | undefined;
+        let data: any;
+        switch (typeof rest[0]) {
+            case "number":
+                if (url.indexOf("%%") < 0) {
+                    console.warn("Url doesn't contain an id", url);
+                }
+                id = rest[0];
+                data = rest[1] || {};
+                break;
+            case "object":
+                id = undefined;
+                data = rest[0];
+                break;
+            case "undefined":
+                id = undefined;
+                data = {};
+                break;
         }
-    }
 
-    let request_id = ++last_request_id;
-    let traceback = new Error();
+        let real_url: string = isFinite(id) ? url.replace("%%", id.toString()) : url;
+        let real_data: any;
+        if (url in translate_to_server) {
+            real_data = translate_to_server[type][url](data);
+        }
+        else {
+            real_data = data;
+        }
 
-    requests_in_flight[request_id] = {
-        type: type,
-        url: real_url,
-        data: real_data,
-    };
-
-
-    requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-        let opts = {
-            url: api1ify(real_url),
-            type: type,
-            data: undefined,
-            dataType: "json",
-            contentType: "application/json",
-            success: (res) => {
-                delete requests_in_flight[request_id];
-                if (url in translate_from_server) {
-                    resolve(translate_from_server[type][url](res));
-                }
-                else {
-                    resolve(res);
-                }
-            },
-            error: (err) => {
-                delete requests_in_flight[request_id];
-                if (err.status !== 0) { /* Ignore aborts */
-                    console.warn(api1ify(real_url), err.status, err.statusText);
-                    console.warn(traceback.stack);
-                }
-                console.error(err);
-                reject(err);
+        for (let id in requests_in_flight) {
+            let req = requests_in_flight[id];
+            if (req.promise && (req.url === real_url) && (type === req.type) && deepCompare(req.data, real_data)) {
+                //console.log("Duplicate in flight request, chaining");
+                return req.promise;
             }
+        }
+
+        let request_id = ++last_request_id;
+        let traceback = new Error();
+
+        requests_in_flight[request_id] = {
+            type: type,
+            url: real_url,
+            data: real_data,
         };
-        if (real_data) {
-            if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
-                opts.data = new FormData();
-                if (real_data instanceof Blob) {
-                    opts.data.append("file", real_data);
+
+
+        requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
+            let opts = {
+                url: api1ify(real_url),
+                type: type,
+                data: undefined,
+                dataType: "json",
+                contentType: "application/json",
+                success: (res) => {
+                    delete requests_in_flight[request_id];
+                    if (url in translate_from_server) {
+                        resolve(translate_from_server[type][url](res));
+                    }
+                    else {
+                        resolve(res);
+                    }
+                },
+                error: (err) => {
+                    delete requests_in_flight[request_id];
+                    if (err.status !== 0) { /* Ignore aborts */
+                        console.warn(api1ify(real_url), err.status, err.statusText);
+                        console.warn(traceback.stack);
+                    }
+                    console.error(err);
+                    reject(err);
+                }
+            };
+            if (real_data) {
+                if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
+                    opts.data = new FormData();
+                    if (real_data instanceof Blob) {
+                        opts.data.append("file", real_data);
+                    } else {
+                        for (let file of (real_data as Array<Blob>)) {
+                            opts.data.append("file", file);
+                        }
+                    }
+                    (opts as any).processData = false;
+                    (opts as any).contentType = false;
                 } else {
-                    for (let file of (real_data as Array<Blob>)) {
-                        opts.data.append("file", file);
+                    if (type === "GET") {
+                        opts.data = real_data;
+                    } else {
+                        opts.data = JSON.stringify(real_data);
                     }
                 }
-                (opts as any).processData = false;
-                (opts as any).contentType = false;
-            } else {
-                if (type === "GET") {
-                    opts.data = real_data;
-                } else {
-                    opts.data = JSON.stringify(real_data);
-                }
             }
-        }
 
-        requests_in_flight[request_id].request = $.ajax(opts);
-    });
+            requests_in_flight[request_id].request = $.ajax(opts);
+        });
 
-    return requests_in_flight[request_id].promise;
+        return requests_in_flight[request_id].promise;
+    };
 }
 
-export function get<K extends keyof URLCommunication["GET"]>(url: K, id?: number, data?: URLData["GET"][K]): Promise<URLResult["GET"][K]> {
-    return request("GET", url, id, data);
-}
-export function post<K extends keyof URLCommunication["POST"]>(url: K, id?: number, data?: URLData["POST"][K]): Promise<URLResult["POST"][K]> {
-    return request("POST", url, id, data);
-}
-export function put<K extends keyof URLCommunication["PUT"]>(url: K, id?: number, data?: URLData["PUT"][K]): Promise<URLResult["PUT"][K]> {
-    return request("PUT", url, id, data);
-}
-export function patch<K extends keyof URLCommunication["PATCH"]>(url: K, id?: number, data?: URLData["PATCH"][K]): Promise<URLResult["PATCH"][K]> {
-    return request("PATCH", url, id, data);
-}
-export function del<K extends keyof URLCommunication["DELETE"]>(url: K, id?: number, data?: URLData["DELETE"][K]): Promise<URLResult["DELETE"][K]> {
-    return request("DELETE", url, id, data);
-}
-export function abort_requests_in_flight(url, type?) {
+export const get = request("GET");
+export const post = request("POST");
+export const put = request("PUT");
+export const patch = request("PATCH");
+export const del = request("DELETE");
+
+export function abort_requests_in_flight(url, type?: keyof URLCommunication) {
     for (let id in requests_in_flight) {
         let req = requests_in_flight[id];
         if ((req.url === url) && (!type || type === req.type)) {

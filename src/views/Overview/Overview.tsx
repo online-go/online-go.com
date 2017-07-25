@@ -164,13 +164,13 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
         this.refresh();
     }}}
     refresh() {{{
-        get("me/groups", 0, {}).then((res) => {
+        get("me/groups", {}).then((res) => {
             this.setState({"groups": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
-        get("me/groups/invitations", 0, {page_size: 100}).then((res) => {
+        get("me/groups/invitations", {page_size: 100}).then((res) => {
             this.setState({"invitations": res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation)});
         }).catch((err) => {
             console.info("Caught", err);
@@ -180,12 +180,12 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
         abort_requests_in_flight("me/groups");
     }}}
     acceptInvite(invite) {{{
-        post("me/groups/invitations", 0, {"request_id": invite.id})
+        post("me/groups/invitations", {"request_id": invite.id})
         .then(() => this.refresh())
         .catch(() => this.refresh());
     }}}
     rejectInvite(invite) {{{
-        post("me/groups/invitations", 0, {"request_id": invite.id, "delete": true})
+        post("me/groups/invitations", {"request_id": invite.id, "delete": true})
         .then(() => this.refresh())
         .catch(() => this.refresh());
     }}}
@@ -219,13 +219,13 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", 0, {ended__isnull: true, ordering: "name"}).then((res) => {
+        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"my_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
-        get("tournaments", 0, {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
+        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
@@ -269,7 +269,7 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/ladders", 0, {}).then((res) => {
+        get("me/ladders", {}).then((res) => {
             this.setState({"ladders": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});

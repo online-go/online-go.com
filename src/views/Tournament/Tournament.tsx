@@ -932,7 +932,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             .then(() => this.resolve(this.state.tournament_id))
             .catch(errorAlerter);
         } else {
-            post("tournaments/", 0, tournament)
+            post("tournaments/", tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
             .catch(errorAlerter);
         }

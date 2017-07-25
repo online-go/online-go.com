@@ -300,7 +300,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
         }
 
         this.close();
-        post("demos", 0, demo).then((res) => {
+        post("demos", demo).then((res) => {
             console.log("Demo create response: ", res);
             browserHistory.push(`/demo/view/${res.id}`);
         }).catch(errorAlerter);

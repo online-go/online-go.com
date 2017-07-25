@@ -46,7 +46,7 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
     createGroup() {
         if (this.state.group.name.trim() !== "") {
             console.info(this.state.group);
-            post("groups/", 0, this.state.group)
+            post("groups/", this.state.group)
             .then((group) => {
                 browserHistory.push(`/group/${group.id}`);
             })

@@ -116,7 +116,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     startVacation = () => {{{
-        put("me/vacation", 0, {})
+        put("me/vacation")
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -205,7 +205,7 @@ export class Settings extends React.PureComponent<{}, any> {
             }
         };
         this.setState({notifications: Object.assign({}, this.state.notifications, up)});
-        put("me/settings", 0, {
+        put("me/settings", {
             notifications: up
         })
         .then(() => 0)
@@ -318,7 +318,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     savePassword = () => {{{
         if (this.state.profile.no_password_set) { // ie social auth account
-            post("/api/v0/changePassword", 0, {
+            post("/api/v0/changePassword", {
                 "new_password": this.state.password1,
                 "old_password": "!",
             })
@@ -332,7 +332,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 text: _("Enter your current password"),
                 input: "password",
             }).then((password) => {
-                post("/api/v0/changePassword", 0, {
+                post("/api/v0/changePassword", {
                     "old_password": password,
                     "new_password": this.state.password1,
                 })
@@ -358,7 +358,7 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
     resendValidationEmail = () => {{{
-        post("me/validateEmail", 0, {})
+        post("me/validateEmail", {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })

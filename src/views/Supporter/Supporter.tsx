@@ -117,7 +117,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 })
                 .catch(errorAlerter);
 
-                get("me/purchase_transactions", 0, {order_by: "-created", page_size:1})
+                get("me/purchase_transactions", {order_by: "-created", page_size:1})
                 .then((res) => {
                     this.setState({
                         last_transaction: res.results.length ? res.results[0] : null
@@ -399,10 +399,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         console.log("Creating payment account for vendor ", vendor, details);
-        return post("me/payment_accounts", 0, obj);
+        return post("me/payment_accounts", obj);
     }}}
     processSupporterSignup(payment_method, amount) {{{
-        let promise = post("me/supporter", 0, {
+        let promise = post("me/supporter", {
             "payment_method": payment_method,
             "price": amount,
         });
