@@ -89,7 +89,7 @@ export class Settings extends React.PureComponent<{}, any> {
         }
     }}}
     resolve() {{{
-        get("me/settings", 0)
+        get("me/settings")
         .then((settings) => {
             this.setState({
                 profile: settings.profile,
@@ -101,7 +101,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     endVacation = () => {{{
-        del("me/vacation", 0)
+        del("me/vacation")
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({

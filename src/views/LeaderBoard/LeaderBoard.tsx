@@ -35,7 +35,7 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     }
 
     componentDidMount() {
-        get("leaderboards/", 0)
+        get("leaderboards/")
         .then((leaderboards) => {
             this.setState({
                 leaderboards: [

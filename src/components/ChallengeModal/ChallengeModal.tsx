@@ -143,7 +143,7 @@ export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
             conf: {
                 mode: this.props.mode,
                 username: "",
-                bot_id: data.get("challenge.bot", 0),
+                bot_id: data.get("challenge.bot"),
                 selected_board_size: preferences.get("new-game-board-size") + "x" + preferences.get("new-game-board-size"),
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },

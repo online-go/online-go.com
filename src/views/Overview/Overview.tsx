@@ -59,7 +59,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     componentDidMount() {
-        return get("ui/overview", 0).then((overview) => {
+        return get("ui/overview").then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});

@@ -111,7 +111,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         if (!data.get('user').anonymous) {
             braintree_js_promise.then(() => {
-                get("me/supporter", 0)
+                get("me/supporter")
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
                 })
@@ -224,7 +224,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .then(() => {
             this.setState({processing: true});
-            del("me/supporter", 0)
+            del("me/supporter")
             .then(() => {
                 window.location.reload();
             })

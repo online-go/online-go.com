@@ -46,7 +46,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
     }
 
     resolve() {
-        get("ladders", 0)
+        get("ladders")
         .then((res) => {
             this.setState({ladders: res.results});
         })

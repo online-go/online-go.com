@@ -50,7 +50,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     }
 
     componentWillMount() {{{
-        get("announcements", 0)
+        get("announcements")
         .then((announcements) => {
             for (let announcement of announcements) {
                 this.announce(announcement);
