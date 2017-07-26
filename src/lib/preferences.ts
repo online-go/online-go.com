@@ -72,13 +72,16 @@ for (let k in defaults) {
 
 
 
-export function get(key: string): any {
-    return data.ensureDefaultAndGet(`preferences.${key}`);
+export function get(key: keyof typeof defaults): any {
+    if (!(key in defaults)) {
+        throw new Error(`Undefined default: ${key}`);
+    }
+    return data.get(`preferences.${key}`);
 }
 export function set(key: string, value: any): any {
     return data.set(`preferences.${key}`, value);
 }
-export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener {
+export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener<string> {
     return data.watch(`preferences.${key}`, cb, call_on_undefined);
 }
 

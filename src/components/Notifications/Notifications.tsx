@@ -657,13 +657,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                del("me/challenges/" + notification.challenge_id)
+                                del("me/challenges/%%", notification.challenge_id)
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post(`me/challenges/${notification.challenge_id}/accept`, {})
+                                post("me/challenges/%%/accept", notification.challenge_id, {})
                                 .then(() => {
                                     this.del();
                                     if (isLiveGame(notification.time_control)) {

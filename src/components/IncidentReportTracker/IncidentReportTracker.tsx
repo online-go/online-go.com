@@ -72,27 +72,27 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             delete this.active_incident_reports[report.id];
         } else {
             report.unclaim = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "unclaim"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "unclaim"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.good_report = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "resolve", was_helpful: true})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "resolve", was_helpful: true})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.bad_report = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "resolve", was_helpful: false})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "resolve", was_helpful: false})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.claim = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "claim"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "claim"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
             report.cancel = () => {
-                post("moderation/incident/" + report.id, {"id": report.id, "action": "cancel"})
+                post("moderation/incident/%%", report.id, {"id": report.id, "action": "cancel"})
                 .then(ignore)
                 .catch(errorAlerter);
             };
@@ -103,7 +103,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                     showCancelButton: true,
                 })
                 .then((txt) => {
-                    post("moderation/incident/" + report.id, {"id": report.id, "action": "note", note: txt})
+                    post("moderation/incident/%%", report.id, {"id": report.id, "action": "note", note: txt})
                     .then(ignore)
                     .catch(errorAlerter);
                 })

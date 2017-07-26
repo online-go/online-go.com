@@ -102,7 +102,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     resolve(group_id: number) {{{
         let user = data.get("user");
 
-        get(`groups/${group_id}`).then((group) => {
+        get("groups/%%", group_id).then((group) => {
             let is_admin = false;
 
             for (let admin of group.admins) {
@@ -117,7 +117,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 group_loaded: true,
             });
         }).catch(errorAlerter);
-        get(`groups/${group_id}/news/`).then((news) => {
+        get("groups/%%/news/", group_id).then((news) => {
             this.setState({news: news.results});
         }).catch(errorAlerter);
     }}}
@@ -136,12 +136,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
 
     leaveGroup = () => {{{
-        post("groups/" + this.state.group_id + "/members", {"delete": true})
+        post("groups/%%/members", this.state.group_id, {"delete": true})
         .then((res) => { this.resolve(this.state.group_id); })
         .catch(errorAlerter);
     }}}
     joinGroup = () => {{{
-        post("groups/" + this.state.group_id + "/members", {})
+        post("groups/%%/members", this.state.group_id, {})
         .then((res) => {
             if (res.success) {
                 this.resolve(this.state.group_id);
@@ -176,7 +176,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateIcon = (files) => {{{
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/icon`, file)
+            put("group/%%/icon", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -187,7 +187,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateBanner = (files) => {{{
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/banner`, file)
+            put("group/%%/banner", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -248,7 +248,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return;
         }
         this.toggleNewNewsPost();
-        post(`group/${this.state.group_id}/news/`, {
+        post("group/%%/news/", this.state.group_id, {
             title: this.state.new_news_title,
             content: this.state.new_news_body,
         })
@@ -277,7 +277,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            post(`group/${this.state.group_id}/news/`, {
+            post("group/%%/news/", this.state.group_id, {
                 'id': entry.id,
                 'delete': true
             })
@@ -329,7 +329,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
 
     inviteUser = (ev) => {{{
-        post(`group/${this.state.group_id}/members`, {"username": this.state.user_to_invite.username })
+        post("group/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
             _("Player invited"); /* for translations */
@@ -667,7 +667,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            del(`groups/${this.state.group.id}`)
+            del("groups/%%", this.state.group.id)
             .then(() => {
                 browserHistory.push("/groups/");
             })
@@ -679,7 +679,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     makeAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to make this user an administrator of the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: true
             })
@@ -692,7 +692,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     unAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to remove administrator privileges from this user?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: false
             })
@@ -705,7 +705,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     kick(player_id: number) {{{
         swal({text: _("Are you sure you wish to remove this user from the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            post("groups/" + this.state.group_id + "/members", {"delete": true, player_id: player_id})
+            post("groups/%%/members", this.state.group_id, {"delete": true, player_id: player_id})
             .then((res) => { this.resolve(this.state.group_id); })
             .catch(errorAlerter);
         })

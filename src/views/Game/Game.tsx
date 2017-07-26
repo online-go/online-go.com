@@ -538,7 +538,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         if (this.game_id) {
-            get(`games/${this.game_id}`)
+            get("games/%%", this.game_id)
             .then((game) => {
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
@@ -1348,7 +1348,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 "text": _("Start a review of this game?"),
                 showCancelButton: true
             }).then(() => {
-                post(`games/${this.game_id}/reviews`, {})
+                post("games/%%/reviews", this.game_id, {})
                 .then((res) => browserHistory.push(`/review/${res.id}`))
                 .catch(errorAlerter);
             })
@@ -1391,7 +1391,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             moderation_note = moderation_note.trim();
         } while (moderation_note === "");
 
-        post(`games/${this.game_id}/moderate`,
+        post("games/%%/moderate", this.game_id,
              {
                  "decide": winner,
                  "moderation_note": moderation_note,
