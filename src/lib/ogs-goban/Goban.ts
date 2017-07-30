@@ -2172,8 +2172,9 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (this.highlight_movetree_moves && movetree_contains_this_square) {
-                let color = "#FF8E0A";
+            if (pos.highlight || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+
+                let color = pos.highlight ? "#00FF00" : "#FF8E0A";
 
                 ctx.lineCap = "square";
                 ctx.save();
@@ -2695,7 +2696,7 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (this.highlight_movetree_moves && movetree_contains_this_square) {
+            if (pos.highlight || (this.highlight_movetree_moves && movetree_contains_this_square)) {
                 ret += "highlight,";
             }
         }}}
@@ -3739,6 +3740,20 @@ export abstract class Goban extends EventEmitter {
             }
         }
     } /* }}} */
+
+    private setLetterMark(x, y, mark: string, drawSquare?) {
+        this.engine.cur_move.getMarks(x, y).letter = mark;
+        if (drawSquare) { this.drawSquare(x, y);  }
+    }
+    public setCustomMark(x, y, mark: string, drawSquare?) {
+        this.engine.cur_move.getMarks(x, y)[mark] = true;
+        if (drawSquare) { this.drawSquare(x, y); }
+    }
+    public deleteCustomMark(x, y, mark: string, drawSquare?) {
+        delete this.engine.cur_move.getMarks(x, y)[mark];
+        if (drawSquare) { this.drawSquare(x, y); }
+    }
+
     private setMark(x, y, mark, dont_draw) { /* {{{ */
         try {
             if (x >= 0 && y >= 0) {
@@ -3747,13 +3762,9 @@ export abstract class Goban extends EventEmitter {
                 }
 
                 if (mark.length <= 3) {
-                    this.engine.cur_move.getMarks(x, y).letter = mark;
+                    this.setLetterMark(x, y, mark, !dont_draw);
                 } else {
-                    this.engine.cur_move.getMarks(x, y)[mark] = true;
-                }
-
-                if (!dont_draw) {
-                    this.drawSquare(x, y);
+                    this.setCustomMark(x, y, mark, !dont_draw);
                 }
             }
         } catch (e) {

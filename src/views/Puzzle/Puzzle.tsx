@@ -34,6 +34,7 @@ import data from "data";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
 import {PuzzleNavigation} from './PuzzleNavigation';
 import {PuzzleEditor} from './PuzzleEditing';
+import {MoveTree} from 'goban';
 
 declare var swal;
 
@@ -64,9 +65,11 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     navigation = new PuzzleNavigation();
     editor: PuzzleEditor;
 
+    hintsOn = false;
+
     set_analyze_tool: any = {};
 
-    constructor(props) { /* {{{ */
+    constructor(props) {
         super(props);
 
         this.editor  = new PuzzleEditor(this.transform);
@@ -97,7 +100,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             delete_branch: () => { this.deleteBranch(); },
         };
 
-    } /* }}} */
+    }
 
     componentDidMount() {{{
         this.fetchPuzzle(parseInt(this.props.params.puzzle_id));
@@ -216,8 +219,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.goban = new Goban(opts);
         this.goban.setMode("puzzle");
         window["global_goban"] = this.goban;
-        this.goban.on("update", () => this.sync_state());
-        this.goban.on("update", () => this.forceUpdate());
+        this.goban.on("update", () => this.onUpdate());
 
         this.goban.on("puzzle-wrong-answer", this.onWrongAnswer);
         this.goban.on("puzzle-correct-answer", this.onCorrectAnswer);
@@ -225,13 +227,24 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.navigation.goban = this.goban;
     }}}
 
+    onUpdate() {{{
+        this.removeHints();
+        this.sync_state();
+        this.forceUpdate();
+    }}}
+
+    removeHints() {{{
+        let move = this.goban.engine.cur_move;
+        move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "highlight", true));
+        this.hintsOn = false;
+    }}}
+
     sync_state() {{{
         let new_state: any = {};
-        let goban = this.goban;
 
-        new_state.analyze_tool = goban.analyze_tool;
-        new_state.analyze_subtool = goban.analyze_subtool;
-        new_state.move_text = goban.engine.cur_move && goban.engine.cur_move.text ? goban.engine.cur_move.text : "";
+        new_state.analyze_tool = this.goban.analyze_tool;
+        new_state.analyze_subtool = this.goban.analyze_subtool;
+        new_state.move_text = this.goban.engine.cur_move && this.goban.engine.cur_move.text ? this.goban.engine.cur_move.text : "";
 
         this.setState(new_state);
     }}}
@@ -260,11 +273,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             show_wrong: false,
         });
 
-        if (this.goban.engine.cur_move.parent) {
-            this.goban.engine.jumpTo(this.goban.engine.cur_move.parent);
-        }
+        this.goban.showPrevious();
 
-        this.forceUpdate();
         this.onResize();
     }}}
     doReset = () => {{{
@@ -504,7 +514,17 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         .catch(ignore);
     }}}
 
-
+    showHint = () => {
+        if (this.hintsOn) {
+            this.removeHints();
+        } else if (!this.goban.engine.cur_move.correct_answer) {
+            let branches = this.goban.engine.cur_move.findBranchesWithCorrectAnswer();
+            branches.forEach(branch => {
+                this.goban.setCustomMark(branch.x, branch.y, "highlight", true);
+            });
+            this.hintsOn = true;
+        }
+    }
 
     render() {{{
         if (this.state.editing) {
@@ -588,6 +608,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                         {(puzzle.owner.id === data.get("user").id || null) &&
                             <button onClick={this.edit}><i className="fa fa-pencil"></i></button>
                         }
+                    </div>
+                    <div className={"right-col"}>
+                        <button className="btn btn-default" onClick={this.showHint} >{_("Hint")}</button>
                     </div>
                 </div>
 
