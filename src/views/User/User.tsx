@@ -826,10 +826,12 @@ export class User extends Resolver<UserProperties, any> {
                         </div>
                         {/* }}} */}
                         {/* }}} */}
-                        <div className='ratings-container'>{/* Ratings {{{ */}
-                            <h3 className='ratings-title'>{_("Ratings")}</h3>
-                            {this.renderRatingGrid()}
-                        </div>
+                        {(!user.professional || global_user.id === user.id) &&
+                            <div className='ratings-container'>{/* Ratings {{{ */}
+                                <h3 className='ratings-title'>{_("Ratings")}</h3>
+                                {this.renderRatingGrid()}
+                            </div>
+                        }
                         {/* }}} */}
                     </div>
 
@@ -856,11 +858,13 @@ export class User extends Resolver<UserProperties, any> {
             </div>
             {/* }}} */}
 
-            <div className='ratings-row'>
-                <div className='ratings-chart'>
-                    <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+            {(!user.professional || global_user.id === user.id) &&
+                <div className='ratings-row'>
+                    <div className='ratings-chart'>
+                        <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                    </div>
                 </div>
-            </div>
+            }
 
             <div className="row">
                 <div className='col-sm-8'>{/* {{{ */}
