@@ -16,4 +16,4 @@
  */
 
 
-export * from "./RatingHistory";
+export * from "./RatingsChart";

@@ -16,10 +16,12 @@
  */
 
 import * as React from "react";
+import {toast} from "toast";
 import {browserHistory} from "react-router";
 import {_, pgettext} from "translate";
-import {shouldOpenNewTab, errorAlerter, alertModerator} from "misc";
-import {rankString} from "rank_utils";
+import {post} from "requests";
+import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
+import {rankString, getUserRating, is_beginner} from "rank_utils";
 import player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import data from "data";
@@ -38,6 +40,14 @@ interface PlayerDetailsProperties {
     playerId: number;
     noextracontrols?: boolean;
 }
+
+let friends = {};
+data.watch('friends', (friends_arr) => {
+    friends = {};
+    for (let friend of friends_arr) {
+        friends[friend.id] = true;
+    }
+});
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
@@ -79,8 +89,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             [
                 "username",
                 "icon",
-                "rating",
-                "ranking",
+                "ratings",
                 "pro",
                 "country",
                 "ui_class",
@@ -157,12 +166,24 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeBan = (_ev) => {{{
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
-    openSupporterAdmin = () => {
+    openSupporterAdmin = () => {{{
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
-    }
+    }}}
+    addFriend = () => {{{
+        toast(<div>{_("Sent friend request")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
+    removeFriend = () => {{{
+        toast(<div>{_("Removed friend")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
     render() {
         let user = data.get("user");
+
+        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
 
         return (
             <div className="PlayerDetails">
@@ -174,18 +195,36 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <div>
                             <Player user={this.state} nodetails rank={false} />
                         </div>
-                        <div>
-                            <span className="rating">{Math.round(this.state.rating) || "..."}</span>
-                        </div>
-                        <div>
-                            <span className="rank">{rankString(this.state) || "..."}</span>
-                        </div>
+                        {rating && rating.professional &&
+                            <div>
+                                <span className="rank">{rating.rank_label}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional &&
+                            <div>
+                                <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional && !is_beginner(this.state) &&
+                            <div>
+                                <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional && is_beginner(this.state) &&
+                            <div>
+                                <span className="rank">{_("Beginners Class")}</span>
+                            </div>
+                        }
                     </div>
                 </div>
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        {friends[this.props.playerId]
+                            ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
+                            : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
+                        }
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>

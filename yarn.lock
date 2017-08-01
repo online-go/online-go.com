@@ -168,7 +168,7 @@
     "@types/d3-interpolate" "*"
     "@types/d3-selection" "*"
 
-"@types/d3@^4.4.0":
+"@types/d3@^4.9.0":
   version "4.9.0"
   resolved "https://registry.yarnpkg.com/@types/d3/-/d3-4.9.0.tgz#4e4518c4ccf442edd437a58ee5f5129be61342b9"
   dependencies:

@@ -41,7 +41,8 @@ export class Resolver<Props, State> extends EventEmitterPureComponent<Props, Sta
                     this.forceUpdate();
                 }
             }).catch((err) => {
-                console.log("Resolve error");
+                console.error("Resolve error");
+                console.error(err);
                 this.resolve_error = true;
             });
             instant_resolution = false;
