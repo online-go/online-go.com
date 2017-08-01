@@ -17,6 +17,7 @@
 
 import * as ReactDOM from "react-dom";
 import {EventEmitterPureComponent} from "EventEmitterPureComponent";
+import {dup} from "misc";
 
 let current_modal = null;
 export class Modal<P, S> extends EventEmitterPureComponent<P&{fastDismiss?: boolean}, S> {
@@ -27,7 +28,6 @@ export class Modal<P, S> extends EventEmitterPureComponent<P&{fastDismiss?: bool
     close = () => {
         this.emit("close");
     }
-
     _open = () => {
         let container = $(ReactDOM.findDOMNode(this)).parent();
         let backdrop = $("<div class='Modal-backdrop'></div>");
@@ -58,15 +58,66 @@ export class Modal<P, S> extends EventEmitterPureComponent<P&{fastDismiss?: bool
 
         this.emit("open");
     }
-
     componentDidMount() {
-        super.componentDidMount();
+        this._open();
+    }
+    componentWillReceiveProps(newProps: any) {
         this._open();
     }
 
-    componentWillReceiveProps(newProps: any) {
-        super.componentWillReceiveProps(newProps);
-        this._open();
+    /********************/
+    /*** State update ***/
+    /********************/
+    /* TODO: This state update system is something I did when I was just getting
+     * started with React, it sucks. It's mostly been removed, but there are
+     * a few modals left that still use it. The eventual goal is to refactor
+     * those uses and remove this funcitonality all together. */
+    upstate_object: any = null;
+
+    nextState(): any {
+        if (this.upstate_object == null) {
+            this.upstate_object = dup(this.state);
+        }
+        return this.upstate_object;
+    }
+    next(): any {
+        return this.nextState();
+    }
+    componentWillUpdate() {
+        this.upstate_object = null;
+    }
+    bulkUpstate(arr) {
+        let next_state: any = this.nextState();
+        let state_update: any = {};
+
+        for (let elt of arr) {
+            let key = elt[0];
+            let event_or_value = elt[1];
+
+            let value = null;
+            if (typeof(event_or_value) === "object" && "target" in event_or_value) {
+                let target = event_or_value.target;
+                value = target.type === "checkbox" ? target.checked : target.value;
+            } else {
+                value = event_or_value;
+            }
+            let components = key.split(".");
+            let primary_key = components[0];
+            let cur = next_state;
+            while (components.length > 1) {
+                cur = cur[components[0]];
+                components.shift();
+            }
+            cur[components[0]] = value;
+            state_update[primary_key] = next_state[primary_key];
+        }
+        this.setState(state_update);
+    }
+    upstate(key: string|Array<Array<any>>, event_or_value?) {
+        if (!event_or_value && Array.isArray(key)) {
+            return this.bulkUpstate(key);
+        }
+        return this.bulkUpstate([[key, event_or_value]]);
     }
 }
 
