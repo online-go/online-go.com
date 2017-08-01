@@ -31,7 +31,6 @@ import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import data from "data";
-import {FirstTimeSetup} from "FirstTimeSetup";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 
@@ -212,10 +211,6 @@ export class Play extends React.Component<PlayProperties, any> {
 
 
     render() {
-        if (!data.get("user").setup_rank_set) {
-            return <FirstTimeSetup/>;
-        }
-
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
         let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);

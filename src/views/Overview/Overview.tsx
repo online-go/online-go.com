@@ -32,7 +32,6 @@ import online_status from "online_status";
 import data from "data";
 import {errorAlerter} from "misc";
 import {longRankString} from "rank_utils";
-import {FirstTimeSetup} from "FirstTimeSetup";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
@@ -71,10 +70,6 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
-            return <FirstTimeSetup/>;
-        }
-
         let user = data.get("config.user");
 
         return (
