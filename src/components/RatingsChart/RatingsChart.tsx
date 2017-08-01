@@ -224,7 +224,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
-        this.rank_axis.tickFormat((rating:number) => rankString(Math.round(rating_to_rank(rating))));
+        this.rank_axis.tickFormat((rating:number) => {
+            let rank = Math.round(rating_to_rank(rating));
+            if (rank >= 13) {
+                return rankString(rank);
+            }
+            return "";
+        })
 
         let boundDataLegendX = (x:number) => {
             return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
@@ -423,8 +429,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 self.helperText.text(format_date(new Date(d.ended)) + '  ' +
                     interpolate(
                         self.shouldDisplayRankInformation()
-                        ? pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
-                        : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
+                        ? (
+                            rating_to_rank(d.rating) >= 13
+                            ?  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
+                            :  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: Beginners Class")
+                        ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
                         ,
                         {
                             rating: Math.floor(d.rating),
