@@ -96,23 +96,6 @@ export class Overview extends React.Component<{}, any> {
                     }
                 </div>
                 <div className="right">
-                    <div className="profile">
-                        <PlayerIcon id={user.id} size={80} />
-
-                        <div className="profile-right">
-                            <span className="username">{user.username}</span>
-
-                            <div className="rank-and-progress">
-                                <span className="rank">{longRankString(user)} &nbsp;</span>
-                                <div className="progress">
-                                    <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
-                                </div>
-                            </div>
-
-                            <Link className="view-and-edit-link" to={`/player/${user.id}`}>{_("View and edit profile") /* translators: View and edit profile */} &gt;</Link>
-                        </div>
-                    </div>
-
                     <div className="right-header">
                         <h3>{_("Tournaments")}</h3>
                         <Link to="/tournaments">{_("All tournaments") /* translators: Link to view all tournaments */} &gt;</Link>
