@@ -106,6 +106,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             let is_admin = false;
 
             for (let admin of group.admins) {
+                player_cache.update(admin);
                 if (user.id === admin.id) {
                     is_admin = true;
                 }
@@ -350,7 +351,6 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     setUserToInvite = (user) => {{{
         this.setState({user_to_invite: user});
     }}}
-
 
 
     render() {{{

@@ -65,19 +65,20 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     componentDidMount() {{{
-        if (this.state.user) {
-            if (!this.props.disableCacheUpdate) {
+        if (!this.props.disableCacheUpdate) {
+            if (this.state.user) {
                 player_cache.update(this.props.user);
             }
-        }
-        let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
+
+            let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+            if (player_id && player_id > 0) {
+                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
         }
 
         this.syncUpdateOnline(this.props.user);
@@ -105,19 +106,28 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     componentWillReceiveProps(new_props) {{{
         if (typeof(new_props.user) === "object") {
-            player_cache.update(new_props.user);
             this.setState({user: new_props.user});
+        } else {
+            this.setState({user: null});
         }
 
-        let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
+        if (!new_props.disableCacheUpdate) {
+            let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+
+            if (typeof(new_props.user) === "object") {
+                player_cache.update(new_props.user);
+            }
+
+            if (player_id && player_id > 0) {
+                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
         }
+
         this.syncUpdateOnline(new_props.user);
     }}}
     componentDidUpdate() {{{
@@ -179,7 +189,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player.pro || player.professional) {
                 rank_text = rankString(player);
             }
-            else if (rating.unset && player.rank > 0) {
+            else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
             }
@@ -215,7 +225,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     display_details = (event) => {
-        if (this.props.nolink || this.state.guest) {
+        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.guest) {
             return;
         }
         else {

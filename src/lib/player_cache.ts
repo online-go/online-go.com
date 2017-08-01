@@ -80,6 +80,14 @@ function update(player: any, dont_overwrite?: boolean): any {
         cache_by_username[cache[id].username] = cache[id];
     }
 
+    /* these are synonymous but called different things throughout the back end, I am truly sorry. */
+    if ('professional' in player) {
+        cache[id]['pro'] = player.professional;
+    }
+    if ('pro' in player) {
+        cache[id]['professional'] = player.pro;
+    }
+
     if (id in listeners) {
         for (let l in listeners[id]) {
             listeners[id][l].cb(cache[id], id);
@@ -146,7 +154,7 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
         }
 
         if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " for fields ", missing_fields);
+            console.error("Fetching ", player_id, " for fields ", missing_fields, " cached player data was ", JSON.parse(JSON.stringify(cache[player_id])));
         }
     } else {
         if (player_cache_debug_enabled) {

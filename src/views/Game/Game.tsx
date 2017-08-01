@@ -34,7 +34,7 @@ import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
 import player_cache from "player_cache";
-import {getPlayerIconURL} from "PlayerIcon";
+import {icon_size_url} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";
 import {PersistentElement} from "PersistentElement";
@@ -157,6 +157,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             strict_seki_mode: false,
             player_icons: {},
             volume: preferences.get("sound-volume"),
+            historical_black: null,
+            historical_white: null,
         };
         this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
 
@@ -260,6 +262,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 show_submit: false,
                 autoplaying: false,
                 review_list: [],
+                historical_black: null,
+                historical_white: null,
             });
 
             this.game_id = nextProps.params.game_id ? parseInt(nextProps.params.game_id) : 0;
@@ -503,33 +507,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
-            try {
-                let urls = {};
-
-                for (let color in this.goban.engine.players) {
-                    getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                        urls[this.goban.engine.players[color].id] = url;
-                        this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                    });
-                }
-            } catch (e) {
-            }
             this.sync_state();
         });
         if (this.review_id) {
             this.goban.on("review.updated", (e) => {
                 this.sync_state();
-                if (this.goban.engine.players.white.id && !this.state.player_icons[this.goban.engine.players.white.id]) {
-                    for (let color in this.goban.engine.players) {
-                        getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                            setTimeout(() => {
-                                let urls = {};
-                                urls[this.goban.engine.players[color].id] = url;
-                                this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                            }, 1);
-                        });
-                    }
-                }
             });
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
@@ -566,7 +548,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 this.setState({
                     review_list: review_list,
+                    historical_black: game.historical_ratings.black,
+                    historical_white: game.historical_ratings.white,
                 });
+            })
+            .catch(ignore);
+        }
+        if (this.review_id) {
+            get("reviews/%%", this.review_id)
+            .then((review) => {
+                if (review.game) {
+                    this.setState({
+                        historical_black: review.game.historical_ratings.black,
+                        historical_white: review.game.historical_ratings.white,
+                    });
+                }
             })
             .catch(ignore);
         }
@@ -2173,15 +2169,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             <div className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
-                  if (engine.players[color].id) {
-                      player_cache.fetch(engine.players[color].id, ["country", "ui_class"]).then((player) => {
-                          Object.assign(engine.players[color], player);
-                      }).catch(ignore);
-                  } else {
-                      Object.assign(engine.players[color], {"country": "un"});
-                  }
-                  if (engine.players[color] && this.state.player_icons[engine.players[color].id]) {
-                      player_bg.backgroundImage = `url("${this.state.player_icons[engine.players[color].id]}")`;
+                  if (this.state[`historical_${color}`]) {
+                      let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                      player_bg.backgroundImage = `url("${icon}")`;
                   }
 
                   return (
@@ -2201,7 +2191,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className={`${color} player-name-container`}>
-                             <Player user={goban.engine.players[color].id ? goban.engine.players[color].id : goban.engine.players[color]}/>
+                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
                           </div>
                       }
 
@@ -2863,14 +2853,13 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }</LineText>;
         }
 
-
         return (
             <div className={`chat-line-container`}>
                 {move_number}
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
-                    {(line.player_id || null) && <Player user={line} />}
+                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>
                 </div>
             </div>
