@@ -18,7 +18,7 @@
 import * as React from "react";
 import {browserHistory} from "react-router";
 import {shouldOpenNewTab, errorLogger} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, getUserRating} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
@@ -26,6 +26,7 @@ import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import player_cache from "player_cache";
 import online_status from "online_status";
+import {pgettext} from "translate";
 
 interface PlayerProperties {
     // id?: any,
@@ -102,8 +103,6 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     }}}
 
-
-
     componentWillReceiveProps(new_props) {{{
         if (typeof(new_props.user) === "object") {
             player_cache.update(new_props.user);
@@ -127,7 +126,6 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     componentWillUnmount() {{{
         this.syncUpdateOnline(null);
     }}}
-
 
     render() {
         if (!this.state.user) {
@@ -173,20 +171,29 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += " noextracontrols";
         }
 
+
         if (this.props.rank !== false) {
-            if ("rank" in player && !("ranking" in player)) {
-                player.ranking = player.rank;
+            let rating = getUserRating(player, 'overall', 0);
+            let rank_text = 'E';
+
+            if (player.pro || player.professional) {
+                rank_text = rankString(player);
             }
-            if (player.ranking > 0) {
-                let suffix = "";
-                if (player.ui_class && player.ui_class.indexOf("provisional") >= 0) {
-                    suffix += "?";
-                }
-                if (player.ui_class && player.ui_class.indexOf("timeout") >= 0) {
-                    suffix += "T";
-                }
-                main_attrs["data-rank"] = " [" + rankString(player) + suffix + "]";
+            else if (rating.unset && player.rank > 0) {
+                /* This is to support displaying archived chat lines */
+                rank_text = rankString(player);
             }
+            else if (rating.deviation > 220) {
+                rank_text = '?';
+            }
+            else if (rating.rank < 13) { /* < 17k */
+                rank_text = pgettext("Beginners class rank text", 'BC');
+            }
+            else {
+                rank_text = rating.rank_label;
+            }
+
+            main_attrs["data-rank"] = " [" + rank_text + "]";
         }
 
         if (props.flare) {
