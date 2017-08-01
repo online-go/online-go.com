@@ -230,7 +230,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 return rankString(rank);
             }
             return "";
-        })
+        });
 
         let boundDataLegendX = (x:number) => {
             return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
