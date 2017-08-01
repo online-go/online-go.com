@@ -116,7 +116,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     startVacation = () => {{{
-        put("me/vacation", {})
+        put("me/vacation")
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -155,8 +155,8 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     getSubmitMode(speed) {{{
-        let single = preferences.get(`one-click-submit-${speed}`);
-        let dbl = preferences.get(`double-click-submit-${speed}`);
+        let single = preferences.get(`one-click-submit-${speed}` as any);
+        let dbl = preferences.get(`double-click-submit-${speed}` as any);
         return single ? "single" : (dbl ? "double" : "button");
     }}}
     setSubmitMode(speed, mode) {{{
@@ -261,7 +261,7 @@ export class Settings extends React.PureComponent<{}, any> {
     updateHideUIClass = (ev) => {{{
         let checked = ev.target.checked;
         this.setState({'hide_ui_class': !checked});
-        put(`me/settings`, {
+        put(`me/settings`, 0, {
             'site_preferences': {
                 'hide_ui_class': !checked
             }
@@ -293,7 +293,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
 
     saveEmail = () => {{{
-        put(`players/${this.state.profile.id}`, {
+        put("players/%%", this.state.profile.id, {
             "email": this.state.profile.email
         })
         .then(() => {
@@ -358,7 +358,7 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
     }}}
     resendValidationEmail = () => {{{
-        post(`me/validateEmail`, {})
+        post("me/validateEmail", {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })

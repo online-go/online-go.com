@@ -38,7 +38,7 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
     }
 
     componentDidMount() {
-        post('me/validateEmail', {
+        post("me/validateEmail", {
             id: this.props.location.query.id,
             verification: this.props.location.query.v,
         })

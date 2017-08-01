@@ -19,7 +19,6 @@ import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
 import {post, get, put, del, patch} from "requests";
-import config from "config";
 import data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
@@ -127,8 +126,8 @@ export class User extends Resolver<UserProperties, any> {
 
     resolve(props) {
         this.setState({"user": null, editing:  /edit/.test(window.location.hash)});
-        this.user_id = parseInt(props.params.user_id || data.get("config.user").id);
-        return get(`players/${this.user_id}/full`).then((state) => {
+        this.user_id = parseInt(props.params.user_id || data.get("user").id);
+        return get("players/%%/full", this.user_id).then((state) => {
             try {
                 //console.log(state);
                 this.original_username = state.user.username;
@@ -232,10 +231,10 @@ export class User extends Resolver<UserProperties, any> {
         $("#host-ip-saved").addClass("hidden");
 
         if (this.state.host_ip_settings.id) {
-            patch(`host_ip_settings/${this.state.host_ip_settings.id}`, obj)
+            patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
-            post(`host_ip_settings/`, obj)
+            post("host_ip_settings/", obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();
@@ -253,7 +252,7 @@ export class User extends Resolver<UserProperties, any> {
         }
         this.moderatorNotesSetTimeout = setTimeout(() => {
             this.moderatorNotesSetTimeout = null;
-            put(`players/${this.user_id}/moderate/notes`, { "moderator_notes": notes.trim() });
+            put("players/%%/moderate/notes", this.user_id, { "moderator_notes": notes.trim() });
         }, 500);
     }
 
@@ -313,7 +312,7 @@ export class User extends Resolver<UserProperties, any> {
         } while (moderation_note === "");
 
 
-        put(`players/${this.user_id}/moderate`, {
+        put("players/%%/moderate", this.user_id, {
             "player_id": this.user_id,
             "is_bot": $("#user-su-is-bot").is(":checked") ? 1 : 0,
             "bot_owner": $("#user-su-bot-owner").val(),
@@ -350,7 +349,7 @@ export class User extends Resolver<UserProperties, any> {
         console.log(files);
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`players/${this.user_id}/icon`, file)
+            put("players/%%/icon", this.user_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
                 player_cache.update({
@@ -363,7 +362,7 @@ export class User extends Resolver<UserProperties, any> {
     }}}
     clearIcon = () => {{{
         this.setState({new_icon: null});
-        del(`players/${this.user_id}/icon`)
+        del("players/%%/icon", this.user_id)
         .then((res) => {
             console.log("Cleared icon", res);
             player_cache.update({
@@ -410,7 +409,7 @@ export class User extends Resolver<UserProperties, any> {
     saveEditChanges() {{{
         let do_save = () => {
             this.setState({editing: false});
-            put(`players/${this.user_id}`, {
+            put("players/%%", this.user_id, {
                 "username": this.state.user.username,
                 "first_name": this.state.user.first_name,
                 "last_name": this.state.user.last_name,
@@ -732,6 +731,7 @@ export class User extends Resolver<UserProperties, any> {
 
 
         let global_user = data.get("config.user");
+        let cdn_release = data.get("config.cdn_release");
 
         return (
           <div className="User container">
@@ -744,8 +744,7 @@ export class User extends Resolver<UserProperties, any> {
                                 : <span className='username'><Player user={user}/></span>
                             }
 
-
-                            {this.state.editing
+                            {editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
                                         ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
@@ -754,7 +753,7 @@ export class User extends Resolver<UserProperties, any> {
                                    </Dropzone></div>
                                 : <PlayerIcon id={user.id} size={128} />
                             }
-                            {this.state.editing &&
+                            {editing &&
                                 <div className='clear-icon-container'>
                                     <button className='xs' onClick={this.clearIcon}>{_("Clear icon")}</button>
                                 </div>
@@ -792,8 +791,7 @@ export class User extends Resolver<UserProperties, any> {
                             {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
                             {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
 
-
-                            {this.state.editing
+                            {editing
                               ? <div className='country-line'>
                                     <Flag country={user.country} big/>
                                     <select value={user.country} onChange={this.saveCountry}>
@@ -983,7 +981,7 @@ export class User extends Resolver<UserProperties, any> {
 
                                 {(this.state.titles.length > 0) &&
                                     <div className="trophies">
-                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${config.cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
+                                        {this.state.titles.map((title, idx) => (<img key={idx} className="trophy" src={`${cdn_release}/img/trophies/${title.icon}`} title={title.title}/>))}
                                     </div>
                                 }
 
@@ -991,7 +989,7 @@ export class User extends Resolver<UserProperties, any> {
                                     <div className="trophies">
                                         {this.state.trophies.map((trophy, idx) => (
                                             <a key={idx} href={trophy.tournament_id ? ("/tournament/" + trophy.tournament_id) : "#"}>
-                                                <img className="trophy" src={`${config.cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
+                                                <img className="trophy" src={`${cdn_release}/img/trophies/${trophy.icon}`} title={trophy.title}/>
                                             </a>
                                         ))}
                                     </div>

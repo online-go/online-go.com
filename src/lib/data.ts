@@ -15,18 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-let defaults = {};
-let store = {};
-let listeners = {};
+import {LocalData} from "data/LocalData";
+
+let defaults: Partial<LocalData> = {};
+let store: Partial<LocalData> = {};
+let listeners: {[K in keyof LocalData]?: {[id: number]: Listener<K>}} = {};
 let last_id = 0;
 
-export class Listener {
+export class Listener<K extends keyof LocalData> {
     key: string;
     id: number;
-    cb: (data: any, key?: string) => void;
+    cb: (data: LocalData[K], key?: K) => void;
     remove_callbacks: Array<() => void>;
 
-    constructor(key: string, cb: (data: any, key?: string) => void) {
+    constructor(key: string, cb: (data: LocalData[K], key?: K) => void) {
         this.key = key;
         this.cb = cb;
         this.id = ++last_id;
@@ -49,8 +51,10 @@ export class Listener {
     }
 }
 
-export function set(key: string, value: any, dontTriggerListeners?:boolean): any {
-    if (typeof(value) === "undefined") {
+
+
+export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | undefined): LocalData[K] {
+    if (value === undefined) {
         remove(key);
         return value;
     }
@@ -62,10 +66,6 @@ export function set(key: string, value: any, dontTriggerListeners?:boolean): any
         console.error(e);
     }
 
-    if (dontTriggerListeners) {
-        return value;
-    }
-
     if (key in listeners) {
         for (let id in listeners[key]) {
             listeners[key][id].cb(value, key);
@@ -73,7 +73,8 @@ export function set(key: string, value: any, dontTriggerListeners?:boolean): any
     }
     return value;
 }
-export function setDefault(key: string, value: any): any {
+
+export function setDefault<K extends keyof LocalData>(key: K, value: LocalData[K]): LocalData[K] {
     defaults[key] = value;
     if (!(key in store)) {
         if (key in listeners) {
@@ -84,7 +85,8 @@ export function setDefault(key: string, value: any): any {
     }
     return value;
 }
-export function remove(key: string): any {
+
+export function remove<K extends keyof LocalData>(key: K): LocalData[K] {
     if (key in listeners) {
         for (let id in listeners[key]) {
             try {
@@ -109,6 +111,7 @@ export function remove(key: string): any {
         return val;
     }
 }
+
 export function removeAll(): void {
     let keys = [];
     for (let key in store) {
@@ -122,22 +125,18 @@ export function removeAll(): void {
         }
     }
 }
-export function get(key: string, _default?: any): any {
+
+export function get<K extends keyof LocalData>(key: K, default_value?: LocalData[K]): LocalData[K] | undefined {
     if (key in store) {
         return store[key];
     }
     if (key in defaults) {
         return defaults[key];
     }
-    return _default;
+    return default_value;
 }
-export function ensureDefaultAndGet(key: string): any {
-    if (!(key in defaults)) {
-        throw new Error(`Undefined default: ${key}`);
-    }
-    return get(key);
-}
-export function watch(key: string, cb: (data: any, key?: string) => void, call_on_undefined?: boolean): Listener {
+
+export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K], key?: K) => void, call_on_undefined?: boolean): Listener<K> {
     let listener = new Listener(key, cb);
     if (!(key in listeners)) {
         listeners[key] = {};
@@ -151,23 +150,19 @@ export function watch(key: string, cb: (data: any, key?: string) => void, call_o
 
     return listener;
 }
-export function dump(key_prefix?: string, strip_prefix?: boolean) {
+
+export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     if (!key_prefix) {
         key_prefix = "";
     }
     let ret = {};
+    let data = Object.assign({}, defaults, store);
+    let keys = Object.keys(data);
 
-    let keys = Object.keys(store).concat(Object.keys(defaults));
-
-    let last_key = null;
     keys.sort().map((key) => {
-        if (last_key === key) {
-            return;
-        }
-        last_key = key;
         if (key.indexOf(key_prefix) === 0) {
             let k = strip_prefix ? key.substr(key_prefix.length) : key;
-            ret[k] = {"union": get(key), value: store[key], "default": defaults[key]};
+            ret[k] = {"union": data[key], value: store[key], "default": defaults[key]};
         }
     });
     console.table(ret);
@@ -181,7 +176,7 @@ try {
             key = key.substr(4);
             try {
                 let item = localStorage.getItem(`ogs.${key}`);
-                if (typeof(item) === "undefined") {
+                if (item === "undefined") {
                     localStorage.removeItem(`ogs.${key}`);
                     continue;
                 }
@@ -201,7 +196,6 @@ try {
 export default window["data"] = {
     set                 : set,
     get                 : get,
-    ensureDefaultAndGet : ensureDefaultAndGet,
     setDefault          : setDefault,
     remove              : remove,
     removeAll           : removeAll,

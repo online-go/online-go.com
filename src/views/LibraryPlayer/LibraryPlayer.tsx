@@ -79,7 +79,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         abort_requests_in_flight("library/");
     }
     refresh(player_id: number) {
-        let promise = get(`library/${player_id}`);
+        let promise = get("library/%%", player_id);
 
         promise
         .then((library) => {
@@ -178,7 +178,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     uploadSGFs = (files) => {{{
         if (parseInt(this.props.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
-            Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
+            Promise.all(files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)))
             .then(() => {
                 this.refresh(this.props.params.player_id);
             })
@@ -211,7 +211,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }}}
     createCollection = () => {{{
 
-        post(`library/${this.state.player_id}/collections`, {
+        post("library/%%/collections", this.state.player_id, {
             "parent_id": this.state.collection_id,
             "name": this.state.new_collection_name,
             "private": this.state.new_collection_private ? 1 : 0,
@@ -225,7 +225,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }}}
     deleteCollection = () => {{{
         let parent = this.state.collections[this.state.collection_id].parent;
-        post(`library/${this.state.player_id}`, {
+        post("library/%%", this.state.player_id, {
             delete_collections: [this.state.collection_id]
         })
         .then(() => {
@@ -236,7 +236,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         .catch(errorAlerter);
     }}}
     deleteGames = () => {{{
-        post(`library/${this.state.player_id}`, {
+        post("library/%%", this.state.player_id, {
             delete_entries: Object.keys(this.state.games_checked)
         })
         .then(() => {

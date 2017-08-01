@@ -15,14 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-
-export let config = {
-    cdn_release: "",
-    user: {},
-};
-
-data.watch("config.cdn_release", (val) => { config.cdn_release = val; });
-data.watch("config.user", (val) => { config.user = val; });
-
-export default config;
+// The types of data that is transmitted between the client and server in
+// Ajax requests. The URLData type is the type of information that we send
+// to the server, while the URLResultType is the type of the server's
+// response to us.
+export type URLCommunication = URLData | URLResult;
+export interface URLData {
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
+}
+export interface URLResult {
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
+}
