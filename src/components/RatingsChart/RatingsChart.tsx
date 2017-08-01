@@ -138,6 +138,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     componentDidMount() {{{
         this.initialize();
         this.resize(true);
+        if (this.shouldDisplayRankInformation()) {
+            this.y_axis_rank_labels.style('display', null);
+        } else {
+            this.y_axis_rank_labels.style('display', 'none');
+        }
     }}}
     componentDidUpdate(prevProps, prevState) {{{
         if (this.props.playerId !== prevProps.playerId
@@ -145,6 +150,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             || this.props.size  !== prevProps.size
         ) {
             this.refreshData();
+        }
+        if (this.shouldDisplayRankInformation()) {
+            this.y_axis_rank_labels.style('display', null);
+        } else {
+            this.y_axis_rank_labels.style('display', 'none');
         }
     }}}
     componentWillUnmount() {{{
@@ -154,7 +164,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }}}
-    shouldComponentUpdate(nextProps, nextState) {{{
+    shouldComponentUpdate(nextProps, nextState) {
         if (this.props.playerId !== nextProps.playerId
             || this.props.speed !== nextProps.speed
             || this.props.size  !== nextProps.size
@@ -198,7 +208,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         }
 
         return false;
-    }}}
+    }
+    shouldDisplayRankInformation():boolean {
+        return this.props.size === 0 && this.props.speed === 'overall';
+    }
 
     initialize() {{{
         let self = this;
@@ -408,9 +421,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
                 let d = x0.getTime() - d0.ended.getTime() > d1.ended.getTime() - x0.getTime() ? d1 : d0;
                 self.helperText.text(format_date(new Date(d.ended)) + '  ' +
-                    interpolate(pgettext(
-                        "Glicko-2 rating +- rating deviation text on the ratings chart",
-                        "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}"),
+                    interpolate(
+                        self.shouldDisplayRankInformation()
+                        ? pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
+                        : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
+                        ,
                         {
                             rating: Math.floor(d.rating),
                             deviation: Math.round(d.deviation),
