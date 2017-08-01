@@ -85,10 +85,11 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
     return (url, ...rest) => {
         initialize();
 
-        let id: number | undefined;
+        let id: number | string | undefined;
         let data: any;
         switch (typeof rest[0]) {
             case "number":
+            case "string":
                 id = rest[0];
                 data = rest[1] || {};
                 break;
@@ -110,7 +111,7 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
             console.trace();
         }
 
-        let real_url: string = isFinite(id) ? url.replace("%%", id.toString()) : url;
+        let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
         let real_data: any;
         if (url in translate_to_server) {
             real_data = translate_to_server[type][url](data);
@@ -119,8 +120,8 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
             real_data = data;
         }
 
-        for (let id in requests_in_flight) {
-            let req = requests_in_flight[id];
+        for (let req_id in requests_in_flight) {
+            let req = requests_in_flight[req_id];
             if (req.promise && (req.url === real_url) && (type === req.type) && deepCompare(req.data, real_data)) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
