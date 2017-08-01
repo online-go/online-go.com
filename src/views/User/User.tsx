@@ -827,7 +827,7 @@ export class User extends Resolver<UserProperties, any> {
                         {/* }}} */}
                         {/* }}} */}
                         <div className='ratings-container'>{/* Ratings {{{ */}
-                            <h3 className='ratings-title'>{_("Ratings and Rankings")}</h3>
+                            <h3 className='ratings-title'>{_("Ratings")}</h3>
                             {this.renderRatingGrid()}
                         </div>
                         {/* }}} */}
@@ -1190,8 +1190,6 @@ export class User extends Resolver<UserProperties, any> {
                 </div>
                 {/* end right col }}} */}
             </div>
-
-
           </div>
         );
     }
@@ -1250,14 +1248,11 @@ export class User extends Resolver<UserProperties, any> {
         let r = getUserRating(this.state.user, speed, size);
 
         return (
-            <div className={'rating-entry ' + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
+            <div className={`rating-entry ${speed}-${size}x${size} ` + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
                  onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
                 >
                 <div className='rating'>
                     <span className='left'>{r.rating.toFixed(0)}</span>&plusmn;<span className='right'>{r.deviation.toFixed(0)}</span>
-                </div>
-                <div className='ranking'>
-                    <span className='left'>{r.partial_rank_label}</span>&plusmn;<span className='right'>{r.rank_deviation.toFixed(1)}</span>
                 </div>
             </div>
         );
