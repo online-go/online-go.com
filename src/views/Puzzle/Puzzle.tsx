@@ -65,8 +65,6 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     navigation = new PuzzleNavigation();
     editor: PuzzleEditor;
 
-    hintsOn = false;
-
     set_analyze_tool: any = {};
 
     constructor(props) {
@@ -79,6 +77,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             edit_step: "setup",
             setup_color: "black",
             puzzle_collection_summary: [],
+            hintsOn: false,
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -235,8 +234,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
     removeHints() {{{
         let move = this.goban.engine.cur_move;
-        move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "highlight", true));
-        this.hintsOn = false;
+        move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "hint", true));
+        this.setState({hintsOn: false});
     }}}
 
     sync_state() {{{
@@ -515,14 +514,14 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }}}
 
     showHint = () => {
-        if (this.hintsOn) {
+        if (this.state.hintsOn) {
             this.removeHints();
         } else if (!this.goban.engine.cur_move.correct_answer) {
             let branches = this.goban.engine.cur_move.findBranchesWithCorrectAnswer();
             branches.forEach(branch => {
-                this.goban.setCustomMark(branch.x, branch.y, "highlight", true);
+                this.goban.setCustomMark(branch.x, branch.y, "hint", true);
             });
-            this.hintsOn = true;
+            this.setState({hintsOn: true});
         }
     }
 
@@ -608,9 +607,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                         {(puzzle.owner.id === data.get("user").id || null) &&
                             <button onClick={this.edit}><i className="fa fa-pencil"></i></button>
                         }
-                    </div>
-                    <div className={"right-col"}>
-                        <button className="btn btn-default" onClick={this.showHint} >{_("Hint")}</button>
+                        <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} >{_("Hint")}</button>
                     </div>
                 </div>
 

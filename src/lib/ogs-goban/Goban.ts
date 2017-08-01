@@ -2172,9 +2172,9 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (pos.highlight || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+            if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
 
-                let color = pos.highlight ? "#00FF00" : "#FF8E0A";
+                let color = pos.hint ? "#8EFF0A" : "#FF8E0A";
 
                 ctx.lineCap = "square";
                 ctx.save();
@@ -2696,8 +2696,12 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (pos.highlight || (this.highlight_movetree_moves && movetree_contains_this_square)) {
-                ret += "highlight,";
+            if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+                if (pos.hint) {
+                    ret += "hint,";
+                } else {
+                    ret += "highlight,";
+                }
             }
         }}}
 
