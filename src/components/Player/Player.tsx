@@ -18,7 +18,7 @@
 import * as React from "react";
 import {browserHistory} from "react-router";
 import {shouldOpenNewTab, errorLogger} from "misc";
-import {rankString, getUserRating} from "rank_utils";
+import {rankString, getUserRating, is_beginner} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
@@ -186,7 +186,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             else if (rating.deviation > 220) {
                 rank_text = '?';
             }
-            else if (rating.rank < 13) { /* < 17k */
+            else if (is_beginner(rating.rank)) { /* < 17k */
                 rank_text = pgettext("Beginners class rank text", 'BC');
             }
             else {

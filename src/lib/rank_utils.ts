@@ -53,6 +53,15 @@ export function rating_to_rank(rating:number) {
 export function get_handicap_adjustment(rating:number, handicap:number):number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
+export function is_beginner(user_or_rank:any):boolean {
+    let rank = null;
+    if (typeof(user_or_rank) === 'number') {
+        rank = user_or_rank;
+    } else {
+        rank = getUserRating(user_or_rank, 'overall', 0).rank;
+    }
+    return rank < 13;
+}
 
 export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
     let ret = new Rating();

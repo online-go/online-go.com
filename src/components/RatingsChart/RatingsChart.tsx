@@ -31,7 +31,8 @@ import {
     rank_to_rating,
     rating_to_rank,
     get_handicap_adjustment,
-    rankString
+    rankString,
+    is_beginner
 } from 'rank_utils';
 
 type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
@@ -226,7 +227,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.outcomes_y.range([60, 0]);
         this.rank_axis.tickFormat((rating:number) => {
             let rank = Math.round(rating_to_rank(rating));
-            if (rank >= 13) {
+            if (!is_beginner(rank)) {
                 return rankString(rank);
             }
             return "";
