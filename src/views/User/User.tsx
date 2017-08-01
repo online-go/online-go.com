@@ -22,7 +22,6 @@ import {post, get, put, del, patch} from "requests";
 import data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
-import {Resolver} from 'Resolver';
 import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
@@ -73,7 +72,7 @@ let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
 
-export class User extends Resolver<UserProperties, any> {
+export class User extends React.PureComponent<UserProperties, any> {
     refs: {
         moderator_notes;
         vacation_left;
@@ -84,6 +83,7 @@ export class User extends Resolver<UserProperties, any> {
     user_id: number;
     vacation_left: string;
     original_username: string;
+    vacation_update_interval: any;
 
     constructor(props) {
         super(props);
@@ -103,31 +103,41 @@ export class User extends Resolver<UserProperties, any> {
             editing: /edit/.test(window.location.hash),
             selected_speed: 'overall',
             selected_size: 0,
+            resolved: false,
         };
-
-        this.on("mount", () => {
-            let interval_start = Date.now();
-            let vacation_update_interval = setInterval(() => {
-                if (this.resolved && this.state.user) {
-                    if (this.state.user.on_vacation) {
-                        let time_diff = Math.round(((Date.now()) - interval_start) / 1000);
-                        let vacation_time_left = this.state.user.vacation_left - time_diff;
-                        this.setState({
-                            vacation_left_text: vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase())
-                        });
-                    }
-                }
-            }, 1000);
-            this.on("unmount", () => {
-                clearInterval(vacation_update_interval);
-            });
-        });
     }
 
+    componentDidMount() {
+        let interval_start = Date.now();
+        this.vacation_update_interval = setInterval(() => {
+            if (this.state.user) {
+                if (this.state.user.on_vacation) {
+                    let time_diff = Math.round(((Date.now()) - interval_start) / 1000);
+                    let vacation_time_left = this.state.user.vacation_left - time_diff;
+                    this.setState({
+                        vacation_left_text: vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase())
+                    });
+                }
+            }
+        }, 1000);
+        this.resolve(this.props);
+    }
+    componentWillUnmount() {
+        clearInterval(this.vacation_update_interval);
+        $("#rating-history-tooltip").remove(); /* TODO: Remove this after the glicko2 stuff is stable and we remove the old ratings stuff */
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.params.user_id !== this.props.params.user_id) {
+            this.setState({"user": null, resolved: false});
+            this.resolve(nextProps);
+        }
+    }
     resolve(props) {
         this.setState({"user": null, editing:  /edit/.test(window.location.hash)});
         this.user_id = parseInt(props.params.user_id || data.get("user").id);
-        return get("players/%%/full", this.user_id).then((state) => {
+        get("players/%%/full", this.user_id).then((state) => {
+            this.setState({resolved: true});
             try {
                 //console.log(state);
                 this.original_username = state.user.username;
@@ -188,8 +198,6 @@ export class User extends Resolver<UserProperties, any> {
                 state.user["rating_" + type] = rank * 100 + 50 - 900;
             }
         };
-
-        this.on("unmount", () => $("#rating-history-tooltip").remove());
 
          if (data.get("config.user").is_moderator) /* aliases {{{ */ {
             state.ip = null;
@@ -461,7 +469,7 @@ export class User extends Resolver<UserProperties, any> {
     }}}
 
 
-    resolvedRender() {
+    render() {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
         let editing = this.state.editing;
@@ -472,9 +480,7 @@ export class User extends Resolver<UserProperties, any> {
         let doDomWork = () => { /* {{{ */
              if ($("#rating-history").length === 0) {
                  console.log("Dom wasn't ready, retrying shortly");
-                 if (this.mounted) {
-                     setTimeout(doDomWork, (domWorkScaleback = domWorkScaleback * 1.2 + 10));
-                 }
+                 setTimeout(doDomWork, (domWorkScaleback = domWorkScaleback * 1.2 + 10));
                  return;
              }
 
@@ -1198,7 +1204,7 @@ export class User extends Resolver<UserProperties, any> {
         );
     }
     renderInvalidUser() {
-        if (this.resolved) {
+        if (this.state.resolved) {
             return (
             <div className="User flex stetch">
                 <div className="container flex fill center-both">
