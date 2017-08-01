@@ -52,11 +52,11 @@ export class MoveTree {
     public parent: MoveTree;
     public readonly id: number;
     public trunk_next: any;
-    public branches: Array<any>;
+    public branches: Array<MoveTree>;
     public correct_answer: boolean;
     public wrong_answer: boolean;
     private hint_next: any;
-    private player: any;
+    public player: any;
     private line_color: any;
     public trunk: boolean;
     public text: string;
@@ -1065,6 +1065,24 @@ export class MoveTree {
 
         return -5;
     } /* }}} */
+
+    private isBranchWithCorrectAnswer(branch: MoveTree): boolean {
+        if (branch.correct_answer) {
+            return true;
+        }
+        if (!branch.branches || branch.branches.length === 0) {
+            return false;
+        }
+
+        return branch.branches.some( item => this.isBranchWithCorrectAnswer(item));
+    }
+
+    /**
+     * Find branches containing node with correct_answer === true
+     */
+    findBranchesWithCorrectAnswer(): Array<MoveTree> {
+        return this.branches.filter( branch => this.isBranchWithCorrectAnswer(branch));
+    }
 
     static markupSGFChatMessage(message, width, height) { /* {{{ */
         try {

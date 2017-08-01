@@ -1,6 +1,6 @@
 'use strict';
 
-console.log(process.env.NODE_PATH)
+console.log('node path :', process.env.NODE_PATH)
 
 var path = require('path');
 let fs = require('fs');
@@ -41,8 +41,8 @@ module.exports = {
     },
 
     performance: {
-        maxAssetSize: 1024*1024*2.5,
-        maxEntrypointSize: 1024*1024*2.5,
+        maxAssetSize: 1024 * 1024 * 2.5,
+        maxEntrypointSize: 1024 * 1024 * 2.5,
     },
 
     plugins: [
@@ -59,8 +59,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.`
-    )
+along with this program.  If not, see <http://www.gnu.org/licenses/>.`)
     ],
 
     //devtool: 'eval',
