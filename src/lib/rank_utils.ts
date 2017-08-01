@@ -33,6 +33,7 @@ class Rating {
     partial_rank_label:string;
     rank_deviation_labels:Array<string>;
     rank_deviation:number;
+    professional:boolean;
 }
 
 export const MaxRank: number = 39;
@@ -56,6 +57,7 @@ export function get_handicap_adjustment(rating:number, handicap:number):number {
 export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
     let ret = new Rating();
     let ratings = user.ratings || {};
+    ret.professional = user.pro || user.professional;
 
     let key:string = speed;
     if (size > 0) {
@@ -89,6 +91,13 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
         rankString(rating_to_rank(ret.rating - ret.deviation), true),
         rankString(rating_to_rank(ret.rating + ret.deviation), true),
     ];
+
+    if (ret.professional) {
+        ret.rank_label = rankString(user);
+        ret.partial_rank_label = ret.rank_label;
+        ret.rank_deviation_labels = ['', ''];
+    }
+
     return ret;
 }
 

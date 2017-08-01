@@ -21,7 +21,7 @@ import {browserHistory} from "react-router";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, getUserRating} from "rank_utils";
 import player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import data from "data";
@@ -89,8 +89,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             [
                 "username",
                 "icon",
-                "rating",
-                "ranking",
+                "ratings",
                 "pro",
                 "country",
                 "ui_class",
@@ -184,6 +183,8 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     render() {
         let user = data.get("user");
 
+        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
+
         return (
             <div className="PlayerDetails">
                 <div className="details">
@@ -194,12 +195,21 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <div>
                             <Player user={this.state} nodetails rank={false} />
                         </div>
-                        <div>
-                            <span className="rating">{Math.round(this.state.rating) || "..."}</span>
-                        </div>
-                        <div>
-                            <span className="rank">{rankString(this.state) || "..."}</span>
-                        </div>
+                        {rating && rating.professional &&
+                            <div>
+                                <span className="rank">{rating.rank_label}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional &&
+                            <div>
+                                <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional &&
+                            <div>
+                                <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                            </div>
+                        }
                     </div>
                 </div>
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
