@@ -189,7 +189,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player.pro || player.professional) {
                 rank_text = rankString(player);
             }
-            else if (rating.unset && player.rank > 0) {
+            else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
             }

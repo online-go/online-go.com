@@ -2863,14 +2863,13 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }</LineText>;
         }
 
-
         return (
             <div className={`chat-line-container`}>
                 {move_number}
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
-                    {(line.player_id || null) && <Player user={line} />}
+                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>
                 </div>
             </div>
