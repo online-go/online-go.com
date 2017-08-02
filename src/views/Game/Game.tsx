@@ -2281,8 +2281,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         let game_id = null;
+        let sgf_download_enabled = false;
         try {
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.engine.config.original_disable_analysis;
             game_id = this.goban.engine.config.game_id;
+
         } catch (e) {}
 
         let sgf_url = null;
@@ -2291,6 +2294,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
+
 
         return (
             <Dock>
@@ -2342,7 +2346,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
-                <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                {sgf_download_enabled
+                    ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                    : <a className='disabled' onClick={()=>swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
                 {mod && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
