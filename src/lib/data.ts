@@ -16,41 +16,12 @@
  */
 
 import {LocalData} from "data/LocalData";
+import {TypedEventEmitter} from 'TypedEventEmitter';
 
 let defaults: Partial<LocalData> = {};
 let store: Partial<LocalData> = {};
-let listeners: {[K in keyof LocalData]?: {[id: number]: Listener<K>}} = {};
+let event_emitter = new TypedEventEmitter<LocalData>();
 let last_id = 0;
-
-export class Listener<K extends keyof LocalData> {
-    key: string;
-    id: number;
-    cb: (data: LocalData[K], key?: K) => void;
-    remove_callbacks: Array<() => void>;
-
-    constructor(key: string, cb: (data: LocalData[K], key?: K) => void) {
-        this.key = key;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
-
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
-
-    remove() {
-        delete listeners[this.key][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
-}
-
 
 
 export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | undefined): LocalData[K] {
@@ -66,40 +37,21 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | und
         console.error(e);
     }
 
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            listeners[key][id].cb(value, key);
-        }
-    }
+    event_emitter.emit(key, value);
     return value;
 }
 
 export function setDefault<K extends keyof LocalData>(key: K, value: LocalData[K]): LocalData[K] {
     defaults[key] = value;
     if (!(key in store)) {
-        if (key in listeners) {
-            for (let id in listeners[key]) {
-                listeners[key][id].cb(value, key);
-            }
-        }
+        event_emitter.emit(key, value);
     }
     return value;
 }
 
 export function remove<K extends keyof LocalData>(key: K): LocalData[K] {
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            try {
-                if (key in defaults) {
-                    listeners[key][id].cb(defaults[key], key);
-                } else {
-                    listeners[key][id].cb(undefined, key);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
+    event_emitter.emit(key, defaults[key]);
+
     try {
         localStorage.removeItem(`ogs.${key}`);
     } catch (e) {
@@ -136,19 +88,17 @@ export function get<K extends keyof LocalData>(key: K, default_value?: LocalData
     return default_value;
 }
 
-export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K], key?: K) => void, call_on_undefined?: boolean): Listener<K> {
-    let listener = new Listener(key, cb);
-    if (!(key in listeners)) {
-        listeners[key] = {};
-    }
-    listeners[key][listener.id] = listener;
+export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K]) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+    event_emitter.on(key, cb);
 
     let val = get(key);
-    if (val != undefined || call_on_undefined) {
-        cb(val, key);
+    if (!dont_call_immediately && (val != undefined || call_on_undefined)) {
+        cb(val);
     }
+}
 
-    return listener;
+export function unwatch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K]) => void): void {
+    event_emitter.off(key, cb);
 }
 
 export function dump(key_prefix: string = "", strip_prefix?: boolean) {
@@ -200,5 +150,6 @@ export default window["data"] = {
     remove              : remove,
     removeAll           : removeAll,
     watch               : watch,
+    unwatch             : unwatch,
     dump                : dump,
 };

@@ -16,7 +16,6 @@
  */
 
 import data from "data";
-import {Listener} from "data";
 import {GoThemes} from "goban";
 import {current_language} from "translate";
 
@@ -81,8 +80,11 @@ export function get(key: keyof typeof defaults): any {
 export function set(key: string, value: any): any {
     return data.set(`preferences.${key}`, value);
 }
-export function watch(key: string, cb: (d: any, key?: string) => void, call_on_undefined?: boolean): Listener<string> {
-    return data.watch(`preferences.${key}`, cb, call_on_undefined);
+export function watch(key: string, cb: (d: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+    data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
+}
+export function unwatch(key: string, cb: (d: any) => void): void {
+    data.unwatch(`preferences.${key}`, cb);
 }
 
 export function dump(): void {
@@ -117,15 +119,15 @@ export function watchSelectedThemes(cb) {
         cb(getSelectedThemes());
     };
 
-    let a = watch("goban-theme-board", call_cb);
-    let b = watch("goban-theme-black", call_cb);
+    watch("goban-theme-board", call_cb);
+    watch("goban-theme-black", call_cb);
     dont_call_right_away = false;
-    let c = watch("goban-theme-white", call_cb);
+    watch("goban-theme-white", call_cb);
     return {
         remove: () => {
-            a.remove();
-            b.remove();
-            c.remove();
+            unwatch("goban-theme-board", call_cb);
+            unwatch("goban-theme-black", call_cb);
+            unwatch("goban-theme-white", call_cb);
         }
     };
 }
