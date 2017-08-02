@@ -24,6 +24,7 @@ import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
+import {PlayerCacheEntry} from 'player_cache';
 import player_cache from "player_cache";
 import online_status from "online_status";
 
@@ -50,7 +51,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "...", "ui_class": ""};
+    player:PlayerCacheEntry;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -77,7 +78,11 @@ class PrivateChat {
             }
         });
 
-
+        this.player = {
+            "id": user_id,
+            "username": "...",
+            "ui_class": ""
+        };
         player_cache.fetch(this.user_id, ["username", "ui_class"])
         .then((player) => {
             this.player = player;

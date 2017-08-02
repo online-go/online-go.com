@@ -96,7 +96,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             ]
         )
         .then((player) => {
-            this.setState(Object.assign({resolved: true}, player));
+            this.setState(Object.assign({resolved: true}, player as any));
         })
         .catch((err) => {
             if (player_id === this.props.playerId) {
