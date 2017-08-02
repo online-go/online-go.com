@@ -1165,7 +1165,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.white_pause_text = goban.white_pause_text;
             new_state.black_pause_text = goban.black_pause_text;
 
-            if ((goban.engine.getMoveNumber() < Math.max(goban.engine.width, goban.engine.height)) && (!("tournament_id" in goban.engine.config))) {
+            if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
                 new_state.resign_mode = "cancel";
             } else {
