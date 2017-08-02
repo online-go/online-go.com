@@ -141,7 +141,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             try {
                 //console.log(state);
                 this.original_username = state.user.username;
-                player_cache.update(state);
+                player_cache.update(state.user);
                 this.update(state);
             } catch (err) {
                 console.error(err.stack);
