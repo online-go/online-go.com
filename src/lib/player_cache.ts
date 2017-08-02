@@ -182,7 +182,7 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
                         console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
                     }
 
-                    get("/termination-api/players/%%", queue.map(e => e.player_id).join(','))
+                    get("/termination-api/players", {"ids": queue.map(e => e.player_id).join('.')})
                     .then((players) => {
                         for (let idx = 0; idx < queue.length; ++idx) {
                             let player = players[idx];
