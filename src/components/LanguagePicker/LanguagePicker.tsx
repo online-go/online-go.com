@@ -20,6 +20,9 @@ import {_, _setCurrentLanguage, current_language, languages} from "translate";
 import {Modal, openModal} from "Modal";
 import preferences from "preferences";
 
+interface Events {
+}
+
 interface LanguagePickerProperties {
 }
 
@@ -45,7 +48,7 @@ export let LanguagePicker = (props: LanguagePickerProperties) => (
     </span>
 );
 
-class LanguagePickerModal extends Modal<LanguagePickerProperties, any> {
+class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
     constructor(props) {
         super(props);
         this.state = {

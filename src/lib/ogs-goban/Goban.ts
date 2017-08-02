@@ -24,7 +24,7 @@ import {ScoreEstimator} from "./ScoreEstimator";
 import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingRatio,
     deepEqual, getRelativeEventPosition, getRandomInt, shortDurationString, dup
 } from "./GoUtil";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
 
@@ -40,7 +40,34 @@ const AUTOSCORE_TOLERANCE = 0.30;
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
 
-export abstract class Goban extends EventEmitter {
+interface Events {
+    "destroy": never;
+    "update": never;
+    "chat-reset": never;
+    "reset": any;
+    "error": any;
+    "gamedata": any;
+    "chat": any;
+    "move-made": never;
+    "review.sync-to-current-move": never;
+    "review.updated": never;
+    "title": string;
+    "puzzle-wrong-answer": never;
+    "puzzle-correct-answer": never;
+    "show-submit": boolean;
+    "state_text": {
+        title: string;
+        show_moves_made_count?: boolean;
+    };
+    "advance-to-next-board": never;
+    "pause-text": {
+        white_pause_text: string;
+        black_pause_text: string;
+    };
+}
+
+
+export abstract class Goban extends TypedEventEmitter<Events> {
     public conditional_starting_color:'black'|'white'|'invalid';
     public analyze_subtool:string;
     public analyze_tool:string;
@@ -932,7 +959,7 @@ export abstract class Goban extends EventEmitter {
                 }
             }
             if (!bulk_processing) {
-                this.emit("review updated", true);
+                this.emit("review.updated");
             }
         }}};
 
@@ -953,7 +980,7 @@ export abstract class Goban extends EventEmitter {
                         process_r(entries[i]);
                     }
                     bulk_processing = false;
-                    this.emit("review.updated", true);
+                    this.emit("review.updated");
 
                     this.enableDrawing();
                     if (this.isPlayerController()) {
@@ -3213,7 +3240,7 @@ export abstract class Goban extends EventEmitter {
                         this.setTitle(_("Your move"));
                     }
                     if (this.engine.cur_move.id === this.engine.last_official_move.id && this.mode === "play") {
-                        this.emit("state_text", _("Your Move"));
+                        this.emit("state_text", {title: _("Your Move")});
                     }
                 } else {
                     let color = this.engine.playerColor(this.engine.playerToMove());
@@ -3229,19 +3256,19 @@ export abstract class Goban extends EventEmitter {
                     }
                     this.setTitle(title);
                     if (this.engine.cur_move.id === this.engine.last_official_move.id && this.mode === "play") {
-                        this.emit("state_text", title, true);
+                        this.emit("state_text", {title: title, show_moves_made_count: true});
                     }
                 }
                 break;
 
             case "stone removal":
                 this.setTitle(_("Stone Removal"));
-                this.emit("state_text", _("Stone Removal Phase"));
+                this.emit("state_text", {title: _("Stone Removal Phase")});
                 break;
 
             case "finished":
                 this.setTitle(_("Game Finished"));
-                this.emit("state_text", _("Game Finished"));
+                this.emit("state_text", {title: _("Game Finished")});
                 break;
 
             default:

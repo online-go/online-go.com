@@ -442,22 +442,22 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let last_title = window.document.title;
         this.last_move_viewed = 0;
         this.on_refocus_title = last_title;
-        this.goban.on("state_text", (title: string, show_moves_made_count?: boolean) => {
-            this.on_refocus_title = title;
-            if (show_moves_made_count) {
+        this.goban.on("state_text", (state) => {
+            this.on_refocus_title = state.title;
+            if (state.show_moves_made_count) {
                 if (!this.goban) {
-                    window.document.title = title;
+                    window.document.title = state.title;
                     return;
                 }
                 if (document.hasFocus()) {
                     this.last_move_viewed = this.goban.engine.getMoveNumber();
-                    window.document.title = title;
+                    window.document.title = state.title;
                 } else {
                     let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
                     window.document.title = interpolate(_("(%s) moves made"), [diff]);
                 }
             } else {
-                window.document.title = title;
+                window.document.title = state.title;
             }
         });
         /* }}} */
@@ -510,7 +510,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.sync_state();
         });
         if (this.review_id) {
-            this.goban.on("review.updated", (e) => {
+            this.goban.on("review.updated", () => {
                 this.sync_state();
             });
             this.goban.on("review.sync-to-current-move", () => {

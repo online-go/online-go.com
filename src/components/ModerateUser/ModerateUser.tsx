@@ -21,13 +21,16 @@ import {put, get} from "requests";
 import {errorAlerter, ignore} from "misc";
 import {Modal, openModal} from "Modal";
 
+interface Events {
+}
+
 interface ModerateUserProperties {
     playerId?: number;
 }
 
 declare var swal;
 
-export class ModerateUser extends Modal<ModerateUserProperties, any> {
+export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     constructor(props) {
         super(props);
         this.state = {

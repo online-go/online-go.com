@@ -17,7 +17,11 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
+
+interface Events {
+    "close": never;
+}
 
 interface PopupCoordinates {
     x: number;
@@ -39,7 +43,7 @@ interface PopoverConfig {
 let last_id: number = 0;
 let open_popovers = {};
 
-export class PopOver extends EventEmitter {
+export class PopOver extends TypedEventEmitter<Events> {
     id: number;
     config: PopoverConfig;
     container: HTMLElement;
