@@ -2348,7 +2348,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
-                    : <a className='disabled' onClick={()=>swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                    : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
                 }
                 {mod && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
