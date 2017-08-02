@@ -18,7 +18,7 @@
 import * as React from "react";
 import {get} from 'requests';
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {User} from './User';
 
 

@@ -33,7 +33,7 @@ import {termination_socket, get_network_latency, get_clock_drift} from "sockets"
 import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";

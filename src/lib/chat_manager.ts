@@ -19,7 +19,7 @@ import {comm_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import data from "data";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 interface Events {
     "chat": any;

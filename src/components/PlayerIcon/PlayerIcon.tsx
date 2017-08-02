@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {errorLogger} from "misc";
 
 
@@ -42,31 +42,32 @@ export function getPlayerIconURL(id, size): Promise<string> {{{
 
 
 export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
+    player_id:number;
     mounted: boolean = false;
-    listener;
 
     constructor(props) {
         super(props);
-        let id = parseInt(props.id || props.user.id || props.user.user_id);
-        if (isNaN(id)) {
-            console.log("bailing", props);
+        this.player_id = parseInt(props.id || props.user.id || props.user.user_id);
+        if (isNaN(this.player_id)) {
+            console.error("PlayerIcon player_id was NaN", props);
             this.state = { url: null };
             return;
         }
 
-        let user = player_cache.lookup(id);
+        let user = player_cache.lookup(this.player_id);
         let size = props.size;
         this.state = {
             url: user && user.icon ? icon_size_url(user.icon, size) : null
         };
         if (!this.state.url) {
-            this.fetch(id, props);
+            this.fetch(this.player_id, props);
         }
-        if (id && id > 0) {
-            this.listener = player_cache.watch(id, (_user) => {
-                this.fetch(id, this.props);
-            });
+        if (this.player_id > 0) {
+            player_cache.watch(this.player_id, this.onCacheUpdate);
         }
+    }
+    onCacheUpdate = (user) => {
+        this.fetch(this.player_id, this.props);
     }
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
@@ -83,19 +84,18 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentWillUnmount() {
         this.mounted = false;
+        player_cache.watch(this.player_id, this.onCacheUpdate);
     }
     componentWillReceiveProps(next_props) {
         let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
         let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
+        this.player_id = next_id;
         if (current_id !== next_id) {
             this.setState({url: null});
-            this.listener.remove();
-            if (next_id && next_id > 0) {
-                this.listener = player_cache.watch(next_id, (_user) => {
-                    this.fetch(next_id, next_props);
-                });
+            player_cache.unwatch(current_id, this.onCacheUpdate);
+            if (next_id > 0) {
+                player_cache.watch(next_id, this.onCacheUpdate);
             }
-
 
             if (!next_id || isNaN(next_id)) {
                 return;

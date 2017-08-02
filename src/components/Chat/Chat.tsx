@@ -28,7 +28,7 @@ import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";

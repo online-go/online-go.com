@@ -25,7 +25,7 @@ import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
 import {PlayerCacheEntry} from 'player_cache';
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 
 let last_id: number = 0;
