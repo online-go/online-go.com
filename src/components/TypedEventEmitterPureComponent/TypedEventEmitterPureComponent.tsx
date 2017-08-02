@@ -19,8 +19,6 @@ import * as React from "react";
 import * as data from "data";
 import {TypedEventEmitter} from "TypedEventEmitter";
 
-type ListenerFn = (...args: Array<any>) => void;
-
 export class TypedEventEmitterPureComponent<Events, Props, State> extends React.PureComponent<Props, State> {
     event_emitter: TypedEventEmitter<Events>;
 
