@@ -33,7 +33,7 @@ import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
 import {challenge} from "ChallengeModal";
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import * as Dropzone from "react-dropzone";

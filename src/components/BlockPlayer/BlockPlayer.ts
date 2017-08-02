@@ -19,7 +19,7 @@ import {get, put} from "requests";
 import data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
-import player_cache from 'player_cache';
+import * as player_cache from 'player_cache';
 
 let ignores = {};
 let block_state = {};

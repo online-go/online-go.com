@@ -22,7 +22,7 @@ import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
 import {rankString, getUserRating, is_beginner} from "rank_utils";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import data from "data";
 import {close_all_popovers} from "popover";

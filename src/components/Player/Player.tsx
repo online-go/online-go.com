@@ -24,7 +24,7 @@ import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 import {pgettext} from "translate";
 

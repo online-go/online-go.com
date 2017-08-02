@@ -24,7 +24,7 @@ import {getSelectedThemes, watchSelectedThemes} from "preferences";
 import {_, pgettext, interpolate} from "translate";
 import preferences from "preferences";
 import data from "data";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';

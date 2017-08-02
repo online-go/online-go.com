@@ -47,14 +47,14 @@ const player_cache_debug_enabled = false;
 let cache: {[id: number]: PlayerCacheEntry} = {};
 let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
 let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
-let nicknames: Array<string> = [];
+export let nicknames: Array<string> = [];
 let fetcher = null;
 let fetch_queue: Array<FetchEntry> = [];
 
 let listeners = {};
 let last_id = 0;
 
-class Listener {
+export class Listener {
     player_id: number;
     id: number;
     cb: (player: any, player_id?: number) => void;
@@ -83,7 +83,7 @@ class Listener {
     }
 }
 
-function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
+export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     if (Array.isArray(player)) {
         for (let p of player) {
             update(p, dont_overwrite);
@@ -125,7 +125,7 @@ function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     return cache[id];
 }
 
-function lookup(player_id: number): PlayerCacheEntry {
+export function lookup(player_id: number): PlayerCacheEntry {
     if (player_id in cache) {
         return cache[player_id];
     }
@@ -133,7 +133,7 @@ function lookup(player_id: number): PlayerCacheEntry {
     return null;
 }
 
-function lookup_by_username(username: string): PlayerCacheEntry {
+export function lookup_by_username(username: string): PlayerCacheEntry {
     if (username in cache_by_username) {
         return cache_by_username[username];
     }
@@ -141,7 +141,7 @@ function lookup_by_username(username: string): PlayerCacheEntry {
     return null;
 }
 
-function watch(player_id: number, cb: (player: any, player_id?: number) => void): Listener {
+export function watch(player_id: number, cb: (player: any, player_id?: number) => void): Listener {
     let listener = new Listener(player_id, cb);
     if (!(player_id in listeners)) {
         listeners[player_id] = {};
@@ -156,7 +156,7 @@ function watch(player_id: number, cb: (player: any, player_id?: number) => void)
     return listener;
 }
 
-function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
+export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);
         return Promise.reject("invalid player id");
@@ -260,16 +260,3 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<Play
 }
 
 
-export const player_cache = {
-    update: update,
-    lookup: lookup,
-    lookup_by_username: lookup_by_username,
-    nicknames: nicknames,
-    fetch: fetch,
-    watch: watch,
-    Listener: Listener,
-};
-
-export default player_cache;
-
-window['player_cache'] = player_cache;
