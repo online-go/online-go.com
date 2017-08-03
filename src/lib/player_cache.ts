@@ -16,7 +16,50 @@
  */
 
 import {get} from "requests";
-import {TypedEventEmitter} from "TypedEventEmitter";
+import {Publisher, Subscriber as RealSubscriber} from "pubsub";
+
+// The player cache's Subscriber is just like a vanilla Subscriber, but can
+// subscribe to and unsubscribe from numerical ids or whole Players. The
+// function to query which players we are watching is called "players", not
+// "channels".
+let publisher = new Publisher<{[id: string]: PlayerCacheEntry}>();
+export class Subscriber {
+    private subscriber: RealSubscriber<{[id: string]: PlayerCacheEntry}, string>;
+
+    constructor(callback: (player: PlayerCacheEntry) => void) {
+        this.subscriber = new publisher.Subscriber((id, player) => callback(player));
+    }
+
+    on(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
+        this.subscriber.on(this.to_strings(players));
+        return this;
+    }
+
+    off(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
+        this.subscriber.off(this.to_strings(players));
+        return this;
+    }
+
+    players(): Array<number> {
+        return this.subscriber.channels().map(id => parseInt(id));
+    }
+
+    private to_strings(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): Array<string> {
+        let result: Array<string> = [];
+        if (!(players instanceof Array)) {
+            players = [players];
+        }
+        for (let player of players) {
+            if (typeof player === "number") {
+                result.push(player.toString());
+            }
+            else {
+                result.push(player.id.toString());
+            }
+        }
+        return result;
+    }
+}
 
 export interface PlayerCacheEntry {
     id      : number;
@@ -51,7 +94,7 @@ let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
 export let nicknames: Array<string> = [];
 let fetcher = null;
 let fetch_queue: Array<FetchEntry> = [];
-let event_emitter = new TypedEventEmitter<{[id: string]: PlayerCacheEntry}>();
+
 
 export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     if (Array.isArray(player)) {
@@ -61,8 +104,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         return;
     }
 
-    let id:number = "user_id" in player ? player.user_id : player.id;
-
+    let id = "user_id" in player ? player.user_id : player.id;
     if (!id) {
         console.error("Invalid player object", player);
         return;
@@ -92,8 +134,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         cache[id]['professional'] = !!player.pro;
     }
 
-    event_emitter.emit(id.toString(), cache[id]);
-
+    publisher.publish(id.toString(), cache[id]);
     return cache[id];
 }
 
@@ -111,18 +152,6 @@ export function lookup_by_username(username: string): PlayerCacheEntry {
     }
 
     return null;
-}
-
-export function watch(player_id: number, cb: (player: any) => void): void {
-    event_emitter.on(player_id.toString(), cb);
-
-    let val = lookup(player_id);
-    if (val) {
-        cb(val);
-    }
-}
-export function unwatch(player_id: number, cb: (player: any) => void): void {
-    event_emitter.off(player_id.toString(), cb);
 }
 
 export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
@@ -182,7 +211,7 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
                         console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
                     }
 
-                    get("/termination-api/players", {"ids": queue.map(e => e.player_id).join('.')})
+                    get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
                     .then((players) => {
                         for (let idx = 0; idx < queue.length; ++idx) {
                             let player = players[idx];
@@ -227,3 +256,5 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
         }
     });
 }
+
+
