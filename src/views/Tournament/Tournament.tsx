@@ -1833,11 +1833,11 @@ export const TOURNAMENT_TYPE_NAMES = { /* {{{ */
     "s_mcmahon": _("Simultaneous McMahon"),
     "mcmahon": _("McMahon"),
     "roundrobin": _("Round Robin"),
-    "s_elimination": _("Simultaneous Eliminination"),
+    "s_elimination": _("Simultaneous Elimination"),
     "s_title": _("Title Tournament"),
     "swiss": _("Swiss"),
-    "elimination": _("Single Eliminination"),
-    "double_elimination": _("Double Eliminination"),
+    "elimination": _("Single Elimination"),
+    "double_elimination": _("Double Elimination"),
 }; /* }}} */
 export const  TOURNAMENT_PAIRING_METHODS = { /* {{{ */
     "random": pgettext("Tournament type", "Random"),
