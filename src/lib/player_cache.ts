@@ -16,6 +16,7 @@
  */
 
 import {get} from "requests";
+import {Batcher} from "batcher";
 import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 
 // The player cache's Subscriber is just like a vanilla Subscriber, but can
@@ -92,9 +93,6 @@ let cache: {[id: number]: PlayerCacheEntry} = {};
 let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
 let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
 export let nicknames: Array<string> = [];
-let fetcher = null;
-let fetch_queue: Array<FetchEntry> = [];
-
 
 export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     if (Array.isArray(player)) {
@@ -193,68 +191,63 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
     }
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
-        fetch_queue.push({
+        fetch_player.soon({
             player_id: player_id,
             resolve: resolve,
             reject: reject,
             required_fields: required_fields,
         });
-
-        if (fetcher === null) {
-            fetcher = setTimeout(() => {
-                fetcher = null;
-                while (fetch_queue.length > 0) {
-                    let queue = fetch_queue.slice(0, 100);
-                    fetch_queue = fetch_queue.slice(100);
-
-                    if (player_cache_debug_enabled) {
-                        console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
-                    }
-
-                    get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
-                    .then((players) => {
-                        for (let idx = 0; idx < queue.length; ++idx) {
-                            let player = players[idx];
-                            let resolve = queue[idx].resolve;
-                            let reject = queue[idx].reject;
-                            let required_fields  = queue[idx].required_fields;
-
-                            if ('icon-url' in player) {
-                                player.icon = player['icon-url']; /* handle stupid inconsistency in API */
-                            }
-
-                            delete active_fetches[player.id];
-                            update(player);
-                            if (required_fields) {
-                                for (let field of required_fields) {
-                                    if (!(field in cache[player.id])) {
-                                        console.warn("Required field ", field, " was not resolved by fetch");
-                                        cache[player.id][field] = "[ERROR]";
-                                    }
-                                }
-                            }
-                            try {
-                                resolve(cache[player.id]);
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        }
-                    })
-                    .catch((err) => {
-                        console.error(err);
-                        for (let idx = 0; idx < queue.length; ++idx) {
-                            delete active_fetches[queue[idx].player_id];
-                            try {
-                                queue[idx].reject(err);
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        }
-                    });
-                }
-            }, 1);
-        }
     });
 }
 
+let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
+    while (fetch_queue.length > 0) {
+        let queue = fetch_queue.slice(0, 100);
+        fetch_queue = fetch_queue.slice(100);
 
+        if (player_cache_debug_enabled) {
+            console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
+        }
+
+        get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
+        .then((players) => {
+            for (let idx = 0; idx < queue.length; ++idx) {
+                let player = players[idx];
+                let resolve = queue[idx].resolve;
+                let reject = queue[idx].reject;
+                let required_fields = queue[idx].required_fields;
+
+                if ('icon-url' in player) {
+                    player.icon = player['icon-url']; /* handle stupid inconsistency in API */
+                }
+
+                delete active_fetches[player.id];
+                update(player);
+                if (required_fields) {
+                    for (let field of required_fields) {
+                        if (!(field in cache[player.id])) {
+                            console.warn("Required field ", field, " was not resolved by fetch");
+                            cache[player.id][field] = "[ERROR]";
+                        }
+                    }
+                }
+                try {
+                    resolve(cache[player.id]);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            for (let idx = 0; idx < queue.length; ++idx) {
+                delete active_fetches[queue[idx].player_id];
+                try {
+                    queue[idx].reject(err);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        });
+    }
+});
