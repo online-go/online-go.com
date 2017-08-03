@@ -17,6 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
+import { Batcher } from "batcher";
 
 interface Events {
     "users-online-updated": never;
@@ -57,7 +58,10 @@ comm_socket.on("disconnect", () => {
     event_emitter.emit("users-online-updated");
 });
 
-let subscribe_queue = null;
+let subscribe_queue = new Batcher<number>(ids => {
+    comm_socket.send("user/monitor", ids);
+});
+
 function subscribe(player_id, cb) {
     if (player_id in state) {
         cb(player_id, state[player_id]);
@@ -65,17 +69,9 @@ function subscribe(player_id, cb) {
         return;
     }
 
-    if (subscribe_queue == null) {
-        subscribe_queue = [];
-        setTimeout(() => {
-            comm_socket.send("user/monitor", subscribe_queue);
-            subscribe_queue = null;
-        }, 1);
-    }
-
     state[player_id] = false;
     listeners[player_id] = [cb];
-    subscribe_queue.push(player_id);
+    subscribe_queue.soon(player_id);
 }
 
 function unsubscribe(player_id, cb) {
