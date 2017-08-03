@@ -27,23 +27,18 @@ interface PlayerIconProps {
     className?: string;
 }
 
-export function icon_size_url(url, size) {
+export function icon_size_url(url: string, size: number): string {
     return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
 }
 
-export function getPlayerIconURL(id, size): Promise<string> {{{
-    return new Promise((resolve, reject) => {
-        player_cache.fetch(id, ["icon"]).then((user) => {
-            resolve(icon_size_url(user.icon, size));
-        })
-        .catch(reject);
-    });
-}}}
+export function getPlayerIconURL(id: number, size: number): Promise<string> {
+    return player_cache.fetch(id, ["icon"]).then(user => icon_size_url(user.icon, size));
+}
 
 
 export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     mounted: boolean = false;
-    subscriber: player_cache.Subscriber;
+    subscriber = new player_cache.Subscriber(user => this.fetch(user.id, this.props));
 
     constructor(props) {
         super(props);
@@ -62,12 +57,8 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         if (!this.state.url) {
             this.fetch(id, props);
         }
-        if (id && id > 0) {
-            this.subscriber = new player_cache.Subscriber((user) => {
-                this.fetch(id, this.props);
-            }).on(id);
-        }
     }
+
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
             if (id === parseInt(props.id || props.user.id || props.user.user_id)) {
@@ -80,27 +71,28 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentDidMount() {
         this.mounted = true;
+        let id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
+        if (!isNaN(id) && id > 0) {
+            this.subscriber.on(id);
+        }
     }
     componentWillUnmount() {
         this.mounted = false;
+        this.subscriber.off(this.subscriber.players());
     }
+
     componentWillReceiveProps(next_props) {
         let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
         let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
         if (current_id !== next_id) {
             this.setState({url: null});
-            this.subscriber.off(current_id);
-            if (next_id && next_id > 0) {
-                this.subscriber = new player_cache.Subscriber((user) => {
-                    this.fetch(next_id, next_props);
-                }).on(next_id);
+            this.subscriber.off(this.subscriber.players());
+            if (!isNaN(next_id) && next_id > 0) {
+                this.subscriber.on(next_id);
             }
-
-
-            if (!next_id || isNaN(next_id)) {
+            else {
                 return;
             }
-
             this.fetch(next_id, next_props);
         }
     }
