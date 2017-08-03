@@ -98,6 +98,17 @@ let ranked_ranks = (() => {
     return rankList(rankedMin, rankedMax, false);
 })();
 
+const standard_board_sizes = {
+    "19x19": "19x19",
+    "13x13": "13x13",
+    "9x9": "9x9",
+    "25x25": "25x25",
+    "21x21": "21x21",
+    "5x5": "5x5",
+    "19x9": "19x9",
+    "5x13": "5x13",
+};
+
 /* }}} */
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
@@ -137,9 +148,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         if (this.props.initialState) {
             challenge.game.initial_state = this.props.initialState;
-        } else {
-            challenge.game.width = preferences.get("new-game-board-size");
-            challenge.game.height = preferences.get("new-game-board-size");
         }
 
         this.state = {
@@ -147,7 +155,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 mode: this.props.mode,
                 username: "",
                 bot_id: data.get("challenge.bot", 0),
-                selected_board_size: preferences.get("new-game-board-size") + "x" + preferences.get("new-game-board-size"),
+                selected_board_size: standard_board_sizes[`${challenge.game.width}x${challenge.game.height}`] || "custom",
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },
             //time_control: recallTimeControlSettings(speed),
@@ -262,7 +270,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         let speed = data.get("challenge.speed", "live");
         data.set("challenge.challenge." + speed, next.challenge);
         data.set("challenge.bot", next.conf.bot_id);
-        data.set("challenge.size", next.conf.selected_board_size);
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
         data.set("demo.settings", next.demo);
     }}}
@@ -605,8 +612,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     additionalSettings = () => {
         let mode = this.props.mode;
         let conf = this.state.conf;
-        let enable_custom_board_sizes = mode === 'demo' || this.state.challenge.game.ranked;
-        console.log(mode);
+        let enable_custom_board_sizes = mode === 'demo' || !this.state.challenge.game.ranked;
 
         return <div id="challenge-basic-settings" className="right-pane pane form-horizontal" role="form">
             {(mode !== "demo" || null) &&
