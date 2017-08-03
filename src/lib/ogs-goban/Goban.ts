@@ -1411,7 +1411,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
 
-        return [((x / 64) - lx) * this.square_size, ((y / 64) - lx) * this.square_size];
+        return [((x / 64) - lx) * this.square_size, ((y / 64) - ly) * this.square_size];
     } /* }}} */
     private setPenStyle(color) { /* {{{ */
         this.pen_ctx.strokeStyle = color;
