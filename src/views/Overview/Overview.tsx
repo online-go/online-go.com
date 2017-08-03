@@ -31,7 +31,7 @@ import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
 import data from "data";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
+import {longRankString, getUserRating, is_beginner} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
@@ -72,6 +72,8 @@ export class Overview extends React.Component<{}, any> {
     render() {
         let user = data.get("config.user");
 
+        let rating = user ? getUserRating(user, 'overall', 0) : null;
+
         return (
         <div id="Overview-Container">
             <AdUnit unit="cdm-zone-01" nag/>
@@ -96,6 +98,36 @@ export class Overview extends React.Component<{}, any> {
                     }
                 </div>
                 <div className="right">
+                    <div className="profile">
+                        <PlayerIcon id={user.id} size={80} />
+
+                        <div className="profile-right">
+                            <div>
+                                <Player user={user} nodetails rank={false} />
+                            </div>
+                            {rating && rating.professional &&
+                                <div>
+                                    <span className="rank">{rating.rank_label}</span>
+                                </div>
+                            }
+                            {rating && !rating.professional &&
+                                <div>
+                                    <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                                </div>
+                            }
+                            {rating && !rating.professional && !is_beginner(user) &&
+                                <div>
+                                    <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                                </div>
+                            }
+                            {rating && !rating.professional && is_beginner(user) &&
+                                <div>
+                                    <span className="rank">{_("Beginners Class")}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
                     <div className="right-header">
                         <h3>{_("Tournaments")}</h3>
                         <Link to="/tournaments">{_("All tournaments") /* translators: Link to view all tournaments */} &gt;</Link>

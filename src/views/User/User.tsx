@@ -139,7 +139,6 @@ export class User extends React.PureComponent<UserProperties, any> {
         get("players/%%/full", this.user_id).then((state) => {
             this.setState({resolved: true});
             try {
-                //console.log(state);
                 this.original_username = state.user.username;
                 player_cache.update(state.user);
                 this.update(state);

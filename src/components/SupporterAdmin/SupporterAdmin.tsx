@@ -24,6 +24,10 @@ import {Modal, openModal} from "Modal";
 import {PrettyTransactionInfo} from 'Supporter/PrettyTransactionInfo';
 import * as moment from 'moment';
 
+
+interface Events {
+}
+
 interface SupporterAdminProperties {
     playerId?: number;
 }
@@ -31,7 +35,7 @@ interface SupporterAdminProperties {
 declare var swal;
 
 
-export class SupporterAdmin extends Modal<SupporterAdminProperties, any> {
+export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any> {
     constructor(props) {
         super(props);
         this.state = {

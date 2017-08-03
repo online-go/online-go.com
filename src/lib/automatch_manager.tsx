@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {browserHistory} from 'react-router';
 import data from "data";
 import {Toast, toast} from 'toast';
@@ -26,6 +26,12 @@ import {Toast, toast} from 'toast';
 export type Speed = 'blitz' | 'live' | 'correspondence';
 export type Size = '9x9' | '13x13' | '19x19';
 export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
+
+interface Events {
+    'start': any;
+    'entry': any;
+    'cancel': any;
+}
 
 export interface AutomatchPreferences {
     uuid: string;
@@ -92,7 +98,7 @@ class AutomatchToast extends React.PureComponent<{}, any> {
     }
 }
 
-class AutomatchManager extends EventEmitter {
+class AutomatchManager extends TypedEventEmitter<Events> {
     active_live_automatcher:AutomatchPreferences;
     active_correspondence_automatchers:{[id:string]: AutomatchPreferences} = {};
     last_find_match_uuid:string;

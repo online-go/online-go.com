@@ -353,9 +353,11 @@ export class Settings extends React.PureComponent<{}, any> {
 
     updateAutoplayDelay = (ev) => {{{
         this.setState({
-            autoplay_delay: parseFloat(ev.target.value)
+            autoplay_delay: ev.target.value
         });
-        preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
+        if (parseFloat(ev.target.value) && parseFloat(ev.target.value) >= 0.1) {
+            preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
+        }
     }}}
     resendValidationEmail = () => {{{
         post("me/validateEmail", {})

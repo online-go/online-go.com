@@ -25,12 +25,15 @@ import {Player} from "Player";
 import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
 
+interface Events {
+}
+
 interface GameLinkModalProperties {
     goban: Goban;
 }
 
 
-export class GameLinkModal extends Modal<GameLinkModalProperties, {}> {
+export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
     constructor(props) {
         super(props);
     }

@@ -16,11 +16,16 @@
  */
 
 import {comm_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import data from "data";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
 
+interface Events {
+    "chat": any;
+    "join": Array<any>;
+    "part": any;
+}
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
@@ -39,7 +44,7 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
-class ChatChannel extends EventEmitter {
+class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     display_name: string;
     proxies: {[id: number]: ChatChannelProxy} = {};
@@ -170,7 +175,7 @@ class ChatChannel extends EventEmitter {
 }
 
 
-export class ChatChannelProxy extends EventEmitter {
+export class ChatChannelProxy extends TypedEventEmitter<Events> {
     id: number = ++last_proxy_id;
     channel: ChatChannel;
 

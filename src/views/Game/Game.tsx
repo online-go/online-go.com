@@ -442,22 +442,22 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let last_title = window.document.title;
         this.last_move_viewed = 0;
         this.on_refocus_title = last_title;
-        this.goban.on("state_text", (title: string, show_moves_made_count?: boolean) => {
-            this.on_refocus_title = title;
-            if (show_moves_made_count) {
+        this.goban.on("state_text", (state) => {
+            this.on_refocus_title = state.title;
+            if (state.show_moves_made_count) {
                 if (!this.goban) {
-                    window.document.title = title;
+                    window.document.title = state.title;
                     return;
                 }
                 if (document.hasFocus()) {
                     this.last_move_viewed = this.goban.engine.getMoveNumber();
-                    window.document.title = title;
+                    window.document.title = state.title;
                 } else {
                     let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
                     window.document.title = interpolate(_("(%s) moves made"), [diff]);
                 }
             } else {
-                window.document.title = title;
+                window.document.title = state.title;
             }
         });
         /* }}} */
@@ -510,7 +510,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.sync_state();
         });
         if (this.review_id) {
-            this.goban.on("review.updated", (e) => {
+            this.goban.on("review.updated", () => {
                 this.sync_state();
             });
             this.goban.on("review.sync-to-current-move", () => {
@@ -1165,7 +1165,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.white_pause_text = goban.white_pause_text;
             new_state.black_pause_text = goban.black_pause_text;
 
-            if ((goban.engine.getMoveNumber() < Math.max(goban.engine.width, goban.engine.height)) && (!("tournament_id" in goban.engine.config))) {
+            if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
                 new_state.resign_mode = "cancel";
             } else {
@@ -2281,8 +2281,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         let game_id = null;
+        let sgf_download_enabled = false;
         try {
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.engine.config.original_disable_analysis;
             game_id = this.goban.engine.config.game_id;
+
         } catch (e) {}
 
         let sgf_url = null;
@@ -2291,6 +2294,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
+
 
         return (
             <Dock>
@@ -2342,7 +2346,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
-                <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                {sgf_download_enabled
+                    ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                    : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
                 {mod && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}

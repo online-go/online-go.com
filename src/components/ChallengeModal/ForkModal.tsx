@@ -24,12 +24,14 @@ import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {MiniGoban} from "MiniGoban";
 import {challenge} from "ChallengeModal";
 
+interface Events {
+}
 
 interface ForkModalProperties {
     goban: Goban;
 }
 
-export class ForkModal extends Modal<ForkModalProperties, any> {
+export class ForkModal extends Modal<Events, ForkModalProperties, any> {
     constructor(props) { /* {{{ */
         super(props);
 

@@ -66,8 +66,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     componentDidMount() {{{
         if (!this.props.disableCacheUpdate) {
-            if (this.state.user) {
-                player_cache.update(this.props.user);
+            if (this.state.user && this.state.user.id > 0) {
+                player_cache.update(this.state.user);
             }
 
             let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
@@ -114,7 +114,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         if (!new_props.disableCacheUpdate) {
             let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
 
-            if (typeof(new_props.user) === "object") {
+            if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
             }
 

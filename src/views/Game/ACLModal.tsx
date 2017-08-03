@@ -29,6 +29,9 @@ import {GroupAutocomplete} from "GroupAutocomplete";
 import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
 
+interface Events {
+}
+
 interface ACLModalProperties {
     gameId?: number;
     reviewId?: number;
@@ -36,7 +39,7 @@ interface ACLModalProperties {
 }
 
 
-export class ACLModal extends Modal<ACLModalProperties, any> {
+export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     refs: {
         player_autocomplete;
         group_autocomplete;

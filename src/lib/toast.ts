@@ -17,12 +17,16 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 
+
+interface Events {
+    "close": never;
+}
 
 let toast_meta_container = null;
 
-export class Toast extends EventEmitter {
+export class Toast extends TypedEventEmitter<Events> {
     container: HTMLElement;
     timeout: any = null;
 

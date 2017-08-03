@@ -16,11 +16,11 @@
  */
 
 import * as ReactDOM from "react-dom";
-import {EventEmitterPureComponent} from "EventEmitterPureComponent";
+import {TypedEventEmitterPureComponent} from "TypedEventEmitterPureComponent";
 import {dup} from "misc";
 
 let current_modal = null;
-export class Modal<P, S> extends EventEmitterPureComponent<P&{fastDismiss?: boolean}, S> {
+export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events & {"close": never, "open": never}, P&{fastDismiss?: boolean}, S> {
     constructor(props) {
         super(props);
         current_modal = this;

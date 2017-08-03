@@ -29,10 +29,13 @@ import {bot_count} from "bots";
 
 declare var swal;
 
+interface Events {
+}
+
 interface NewGameModalProperties {
 }
 
-export class NewGameModal extends Modal<NewGameModalProperties, any> {
+export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     size9;
     size13;
     size19;

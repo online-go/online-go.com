@@ -29,6 +29,9 @@ import {bot_count} from "bots";
 
 declare var swal;
 
+interface Events {
+}
+
 interface AutomatchSettingsProperties {
 }
 
@@ -112,7 +115,7 @@ export function getAutomatchSettings(speed:'blitz'|'live'|'correspondence') {
     }
 }
 
-export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
+export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties, any> {
     constructor(props) {
         super(props);
         this.state = {

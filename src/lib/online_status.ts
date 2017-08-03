@@ -16,11 +16,15 @@
  */
 
 import {comm_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
+
+interface Events {
+    "users-online-updated": never;
+}
 
 let listeners: {[id: number]: Array<any>} = {};
 let state = {};
-let event_emitter = new EventEmitter();
+let event_emitter = new TypedEventEmitter<Events>();
 
 comm_socket.on("connect", () => {
     let list = [];

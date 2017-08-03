@@ -36,6 +36,9 @@ declare let swal;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
+interface Events {
+}
+
 interface ChallengeModalProperties {
     mode: ChallengeModes;
     playerId?: number;
@@ -97,7 +100,7 @@ let ranked_ranks = (() => {
 
 /* }}} */
 
-export class ChallengeModal extends Modal<ChallengeModalProperties, any> {
+export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
     refs: {
         time_control_picker
     };

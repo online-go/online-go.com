@@ -504,6 +504,28 @@ export class GoEngine {
         this.cur_move = t;
         this.jumpTo(t);
     } /* }}} */
+    public gameCanBeCanceled():boolean { /* {{{ */
+        if (this.phase !== 'play') {
+            return false;
+        }
+
+        if ('tournament_id' in this.config && this.config.tournament_id) {
+            return false;
+        }
+
+        if ('ladder_id' in this.config && this.config.ladder_id) {
+            return false;
+        }
+
+        let move_number = this.getMoveNumber();
+        let max_moves_played = 1 + (this.free_handicap_placement ? this.handicap : 1);
+
+        if (move_number < max_moves_played) {
+            return true;
+        }
+
+        return false;
+    } /* }}} */
 
     private isMoveLegal(x, y) { /* {{{ */
         return true;
@@ -533,15 +555,14 @@ export class GoEngine {
         }
     } /* }}} */
 
-
-    private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) {
+    private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) { /* {{{ */
         let idx = x + y * this.width;
         if (done_array[idx]) {
             return;
         }
         done_array[idx] = true;
         fn_of_neighbor_pt(x, y);
-    }
+    } /* }}} */
     private foreachNeighbor(pt_or_group, fn_of_neighbor_pt) { /* {{{ */
         if (pt_or_group.constructor === Array) {
             let group = pt_or_group;

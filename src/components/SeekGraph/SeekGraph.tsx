@@ -21,7 +21,7 @@ import {browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {comm_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
@@ -31,6 +31,10 @@ import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
 
 declare let swal;
+
+interface Events {
+    "challenges": Array<any>;
+}
 
 let MAX_RATIO = 0.99;
 
@@ -71,7 +75,7 @@ function lists_are_equal(A, B) {
     return true;
 }
 
-export class SeekGraph extends EventEmitter {
+export class SeekGraph extends TypedEventEmitter<Events> {
     static blitz_line_ratio = 0.1;
     static live_line_ratio = 0.6;
     static time_columns = [ /* {{{ */

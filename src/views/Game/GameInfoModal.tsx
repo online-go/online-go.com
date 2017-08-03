@@ -26,13 +26,16 @@ import {Player} from "Player";
 import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
 
+interface Events {
+}
+
 interface GameInfoModalProperties {
     game: GoEngine;
     creatorId: number;
 }
 
 
-export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
+export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     constructor(props) {
         super(props);
     }
