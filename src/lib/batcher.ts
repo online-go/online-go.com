@@ -20,22 +20,20 @@
 // time when the need arises. The classic example of this is requests to
 // the back end.
 export class Batcher<T> {
-    private action: (values: Array<T>) => void;
     private values: Array<T>;
 
-    constructor(action: (values: Array<T>) => void) {
-        this.action = action;
+    constructor(private action: (values: Array<T>) => void) {
         this.values = [];
     }
 
     // Perform the action on the given value soon. It is OK to call
     // this method from within the action function, but the action will
     // not be executed on the new values immediately.
-    soon(value: T): void {
+    soon(...values: Array<T>): void {
         if (this.values.length === 0) {
             setTimeout(this.perform, 0);
         }
-        this.values.push(value);
+        this.values.push(...values);
     }
 
     private perform = () => {
