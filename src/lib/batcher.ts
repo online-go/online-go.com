@@ -30,7 +30,7 @@ export class Batcher<T> {
     // this method from within the action function, but the action will
     // not be executed on the new values immediately.
     soon(...values: Array<T>): void {
-        if (this.values.length === 0) {
+        if (this.values.length === 0 && values.length > 0) {
             setTimeout(this.perform, 0);
         }
         this.values.push(...values);
