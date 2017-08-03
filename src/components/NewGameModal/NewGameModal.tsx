@@ -50,13 +50,6 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
         this.size19 = this.updateBoardSize.bind(this, 19);
     }
 
-    componentDidMount() {
-        super.componentDidMount();
-    }
-    componentWillUnmount() {
-        super.componentWillMount();
-    }
-
     updateBoardSize(num) {
         this.setState({board_size: num});
         preferences.set("new-game-board-size", num);
