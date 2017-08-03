@@ -105,6 +105,11 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
     }
 
     let id = "user_id" in player ? player.user_id : player.id;
+    if (!id) {
+        console.error("Invalid player object", player);
+        return;
+    }
+
     if (!(id in cache)) {
         cache[id] = {id:id};
     }
@@ -206,7 +211,7 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
                         console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
                     }
 
-                    get("/termination-api/players/%%", queue.map(e => e.player_id).join(','))
+                    get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
                     .then((players) => {
                         for (let idx = 0; idx < queue.length; ++idx) {
                             let player = players[idx];
