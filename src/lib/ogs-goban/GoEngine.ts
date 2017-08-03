@@ -701,7 +701,7 @@ export class GoEngine {
             return this.colorToMove();
         }
     } /* }}} */
-    private colorToMove() { /* {{{ */
+    public colorToMove() { /* {{{ */
         return this.player === 1 ? "black" : "white";
     } /* }}} */
     public playerByColor(color) { /* {{{ */
@@ -905,6 +905,24 @@ export class GoEngine {
         if ("initial_player" in this.config) {
             this.player = this.config["initial_player"] === "white" ? 2 : 1;
         }
+    } /* }}} */
+    public computeInitialStateForForkedGame():{black:string; white:string} { /* {{{ */
+        let black = "";
+        let white = "";
+        for (let y = 0; y < this.height; ++y) {
+            for (let x = 0; x < this.width; ++x) {
+                if (this.board[y][x] === 1) {
+                    black += encodeMove(x, y);
+                } else if (this.board[y][x] === 2) {
+                    white += encodeMove(x, y);
+                }
+            }
+        }
+
+        return {
+            black: black,
+            white: white,
+        };
     } /* }}} */
 
     public toggleMetaGroupRemoval(x, y): Array<any> { /* {{{ */
