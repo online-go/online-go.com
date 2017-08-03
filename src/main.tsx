@@ -301,3 +301,5 @@ const routes = (
 </Router>);
 
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+window['player_cache'] = player_cache;

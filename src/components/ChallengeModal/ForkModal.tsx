@@ -40,13 +40,17 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
         this.state = {
             player: null,
             fork_preview: {
-                "moves": goban.engine.cur_move.getMoveStringToThisPoint(),
-                "initial_state": goban.engine.initial_state,
-                "initial_player": goban.engine.config.initial_player,
+                //"moves": goban.engine.cur_move.getMoveStringToThisPoint(),
+                //"initial_state": goban.engine.initial_state,
+                //"initial_player": goban.engine.config.initial_player,
+                "moves": [],
+                "initial_state": goban.engine.computeInitialStateForForkedGame(),
+                "initial_player": goban.engine.colorToMove(),
                 "width": goban.engine.width,
                 "height": goban.engine.height,
                 "rules": goban.engine.rules,
                 "handicap": goban.engine.handicap,
+                "komi": goban.engine.komi,
                 "move_number": goban.engine.getMoveNumber(),
                 "game_name": goban.engine.name,
             }
@@ -84,7 +88,5 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
 
 
 export function openForkModal(goban) {
-
-
     return openModal(<ForkModal goban={goban} />);
 }

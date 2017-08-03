@@ -40,7 +40,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     }
 
     componentWillMount() {
-        super.componentWillMount();
         get("players/%%/full", this.props.playerId)
         .then((dets) => {
             console.log(dets);

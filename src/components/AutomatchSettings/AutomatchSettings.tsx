@@ -126,13 +126,6 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
         };
     }
 
-    componentDidMount() {{{
-        super.componentDidMount();
-    }}}
-    componentWillUnmount() {{{
-        super.componentWillMount();
-    }}}
-
     setTab = (tab) => {{{
         data.set('automatch.last-tab', tab);
         this.setState({'tab': tab});

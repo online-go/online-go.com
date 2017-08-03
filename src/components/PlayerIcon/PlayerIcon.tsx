@@ -27,48 +27,38 @@ interface PlayerIconProps {
     className?: string;
 }
 
-export function icon_size_url(url, size) {
+export function icon_size_url(url: string, size: number): string {
     return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
 }
 
-export function getPlayerIconURL(id, size): Promise<string> {{{
-    return new Promise((resolve, reject) => {
-        player_cache.fetch(id, ["icon"]).then((user) => {
-            resolve(icon_size_url(user.icon, size));
-        })
-        .catch(reject);
-    });
-}}}
+export function getPlayerIconURL(id: number, size: number): Promise<string> {
+    return player_cache.fetch(id, ["icon"]).then(user => icon_size_url(user.icon, size));
+}
 
 
 export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
-    player_id:number;
     mounted: boolean = false;
+    subscriber = new player_cache.Subscriber(user => this.fetch(user.id, this.props));
 
     constructor(props) {
         super(props);
-        this.player_id = parseInt(props.id || props.user.id || props.user.user_id);
-        if (isNaN(this.player_id)) {
-            console.error("PlayerIcon player_id was NaN", props);
+        let id = parseInt(props.id || props.user.id || props.user.user_id);
+        if (isNaN(id)) {
+            console.log("bailing", props);
             this.state = { url: null };
             return;
         }
 
-        let user = player_cache.lookup(this.player_id);
+        let user = player_cache.lookup(id);
         let size = props.size;
         this.state = {
             url: user && user.icon ? icon_size_url(user.icon, size) : null
         };
         if (!this.state.url) {
-            this.fetch(this.player_id, props);
-        }
-        if (this.player_id > 0) {
-            player_cache.watch(this.player_id, this.onCacheUpdate);
+            this.fetch(id, props);
         }
     }
-    onCacheUpdate = (user) => {
-        this.fetch(this.player_id, this.props);
-    }
+
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
             if (id === parseInt(props.id || props.user.id || props.user.user_id)) {
@@ -81,26 +71,28 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentDidMount() {
         this.mounted = true;
+        let id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
+        if (!isNaN(id) && id > 0) {
+            this.subscriber.on(id);
+        }
     }
     componentWillUnmount() {
         this.mounted = false;
-        player_cache.watch(this.player_id, this.onCacheUpdate);
+        this.subscriber.off(this.subscriber.players());
     }
+
     componentWillReceiveProps(next_props) {
         let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
         let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
-        this.player_id = next_id;
         if (current_id !== next_id) {
             this.setState({url: null});
-            player_cache.unwatch(current_id, this.onCacheUpdate);
-            if (next_id > 0) {
-                player_cache.watch(next_id, this.onCacheUpdate);
+            this.subscriber.off(this.subscriber.players());
+            if (!isNaN(next_id) && next_id > 0) {
+                this.subscriber.on(next_id);
             }
-
-            if (!next_id || isNaN(next_id)) {
+            else {
                 return;
             }
-
             this.fetch(next_id, next_props);
         }
     }
