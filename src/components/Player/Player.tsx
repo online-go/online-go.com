@@ -193,7 +193,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
             }
-            else if (rating.deviation > 220) {
+            else if (rating.deviation >= 220) {
                 rank_text = '?';
             }
             else if (is_beginner(rating.rank)) { /* < 17k */
