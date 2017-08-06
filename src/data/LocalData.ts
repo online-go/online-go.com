@@ -18,3 +18,6 @@
 export interface LocalData {
     [name: string]: any;
 }
+
+export const data_validation: {[name in keyof LocalData]?: (x: any) => x is LocalData[name]} = {
+};

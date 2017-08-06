@@ -17,7 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
-import { Batcher } from "batcher";
+import {Batcher} from "batcher";
 
 interface Events {
     "users-online-updated": never;

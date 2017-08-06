@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {LocalData} from "data/LocalData";
+import {LocalData, data_validation} from "data/LocalData";
 import {TypedEventEmitter} from 'TypedEventEmitter';
 
 let defaults: Partial<LocalData> = {};
@@ -130,7 +130,13 @@ try {
                     localStorage.removeItem(`ogs.${key}`);
                     continue;
                 }
-                store[key] = JSON.parse(item);
+                let value = JSON.parse(item);
+                if ((data_validation[key] || (value => true))(value)) {
+                    store[key] = value;
+                }
+                else {
+                    throw "Couldn't validate data value.";
+                }
             } catch (e) {
                 console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
                 console.error(e);
