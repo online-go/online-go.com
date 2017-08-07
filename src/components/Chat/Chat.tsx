@@ -174,7 +174,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     resolve() {{{
-        if (data.get("user").anonymous) {
+        if (!data.get("user").anonymous) {
             get("me/groups", {page_size: 30})
             .then((groups) => {
                 this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
