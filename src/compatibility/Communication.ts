@@ -15,18 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {URLData, URLResult} from "data/Communication";
+// The types of data that is transmitted between the client and server in
+// Ajax requests. The URLData type is the type of information that we send
+// to the server, while the URLResultType is the type of the server's
+// response to us.
+export type URLCommunication = URLData | URLResult;
+export interface URLData {
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
+}
+export interface URLResult {
+    GET: {[url: string]: any};
+    POST: {[url: string]: any};
+    PUT: {[url: string]: any};
+    PATCH: {[url: string]: any};
+    DELETE: {[url: string]: any};
+}
 
-// Translate data from the server's loosely-typed schemas to our strongly-typed ones.
-// There are two places where communication with the server happens: the request
-// module and the sockets module. We deal first with requests. The interfaces
-// URLDataType and URLResultType declare the type of the data that will be fed to
-// and returned from an HTTP Ajax request. The translation functions then translate
-// to and from the server's format.
 
 
-
-// The translation function tables.
+// The translation function tables for AJAX requests. These translate data from the
+// server's loosely-typed schemas to our strongly-typed ones.
 type TranslateToServerType = {[type in keyof URLData]: {[url in keyof URLData[type]]?: (data: URLData[type][url]) => any}};
 type TranslateFromServerType = {[type in keyof URLResult]: {[url in keyof URLResult[type]]?: (result: any) => URLResult[type][url]}};
 
