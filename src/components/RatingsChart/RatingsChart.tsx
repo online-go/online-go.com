@@ -431,7 +431,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                     interpolate(
                         self.shouldDisplayRankInformation()
                         ? (
-                            rating_to_rank(d.rating) >= 13
+                            !is_novice(rating_to_rank(d.rating))
                             ?  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
                             :  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: Novice")
                         ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")

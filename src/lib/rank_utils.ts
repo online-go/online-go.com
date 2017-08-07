@@ -60,7 +60,8 @@ export function is_novice(user_or_rank:any):boolean {
     } else {
         rank = getUserRating(user_or_rank, 'overall', 0).rank;
     }
-    return rank < 13;
+    //return rank < 13;
+    return rank < 5;
 }
 
 export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
