@@ -17,7 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
-import data from "data";
+import * as data from "data";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
 

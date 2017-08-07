@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router";
 import {post} from "requests";
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 

@@ -20,7 +20,7 @@ import {Link} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {comm_socket} from "sockets";
 import {post, get} from "requests";
-import data from "data";
+import * as data from "data";
 import {Player} from "Player";
 import {ignore, errorAlerter} from "misc";
 import * as moment from "moment";

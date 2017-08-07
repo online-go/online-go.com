@@ -25,7 +25,7 @@ import {Card} from "material";
 import {sfx} from "goban";
 import {LanguagePicker} from "LanguagePicker";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';

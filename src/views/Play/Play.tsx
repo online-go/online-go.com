@@ -30,7 +30,7 @@ import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
-import data from "data";
+import * as data from "data";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 

@@ -21,7 +21,7 @@ import {_, interpolate} from "translate";
 import preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
 import {rankString} from "rank_utils";
