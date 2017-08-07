@@ -21,7 +21,7 @@ import {browserHistory} from "react-router";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-import {rankString, getUserRating, is_beginner} from "rank_utils";
+import {rankString, getUserRating, is_novice} from "rank_utils";
 import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import data from "data";
@@ -205,14 +205,14 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                                 <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
                             </div>
                         }
-                        {rating && !rating.professional && !is_beginner(this.state) &&
+                        {rating && !rating.professional && !is_novice(this.state) &&
                             <div>
                                 <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                             </div>
                         }
-                        {rating && !rating.professional && is_beginner(this.state) &&
+                        {rating && !rating.professional && is_novice(this.state) &&
                             <div>
-                                <span className="rank">{_("Beginners Class")}</span>
+                                <span className="rank">{_("Novice")}</span>
                             </div>
                         }
                     </div>

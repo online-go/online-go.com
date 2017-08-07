@@ -32,7 +32,7 @@ import {
     rating_to_rank,
     get_handicap_adjustment,
     rankString,
-    is_beginner
+    is_novice
 } from 'rank_utils';
 
 type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
@@ -227,7 +227,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.outcomes_y.range([60, 0]);
         this.rank_axis.tickFormat((rating:number) => {
             let rank = Math.round(rating_to_rank(rating));
-            if (!is_beginner(rank)) {
+            if (!is_novice(rank)) {
                 return rankString(rank);
             }
             return "";
@@ -433,7 +433,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                         ? (
                             rating_to_rank(d.rating) >= 13
                             ?  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
-                            :  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: Beginners Class")
+                            :  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: Novice")
                         ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
                         ,
                         {

@@ -31,7 +31,7 @@ import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
 import data from "data";
 import {errorAlerter} from "misc";
-import {longRankString, getUserRating, is_beginner} from "rank_utils";
+import {longRankString, getUserRating, is_novice} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
@@ -115,14 +115,14 @@ export class Overview extends React.Component<{}, any> {
                                     <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
                                 </div>
                             }
-                            {rating && !rating.professional && !is_beginner(user) &&
+                            {rating && !rating.professional && !is_novice(user) &&
                                 <div>
                                     <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                                 </div>
                             }
-                            {rating && !rating.professional && is_beginner(user) &&
+                            {rating && !rating.professional && is_novice(user) &&
                                 <div>
-                                    <span className="rank">{_("Beginners Class")}</span>
+                                    <span className="rank">{_("Novice")}</span>
                                 </div>
                             }
                         </div>
