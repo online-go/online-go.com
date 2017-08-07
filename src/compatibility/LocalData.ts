@@ -19,8 +19,8 @@ export interface LocalData {
     [name: string]: any;
 }
 
-export const serialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
+export const serialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
 };
 
-export const deserialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
+export const deserialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
 };
