@@ -276,6 +276,38 @@
     </noscript>
     <!-- End Nielsen Online SiteCensus -->
 
+      <script>
+          function version_print_setters() {
+              ret = "\n\n";
+
+              var scripts = $("script"); 
+              for (var idx = 0; idx < scripts.length; ++idx) {
+                  var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
+                  if (m) {
+                      let path = scripts[idx].src
+                      ret += "localStorage.setItem('ogs-script', '" + m[1] + "');\n";
+                  }
+              }
+
+              var stylesheets = $("link"); 
+              for (var idx = 0; idx < stylesheets.length; ++idx) {
+                  if (stylesheets[idx].rel === "stylesheet") {
+                      var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)
+                      if (m) {
+                          let path = stylesheets[idx].src
+                          ret += "localStorage.setItem('ogs-css', '" + m[1] + "');\n";
+                      }
+                  }
+              }
+
+              return ret + "\n\n";
+          }
+          function version_clear() {
+              localStorage.removeItem('ogs-css');
+              localStorage.removeItem('ogs-script');
+          }
+      </script>
+
     {{LIVE_RELOAD}}
   </body>
 </html>
