@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {LocalData} from "data/LocalData";
+import {LocalData, deserialise_data, serialise_data} from "compatibility/LocalData";
 import {TypedEventEmitter} from 'TypedEventEmitter';
 
 let defaults: Partial<LocalData> = {};
@@ -32,7 +32,7 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | und
 
     store[key] = value;
     try {
-        localStorage.setItem(`ogs.${key}`, JSON.stringify(value));
+        localStorage.setItem(`ogs.${key}`, (serialise_data[key] || JSON.stringify)(value));
     } catch (e) {
         console.error(e);
     }
@@ -126,11 +126,7 @@ try {
             key = key.substr(4);
             try {
                 let item = localStorage.getItem(`ogs.${key}`);
-                if (item === "undefined") {
-                    localStorage.removeItem(`ogs.${key}`);
-                    continue;
-                }
-                store[key] = JSON.parse(item);
+                store[key] = (deserialise_data[key] || JSON.parse)(item);
             } catch (e) {
                 console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
                 console.error(e);

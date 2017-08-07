@@ -15,14 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// The type of the values stored in the data cache.
 export interface LocalData {
     [name: string]: any;
 }
 
-// Functions that convert the string stored in localStorage to the data value that we will
-// actually use, and vice versa. When deserialising, an exception is thrown if the data is
-// invalid in any way. If no serialisation is specified, then JSON is used with no validation.
 export const serialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
 };
 
