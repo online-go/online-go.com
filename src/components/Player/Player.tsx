@@ -196,11 +196,13 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             else if (rating.deviation >= 220) {
                 rank_text = '?';
             }
-            else if (is_novice(rating.rank)) { /* < 17k */
+            /*
+            else if (is_novice(rating.rank)) {
                 rank_text = pgettext("Novice rank text", 'N');
             }
+            */
             else {
-                rank_text = rating.rank_label;
+                rank_text = rating.bounded_rank_label;
             }
 
             main_attrs["data-rank"] = " [" + rank_text + "]";

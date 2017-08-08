@@ -34,9 +34,14 @@ class Rating {
     rank_deviation_labels:Array<string>;
     rank_deviation:number;
     professional:boolean;
+    bounded_rank:number;
+    bounded_rank_label:string;
+    partial_bounded_rank:number;
+    partial_bounded_rank_label:string;
 }
 
-export const MaxRank: number = 39;
+export const MinRank: number = 5;
+export const MaxRank: number = 38;
 
 
 const MIN_RATING = 100;
@@ -53,16 +58,27 @@ export function rating_to_rank(rating:number) {
 export function get_handicap_adjustment(rating:number, handicap:number):number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
-export function is_novice(user_or_rank:any):boolean {
+function overall_rank(user_or_rank:any):number {
     let rank = null;
     if (typeof(user_or_rank) === 'number') {
         rank = user_or_rank;
     } else {
         rank = getUserRating(user_or_rank, 'overall', 0).rank;
     }
-    //return rank < 13;
-    return rank < 5;
+    return rank;
 }
+export function is_novice(user_or_rank:any):boolean {
+    return overall_rank(user_or_rank) < MinRank;
+}
+export function is_rank_bounded(user_or_rank:any):boolean {
+    let rank = overall_rank(user_or_rank);
+    return rank < MinRank || rank > MaxRank;
+}
+export function bounded_rank(user_or_rank:any):number {
+    let rank = overall_rank(user_or_rank);
+    return Math.min(MaxRank, Math.max(MinRank, rank));
+}
+
 
 export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
     let ret = new Rating();
@@ -101,6 +117,14 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
         rankString(rating_to_rank(ret.rating - ret.deviation), true),
         rankString(rating_to_rank(ret.rating + ret.deviation), true),
     ];
+    ret.bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.rank));
+    ret.bounded_rank_label = rankString(ret.bounded_rank);
+    ret.partial_bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.partial_rank));
+    ret.partial_bounded_rank_label = rankString(ret.partial_bounded_rank, true);
+    if (ret.rank > (MaxRank + 1)) {
+        ret.bounded_rank_label += '+';
+        ret.partial_bounded_rank_label += '+';
+    }
 
     if (ret.professional) {
         ret.rank_label = rankString(user);
@@ -179,5 +203,5 @@ export function proRankList(): Array<IRankInfo> {
     return result;
 }
 
-export function amateurRanks() { return rankList(0, MaxRank, true); }
+export function amateurRanks() { return rankList(MinRank, MaxRank, true); }
 export function allRanks() { return rankList().concat( proRankList()); }

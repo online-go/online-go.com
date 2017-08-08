@@ -205,14 +205,9 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                                 <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
                             </div>
                         }
-                        {rating && !rating.professional && !is_novice(this.state) &&
+                        {rating && !rating.professional &&
                             <div>
-                                <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
-                            </div>
-                        }
-                        {rating && !rating.professional && is_novice(this.state) &&
-                            <div>
-                                <span className="rank">{_("Novice")}</span>
+                                <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                             </div>
                         }
                     </div>

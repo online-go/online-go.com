@@ -32,7 +32,9 @@ import {
     rating_to_rank,
     get_handicap_adjustment,
     rankString,
-    is_novice
+    is_novice,
+    is_rank_bounded,
+    bounded_rank
 } from 'rank_utils';
 
 type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
@@ -227,7 +229,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.outcomes_y.range([60, 0]);
         this.rank_axis.tickFormat((rating:number) => {
             let rank = Math.round(rating_to_rank(rating));
-            if (!is_novice(rank)) {
+            if (!is_rank_bounded(rank)) {
                 return rankString(rank);
             }
             return "";
@@ -431,15 +433,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                     interpolate(
                         self.shouldDisplayRankInformation()
                         ? (
-                            !is_novice(rating_to_rank(d.rating))
-                            ?  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
-                            :  pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: Novice")
+                            pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
                         ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
                         ,
                         {
                             rating: Math.floor(d.rating),
                             deviation: Math.round(d.deviation),
-                            rank: rankString(rating_to_rank(d.rating), true),
+                            rank: rankString(bounded_rank(rating_to_rank(d.rating)), true),
                             rank_deviation: (rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)).toFixed(1),
                         }
                     )

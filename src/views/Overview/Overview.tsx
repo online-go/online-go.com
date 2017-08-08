@@ -117,12 +117,7 @@ export class Overview extends React.Component<{}, any> {
                             }
                             {rating && !rating.professional && !is_novice(user) &&
                                 <div>
-                                    <span className="rank">{rating.partial_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
-                                </div>
-                            }
-                            {rating && !rating.professional && is_novice(user) &&
-                                <div>
-                                    <span className="rank">{_("Novice")}</span>
+                                    <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                                 </div>
                             }
                         </div>
