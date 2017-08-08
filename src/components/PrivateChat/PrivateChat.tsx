@@ -18,7 +18,7 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {_} from 'translate';
-import data from "data";
+import * as data from "data";
 import ITC from "ITC";
 import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";

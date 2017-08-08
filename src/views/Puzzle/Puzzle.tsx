@@ -30,7 +30,7 @@ import {Player} from "Player";
 import {StarRating} from "StarRating";
 import {Resizable} from "Resizable";
 import preferences from "preferences";
-import data from "data";
+import * as data from "data";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
 import {PuzzleNavigation} from './PuzzleNavigation';
 import {PuzzleEditor} from './PuzzleEditing';

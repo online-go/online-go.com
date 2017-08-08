@@ -15,22 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// The types of data that is transmitted between the client and server in
-// Ajax requests. The URLData type is the type of information that we send
-// to the server, while the URLResultType is the type of the server's
-// response to us.
-export type URLCommunication = URLData | URLResult;
-export interface URLData {
-    GET: {[url: string]: any};
-    POST: {[url: string]: any};
-    PUT: {[url: string]: any};
-    PATCH: {[url: string]: any};
-    DELETE: {[url: string]: any};
+export interface LocalData {
+    [name: string]: any;
 }
-export interface URLResult {
-    GET: {[url: string]: any};
-    POST: {[url: string]: any};
-    PUT: {[url: string]: any};
-    PATCH: {[url: string]: any};
-    DELETE: {[url: string]: any};
-}
+
+export const serialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
+};
+
+export const deserialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
+};

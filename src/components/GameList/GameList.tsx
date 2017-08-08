@@ -22,7 +22,7 @@ import {Goban} from "goban";
 import {termination_socket} from "sockets";
 import {MiniGoban} from "MiniGoban";
 import {GobanLineSummary} from "GobanLineSummary";
-import data from "data";
+import * as data from "data";
 
 interface GameListProps {
     list: Array<any>;

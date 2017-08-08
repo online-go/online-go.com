@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Link} from "react-router";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {get} from "requests";
 import * as moment from "moment";
 import {FriendList} from "./FriendList";

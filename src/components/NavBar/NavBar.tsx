@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
-import data from "data";
+import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";

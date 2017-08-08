@@ -23,7 +23,7 @@ import {errorAlerter} from "misc";
 import {Player} from "Player";
 import {PaginatedTable} from "PaginatedTable";
 import {UIPush} from "UIPush";
-import data from "data";
+import * as data from "data";
 import tooltip from "tooltip";
 
 declare var swal;

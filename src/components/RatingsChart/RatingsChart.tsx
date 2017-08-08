@@ -21,7 +21,7 @@
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {Link} from "react-router";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";

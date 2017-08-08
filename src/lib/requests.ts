@@ -16,8 +16,7 @@
  */
 
 import {deepCompare} from "misc";
-import {URLCommunication, URLData, URLResult} from "data/Communication";
-import {translate_from_server, translate_to_server} from "compatibility/Communication";
+import {URLCommunication, URLData, URLResult, translate_from_server, translate_to_server} from "compatibility/Communication";
 
 
 

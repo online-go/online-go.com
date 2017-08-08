@@ -18,7 +18,7 @@
 import {Goban, GoMath} from "goban";
 import {errorAlerter, dup, ignore} from "misc";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
-import data from "data";
+import * as data from "data";
 import {abort_requests_in_flight, post, get, put, del} from "requests";
 import preferences from "preferences";
 

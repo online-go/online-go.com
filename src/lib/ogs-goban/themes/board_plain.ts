@@ -16,7 +16,7 @@
 
 import GoTheme from "../GoTheme";
 import {_} from "../translate";
-import data from "data";
+import * as data from "data";
 
 data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
