@@ -26,7 +26,7 @@ import * as data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, bounded_rank} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
 
@@ -147,6 +147,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         $(document).on("touchstart touchmove", this.onTouchStartMove);
     } /* }}} */
 
+    userRank() {
+        let user = data.get('user');
+        if (!user || user.anonymous) {
+            return 18;
+        }
+        return bounded_rank(user);
+    }
     onDisconnect = () => {{{
     }}}
     onConnect = () => {{{
@@ -178,18 +185,18 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     e.eligible = false;
                     e.user_challenge = true;
                     e.ineligible_reason = _("This is your challenge");
-                } else if (e.ranked && Math.abs(data.get("user").ranking - e.rank) > 9) {
+                } else if (e.ranked && Math.abs(this.userRank() - e.rank) > 9) {
                     e.eligible = false;
                     e.ineligible_reason = _("This is a ranked game and the rank difference is more than 9");
-                } else if (e.min_rank <= data.get("user").ranking && e.max_rank >= data.get("user").ranking) {
+                } else if (e.min_rank <= this.userRank() && e.max_rank >= this.userRank()) {
                     e.eligible = true;
                 } else {
                     e.eligible = false;
 
-                    if (e.min_rank > data.get("user").ranking) {
+                    if (e.min_rank > this.userRank()) {
                         e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
                     }
-                    else if (e.max_rank < data.get("user").ranking) {
+                    else if (e.max_rank < this.userRank()) {
                         e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
                     }
                 }
@@ -503,7 +510,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* player rank line */
         if (!data.get("user").anonymous) {
-            let rank_ratio = (Math.min(MAX_RATIO, (data.get("user").ranking + 1) / 40));
+            let rank_ratio = (Math.min(MAX_RATIO, (this.userRank() + 1) / 40));
             let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
@@ -724,18 +731,18 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
 
                 if (!data.get("user").anonymous) {
-                    if (C.min_rank > data.get("user").ranking) {
+                    if (C.min_rank > this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) + "</span>";
                     }
-                    else if (C.max_rank < data.get("user").ranking) {
+                    else if (C.max_rank < this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) + "</span>";
                     }
-                    else if (C.ranked && Math.abs(data.get("user").ranking - C.rank) > 9) {
+                    else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }
 
-                //console.log(C.ranked, Math.abs(data.get('user').ranking - C.rank));
+                //console.log(C.ranked, Math.abs(this.userRank() - C.rank));
                 e.append($("<span>").addClass("details").html(details_html));
             }
 
