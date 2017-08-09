@@ -20,6 +20,7 @@ import {TypedEventEmitter} from "TypedEventEmitter";
 import * as data from "data";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
+import {bounded_rank} from 'rank_utils';
 
 interface Events {
     "chat": any;
@@ -152,6 +153,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }}}
     _update_sorted_lists() {{{
+        console.log("asdfsf");
         this.users_by_name = [];
         this.users_by_rank = [];
         for (let id in this.user_list) {
@@ -159,19 +161,28 @@ class ChatChannel extends TypedEventEmitter<Events> {
             this.users_by_rank.push(this.user_list[id]);
         }
         this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
-        this.users_by_rank.sort((a, b) => {
-            if (!a.ranking && b.ranking) {
-                return 1;
-            }
-            if (a.ranking && !b.ranking) {
-                return -1;
-            }
-            if ((!a.ranking && !b.ranking) || a.ranking - b.ranking === 0) {
-                return a.username.localeCompare(b.username);
-            }
-            return b.ranking - a.ranking;
-        });
+        this.users_by_rank.sort(users_by_rank);
     }}}
+}
+
+export function users_by_rank(a, b) {
+    if (a.professional && !b.professional) {
+        return -1;
+    }
+    if (b.professional && !a.professional) {
+        return 1;
+    }
+    if (a.professional && b.professional) {
+        return b.ranking - a.ranking;
+    }
+
+    let a_rank = Math.floor(bounded_rank(a));
+    let b_rank = Math.floor(bounded_rank(b));
+
+    if (a_rank === b_rank) {
+        return a.username.localeCompare(b.username);
+    }
+    return b_rank - a_rank;
 }
 
 

@@ -142,7 +142,11 @@ export function rankString(r, with_tenths?:boolean) {
         if (r.pro || r.professional) {
             return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
         }
-        r = ranking;
+        if ('ratings' in r) {
+            r = overall_rank(r);
+        } else {
+            r = ranking;
+        }
     }
     if (r > 900) {
         return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
@@ -159,10 +163,15 @@ export function rankString(r, with_tenths?:boolean) {
 
 export function longRankString(r) {
     if (typeof(r) === "object") {
-        if (r.pro) {
-            return interpolate(_("%s Pro"), [((r.ranking - 36))]);
+        let ranking = "ranking" in r ? r.ranking : r.rank;
+        if (r.pro || r.professional) {
+            return interpolate(_("%s Pro"), [((ranking - 36))]);
         }
-        r = r.ranking;
+        if ('ratings' in r) {
+            r = overall_rank(r);
+        } else {
+            r = ranking;
+        }
     }
     if (r > 900) {
         return interpolate(_("%s Pro"), [(((r - 1000) - 36))]);

@@ -32,6 +32,7 @@ import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
+import {users_by_rank} from 'chat_manager';
 
 declare let swal;
 
@@ -502,22 +503,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         let sort_order = this.state.user_sort_order;
         if (sort_order === "rank") {
-            lst.sort((a, b) => {
-                if (!a.ranking && b.ranking) {
-                    return 1;
-                }
-                if (a.ranking && !b.ranking) {
-                    return -1;
-                }
-                if (!a.ranking && !b.ranking) {
-                    return a.username.localeCompare(b.username);
-                }
-
-                if (a.ranking - b.ranking === 0)  {
-                    return a.username.localeCompare(b.username);
-                }
-                return b.ranking - a.ranking;
-            });
+            lst.sort(users_by_rank);
         } else {
             lst.sort((a, b) => {
                 return a.username.localeCompare(b.username);
