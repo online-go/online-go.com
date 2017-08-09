@@ -93,6 +93,12 @@ export function makeRatingEntry(d:any):RatingEntry {
     let handicap = parseInt(d.handicap);
     let won = parseInt(d.outcome) === 2 ? 1 : 0;
     let lost = 1 - won;
+    let extra = JSON.parse(d.extra)
+
+    if (d.opponent_id <= 0) {
+        lost = 0;
+    }
+
     if (handicap > 0) {
         if (played_black) {
             effective_rating += get_handicap_adjustment(effective_rating, handicap);
@@ -116,8 +122,8 @@ export function makeRatingEntry(d:any):RatingEntry {
         opponent_rating    : parseFloat(d.oppponent_rating),
         opponent_deviation : parseFloat(d.opponent_deviation),
         outcome            : parseInt(d.outcome),
-        extra              : JSON.parse(d.extra),
-        count              : 1,
+        extra              : extra,
+        count              : d.opponent_id > 0 ? 1 : 0,
         wins               : won,
         losses             : lost,
         strong_wins        : effective_rating < effective_opponent_rating ? won : 0,
