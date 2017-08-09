@@ -31,6 +31,7 @@ import preferences from "preferences";
 import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
+import {RegisteredPlayer} from "data/Player";
 
 declare let swal;
 
@@ -90,10 +91,11 @@ let ranks = amateurRanks();
 let demo_ranks = allRanks();
 
 let ranked_ranks = (() => {
-    if (!data.get("user")) { return []; }
+    let user = data.get("user");
+    if (!(user instanceof RegisteredPlayer)) { return []; }
 
-    let rankedMin = Math.max(0, data.get("user").ranking - 9);
-    let rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
+    let rankedMin = Math.max(0, user.ranking - 9);
+    let rankedMax = Math.min(MaxRank, user.ranking + 9);
 
     return rankList(rankedMin, rankedMax, false);
 })();
@@ -238,15 +240,16 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     setRanked(tf) { /* {{{ */
         let next = this.nextState();
+        let user = data.get("user");
 
         next.challenge.game.ranked = tf;
-        if (tf && this.state.challenge && data.get("user")) {
+        if (tf && this.state.challenge && user instanceof RegisteredPlayer) {
             next.challenge.game.handicap = Math.min(9, this.state.challenge.game.handicap);
             next.challenge.game.komi_auto = "automatic";
-            next.challenge.min_ranking = Math.max(this.state.challenge.min_ranking, data.get("user").ranking - 9);
-            next.challenge.min_ranking = Math.min(this.state.challenge.min_ranking, data.get("user").ranking + 9);
-            next.challenge.max_ranking = Math.max(this.state.challenge.max_ranking, data.get("user").ranking - 9);
-            next.challenge.max_ranking = Math.min(this.state.challenge.max_ranking, data.get("user").ranking + 9);
+            next.challenge.min_ranking = Math.max(this.state.challenge.min_ranking, user.ranking - 9);
+            next.challenge.min_ranking = Math.min(this.state.challenge.min_ranking, user.ranking + 9);
+            next.challenge.max_ranking = Math.max(this.state.challenge.max_ranking, user.ranking - 9);
+            next.challenge.max_ranking = Math.min(this.state.challenge.max_ranking, user.ranking + 9);
 
             if (
                 this.state.conf.selected_board_size !== "19x19" &&
@@ -1061,6 +1064,9 @@ export function challengeRematch(goban, player, original_game_meta) { /* {{{ */
 export function createBlitz() {{{
     let user = data.get("user");
     let config = dup(blitz_config);
+    if (!(user instanceof RegisteredPlayer)) {
+        return;
+    }
     config.challenge.min_ranking = user.ranking - 3;
     config.challenge.max_ranking = user.ranking + 3;
     config.challenge.game.width = preferences.get("new-game-board-size");
@@ -1070,6 +1076,9 @@ export function createBlitz() {{{
 export function createLive() {{{
     let user = data.get("user");
     let config = dup(live_config);
+    if (!(user instanceof RegisteredPlayer)) {
+        return;
+    }
     config.challenge.min_ranking = user.ranking - 3;
     config.challenge.max_ranking = user.ranking + 3;
     config.challenge.game.width = preferences.get("new-game-board-size");
@@ -1079,6 +1088,9 @@ export function createLive() {{{
 export function createCorrespondence() {{{
     let user = data.get("user");
     let config = dup(correspondence_config);
+    if (!(user instanceof RegisteredPlayer)) {
+        return;
+    }
     config.challenge.min_ranking = user.ranking - 3;
     config.challenge.max_ranking = user.ranking + 3;
     config.challenge.game.width = preferences.get("new-game-board-size");

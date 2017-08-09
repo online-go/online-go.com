@@ -22,6 +22,7 @@ import {errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
+import {RegisteredPlayer} from "data/Player";
 
 declare var Braintree;
 declare var swal;
@@ -58,7 +59,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     constructor(props) {
         super(props);
-        if (data.get('user').anonymous) {
+        if (!(data.get('user') instanceof RegisteredPlayer)) {
             this.state = {
                 loading: false
             };
@@ -109,7 +110,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
         }
 
-        if (!data.get('user').anonymous) {
+        if (data.get('user') instanceof RegisteredPlayer) {
             braintree_js_promise.then(() => {
                 get("me/supporter")
                 .then((supporter) => {
@@ -460,7 +461,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             </div>
         );
 
-        if (user.anonymous) {
+        if (!(user instanceof RegisteredPlayer)) {
             return (
                 <div className="Supporter">
                     {supporter_text}

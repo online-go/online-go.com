@@ -41,7 +41,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
-
+import {RegisteredPlayer} from "data/Player";
 
 declare let swal;
 
@@ -198,7 +198,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("user").is.moderator) /* aliases {{{ */ {
             state.ip = null;
             state.host_ip_settings = null;
          } /* }}} */
@@ -359,10 +359,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             put("players/%%/icon", this.user_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
-                player_cache.update({
-                    id: this.user_id,
-                    icon: res.icon,
-                });
+                player_cache.update(new RegisteredPlayer(this.user_id, {icon: res.icon}));
             });
         })
         .catch(errorAlerter);
@@ -372,10 +369,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         del("players/%%/icon", this.user_id)
         .then((res) => {
             console.log("Cleared icon", res);
-            player_cache.update({
-                id: this.user_id,
-                icon: res.icon,
-            });
+            player_cache.update(new RegisteredPlayer(this.user_id, {icon: res.icon}));
         })
         .catch(errorAlerter);
     }}}
@@ -431,7 +425,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         };
 
-        if (!data.get('user').is_moderator && (this.original_username !== this.state.user.username)) {
+        if (!data.get('user').is.moderator && (this.original_username !== this.state.user.username)) {
             swal({
                 text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
                 showCancelButton: true,
@@ -735,7 +729,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
 
-        let global_user = data.get("config.user");
+        let global_user = data.get("user");
         let cdn_release = data.get("config.cdn_release");
 
         return (
@@ -765,7 +759,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             }
 
                             <div className='avatar-subtext'>
-                                {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
+                                {(global_user.is.moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
 
                                 {(user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
 
@@ -820,13 +814,13 @@ export class User extends React.PureComponent<UserProperties, any> {
                             }
 
                             <div className='avatar-buttons'>
-                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                                {((global_user.id === user.id || global_user.is.moderator) || null)   &&
                                     <button onClick={this.toggleEdit} className='xs edit-button'>
                                         <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
                                     </button>
                                 }
 
-                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                                { (global_user.is.moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
                             </div>
                         </div>
                         {/* }}} */}

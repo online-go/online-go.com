@@ -33,6 +33,7 @@ import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {users_by_rank} from 'chat_manager';
+import {GuestPlayer, RegisteredPlayer, player_attributes} from "data/Player";
 
 declare let swal;
 
@@ -48,7 +49,7 @@ interface ChatProperties {
 }
 
 let name_match_regex = /^loading...$/;
-data.watch("config.user", (user) => {
+data.watch("user", user => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
           "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
@@ -175,7 +176,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     resolve() {{{
-        if (!data.get("user").anonymous) {
+        if (data.get("user") instanceof RegisteredPlayer) {
             get("me/groups", {page_size: 30})
             .then((groups) => {
                 this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
@@ -304,16 +305,6 @@ export class Chat extends React.Component<ChatProperties, any> {
             return;
         }
         c.chat_ids[obj.message.i] = true;
-
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
-
         c.chat_log.push(obj);
         if (this.state.active_channel === obj.channel) {
             //this.syncStateSoon();
@@ -543,10 +534,10 @@ export class Chat extends React.Component<ChatProperties, any> {
 
             if (this.send_tokens <= 0) {
                 let chillout_time = 20;
-                if (data.get("config.user").supporter) {
+                if (data.get("user").is.supporter) {
                     chillout_time = 10;
                 }
-                if (data.get("config.user").is_moderator) {
+                if (data.get("user").is.moderator) {
                     chillout_time = 2;
                 }
 
@@ -569,7 +560,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             --this.send_tokens;
             setTimeout(() => { this.send_tokens = Math.min(5, this.send_tokens + 1); }, 2000);
 
-            let user = data.get("config.user");
+            let user = data.get("user");
 
             let obj: any = {
                 "channel": channel,
@@ -581,9 +572,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             obj = dup(obj);
             obj.username = user.username;
             obj.id = user.id;
-            obj.ranking = user.ranking;
-            obj.professional = user.professional;
-            obj.ui_class = user.ui_class;
+            obj.ranking = user instanceof RegisteredPlayer ? user.ranking : 0;
+            obj.professional = user.is.professional;
+            obj.ui_class = player_attributes(user).join(" ");
             obj.message = {"i": obj.uuid, "t": Math.floor(Date.now() / 1000), "m": txt};
             this.onChatMessage(obj);
         };
@@ -755,9 +746,9 @@ export class Chat extends React.Component<ChatProperties, any> {
 
                         <TabCompleteInput ref="input" type="text" className={this.state.rtl_mode ? "rtl" : ""}
                                placeholder={
-                                   !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated") :
+                                   !data.get('user').is.validated ? _("Chat will be enabled once your email address has been validated") :
                                        this.state.show_say_hi_placeholder ? _("Say hi!") : ""}
-                               disabled={data.get("user").anonymous || !data.get('user').email_validated}
+                               disabled={!data.get('user').is.validated}
                                onKeyPress={this.onKeyPress}
                                />
 
@@ -869,7 +860,7 @@ function ChatLine(props) {{{
     return (
         <div className={
              (third_person ? "chat-line third-person" : "chat-line")
-             + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
+             + (user.id === data.get("user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
         }>
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}

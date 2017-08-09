@@ -24,6 +24,7 @@ import * as data from "data";
 import {Player} from "Player";
 import {ignore, errorAlerter} from "misc";
 import * as moment from "moment";
+import {RegisteredPlayer} from "data/Player";
 
 declare var swal;
 
@@ -50,7 +51,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             this.active_incident_reports = {};
             this.setState({ reports: [] });
 
-            if (!user.anonymous) {
+            if (user instanceof RegisteredPlayer) {
                 comm_socket.send("incident/connect", {
                     "player_id": user.id,
                     "auth": data.get("config.incident_auth"),
@@ -192,10 +193,10 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                     </div>
 
                                     <div className="spread">
-                                        {((!report.moderator && user.is_moderator) || null) &&
+                                        {((!report.moderator && user.is.moderator) || null) &&
                                             <button className="primary xs" onClick={report.claim}>{_("Claim")}</button>
                                         }
-                                        {((report.moderator && user.is_moderator && user.id !== report.moderator.id) || null) &&
+                                        {((report.moderator && user.is.moderator && user.id !== report.moderator.id) || null) &&
                                             <button className="danger xs" onClick={report.claim}>{_("Steal")}</button>
                                         }
                                         {((!report.moderator && report.reporting_user && user.id === report.reporting_user.id) || null) &&
@@ -203,7 +204,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         }
                                     </div>
 
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                    {((report.moderator && user.is.moderator && user.id === report.moderator.id) || null) &&
                                         <div className="spread">
                                             <button className="success xs"  onClick={report.good_report}>{_("Good report")}</button>
                                             <button className="info xs"  onClick={report.set_note}>{_("Note")}</button>

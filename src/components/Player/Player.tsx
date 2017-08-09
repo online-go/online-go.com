@@ -27,6 +27,7 @@ import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
 import online_status from "online_status";
 import {pgettext} from "translate";
+import {player_attributes} from "data/Player";
 
 interface PlayerProperties {
     // id?: any,
@@ -72,7 +73,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
             let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
             if (player_id && player_id > 0) {
-                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                player_cache.fetch(player_id).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (player_id === user.id) {
                         this.setState({user: user});
@@ -119,7 +120,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
 
             if (player_id && player_id > 0) {
-                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                player_cache.fetch(player_id).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (player_id === user.id) {
                         this.setState({user: user});
@@ -161,9 +162,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += " Player-with-icon";
         }
 
-        if (player.ui_class) {
-            main_attrs.className += " " + player.ui_class;
-        }
+        main_attrs.className += " " + player_attributes(player).join(" ");
 
         if (player_id < 0) {
             main_attrs.className += " guest";

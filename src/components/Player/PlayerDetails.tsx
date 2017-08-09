@@ -34,7 +34,7 @@ import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
 import {close_friend_list} from 'FriendList/FriendIndicator';
-
+import {RegisteredPlayer} from "data/Player";
 
 interface PlayerDetailsProperties {
     playerId: number;
@@ -84,17 +84,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     }}}
     resolve(player_id) {{{
         this.setState({resolved: false});
-        player_cache.fetch(
-            this.props.playerId,
-            [
-                "username",
-                "icon",
-                "ratings",
-                "pro",
-                "country",
-                "ui_class",
-            ]
-        )
+        player_cache.fetch(this.props.playerId)
         .then((player) => {
             this.setState(Object.assign({resolved: true}, player as any));
         })
@@ -212,7 +202,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         }
                     </div>
                 </div>
-                {!user.anonymous && (user.id !== this.props.playerId || null) &&
+                {user instanceof RegisteredPlayer && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
@@ -224,20 +214,20 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
-                { ((user.is_moderator && this.props.playerId > 0) || null) &&
+                {user instanceof RegisteredPlayer && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
+                { ((user.is.moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
                         <button className="xs noshadow danger" onClick={this.shadowban}><i className="fa fa-commenting"/>{pgettext("Disallow user to chat", "Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_moderator && this.props.playerId > 0) || null) &&
+                { ((user.is.moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.removeBan}><i className="fa fa-thumbs-o-up"/>{pgettext("Allow user on the server", "Un-Ban")}</button>
                         <button className="xs noshadow" onClick={this.removeShadowban}><i className="fa fa-commenting-o"/>{pgettext("Remove chat ban", "Un-Shadowban")}</button>
                     </div>
                 }
-                { ((user.is_superuser && this.props.playerId > 0) || null) &&
+                { ((user.is.admin && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                     </div>

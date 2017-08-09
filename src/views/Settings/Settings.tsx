@@ -430,8 +430,8 @@ export class Settings extends React.PureComponent<{}, any> {
                         }
                     </dd>
 
-                    {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
-                    {(user.supporter || null) &&
+                    {(user.is.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
+                    {(user.is.supporter || null) &&
                         <dd>
                             <input type="checkbox"
                                     checked={!this.state.hide_ui_class}
@@ -542,7 +542,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </button>
                     }
                     {this.state.email_message && <div>{this.state.email_message}</div>}
-                    {this.state.profile.email && !this.state.email_changed && !data.get('user').email_validated &&
+                    {this.state.profile.email && !this.state.email_changed && !data.get('user').is.validated &&
                         <div>
                             <div className='awaiting-validation-text'>
                                 {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}

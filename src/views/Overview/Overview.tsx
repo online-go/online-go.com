@@ -70,7 +70,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        let user = data.get("config.user");
+        let user = data.get("user");
 
         let rating = user ? getUserRating(user, 'overall', 0) : null;
 

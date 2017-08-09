@@ -21,6 +21,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import {FAdBlock} from 'fab';
+import {RegisteredPlayer} from "data/Player";
 
 declare var factorem;
 
@@ -54,20 +55,16 @@ if (never_load_ads) {
 function should_show_ads() {
     let user = data.get("user");
 
-    if (user && (user.supporter && user.id !== 1)) {
-        return false;
+    if (user && (user.is.admin || user.is.moderator)) {
+        return data.get("ad-override", false);
     }
 
-    if (user && (user.is_superuser || user.is_moderator)) {
-        return data.get("ad-override", false);
+    if (user && user.is.supporter) {
+        return false;
     }
 
     if (/beta|dev/.test(window.location.hostname)) {
         return false;
-    }
-
-    if (!user || user.anonymous) {
-        return true;
     }
 
     return true;
