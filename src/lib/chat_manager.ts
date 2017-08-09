@@ -153,7 +153,6 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }}}
     _update_sorted_lists() {{{
-        console.log("asdfsf");
         this.users_by_name = [];
         this.users_by_rank = [];
         for (let id in this.user_list) {
