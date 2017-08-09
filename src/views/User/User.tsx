@@ -1007,7 +1007,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         }
 
                         <Card>
-                            <h3>{_("Statistics")}</h3>
+                            <h3>Old Elo ratings</h3>
+                            <h4><i>These ratings and ranks are no longer used, and will be removed soon. They are strictly for informational purposes during the transition period everyone gets used to the new Glicko-2 rating system.</i></h4>
                             <h5>{_("Ranked games played")}: {this.state.statistics.total}</h5>
                             <h5>{_("Won")}: {this.state.statistics.wins}  &nbsp;&nbsp; {_("Lost")}: {this.state.statistics.losses}  &nbsp;&nbsp; {_("Draws")}: {this.state.statistics.draws}</h5>
 
