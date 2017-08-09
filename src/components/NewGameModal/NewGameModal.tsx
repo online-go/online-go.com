@@ -140,10 +140,5 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
 }
 
 export function openNewGameModal() {{{
-    if (!data.get("user").setup_rank_set) {
-        browserHistory.push("/");
-        return;
-    }
-
     return openModal(<NewGameModal fastDismiss={true} />);
 }}}

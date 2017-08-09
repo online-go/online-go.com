@@ -317,10 +317,5 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
 
 
 export function openAutomatchSettings() {{{
-    if (!data.get("user").setup_rank_set) {
-        browserHistory.push("/");
-        return;
-    }
-
     return openModal(<AutomatchSettings fastDismiss={true} />);
 }}}
