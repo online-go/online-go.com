@@ -93,7 +93,7 @@ export function makeRatingEntry(d:any):RatingEntry {
     let handicap = parseInt(d.handicap);
     let won = parseInt(d.outcome) === 2 ? 1 : 0;
     let lost = 1 - won;
-    let extra = JSON.parse(d.extra)
+    let extra = JSON.parse(d.extra);
 
     if (d.opponent_id <= 0) {
         lost = 0;
