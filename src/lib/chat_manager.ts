@@ -16,11 +16,17 @@
  */
 
 import {comm_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
-import data from "data";
+import {TypedEventEmitter} from "TypedEventEmitter";
+import * as data from "data";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
+import {bounded_rank} from 'rank_utils';
 
+interface Events {
+    "chat": any;
+    "join": Array<any>;
+    "part": any;
+}
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
@@ -39,7 +45,7 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
-class ChatChannel extends EventEmitter {
+class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     display_name: string;
     proxies: {[id: number]: ChatChannelProxy} = {};
@@ -154,23 +160,32 @@ class ChatChannel extends EventEmitter {
             this.users_by_rank.push(this.user_list[id]);
         }
         this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
-        this.users_by_rank.sort((a, b) => {
-            if (!a.ranking && b.ranking) {
-                return 1;
-            }
-            if (a.ranking && !b.ranking) {
-                return -1;
-            }
-            if ((!a.ranking && !b.ranking) || a.ranking - b.ranking === 0) {
-                return a.username.localeCompare(b.username);
-            }
-            return b.ranking - a.ranking;
-        });
+        this.users_by_rank.sort(users_by_rank);
     }}}
 }
 
+export function users_by_rank(a, b) {
+    if (a.professional && !b.professional) {
+        return -1;
+    }
+    if (b.professional && !a.professional) {
+        return 1;
+    }
+    if (a.professional && b.professional) {
+        return b.ranking - a.ranking;
+    }
 
-export class ChatChannelProxy extends EventEmitter {
+    let a_rank = Math.floor(bounded_rank(a));
+    let b_rank = Math.floor(bounded_rank(b));
+
+    if (a_rank === b_rank) {
+        return a.username.localeCompare(b.username);
+    }
+    return b_rank - a_rank;
+}
+
+
+export class ChatChannelProxy extends TypedEventEmitter<Events> {
     id: number = ++last_proxy_id;
     channel: ChatChannel;
 

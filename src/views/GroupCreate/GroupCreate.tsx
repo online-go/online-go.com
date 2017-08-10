@@ -18,7 +18,6 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {EventEmitterPureComponent} from "EventEmitterPureComponent";
 import {browserHistory} from "react-router";
 
 declare var swal;
@@ -26,7 +25,7 @@ declare var swal;
 interface GroupCreateProperties {
 }
 
-export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties, any> {
+export class GroupCreate extends React.PureComponent<GroupCreateProperties, any> {
     refs: {
         name
     };
@@ -34,19 +33,22 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
     constructor(props) {
         super(props);
         this.state = {
-            group: {
-                name: "",
-                require_invitation: false,
-                is_public: true,
-                hide_details: false,
-            }
+            name: "",
+            require_invitation: false,
+            is_public: true,
+            hide_details: false,
         };
     }
 
     createGroup() {
-        if (this.state.group.name.trim() !== "") {
-            console.info(this.state.group);
-            post("groups/", this.state.group)
+        if (this.state.name.trim() !== "") {
+            let group = {
+                name: this.state.name,
+                require_invitation: this.state.require_invitation,
+                is_public: this.state.is_public,
+                hide_details: this.state.hide_details,
+            };
+            post("groups/", group)
             .then((group) => {
                 browserHistory.push(`/group/${group.id}`);
             })
@@ -57,6 +59,11 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
             this.refs.name.focus();
         }
     }
+
+    set_name = (ev) => this.setState({'name': ev.target.value});
+    set_is_public = (ev) => this.setState({'is_public': ev.target.checked});
+    set_require_invitation = (ev) => this.setState({'require_invitation': ev.target.checked});
+    set_hide_details = (ev) => this.setState({'hide_details': ev.target.checked});
 
     render() {
         return (
@@ -72,7 +79,7 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
                         <div className="form-group">
                             <label className="col-sm-5 control-label" htmlFor="group-create-name">{_("Group Name")}</label>
                             <div className="col-sm-6">
-                                <input type="text" ref="name" className="form-control" id="group-create-name" value={this.state.group.name} onChange={(ev) => this.upstate("group.name", ev)} placeholder={_("Group Name")}/>
+                                <input type="text" ref="name" className="form-control" id="group-create-name" value={this.state.name} onChange={this.set_name} placeholder={_("Group Name")}/>
                             </div>
                         </div>
 
@@ -80,16 +87,16 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
                             <label className="col-sm-5 control-label" htmlFor="group-create-public">{_("Open to the public")}</label>
                             <div className="col-sm-6">
                                 <div className="checkbox">
-                                    <input type="checkbox" id="group-create-public" checked={this.state.group.is_public} onChange={(ev) => this.upstate("group.is_public", ev)}/>
+                                    <input type="checkbox" id="group-create-public" checked={this.state.is_public} onChange={this.set_is_public}/>
                                 </div>
                             </div>
                         </div>
-                        {(!this.state.group.is_public || null) &&
+                        {(!this.state.is_public || null) &&
                             <div className="form-group">
                                 <label className="col-sm-5 control-label" htmlFor="group-create-disable-invitation">{_("Disable invitation requests")}</label>
                                 <div className="col-sm-6">
                                     <div className="checkbox">
-                                        <input type="checkbox" id="group-create-disable-invitation" checked={this.state.group.require_invitation} onChange={(ev) => this.upstate("group.require_invitation", ev)}/>
+                                        <input type="checkbox" id="group-create-disable-invitation" checked={this.state.require_invitation} onChange={this.set_require_invitation}/>
                                     </div>
                                 </div>
                             </div>
@@ -98,7 +105,7 @@ export class GroupCreate extends EventEmitterPureComponent<GroupCreateProperties
                             <label className="col-sm-5 control-label" htmlFor="group-create-hide-details">{_("Hide details from non-members")}</label>
                             <div className="col-sm-6">
                                 <div className="checkbox">
-                                    <input type="checkbox" id="group-create-hide-details" checked={this.state.group.hide_details} onChange={(ev) => this.upstate("group.hide_details", ev)}/>
+                                    <input type="checkbox" id="group-create-hide-details" checked={this.state.hide_details} onChange={this.set_hide_details}/>
                                 </div>
                             </div>
                         </div>

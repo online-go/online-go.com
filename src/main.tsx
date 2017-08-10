@@ -17,7 +17,7 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 
-import data from "data";
+import * as data from "data";
 
 data.setDefault("theme", "light");
 data.setDefault("config", {
@@ -41,7 +41,7 @@ import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {toast} from 'toast';
 
 import {NavBar} from "NavBar";
@@ -70,7 +70,6 @@ import {Tournament} from "Tournament";
 import {TournamentListMainView} from "TournamentList";
 import {Tutorial} from "Tutorial";
 import {User, UserByName} from "User";
-import {RatingHistory} from "RatingHistory";
 import {Settings} from "Settings";
 import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
@@ -238,9 +237,6 @@ const routes = (
         <Route path="/user/view/:user_id" component={User}/>
         <Route path="/user/view/:user_id/*" component={User}/>
         <Route path="/user/view/:user_id/**/*" component={User}/>
-        <Route path="/ratinghistory/:user_id" component={RatingHistory}/>
-        <Route path="/ratinghistory/:user_id/*" component={RatingHistory}/>
-        <Route path="/ratinghistory/:user_id/**/*" component={RatingHistory}/>
         <Route path="/settings" component={Settings}/>
         <Route path="/user/settings" component={Settings}/>
         <Route path="/user/supporter" component={Supporter}/>
@@ -305,3 +301,6 @@ const routes = (
 </Router>);
 
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+window["player_cache"] = player_cache;
+window["data"] = data;

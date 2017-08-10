@@ -29,10 +29,9 @@ import {toast} from "toast";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
-import {FirstTimeSetup} from "FirstTimeSetup";
+import {longRankString, getUserRating, is_novice} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
@@ -71,11 +70,9 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
-            return <FirstTimeSetup/>;
-        }
-
         let user = data.get("config.user");
+
+        let rating = user ? getUserRating(user, 'overall', 0) : null;
 
         return (
         <div id="Overview-Container">
@@ -105,16 +102,24 @@ export class Overview extends React.Component<{}, any> {
                         <PlayerIcon id={user.id} size={80} />
 
                         <div className="profile-right">
-                            <span className="username">{user.username}</span>
-
-                            <div className="rank-and-progress">
-                                <span className="rank">{longRankString(user)} &nbsp;</span>
-                                <div className="progress">
-                                    <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
-                                </div>
+                            <div>
+                                <Player user={user} nodetails rank={false} />
                             </div>
-
-                            <Link className="view-and-edit-link" to={`/player/${user.id}`}>{_("View and edit profile") /* translators: View and edit profile */} &gt;</Link>
+                            {rating && rating.professional &&
+                                <div>
+                                    <span className="rank">{rating.rank_label}</span>
+                                </div>
+                            }
+                            {rating && !rating.professional &&
+                                <div>
+                                    <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                                </div>
+                            }
+                            {rating && !rating.professional && !is_novice(user) &&
+                                <div>
+                                    <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                                </div>
+                            }
                         </div>
                     </div>
 

@@ -1,6 +1,6 @@
 'use strict';
 
-console.log(process.env.NODE_PATH)
+console.log('node path :', process.env.NODE_PATH)
 
 var path = require('path');
 let fs = require('fs');
@@ -14,11 +14,13 @@ module.exports = {
     },
     resolve: {
         modules: [
-            'src/lib', 
-            'src/lib/goban', 
-            'src/components', 
-            'src/views', 
-            'src', 
+            'src/lib',
+            'src/lib/goban',
+            'src/components',
+            'src/views',
+            'src/data',
+            'src/compatibility',
+            'src',
             'node_modules'
         ],
         extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
@@ -30,8 +32,8 @@ module.exports = {
     module: {
         loaders: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
-            { 
-                test: /\.tsx?$/, 
+            {
+                test: /\.tsx?$/,
                 loader: "ts-loader",
                 exclude: /node_modules/,
             }
@@ -39,8 +41,8 @@ module.exports = {
     },
 
     performance: {
-        maxAssetSize: 1024*1024*2.5,
-        maxEntrypointSize: 1024*1024*2.5,
+        maxAssetSize: 1024 * 1024 * 2.5,
+        maxEntrypointSize: 1024 * 1024 * 2.5,
     },
 
     plugins: [
@@ -57,8 +59,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.`
-    )
+along with this program.  If not, see <http://www.gnu.org/licenses/>.`)
     ],
 
     //devtool: 'eval',

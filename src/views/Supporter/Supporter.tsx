@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {del, put, post, get} from "requests";
 import {errorAlerter} from "misc";
-import data from "data";
+import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 
@@ -341,7 +341,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let exp_month = parseInt(m[1]);
         let exp_year = parseInt("20" + m[2]);
 
-        return put(`me/payment_methods/${this.state.payment_method.id}` , {
+        return put("me/payment_methods/%%", this.state.payment_method.id, {
             "first_name": this.state.fname.trim(),
             "last_name": this.state.lname.trim(),
             "email": this.state.email,

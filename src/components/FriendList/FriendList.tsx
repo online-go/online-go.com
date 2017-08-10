@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 
@@ -38,6 +38,7 @@ export class FriendList extends React.PureComponent<{}, any> {
             resolved: false
         };
     }
+    friends_listener:any;
 
     updateFriends = (friends) => {
         this.setState({
@@ -51,6 +52,7 @@ export class FriendList extends React.PureComponent<{}, any> {
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
+        data.unwatch("friends", this.updateFriends);
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
     }}}
     resortFriends = () => {

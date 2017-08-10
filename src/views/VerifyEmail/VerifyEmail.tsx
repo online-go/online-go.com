@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router";
 import {post} from "requests";
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 
@@ -38,7 +38,7 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
     }
 
     componentDidMount() {
-        post('me/validateEmail', {
+        post("me/validateEmail", {
             id: this.props.location.query.id,
             verification: this.props.location.query.v,
         })

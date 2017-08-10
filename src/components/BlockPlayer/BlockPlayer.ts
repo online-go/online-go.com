@@ -16,10 +16,10 @@
  */
 
 import {get, put} from "requests";
-import data from "data";
+import * as data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
-import player_cache from 'player_cache';
+import * as player_cache from "player_cache";
 
 let ignores = {};
 let block_state = {};
@@ -36,7 +36,7 @@ export function setIgnore(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_chat = tf;
-        put("players/" + player_id + "/block", {block_chat: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })
@@ -49,7 +49,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_games = tf;
-        put("players/" + player_id + "/block", {block_games: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })

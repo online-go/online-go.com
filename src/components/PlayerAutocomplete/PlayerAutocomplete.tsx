@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, abort_requests_in_flight} from "requests";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 import _Autosuggest = require("react-autosuggest");
 let Autosuggest = _Autosuggest as any;

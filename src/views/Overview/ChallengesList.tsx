@@ -19,11 +19,11 @@ import * as React from "react";
 import {_} from "translate";
 import {Card} from "material";
 import {del, post, get} from "requests";
-import data from "data";
+import * as data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
-import {player_cache} from "player_cache";
+import * as player_cache from "player_cache";
 import {profanity_filter} from "profanity_filter";
 import {challenge_text_description} from "ChallengeModal";
 import {FabX, FabCheck} from "material";
@@ -60,13 +60,13 @@ export class ChallengesList extends React.PureComponent<{}, any> {
     }}}
 
     deleteChallenge(challenge) {{{
-        del(`me/challenges/${challenge.id}`)
+        del("me/challenges/%%", challenge.id)
         .then(ignore)
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
     }}}
     acceptChallenge(challenge) {{{
-        post(`me/challenges/${challenge.id}/accept`, {})
+        post("me/challenges/%%/accept", challenge.id, {})
         .then(ignore)
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});

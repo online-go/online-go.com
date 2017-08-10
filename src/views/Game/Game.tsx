@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
+import * as data from "data";
 import device from "device";
 import preferences from "preferences";
 import * as React from "react";
@@ -33,8 +33,8 @@ import {termination_socket, get_network_latency, get_clock_drift} from "sockets"
 import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
-import player_cache from "player_cache";
-import {getPlayerIconURL} from "PlayerIcon";
+import * as player_cache from "player_cache";
+import {icon_size_url} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";
 import {PersistentElement} from "PersistentElement";
@@ -157,6 +157,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             strict_seki_mode: false,
             player_icons: {},
             volume: preferences.get("sound-volume"),
+            historical_black: null,
+            historical_white: null,
         };
         this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
 
@@ -260,6 +262,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 show_submit: false,
                 autoplaying: false,
                 review_list: [],
+                historical_black: null,
+                historical_white: null,
             });
 
             this.game_id = nextProps.params.game_id ? parseInt(nextProps.params.game_id) : 0;
@@ -438,22 +442,22 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let last_title = window.document.title;
         this.last_move_viewed = 0;
         this.on_refocus_title = last_title;
-        this.goban.on("state_text", (title: string, show_moves_made_count?: boolean) => {
-            this.on_refocus_title = title;
-            if (show_moves_made_count) {
+        this.goban.on("state_text", (state) => {
+            this.on_refocus_title = state.title;
+            if (state.show_moves_made_count) {
                 if (!this.goban) {
-                    window.document.title = title;
+                    window.document.title = state.title;
                     return;
                 }
                 if (document.hasFocus()) {
                     this.last_move_viewed = this.goban.engine.getMoveNumber();
-                    window.document.title = title;
+                    window.document.title = state.title;
                 } else {
                     let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
                     window.document.title = interpolate(_("(%s) moves made"), [diff]);
                 }
             } else {
-                window.document.title = title;
+                window.document.title = state.title;
             }
         });
         /* }}} */
@@ -503,33 +507,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
-            try {
-                let urls = {};
-
-                for (let color in this.goban.engine.players) {
-                    getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                        urls[this.goban.engine.players[color].id] = url;
-                        this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                    });
-                }
-            } catch (e) {
-            }
             this.sync_state();
         });
         if (this.review_id) {
-            this.goban.on("review.updated", (e) => {
+            this.goban.on("review.updated", () => {
                 this.sync_state();
-                if (this.goban.engine.players.white.id && !this.state.player_icons[this.goban.engine.players.white.id]) {
-                    for (let color in this.goban.engine.players) {
-                        getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                            setTimeout(() => {
-                                let urls = {};
-                                urls[this.goban.engine.players[color].id] = url;
-                                this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                            }, 1);
-                        });
-                    }
-                }
             });
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
@@ -538,7 +520,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         if (this.game_id) {
-            get(`games/${this.game_id}`)
+            get("games/%%", this.game_id)
             .then((game) => {
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
@@ -566,7 +548,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 this.setState({
                     review_list: review_list,
+                    historical_black: game.historical_ratings.black,
+                    historical_white: game.historical_ratings.white,
                 });
+            })
+            .catch(ignore);
+        }
+        if (this.review_id) {
+            get("reviews/%%", this.review_id)
+            .then((review) => {
+                if (review.game) {
+                    this.setState({
+                        historical_black: review.game.historical_ratings.black,
+                        historical_white: review.game.historical_ratings.white,
+                    });
+                }
             })
             .catch(ignore);
         }
@@ -1169,7 +1165,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.white_pause_text = goban.white_pause_text;
             new_state.black_pause_text = goban.black_pause_text;
 
-            if ((goban.engine.getMoveNumber() < Math.max(goban.engine.width, goban.engine.height)) && (!("tournament_id" in goban.engine.config))) {
+            if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
                 new_state.resign_mode = "cancel";
             } else {
@@ -1348,7 +1344,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 "text": _("Start a review of this game?"),
                 showCancelButton: true
             }).then(() => {
-                post(`games/${this.game_id}/reviews`, {})
+                post("games/%%/reviews", this.game_id, {})
                 .then((res) => browserHistory.push(`/review/${res.id}`))
                 .catch(errorAlerter);
             })
@@ -1391,7 +1387,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             moderation_note = moderation_note.trim();
         } while (moderation_note === "");
 
-        post(`games/${this.game_id}/moderate`,
+        post("games/%%/moderate", this.game_id,
              {
                  "decide": winner,
                  "moderation_note": moderation_note,
@@ -2173,15 +2169,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             <div className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
-                  if (engine.players[color].id) {
-                      player_cache.fetch(engine.players[color].id, ["country", "ui_class"]).then((player) => {
-                          Object.assign(engine.players[color], player);
-                      }).catch(ignore);
-                  } else {
-                      Object.assign(engine.players[color], {"country": "un"});
-                  }
-                  if (engine.players[color] && this.state.player_icons[engine.players[color].id]) {
-                      player_bg.backgroundImage = `url("${this.state.player_icons[engine.players[color].id]}")`;
+                  if (this.state[`historical_${color}`]) {
+                      let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                      player_bg.backgroundImage = `url("${icon}")`;
                   }
 
                   return (
@@ -2201,7 +2191,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className={`${color} player-name-container`}>
-                             <Player user={goban.engine.players[color].id ? goban.engine.players[color].id : goban.engine.players[color]}/>
+                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
                           </div>
                       }
 
@@ -2291,8 +2281,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         let game_id = null;
+        let sgf_download_enabled = false;
         try {
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.engine.config.original_disable_analysis;
             game_id = this.goban.engine.config.game_id;
+
         } catch (e) {}
 
         let sgf_url = null;
@@ -2301,6 +2294,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
+
 
         return (
             <Dock>
@@ -2352,7 +2346,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
-                <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                {sgf_download_enabled
+                    ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                    : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
                 {mod && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
@@ -2863,14 +2860,13 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }</LineText>;
         }
 
-
         return (
             <div className={`chat-line-container`}>
                 {move_number}
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
-                    {(line.player_id || null) && <Player user={line} />}
+                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>
                 </div>
             </div>

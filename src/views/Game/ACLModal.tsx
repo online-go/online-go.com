@@ -29,6 +29,9 @@ import {GroupAutocomplete} from "GroupAutocomplete";
 import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
 
+interface Events {
+}
+
 interface ACLModalProperties {
     gameId?: number;
     reviewId?: number;
@@ -36,7 +39,7 @@ interface ACLModalProperties {
 }
 
 
-export class ACLModal extends Modal<ACLModalProperties, any> {
+export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     refs: {
         player_autocomplete;
         group_autocomplete;
@@ -57,7 +60,9 @@ export class ACLModal extends Modal<ACLModalProperties, any> {
     componentWillUnmount() {
     }
     refresh = () => {
-        get(this.props.gameId ? `games/${this.props.gameId}/acl` : `reviews/${this.props.reviewId}/acl`)
+        let url = this.props.gameId ? "games/%%/acl" : "reviews/%%/acl";
+        let id = this.props.gameId ? this.props.gameId : this.props.reviewId;
+        get(url, id)
         .then((acl) => this.setState({acl: acl}))
         .catch(errorAlerter);
     }
@@ -72,7 +77,7 @@ export class ACLModal extends Modal<ACLModalProperties, any> {
         }
         this.setState({acl: new_acl});
 
-        del(this.props.gameId ? `games/acl/${obj.id}` : `reviews/acl/${obj.id}`)
+        del((this.props.gameId ? "games/acl/%%" : "reviews/acl/%%"), obj.id)
         .then(this.refresh)
         .catch((e) => { this.refresh(); errorAlerter(e); });
     }

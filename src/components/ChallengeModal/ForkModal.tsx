@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {Goban} from "goban";
@@ -24,12 +24,14 @@ import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {MiniGoban} from "MiniGoban";
 import {challenge} from "ChallengeModal";
 
+interface Events {
+}
 
 interface ForkModalProperties {
     goban: Goban;
 }
 
-export class ForkModal extends Modal<ForkModalProperties, any> {
+export class ForkModal extends Modal<Events, ForkModalProperties, any> {
     constructor(props) { /* {{{ */
         super(props);
 
@@ -38,13 +40,17 @@ export class ForkModal extends Modal<ForkModalProperties, any> {
         this.state = {
             player: null,
             fork_preview: {
-                "moves": goban.engine.cur_move.getMoveStringToThisPoint(),
-                "initial_state": goban.engine.initial_state,
-                "initial_player": goban.engine.config.initial_player,
+                //"moves": goban.engine.cur_move.getMoveStringToThisPoint(),
+                //"initial_state": goban.engine.initial_state,
+                //"initial_player": goban.engine.config.initial_player,
+                "moves": [],
+                "initial_state": goban.engine.computeInitialStateForForkedGame(),
+                "initial_player": goban.engine.colorToMove(),
                 "width": goban.engine.width,
                 "height": goban.engine.height,
                 "rules": goban.engine.rules,
                 "handicap": goban.engine.handicap,
+                "komi": goban.engine.komi,
                 "move_number": goban.engine.getMoveNumber(),
                 "game_name": goban.engine.name,
             }
@@ -82,7 +88,5 @@ export class ForkModal extends Modal<ForkModalProperties, any> {
 
 
 export function openForkModal(goban) {
-
-
     return openModal(<ForkModal goban={goban} />);
 }

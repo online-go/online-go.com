@@ -22,7 +22,7 @@ import {post, get} from "requests";
 import {UIPush} from "UIPush";
 import * as moment from "moment";
 import ITC from "ITC";
-import data from "data";
+import * as data from "data";
 
 interface AnnouncementsProperties {
 }

@@ -23,7 +23,7 @@ import {errorAlerter} from "misc";
 import {Player} from "Player";
 import {PaginatedTable} from "PaginatedTable";
 import {UIPush} from "UIPush";
-import data from "data";
+import * as data from "data";
 import tooltip from "tooltip";
 
 declare var swal;
@@ -76,7 +76,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
 
     reload = () => {{{
-        get(`ladders/${this.props.ladderId}`)
+        get("ladders/%%", this.props.ladderId)
         .then((ladder) => this.setState({ladder: ladder}))
         .catch(errorAlerter);
 
@@ -99,7 +99,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             "cancelButtonText": _("No"),
         })
         .then(() => {
-            post(`ladders/${this.props.ladderId}/players/challenge`, {
+            post("ladders/%%/players/challenge", this.props.ladderId, {
                 "player_id": ladder_player.player.id,
             })
             .then((res) => {

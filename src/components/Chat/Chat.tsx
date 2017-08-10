@@ -22,16 +22,17 @@ import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
+import {users_by_rank} from 'chat_manager';
 
 declare let swal;
 
@@ -174,7 +175,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     resolve() {{{
-        if (!data.get("config.user").anonymous) {
+        if (!data.get("user").anonymous) {
             get("me/groups", {page_size: 30})
             .then((groups) => {
                 this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
@@ -502,22 +503,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         let sort_order = this.state.user_sort_order;
         if (sort_order === "rank") {
-            lst.sort((a, b) => {
-                if (!a.ranking && b.ranking) {
-                    return 1;
-                }
-                if (a.ranking && !b.ranking) {
-                    return -1;
-                }
-                if (!a.ranking && !b.ranking) {
-                    return a.username.localeCompare(b.username);
-                }
-
-                if (a.ranking - b.ranking === 0)  {
-                    return a.username.localeCompare(b.username);
-                }
-                return b.ranking - a.ranking;
-            });
+            lst.sort(users_by_rank);
         } else {
             lst.sort((a, b) => {
                 return a.username.localeCompare(b.username);

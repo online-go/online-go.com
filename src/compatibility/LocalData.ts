@@ -15,14 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.RatingHistory {
-
-    #rating-history {
-        position: fixed;
-        top: navbar-height+4em;
-        bottom: 1rem;
-        left: 1rem;
-        right: 1rem;
-    }
-
+export interface LocalData {
+    [name: string]: any;
 }
+
+export const serialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
+};
+
+export const deserialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
+};

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {comm_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import preferences from "preferences";
 import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
@@ -27,11 +27,19 @@ import {browserHistory} from "react-router";
 import {challenge_text_description} from "ChallengeModal";
 import {Player} from "Player";
 import {FabX, FabCheck} from "material";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {toast} from 'toast';
 
 
 declare let Notification: any;
+
+interface Events {
+    "turn-count": number;
+    "notification": any;
+    "notification-list-updated": never;
+    "notification-count": number;
+}
+
 
 // null or id of game that we're current viewing
 function getCurrentGameId() {
@@ -190,11 +198,11 @@ class NotificationManager {
     boards_to_move_on;
     turn_offset;
     auth;
-    event_emitter: EventEmitter;
+    event_emitter: TypedEventEmitter<Events>;
 
     constructor() {{{
         window["notification_manager"] = this;
-        this.event_emitter = new EventEmitter();
+        this.event_emitter = new TypedEventEmitter<Events>();
 
         this.notifications = {};
         this.ordered_notifications = [];
@@ -439,8 +447,8 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
 
-        notification_manager.event_emitter.on("turn-count", (ct, next_board) => {
-            this.setState({count: ct, next_board: next_board});
+        notification_manager.event_emitter.on("turn-count", (ct) => {
+            this.setState({count: ct});
         });
     }
 
@@ -657,13 +665,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                del("me/challenges/" + notification.challenge_id)
+                                del("me/challenges/%%", notification.challenge_id)
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post(`me/challenges/${notification.challenge_id}/accept`, {})
+                                post("me/challenges/%%/accept", notification.challenge_id, {})
                                 .then(() => {
                                     this.del();
                                     if (isLiveGame(notification.time_control)) {

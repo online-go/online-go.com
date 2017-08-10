@@ -22,15 +22,131 @@ interface IRankInfo {
     label: string;
 }
 
-export const MaxRank: number = 36;
+class Rating {
+    unset:boolean;
+    rating:number;
+    deviation:number;
+    volatility:number;
+    rank:number;
+    rank_label:string;
+    partial_rank:number;
+    partial_rank_label:string;
+    rank_deviation_labels:Array<string>;
+    rank_deviation:number;
+    professional:boolean;
+    bounded_rank:number;
+    bounded_rank_label:string;
+    partial_bounded_rank:number;
+    partial_bounded_rank_label:string;
+}
 
-export function rankString(r) {
+export const MinRank: number = 5;
+export const MaxRank: number = 38;
+
+
+const MIN_RATING = 100;
+const MAX_RATING = 6000;
+
+export function rank_to_rating(rank:number) {
+    return 850 * Math.exp(0.032 * rank);
+}
+
+export function rating_to_rank(rating:number) {
+    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / 850.0) / 0.032;
+}
+
+export function get_handicap_adjustment(rating:number, handicap:number):number {
+    return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
+}
+function overall_rank(user_or_rank:any):number {
+    let rank = null;
+    if (typeof(user_or_rank) === 'number') {
+        rank = user_or_rank;
+    } else {
+        rank = getUserRating(user_or_rank, 'overall', 0).rank;
+    }
+    return rank;
+}
+export function is_novice(user_or_rank:any):boolean {
+    return overall_rank(user_or_rank) < MinRank;
+}
+export function is_rank_bounded(user_or_rank:any):boolean {
+    let rank = overall_rank(user_or_rank);
+    return rank < MinRank || rank > MaxRank;
+}
+export function bounded_rank(user_or_rank:any):number {
+    let rank = overall_rank(user_or_rank);
+    return Math.min(MaxRank, Math.max(MinRank, rank));
+}
+
+
+export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
+    let ret = new Rating();
+    let ratings = user.ratings || {};
+    ret.professional = user.pro || user.professional;
+
+    let key:string = speed;
+    if (size > 0) {
+        if (speed !== 'overall') {
+            key += `-${size}x${size}`;
+        } else {
+            key = `${size}x${size}`;
+        }
+    }
+
+    let rating = {
+        rating: 1500,
+        deviation: 350,
+        volatility: 0.06,
+    };
+    ret.unset = true;
+    if (key in ratings) {
+        ret.unset = false;
+        rating = ratings[key];
+    }
+
+    ret.rating = rating.rating;
+    ret.deviation = rating.deviation;
+    ret.volatility = rating.volatility;
+    ret.rank = Math.floor(rating_to_rank(ret.rating));
+    ret.rank_deviation = rating_to_rank(ret.rating + ret.deviation) - rating_to_rank(ret.rating);
+    ret.partial_rank = rating_to_rank(ret.rating);
+    ret.rank_label = rankString(ret.rank, false);
+    ret.partial_rank_label = rankString(ret.partial_rank, true);
+    ret.rank_deviation_labels = [
+        rankString(rating_to_rank(ret.rating - ret.deviation), true),
+        rankString(rating_to_rank(ret.rating + ret.deviation), true),
+    ];
+    ret.bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.rank));
+    ret.bounded_rank_label = rankString(ret.bounded_rank);
+    ret.partial_bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.partial_rank));
+    ret.partial_bounded_rank_label = rankString(ret.partial_bounded_rank, true);
+    if (ret.rank > (MaxRank + 1)) {
+        ret.bounded_rank_label += '+';
+        ret.partial_bounded_rank_label += '+';
+    }
+
+    if (ret.professional) {
+        ret.rank_label = rankString(user);
+        ret.partial_rank_label = ret.rank_label;
+        ret.rank_deviation_labels = ['', ''];
+    }
+
+    return ret;
+}
+
+
+export function rankString(r, with_tenths?:boolean) {
     if (typeof(r) === "object") {
         let ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
         }
-        r = ranking;
+        if ('ratings' in r) {
+            r = overall_rank(r);
+        } else {
+            r = ranking;
+        }
     }
     if (r > 900) {
         return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
@@ -40,17 +156,22 @@ export function rankString(r) {
     }
 
     if (r < 30) {
-        return interpolate(pgettext("Kyu", "%sk"), [(30 - r)]);
+        return interpolate(pgettext("Kyu", "%sk"), [(30 - r).toFixed(with_tenths ? 1 : 0)]);
     }
-    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1)]);
+    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1).toFixed(with_tenths ? 1 : 0)]);
 }
 
 export function longRankString(r) {
     if (typeof(r) === "object") {
-        if (r.pro) {
-            return interpolate(_("%s Pro"), [((r.ranking - 36))]);
+        let ranking = "ranking" in r ? r.ranking : r.rank;
+        if (r.pro || r.professional) {
+            return interpolate(_("%s Pro"), [((ranking - 36))]);
         }
-        r = r.ranking;
+        if ('ratings' in r) {
+            r = overall_rank(r);
+        } else {
+            r = ranking;
+        }
     }
     if (r > 900) {
         return interpolate(_("%s Pro"), [(((r - 1000) - 36))]);
@@ -91,5 +212,5 @@ export function proRankList(): Array<IRankInfo> {
     return result;
 }
 
-export function amateurRanks() { return rankList(0, MaxRank, true); }
+export function amateurRanks() { return rankList(MinRank, MaxRank, true); }
 export function allRanks() { return rankList().concat( proRankList()); }

@@ -25,6 +25,9 @@ import {errorAlerter} from "misc";
 
 declare var swal;
 
+interface Events {
+}
+
 interface GameAcceptModalProperties {
     challenge: any;
     onAccept: (challenge) => void;
@@ -34,7 +37,7 @@ interface GameAcceptModalProperties {
 }
 
 
-export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
+export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}> {
     constructor(props) {
         super(props);
     }
@@ -48,7 +51,7 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
             allowEscapeKey: false,
         });
 
-        post(`challenges/${this.props.challenge.challenge_id}/accept`, {})
+        post("challenges/%%/accept", this.props.challenge.challenge_id, {})
         .then(() => {
             swal.close();
             this.close();

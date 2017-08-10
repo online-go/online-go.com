@@ -18,7 +18,8 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import data from "data";
+import {deepCompare} from "misc";
+import * as data from "data";
 
 interface PaginatedTableColumnProperties {
     cellProps?: any;
@@ -55,7 +56,7 @@ interface PaginatedTableProperties {
     // callback?: ()=>any,
 }
 
-export class PaginatedTable extends React.PureComponent<PaginatedTableProperties, any> {
+export class PaginatedTable extends React.Component<PaginatedTableProperties, any> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
@@ -86,6 +87,10 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             this.source_function = this.props.source as SourceFunction;
         }
         setTimeout(() => this.update(), 1);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepCompare(this.props, nextProps) || !deepCompare(this.state, nextState);
     }
 
     setPageSize(n: number|string) {
@@ -125,9 +130,9 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             query["ordering"] = order_by.join(",");
         }
         if (this.source_method === "get") {
-            return get(this.source_url, query);
+            return get(this.source_url, query); // TODO: Check the URLs and typify the result
         }
-        return post(this.source_url, query);
+        return post(this.source_url, query); // TODO: Check the URLs and typify the result again
     }
 
 

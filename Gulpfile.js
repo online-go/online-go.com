@@ -22,12 +22,12 @@ let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
 gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html", "watch_tslint"]);
 gulp.task('watch_dist_js', () => { gulp.watch(['dist/*.js'], livereload.reload); });
 gulp.task('watch_html', () => { gulp.watch(['src/*.html'], livereload.reload); });
-gulp.task('watch_styl', () => { gulp.watch(['src/**/*.styl', 'src/*.styl'], ['build_styl']); }); 
+gulp.task('watch_styl', () => { gulp.watch(['src/**/*.styl', 'src/*.styl'], ['build_styl']); });
 gulp.task('build_styl', build_styl);
 gulp.task('min_styl', min_styl);
 gulp.task('livereload-server', () => { livereload.listen(35701); });
 gulp.task('background_webpack', background_webpack);
-gulp.task('watch_tslint', () => { gulp.watch([ts_sources], ['tslint']); }); 
+gulp.task('watch_tslint', () => { gulp.watch([ts_sources], ['tslint']); });
 gulp.task('dev-server', dev_server);
 gulp.task('tslint', lint);
 
@@ -190,12 +190,12 @@ function dev_server(done) {
             res2.on('end', () => {
                 res.setHeader('content-type', 'application/javascript');
                 res.setHeader("Content-Length", data.length);
-                res.send(200, data);
+                res.status(200).send(data);
             });
         });
 
         req2.on('error', (e) => {
-            res.send(500, e.message);
+            res.status(500).send(e.message);
         });
 
         req2.end();
@@ -225,7 +225,7 @@ function dev_server(done) {
                 case 'VERSION_DOTJS': return 'js';
                 case 'VERSION_DOTCSS': return 'css';
                 case 'LANGUAGE_VERSION_DOTJS': return 'js';
-                case 'EXTRA_CONFIG': 
+                case 'EXTRA_CONFIG':
                     return `<script>window['websocket_host'] = "https://beta.online-go.com";</script>`
                 ;
             }

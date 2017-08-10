@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
 import {AdUnit} from "AdUnit";
-import data from "data";
+import * as data from "data";
 
 declare var swal;
 
@@ -53,13 +53,13 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     resolve(ladder_id) {
-        get(`ladders/${ladder_id}`)
+        get("ladders/%%", ladder_id)
         .then((ladder) => this.setState({ladder: ladder}))
         .catch(errorAlerter);
     }
 
     join = () => {
-        post(`ladders/${this.props.params.ladder_id}/players`, {})
+        post("ladders/%%/players", this.props.params.ladder_id, {})
         .then(() => {
             this.resolve(this.props.params.ladder_id);
             this.refs.ladder_component.updatePlayers();
@@ -76,7 +76,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             "focusCancel": true
         })
         .then(() => {
-            del(`ladders/${this.props.params.ladder_id}/players`)
+            del("ladders/%%/players", this.props.params.ladder_id)
             .then(() => {
                 this.resolve(this.props.params.ladder_id);
                 this.refs.ladder_component.updatePlayers();

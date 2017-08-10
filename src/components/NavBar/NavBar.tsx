@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
-import data from "data";
+import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -33,7 +33,7 @@ import {NotificationIndicator, TurnIndicator, NotificationList} from "Notificati
 import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 
 let body = $(document.body);
 
@@ -66,7 +66,7 @@ let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
     get("/api/v0/logout").then((config) => {
-        data.set("config", config, true);
+        data.set("config", config);
         window.location.reload();
     });
 }

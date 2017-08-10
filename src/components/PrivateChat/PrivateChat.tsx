@@ -18,13 +18,14 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {_} from 'translate';
-import data from "data";
+import * as data from "data";
 import ITC from "ITC";
 import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import {PlayerCacheEntry} from 'player_cache';
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 
 let last_id: number = 0;
@@ -50,7 +51,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "...", "ui_class": ""};
+    player:PlayerCacheEntry;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -77,7 +78,11 @@ class PrivateChat {
             }
         });
 
-
+        this.player = {
+            "id": user_id,
+            "username": "...",
+            "ui_class": ""
+        };
         player_cache.fetch(this.user_id, ["username", "ui_class"])
         .then((player) => {
             this.player = player;
