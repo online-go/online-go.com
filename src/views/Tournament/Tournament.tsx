@@ -399,8 +399,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
                     let black = $("<div>").addClass("black").addClass("elimination-player-" + match.black);
                     let white = $("<div>").addClass("white").addClass("elimination-player-" + match.white);
-                    ReactDOM.render((<Player user={players[match.black]} icon rank />), black[0]);
-                    ReactDOM.render((<Player user={players[match.white]} icon rank />), white[0]);
+                    ReactDOM.render((<Player user={players[match.black]} icon rank using_cache/>), black[0]);
+                    ReactDOM.render((<Player user={players[match.white]} icon rank using_cache/>), white[0]);
 
 
                     black.prepend($("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr("href", "/game/view/" + match.gameid));
@@ -443,7 +443,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     let bye = round.byes[bye_num];
                     let byediv = $("<div>").addClass("byediv");
                     let byee = $("<div>").addClass("bye").addClass("elimination-player-" + bye);
-                    ReactDOM.render((<Player user={players[bye]} icon rank />), byee[0]);
+                    ReactDOM.render((<Player user={players[bye]} icon rank using_cache/>), byee[0]);
                     bindHovers(byee, bye);
                     byediv.append(byee);
                     let obj = {
@@ -1147,7 +1147,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         {(tournament.group || null) &&
                             <tr>
                                 <th>{_("Tournament Director")}</th>
-                                <td><Player user={tournament.director} /></td>
+                                <td><Player user={tournament.director} using_cache/></td>
                             </tr>
                         }
 
@@ -1461,7 +1461,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <Card>
                                 {this.state.sorted_players.map((player, idx) => (
                                     <div key={player.id}>
-                                        <Player icon user={player} />
+                                        <Player icon user={player} using_cache/>
                                     </div>
                                 ))}
                             </Card>
@@ -1520,7 +1520,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                         <tr key={idx} >
                                                             {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
 
-                                                            <th className="player"><Player user={player} icon /></th>
+                                                            <th className="player"><Player user={player} icon using_cache/></th>
                                                             {group.players.map((opponent, idx) => (
                                                                 <td key={idx} className={"result " + selected_round.colors[player.id + "x" + opponent.id]}>
                                                                     <Link to={`/game/${selected_round.game_ids[player.id + "x" + opponent.id]}`}>
@@ -1567,8 +1567,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
-                                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
-                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+                                                {(m.player || null) && <td className="player"><Player user={m.player} icon using_cache/></td>}
+                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon using_cache/></td>}
 
                                                 <td className={"result " + selected_round.colors[pxo]}>
                                                     <Link to={`/game/${selected_round.game_ids[pxo]}`}>
@@ -1608,8 +1608,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
-                                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
-                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+                                                {(m.player || null) && <td className="player"><Player user={m.player} icon using_cache/></td>}
+                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon using_cache/></td>}
 
                                                 <td className={"result " + selected_round.colors[m.player.id + "x" + m.opponent.id]}>
                                                     <Link to={`/game/${selected_round.game_ids[m.player.id + "x" + m.opponent.id]}`}>
@@ -1648,7 +1648,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
-                                                {(player || null) && <td className="player"><Player user={player} icon/></td>}
+                                                {(player || null) && <td className="player"><Player user={player} icon using_cache/></td>}
                                                 <td className="points">{player.points}</td>
                                                 {(tournament.ended || null) && <td className="points">{player.sos}</td>}
                                                 {(tournament.ended || null) && <td className="points">{player.sodos}</td>}
@@ -1668,9 +1668,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <div style={{display: "inline-block"}}>
                                         <h3>
                                             {
-                                                (rounds[0].matches[0].player || null) && <Player user={rounds[0].matches[0].player} icon/>
+                                                (rounds[0].matches[0].player || null) && <Player user={rounds[0].matches[0].player} icon using_cache/>
                                             } vs. {
-                                                (rounds[0].matches[0].opponent || null) && <Player user={rounds[0].matches[0].opponent} icon/>
+                                                (rounds[0].matches[0].opponent || null) && <Player user={rounds[0].matches[0].opponent} icon using_cache/>
                                             }
                                         </h3>
 

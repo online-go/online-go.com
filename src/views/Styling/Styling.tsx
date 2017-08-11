@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Card, FabX, FabCheck, FabAdd } from "material";
 import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
+import {PlayerIcon} from "Player";
 import {toast} from "toast";
 import {VoiceChat} from "VoiceChat";
 import * as Datetime from "react-datetime";
@@ -90,7 +90,7 @@ export class Styling extends React.PureComponent<{}, any> {
                 <Card>
                     <PlayerAutocomplete onComplete={this.updateAutocompletedPlayer} />
                     <div>
-                    {this.state.autocompleted_player && <Player icon user={this.state.autocompleted_player} />}
+                    {this.state.autocompleted_player && <Player icon user={this.state.autocompleted_player} using_cache/>}
                     </div>
 
                     <GroupAutocomplete onComplete={this.updateAutocompletedGroup} />
@@ -359,8 +359,8 @@ export class Styling extends React.PureComponent<{}, any> {
         <div className="row">
             <div className="col-xs-4">
                 <Card>
-                    <Player user={{"id": 1, "username": "anoek"}}/>
-                    <PlayerIcon id={1}/>
+                    <Player user={1}/>
+                    <PlayerIcon user={1} size={64}/>
                 </Card>
                 <Card>
                     <div style={{fontSize: "1.5em"}}>

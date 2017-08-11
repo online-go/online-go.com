@@ -91,7 +91,7 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
                     }
                 </div>
 
-                {sorted_users.map((user) => <div key={user.id}><Player user={user} flag rank /></div>)}
+                {sorted_users.map((user) => <div key={user.id}><Player user={user} flag rank using_cache/></div>)}
             </div>
         );
     }

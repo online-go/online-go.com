@@ -404,7 +404,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 }
 
                                 <div className="admins">
-                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
+                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} using_cache/>) }
                                 </div>
 
                                 {(this.state.group_loaded || null) &&
@@ -532,7 +532,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                 : <h2>{entry.title}</h2>
                                             }
 
-                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
+                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} using_cache/></i>
                                             {this.state.is_admin &&
                                                 <div>
                                                     {this.state.editing_news && this.state.editing_news.id === entry.id
@@ -609,7 +609,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             source={`groups/${group.id}/members`}
                             groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                             columns={[
-                                {header: _("Members"), className: "", render: (X) => <Player icon user={X}/>},
+                                {header: _("Members"), className: "", render: (X) => <Player icon user={X} using_cache/>},
                             ]}
                         />
                     </Card>

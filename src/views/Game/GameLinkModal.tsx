@@ -55,9 +55,9 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                           {goban.engine.config.game_name}
                       </h2>
                       <h3>
-                          <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {
+                          <Player icon rank user={goban.engine.config.players.black}/> {
                               _("vs.")
-                          } <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
+                          } <Player icon rank user={goban.engine.config.players.white}/>
                       </h3>
                   </div>
               </div>

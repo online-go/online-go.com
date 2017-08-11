@@ -25,7 +25,7 @@ import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
 import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
-import {PlayerIcon} from "PlayerIcon";
+import {PlayerIcon} from "Player";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
 import preferences from "preferences";
 import {notification_manager} from "Notifications";
@@ -929,7 +929,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                   <h2>
                       {(mode === "open" || null) && <span>{_("Custom Game")}</span> }
                       {(mode === "demo" || null) && <span>{_("Demo Board")}</span> }
-                      {(mode === "player" || null) && <span className="header-with-icon"><PlayerIcon id={player_id} size={32} />&nbsp; {player_username}</span> }
+                      {(mode === "player" || null) && <span className="header-with-icon"><PlayerIcon user={player_id} size={32} />&nbsp; {player_username}</span> }
                       {(mode === "computer" || null) && <span>{_("Computer")}</span> }
                   </h2>
               </div>

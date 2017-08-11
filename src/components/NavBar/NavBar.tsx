@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import * as data from "data";
 import {_, current_language, languages} from "translate";
-import {PlayerIcon} from "PlayerIcon";
+import {PlayerIcon} from "Player";
 import {post, get, abort_requests_in_flight} from "requests";
 import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore} from "misc";
 import {LineText} from "misc-ui";
@@ -307,7 +307,7 @@ export class NavBar extends React.PureComponent<{}, NavBarState> {
                     <TurnIndicator />
                     <span className="icon-container" onClick={this.toggleRightNav}>
                         <NotificationIndicator />
-                        <PlayerIcon user={this.state.user} size="64"/>
+                        <PlayerIcon user={this.state.user} size={64}/>
                         <i className="fa fa-caret-down" />
                     </span>
                 </section>
@@ -493,7 +493,7 @@ export class NavBar extends React.PureComponent<{}, NavBarState> {
                             <div>
                                 <h3>{_("Players")}</h3>
                                 {this.state.omnisearch_players.map((e, idx) => (
-                                    <div key={idx}><Player user={e} icon rank /></div>
+                                    <div key={idx}><Player user={e} icon rank using_cache/></div>
                                 ))}
                             </div>
                         }

@@ -80,7 +80,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
               <div className="header">
                   <div>
                       <h2>
-                          <Player icon iconSize={32} user={challenge}/>
+                          <Player icon iconSize={32} user={challenge} using_cache/>
                       </h2>
                       <h4>
                           {challenge.name}

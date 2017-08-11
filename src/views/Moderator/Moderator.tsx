@@ -89,7 +89,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: _("User"),  className: () => "user",
                          render: (X) => (
                              <div className="userlog-user">
-                                 <Player user={X} />
+                                 <Player user={X} using_cache/>
                                  <span><b>{_("Accounts")}:</b> {X.browser_id_count}</span>
                                  <span><b>IP:</b> {X.last_ip}</span>
                                  <span><b>{_("Country")}:</b> {cc_to_country_name(X.geoip.country)} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>
@@ -129,13 +129,13 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                          render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },
 
                         {header: _("Moderator"),  className: () => "moderator",
-                         render: (X) => (<Player user={X.moderator} />)},
+                         render: (X) => (<Player user={X.moderator} using_cache/>)},
 
                         {header: "",  className: () => "object",
                          render: (X) => (
                              <span>
                                  {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>}
-                                 {X.player && <Player user={X.player}/> }
+                                 {X.player && <Player user={X.player} using_cache/> }
                              </span>
                         )},
 

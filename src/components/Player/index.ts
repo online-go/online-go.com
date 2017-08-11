@@ -17,3 +17,4 @@
 
 export * from "./Player";
 export * from "./PlayerDetails";
+export * from "./PlayerIcon";

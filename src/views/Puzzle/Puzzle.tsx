@@ -577,7 +577,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     <dt>{_("Rating")}</dt>
                     <dd><StarRating value={this.state.rated ? this.state.my_rating : this.state.rating} rated={this.state.rated} onChange={this.ratePuzzle} /></dd>
                     <dt>{_("Author")}</dt>
-                    <dd><Player user={this.state.owner} icon rank /></dd>
+                    <dd><Player user={this.state.owner} icon rank using_cache/></dd>
                 </dl>
 
                 <div className="btn-container">

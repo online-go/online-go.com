@@ -22,7 +22,7 @@ import {post, get, put, del, patch} from "requests";
 import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
-import {PlayerIcon} from 'PlayerIcon';
+import {PlayerIcon} from "Player";
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
@@ -740,17 +740,17 @@ export class User extends React.PureComponent<UserProperties, any> {
                         <div className="avatar-container">{/* Avatar container{{{ */}
                             {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
-                                : <span className='username'><Player user={user}/></span>
+                                : <span className='username'><Player user={user} using_cache/></span>
                             }
 
                             {editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
                                         ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
-                                        : <PlayerIcon id={user.id} size={128} />
+                                        : <PlayerIcon user={user.id} size={128} />
                                     }
                                    </Dropzone></div>
-                                : <PlayerIcon id={user.id} size={128} />
+                                : <PlayerIcon user={user.id} size={128} />
                             }
                             {editing &&
                                 <div className='clear-icon-container'>
@@ -788,7 +788,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                             {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
                             {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
-                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
+                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner} using_cache/></div>}
 
                             {editing
                               ? <div className='country-line'>
@@ -879,7 +879,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
-                                        <Player user={X}/>
+                                        <Player user={X} using_cache/>
                                         {(X.has_notes || null) && <i className="fa fa-file-text-o"/>}
                                     </span>
                                 )},
@@ -929,8 +929,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
-                                        {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                        {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                        {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} using_cache/>},
+                                        {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} using_cache/>},
                                         {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
                                     ]}
                                 />
@@ -962,8 +962,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         columns={[
                                             {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                             {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} using_cache/>},
+                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} using_cache/>},
                                         ]}
                                     />
                                 </div>

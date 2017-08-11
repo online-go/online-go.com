@@ -134,7 +134,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
                             {obj.group_id
                                 ? <a target="_blank" href={`/group/${obj.group_id}`} className="group">{obj.group_name}</a>
-                                : <Player user={obj.player_id} />
+                                : <Player user={obj.player_id} using_cache/>
                             }
                         </div>
                     ))}

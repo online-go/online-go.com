@@ -107,7 +107,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                              render: (X) => (
                                 <div>
                                     <div>{X.name}</div>
-                                    <Player user={X.owner}/>
+                                    <Player user={X.owner} using_cache/>
                                 </div>
                              )
                             },

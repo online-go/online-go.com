@@ -150,7 +150,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                     <div key={idx}>
                                     <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
                                         <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
+                                        <Player nolink user={challenge.player} using_cache/>
                                     </Link>
                                     </div>
                                 ))
@@ -173,7 +173,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                     <div key={idx}>
                                     <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
                                         <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
+                                        <Player nolink user={challenge.player} using_cache/>
                                     </Link>
                                     </div>
                                 ))
@@ -236,7 +236,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                         {header: _("Player"), className: "player-column", render: (lp) => (
                             <div className="player-challenge-container">
                                 <div className="primary-player">
-                                    <Player flag user={lp.player}/>
+                                    <Player flag user={lp.player} using_cache/>
                                 </div>
                                 {(thin_view || null) && challenged_by(lp, true)}
                                 {(thin_view || null) && challenging(lp, true)}

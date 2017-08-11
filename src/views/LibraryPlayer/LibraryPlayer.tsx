@@ -374,8 +374,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                                     }
                                     <span className="date">{moment(game.started).format("ll")}</span>
                                     <span className="name"><Link to={`/game/${game.game_id}`}>{game.name}</Link></span>
-                                    <span className="black"><Player user={game.black}/></span>
-                                    <span className="white"><Player user={game.white}/></span>
+                                    <span className="black"><Player user={game.black} using_cache/></span>
+                                    <span className="white"><Player user={game.white} using_cache/></span>
                                     <span className="outcome">{outcome_formatter(game)}</span>
                                 </div>
                             ))}

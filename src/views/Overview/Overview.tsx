@@ -27,7 +27,7 @@ import {post, get, abort_requests_in_flight} from "requests";
 import {Goban} from "goban";
 import {toast} from "toast";
 import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
+import {PlayerIcon} from "Player";
 import * as data from "data";
 import {errorAlerter} from "misc";
 import {longRankString, getUserRating, is_novice} from "rank_utils";
@@ -98,11 +98,11 @@ export class Overview extends React.Component<{}, any> {
                 </div>
                 <div className="right">
                     <div className="profile">
-                        <PlayerIcon id={user.id} size={80} />
+                        <PlayerIcon user={user.id} size={80} />
 
                         <div className="profile-right">
                             <div>
-                                <Player user={user} nodetails rank={false} />
+                                <Player user={user} nodetails rank={false} using_cache/>
                             </div>
                             {rating && rating.professional &&
                                 <div>

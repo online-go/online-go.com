@@ -23,7 +23,6 @@ import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
 import * as player_cache from "player_cache";
-import {icon_size_url} from "PlayerIcon";
 import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
@@ -33,16 +32,17 @@ import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
-import {close_friend_list} from 'FriendList/FriendIndicator';
+import {PlayerComponentProperties, PlayerComponent} from "./PlayerComponent";
+import {icon_size_url} from "./PlayerIcon";
+import {close_friend_list} from "FriendList/FriendIndicator";
 import {RegisteredPlayer} from "data/Player";
 
-interface PlayerDetailsProperties {
-    playerId: number;
+interface PlayerDetailsProperties extends PlayerComponentProperties {
     noextracontrols?: boolean;
 }
 
 let friends = {};
-data.watch('friends', (friends_arr) => {
+data.watch("friends", (friends_arr) => {
     friends = {};
     for (let friend of friends_arr) {
         friends[friend.id] = true;
@@ -51,183 +51,118 @@ data.watch('friends', (friends_arr) => {
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
-export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, any> {
-    refs: {
-    };
-
-    constructor(props) {
-        super(props);
-        this.state = this.blankState();
-        let player = player_cache.lookup(this.props.playerId);
-        if (player) {
-            this.state = Object.assign(this.state, player);
-        }
-    }
-
-    componentWillMount()  {
-        this.resolve(this.props.playerId);
-    }
-
-    blankState() {{{
-        return {
-            resolved: false,
-            resolving: 0,
-            username: "...",
-            //icon: data.get('config.cdn_release') + '/img/default-user.svg',
-            icon: "",
-            ranking: "...",
-            rating: "...",
-            ui_class: "...",
-            country: "un",
-            error: null,
-        };
-    }}}
-    resolve(player_id) {{{
-        this.setState({resolved: false});
-        player_cache.fetch(this.props.playerId)
-        .then((player) => {
-            this.setState(Object.assign({resolved: true}, player as any));
-        })
-        .catch((err) => {
-            if (player_id === this.props.playerId) {
-                this.setState({resolved: true, error: _("Error loading player information")});
-                console.error(err);
-            }
-        });
-    }}}
-    componentWillReceiveProps(new_props) {{{
-        if (new_props.playerId !== this.props.playerId) {
-            let player = player_cache.lookup(new_props.playerId);
-            let new_state = this.blankState();
-            if (player) {
-                new_state = Object.assign(this.state, player);
-            }
-            this.setState(new_state);
-            setTimeout(() => {
-                this.resolve(new_props.playerId);
-            }, 1);
-        }
-    }}}
-    componentWillUnmount() {{{
-    }}}
-
+export class PlayerDetails extends PlayerComponent<PlayerDetailsProperties> {
     close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
     }
 
-    gotoPlayerView = (ev) => {{{
-        this.close_all_modals_and_popovers();
-
-        let url = `/player/${this.props.playerId}/${this.state.username}`;
-        if (shouldOpenNewTab(ev)) {
-            window.open(url, "_blank");
-        } else {
-            browserHistory.push(url);
-        }
-    }}}
     challenge = (_ev) => {{{
-        challenge(this.props.playerId);
+        challenge(this.state.player.id);
         this.close_all_modals_and_popovers();
     }}}
     message = (_ev) => {{{
-        getPrivateChat(this.props.playerId).open();
+        getPrivateChat(this.state.player.id).open();
         this.close_all_modals_and_popovers();
     }}}
     report = (_ev) => {{{
-        alertModerator({user: this.props.playerId});
+        alertModerator({user: this.state.player.id});
         this.close_all_modals_and_popovers();
     }}}
     block = (ev) => {{{
-        let controls = openBlockPlayerControls(ev, this.props.playerId);
+        let controls = openBlockPlayerControls(ev, this.state.player.id);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
     }}}
     ban = (_ev) => {{{
-        ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        ban(this.state.player.id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     shadowban = (_ev) => {{{
-        shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        shadowban(this.state.player.id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeShadowban = (_ev) => {{{
-        remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_shadowban(this.state.player.id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     removeBan = (_ev) => {{{
-        remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_ban(this.state.player.id).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
     openSupporterAdmin = () => {{{
         this.close_all_modals_and_popovers();
-        openSupporterAdminModal(this.props.playerId);
+        openSupporterAdminModal(this.state.player.id);
     }}}
     addFriend = () => {{{
         toast(<div>{_("Sent friend request")}</div>, 5000);
         this.close_all_modals_and_popovers();
-        post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+        post('me/friends', {player_id: this.state.player.id}).then(ignore).catch(errorAlerter);
     }}}
     removeFriend = () => {{{
         toast(<div>{_("Removed friend")}</div>, 5000);
         this.close_all_modals_and_popovers();
-        post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+        post('me/friends', {"delete": true, player_id: this.state.player.id}).then(ignore).catch(errorAlerter);
     }}}
     render() {
         let user = data.get("user");
+        let player = this.state.player;
 
-        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
+        if (!(player instanceof RegisteredPlayer)) {
+            return null;
+        }
 
+        let rating = getUserRating(this.state, 'overall', 0);
         return (
             <div className="PlayerDetails">
                 <div className="details">
-                    <div className="icon" style={{backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")'}}>
-                        <Flag country={this.state.country}/>
+                    <div className="icon" style={{backgroundImage: 'url("' + icon_size_url(player.icon, 64) + '")'}}>
+                        <Flag country={player.country}/>
                     </div>
                     <div>
                         <div>
-                            <Player user={this.state} nodetails rank={false} />
+                            <Player user={player.id} nodetails rank={false} using_cache/>
                         </div>
-                        {rating && rating.professional &&
+                        {(player.is.professional || null) &&
                             <div>
                                 <span className="rank">{rating.rank_label}</span>
                             </div>
                         }
-                        {rating && !rating.professional &&
+                        {(!player.is.professional || null) &&
                             <div>
                                 <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
                             </div>
                         }
-                        {rating && !rating.professional &&
+                        {(!player.is.professional || null) &&
                             <div>
                                 <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                             </div>
                         }
                     </div>
                 </div>
-                {user instanceof RegisteredPlayer && (user.id !== this.props.playerId || null) &&
+                {(user.id !== player.id || null) &&
                     <div className="actions">
-                        <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
-                        <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
-                        {friends[this.props.playerId]
-                            ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
-                            : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
+                        <button className="xs noshadow primary" onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        <button className="xs noshadow success" onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        {friends[player.id]
+                            ? <button className="xs noshadow reject" onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
+                            : <button className="xs noshadow success" onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
                         }
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
+                        <button className="xs noshadow reject" onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
+                        <button className="xs noshadow reject" onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
-                {user instanceof RegisteredPlayer && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
-                { ((user.is.moderator && this.props.playerId > 0) || null) &&
+                {!this.props.noextracontrols && extraActionCallback && extraActionCallback(this.state.player.id, this.state)}
+                { ((user.is.moderator) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
                         <button className="xs noshadow danger" onClick={this.shadowban}><i className="fa fa-commenting"/>{pgettext("Disallow user to chat", "Shadowban")}</button>
                     </div>
                 }
-                { ((user.is.moderator && this.props.playerId > 0) || null) &&
+                { ((user.is.moderator) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.removeBan}><i className="fa fa-thumbs-o-up"/>{pgettext("Allow user on the server", "Un-Ban")}</button>
                         <button className="xs noshadow" onClick={this.removeShadowban}><i className="fa fa-commenting-o"/>{pgettext("Remove chat ban", "Un-Shadowban")}</button>
                     </div>
                 }
-                { ((user.is.admin && this.props.playerId > 0) || null) &&
+                { ((user.is.admin) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                     </div>

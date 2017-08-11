@@ -176,13 +176,13 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
 
                                     {(report.moderator || null) &&
                                         <div className="spread">
-                                            <Player user={report.moderator} icon />
+                                            <Player user={report.moderator} icon using_cache/>
                                         </div>
                                     }
                                     <div className="spread">
                                         {(report.url || null) && <a href={report.url} target="_blank">{report.url}</a>}
                                         {(report.reported_user || null) &&
-                                            <span>{_("Reported user")}: <Player user={report.reported_user} icon /></span>
+                                            <span>{_("Reported user")}: <Player user={report.reported_user} icon using_cache/></span>
                                         }
                                         {(report.reported_game || null) &&
                                             <span>{_("Game")}: <Link to={`/game/view/${report.reported_game}`}>#{report.reported_game}</Link></span>
@@ -215,7 +215,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
 
                                     <div className="spread">
                                         {(report.reporting_user)
-                                            ? <Player user={report.reporting_user} icon />
+                                            ? <Player user={report.reporting_user} icon using_cache/>
                                             : <span>{_("System")}</span>
                                         }
                                         <i>{moment(report.created).fromNow()}</i>

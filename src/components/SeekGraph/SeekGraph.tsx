@@ -676,15 +676,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             if (C.live_game) {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.black_rank, "username": C.black_username }} rank nolink />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank nolink/>), f[0]);
                 e.append($("<span>").text(" " + _("vs.") + " "));
                 f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.white_rank, "username": C.white_username }} rank nolink />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank nolink/>), f[0]);
             } else {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{"user_id": C.user_id, "ranking": C.rank, "username": C.username}} rank />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank/>), f[0]);
 
                 let details_html = ", " +
                     (C.ranked ? _("Ranked") : _("Unranked"))

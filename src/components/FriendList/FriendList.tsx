@@ -57,7 +57,7 @@ export class FriendList extends React.PureComponent<{}, FriendIndicatorState> {
             <div className="FriendList">
                 {friends.map(friend => (
                     <div key={friend.id} >
-                        <Player user={friend.id} online rank noextracontrols />
+                        <Player user={friend.id} online rank noextracontrols using_cache/>
                     </div>
                 ))}
             </div>

@@ -143,7 +143,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                                 <button className="reject xs" onClick={this.deleteAnnouncement.bind(this, announcement)}><i className="fa fa-trash-o"/></button>
                             </div>
                             <div className="cell">
-                                <Player user={announcement.creator}/>
+                                <Player user={announcement.creator} using_cache/>
                             </div>
                             <div className="cell">
                                 {announcement.text}

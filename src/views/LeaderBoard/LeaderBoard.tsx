@@ -135,7 +135,7 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
                                     <h3>{cell.name}</h3>
                                     {cell.userlist.map((entry, eidx) => (
                                         <div key={`${ridx}x${cidx}x${eidx}`} className="entry">
-                                            <span className="points">{points(entry.points)}</span> <Player flag user={entry}/>
+                                            <span className="points">{points(entry.points)}</span> <Player flag user={entry} using_cache/>
                                         </div>
                                     ))}
                                 </div>
