@@ -25,7 +25,7 @@ import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
 import * as player_cache from "player_cache";
-import online_status from "online_status";
+import {observe_online} from "online_status";
 import {Player, player_attributes} from "data/Player";
 
 let last_id: number = 0;
@@ -59,23 +59,26 @@ class PrivateChat {
 
     display_state = "closed";
 
+    subscriber = new player_cache.Subscriber(player => {
+        if (player.is.online) {
+            this.player_dom.addClass("online");
+        }
+        else {
+            this.player_dom.removeClass("online");
+        }
+    });
+
 
     constructor(user_id, username) { /* {{{ */
         this.user_id = user_id;
         comm_socket.send("chat/pm/load", user_id);
 
-        this.player_dom = $("<span class='user Player nolink'>...</span>");
+        this.player_dom = $("<span class='user Player show-online nolink'>...</span>");
         if (username) {
             this.player_dom.text(username);
         }
 
-        online_status.subscribe(user_id, (_, tf) => {
-            if (tf) {
-                this.player_dom.removeClass("offline").addClass("online");
-            } else {
-                this.player_dom.addClass("offline").removeClass("online");
-            }
-        });
+        this.subscriber.to([user_id]);
 
         this.player = player_cache.lookup(user_id);
         player_cache.fetch(this.user_id)

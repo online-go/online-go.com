@@ -25,7 +25,7 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
-import online_status from "online_status";
+import {observe_online} from "online_status";
 import {pgettext} from "translate";
 import {player_attributes} from "data/Player";
 
@@ -48,11 +48,8 @@ interface PlayerProperties {
 
 
 export class Player extends React.PureComponent<PlayerProperties, any> {
-    refs: {
-        elt
-    };
-
     online_subscription_user_id = null;
+    subscriber = new player_cache.Subscriber(player => this.updateOnline(player.id, player.is.online));
 
     constructor(props) {
         super(props);
@@ -92,15 +89,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     syncUpdateOnline(user_or_id) {{{
         let id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
 
-        if (!this.props.online || id !== this.online_subscription_user_id) {
-            if (this.online_subscription_user_id) {
-                this.online_subscription_user_id = null;
-                online_status.unsubscribe(this.online_subscription_user_id, this.updateOnline);
-            }
-        }
         if (this.props.online && id && id !== this.online_subscription_user_id) {
             this.online_subscription_user_id = id;
-            online_status.subscribe(this.online_subscription_user_id, this.updateOnline);
+            observe_online(this.online_subscription_user_id);
+            this.subscriber.to([this.online_subscription_user_id])
         }
 
     }}}
@@ -178,6 +170,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
         if (this.props.noextracontrols) {
             main_attrs.className += " noextracontrols";
+        }
+
+        if (this.props.online) {
+            main_attrs.className += " show-online";
         }
 
 

@@ -139,7 +139,7 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 export function rankString(r, with_tenths?:boolean) {
     if (typeof(r) === "object") {
         let ranking = "ranking" in r ? r.ranking : r.rank;
-        if (r.pro || r.professional) {
+        if (r.pro || r.professional || (r.is && r.is.professional)) {
             return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
         }
         if ('ratings' in r) {

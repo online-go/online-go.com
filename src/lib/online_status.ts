@@ -16,86 +16,65 @@
  */
 
 import {comm_socket} from "sockets";
-import {TypedEventEmitter} from "TypedEventEmitter";
-import { Batcher } from "batcher";
+import {Batcher} from "batcher";
+import * as player_cache from "player_cache";
+import {RegisteredPlayer} from "data/Player";
 
-interface Events {
-    "users-online-updated": never;
+
+
+// Record which users are online. This is in case the online
+// status arrives before the player is fetched from the backend.
+let online: {[id: number]: boolean} = {};
+
+
+
+// Tell the module which players are to be observed.
+export function observe_online(...ids: Array<number>) {
+    ids.forEach(id => online[id] = (online[id] || false));
+    subscribe_queue.soon(...ids);
 }
 
-let listeners: {[id: number]: Array<any>} = {};
-let state = {};
-let event_emitter = new TypedEventEmitter<Events>();
-
-comm_socket.on("connect", () => {
-    let list = [];
-    for (let id in state) {
-        list.push(id);
+let subscribe_queue = new Batcher<number>(ids => {
+    comm_socket.send("user/monitor", ids);
+    for (let id of ids) {
+        player_cache.fetch(id)
+        .then(player => {
+            if (player instanceof RegisteredPlayer && !player.is.online !== !online[player.id]) {
+                player.is.online = online[player.id];
+                player_cache.update(player);
+            }
+        });
     }
-    if (list.length) {
-        comm_socket.send("user/monitor", list);
+});
+
+
+
+// Handle the communication with the backend.
+comm_socket.on("connect", () => {
+    let keys = Object.keys(online);
+    if (keys.length > 0) {
+        comm_socket.send("user/monitor", keys);
     }
 });
 
 comm_socket.on("user/state", (states) => {
-    let i;
     for (let id in states) {
-        state[id] = states[id];
-        for (i = 0; i < listeners[id].length; ++i) {
-            listeners[id][i](id, state[id]);
+        online[id] = !!states[id];
+        let player = player_cache.lookup(parseInt(id));
+        if (player instanceof RegisteredPlayer && !player.is.online !== !online[id]) {
+            player.is.online = online[id];
+            player_cache.update(player);
         }
     }
-    event_emitter.emit("users-online-updated");
 });
 
 comm_socket.on("disconnect", () => {
-    for (let id in state) {
-        state[id] = false;
-        for (let i = 0; i < listeners[id].length; ++i) {
-            listeners[id][i](id, state[id]);
+    for (let id in online) {
+        online[id] = false;
+        let player = player_cache.lookup(parseInt(id));
+        if (player instanceof RegisteredPlayer && player.is.online) {
+            player.is.online = false;
+            player_cache.update(player);
         }
     }
-    event_emitter.emit("users-online-updated");
 });
-
-let subscribe_queue = new Batcher<number>(ids => {
-    comm_socket.send("user/monitor", ids);
-});
-
-function subscribe(player_id, cb) {
-    if (player_id in state) {
-        cb(player_id, state[player_id]);
-        listeners[player_id].push(cb);
-        return;
-    }
-
-    state[player_id] = false;
-    listeners[player_id] = [cb];
-    subscribe_queue.soon(player_id);
-}
-
-function unsubscribe(player_id, cb) {
-    if (player_id in listeners) {
-        for (let i = 0; i < listeners[player_id].length; ++i) {
-            if (listeners[player_id] === cb) {
-                listeners[player_id].splice(i, 1);
-                return;
-            }
-        }
-    }
-}
-
-function is_player_online(player_id) {
-    if (player_id in state) {
-        return state[player_id];
-    }
-    return false;
-}
-
-
-export default {
-    subscribe: subscribe,
-    unsubscribe: unsubscribe,
-    is_player_online: is_player_online,
-    event_emitter: event_emitter,
-};

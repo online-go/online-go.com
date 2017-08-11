@@ -94,7 +94,7 @@
     }
 
 
-    &.online, &.offline{
+    &.show-online{
         &:before {
             display: inline-block;
             font-size: 0.5rem;
@@ -111,7 +111,7 @@
         }
     }
 
-    &.online:before {
+    &.show-online.online:before {
         color: #33FF33;
     }
 }
