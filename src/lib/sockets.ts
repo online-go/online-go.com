@@ -16,6 +16,7 @@
  */
 
 import * as data from "data";
+import * as debug from "debug";
 
 let io_config = {
     reconnection: true,
@@ -30,15 +31,13 @@ export const comm_socket = termination_socket;
 
 termination_socket.send = termination_socket.emit;
 
-window["termination_socket"] = termination_socket;
-
 termination_socket.on("connect", () => {
-    console.info("Connection to server established");
+    debug.log("sockets", "Connection to server established.");
     termination_socket.emit('hostinfo');
 });
 termination_socket.on('HUP', () => window.location.reload());
 termination_socket.on('hostinfo', (hostinfo) => {
-    console.log('Termination server: ', hostinfo);
+    debug.log("sockets", "Termination server", hostinfo);
 });
 
 let last_clock_drift = 0.0;
@@ -66,8 +65,6 @@ export function get_network_latency(): number {
 export function get_clock_drift(): number {
     return last_clock_drift;
 }
-window["get_network_latency"] = get_network_latency;
-window["get_clock_drift"] = get_clock_drift;
 termination_socket.on("net/pong", handle_pong);
 termination_socket.on("connect", ping);
 setInterval(ping, 10000);
