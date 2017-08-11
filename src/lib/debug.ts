@@ -31,80 +31,42 @@ import * as data from "data";
 import * as player_cache from "player_cache";
 import * as sockets from "sockets";
 
-const modules = {
+Object.assign(window, {
     debug: debug,
     data: data,
     player_cache: player_cache,
     sockets: sockets,
-};
+});
 
 
 
-// For use when saying "start_debugging();" becomes tiresome.
-// Do not commit code with start_debugging_immediately = true !
-let start_debugging_immediately = false;
-
-
-
-// Initialise the debugger. We don't do this unless asked so that we
-// can avoid polluting the global namespace.
-function start_debugging() {
-    Object.assign(window, modules);
-    return Object.keys(modules);
-}
-
-window["start_debugging"] = start_debugging;
-
-if (start_debugging_immediately) {
-    start_debugging();
-}
-else {
-    console.info("Say \"start_debugging();\" to add useful things to the global scope.");
-}
-
-
-
-// Selective logging
+// Selective logging.
 export function log(module: keyof typeof debug, ...rest: Array<any>) {
     if (debug[module]) {
         console.log(`[${module}]`, ...rest);
     }
 }
 
+// Assertions.
 export function assert(module: keyof typeof debug, assertion: boolean, ...rest: Array<any>) {
-    if (!assertion) {
-        cant_happen(module, ...rest);
-    }
-}
-
-let cant_happen_happened: boolean = false;
-export function cant_happen(module: keyof typeof debug, ...rest: Array<any>) {
+    if (assertion) { return; }
     console.error(`[${module}]`, ...rest);
 
-    // To avoid a flood, we only record the first time the impossible happens.
-    if (cant_happen_happened) {
-        return;
-    }
-    cant_happen_happened = true;
-
-    // Don't phone home on dev systems.
-    if (!/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)) {
-        return;
-    }
-
     // Phone home to tell of our distress.
-    /*
-    $.ajax({
-        url: "https://example.com/issues",
-        type: "POST",
-        data: {
-            title: `Can't happen happened in ${module}.`,
-            body: JSON.stringify(rest) + "\n" + new Error().stack,
-        },
-        crossDomain: true,
-        beforeSend: (() => true),
-        success: console.log,
-        error: console.warn,
-    });
-    */
+    if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)) {
+        /*
+        $.ajax({
+            url: "https://example.com/issues",
+            type: "POST",
+            data: {
+                title: `Can't happen happened in ${module}.`,
+                body: JSON.stringify(rest) + "\n" + new Error().stack,
+            },
+            crossDomain: true,
+            beforeSend: (() => true),
+            success: console.log,
+            error: console.warn,
+        });
+        */
+    }
 }
