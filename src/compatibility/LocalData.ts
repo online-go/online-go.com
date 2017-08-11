@@ -15,12 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {Player, RegisteredPlayer} from "data/Player";
+import {serialise_player, deserialise_player, deserialise_friends} from "compatibility/Player";
+
 export interface LocalData {
+    debug: boolean;
+    "ad-override": boolean;
+    "email-banner-dismissed": boolean;
+    user: Player;
+    friends: Array<RegisteredPlayer>;
     [name: string]: any;
 }
 
 export const serialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
+    user: serialise_player,
+    friends: JSON.stringify,
 };
 
 export const deserialise_data: {readonly [name in keyof LocalData]?: (x: string) => LocalData[name]} = {
+    user: deserialise_player,
+    friends: deserialise_friends,
 };
+

@@ -15,20 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {RegisteredPlayer} from "data/Player";
+import {to_server_player_ids, from_server_players, from_server_friends} from "compatibility/Player";
+
 // The types of data that is transmitted between the client and server in
 // Ajax requests. The URLData type is the type of information that we send
 // to the server, while the URLResultType is the type of the server's
 // response to us.
 export type URLCommunication = URLData | URLResult;
+
 export interface URLData {
-    GET: {[url: string]: any};
+    GET: {
+        "/termination-api/players": Array<number>;
+        [url: string]: any;
+    };
     POST: {[url: string]: any};
     PUT: {[url: string]: any};
     PATCH: {[url: string]: any};
     DELETE: {[url: string]: any};
 }
+
 export interface URLResult {
-    GET: {[url: string]: any};
+    GET: {
+        "/termination-api/players": Array<RegisteredPlayer>;
+        "ui/friends": Array<RegisteredPlayer>;
+        [url: string]: any;
+    };
     POST: {[url: string]: any};
     PUT: {[url: string]: any};
     PATCH: {[url: string]: any};
@@ -43,14 +55,20 @@ type TranslateToServerType = {[type in keyof URLData]: {[url in keyof URLData[ty
 type TranslateFromServerType = {[type in keyof URLResult]: {[url in keyof URLResult[type]]?: (result: any) => URLResult[type][url]}};
 
 export const translate_to_server: TranslateToServerType = {
-    GET: {},
+    GET: {
+        "/termination-api/players": to_server_player_ids,
+    },
     POST: {},
     PUT: {},
     PATCH: {},
     DELETE: {},
 };
+
 export const translate_from_server: TranslateFromServerType = {
-    GET: {},
+    GET: {
+        "/termination-api/players": from_server_players,
+        "ui/friends": from_server_friends,
+    },
     POST: {},
     PUT: {},
     PATCH: {},
