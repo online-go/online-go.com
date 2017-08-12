@@ -145,7 +145,7 @@ export function is_registered(player: any): player is RegisteredPlayer {
 // ensures that we get a consistent sort order in all cases.
 //
 // Typical usage:
-//     players.sort(by_name);
+//     players.sort(by_username);
 //     etc...
 //
 // Although slightly less efficient, we carry out all four type checks.

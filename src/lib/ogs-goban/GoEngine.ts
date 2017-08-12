@@ -20,7 +20,7 @@ import {GoMath, Move} from "./GoMath";
 import {GoStoneGroup} from "./GoStoneGroup";
 import {ScoreEstimator} from "./ScoreEstimator";
 import {_} from "./translate";
-
+import * as data from "data";
 
 let __currentMarker = 0;
 
@@ -168,7 +168,8 @@ export class GoEngine {
 
         try {
             this.config.original_disable_analysis = this.config.disable_analysis;
-            if (typeof(window) !== "undefined" && typeof(window["user"]) !== "undefined" && window["user"] && window["user"].id !== this.black_player_id && window["user"].id !== this.white_player_id) {
+            let user = data.get("user");
+            if (user && user.id !== this.black_player_id && user.id !== this.white_player_id) {
                 this.disable_analysis = false;
                 this.config.disable_analysis = false;
             }

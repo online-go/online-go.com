@@ -20,41 +20,31 @@ import {Ranking} from "data/Ranking";
 import {getUserRating} from "rank_utils";
 
 
-// Convert a Player to and from a string for storage in the browser's localStorage.
-export function serialise_player(player: Player): string {
-    if (player instanceof RegisteredPlayer) {
-        return JSON.stringify(Object.assign({}, player, {type: "Registered"}));
-    }
-    if (player instanceof GuestPlayer) {
-        return JSON.stringify(Object.assign({}, player, {type: "Guest"}));
-    }
-}
-
+// Convert a Player from a string in the browser's localStorage.
 export function deserialise_player(data: string): Player {
     let player = JSON.parse(data);
-    if (typeof player === "object" &&
-        typeof player.id === "number") {
-        if (player.type === "Guest") {
-            return new GuestPlayer(player.id);
-        }
-        if (player.type === "Registered") {
-            return new RegisteredPlayer(player.id, player_properties(player));
-        }
+    if (!isFinite(player.id)) {
+        throw "Couldn't deserialise a player.";
     }
-    throw "Couldn't deserialise a player.";
+    if (player.id < 0) {
+        return new GuestPlayer(player.id);
+    }
+    if (player.id >= 0) {
+        return new RegisteredPlayer(player.id, player_properties(player));
+    }
 }
 
 export function deserialise_friends(data: string): Array<RegisteredPlayer> {
     let friends = JSON.parse(data);
-    if (Array.isArray(friends)) {
-        return friends.map(friend => {
-            if (typeof friend !== "object" || typeof friend.id !== "number") {
-                throw "Couldn't deserialise friends list.";
-            }
-            return new RegisteredPlayer(friend.id, player_properties(friend));
-        });
+    if (!Array.isArray(friends)) {
+        throw "Couldn't deserialise friends list.";
     }
-    throw "Couldn't deserialise friends list.";
+    return friends.map(friend => {
+        if (typeof friend !== "object" || typeof friend.id !== "number") {
+            throw "Couldn't deserialise friends list.";
+        }
+        return new RegisteredPlayer(friend.id, player_properties(friend));
+    });
 }
 
 // Given an object, choose only the properties that occur in a RegisteredPlayer.
@@ -80,15 +70,15 @@ export function to_server_player(player: RegisteredPlayer): any {
     // usage has been removed from the front end code.
     old_player.id = old_player.player_id = player.id;
     old_player.username = player.username;
-    old_player.icon = old_player["icon-url"] = player.icon;
+    old_player.icon = old_player["icon-url"] /* NUIFE */ = player.icon;
     old_player.country = player.country;
-    old_player.ui_class = player_attributes(player).join(" ");
+    old_player.ui_class /* NUIFE */ = player_attributes(player).join(" ");
     old_player.is_superuser = player.is.admin;
     old_player.is_moderator = player.is.moderator;
     old_player.tournament_moderator = player.is.tournament_moderator;
-    old_player.email_validated = player.is.validated;
+    old_player.email_validated /* NUIFE */ = player.is.validated;
     old_player.is_bot = player.is.bot;
-    old_player.anonymous = false;
+    old_player.anonymous /* NUIFE */ = false;
     old_player.supporter = player.is.supporter;
     old_player.ranking = old_player.rank = player.ranking;
     old_player.ratings = player.ratings;
@@ -97,24 +87,15 @@ export function to_server_player(player: RegisteredPlayer): any {
 }
 
 export function from_server_player(player: any): Player {
-    // If the player isn't even an object then we're really screwed.
-    // This should never happen, and indicates a bug.
-    if (typeof player !== "object") {
-        console.error("Invalid player", player);
-        return new RegisteredPlayer(0);
-    }
-
-    // Calculate the player's id. If that is unavailable, then use 0
-    // as the id. Player id 0 is reserved for an unknown player.
-    // Negative ids are reserved for guest players.
-    let id: number = 0 + (player.id || player.player_id);
+    // Calculate the player's id.
+    let id: number = (player.id || player.player_id) - 0;
     if (!isFinite(id)) {
-        return new RegisteredPlayer(0);
+        throw "Couldn't translate server data to a player.";
     }
 
-    // If any parameter is unavailable, then we use the cached value.
+    // Transfer properties into the Player object. If any property is unavailable,
+    // then we use the cached value.
     let result = player_cache.lookup(id);
-
     if (result instanceof RegisteredPlayer) {
         let username: string = player.username;
         if (typeof username === "string" && username !== "") {

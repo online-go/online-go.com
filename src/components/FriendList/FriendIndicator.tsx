@@ -36,7 +36,7 @@ interface FriendIndicatorState {
 }
 
 export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorState> {
-    friends: Array<number>;
+    friends: Array<number> = [];
     subscriber: player_cache.Subscriber;
 
     constructor(props) {

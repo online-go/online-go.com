@@ -16,7 +16,7 @@
  */
 
 import {Player, RegisteredPlayer} from "data/Player";
-import {serialise_player, deserialise_player, deserialise_friends} from "compatibility/Player";
+import {deserialise_player, deserialise_friends} from "compatibility/Player";
 
 export interface LocalData {
     debug: boolean;
@@ -28,7 +28,7 @@ export interface LocalData {
 }
 
 export const serialise_data: {readonly [name in keyof LocalData]?: (x: LocalData[name]) => string} = {
-    user: serialise_player,
+    user: JSON.stringify,
     friends: JSON.stringify,
 };
 

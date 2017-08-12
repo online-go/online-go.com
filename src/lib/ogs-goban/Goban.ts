@@ -27,7 +27,8 @@ import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingR
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
-
+import {RegisteredPlayer} from "data/Player";
+import * as data from "data";
 
 export const GOBAN_FONT =  "Verdana,Arial,sans-serif";
 declare let swal;
@@ -516,7 +517,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 sfx.play("beepbeep", true);
             }
             if (msg.message) {
-                if (!window["has_focus"] && !window["user"].anonymous && /^\/game\//.test(this.getLocation())) {
+                if (!window["has_focus"] && data.get("user") instanceof RegisteredPlayer && /^\/game\//.test(this.getLocation())) {
                     swal(_(msg.message));
                 } else {
                     console.info(msg.message);
@@ -3951,7 +3952,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
     public autoScore() { /* {{{ */
         try {
-            if (!window["user"] || !this.on_game_screen  || !this.engine || (window["user"].id !== this.engine.black_player_id && window["user"].id !== this.engine.white_player_id)) {
+            let user = data.get("user");
+            if (!user || !this.on_game_screen  || !this.engine || (user.id !== this.engine.black_player_id && user.id !== this.engine.white_player_id)) {
                 return;
             }
         } catch (e) {
@@ -4210,7 +4212,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
                     if (this.on_game_screen && player_id) {
                         sound_to_play = seconds;
-                        if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
+                        let user = data.get("user");
+                        if (user && player_id === user.id && user.id === this.engine.playerToMove()) {
                             this.byoyomi_label = "" + seconds;
                             let last_byoyomi_label = this.byoyomi_label;
                             if (this.last_hover_square) {
@@ -4226,7 +4229,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                             }, 1100);
                         }
 
-                        if (sound_to_play && window["user"].id === clock.current_player && player_id === window["user"].id) {
+                        if (sound_to_play && user.id === clock.current_player && player_id === user.id) {
                             if (this.last_sound_played !== sound_to_play) {
                                 this.last_sound_played = sound_to_play;
 

@@ -834,7 +834,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         {/* }}} */}
                     </div>
 
-                    {/* ((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
+                    {/* ((global_user && global_user.id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
                         {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
                         {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
                                 onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
@@ -867,7 +867,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
             <div className="row">
                 <div className='col-sm-8'>{/* {{{ */}
-                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
+                    {((global_user && global_user.is.moderator) || null) && <Card > {/* Moderator stuff {{{ */}
                         <b>Users with the same IP or Browser ID</b>
                         <PaginatedTable
                             className="aliases"
@@ -1086,7 +1086,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </Card>
                     </div>}
 
-                    {(user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id) && <div >
+                    {(user.is_bot && user.bot_owner && user.bot_owner.id === global_user.id) && <div >
                         <h2>{_("Bot Controls")}</h2>
                         <div className="well">
                             <h5>{_("API Key")}
