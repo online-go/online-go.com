@@ -127,6 +127,7 @@ export function from_server_player(player: any): Player {
         // Calculate the attributes. Some of these are passed in attributes
         // of the player object, whereas others are passed in the ui_class
         // string.
+        result.is.online = !!result.is.online;
         if ("is_superuser" in player) {
             result.is.admin = !!player.is_superuser;
         }

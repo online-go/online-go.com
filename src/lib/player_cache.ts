@@ -31,7 +31,7 @@ export let nicknames: Array<string> = [];
 
 // List all the keys of a RegisteredPlayer and all the attributes of RegisteredPlayer["is"]
 const keys: Array<keyof RegisteredPlayer> = ["username", "icon", "country", "ranking", "ratings"];
-const attributes: Array<keyof RegisteredPlayer["is"]> = ["admin", "moderator", "tournament_moderator", "validated", "professional", "supporter", "provisional", "timeout", "bot"];
+const attributes: Array<keyof RegisteredPlayer["is"]> = ["online", "admin", "moderator", "tournament_moderator", "validated", "professional", "supporter", "provisional", "timeout", "bot"];
 
 
 
@@ -111,13 +111,11 @@ export function lookup(id: number): Player {
     throw `player_cache.lookup: Player id is ${id}.`;
 }
 
-// Look up a player in the cache by username. We have to check that the
-// username of the player we're returning really matches the username requested.
-// This is because players can change their username at will. If there is no
+// Look up a player in the cache by username. If there is no
 // matching username in the cache, the we return undefined.
 export function lookup_by_username(username: string): RegisteredPlayer | void {
     let player = cache_by_username[username];
-    if (player.username === username) {
+    if (player) {
         return new RegisteredPlayer(player.id, player);
     }
 }
@@ -131,6 +129,7 @@ export function lookup_by_username(username: string): RegisteredPlayer | void {
 export function update(player: Player): void {
     // Compatibility with untyped code.
     if (!is_player(player)) {
+        console.error("Untyped player added to the player_cache.", player);
         player = from_server_player(player);
     }
     // End compatibility section.
@@ -145,7 +144,7 @@ export function update(player: Player): void {
     let next = new RegisteredPlayer(player.id, cache_by_id[player.id], player);
 
     // Has the cached player changed?
-    if (!keys.some(key => previous[key] !== next[key]) && !attributes.some(attr => !previous.is[attr] !== !next.is[attr])) {
+    if (keys.every(key => previous[key] === next[key]) && attributes.every(attr => previous.is[attr] === next.is[attr])) {
         return;
     }
 
@@ -158,6 +157,7 @@ export function update(player: Player): void {
     if (!(next.username in cache_by_username)) {
         nicknames.push(next.username);
     }
+    delete cache_by_username[previous.username];
     cache_by_username[next.username] = next;
     cache_by_id[player.id] = next;
     publish.soon(player.id);

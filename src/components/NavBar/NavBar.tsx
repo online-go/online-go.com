@@ -205,7 +205,7 @@ export class NavBar extends React.PureComponent<{}, NavBarState> {
 
                 get("ui/omniSearch", {q: q.trim()})
                 .then((res) => {
-                    player_cache.update(res.players);
+                    res.players.forEach(player_cache.update);
                     this.setState({
                         omnisearch_loading: false,
                         omnisearch_players: res.players,

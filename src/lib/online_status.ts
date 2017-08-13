@@ -39,7 +39,7 @@ let subscribe_queue = new Batcher<number>(ids => {
     for (let id of ids) {
         player_cache.fetch(id)
         .then(player => {
-            if (player instanceof RegisteredPlayer && !player.is.online !== !online[player.id]) {
+            if (player instanceof RegisteredPlayer && player.is.online !== online[player.id]) {
                 player.is.online = online[player.id];
                 player_cache.update(player);
             }
