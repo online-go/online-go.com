@@ -79,6 +79,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             new_news_title: "",
             new_news_body: "",
             invite_result: null,
+            editing_news: null,
         };
     }
 
@@ -296,6 +297,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
     editNewsPost(entry) {{{
         this.setState({editing_news: entry});
+        this.refs.news.forceUpdate();
     }}}
     updateNewsPost = () => {{{
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
@@ -318,6 +320,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 {content: ev.target.value}
             )
         });
+        this.refs.news.forceUpdate();
     }}}
     updateNewsTitle = (ev) => {{{
         this.setState({
@@ -327,6 +330,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 {title: ev.target.value}
             )
         });
+        this.refs.news.forceUpdate();
     }}}
 
     inviteUser = (ev) => {{{
@@ -525,10 +529,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 source={`groups/${group.id}/news`}
                                 pageSize={1}
                                 columns={[
-                                    {header: _("News"), className: "none", render: (entry) => (
+                                    {header: _("News"), className: "none", render: (entry) =>
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
+                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
                                                 : <h2>{entry.title}</h2>
                                             }
 
@@ -543,11 +547,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                 </div>
                                             }
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <textarea value={this.state.editing_news.content} onChange={this.updateNewsContent} />
+                                                ? <textarea ref='editing_news_body' value={this.state.editing_news.content} onChange={this.updateNewsContent} />
                                                 : <Markdown source={entry.content} />
                                             }
                                         </div>
-                                    )},
+                                    },
                                 ]}
                             />
                         </Card>
