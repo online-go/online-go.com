@@ -60,7 +60,7 @@ export class About extends React.Component<{}, any> {
                         </span>
                     </h2>
 
-                    {_("Online-go.com is made possible by the generous financial support from hundreds of indivdiual site supporters, the guidance and welcome friendly attitudes of the Go community at large, and by a large collection of volunteers that have helped translate Online-Go.com into a multitude of different languages from all over the world.")}
+                    {_("Online-go.com is made possible by the generous financial support from hundreds of individual site supporters, the guidance and welcome friendly attitudes of the Go community at large, and by a large collection of volunteers that have helped translate Online-Go.com into a multitude of different languages from all over the world.")}
 
                     <h4 className="about-links">
                         <a href="https://translate.online-go.com" target="_blank">{_("Help translate Online-Go.com")}</a>
