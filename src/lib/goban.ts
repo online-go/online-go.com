@@ -84,6 +84,10 @@ export class Goban extends OGSGoban {
         return preferences.get("show-variation-move-numbers");
     }
 
+    isAnalysisDisabled():boolean {
+        // Player's settings to always disable analysis overrides the per-game setting.
+        return this.engine.config.disable_analysis || preferences.get("always-disable-analysis");
+    }
 
     watchSelectedThemes(cb) {
         return watchSelectedThemes(cb);

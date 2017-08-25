@@ -33,6 +33,7 @@ let defaults = {
     "autoplay-delay": 10000,
     "desktop-notifications": true,
     "asked-to-enable-desktop-notifications": false,
+    "always-disable-analysis": false,
 
     "sound-enabled": true,
     "sound-volume": 0.5,
