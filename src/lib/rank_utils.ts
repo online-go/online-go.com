@@ -78,6 +78,17 @@ export function bounded_rank(user_or_rank:any):number {
     let rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
+export function is_provisional(user:any):boolean {
+    let ratings = user.ratings || {};
+
+    let rating = ratings['overall'] || {
+        rating: 1500,
+        deviation: 350,
+        volatility: 0.06,
+    };
+
+    return rating.deviation >= 220;
+}
 
 
 export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
@@ -137,7 +148,11 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 
 
 export function rankString(r, with_tenths?:boolean) {
+    let provisional = false;
+
     if (typeof(r) === "object") {
+        provisional = is_provisional(r);
+
         let ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
@@ -151,7 +166,11 @@ export function rankString(r, with_tenths?:boolean) {
     if (r > 900) {
         return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
     }
+
     if (r < -900) {
+        provisional = true;
+    }
+    if (provisional) {
         return "?";
     }
 
@@ -162,7 +181,11 @@ export function rankString(r, with_tenths?:boolean) {
 }
 
 export function longRankString(r) {
+    let provisional = false;
+
     if (typeof(r) === "object") {
+        provisional = is_provisional(r);
+
         let ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             return interpolate(_("%s Pro"), [((ranking - 36))]);
@@ -178,6 +201,9 @@ export function longRankString(r) {
     }
 
     if (r < -900) {
+        provisional = true;
+    }
+    if (provisional) {
         return "?";
     }
 
