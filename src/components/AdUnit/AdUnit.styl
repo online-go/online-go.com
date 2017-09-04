@@ -16,7 +16,7 @@
  */
 
 
-.AdUnit {
+.--supporter-container {
     // here
     flex-grow: 0;
     flex-shrink: 0;
@@ -26,38 +26,7 @@
     text-align: center;
     padding: 0.5rem;
 
-    .ogs-cdm-zone-01-container, 
-    .ogs-cdm-zone-02-container,
-    .ogs-cdm-zone-03-container,
-    .ogs-cdm-zone-04-container,
-    .ogs-cdm-zone-05-container,
-    .ogs-cdm-zone-06-container,
-    {
-        flex-shrink: 0;
-        text-align: center;
-        //background-color: rgba(0,0,255,0.1);
-    }
-
-    .ogs-cdm-zone-01-container, 
-    .ogs-cdm-zone-04-container,
-    .ogs-cdm-zone-05-container, {
-        //height: 90px;
-        //max-width: 728px;
-        min-height: 90px;
-        min-width: 728px;
-    }
-
-    .ogs-cdm-zone-02-container,
-    .ogs-cdm-zone-03-container,
-    .ogs-cdm-zone-06-container, {
-        min-height: 250px;
-        min-width: 300px;
-        //max-width: 300px;
-    }
-
-
-
-    .turn-off-ads-note {
+    .supporter-note{
         min-height: 1rem;
         padding-bottom: 0.5rem;
 
@@ -67,18 +36,50 @@
     }
 }
 
+
+.ogs-cdm-zone-01-container, 
+.ogs-cdm-zone-02-container,
+.ogs-cdm-zone-03-container,
+.ogs-cdm-zone-04-container,
+.ogs-cdm-zone-05-container,
+.ogs-cdm-zone-06-container,
+{
+    flex-shrink: 0;
+    text-align: center;
+    //background-color: rgba(0,0,255,0.1);
+}
+
+.ogs-cdm-zone-01-container, 
+.ogs-cdm-zone-04-container,
+.ogs-cdm-zone-05-container, {
+    //height: 90px;
+    //max-width: 728px;
+    min-height: 90px;
+    min-width: 728px;
+}
+
+.ogs-cdm-zone-02-container,
+.ogs-cdm-zone-03-container,
+.ogs-cdm-zone-06-container, {
+    min-height: 250px;
+    min-width: 300px;
+    //max-width: 300px;
+}
+
+
 @media (max-width: 728px) {
-    .AdUnit {
+    .--supporter-container {
         padding-left: 0;
         padding-right: 0;
-        .ogs-cdm-zone-01-container, 
-        .ogs-cdm-zone-04-container,
-        .ogs-cdm-zone-05-container, {
-            min-height: 50px;
-            min-width: 320px;
-            overflow: auto;
-            //height: 90px;
-            //max-width: 728px;
-        }
+    }
+
+    .ogs-cdm-zone-01-container, 
+    .ogs-cdm-zone-04-container,
+    .ogs-cdm-zone-05-container, {
+        min-height: 50px;
+        min-width: 320px;
+        overflow: auto;
+        //height: 90px;
+        //max-width: 728px;
     }
 }

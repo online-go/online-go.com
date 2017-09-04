@@ -30,11 +30,10 @@ import {Player} from "Player";
 import {PlayerIcon} from "Player";
 import * as data from "data";
 import {errorAlerter} from "misc";
-import {longRankString, getUserRating, is_novice} from "rank_utils";
+import {longRankString, getUserRating, is_novice, is_provisional} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
-
 
 
 let UserRating = (props: {rating: number}) => {
@@ -42,7 +41,6 @@ let UserRating = (props: {rating: number}) => {
     let tenthsRating = Math.floor(props.rating * 10) % 10;
     return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
 };
-
 
 
 export class Overview extends React.Component<{}, any> {
@@ -64,6 +62,7 @@ export class Overview extends React.Component<{}, any> {
             errorAlerter(err);
         });
     }
+
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
     }
@@ -114,7 +113,7 @@ export class Overview extends React.Component<{}, any> {
                                     <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
                                 </div>
                             }
-                            {rating && !rating.professional && !is_novice(user) &&
+                            {rating && !rating.professional && !is_novice(user) && !is_provisional(user) &&
                                 <div>
                                     <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
                                 </div>

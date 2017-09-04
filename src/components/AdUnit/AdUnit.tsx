@@ -21,7 +21,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import {FAdBlock} from 'fab';
-import {RegisteredPlayer} from "data/Player";
+import {TypedEventEmitter} from 'TypedEventEmitter';
 
 declare var factorem;
 
@@ -42,6 +42,7 @@ interface AdUnitProperties {
 
 
 const never_load_ads = false;
+let adblock_detector = new TypedEventEmitter<{'blocked': never}>();
 let ads_are_blocked = false;
 let zone_end = null;
 let refresh_delay_timeout = null;
@@ -137,10 +138,6 @@ function refresh_ads() {
         script.onload = () => {
             clearTimeout(failsafe);
             refresh_delay_timeout = null;
-            //console.info("CDM Loaded");
-            setTimeout(() => {
-                //console.info("Ad zones: ", factorem.adZones);
-            }, 100);
         };
         document.head.appendChild(script);
     }, never_load_ads ? 24 * 3600 * 1000 : 1);
@@ -165,6 +162,7 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
     }
 
     componentDidMount() {
+        adblock_detector.on('blocked', this.forceUpdate.bind(this));
         refresh_ads();
         if (rotate_timer) {
             return;
@@ -173,6 +171,7 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
     }
 
     componentWillUnmount() {
+        adblock_detector.off('blocked', this.forceUpdate.bind(this));
         refresh_ads();
         clearInterval(rotate_timer);
         rotate_timer = null;
@@ -184,11 +183,23 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
         }
 
         return (
-            <div className="AdUnit">
-                <div ref="container" className={"ogs-" + this.props.unit + "-container"}><div><div id={this.props.unit}></div></div></div>
-
+            <div className='--supporter-container'>
+                <div>
+                    <div ref="container" className={"ogs-" + this.props.unit + "-container"}><div><div id={this.props.unit}></div></div></div>
+                </div>
+                {ads_are_blocked &&
+                    <div style={{
+                        padding: '1rem',
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                    }}>
+                        <Link to="/user/supporter">
+                            {_("Please consider disabling your ad blocker for this site, or signing up to make a small donation to get rid of ads without an ad blocker. We are a small site and depend on supporter donations and ad revenue to stay online. Thank you for your consideration and for playing on OGS!")}
+                        </Link>
+                    </div>
+                }
                 {(!this.props.nag ? null : (
-                    <div className="turn-off-ads-note">
+                    <div className="supporter-note">
                         <Link to="/user/supporter">{_("Turn off ads and better support OGS, become a site supporter today!")}</Link>
                     </div>
                 ))}
@@ -217,11 +228,13 @@ if (should_show_ads()) {
     let timeout = setTimeout(() => {
         set_fab('timeout');
         ads_are_blocked = true;
+        adblock_detector.emit('blocked');
         clearTimeout(timeout);
     }, 10000);
     fab.onDetected(() => {
         clearTimeout(timeout);
         ads_are_blocked = true;
+        adblock_detector.emit('blocked');
         set_fab('blocked');
     });
     fab.onNotDetected(() => {

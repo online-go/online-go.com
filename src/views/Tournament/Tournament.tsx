@@ -21,7 +21,7 @@ import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
-import {longRankString, rankString, amateurRanks} from "rank_utils";
+import {bounded_rank, longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
 import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
 import {Markdown} from "Markdown";
@@ -1057,7 +1057,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let can_join = true;
         let cant_join_reason = "";
 
-        if (!(data.get("user") instanceof RegisteredPlayer)) {
+        if (user instanceof RegisteredPlayer) {
             can_join = false;
             cant_join_reason = _("You must sign in to join this tournament.");
         } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
@@ -1066,10 +1066,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         } else if (!tournament.is_open || tournament.exclusivity === "invite") {
             can_join = false;
             cant_join_reason = _("This is a closed tournament, you must be invited to join.");
-        } else if (tournament.exclude_provisional && data.get("user").is.provisional) {
+        } else if (tournament.exclude_provisional && user.is.provisional) {
             can_join = false;
             cant_join_reason = _("This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.");
+        } else if (bounded_rank(user) < tournament.min_ranking) {
+            can_join = false;
+            cant_join_reason = _("Your rank is too low to join this tournament.");
+        } else if (bounded_rank(user) > tournament.max_ranking) {
+            can_join = false;
+            cant_join_reason = _("Your rank is too high to join this tournament");
         }
+
 
         let time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
 

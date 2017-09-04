@@ -48,8 +48,8 @@ function ping() {
     if (termination_socket.connected) {
         termination_socket.send("net/ping", {
             client: Date.now(),
-            //drift: last_clock_drift,
-            //latency: last_latency,
+            drift: last_clock_drift,
+            latency: last_latency,
         });
     }
 }
