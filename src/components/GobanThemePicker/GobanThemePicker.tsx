@@ -21,7 +21,7 @@ import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {GoThemes} from "goban";
 import {getSelectedThemes} from "preferences";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {PersistentElement} from "PersistentElement";
 import * as data from "data";
 

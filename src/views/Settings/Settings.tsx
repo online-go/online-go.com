@@ -24,7 +24,7 @@ import {durationString} from "TimeControl";
 import {Card} from "material";
 import {sfx} from "goban";
 import {LanguagePicker} from "LanguagePicker";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as data from "data";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';

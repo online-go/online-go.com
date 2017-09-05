@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {AdUnit} from "AdUnit";
 import {GameList} from "GameList";
 import {comm_socket} from "sockets";

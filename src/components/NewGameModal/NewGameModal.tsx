@@ -23,7 +23,7 @@ import {challenge, challengeComputer, createCorrespondence, createBlitz,
         createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore} from "misc";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as data from "data";
 import {bot_count} from "bots";
 

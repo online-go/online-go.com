@@ -21,7 +21,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Card} from "material";
 import {AdUnit} from "AdUnit";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {shortTimeControl, shortShortTimeControl, computeAverageMoveTime} from "TimeControl";
 import {PaginatedTable} from "PaginatedTable";

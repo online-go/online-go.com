@@ -19,6 +19,9 @@ import {get} from "requests";
 import {Batcher} from "batcher";
 import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 
+import Debug from "debug";
+const debug = new Debug("player_cache");
+
 // The player cache's Subscriber is just like a vanilla Subscriber, but can
 // subscribe to and unsubscribe from numerical ids or whole Players. The
 // function to query which players we are watching is called "players", not
@@ -88,7 +91,6 @@ interface FetchEntry {
     required_fields: Array<string>;
 }
 
-const player_cache_debug_enabled = false;
 let cache: {[id: number]: PlayerCacheEntry} = {};
 let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
 let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
@@ -177,13 +179,9 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
             return Promise.resolve(cache[player_id]);
         }
 
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " for fields ", missing_fields, " cached player data was ", JSON.parse(JSON.stringify(cache[player_id])));
-        }
+        debug.log(`Fetching ${player_id} for fields ${missing_fields.join(", ")}.`, cache[player_id]);
     } else {
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " because no user information was in our cache");
-        }
+        debug.log(`Fetching ${player_id} because no user information was in our cache.`);
     }
 
     if (player_id in active_fetches) {
@@ -205,9 +203,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         let queue = fetch_queue.slice(0, 100);
         fetch_queue = fetch_queue.slice(100);
 
-        if (player_cache_debug_enabled) {
-            console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
-        }
+        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
 
         get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
         .then((players) => {
@@ -226,7 +222,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
                 if (required_fields) {
                     for (let field of required_fields) {
                         if (!(field in cache[player.id])) {
-                            console.warn("Required field ", field, " was not resolved by fetch");
+                            debug.warn("Required field ", field, " was not resolved by fetch");
                             cache[player.id][field] = "[ERROR]";
                         }
                     }
@@ -239,7 +235,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
             }
         })
         .catch((err) => {
-            console.error(err);
+            debug.error(err);
             for (let idx = 0; idx < queue.length; ++idx) {
                 delete active_fetches[queue[idx].player_id];
                 try {

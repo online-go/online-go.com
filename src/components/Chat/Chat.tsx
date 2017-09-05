@@ -23,7 +23,7 @@ import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
 import * as data from "data";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";

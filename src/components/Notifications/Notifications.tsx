@@ -18,7 +18,7 @@
 import * as React from "react";
 import {comm_socket} from "sockets";
 import * as data from "data";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
 import {isLiveGame} from "TimeControl";

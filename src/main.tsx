@@ -75,6 +75,7 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
+import "debug";
 
 declare const swal;
 
@@ -302,5 +303,3 @@ const routes = (
 
 ReactDOM.render(routes, document.getElementById("main-content"));
 
-window["player_cache"] = player_cache;
-window["data"] = data;
