@@ -250,6 +250,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
         this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).name = t.name);
         comm_socket.on("chat-message", this.onChatMessage);
+        comm_socket.on("chat-message-removed", this.onChatMessageRemoved);
         comm_socket.on("chat-join", this.onChatJoin);
         comm_socket.on("chat-part", this.onChatPart);
         this.online_count_interval = setInterval(() => {
@@ -283,6 +284,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
     }}}
 
+    onChatMessageRemoved = (obj) => {{{
+        console.log("Chat message removed: ", obj);
+        let c = getChannel(obj.channel);
+        c.chat_ids[obj.uuid] = true;
+        for (let idx = 0; idx < c.chat_log.length; ++idx) {
+            let entry = c.chat_log[idx];
+            if (entry.message.i === obj.uuid) {
+                c.chat_log.splice(idx, 1);
+            }
+        }
+        this.syncStateSoon();
+    }}}
     onChatMessage = (obj) => {{{
         let mentioned = false;
         try {
@@ -795,11 +808,11 @@ function searchString(site, parameters) {
 
     return site + parameters[0] + '+' +
         parameters.slice(1, parameters.length).join('+').slice(0);
-};
+}
 
 function generateChatSearchLine(urlString, command, body) {
     let target = '';
-    let bodyString = body.substr(command.length)
+    let bodyString = body.substr(command.length);
     if (bodyString.split(' ')[0] === '-user') {
         target = bodyString.split(' ')[1] + ' ';
     }
@@ -811,7 +824,7 @@ function generateChatSearchLine(urlString, command, body) {
     } else {
         return  searchString(urlString, params.slice(1, params.length));
     }
-};
+}
 
 function ChatLine(props) {{{
     let line = props.line;
@@ -820,7 +833,6 @@ function ChatLine(props) {{{
     if (line.system) {
         return ( <div className="chat-line system">{chat_markup(line.body)}</div>);
     }
-
 
     let message = line.message;
     let ts = message.t ? new Date(message.t * 1000) : null;
@@ -861,7 +873,9 @@ function ChatLine(props) {{{
              (third_person ? "chat-line third-person" : "chat-line")
              + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
-        }>
+        }
+            data-chat-id={message.i}
+        >
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
             {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
             <span className="body">{chat_markup(body)}</span>

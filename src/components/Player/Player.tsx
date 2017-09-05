@@ -250,8 +250,23 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             return;
         }
         else {
+            let chat_id = null;
+            try {
+                let cur = $(this.refs.elt);
+
+                while (cur && cur[0].nodeName !== 'BODY') {
+                    chat_id = cur.attr('data-chat-id');
+                    if (chat_id) {
+                        break;
+                    }
+                    cur = cur.parent();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+
             popover({
-                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} />),
+                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} chatId={chat_id} />),
                 below: this.refs.elt,
                 minWidth: 240,
                 minHeight: 250,

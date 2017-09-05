@@ -24,6 +24,7 @@ import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
 import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
+import {termination_socket} from "sockets";
 import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
@@ -35,9 +36,11 @@ import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 
+declare var swal;
 
 interface PlayerDetailsProperties {
     playerId: number;
+    chatId?: string;
     noextracontrols?: boolean;
 }
 
@@ -180,6 +183,23 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         this.close_all_modals_and_popovers();
         post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
     }}}
+    removeSingleLine = () => {{{
+        termination_socket.send('chat/remove', {uuid: this.props.chatId});
+        this.close_all_modals_and_popovers();
+    }}}
+    removeAllChats = () => {{{
+        this.close_all_modals_and_popovers();
+
+        swal({
+            text: _(`Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversable.`),
+            confirmButtonText: _("Yes"),
+            cancelButtonText: _("No"),
+            showCancelButton: true,
+            focusCancel: true
+        })
+        .then(() => termination_socket.send('chat/remove_all', {player_id: this.props.playerId}))
+        .catch(() => 0);
+    }}}
     render() {
         let user = data.get("user");
 
@@ -225,6 +245,14 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                     </div>
                 }
                 {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
+                { ((user.is_moderator) || null) &&
+                    <div className="actions">
+                        {(this.props.chatId || null) &&
+                            <button className="xs noshadow reject" onClick={this.removeSingleLine}><i className="fa fa-times"/>{pgettext("Remove chat line", "Remove chat line")}</button>
+                        }
+                        <button className="xs noshadow reject" onClick={this.removeAllChats}><i className="fa fa-times-circle"/>{pgettext("Remove all chat lines from this user", "Remove all chats")}</button>
+                    </div>
+                }
                 { ((user.is_moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>
