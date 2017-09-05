@@ -21,6 +21,9 @@ import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 import {Player, GuestPlayer, RegisteredPlayer, is_player} from "data/Player";
 import {from_server_player} from "compatibility/Player";
 
+import Debug from "debug";
+const debug = new Debug("player_cache");
+
 
 
 const player_cache_debug_enabled = false;
@@ -149,9 +152,7 @@ export function update(player: Player): void {
     }
 
     // Log the change and who to blame if it's wrong.
-    if (player_cache_debug_enabled) {
-        console.trace("Player cache updated", next);
-    }
+    debug.trace("Player cache updated", next);
 
     // Update the cache and publish the new details.
     if (!(next.username in cache_by_username)) {
@@ -208,9 +209,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         let queue = fetch_queue.slice(0, 100);
         fetch_queue = fetch_queue.slice(100);
 
-        if (player_cache_debug_enabled) {
-            console.log("Batch requesting player info for", queue.map(e => e.player_id).join(','));
-        }
+        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
 
         get("/termination-api/players", queue.map(e => e.player_id))
         .then(players => {

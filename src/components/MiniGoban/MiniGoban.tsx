@@ -18,7 +18,7 @@
 import * as React from "react";
 import {browserHistory} from "react-router";
 import {_, interpolate} from "translate";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
 import * as data from "data";

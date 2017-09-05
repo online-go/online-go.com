@@ -22,7 +22,7 @@ import {getLocation, setLocation} from "location";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
 import {getSelectedThemes, watchSelectedThemes} from "preferences";
 import {_, pgettext, interpolate} from "translate";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as data from "data";
 import * as player_cache from "player_cache";
 import {RegisteredPlayer} from "data/Player";

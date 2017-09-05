@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
 import {MiniGoban} from "MiniGoban";

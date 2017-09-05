@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {_} from "translate";
 
 interface PuzzleSettingsModalProperties {

@@ -17,7 +17,7 @@
 
 import * as data from "data";
 import device from "device";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as React from "react";
 import {Link, browserHistory} from "react-router";
 import {_, ngettext, pgettext, interpolate} from "translate";

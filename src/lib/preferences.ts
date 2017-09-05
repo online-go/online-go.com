@@ -131,11 +131,3 @@ export function watchSelectedThemes(cb) {
         }
     };
 }
-
-
-export default window["preferences"] = {
-    get: get,
-    set: set,
-    watch: watch,
-    dump: dump,
-};

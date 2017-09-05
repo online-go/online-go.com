@@ -27,7 +27,7 @@ import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} f
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "Player";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
