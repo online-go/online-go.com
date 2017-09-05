@@ -16,7 +16,9 @@
  */
 
 import * as data from "data";
-import * as debug from "debug";
+
+import Debug from "debug";
+const debug = new Debug("sockets");
 
 let io_config = {
     reconnection: true,
@@ -32,12 +34,12 @@ export const comm_socket = termination_socket;
 termination_socket.send = termination_socket.emit;
 
 termination_socket.on("connect", () => {
-    debug.log("sockets", "Connection to server established.");
+    debug.log("Connection to server established.");
     termination_socket.emit('hostinfo');
 });
 termination_socket.on('HUP', () => window.location.reload());
 termination_socket.on('hostinfo', (hostinfo) => {
-    debug.log("sockets", "Termination server", hostinfo);
+    debug.log("Termination server", hostinfo);
 });
 
 let last_clock_drift = 0.0;

@@ -17,11 +17,49 @@
 
 // Debugging flags to enable or disable debugging of individual modules.
 // Set these values at will in the console.
-export const debug = {
+const debug = {
     data: false,
     player_cache: false,
     sockets: false,
 };
+
+// Create an instance of the Debug class to allow a module to debug itself.
+export default class Debug {
+    constructor(readonly module: keyof typeof debug) {}
+
+    start() {
+        debug[this.module] = true;
+    }
+    stop() {
+        debug[this.module] = false;
+    }
+
+    private format(message: string): string {
+        return `[${this.module}] ${message}`;
+    }
+    log = (message: string, ...rest: Array<any>) => {
+        debug[this.module] ? console.log(this.format(message), ...rest) : undefined;
+    }
+    trace = (message: string, ...rest: Array<any>) => {
+        debug[this.module] ? console.trace(this.format(message), ...rest) : undefined;
+    }
+    info = (message: string, ...rest: Array<any>) => {
+        debug[this.module] ? console.info(this.format(message), ...rest) : undefined;
+    }
+    warn = (message: string, ...rest: Array<any>) => {
+        console.warn(this.format(message), ...rest);
+    }
+    error = (message: string, ...rest: Array<any>) => {
+        console.error(this.format(message), ...rest);
+    }
+
+    assert(assertion: boolean, message: string, ...rest: Array<any>) {
+        if (assertion) { return; }
+        console.error(this.format(message), ...rest);
+
+        // TODO: Phone home to tell of our distress.
+    }
+}
 
 
 
@@ -37,36 +75,3 @@ Object.assign(window, {
     player_cache: player_cache,
     sockets: sockets,
 });
-
-
-
-// Selective logging.
-export function log(module: keyof typeof debug, ...rest: Array<any>) {
-    if (debug[module]) {
-        console.log(`[${module}]`, ...rest);
-    }
-}
-
-// Assertions.
-export function assert(module: keyof typeof debug, assertion: boolean, ...rest: Array<any>) {
-    if (assertion) { return; }
-    console.error(`[${module}]`, ...rest);
-
-    // Phone home to tell of our distress.
-    if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)) {
-        /*
-        $.ajax({
-            url: "https://example.com/issues",
-            type: "POST",
-            data: {
-                title: `Can't happen happened in ${module}.`,
-                body: JSON.stringify(rest) + "\n" + new Error().stack,
-            },
-            crossDomain: true,
-            beforeSend: (() => true),
-            success: console.log,
-            error: console.warn,
-        });
-        */
-    }
-}
