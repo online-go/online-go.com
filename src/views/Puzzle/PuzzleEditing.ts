@@ -20,7 +20,7 @@ import {errorAlerter, dup, ignore} from "misc";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
 import * as data from "data";
 import {abort_requests_in_flight, post, get, put, del} from "requests";
-import preferences from "preferences";
+import * as preferences from "preferences";
 
 
 export class PuzzleEditor {

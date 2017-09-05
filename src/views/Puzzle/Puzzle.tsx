@@ -29,7 +29,7 @@ import {Markdown} from "Markdown";
 import {Player} from "Player";
 import {StarRating} from "StarRating";
 import {Resizable} from "Resizable";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as data from "data";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
 import {PuzzleNavigation} from './PuzzleNavigation';

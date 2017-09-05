@@ -67,11 +67,13 @@ export default class Debug {
 // Don't even think of trying to access a module in the global scope.
 import * as data from "data";
 import * as player_cache from "player_cache";
+import * as preferences from "preferences";
 import * as sockets from "sockets";
 
 Object.assign(window, {
     debug: debug,
     data: data,
     player_cache: player_cache,
+    preferences: preferences,
     sockets: sockets,
 });

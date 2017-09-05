@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_, _setCurrentLanguage, current_language, languages} from "translate";
 import {Modal, openModal} from "Modal";
-import preferences from "preferences";
+import * as preferences from "preferences";
 
 interface Events {
 }
