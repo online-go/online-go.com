@@ -65,6 +65,15 @@ interface Events {
         white_pause_text: string;
         black_pause_text: string;
     };
+    "auto-resign": {
+        game_id: number;
+        player_id: number;
+        expiration: number;
+    };
+    "clear-auto-resign": {
+        game_id: number;
+        player_id: number;
+    };
 }
 
 
@@ -768,31 +777,19 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.emit("update");
             }); /* }}} */
 
-            this._socket_on(prefix + "pending_resignation", (obj) => { /* {{{ */
-                if (this.disconnectedFromGame) { return; }
-
-                let game_id = obj.game_id;
-                let player_id = obj.player_id;
-                let delay = obj.delay;
-                console.info("Pending resignation");
-                if (game_id !== this.game_id) { return; }
-                if (this.onPendingResignation) {
-                    this.onPendingResignation(player_id, delay);
-                }
+            this._socket_on(prefix + "auto_resign", (obj) => { /* {{{ */
+                this.emit('auto-resign', {
+                    game_id: obj.game_id,
+                    player_id: obj.player_id,
+                    expiration: obj.expiration,
+                });
             }); /* }}} */
-            this._socket_on(prefix + "pending_resignation_cleared", (obj) => { /* {{{ */
-                if (this.disconnectedFromGame) { return; }
-
-                let game_id = obj.game_id;
-                let player_id = obj.player_id;
-                let delay = obj.delay;
-                console.info("Pending resignation cleared");
-                if (game_id !== this.game_id) { return; }
-                if (this.onPendingResignationCleared) {
-                    this.onPendingResignationCleared(player_id, delay);
-                }
+            this._socket_on(prefix + "clear_auto_resign", (obj) => { /* {{{ */
+                this.emit('clear-auto-resign', {
+                    game_id: obj.game_id,
+                    player_id: obj.player_id,
+                });
             }); /* }}} */
-
         }
 
 

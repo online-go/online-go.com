@@ -251,6 +251,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
         this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).name = t.name);
         comm_socket.on("chat-message", this.onChatMessage);
+        comm_socket.on("chat-message-removed", this.onChatMessageRemoved);
         comm_socket.on("chat-join", this.onChatJoin);
         comm_socket.on("chat-part", this.onChatPart);
         this.online_count_interval = setInterval(() => {
@@ -284,6 +285,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
     }}}
 
+    onChatMessageRemoved = (obj) => {{{
+        console.log("Chat message removed: ", obj);
+        let c = getChannel(obj.channel);
+        c.chat_ids[obj.uuid] = true;
+        for (let idx = 0; idx < c.chat_log.length; ++idx) {
+            let entry = c.chat_log[idx];
+            if (entry.message.i === obj.uuid) {
+                c.chat_log.splice(idx, 1);
+            }
+        }
+        this.syncStateSoon();
+    }}}
     onChatMessage = (obj) => {{{
         let mentioned = false;
         try {
@@ -779,6 +792,31 @@ export class Chat extends React.Component<ChatProperties, any> {
 }
 
 
+function searchString(site, parameters) {
+    if (parameters.length === 1) {
+        return site + parameters[0];
+    }
+
+    return site + parameters[0] + '+' +
+        parameters.slice(1, parameters.length).join('+').slice(0);
+}
+
+function generateChatSearchLine(urlString, command, body) {
+    let target = '';
+    let bodyString = body.substr(command.length);
+    if (bodyString.split(' ')[0] === '-user') {
+        target = bodyString.split(' ')[1] + ' ';
+    }
+
+    let params = body.split(' ');
+    if (target.length > 0) {
+        return  target.slice(0, target.length - 1) + ": " +
+            searchString(urlString, params.slice(3, params.length));
+    } else {
+        return  searchString(urlString, params.slice(1, params.length));
+    }
+}
+
 function ChatLine(props) {{{
     let line = props.line;
     let user = line;
@@ -787,72 +825,36 @@ function ChatLine(props) {{{
         return ( <div className="chat-line system">{chat_markup(line.body)}</div>);
     }
 
-
     let message = line.message;
     let ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
 
     if (typeof(body) === 'string') {
-
-      let searchString = (site, parameters) => {
-
-        if (parameters.length === 1) {
-            return site + parameters[0];
+        if (body.substr(0, 4) === '/me ') {
+            third_person = (body.substr(0, 4) === "/me ");
+            body = body.substr(4);
         }
 
-        return site +
-               parameters[0] +
-               '+' +
-               parameters
-                 .slice(1, parameters.length)
-                 .join('+')
-                 .slice(0);
-      };
-
-      let targetUser = (bodyString) => {
-        if (bodyString.split(' ')[0] === '-user') {
-          return bodyString.split(' ')[1] + ' ';
-        } else {
-          return '';
+        if (/^\/senseis?\s/.test(body)) {
+            body = generateChatSearchLine(
+                'http://senseis.xmp.net/?search=',
+                /^\/senseis?\s/.exec(body)[0],
+                body
+            );
         }
-      };
 
-      let generateChatSearchLine = (urlString, command, body) => {
-        let target = targetUser(body.substr(command.length));
-        let params = body.split(' ');
-        if (target.length > 0) {
-          return  target.slice(0, target.length - 1) + ": " +
-                  searchString(urlString, params.slice(3, params.length));
-        } else {
-          return  searchString(urlString, params.slice(1, params.length));
+        if (body.substr(0, 8) === '/google ') {
+            body = generateChatSearchLine(
+                'https://www.google.com/#q=', '/google ', body
+            );
         }
-      };
 
-      if (body.substr(0, 4) === '/me ') {
-        third_person = (body.substr(0, 4) === "/me ");
-        body = body.substr(4);
-      }
-
-      if (/^\/senseis?\s/.test(body)) {
-        body = generateChatSearchLine(
-          'http://senseis.xmp.net/?search=',
-          /^\/senseis?\s/.exec(body)[0],
-          body
-        );
-      }
-
-      if (body.substr(0, 8) === '/google ') {
-          body = generateChatSearchLine(
-          'https://www.google.com/#q=', '/google ', body
-        );
-      }
-
-      if (body.substr(0, 8) === '/lmgtfy ') {
-          body = generateChatSearchLine(
-          'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
-        );
-      }
+        if (body.substr(0, 8) === '/lmgtfy ') {
+            body = generateChatSearchLine(
+                'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
+            );
+        }
     }
 
     let mentions = name_match_regex.test(body);
@@ -862,7 +864,9 @@ function ChatLine(props) {{{
              (third_person ? "chat-line third-person" : "chat-line")
              + (user.id === data.get("user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
-        }>
+        }
+            data-chat-id={message.i}
+        >
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
             {(user.id || null) && <Player user={user} flare rank={false} noextracontrols/>}{(third_person ? " " : ": ")}
             <span className="body">{chat_markup(body)}</span>

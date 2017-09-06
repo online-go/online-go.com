@@ -64,6 +64,27 @@
         &:last-child {
             margin-left: 0.1rem;
         }
+
+        .auto-resign-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            opacity: 0.9;
+            z-index: z.goban.score-details;
+            background-color #555;
+            color #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            font-size: font-size-big;
+            .fa-bolt {
+                font-size: 200%;
+            }
+        }
     }
 
     .player-icon-clock-row{

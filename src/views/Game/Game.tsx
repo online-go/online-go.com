@@ -160,6 +160,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             volume: preferences.get("sound-volume"),
             historical_black: null,
             historical_white: null,
+            black_auto_resign_expiration: null,
+            white_auto_resign_expiration: null,
         };
         this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
 
@@ -324,6 +326,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         window["Game"] = null;
         window["global_goban"] = null;
+        this.setState({
+            black_auto_resign_expiration: null,
+            white_auto_resign_expiration: null,
+        });
     }}}
     onFocus = () => {{{
         if (this.goban && this.goban.engine) {
@@ -510,6 +516,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             this.sync_state();
         });
+
+        this.goban.on("auto-resign", (data) => {
+            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+                this.setState({ black_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift() ) });
+            }
+            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+                this.setState({ white_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift()) });
+            }
+        });
+        this.goban.on("clear-auto-resign", (data) => {
+            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+                this.setState({ black_auto_resign_expiration: null });
+            }
+            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+                this.setState({ white_auto_resign_expiration:null });
+            }
+        });
+
+
         if (this.review_id) {
             this.goban.on("review.updated", () => {
                 this.sync_state();
@@ -518,6 +543,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 this.syncToCurrentReviewMove();
             });
         }
+
 
 
         if (this.game_id) {
@@ -2171,6 +2197,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                   return (
                   <div key={idx} className={`${color} player-container`}>
+                      {this.state[`${color}_auto_resign_expiration`] &&
+                          <div className={`auto-resign-overlay`}>
+                              <i className='fa fa-bolt' />
+                              <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
+                          </div>
+                      }
+
                       <div className="player-icon-clock-row">
                           {(goban.engine.players[color] || null) &&
                               <div className="player-icon-container" style={player_bg}>
@@ -2467,9 +2500,70 @@ export function goban_view_squashed(): boolean {{{
     return win.height() <= 500;
 }}}
 
+
+
+export class CountDown extends React.PureComponent<{to:Date}, any> { /* {{{ */
+    timeout: any;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            display: this.format(props.to.getTime() - Date.now())
+        };
+    }
+
+    update() {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
+
+        let left = this.props.to.getTime() - Date.now();
+
+        if (left > 0) {
+            //this.timeout = setTimeout(() => this.update(), left % 100 || 100);
+            this.timeout = setTimeout(() => this.update(), 100);
+        }
+
+        this.setState({display: this.format(left)});
+    }
+
+    format(ms) {
+        if (ms < 0) {
+            return '0:00.0';
+        }
+
+        let minutes = Math.floor(ms / 60000);
+        ms -= minutes * 60000;
+        let seconds = Math.floor(ms / 1000);
+        ms -= seconds * 1000;
+        let tenths = Math.floor(ms / 100);
+
+        if (seconds < 10) {
+            return `${minutes}:0${seconds}.${tenths}`;
+        }
+        return `${minutes}:${seconds}.${tenths}`;
+    }
+
+    componentDidMount() {
+        this.update();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.update();
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
+    }
+
+    render() {
+        return <div>{this.state.display}</div>;
+    }
+} /* }}} */
+
+
+
 /* Chat {{{ */
-
-
 export class GameChat extends React.PureComponent<GameChatProperties, any> {
     refs: {
         chat_log;
