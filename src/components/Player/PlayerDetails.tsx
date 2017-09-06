@@ -191,7 +191,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         this.close_all_modals_and_popovers();
 
         swal({
-            text: _(`Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversable.`),
+            text: _(`Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversible.`),
             confirmButtonText: _("Yes"),
             cancelButtonText: _("No"),
             showCancelButton: true,
