@@ -2210,7 +2210,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       }
 
                       <div className="player-icon-clock-row">
-                          {(goban.engine.players[color] || null) &&
+                          {((engine.players[color] && engine.players[color].id) || null) &&
                               <div className="player-icon-container" style={player_bg}>
                                  <div className="player-flag"><Flag country={engine.players[color].country}/></div>
                                  <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
