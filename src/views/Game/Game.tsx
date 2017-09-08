@@ -1415,6 +1415,26 @@ export class Game extends React.PureComponent<GameProperties, any> {
              }
         ).catch(errorAlerter);
     }}}
+    annul = () => {{{
+        let moderation_note = null;
+        do {
+            moderation_note = prompt("Moderator note:");
+            if (moderation_note == null) {
+                return;
+            }
+            moderation_note = moderation_note.trim();
+        } while (moderation_note === "");
+
+        post("games/%%/annul", this.game_id,
+             {
+                 "moderation_note": moderation_note,
+             }
+        )
+        .then(() => {
+            swal({text: _(`Game has been annulled`)});
+        })
+        .catch(errorAlerter);
+    }}}
 
     cancelOrResign() {{{
         if (this.state.resign_mode === "cancel") {
@@ -2205,7 +2225,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       }
 
                       <div className="player-icon-clock-row">
-                          {(goban.engine.players[color] || null) &&
+                          {((engine.players[color] && engine.players[color].id) || null) &&
                               <div className="player-icon-container" style={player_bg}>
                                  <div className="player-flag"><Flag country={engine.players[color].country}/></div>
                                  <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
@@ -2302,10 +2322,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     frag_dock() {{{
         let goban = this.goban;
         let mod = (goban && data.get("user").is.moderator && goban.engine.phase !== "finished" || null);
+        let annul = (goban && data.get("user").is.moderator && goban.engine.phase === "finished" || null);
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
         if (review) {
             mod = null;
+            annul = null;
         }
 
         let game_id = null;
@@ -2378,10 +2400,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                     : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
                 }
-                {mod && <hr/>}
+                {(mod || annul) && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
+                {annul && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
             </Dock>
         );
     }}}

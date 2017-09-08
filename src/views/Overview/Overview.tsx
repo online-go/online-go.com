@@ -55,6 +55,11 @@ export class Overview extends React.Component<{}, any> {
     }
 
     componentDidMount() {
+        this.refresh();
+    }
+
+    refresh() {
+        abort_requests_in_flight("ui/overview");
         return get("ui/overview").then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
@@ -78,7 +83,7 @@ export class Overview extends React.Component<{}, any> {
             <div id="Overview">
                 <div className="left">
                     <EmailBanner />
-                    <ChallengesList />
+                    <ChallengesList onAccept={() => this.refresh()} />
 
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">

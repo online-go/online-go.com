@@ -18,6 +18,8 @@
 import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
+import {openModal} from 'Modal';
+import {NotesModal} from 'NotesModal';
 import {post, get, put, del, patch} from "requests";
 import * as data from "data";
 import * as moment from "moment";
@@ -408,10 +410,21 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
     }}}
     saveEditChanges() {{{
-        let do_save = () => {
-            this.setState({editing: false});
+        let username = this.state.user.username.trim();
+        let promise: Promise<void>;
+        if (!data.get('user').is.moderator && (this.original_username !== username)) {
+            promise = swal({
+                text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
+                showCancelButton: true,
+            });
+        }
+        else {
+            promise = Promise.resolve();
+        }
+        promise.then(() => {
+            this.setState({editing: false, user: Object.assign({}, this.state.user, {username: username})});
             put("players/%%", this.user_id, {
-                "username": this.state.user.username,
+                "username": username,
                 "first_name": this.state.user.first_name,
                 "last_name": this.state.user.last_name,
                 "about": this.state.user.about,
@@ -423,19 +436,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                 console.log(res);
             })
             .catch(errorAlerter);
-        };
-
-        if (!data.get('user').is.moderator && (this.original_username !== this.state.user.username)) {
-            swal({
-                text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
-                showCancelButton: true,
-            }).then(() => {
-                do_save();
-            })
-            .catch(ignore);
-        } else {
-            do_save();
-        }
+        })
+        .catch(ignore);
     }}}
     openModerateUser = () => {{{
         let modal = openModerateUserModal(this.state.user);
@@ -880,7 +882,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
                                         <Player user={X} using_cache/>
-                                        {(X.has_notes || null) && <i className="fa fa-file-text-o"/>}
+                                        {(X.has_notes || null) && <i className="fa fa-file-text-o clickable" onClick={() => openNotes(X.moderator_notes)} />}
                                     </span>
                                 )},
                                 {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
@@ -1262,4 +1264,8 @@ export class User extends React.PureComponent<UserProperties, any> {
         );
     }
 
+}
+
+function openNotes(notes) {
+    openModal(<NotesModal notes={notes} fastDismiss />);
 }

@@ -15,15 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {browserHistory} from "react-router";
 
-
-export function getLocation() {
-    return window.location.pathname;
-}
-export function setLocation(uri) {
-    return browserHistory.push(uri);
-}
-export function replaceLocation(uri) {
-    return browserHistory.replace(uri);
-}
+export * from "./NotesModal";
