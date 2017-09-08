@@ -19,6 +19,7 @@ import * as React from "react";
 import {_} from "translate";
 import {Card} from "material";
 import {del, post, get} from "requests";
+import {browserHistory} from "react-router";
 import * as data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";
@@ -67,7 +68,11 @@ export class ChallengesList extends React.PureComponent<{}, any> {
     }}}
     acceptChallenge(challenge) {{{
         post("me/challenges/%%/accept", challenge.id, {})
-        .then(ignore)
+        .then((res) => {
+            if (res.time_per_move > 0 && res.time_per_move < 1800) {
+                browserHistory.push(`/game/${res.game}`);
+            }
+        })
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
     }}}
