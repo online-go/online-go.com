@@ -31,7 +31,7 @@ import {FabX, FabCheck} from "material";
 import {ignore} from "misc";
 
 
-export class ChallengesList extends React.PureComponent<{onAccept:()=>void}, any> {
+export class ChallengesList extends React.PureComponent<{onAccept:() => void}, any> {
     constructor(props) {
         super(props);
         this.state = {

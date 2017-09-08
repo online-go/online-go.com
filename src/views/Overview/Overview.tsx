@@ -84,7 +84,7 @@ export class Overview extends React.Component<{}, any> {
             <div id="Overview">
                 <div className="left">
                     <EmailBanner />
-                    <ChallengesList onAccept={()=>this.refresh()} />
+                    <ChallengesList onAccept={() => this.refresh()} />
 
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
