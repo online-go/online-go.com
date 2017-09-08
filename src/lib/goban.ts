@@ -18,7 +18,6 @@
 import {Goban as OGSGoban} from 'ogs-goban';
 import {deepEqual, dup, getRandomInt, getRelativeEventPosition} from "misc";
 import {shortDurationString, isLiveGame} from "TimeControl";
-import {getLocation, setLocation} from "location";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
 import {getSelectedThemes, watchSelectedThemes} from "preferences";
 import {_, pgettext, interpolate} from "translate";
@@ -52,7 +51,7 @@ export class Goban extends OGSGoban {
     }
 
     getLocation():string {
-        return getLocation();
+        return window.location.pathname;
     }
 
     protected getShouldPlayVoiceCountdown():boolean {
