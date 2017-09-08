@@ -31,7 +31,7 @@ import {FabX, FabCheck} from "material";
 import {ignore} from "misc";
 
 
-export class ChallengesList extends React.PureComponent<{}, any> {
+export class ChallengesList extends React.PureComponent<{onAccept:()=>void}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -71,6 +71,10 @@ export class ChallengesList extends React.PureComponent<{}, any> {
         .then((res) => {
             if (res.time_per_move > 0 && res.time_per_move < 1800) {
                 browserHistory.push(`/game/${res.game}`);
+            } else {
+                if (this.props.onAccept) {
+                    this.props.onAccept();
+                }
             }
         })
         .catch(ignore);
