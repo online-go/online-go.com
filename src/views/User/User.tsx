@@ -18,6 +18,8 @@
 import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
 import {Link} from "react-router";
+import {openModal} from 'Modal';
+import {NotesModal} from 'NotesModal';
 import {post, get, put, del, patch} from "requests";
 import * as data from "data";
 import * as moment from "moment";
@@ -886,7 +888,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
                                         <Player user={X}/>
-                                        {(X.has_notes || null) && <i className="fa fa-file-text-o"/>}
+                                        {(X.has_notes || null) && <i className="fa fa-file-text-o clickable" onClick={() => openNotes(X.moderator_notes)} />}
                                     </span>
                                 )},
                                 {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
@@ -1268,4 +1270,8 @@ export class User extends React.PureComponent<UserProperties, any> {
         );
     }
 
+}
+
+function openNotes(notes) {
+    openModal(<NotesModal notes={notes} fastDismiss />);
 }
