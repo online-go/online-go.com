@@ -130,7 +130,7 @@ export class PlayerDetails extends PlayerComponent<PlayerDetailsProperties> {
             return null;
         }
 
-        let rating = getUserRating(this.state, 'overall', 0);
+        let rating = getUserRating(this.state.player, 'overall', 0);
         return (
             <div className="PlayerDetails">
                 <div className="details">
