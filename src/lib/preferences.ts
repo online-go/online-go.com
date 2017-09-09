@@ -60,6 +60,8 @@ let defaults = {
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
+
+    "board-labeling": 'automatic',
 };
 
 defaults['profanity-filter'][current_language] = true;

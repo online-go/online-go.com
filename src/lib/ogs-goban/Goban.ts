@@ -437,6 +437,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         console.warn("getNetworkLatency not provided for Goban instance");
         return 0;
     }}}
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+        return 'A1';
+    }}}
     protected getShowMoveNumbers():boolean {{{
         return false;
     }}}
@@ -2921,20 +2924,67 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             let yy = y;
             ctx.fillText(ch, xx, yy);
         };
+        let vplace = (ch, x, y) => { /* places centered (horizontally & veritcally) text at x,y, with text going down vertically. */
+            for (let i = 0; i < ch.length; ++i) {
+                let metrics = ctx.measureText(ch[i]);
+                console.log(metrics);
+                let xx = x - metrics.width / 2;
+                let yy = y;
+                let H = metrics.width; /* should be height in an ideal world, measureText doesn't seem to return it though. For our purposes this works well enough though. */
+
+                if (ch.length === 2) {
+                    yy = yy - H + (i * H);
+                }
+                if (ch.length === 3) {
+                    yy = yy - (H * 1.5) + (i * H);
+                }
+
+                ctx.fillText(ch[i], xx, yy);
+            }
+        };
 
         let drawHorizontal = (i, j) => {
-            for (let c = 0; c < this.width; ++i, ++c) {
-                let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
-                let y = j * this.square_size + this.square_size / 2;
-                place("ABCDEFGHJKLMNOPQRSTUVWXYZ"[c], x, y);
+            switch (this.getCoordinateDisplaySystem()) {
+                case 'A1':
+                    for (let c = 0; c < this.width; ++i, ++c) {
+                        let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
+                        let y = j * this.square_size + this.square_size / 2;
+                        place("ABCDEFGHJKLMNOPQRSTUVWXYZ"[c], x, y);
+                    }
+                    break;
+                case '1-1':
+                    for (let c = 0; c < this.width; ++i, ++c) {
+                        let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
+                        let y = j * this.square_size + this.square_size / 2;
+                        place('' + (c + 1), x, y);
+                    }
+                    break;
             }
         };
 
         let drawVertical = (i, j) => {
-            for (let c = 0; c < this.height; ++j, ++c) {
-                let x = i * this.square_size + this.square_size / 2;
-                let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
-                place("" + (this.height - c), x, y);
+            switch (this.getCoordinateDisplaySystem()) {
+                case 'A1':
+                    for (let c = 0; c < this.height; ++j, ++c) {
+                        let x = i * this.square_size + this.square_size / 2;
+                        let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
+                        place("" + (this.height - c), x, y);
+                    }
+                    break;
+                case '1-1':
+                    let chinese_japanese_numbers = [
+                        "一", "二", "三", "四", "五",
+                        "六", "七", "八", "九", "十",
+                        "十一", "十二", "十三", "十四", "十五",
+                        "十六", "十七", "十八", "十九", "二十",
+                        "二十一", "二十二", "二十三", "二十四", "二十五",
+                    ];
+                    for (let c = 0; c < this.height; ++j, ++c) {
+                        let x = i * this.square_size + this.square_size / 2;
+                        let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
+                        vplace(chinese_japanese_numbers[c], x, y);
+                    }
+                    break;
             }
         };
 
@@ -2947,8 +2997,17 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
             /* Draw labels */
             let text_size = Math.round(this.square_size * 0.5);
+            let bold = 'bold';
+            if (this.getCoordinateDisplaySystem() === '1-1') {
+                text_size *= 0.7;
+                bold = '';
 
-            ctx.font = "bold " + text_size + "px " + GOBAN_FONT;
+                if (this.height > 20) {
+                    text_size *= 0.7;
+                }
+            }
+
+            ctx.font = `${bold} ${text_size}px ${GOBAN_FONT}`;
             ctx.textBaseline = "middle";
             ctx.fillStyle = this.theme_board.getLabelTextColor();
             ctx.save();

@@ -70,6 +70,7 @@ export class Settings extends React.PureComponent<{}, any> {
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
+            board_labeling: preferences.get("board-labeling"),
         };
     }
 
@@ -186,6 +187,10 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     setCorrSubmitMode = (ev) => {{{
         this.setSubmitMode("correspondence", ev.target.value);
+    }}}
+    setBoardLabeling = (ev) => {{{
+        preferences.set('board-labeling', ev.target.value);
+        this.setState({'board_labeling': ev.target.value});
     }}}
 
     notification_bindings= {};
@@ -394,7 +399,7 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dt>{_("Language")}</dt>
                     <dd><LanguagePicker /></dd>
 
-                    <dt>{_("Profanity Filter")}</dt>
+                    <dt>{_("Profanity filter")}</dt>
                     <dd>
                         <select multiple onChange={this.updateProfanityFilter} value={this.state.profanity_filter} >
                             {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
@@ -413,7 +418,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </select>
                     </dd>
 
-                    <dt>{_("Desktop Notifications")}</dt>
+                    <dt>{_("Desktop notifications")}</dt>
                     <dd>
                         <input type="checkbox"
                                 checked={this.state.desktop_notifications_enabled}
@@ -496,8 +501,17 @@ export class Settings extends React.PureComponent<{}, any> {
                             {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
                         </span>
                     </dd>
-                    <dt><label htmlFor="voice-countdown">{_("Voice Countdown")}</label></dt>
+                    <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
                     <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
+                    <dt>{_("Board labeling")}</dt>
+                    <dd>
+                        <select value={this.state.board_labeling} onChange={this.setBoardLabeling}>
+                            <option value="automatic">{_("Automatic")}</option>
+                            <option value="A1">A1</option>
+                            <option value="1-1">1-1</option>
+                        </select>
+                    </dd>
+
                     <dt>{_("Live game submit mode")}</dt>
                     <dd>
                         <select value={this.state.live_submit_mode} onChange={this.setLiveSubmitMode}>
@@ -518,7 +532,7 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dd>
                         <input id="autoadvance" type="checkbox" checked={this.state.autoadvance} onChange={this.setAutoAdvance} />
                     </dd>
-                    <dt>{_("Autoplay Delay (in seconds)")}</dt>
+                    <dt>{_("Autoplay delay (in seconds)")}</dt>
                     <dd>
                         <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
                     </dd>
@@ -531,7 +545,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 <h3>{_("Account Settings")}</h3>
 
                 <dl>
-                    <dt>{_("Email Address")}</dt>
+                    <dt>{_("Email address")}</dt>
                     <dd><input type="email" name="new_email"
                         value={this.state.profile.email}
                         onChange={this.updateEmail}

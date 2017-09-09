@@ -20,7 +20,7 @@ import {deepEqual, dup, getRandomInt, getRelativeEventPosition} from "misc";
 import {shortDurationString, isLiveGame} from "TimeControl";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
 import {getSelectedThemes, watchSelectedThemes} from "preferences";
-import {_, pgettext, interpolate} from "translate";
+import {_, pgettext, interpolate, current_language} from "translate";
 import * as preferences from "preferences";
 import * as data from "data";
 import * as player_cache from "player_cache";
@@ -57,6 +57,24 @@ export class Goban extends OGSGoban {
     protected getShouldPlayVoiceCountdown():boolean {
         return preferences.get("sound-voice-countdown");
     }
+
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+        switch (preferences.get('board-labeling')) {
+            case 'A1':
+                return 'A1';
+            case '1-1':
+                return '1-1';
+            default: // auto
+                switch (current_language) {
+                    case 'ko':
+                    case 'ja':
+                    case 'zh-cn':
+                        return '1-1';
+                    default:
+                        return 'A1';
+                }
+        }
+    }}}
 
     getShowMoveNumbers():boolean {
         return preferences.get("show-move-numbers");
