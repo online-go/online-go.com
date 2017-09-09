@@ -132,7 +132,7 @@ export function lookup_by_username(username: string): RegisteredPlayer | void {
 export function update(player: Player): void {
     // Compatibility with untyped code.
     if (!is_player(player)) {
-        console.error("Untyped player added to the player_cache.", player);
+        debug.error("Untyped player added to the player cache.", player);
         player = from_server_player(player);
     }
     // End compatibility section.
@@ -152,7 +152,7 @@ export function update(player: Player): void {
     }
 
     // Log the change and who to blame if it's wrong.
-    debug.trace("Player cache updated", next);
+    debug.trace("Player cache updated.", next);
 
     // Update the cache and publish the new details.
     if (!(next.username in cache_by_username)) {
@@ -209,7 +209,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         let queue = fetch_queue.slice(0, 100);
         fetch_queue = fetch_queue.slice(100);
 
-        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
+        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(', ')}.`);
 
         get("/termination-api/players", queue.map(e => e.player_id))
         .then(players => {

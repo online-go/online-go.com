@@ -68,7 +68,6 @@ export abstract class PlayerComponent<P extends PlayerComponentProperties> exten
             this.state = {player: player_cache.lookup(user.id)};
         }
         else {
-            player_cache.fetch(user.id); // In case we ask for the PlayerDetails.
             this.state = {player: user};
         }
     }
