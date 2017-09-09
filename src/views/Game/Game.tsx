@@ -1743,7 +1743,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                 </span>
                 <span>
-                    {((!state.show_submit && state.is_my_move) || null) &&
+                    {((!state.show_submit && state.is_my_move && this.goban.engine.handicapMovesLeft() === 0) || null) &&
                         <button className="sm primary bold pass-button" onClick={this.pass}>{_("Pass")}</button>
                     }
                     {((state.show_submit && this.goban.engine.undo_requested !== this.goban.engine.getMoveNumber()) || null) &&
