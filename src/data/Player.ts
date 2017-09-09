@@ -238,3 +238,49 @@ export function player_attributes(player: Player): Array<string> {
     }
     return attributes;
 }
+
+
+
+// Evil hack to allow RegisteredPlayers to use ui_class and is_* fields
+// in untyped code. In typed code, use of these fields will generate a
+// type error.
+class RealRegisteredPlayer extends RegisteredPlayer {
+    get ui_class() {
+        console.error("Use of Player.ui_class.", this);
+        return player_attributes(this).join(" ");
+    }
+    get is_superuser() {
+        console.error("Use of Player.is_superuser.", this);
+        return this.is.admin;
+    }
+    get is_moderator() {
+        console.error("Use of Player.is_moderator.", this);
+        return this.is.moderator;
+    }
+    get is_tournament_moderator() {
+        console.error("Use of Player.is_tournament_moderator.", this);
+        return this.is.tournament_moderator;
+    }
+    get is_bot() {
+        console.error("Use of Player.is_bot.", this);
+        return this.is.bot;
+    }
+    get email_validated() {
+        console.error("Use of Player.email_validated.", this);
+        return this.is.validated;
+    }
+    get pro() {
+        console.error("Use of Player.pro.", this);
+        return this.is.professional;
+    }
+    get professional() {
+        console.error("Use of Player.professional.", this);
+        return this.is.professional;
+    }
+    get supporter() {
+        console.error("Use of Player.supporter.", this);
+        return this.is.supporter;
+    }
+}
+RegisteredPlayer.prototype = RealRegisteredPlayer.prototype;
+RegisteredPlayer.prototype.constructor = RegisteredPlayer;
