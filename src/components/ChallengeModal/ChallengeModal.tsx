@@ -23,7 +23,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
-import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
+import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList, rating_to_rank} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
@@ -92,8 +92,8 @@ let demo_ranks = allRanks();
 let ranked_ranks = (() => {
     if (!data.get("user")) { return []; }
 
-    let rankedMin = Math.max(0, data.get("user").ranking - 9);
-    let rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
+    let rankedMin = Math.max(0, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) - 9));
+    let rankedMax = Math.min(MaxRank, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) + 9));
 
     return rankList(rankedMin, rankedMax, false);
 })();
