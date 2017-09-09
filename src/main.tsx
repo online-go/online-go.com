@@ -77,7 +77,7 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
-import {RegisteredPlayer, player_attributes} from "data/Player";
+import {RegisteredPlayer, player_attributes, is_registered} from "data/Player";
 import {from_server_player} from "compatibility/Player";
 
 declare const swal;
@@ -92,9 +92,8 @@ data.watch("config", (config) => {
 get("ui/config").then((config) => data.set("config", config));
 data.watch("config.user", player_data => {
     let player = from_server_player(player_data);
-    if (player instanceof RegisteredPlayer) {
-        player_cache.update(player);
-    }
+    player_cache.update(player);
+    (player as any).anonymous = !is_registered(player);
     data.set("user", player);
     window["user"] = player;
 });
