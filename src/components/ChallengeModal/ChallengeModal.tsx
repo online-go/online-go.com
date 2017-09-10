@@ -92,8 +92,16 @@ let demo_ranks = allRanks();
 let ranked_ranks = (() => {
     if (!data.get("user")) { return []; }
 
-    let rankedMin = Math.max(0, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) - 9));
-    let rankedMax = Math.min(MaxRank, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) + 9));
+    let rankedMin;
+    let rankedMax;
+
+    if (data.get("user").pro) {
+        rankedMin = Math.max(0, data.get("user").ranking - 9);
+        rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
+    } else {
+        rankedMin = Math.max(0, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) - 9));
+        rankedMax = Math.min(MaxRank, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) + 9));
+    }
 
     return rankList(rankedMin, rankedMax, false);
 })();
