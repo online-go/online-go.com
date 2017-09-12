@@ -159,6 +159,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             volume: preferences.get("sound-volume"),
             historical_black: null,
             historical_white: null,
+            annulled: false,
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
         };
@@ -574,6 +575,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 this.setState({
                     review_list: review_list,
+                    annulled: game.annulled,
                     historical_black: game.historical_ratings.black,
                     historical_white: game.historical_ratings.white,
                 });
@@ -893,7 +895,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }}}
     showGameInfo() {{{
-        openGameInfoModal(this.goban.engine, this.creator_id || this.goban.review_owner_id);
+        openGameInfoModal(this.goban.engine, this.state.annulled, this.creator_id || this.goban.review_owner_id);
     }}}
     showLinkModal() {{{
         openGameLinkModal(this.goban);
