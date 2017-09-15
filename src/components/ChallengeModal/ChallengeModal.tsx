@@ -23,7 +23,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
-import {longRankString, rankString, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
+import {longRankString, rankString, getUserRating, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
@@ -573,7 +573,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <label className="control-label" htmlFor="engine">{pgettext("Computer opponent", "AI Player")}</label>
                     <div className="controls">
                     <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(bot.ranking)})</option>) )}
+                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(getUserRating(bot).rank)})</option>) )}
                     </select>
                     </div>
                 </div>
