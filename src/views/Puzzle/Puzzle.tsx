@@ -402,7 +402,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     return;
                 }
 
-                this.editor.createPuzzleCollection(this.state.puzzle)
+                this.editor.createPuzzleCollection(this.state.puzzle, name)
                     .then((state) => this.setState(state))
                     .catch(errorAlerter);
             })
