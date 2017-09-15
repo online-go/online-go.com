@@ -2340,12 +2340,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let game_id = null;
         let sgf_download_enabled = false;
         try {
-            // This used this.goban.engine.config.original_disable_analysis
-            // before. Thus, you could not download the SGF even when you are
-            // not one of the participating players, or, if you are not signed
-            // in at all. I wonder why? More importantly: Is this a feature that
-            // we want to keep as it was before?
-            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.isAnalysisDisabled();
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.isAnalysisDisabled(true);
             game_id = this.goban.engine.config.game_id;
 
         } catch (e) {}
