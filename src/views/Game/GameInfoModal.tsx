@@ -31,6 +31,7 @@ interface Events {
 
 interface GameInfoModalProperties {
     game: GoEngine;
+    annulled: boolean;
     creatorId: number;
 }
 
@@ -79,7 +80,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                         </dd>
                     <dt>{_("Rules")}</dt><dd>{rulesText(game.config.rules)}</dd>
                     <dt>{_("Ranked")}</dt><dd>{yesno(game.config.ranked)}</dd>
-                    <dt>{_("Annulled")}</dt><dd>{yesno(game.config.annulled)}</dd>
+                    <dt>{_("Annulled")}</dt><dd>{yesno(this.props.annulled)}</dd>
                     <dt>{_("Board Size")}</dt><dd>{game.config.width}x{game.config.height}</dd>
                     <dt>{_("Handicap")}</dt><dd>{handicapText(game.config.handicap)}</dd>
                     <dt>{_("Komi")}</dt><dd>{parseFloat(game.config.komi).toFixed(1)}</dd>
@@ -96,8 +97,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(game:GoEngine, creator_id: number): void {
-    openModal(<GameInfoModal game={game} creatorId={creator_id} fastDismiss />);
+export function openGameInfoModal(game:GoEngine, annulled:boolean, creator_id: number): void {
+    openModal(<GameInfoModal game={game} annulled={annulled} creatorId={creator_id} fastDismiss />);
 }
 
 function yesno(tf: boolean) {{{

@@ -91,7 +91,7 @@ export function is_provisional(user:any):boolean {
 }
 
 
-export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence', size: 0 | 9 | 13 | 19) {
+export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence' = 'overall', size: 0 | 9 | 13 | 19 = 0) {
     let ret = new Rating();
     let ratings = user.ratings || {};
     ret.professional = user.is ? !!user.is.professional : user.pro || user.professional;

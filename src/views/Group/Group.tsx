@@ -547,7 +547,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                 </div>
                                             }
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <textarea ref='editing_news_body' value={this.state.editing_news.content} onChange={this.updateNewsContent} />
+                                                ? <textarea rows={7} ref='editing_news_body' value={this.state.editing_news.content} onChange={this.updateNewsContent} />
                                                 : <Markdown source={entry.content} />
                                             }
                                         </div>
