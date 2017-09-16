@@ -227,7 +227,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     display_details = (event) => {
-        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.guest) {
+        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return;
         }
         else {
