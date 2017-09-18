@@ -18,6 +18,8 @@
                 "src/views/*",
                 "src/data/*",
                 "src/compatibility/*",
+                "src/tests/selenium/*",
+                "src/tests/unit/*",
                 "src/*"
             ],
             "requests": [
@@ -29,6 +31,8 @@
         "jsx": "react"
     },
     "files": [
-        "./src/main.tsx"
+        "./src/main.tsx",
+        "./src/tests/selenium/main.ts",
+        "./src/tests/unit/main.ts"
     ]
 }
