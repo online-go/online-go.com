@@ -215,7 +215,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <div>
                             <Player user={this.state} nodetails rank={false} />
                         </div>
-                        {rating && rating.professional &&
+                        {rating && !!rating.professional &&
                             <div>
                                 <span className="rank">{rating.rank_label}</span>
                             </div>
