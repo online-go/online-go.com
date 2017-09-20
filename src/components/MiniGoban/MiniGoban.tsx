@@ -24,7 +24,7 @@ import {termination_socket} from "sockets";
 import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {navigateTo} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, getUserRating} from "rank_utils";
 
 interface MiniGobanProps {
     id: number;
@@ -116,8 +116,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
             white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
 
-            black_name: (typeof(black) === "object" ? (black.username + " [" + rankString(black) + "]") : black),
-            white_name: (typeof(white) === "object" ? (white.username + " [" + rankString(white) + "]") : white),
+            black_name: (typeof(black) === "object" ? (black.username + " [" + getUserRating(black).bounded_rank_label + "]") : black),
+            white_name: (typeof(white) === "object" ? (white.username + " [" + getUserRating(white).bounded_rank_label + "]") : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,

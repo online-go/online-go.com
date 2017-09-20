@@ -16,6 +16,7 @@
  */
 
 import {termination_socket} from "sockets";
+import {getUserRating} from 'rank_utils';
 
 let active_bots = {};
 let _bots_list = [];
@@ -42,5 +43,5 @@ termination_socket.on("active-bots", (bots) => {
     for (let id in bots) {
         _bots_list.push(bots[id]);
     }
-    _bots_list.sort((a, b) => a.ranking - b.ranking);
+    _bots_list.sort((a, b) => getUserRating(a).rating - getUserRating(b).rating);
 });

@@ -100,7 +100,7 @@ export class PuzzleEditor {
      * NOTE: Does not catch error
      * @param puzzle Puzzle
      */
-    createPuzzleCollection(puzzle: any): Promise<any> {
+    createPuzzleCollection(puzzle: any, name:string): Promise<any> {
         let postResult;
         return post("puzzles/collections/", {
             "name": name,
