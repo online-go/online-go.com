@@ -23,7 +23,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
-import {longRankString, rankString, getUserRating, MaxRank, amateurRanks, allRanks, rankList} from "rank_utils";
+import {longRankString, rankString, getUserRating, MaxRank, amateurRanks, allRanks, rankList, bounded_rank} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
@@ -95,13 +95,8 @@ let ranked_ranks = (() => {
     let rankedMin;
     let rankedMax;
 
-    if (data.get("user").pro) {
-        rankedMin = Math.max(0, data.get("user").ranking - 9);
-        rankedMax = Math.min(MaxRank, data.get("user").ranking + 9);
-    } else {
-        rankedMin = Math.max(0, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) - 9));
-        rankedMax = Math.min(MaxRank, Math.floor(rating_to_rank(data.get("user").ratings.overall.rating) + 9));
-    }
+    rankedMin = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank - 9);
+    rankedMax = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank + 9);
 
     return rankList(rankedMin, rankedMax, false);
 })();
