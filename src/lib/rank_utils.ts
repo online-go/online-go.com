@@ -139,6 +139,7 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 
     if (ret.professional) {
         ret.rank_label = rankString(user);
+        ret.bounded_rank_label = rankString(user);
         ret.partial_rank_label = ret.rank_label;
         ret.rank_deviation_labels = ['', ''];
     }
