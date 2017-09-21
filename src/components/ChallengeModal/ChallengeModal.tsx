@@ -881,7 +881,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                             <div className="controls">
                                                 <div className="checkbox">
                                                     <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
+                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
                                                             <option key={idx} value={r.rank}>{r.label}</option>
                                                         ))}
                                                     </select>
@@ -894,7 +894,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                             <div className="controls">
                                                 <div className="checkbox">
                                                     <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks.slice(5, 100)).map((r, idx) => (
+                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
                                                             <option key={idx} value={r.rank}>{r.label}</option>
                                                         ))}
                                                     </select>
