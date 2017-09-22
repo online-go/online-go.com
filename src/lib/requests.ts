@@ -204,10 +204,12 @@ export const put = request("PUT") as PutRequestFunction;
 export const patch = request("PATCH") as PatchRequestFunction;
 export const del = request("DELETE") as DeleteRequestFunction;
 
-export function abort_requests_in_flight(url, type?: keyof API) {
+export function abort_requests_in_flight<METHOD extends keyof API, URL extends keyof API[METHOD]>(type:METHOD, url: URL, id?: number) {
     for (let id in requests_in_flight) {
+        let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+
         let req = requests_in_flight[id];
-        if ((req.url === url) && (!type || type === req.type)) {
+        if ((req.url === real_url) && (!type || type === req.type)) {
             req.request.abort();
         }
     }

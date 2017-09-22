@@ -60,7 +60,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     refresh() {
-        abort_requests_in_flight("ui/overview");
+        abort_requests_in_flight('GET', "ui/overview");
         return get("ui/overview").then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
@@ -70,7 +70,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     componentWillUnmount() {
-        abort_requests_in_flight("ui/overview");
+        abort_requests_in_flight('GET', "ui/overview");
     }
 
     render() {
@@ -186,7 +186,7 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
         });
     }}}
     componentWillUnmount() {{{
-        abort_requests_in_flight("me/groups");
+        abort_requests_in_flight('GET', "me/groups");
     }}}
     acceptInvite(invite) {{{
         post("me/groups/invitations", {"request_id": invite.id})
@@ -242,7 +242,7 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
         });
     }}}
     componentWillUnmount() {{{
-        abort_requests_in_flight("me/tournaments");
+        abort_requests_in_flight('GET', "me/tournaments");
     }}}
     render() {
         if (!this.state.resolved) {
@@ -286,7 +286,7 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
         });
     }}}
     componentWillUnmount() {{{
-        abort_requests_in_flight("me/ladders");
+        abort_requests_in_flight('GET', "me/ladders");
     }}}
     render() {
         if (!this.state.resolved) {

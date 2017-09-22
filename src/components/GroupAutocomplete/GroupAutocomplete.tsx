@@ -74,7 +74,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             return;
         }
 
-        abort_requests_in_flight("players");
+        abort_requests_in_flight('GET', "groups");
         this.current_search = value;
 
         if (value.length > 1) {

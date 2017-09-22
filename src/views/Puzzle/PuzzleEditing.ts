@@ -123,7 +123,6 @@ export class PuzzleEditor {
      * @param callback assignes new state and editing status
      */
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {{{
-        abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
             get("puzzles/collections", {page_size: 100, owner: data.get("user").id})
             .then((collections) => {

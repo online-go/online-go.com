@@ -155,9 +155,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         }
     }}}
     abort_requests() {{{
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}`);
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}/rounds`);
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}/players/all`);
+        abort_requests_in_flight('GET', 'tournaments/%%', this.state.tournament_id);
+        abort_requests_in_flight('GET', 'tournaments/%%/rounds', this.state.tournament_id);
+        abort_requests_in_flight('GET', 'tournaments/%%/players/all', this.state.tournament_id);
     }}}
     resolve(tournament_id: number) {{{
         this.abort_requests();
