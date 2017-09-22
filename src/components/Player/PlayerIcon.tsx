@@ -15,4 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./PlayerIcon";
+import * as React from "react";
+import {PlayerComponentProperties, PlayerComponent} from "./PlayerComponent";
+
+interface PlayerIconProperties extends PlayerComponentProperties {
+    size?: number;
+}
+
+export function icon_size_url(url: string, size: number): string {
+    return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
+}
+
+export class PlayerIcon extends PlayerComponent<PlayerIconProperties> {
+    render() {
+        return <img className={`PlayerIcon PlayerIcon-${this.props.size}`} src={icon_size_url(this.state.player.icon, this.props.size || 16)} />;
+    }
+}

@@ -29,7 +29,7 @@ interface Events {
 }
 
 let name_match_regex = /^loading...$/;
-data.watch("config.user", (user) => {
+data.watch("user", (user) => {
     try {
         name_match_regex = new RegExp("\b" + user.username.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "\b", "i");
     } catch (e) {
@@ -233,16 +233,6 @@ class ChatManager {
         if (!(obj.channel in this.channels)) {
             return;
         }
-
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
-
         this.channels[obj.channel].handleChat(obj);
     }}}
     onJoin = (joins) => {{{

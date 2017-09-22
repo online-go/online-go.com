@@ -17,6 +17,8 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 
+import "debug"; // Must go first due to circular imports.
+
 import * as data from "data";
 
 data.setDefault("theme", "light");
@@ -75,7 +77,8 @@ import {Styling} from "Styling";
 import {AnnouncementCenter} from "AnnouncementCenter";
 import {VerifyEmail} from "VerifyEmail";
 import * as docs from "docs";
-import "debug";
+import {RegisteredPlayer, player_attributes, is_registered} from "data/Player";
+import {from_server_player} from "compatibility/Player";
 
 declare const swal;
 
@@ -87,10 +90,12 @@ data.watch("config", (config) => {
     }
 });
 get("ui/config").then((config) => data.set("config", config));
-data.watch("config.user", (user) => {
-    player_cache.update(user);
-    data.set("user", user);
-    window["user"] = user;
+data.watch("config.user", player_data => {
+    let player = from_server_player(player_data);
+    player_cache.update(player);
+    (player as any).anonymous = !is_registered(player);
+    data.set("user", player);
+    window["user"] = player;
 });
 
 
@@ -127,15 +132,15 @@ try {
 const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
 const PageNotFound = () => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
 const Default = () => (
-    data.get("config.user").anonymous
+    !(data.get("user") instanceof RegisteredPlayer)
         ?  <ObserveGames/>
         :  <Overview/>
 );
 
 /** Connect to the chat service */
 let auth_connect_fn = () => {return; };
-data.watch("config.user", (user) => {
-    if (!user.anonymous) {
+data.watch("user", (user) => {
+    if (user instanceof RegisteredPlayer) {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("authenticate", {
                 auth: data.get("config.chat_auth"),
@@ -147,16 +152,15 @@ data.watch("config.user", (user) => {
                 player_id: user.id,
                 ranking: user.ranking,
                 username: user.username,
-                ui_class: user.ui_class,
+                ui_class: player_attributes(user).join(" "),
             });
         };
-    } else if (user.id < 0) {
+    }
+    else {
         auth_connect_fn = (): void => {
             sockets.comm_socket.send("chat/connect", {
                 player_id: user.id,
-                ranking: user.ranking,
                 username: user.username,
-                ui_class: user.ui_class,
             });
         };
     }
@@ -180,9 +184,9 @@ browserHistory.listen(location => {
         let user_type = 'error';
         let user = data.get('user');
 
-        if (!user || user.anonymous) {
+        if (!(user instanceof RegisteredPlayer)) {
             user_type = 'anonymous';
-        } else if (user.supporter) {
+        } else if (user.is.supporter) {
             user_type = 'supporter';
         } else {
             user_type = 'non-supporter';

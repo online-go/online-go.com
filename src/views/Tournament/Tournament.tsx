@@ -41,7 +41,7 @@ import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import * as d3 from "d3";
-
+import {RegisteredPlayer} from "data/Player";
 
 
 declare var swal;
@@ -399,8 +399,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
                     let black = $("<div>").addClass("black").addClass("elimination-player-" + match.black);
                     let white = $("<div>").addClass("white").addClass("elimination-player-" + match.white);
-                    ReactDOM.render((<Player user={players[match.black]} icon rank />), black[0]);
-                    ReactDOM.render((<Player user={players[match.white]} icon rank />), white[0]);
+                    ReactDOM.render((<Player user={players[match.black]} icon rank using_cache/>), black[0]);
+                    ReactDOM.render((<Player user={players[match.white]} icon rank using_cache/>), white[0]);
 
 
                     black.prepend($("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr("href", "/game/view/" + match.gameid));
@@ -443,7 +443,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     let bye = round.byes[bye_num];
                     let byediv = $("<div>").addClass("byediv");
                     let byee = $("<div>").addClass("bye").addClass("elimination-player-" + bye);
-                    ReactDOM.render((<Player user={players[bye]} icon rank />), byee[0]);
+                    ReactDOM.render((<Player user={players[bye]} icon rank using_cache/>), byee[0]);
                     bindHovers(byee, bye);
                     byediv.append(byee);
                     let obj = {
@@ -1057,7 +1057,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let can_join = true;
         let cant_join_reason = "";
 
-        if (user.anonymous) {
+        if (user instanceof RegisteredPlayer) {
             can_join = false;
             cant_join_reason = _("You must sign in to join this tournament.");
         } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
@@ -1066,7 +1066,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         } else if (!tournament.is_open || tournament.exclusivity === "invite") {
             can_join = false;
             cant_join_reason = _("This is a closed tournament, you must be invited to join.");
-        } else if (tournament.exclude_provisional && user.provisional > 0) {
+        } else if (tournament.exclude_provisional && user.is.provisional) {
             can_join = false;
             cant_join_reason = _("This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.");
         } else if (bounded_rank(user) < tournament.min_ranking) {
@@ -1100,15 +1100,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     }
                     {!editing && !loading &&
                         <div>
-                            {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
+                            {(((data.get("user").is.tournament_moderator || data.get("user").id === tournament.director.id)
                                && !tournament.started && !tournament.start_waiting) || null) &&
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
 
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && (data.get("user").is.tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
                                 <button className="danger xs" onClick={this.startTournament}>{_("Start Tournament Now")}</button>
                             }
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && (data.get("user").is.tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
                                 <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
                             }
 
@@ -1154,7 +1154,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         {(tournament.group || null) &&
                             <tr>
                                 <th>{_("Tournament Director")}</th>
-                                <td><Player user={tournament.director} /></td>
+                                <td><Player user={tournament.director} using_cache/></td>
                             </tr>
                         }
 
@@ -1453,7 +1453,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         </div>
                     }
                     <div className="player-list">
-                        {(tournament.exclusivity !== "invite" || data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id || null) &&
+                        {(tournament.exclusivity !== "invite" || data.get("user").is.tournament_moderator || tournament.director.id === data.get("user").id || null) &&
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
@@ -1468,7 +1468,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             <Card>
                                 {this.state.sorted_players.map((player, idx) => (
                                     <div key={player.id}>
-                                        <Player icon user={player} />
+                                        <Player icon user={player} using_cache/>
                                     </div>
                                 ))}
                             </Card>
@@ -1527,7 +1527,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                         <tr key={idx} >
                                                             {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
 
-                                                            <th className="player"><Player user={player} icon /></th>
+                                                            <th className="player"><Player user={player} icon using_cache/></th>
                                                             {group.players.map((opponent, idx) => (
                                                                 <td key={idx} className={"result " + selected_round.colors[player.id + "x" + opponent.id]}>
                                                                     <Link to={`/game/${selected_round.game_ids[player.id + "x" + opponent.id]}`}>
@@ -1574,8 +1574,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
-                                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
-                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+                                                {(m.player || null) && <td className="player"><Player user={m.player} icon using_cache/></td>}
+                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon using_cache/></td>}
 
                                                 <td className={"result " + selected_round.colors[pxo]}>
                                                     <Link to={`/game/${selected_round.game_ids[pxo]}`}>
@@ -1615,8 +1615,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
-                                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
-                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+                                                {(m.player || null) && <td className="player"><Player user={m.player} icon using_cache/></td>}
+                                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon using_cache/></td>}
 
                                                 <td className={"result " + selected_round.colors[m.player.id + "x" + m.opponent.id]}>
                                                     <Link to={`/game/${selected_round.game_ids[m.player.id + "x" + m.opponent.id]}`}>
@@ -1655,7 +1655,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
-                                                {(player || null) && <td className="player"><Player user={player} icon/></td>}
+                                                {(player || null) && <td className="player"><Player user={player} icon using_cache/></td>}
                                                 <td className="points">{player.points}</td>
                                                 {(tournament.ended || null) && <td className="points">{player.sos}</td>}
                                                 {(tournament.ended || null) && <td className="points">{player.sodos}</td>}
@@ -1675,9 +1675,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <div style={{display: "inline-block"}}>
                                         <h3>
                                             {
-                                                (rounds[0].matches[0].player || null) && <Player user={rounds[0].matches[0].player} icon/>
+                                                (rounds[0].matches[0].player || null) && <Player user={rounds[0].matches[0].player} icon using_cache/>
                                             } vs. {
-                                                (rounds[0].matches[0].opponent || null) && <Player user={rounds[0].matches[0].opponent} icon/>
+                                                (rounds[0].matches[0].opponent || null) && <Player user={rounds[0].matches[0].opponent} icon using_cache/>
                                             }
                                         </h3>
 
@@ -1712,7 +1712,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     }}}
 
     kick(player_id: number) {{{
-        let user = player_cache.lookup(player_id);
+        let user = player_cache.lookup(player_id) as RegisteredPlayer;
+        if (!user) {
+            return;
+        }
 
         swal({
             text: interpolate(_("Really kick {{user}} from the tournament?"), {"user": user.username}),
@@ -1732,7 +1735,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         close_all_popovers();
     }}}
     adjustPoints(player_id: number) {{{
-        let user = player_cache.lookup(player_id);
+        let user = player_cache.lookup(player_id) as RegisteredPlayer;
+        if (!user) {
+            return;
+        }
 
         swal({
             input: "number",
@@ -1759,7 +1765,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         close_all_popovers();
     }}}
     disqualify(player_id: number) {{{
-        let user = player_cache.lookup(player_id);
+        let user = player_cache.lookup(player_id) as RegisteredPlayer;
+        if (!user) {
+            return;
+        }
 
         swal({
             text: interpolate(_("Really disqualify {{user}}?"), {"user": user.username}),
@@ -1781,7 +1790,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
     renderExtraPlayerActions = (player_id: number, user: any) => {{{
         let user = data.get("user");
-        if (!(user.is_tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
+        if (!(user.is.tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
             return null;
         }
 

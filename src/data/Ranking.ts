@@ -15,6 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./Player";
-export * from "./PlayerDetails";
-export * from "./PlayerIcon";
+export type Ranking = number;
+
+// Symbolically create ranks for players. Ranks are represented as a
+// plain number, although the numbers map to kyu, dan and pro ranks.
+export function kyu(level: number): Ranking {
+    return 30 - Math.ceil(level);
+}
+
+export function dan(level: number): Ranking {
+    return Math.floor(level) + 29;
+}
+
+export function pro(level: number): Ranking {
+    return Math.floor(level) + 36;
+}

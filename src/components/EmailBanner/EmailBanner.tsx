@@ -43,7 +43,7 @@ export class EmailBanner extends React.PureComponent<EmailBannerProperties, any>
     }
 
     render() {
-        if (data.get('user').email_validated) {
+        if (data.get('user').is.validated) {
             return null;
         }
 

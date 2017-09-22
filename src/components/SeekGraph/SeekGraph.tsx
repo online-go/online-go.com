@@ -26,9 +26,10 @@ import * as data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";
-import {rankString, bounded_rank} from "rank_utils";
+import {rankString} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
+import {RegisteredPlayer} from "data/Player";
 
 declare let swal;
 
@@ -147,13 +148,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         $(document).on("touchstart touchmove", this.onTouchStartMove);
     } /* }}} */
 
-    userRank() {
-        let user = data.get('user');
-        if (!user || user.anonymous) {
-            return 18;
-        }
-        return bounded_rank(user);
-    }
     onDisconnect = () => {{{
     }}}
     onConnect = () => {{{
@@ -164,6 +158,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
     }}}
     onSeekgraphGlobal = (lst) => {{{
+        let user = data.get("user");
         for (let i = 0; i < lst.length; ++i) {
             let e = lst[i];
             if ("game_started" in e) {
@@ -178,25 +173,25 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 }
             } else {
                 e.user_challenge = false;
-                if (data.get("user").anonymous) {
+                if (!(user instanceof RegisteredPlayer)) {
                     e.eligible = false;
                     e.ineligible_reason = _("Not logged in");
-                } else if (e.user_id === data.get("user").id) {
+                } else if (e.user_id === user.id) {
                     e.eligible = false;
                     e.user_challenge = true;
                     e.ineligible_reason = _("This is your challenge");
-                } else if (e.ranked && Math.abs(this.userRank() - e.rank) > 9) {
+                } else if (e.ranked && Math.abs(user.ranking - e.rank) > 9) {
                     e.eligible = false;
                     e.ineligible_reason = _("This is a ranked game and the rank difference is more than 9");
-                } else if (e.min_rank <= this.userRank() && e.max_rank >= this.userRank()) {
+                } else if (e.min_rank <= user.ranking && e.max_rank >= user.ranking) {
                     e.eligible = true;
                 } else {
                     e.eligible = false;
 
-                    if (e.min_rank > this.userRank()) {
+                    if (e.min_rank > user.ranking) {
                         e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
                     }
-                    else if (e.max_rank < this.userRank()) {
+                    else if (e.max_rank < user.ranking) {
                         e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
                     }
                 }
@@ -475,6 +470,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.redraw();
     }}}
     drawAxes() {{{
+        let user = data.get("user");
         let ctx = this.canvas[0].getContext("2d");
         let w = this.canvas.width();
         let h = this.canvas.height();
@@ -509,8 +505,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.stroke();
 
         /* player rank line */
-        if (!data.get("user").anonymous) {
-            let rank_ratio = (Math.min(MAX_RATIO, (this.userRank() + 1) / 40));
+        if (user instanceof RegisteredPlayer) {
+            let rank_ratio = (Math.min(MAX_RATIO, (user.ranking + 1) / 40));
             let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
@@ -680,15 +676,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             if (C.live_game) {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.black_rank, "username": C.black_username }} rank nolink />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank nolink/>), f[0]);
                 e.append($("<span>").text(" " + _("vs.") + " "));
                 f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.white_rank, "username": C.white_username }} rank nolink />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank nolink/>), f[0]);
             } else {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{"user_id": C.user_id, "ranking": C.rank, "username": C.username}} rank />), f[0]);
+                ReactDOM.render((<Player user={C.user_id} rank/>), f[0]);
 
                 let details_html = ", " +
                     (C.ranked ? _("Ranked") : _("Unranked"))
@@ -729,15 +725,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     details_html += ", \"" + ($("<div>").text(C.name).html()) + "\"";
                 }
 
-
-                if (!data.get("user").anonymous) {
-                    if (C.min_rank > this.userRank()) {
+                let user = data.get("user");
+                if (user instanceof RegisteredPlayer) {
+                    if (C.min_rank > user.ranking) {
                         details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) + "</span>";
                     }
-                    else if (C.max_rank < this.userRank()) {
+                    else if (C.max_rank < user.ranking) {
                         details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) + "</span>";
                     }
-                    else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
+                    else if (C.ranked && Math.abs(user.ranking - C.rank) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }

@@ -120,7 +120,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             white_name: (typeof(white) === "object" ? (white.username + " [" + getUserRating(white).bounded_rank_label + "]") : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
-            current_users_move: player_to_move === data.get("config.user").id,
+            current_users_move: player_to_move === data.get("user").id,
             black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
             white_to_move_cls: (this.goban && white.id === player_to_move) ? "to-move" : "",
 

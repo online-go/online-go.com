@@ -16,90 +16,88 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
-import online_status from "online_status";
+import {observe_online} from "online_status";
 import * as data from "data";
 import {get} from "requests";
-import * as moment from "moment";
 import {FriendList} from "./FriendList";
 import {UIPush} from "UIPush";
 import {KBShortcut} from "KBShortcut";
+import {RegisteredPlayer} from "data/Player";
+import * as player_cache from "player_cache";
 
 
-let friend_indicator_singleton:FriendIndicator;
 
-export class FriendIndicator extends React.PureComponent<{}, any> {
-    update_interval = null;
-    friend_list = [];
-    online_subscriptions = {};
+let friend_indicator_singleton: FriendIndicator;
+
+interface FriendIndicatorState {
+    online_count: number;
+    has_friends: boolean;
+    show_friends: boolean;
+}
+
+export class FriendIndicator extends React.PureComponent<{}, FriendIndicatorState> {
+    friends: Array<number> = [];
+    subscriber: player_cache.Subscriber;
 
     constructor(props) {
         super(props);
         this.state = {
-            friends: [],
-            online_ct: 0,
-            show_friend_list: false,
+            online_count: 0,
+            has_friends: false,
+            show_friends: false,
         };
         friend_indicator_singleton = this;
+        this.subscriber = new player_cache.Subscriber(this.updateFriendCount);
     }
 
-    componentWillMount() {
-        data.watch("friends", this.updateFriends);
-        online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
+    componentDidMount() {
+        data.watch("friends", this.updateFriendList);
+        this.subscriber.to(this.friends);
         this.refresh();
     }
 
-    updateFriendCount = () => {
-        let ct = 0;
-        for (let friend of this.friend_list) {
-            if (!(friend.id in this.online_subscriptions)) {
-                this.online_subscriptions[friend.id] = true;
-                setTimeout(() => {
-                    online_status.subscribe(friend.id, this.updateFriendCount);
-                }, 1);
-            }
-
-            if (online_status.is_player_online(friend.id)) {
-                ++ct;
-            }
-        }
-
-        this.setState({
-            online_ct: ct
-        });
+    componentWillUnmount() {
+        this.subscriber.to([]);
+        data.unwatch("friends", this.updateFriendList);
     }
 
     refresh() {
-        get("ui/friends").then((res) => {
-            data.set("friends", res.friends);
-        }).catch((err) => {
-            console.error("Error resolving friends list: ", err);
-        });
+        get("ui/friends")
+        .then(friends => data.set("friends", friends))
+        .catch(err => console.error("Error resolving friends list: ", err));
     }
 
-    updateFriends = (friends) => {
-        this.friend_list = friends;
+    updateFriendList = (friends: Array<RegisteredPlayer>) => {
+        let ids: Array<number> = friends.map(friend => friend.id);
+        observe_online(...ids);
+        friends.forEach(player_cache.update);
+        this.friends = ids;
+        this.subscriber.to(ids);
+        this.setState({has_friends: ids.length > 0});
         this.updateFriendCount();
     }
 
-    toggleFriendList = () => {
-        this.setState({
-            show_friend_list: !this.state.show_friend_list
-        });
+    updateFriendCount = () => {
+        let friends = this.friends.map(player_cache.lookup);
+        let online_count = friends.reduce((sum, friend) => friend.is.online ? sum + 1 : sum, 0);
+        this.setState({online_count: online_count});
     }
 
+    toggleFriendList = () => {
+        this.setState({show_friends: !this.state.show_friends});
+    }
 
     render() {
-        if (this.friend_list.length === 0) {
+        if (!this.state.has_friends) {
             return null;
         }
 
         return (
-            <span className={"FriendIndicator" + (this.state.online_ct ? " online" : "")} onClick={this.toggleFriendList}>
+            <span className={"FriendIndicator" + (this.state.online_count ? " online" : "")} onClick={this.toggleFriendList}>
                 <UIPush event="update-friend-list" action={this.refresh} />
                 <i className="fa fa-users"/>
-                <span className="count">{this.state.online_ct}</span>
-                {(this.state.show_friend_list || null) &&
+                <span className="count">{this.state.online_count}</span>
+                {(this.state.show_friends || null) &&
                     <div>
                         <KBShortcut shortcut="escape" action={this.toggleFriendList}/>
                         <div className='FriendListBackdrop' onClick={this.toggleFriendList} />
@@ -112,7 +110,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
 }
 
 export function close_friend_list() {
-    if (friend_indicator_singleton && friend_indicator_singleton.state.show_friend_list) {
-        friend_indicator_singleton.setState({show_friend_list: false});
+    if (friend_indicator_singleton && friend_indicator_singleton.state.show_friends) {
+        friend_indicator_singleton.setState({show_friends: false});
     }
 }

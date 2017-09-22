@@ -86,7 +86,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             <div className="Modal SupporterAdmin" ref="modal">
                 <div className="header">
                     <h3>
-                        <Player user={this.props.playerId}/> - {this.state.loading
+                        <Player user={this.props.playerId} using_cache/> - {this.state.loading
                             ? null
                             : <span >
                                 {this.state.supporter ? 'Supporter' : 'Non-Supporter'}

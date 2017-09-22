@@ -56,20 +56,16 @@ if (never_load_ads) {
 function should_show_ads() {
     let user = data.get("user");
 
-    if (user && (user.supporter && user.id !== 1)) {
-        return false;
+    if (user && (user.is.admin || user.is.moderator)) {
+        return data.get("ad-override", false);
     }
 
-    if (user && (user.is_superuser || user.is_moderator)) {
-        return data.get("ad-override", false);
+    if (user && user.is.supporter) {
+        return false;
     }
 
     if (/beta|dev/.test(window.location.hostname)) {
         return false;
-    }
-
-    if (!user || user.anonymous) {
-        return true;
     }
 
     return true;

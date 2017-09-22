@@ -112,7 +112,7 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
 
         let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
         let real_data: any;
-        if (url in translate_to_server) {
+        if (url in translate_to_server[type]) {
             real_data = translate_to_server[type][url](data);
         }
         else {
@@ -146,7 +146,7 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
                 contentType: "application/json",
                 success: (res) => {
                     delete requests_in_flight[request_id];
-                    if (url in translate_from_server) {
+                    if (url in translate_from_server[type]) {
                         resolve(translate_from_server[type][url](res));
                     }
                     else {

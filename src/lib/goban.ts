@@ -24,7 +24,7 @@ import {_, pgettext, interpolate, current_language} from "translate";
 import * as preferences from "preferences";
 import * as data from "data";
 import * as player_cache from "player_cache";
-
+import {RegisteredPlayer} from "data/Player";
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';
 export {MoveTree} from 'ogs-goban/MoveTree';
@@ -38,7 +38,7 @@ export class Goban extends OGSGoban {
     defaultConfig() {
         return {
             server_socket : termination_socket,
-            player_id     : (data.get("user").anonymous ? 0 : data.get("user").id),
+            player_id: Math.max(0, (data.get("user") || {id: 0}).id),
         };
     }
 
@@ -113,7 +113,7 @@ export class Goban extends OGSGoban {
     autoadvance = () => {
         let user = data.get('user');
 
-        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
+        if (user instanceof RegisteredPlayer && /^\/game\//.test(this.getLocation())) {
             /* if we just moved */
             if (this.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {

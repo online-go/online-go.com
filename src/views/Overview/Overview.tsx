@@ -27,8 +27,7 @@ import {post, get, abort_requests_in_flight} from "requests";
 import {Goban} from "goban";
 import {toast} from "toast";
 import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
-import online_status from "online_status";
+import {PlayerIcon} from "Player";
 import * as data from "data";
 import {errorAlerter} from "misc";
 import {longRankString, getUserRating, is_novice, is_provisional} from "rank_utils";
@@ -74,7 +73,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        let user = data.get("config.user");
+        let user = data.get("user");
 
         let rating = user ? getUserRating(user, 'overall', 0) : null;
 
@@ -103,11 +102,11 @@ export class Overview extends React.Component<{}, any> {
                 </div>
                 <div className="right">
                     <div className="profile">
-                        <PlayerIcon id={user.id} size={80} />
+                        <PlayerIcon user={user.id} size={80} />
 
                         <div className="profile-right">
                             <div>
-                                <Player user={user} nodetails rank={false} />
+                                <Player user={user} nodetails rank={false} using_cache/>
                             </div>
                             {rating && rating.professional &&
                                 <div>

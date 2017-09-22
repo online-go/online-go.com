@@ -60,9 +60,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                           {game.config.game_name}
                       </h2>
                       <h3>
-                          <Player disableCacheUpdate icon rank user={game.config.players.black} /> {
+                          <Player icon rank user={game.config.players.black}/> {
                               _("vs.")
-                          } <Player disableCacheUpdate icon rank user={game.config.players.white} />
+                          } <Player icon rank user={game.config.players.white}/>
                       </h3>
                   </div>
               </div>
@@ -70,9 +70,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 <dl className="horizontal">
                     <dt>{_("Game")}</dt><dd>{game.config.game_name}</dd>
                     {this.props.creatorId && <dt>{_("Creator")}</dt>}
-                    {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
-                    <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.black} /></dd>
-                    <dt>{_("White")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.white} /></dd>
+                    {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} using_cache/></dd>}
+                    <dt>{_("Black")}</dt><dd><Player icon rank user={game.config.players.black}/></dd>
+                    <dt>{_("White")}</dt><dd><Player icon rank user={game.config.players.white}/></dd>
                     <dt>{_("Time")}</dt>
                         <dd>
                             {game.config.start_time ? moment(new Date(game.config.start_time * 1000)).format("LLL") : ""}

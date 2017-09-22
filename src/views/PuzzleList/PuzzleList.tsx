@@ -29,6 +29,7 @@ import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
 import * as data from "data";
 import * as moment from "moment";
+import {RegisteredPlayer} from "data/Player";
 
 interface PuzzleListProperties {
 }
@@ -106,7 +107,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                              render: (X) => (
                                 <div>
                                     <div>{X.name}</div>
-                                    <Player user={X.owner}/>
+                                    <Player user={X.owner} using_cache/>
                                 </div>
                              )
                             },
@@ -129,7 +130,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                         ]}
                     />
 
-                    {((!user.anonymous) || null) &&
+                    {((user instanceof RegisteredPlayer) || null) &&
                         <div className="create-a-new-puzzle-link-container">
                             <a href="/puzzle/new"><i className="fa fa-plus-square" /> {_("Create a new puzzle")}</a>
                         </div>

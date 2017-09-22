@@ -61,6 +61,7 @@
         content: fa-wrench-content;
     }
 
+
     
     &.timeout{
         //color: @ogs-player-timeout  !important;
@@ -89,38 +90,30 @@
         text-decoration: none;
     }
 
-    & span.rank span.timeout {
-        font-weight: bold;
+
+
+    &.show-online:before {
+        display: inline-block;
+        font-size: 0.5rem;
+        width: 0.5rem;
+        font-family: 'FontAwesome';
+        content: fa-circle-content;
+        color: #888;
+        text-shadow: 0 0 1px rgba(0,0,0,0.5);
+        vertical-align: middle;
+        padding-bottom: 0.5rem;
     }
-
-
-    &.online, &.offline{
-        &:before {
-            display: inline-block;
-            font-size: 0.5rem;
-            width: 0.5rem;
-            font-family: 'FontAwesome';
-            content: fa-circle-content;
-            color: #888;
-            text-shadow: 0 0 1px rgba(0,0,0,0.5);
-            vertical-align: middle;
-            padding-bottom: 0.5rem;
-            //position: absolute;
-            //top: 0.35em;
-            //left: -1.1em;
-        }
-    }
-
-    &.online:before {
+    &.show-online.online:before {
         color: #33FF33;
     }
-}
 
-.Player[data-rank]:after {
-    content: attr(data-rank)
-    font-size: 0.7em;
-    padding-left: 0.15em;
-    padding-top: 0.2em;
+
+
+    & .rank {
+        font-size: 0.7em;
+        padding-left: 0.15em;
+        padding-top: 0.2em;
+    }
 }
 
 .Player-with-icon {

@@ -23,7 +23,7 @@ import {browserHistory} from "react-router";
 import * as data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
+import {PlayerIcon} from "Player";
 import * as player_cache from "player_cache";
 import {profanity_filter} from "profanity_filter";
 import {challenge_text_description} from "ChallengeModal";
@@ -102,14 +102,14 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
                         return (
                         <Card key={challenge.id}>
                             <div className='icon-name'>
-                                <PlayerIcon id={opponent.id} size={64}/>
+                                <PlayerIcon user={opponent.id} size={64}/>
                                 <div className='name'>
                                     {challenge.challenged.id === user.id &&
                                         <FabCheck onClick={this.acceptChallenge.bind(this, challenge)} />
                                     }
                                     <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
                                     <h4>{profanity_filter(challenge.game.name)}</h4>
-                                    <Player user={opponent}/>
+                                    <Player user={opponent} using_cache/>
                                 </div>
                             </div>
                             <div>

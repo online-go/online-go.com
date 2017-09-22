@@ -34,7 +34,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
-
+import {RegisteredPlayer} from "data/Player";
 
 
 declare var swal;
@@ -385,7 +385,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             <div className="row">
                 <div className="col-sm-9">
                     <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card {{{ */}
-                        {(this.state.is_admin || user.is_moderator || null) &&
+                        {(this.state.is_admin || user.is.moderator || null) &&
                             <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit}/>
                         }
 
@@ -408,7 +408,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 }
 
                                 <div className="admins">
-                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
+                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} using_cache/>) }
                                 </div>
 
                                 {(this.state.group_loaded || null) &&
@@ -416,7 +416,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                         ? this.state.is_admin
                                             ? (editing
                                                 ? (
-                                                    (((user.id === (group.founder && group.founder.id)) || user.is_moderator) || null) &&
+                                                    (((user.id === (group.founder && group.founder.id)) || user.is.moderator) || null) &&
                                                         <div>
                                                             <button className="reject" onClick={this.deleteGroup}>{_("Delete Group")}</button>
                                                         </div>
@@ -439,12 +439,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                  </button>
                                               </div>
                                         : group.is_public
-                                            ? <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
+                                            ? <button className="primary xs" disabled={!(user instanceof RegisteredPlayer)} onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
                                                 ? <i>{_("This is a private group, you must be invited to join")}</i>
                                                 : this.state.invitation_request_pending
                                                     ? <i>{_("A request to join this group has been sent to the group administrators")}</i>
-                                                    : <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
+                                                    : <button className="primary xs" disabled={!(user instanceof RegisteredPlayer)} onClick={this.joinGroup}>{_("Request to join this group")}</button>
                                     )
                                 }
 
@@ -536,7 +536,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                 : <h2>{entry.title}</h2>
                                             }
 
-                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
+                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} using_cache/></i>
                                             {this.state.is_admin &&
                                                 <div>
                                                     {this.state.editing_news && this.state.editing_news.id === entry.id
@@ -613,7 +613,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             source={`groups/${group.id}/members`}
                             groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                             columns={[
-                                {header: _("Members"), className: "", render: (X) => <Player icon user={X}/>},
+                                {header: _("Members"), className: "", render: (X) => <Player icon user={X} using_cache/>},
                             ]}
                         />
                     </Card>
@@ -640,7 +640,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         );
     }}}
     renderExtraPlayerActions = (player_id: number, user: any) => {{{
-        if (!this.state.is_admin && !data.get("user").is_moderator) {
+        if (!this.state.is_admin && !data.get("user").is.moderator) {
             return null;
         }
 

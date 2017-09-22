@@ -111,7 +111,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             white_name: (typeof(white) === "object" ? (white.username + " [" + rankString(white) + "]") : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
-            current_users_move: player_to_move === data.get("config.user").id,
+            current_users_move: player_to_move === data.get("user").id,
             black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
             white_to_move_cls: (this.goban && white.id === player_to_move) ? "to-move" : "",
 
@@ -154,7 +154,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && <div className="player"><Player user={opponent} rank /></div> }
+                {player && <div className="player"><Player user={opponent} rank using_cache/></div> }
                 {player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={player_clock} />
@@ -166,13 +166,13 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                     </div>
                 }
 
-                {!player && <div className="player"><Player user={this.props.black} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.black} rank using_cache/></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
                     </div>
                 }
-                {!player && <div className="player"><Player user={this.props.white} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.white} rank using_cache/></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />

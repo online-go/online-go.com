@@ -24,9 +24,9 @@ import {splitOnBytes} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
-import {PlayerCacheEntry} from 'player_cache';
 import * as player_cache from "player_cache";
-import online_status from "online_status";
+import {observe_online} from "online_status";
+import {Player, player_attributes} from "data/Player";
 
 let last_id: number = 0;
 
@@ -51,7 +51,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player:PlayerCacheEntry;
+    player: Player;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -59,35 +59,33 @@ class PrivateChat {
 
     display_state = "closed";
 
+    subscriber = new player_cache.Subscriber(player => {
+        if (player.is.online) {
+            this.player_dom.addClass("online");
+        }
+        else {
+            this.player_dom.removeClass("online");
+        }
+    });
+
 
     constructor(user_id, username) { /* {{{ */
         this.user_id = user_id;
         comm_socket.send("chat/pm/load", user_id);
 
-        this.player_dom = $("<span class='user Player nolink'>...</span>");
+        this.player_dom = $("<span class='user Player show-online nolink'>...</span>");
         if (username) {
             this.player_dom.text(username);
-            this.player.username = username;
         }
 
-        online_status.subscribe(user_id, (_, tf) => {
-            if (tf) {
-                this.player_dom.removeClass("offline").addClass("online");
-            } else {
-                this.player_dom.addClass("offline").removeClass("online");
-            }
-        });
+        this.subscriber.to([user_id]);
 
-        this.player = {
-            "id": user_id,
-            "username": "...",
-            "ui_class": ""
-        };
-        player_cache.fetch(this.user_id, ["username", "ui_class"])
-        .then((player) => {
+        this.player = player_cache.lookup(user_id);
+        player_cache.fetch(this.user_id)
+        .then(player => {
             this.player = player;
             this.player_dom.text(player.username);
-            this.player_dom.addClass(player.ui_class);
+            this.player_dom.addClass(player_attributes(player).join(" "));
             this.updateInputPlaceholder();
         })
         .catch((err) => {
@@ -109,7 +107,7 @@ class PrivateChat {
             .append(this.player_dom)
         ;
 
-        if (data.get("user").is_moderator) {
+        if (data.get("user").is.moderator) {
             let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
@@ -232,7 +230,7 @@ class PrivateChat {
         }
 
         let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+            if (!data.get('user').is.validated && !this.player.is.moderator && this.lines.length === 0) {
                 return;
             }
 
@@ -268,7 +266,7 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
+        if (!data.get('user').is.validated && !this.player.is.moderator && this.lines.length === 0) {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
@@ -568,7 +566,7 @@ comm_socket.on("private-superchat", (config) => {{{
         pc = getPrivateChat(config.moderator_id, config.moderator_username);
         if (pc) {
             pc.open();
-            if (!data.get("user").is_superuser) {
+            if (!data.get("user").is.admin) {
                 pc.superchat(config.enable);
             } else {
                 pc.addSystem({

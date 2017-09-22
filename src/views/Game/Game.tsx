@@ -34,7 +34,7 @@ import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
 import * as player_cache from "player_cache";
-import {icon_size_url} from "PlayerIcon";
+import {icon_size_url} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";
 import {PersistentElement} from "PersistentElement";
@@ -51,6 +51,7 @@ import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
 import {AdUnit} from "AdUnit";
 import * as moment from "moment";
+import {RegisteredPlayer} from "data/Player";
 
 declare var swal;
 
@@ -549,12 +550,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.game_id) {
             get("games/%%", this.game_id)
             .then((game) => {
-                if (game.players.white.id) {
-                    player_cache.update(game.players.white, true);
-                }
-                if (game.players.black.id) {
-                    player_cache.update(game.players.black, true);
-                }
                 this.creator_id = game.creator;
                 this.ladder_id = game.ladder;
                 this.tournament_id = game.tournament;
@@ -1050,7 +1045,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return;
         }
 
-        if (!data.get("user").anonymous) {
+        if (data.get("user") instanceof RegisteredPlayer) {
             goban.sendChat(analysis, this.refs.chat.state.chat_log);
             this.last_analysis_sent = analysis;
         } else {
@@ -2021,10 +2016,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 value={this.state.variation_name}
                                 onChange={this.updateVariationName}
                                 onKeyDown={this.variationKeyPress}
-                                disabled={user.anonymous}
+                                disabled={!(user instanceof RegisteredPlayer)}
                                 />
-                                {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>}
-                                {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Record")}</button>}
+                                {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={!(user instanceof RegisteredPlayer)} onClick={this.shareAnalysis}>{_("Share")}</button>}
+                                {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={!(user instanceof RegisteredPlayer)} onClick={this.shareAnalysis}>{_("Record")}</button>}
                         </div>
                         </div>
                     </div>
@@ -2052,10 +2047,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return (
             <div className="play-controls">
                 <div className="game-state">
-                    {_("Review by")}: <Player user={this.state.review_owner_id} />
+                    {_("Review by")}: <Player user={this.state.review_owner_id} using_cache/>
                     {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
                         <div>
-                            {_("Review controller")}: <Player user={this.state.review_controller_id} />
+                            {_("Review controller")}: <Player user={this.state.review_controller_id} using_cache/>
                         </div>
                     }
                 </div>
@@ -2092,9 +2087,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 value={this.state.variation_name}
                                 onChange={this.updateVariationName}
                                 onKeyDown={this.variationKeyPress}
-                                disabled={user.anonymous}
+                                disabled={!(user instanceof RegisteredPlayer)}
                                 />
-                            <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>
+                            <button className="sm" type="button" disabled={!(user instanceof RegisteredPlayer)} onClick={this.shareAnalysis}>{_("Share")}</button>
                         </div>
                     </div>
 
@@ -2246,7 +2241,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className={`${color} player-name-container`}>
-                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
+                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] }/>
                           </div>
                       }
 
@@ -2328,8 +2323,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     frag_dock() {{{
         let goban = this.goban;
-        let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
-        let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
+        let mod = (goban && data.get("user").is.moderator && goban.engine.phase !== "finished" || null);
+        let annul = (goban && data.get("user").is.moderator && goban.engine.phase === "finished" || null);
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
         if (review) {
@@ -2688,7 +2683,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                     }
                 </div>
                 <div className="chat-input-container input-group">
-                    {((this.props.userIsPlayer && data.get('user').email_validated) || null) &&
+                    {((this.props.userIsPlayer && data.get('user').is.validated) || null) &&
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleChatLog}
@@ -2697,10 +2692,10 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         </button>
                     }
                     <TabCompleteInput className={`chat-input  ${this.state.chat_log}`}
-                        disabled={user.anonymous || !data.get('user').email_validated}
-                        placeholder={user.anonymous
+                        disabled={!data.get('user').is.validated}
+                        placeholder={!(user instanceof RegisteredPlayer)
                             ? _("Login to chat")
-                            : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
+                            : !data.get('user').is.validated ? _("Chat will be enabled once your email address has been validated")
                                 : (this.state.chat_log === "malkovich"
                                     ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
                                     : _("Say hi!")
@@ -2772,7 +2767,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}#${m[2] || ""}${m[4] || ""}`}</Link>)},
             {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
             {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-            {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])}/>)},
+            {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])} using_cache/>)},
         ];
 
         if (extra_pattern_replacements) {
@@ -2985,7 +2980,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
-                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
+                    {(line.player_id || null) && <Player user={line} flare/>}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>
                 </div>
             </div>

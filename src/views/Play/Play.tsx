@@ -416,7 +416,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                 </span>
                 <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                    <Player user={this.extractUser(C)}/>
+                    <Player user={this.extractUser(C).id} using_cache/>
                 </span>
                 <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}

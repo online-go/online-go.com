@@ -660,7 +660,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
             case "challenge":
                 return (
                     <div>
-                        {_("Challenge from")} <Player user={notification.user}/>
+                        {_("Challenge from")} <Player user={notification.user} using_cache/>
                         <div className="description">{challenge_text_description(notification)}</div>
                         <div className="buttons">
                             <FabX onClick={() => {
@@ -729,7 +729,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
             case "friendRequest":
                 return (
                     <div>
-                        {_("Friend request from") /* translators: friend request from <user> */} <Player user={notification.user}/>
+                        {_("Friend request from") /* translators: friend request from <user> */} <Player user={notification.user} using_cache/>
 
                         <div className="buttons">
                             <FabX onClick={() => {
@@ -749,15 +749,15 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                 );
 
             case "friendAccepted":
-                return <div>{_("Friend request accepted")}: <Player user={notification.user} /></div>;
+                return <div>{_("Friend request accepted")}: <Player user={notification.user} using_cache/></div>;
 
             case "friendDeclined":
-                return <div>{_("Friend request declined")}: <Player user={notification.user} /></div>;
+                return <div>{_("Friend request declined")}: <Player user={notification.user} using_cache/></div>;
 
             case "groupRequest":
                 return (
                     <div>
-                        {_("Group join request from") /* translators: Group join request from <user> */} <Player user={notification.user}/>
+                        {_("Group join request from") /* translators: Group join request from <user> */} <Player user={notification.user} using_cache/>
 
                         <div className="buttons">
                             <FabX onClick={() => {

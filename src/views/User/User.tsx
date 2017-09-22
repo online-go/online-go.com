@@ -24,7 +24,7 @@ import {post, get, put, del, patch} from "requests";
 import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
-import {PlayerIcon} from 'PlayerIcon';
+import {PlayerIcon} from "Player";
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
@@ -43,7 +43,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
-
+import {RegisteredPlayer} from "data/Player";
 
 declare let swal;
 
@@ -200,7 +200,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("user").is.moderator) /* aliases {{{ */ {
             state.ip = null;
             state.host_ip_settings = null;
          } /* }}} */
@@ -361,10 +361,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             put("players/%%/icon", this.user_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
-                player_cache.update({
-                    id: this.user_id,
-                    icon: res.icon,
-                });
+                player_cache.update(new RegisteredPlayer(this.user_id, {icon: res.icon}));
             });
         })
         .catch(errorAlerter);
@@ -374,10 +371,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         del("players/%%/icon", this.user_id)
         .then((res) => {
             console.log("Cleared icon", res);
-            player_cache.update({
-                id: this.user_id,
-                icon: res.icon,
-            });
+            player_cache.update(new RegisteredPlayer(this.user_id, {icon: res.icon}));
         })
         .catch(errorAlerter);
     }}}
@@ -418,7 +412,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     saveEditChanges() {{{
         let username = this.state.user.username.trim();
         let promise: Promise<void>;
-        if (!data.get('user').is_moderator && (this.original_username !== username)) {
+        if (!data.get('user').is.moderator && (this.original_username !== username)) {
             promise = swal({
                 text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
                 showCancelButton: true,
@@ -737,7 +731,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
 
-        let global_user = data.get("config.user");
+        let global_user = data.get("user");
         let cdn_release = data.get("config.cdn_release");
 
         return (
@@ -748,17 +742,17 @@ export class User extends React.PureComponent<UserProperties, any> {
                         <div className="avatar-container">{/* Avatar container{{{ */}
                             {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
-                                : <span className='username'><Player user={user}/></span>
+                                : <span className='username'><Player user={user} using_cache/></span>
                             }
 
                             {editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
                                         ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
-                                        : <PlayerIcon id={user.id} size={128} />
+                                        : <PlayerIcon user={user.id} size={128} />
                                     }
                                    </Dropzone></div>
-                                : <PlayerIcon id={user.id} size={128} />
+                                : <PlayerIcon user={user.id} size={128} />
                             }
                             {editing &&
                                 <div className='clear-icon-container'>
@@ -767,7 +761,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             }
 
                             <div className='avatar-subtext'>
-                                {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
+                                {(global_user.is.moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
 
                                 {(user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
 
@@ -796,7 +790,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                             {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
                             {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
-                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
+                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner} using_cache/></div>}
 
                             {editing
                               ? <div className='country-line'>
@@ -822,13 +816,13 @@ export class User extends React.PureComponent<UserProperties, any> {
                             }
 
                             <div className='avatar-buttons'>
-                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                                {((global_user.id === user.id || global_user.is.moderator) || null)   &&
                                     <button onClick={this.toggleEdit} className='xs edit-button'>
                                         <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
                                     </button>
                                 }
 
-                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                                { (global_user.is.moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
                             </div>
                         </div>
                         {/* }}} */}
@@ -842,7 +836,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         {/* }}} */}
                     </div>
 
-                    {/* ((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
+                    {/* ((global_user && global_user.id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
                         {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
                         {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
                                 onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
@@ -875,7 +869,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
             <div className="row">
                 <div className='col-sm-8'>{/* {{{ */}
-                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
+                    {((global_user && global_user.is.moderator) || null) && <Card > {/* Moderator stuff {{{ */}
                         <b>Users with the same IP or Browser ID</b>
                         <PaginatedTable
                             className="aliases"
@@ -887,7 +881,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
-                                        <Player user={X}/>
+                                        <Player user={X} using_cache/>
                                         {(X.has_notes || null) && <i className="fa fa-file-text-o clickable" onClick={() => openNotes(X.moderator_notes)} />}
                                     </span>
                                 )},
@@ -937,8 +931,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
-                                        {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                        {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                        {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} using_cache/>},
+                                        {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} using_cache/>},
                                         {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
                                     ]}
                                 />
@@ -970,8 +964,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         columns={[
                                             {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                             {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black}/>},
-                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white}/>},
+                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.black} using_cache/>},
+                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.white} using_cache/>},
                                         ]}
                                     />
                                 </div>
@@ -1094,7 +1088,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </Card>
                     </div>}
 
-                    {(user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id) && <div >
+                    {(user.is_bot && user.bot_owner && user.bot_owner.id === global_user.id) && <div >
                         <h2>{_("Bot Controls")}</h2>
                         <div className="well">
                             <h5>{_("API Key")}

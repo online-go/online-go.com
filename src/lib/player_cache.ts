@@ -18,184 +18,190 @@
 import {get} from "requests";
 import {Batcher} from "batcher";
 import {Publisher, Subscriber as RealSubscriber} from "pubsub";
+import {Player, GuestPlayer, RegisteredPlayer, is_player} from "data/Player";
+import {from_server_player} from "compatibility/Player";
 
 import Debug from "debug";
 const debug = new Debug("player_cache");
+
+
+
+const player_cache_debug_enabled = false;
+let cache_by_id: {[id: number]: RegisteredPlayer} = {};
+let cache_by_username: {[username: string]: RegisteredPlayer} = {};
+let active_fetches: {[id: number]: Promise<RegisteredPlayer>} = {};
+export let nicknames: Array<string> = [];
+
+// List all the keys of a RegisteredPlayer and all the attributes of RegisteredPlayer["is"]
+const keys: Array<keyof RegisteredPlayer> = ["username", "icon", "country", "ranking", "ratings"];
+const attributes: Array<keyof RegisteredPlayer["is"]> = ["online", "admin", "moderator", "tournament_moderator", "validated", "professional", "supporter", "provisional", "timeout", "bot"];
+
+
 
 // The player cache's Subscriber is just like a vanilla Subscriber, but can
 // subscribe to and unsubscribe from numerical ids or whole Players. The
 // function to query which players we are watching is called "players", not
 // "channels".
-let publisher = new Publisher<{[id: string]: PlayerCacheEntry}>();
-export class Subscriber {
-    private subscriber: RealSubscriber<{[id: string]: PlayerCacheEntry}, string>;
+let publisher = new Publisher<{[id: string]: RegisteredPlayer}>();
 
-    constructor(callback: (player: PlayerCacheEntry) => void) {
-        this.subscriber = new publisher.Subscriber((id, player) => callback(player));
+let publish = new Batcher<number>(ids => {
+    let last_id: number | undefined;
+    for (let id of ids.sort()) {
+        if (id !== last_id) {
+            last_id = id;
+            publisher.publish(id.toString(), cache_by_id[id]);
+        }
+    }
+});
+
+export class Subscriber {
+    private subscriber: RealSubscriber<{[id: string]: RegisteredPlayer}, string>;
+
+    constructor(callback: (player: RegisteredPlayer) => void) {
+        this.subscriber = new publisher.Subscriber((id, player) => callback(new RegisteredPlayer(player.id, player)));
     }
 
-    on(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
-        this.subscriber.on(this.to_strings(players));
+    on(players: number | Player | Array<number | Player>): this {
+        this.subscriber.on(to_strings(players));
         return this;
     }
 
-    off(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
-        this.subscriber.off(this.to_strings(players));
+    off(players: number | Player | Array<number | Player>): this {
+        this.subscriber.off(to_strings(players));
+        return this;
+    }
+
+    to(players: Array<number | Player>): this {
+        this.subscriber.off(this.subscriber.channels()).on(to_strings(players));
         return this;
     }
 
     players(): Array<number> {
         return this.subscriber.channels().map(id => parseInt(id));
     }
+}
 
-    private to_strings(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): Array<string> {
-        let result: Array<string> = [];
-        if (!(players instanceof Array)) {
-            players = [players];
+function to_strings(players: number | Player | Array<number | Player>): Array<string> {
+    let result: Array<string> = [];
+    if (!(players instanceof Array)) {
+        players = [players];
+    }
+    for (let player of players) {
+        player = typeof player === "number" ? player : player.id;
+        result.push(player.toString());
+        if (!(player in cache_by_id)) {
+            fetch(player);
         }
-        for (let player of players) {
-            if (typeof player === "number") {
-                result.push(player.toString());
-            }
-            else {
-                result.push(player.id.toString());
-            }
-        }
-        return result;
+    }
+    return result;
+}
+
+
+
+// Look up a player in the cache by id. Any unknown parameters will have
+// their default values substituted. If the player is not in the cache,
+// then all of its parameters are unknown, and so all of them will have
+// default values.
+export function lookup(id: number): Player {
+    if (isFinite(id) && id < 0) {
+        return new GuestPlayer(id);
+    }
+    if (isFinite(id) && id >= 0) {
+        return new RegisteredPlayer(id, cache_by_id[id]);
+    }
+
+    // The id is NaN or infinite.
+    throw `player_cache.lookup: Player id is ${id}.`;
+}
+
+// Look up a player in the cache by username. If there is no
+// matching username in the cache, the we return undefined.
+export function lookup_by_username(username: string): RegisteredPlayer | void {
+    let player = cache_by_username[username];
+    if (player) {
+        return new RegisteredPlayer(player.id, player);
     }
 }
 
-export interface PlayerCacheEntry {
-    id      : number;
-    country?: string;
-    icon?   : string;
-    pro?    : boolean;
-    ranking?: number;
-    rating? : number;
-    ratings?: {
-                'overall': {
-                    rating: number;
-                    deviation: number;
-                    volatility: number;
-                    games_played: number;
-                }
-              };
-    ui_class?: string;
-    username?: string;
+
+
+// Update the entry in the player cache with some new information. For
+// compatibility with untyped code, we don't assume that the player is in
+// fact a RegisteredPlayer. If it isn't then it's a player from the server
+// that needs converting.
+export function update(player: Player): void {
+    // Compatibility with untyped code.
+    if (!is_player(player)) {
+        debug.error("Untyped player added to the player cache.", player);
+        player = from_server_player(player);
+    }
+    // End compatibility section.
+
+    // Guest players aren't stored in the cache as they never change.
+    if (!(player instanceof RegisteredPlayer)) {
+        return;
+    }
+
+    // What is the currently cached player, and what is the updated player?
+    let previous = new RegisteredPlayer(player.id, cache_by_id[player.id]);
+    let next = new RegisteredPlayer(player.id, cache_by_id[player.id], player);
+
+    // Has the cached player changed?
+    if (keys.every(key => previous[key] === next[key]) && attributes.every(attr => previous.is[attr] === next.is[attr])) {
+        return;
+    }
+
+    // Log the change and who to blame if it's wrong.
+    debug.trace("Player cache updated.", next);
+
+    // Update the cache and publish the new details.
+    if (!(next.username in cache_by_username)) {
+        nicknames.push(next.username);
+    }
+    delete cache_by_username[previous.username];
+    cache_by_username[next.username] = next;
+    cache_by_id[player.id] = next;
+    publish.soon(player.id);
 }
 
+
+
+// Fetch a player's info from the termination server.
 interface FetchEntry {
     player_id: number;
-    resolve: (value?:any) => void;
-    reject: (reason?:any) => void;
-    required_fields: Array<string>;
+    resolve: (value: RegisteredPlayer) => void;
+    reject: (reason?: any) => void;
 }
 
-let cache: {[id: number]: PlayerCacheEntry} = {};
-let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
-let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
-export let nicknames: Array<string> = [];
+export function fetch(player_id: number): Promise<Player> {
+    // Note that Object.assign does not copy from an object's prototype,
+    // nor does it baulk at undefined values if the player is not in the
+    // cache at all.
+    let cached: Partial<RegisteredPlayer> = Object.assign({}, cache_by_id[player_id]);
 
-export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
-    if (Array.isArray(player)) {
-        for (let p of player) {
-            update(p, dont_overwrite);
-        }
-        return;
+    // Satisfy the easy cases first: a guest player and a complete
+    // cached RegisteredPlayer.
+    if (player_id < 0) {
+        return Promise.resolve(new GuestPlayer(player_id));
+    }
+    if (keys.every(key => key in cached) && attributes.every(attr => attr in cached.is)) {
+        return Promise.resolve(new RegisteredPlayer(player_id, cache_by_id[player_id]));
     }
 
-    let id = "user_id" in player ? player.user_id : player.id;
-    if (!id) {
-        console.error("Invalid player object", player);
-        return;
-    }
-
-    if (!(id in cache)) {
-        cache[id] = {id:id};
-    }
-    for (let k in player) {
-        if (dont_overwrite && k in cache[id]) {
-            continue;
-        }
-        cache[id][k] = player[k];
-    }
-    if (cache[id].username && !(cache[id].username in cache_by_username)) {
-        nicknames.push(cache[id]["username"]);
-    }
-    if (cache[id].username) {
-        cache_by_username[cache[id].username] = cache[id];
-    }
-
-    /* these are synonymous but called different things throughout the back end, I am truly sorry. */
-    if ('professional' in player) {
-        cache[id]['pro'] = !!player.professional;
-    }
-    if ('pro' in player) {
-        cache[id]['professional'] = !!player.pro;
-    }
-
-    publisher.publish(id.toString(), cache[id]);
-    return cache[id];
-}
-
-export function lookup(player_id: number): PlayerCacheEntry {
-    if (player_id in cache) {
-        return cache[player_id];
-    }
-
-    return null;
-}
-
-export function lookup_by_username(username: string): PlayerCacheEntry {
-    if (username in cache_by_username) {
-        return cache_by_username[username];
-    }
-
-    return null;
-}
-
-export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
-    if (!player_id) {
-        console.error("Attempted to fetch invalid player id: ", player_id);
-        return Promise.reject("invalid player id");
-    }
-
-    let missing_fields = [];
-
-    if (player_id in cache) {
-        let have_cached_copy = true;
-
-        if (required_fields) {
-            for (let f of required_fields) {
-                if (!(f in cache[player_id])) {
-                    missing_fields.push(f);
-                    have_cached_copy = false;
-                    break;
-                }
-            }
-        }
-
-        if (have_cached_copy) {
-            return Promise.resolve(cache[player_id]);
-        }
-
-        debug.log(`Fetching ${player_id} for fields ${missing_fields.join(", ")}.`, cache[player_id]);
-    } else {
-        debug.log(`Fetching ${player_id} because no user information was in our cache.`);
-    }
-
-    if (player_id in active_fetches) {
-        return active_fetches[player_id];
-    }
-
-    return active_fetches[player_id] = new Promise((resolve, reject) => {
-        fetch_player.soon({
-            player_id: player_id,
-            resolve: resolve,
-            reject: reject,
-            required_fields: required_fields,
+    // We can't satisfy the request from the cache. If there's a request in progress
+    // then use it, otherwise we have to make a new request to the backend. Once the
+    // player is retrieved from the backend, we pass a copy to the caller so they can
+    // do whatever they like with it without messing up the cache.
+    if (!(player_id in active_fetches)) {
+        active_fetches[player_id] = new Promise((resolve, reject) => {
+            fetch_player.soon({
+                player_id: player_id,
+                resolve: resolve,
+                reject: reject,
+            });
         });
-    });
+    }
+    return active_fetches[player_id].then(player => new RegisteredPlayer(player.id, player));
 }
 
 let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
@@ -203,46 +209,37 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         let queue = fetch_queue.slice(0, 100);
         fetch_queue = fetch_queue.slice(100);
 
-        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
+        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(', ')}.`);
 
-        get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
-        .then((players) => {
-            for (let idx = 0; idx < queue.length; ++idx) {
-                let player = players[idx];
-                let resolve = queue[idx].resolve;
-                let reject = queue[idx].reject;
-                let required_fields = queue[idx].required_fields;
-
-                if ('icon-url' in player) {
-                    player.icon = player['icon-url']; /* handle stupid inconsistency in API */
+        get("/termination-api/players", queue.map(e => e.player_id))
+        .then(players => {
+            for (let player of players) {
+                // If the fetch has missed out any properties of the player,
+                // then treat it as though it had returned the default value.
+                // Otherwise we could get an infinite sequence of fetches.
+                for (let key of keys as Array<string>) {
+                    player[key] = player[key]; // Maybe copy from the prototype.
+                }
+                for (let attr of attributes) {
+                    player.is[attr] = !!player.is[attr]; // Might be undefined.
                 }
 
-                delete active_fetches[player.id];
                 update(player);
-                if (required_fields) {
-                    for (let field of required_fields) {
-                        if (!(field in cache[player.id])) {
-                            debug.warn("Required field ", field, " was not resolved by fetch");
-                            cache[player.id][field] = "[ERROR]";
-                        }
-                    }
+                delete active_fetches[player.id];
+            }
+            for (let item of queue) {
+                if (item.player_id in cache_by_id) {
+                    item.resolve(cache_by_id[item.player_id]);
                 }
-                try {
-                    resolve(cache[player.id]);
-                } catch (e) {
-                    console.error(e);
+                else {
+                    item.reject(`Unable to load player ${item.player_id }.`);
                 }
             }
         })
-        .catch((err) => {
-            debug.error(err);
-            for (let idx = 0; idx < queue.length; ++idx) {
-                delete active_fetches[queue[idx].player_id];
-                try {
-                    queue[idx].reject(err);
-                } catch (e) {
-                    console.error(e);
-                }
+        .catch(err => {
+            for (let item of queue) {
+                delete active_fetches[item.player_id];
+                item.reject(err);
             }
         });
     }

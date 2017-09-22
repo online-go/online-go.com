@@ -20,6 +20,8 @@ import {Link} from "react-router";
 import {post} from "requests";
 import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
+import * as player_cache from "player_cache";
+import {RegisteredPlayer} from "data/Player";
 
 declare var swal;
 
@@ -45,7 +47,10 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
         .then(() => {
             this.setState({verifying: false, message: _("Great, your email address has been verified!")});
             let user = data.get('user');
-            user.email_validated = new Date().toString();
+            if (user instanceof RegisteredPlayer) {
+                user.is.validated = true;
+                player_cache.update(user);
+            }
             data.set('user', user);
         })
         .catch((err) => {

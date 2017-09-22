@@ -20,6 +20,7 @@ import * as data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
 import * as player_cache from "player_cache";
+import {RegisteredPlayer} from "data/Player";
 
 let ignores = {};
 let block_state = {};
@@ -71,7 +72,7 @@ export function player_is_ignored(user_id) {
 function update_blocks() {
     let user = data.get("user");
 
-    if (!user.anonymous) {
+    if (user instanceof RegisteredPlayer) {
         get("me/blocks")
         .then((entries) => {
             block_state = {};
@@ -105,8 +106,8 @@ function ignoreUser(uid, dont_fetch = false) {
         $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
     }
     else {
-        player_cache.fetch(uid, ['ui_class']).then((obj) => {
-            if (obj.ui_class.indexOf('moderator') < 0) {
+        player_cache.fetch(uid).then(player => {
+            if (!player.is.moderator) {
                 ignores[uid] = true;
                 $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
             } else {
