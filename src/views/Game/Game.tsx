@@ -695,7 +695,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
 
     checkAndEnterAnalysis(move?:MoveTree) {{{
-        if (this.goban.mode === "play" && this.goban.engine.phase !== "stone removal" && (!this.goban.engine.config.disable_analysis || this.goban.engine.phase === "finished")) {
+        if (this.goban.mode === "play" && this.goban.engine.phase !== "stone removal" && (!this.goban.isAnalysisDisabled() || this.goban.engine.phase === "finished")) {
             this.setState({variation_name: ""});
             this.goban.setMode("analyze");
             if (move) {
@@ -902,7 +902,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     gameAnalyze() {{{
         let user = data.get("user");
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
         } else {
             let last_estimate_move = this.stopEstimatingScore();
@@ -914,7 +914,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }}}
     fork() {{{
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Game forking has been disabled for this game since analysis mode has been disabled"));
         } else {
             challengeFromBoardPosition(this.goban);
@@ -1350,7 +1350,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     enterConditionalMovePlanner() {{{
             //if (!auth) { return; }
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Conditional moves have been disabled for this game."));
         } else {
             this.stashed_conditional_moves = this.goban.conditional_tree.duplicate();
@@ -1364,7 +1364,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let user = data.get("user");
         let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
 
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished" && is_player) {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
             //swal(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
 
         } else {
@@ -1782,7 +1782,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
                     }
-                    {(state.mode === "play" && state.phase === "play" && this.goban.engine.disable_analysis && state.cur_move_number < state.official_move_number || null) &&
+                    {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
                         <span>
                             <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
                         </span>
@@ -2340,7 +2340,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let game_id = null;
         let sgf_download_enabled = false;
         try {
-            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.engine.config.original_disable_analysis;
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.isAnalysisDisabled(true);
             game_id = this.goban.engine.config.game_id;
 
         } catch (e) {}
@@ -2379,13 +2379,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.toggleCoordinates}><i className="ogs-coordinates"></i> {_("Toggle coordinates")}</a>
                 <a onClick={this.showGameInfo}><i className="fa fa-info"></i> {_("Game information")}</a>
                 {game &&
-                    <a onClick={this.gameAnalyze} className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""} >
+                    <a onClick={this.gameAnalyze} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""} >
                         <i className="fa fa-sitemap"></i> {_("Analyze game")}
                     </a>
                 }
                 {(goban && this.state.user_is_player && goban.engine.phase !== "finished" || null) &&
                     <a style={{visibility: goban.mode === "play" && goban && goban.engine.playerToMove() !== data.get("user").id ? "visible" : "hidden"}}
-                       className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""}
+                       className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
                        onClick={this.enterConditionalMovePlanner}>
                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
@@ -2394,7 +2394,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <a onClick={this.pauseGame}><i className="fa fa-pause"></i> {_("Pause game")}</a>
                 }
                 {game &&
-                    <a onClick={this.startReview} className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""}>
+                    <a onClick={this.startReview} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
@@ -2913,14 +2913,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
        let goban = this.props.gameview.goban;
 
        if ("move_number" in line) {
-           if (!goban.engine.config.disable_analysis) {
+           if (!goban.isAnalysisDisabled()) {
                goban.setMode("analyze");
            }
 
             goban.engine.followPath(line.move_number, "");
             goban.redraw();
 
-            if (goban.engine.config.disable_analysis) {
+            if (goban.isAnalysisDisabled()) {
                 goban.updatePlayerToMoveTitle();
             }
 
@@ -2934,7 +2934,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 ct += mvs[i].edited ? 0 : 1;
             }
 
-            if (goban.engine.config.disable_analysis) {
+            if (goban.isAnalysisDisabled()) {
                 goban.setMode("analyze");
             }
 

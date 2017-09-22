@@ -67,6 +67,7 @@ export class Settings extends React.PureComponent<{}, any> {
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
+            always_disable_analysis: preferences.get("always-disable-analysis"),
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
@@ -225,6 +226,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setAutoAdvance = (ev) => {{{
         preferences.set("auto-advance-after-submit", ev.target.checked),
         this.setState({autoadvance: preferences.get("auto-advance-after-submit")});
+    }}}
+    setAlwaysDisableAnalysis = (ev) => {{{
+        preferences.set("always-disable-analysis", ev.target.checked),
+        this.setState({always_disable_analysis: preferences.get("always-disable-analysis")});
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
@@ -536,6 +541,14 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dd>
                         <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
                     </dd>
+                    <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
+                    <dd>
+                        <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
+                        <div><i>
+                        {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
+                        </i></div>
+                    </dd>
+
                 </dl>
             </Card>
             {/* }}} */}

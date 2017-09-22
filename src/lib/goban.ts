@@ -84,6 +84,23 @@ export class Goban extends OGSGoban {
         return preferences.get("show-variation-move-numbers");
     }
 
+    isAnalysisDisabled(perGameSettingAppliesToNonPlayers = false):boolean {
+        // The player's preference setting to always disable analysis overrides the per-game setting for
+        // their own games.
+        if (preferences.get("always-disable-analysis") && this.isParticipatingPlayer()) {
+            return true;
+        }
+
+        // If the user hasn't enabled the always-disable-analysis option (or they do not participate in this game),
+        // we check the per-game setting.
+        if (perGameSettingAppliesToNonPlayers) {
+            // This is used for the SGF download which is disabled even for users that are not
+            // participating in the game (or not signed in)
+            return this.engine.config.original_disable_analysis;
+        } else {
+            return this.engine.config.disable_analysis;
+        }
+    }
 
     watchSelectedThemes(cb) {
         return watchSelectedThemes(cb);
