@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+export * from './autotype';
+import * as me from './me';
+import * as ui from './ui';
+import * as groups from './groups';
+import * as github from './github';
+
 interface GenericRequestResponse {
     'request': any;
     'response': any;
@@ -26,25 +32,25 @@ export interface API {
         'announcements': GenericRequestResponse;
         'games/%%': GenericRequestResponse;
         'games/%%/acl': GenericRequestResponse;
-        'groups': GenericRequestResponse;
-        'groups/%%': GenericRequestResponse;
-        'groups/%%/members': GenericRequestResponse;
-        'groups/%%/news': GenericRequestResponse;
+        'groups': groups.Groups_GET;
+        'groups/%%': groups.GroupsDetail_GET;
+        'groups/%%/members': groups.GroupsMembers_GET;
+        'groups/%%/news': groups.GroupsNews_GET;
         'host_ip_settings': GenericRequestResponse;
         'ladders': GenericRequestResponse;
         'ladders/%%': GenericRequestResponse;
         'ladders/%%/players': GenericRequestResponse;
         'leaderboards': GenericRequestResponse;
         'library/%%': GenericRequestResponse;
-        'me/blocks': GenericRequestResponse;
-        'me/challenges': GenericRequestResponse;
-        'me/groups': GenericRequestResponse;
-        'me/groups/invitations': GenericRequestResponse;
-        'me/ladders': GenericRequestResponse;
-        'me/purchase_transactions': GenericRequestResponse;
+        'me/blocks': me.MeBlocks_GET;
+        'me/challenges': me.MeChallenges_GET;
+        'me/groups': me.MeGroups_GET;
+        'me/groups/invitations': me.MeGroupsInvitations_GET;
+        'me/ladders': me.MeLadders_GET;
+        'me/purchase_transactions': me.MePurchaseTransactions_GET;
         'me/settings': GenericRequestResponse;
-        'me/supporter': GenericRequestResponse;
-        'me/tournaments': GenericRequestResponse;
+        'me/supporter': me.MeSupporter_GET;
+        'me/tournaments': me.MeTournaments_GET;
         'moderation': GenericRequestResponse;
         'moderation/recent_users': GenericRequestResponse;
         'players': GenericRequestResponse;
@@ -64,11 +70,11 @@ export interface API {
         'tournaments/%%': GenericRequestResponse;
         'tournaments/%%/players/all': GenericRequestResponse;
         'tournaments/%%/rounds': GenericRequestResponse;
-        'ui/config': GenericRequestResponse;
-        'ui/friends': GenericRequestResponse;
-        'ui/omniSearch': GenericRequestResponse;
-        'ui/overview': GenericRequestResponse;
-        'https://api.github.com/repos/online-go/online-go.com/contributors': GenericRequestResponse;
+        'ui/config': ui.UiConfig_GET;
+        'ui/friends': ui.UiFriends_GET;
+        'ui/omniSearch': ui.UiOmniSearch_GET;
+        'ui/overview': ui.UiOverview_GET;
+        'https://api.github.com/repos/online-go/online-go.com/contributors': github.HttpsApiGithubComReposOnlineGoOnlineGoComContributors_GET;
     };
     'POST': {
         '/api/v0/changePassword': GenericRequestResponse;
@@ -83,9 +89,9 @@ export interface API {
         'games/%%/annul': GenericRequestResponse;
         'games/%%/moderate': GenericRequestResponse;
         'games/%%/reviews': GenericRequestResponse;
-        'groups': GenericRequestResponse;
-        'groups/%%/members': GenericRequestResponse;
-        'groups/%%/news': GenericRequestResponse;
+        'groups': groups.Groups_POST;
+        'groups/%%/members': groups.GroupsMembers_POST;
+        'groups/%%/news': groups.GroupsNews_POST;
         'host_ip_settings': GenericRequestResponse;
         'ladders/%%/players': GenericRequestResponse;
         'ladders/%%/players/challenge': GenericRequestResponse;
@@ -117,7 +123,7 @@ export interface API {
         'groups/%%/banner': GenericRequestResponse;
         'groups/%%/icon': GenericRequestResponse;
         'groups/%%/members': GenericRequestResponse;
-        'groups/%%/news': GenericRequestResponse;
+        'groups/%%/news': groups.GroupsNews_PUT;
         'me/payment_methods/%%': GenericRequestResponse;
         'me/settings': GenericRequestResponse;
         'me/vacation': GenericRequestResponse;

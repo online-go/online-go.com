@@ -16,7 +16,7 @@
  */
 
 import {deepCompare} from "misc";
-import { API } from 'api';
+import { API, autotype } from 'api';
 
 
 export function api1ify(path) {
@@ -158,6 +158,7 @@ export function request<T extends keyof API>(type: T) {
                 contentType: "application/json",
                 success: (res) => {
                     delete requests_in_flight[request_id];
+                    autotype(type, url, 'response', res);
                     resolve(res);
                 },
                 error: (err) => {
@@ -167,6 +168,7 @@ export function request<T extends keyof API>(type: T) {
                         console.warn(traceback.stack);
                     }
                     console.error(err);
+                    autotype(type, url, 'error', err);
                     reject(err);
                 }
             };
@@ -190,6 +192,8 @@ export function request<T extends keyof API>(type: T) {
                     }
                 }
             }
+
+            autotype(type, url, 'request', real_data);
 
             requests_in_flight[request_id].request = $.ajax(opts);
         });

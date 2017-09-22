@@ -1,7 +1,7 @@
 {
     "rules": {
         "adjacent-overload-signatures": true,
-        "class-name": true,
+        "class-name": false,
         "curly": true,
         "eofline": true,
         "file-header": [true, "[Cc]opyright ([(][Cc][)])?\\s*\\d{4}"],
