@@ -215,7 +215,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
         let last_ip = this.state.user.last_ip;
-        get("host_ip_settings/", {"address": last_ip})
+        get("host_ip_settings", {"address": last_ip})
         .then((lst) => {
             this.setState({"host_ip_settings": lst.count ? lst.results[0] : {
                 "id": 0,
@@ -243,7 +243,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
-            post("host_ip_settings/", obj)
+            post("host_ip_settings", obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();

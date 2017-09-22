@@ -928,11 +928,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         delete tournament.settings.active_round;
 
         if (this.state.tournament.id) {
-            put('tournaments/', this.state.tournament.id, tournament)
+            put('tournaments', this.state.tournament.id, tournament)
             .then(() => this.resolve(this.state.tournament_id))
             .catch(errorAlerter);
         } else {
-            post("tournaments/", tournament)
+            post("tournaments", tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
             .catch(errorAlerter);
         }

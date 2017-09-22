@@ -102,13 +102,13 @@ export class PuzzleEditor {
      */
     createPuzzleCollection(puzzle: any, name:string): Promise<any> {
         let postResult;
-        return post("puzzles/collections/", {
+        return post("puzzles/collections", {
             "name": name,
             "private": false,
             "price": "0.00",
         }).then((res) => {
             postResult = res;
-            return get("puzzles/collections/", {page_size: 100, owner: data.get("user").id});
+            return get("puzzles/collections", {page_size: 100, owner: data.get("user").id});
         }).then((collections) => {
             return {
                 puzzle: Object.assign({}, puzzle, {puzzle_collection: postResult.id}),
@@ -125,7 +125,7 @@ export class PuzzleEditor {
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {{{
         abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
-            get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
+            get("puzzles/collections", {page_size: 100, owner: data.get("user").id})
             .then((collections) => {
                 callback(
                     Object.assign(

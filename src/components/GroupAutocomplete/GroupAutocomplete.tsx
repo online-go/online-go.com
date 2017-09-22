@@ -74,11 +74,11 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             return;
         }
 
-        abort_requests_in_flight("players/");
+        abort_requests_in_flight("players");
         this.current_search = value;
 
         if (value.length > 1) {
-            get("groups/", {name__istartswith: value, page_size: 10})
+            get("groups", {name__istartswith: value, page_size: 10})
             .then((res) => {
                 for (let group of res.results) {
                     groups_by_name[group.name] = group;

@@ -30,12 +30,11 @@ export interface API {
         'groups/%%': GenericRequestResponse;
         'groups/%%/members': GenericRequestResponse;
         'groups/%%/news': GenericRequestResponse;
-        'groups/': GenericRequestResponse;
-        'host_ip_settings/': GenericRequestResponse;
+        'host_ip_settings': GenericRequestResponse;
         'ladders': GenericRequestResponse;
         'ladders/%%': GenericRequestResponse;
         'ladders/%%/players': GenericRequestResponse;
-        'leaderboards/': GenericRequestResponse;
+        'leaderboards': GenericRequestResponse;
         'library/%%': GenericRequestResponse;
         'me/blocks': GenericRequestResponse;
         'me/challenges': GenericRequestResponse;
@@ -48,24 +47,19 @@ export interface API {
         'me/tournaments': GenericRequestResponse;
         'moderation': GenericRequestResponse;
         'moderation/recent_users': GenericRequestResponse;
-        'player/%%/aliases': GenericRequestResponse;
         'players': GenericRequestResponse;
         'players/%%/aliases': GenericRequestResponse;
         'players/%%/full': GenericRequestResponse;
         'players/%%/games': GenericRequestResponse;
-        'players/': GenericRequestResponse;
-        'puzzle/%%/collection_summary': GenericRequestResponse;
-        'puzzle/collections/': GenericRequestResponse;
         'puzzles/%%': GenericRequestResponse;
         'puzzles/%%/collection_summary': GenericRequestResponse;
         'puzzles/%%/rate': GenericRequestResponse;
         'puzzles/collections': GenericRequestResponse;
-        'puzzles/collections/': GenericRequestResponse;
         'reviews': GenericRequestResponse;
         'reviews/%%': GenericRequestResponse;
         'reviews/%%/acl': GenericRequestResponse;
         'supporter_center/player/%%': GenericRequestResponse;
-        'tournament_schedules/': GenericRequestResponse;
+        'tournament_schedules': GenericRequestResponse;
         'tournaments': GenericRequestResponse;
         'tournaments/%%': GenericRequestResponse;
         'tournaments/%%/players/all': GenericRequestResponse;
@@ -89,11 +83,10 @@ export interface API {
         'games/%%/annul': GenericRequestResponse;
         'games/%%/moderate': GenericRequestResponse;
         'games/%%/reviews': GenericRequestResponse;
-        'group/%%/news': GenericRequestResponse;
+        'groups': GenericRequestResponse;
         'groups/%%/members': GenericRequestResponse;
         'groups/%%/news': GenericRequestResponse;
-        'groups/': GenericRequestResponse;
-        'host_ip_settings/': GenericRequestResponse;
+        'host_ip_settings': GenericRequestResponse;
         'ladders/%%/players': GenericRequestResponse;
         'ladders/%%/players/challenge': GenericRequestResponse;
         'library/%%': GenericRequestResponse;
@@ -111,12 +104,12 @@ export interface API {
         'moderation/incident/%%': GenericRequestResponse;
         'moderation/shadowban_anonymous_user': GenericRequestResponse;
         'players/%%/challenge': GenericRequestResponse;
-        'puzzles/': GenericRequestResponse;
-        'puzzles/collections/': GenericRequestResponse;
+        'puzzles': GenericRequestResponse;
+        'puzzles/collections': GenericRequestResponse;
         'reviews/%%/acl': GenericRequestResponse;
+        'tournaments': GenericRequestResponse;
         'tournaments/%%/players': GenericRequestResponse;
         'tournaments/%%/start': GenericRequestResponse;
-        'tournaments/': GenericRequestResponse;
         'ui/bot/generateAPIKey': GenericRequestResponse;
     };
     'PUT': {
@@ -137,7 +130,6 @@ export interface API {
         'puzzles/%%/rate': GenericRequestResponse;
         'tournaments': GenericRequestResponse;
         'tournaments/%%/players': GenericRequestResponse;
-        'tournaments/': GenericRequestResponse;
         'ui/bot/saveBotInfo': GenericRequestResponse;
     };
     'PATCH': {
