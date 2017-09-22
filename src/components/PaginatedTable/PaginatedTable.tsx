@@ -130,10 +130,16 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             query["ordering"] = order_by.join(",");
         }
         if (this.props.get) {
-            return get(this.props.get, this.props.getId, query); // TODO: Check the URLs and typify the result
+            if (this.props.getId) {
+                return get(this.props.get, this.props.getId, query);
+            }
+            return get(this.props.get, query);
         }
         else if (this.props.post) {
-            return post(this.props.post, this.props.postId, query); // TODO: Check the URLs and typify the result again
+            if (this.props.postId) {
+                return post(this.props.post, this.props.postId, query); // TODO: Check the URLs and typify the result again
+            }
+            return post(this.props.post, query);
         }
     }
 
