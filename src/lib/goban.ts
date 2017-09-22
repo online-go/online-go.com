@@ -85,13 +85,14 @@ export class Goban extends OGSGoban {
     }
 
     isAnalysisDisabled(perGameSettingAppliesToNonPlayers = false):boolean {
-        if (preferences.get("always-disable-analysis")) {
-            // Player's settings to always disable analysis overrides the per-game setting.
+        // The player's preference setting to always disable analysis overrides the per-game setting for
+        // their own games.
+        if (preferences.get("always-disable-analysis") && this.isParticipatingPlayer()) {
             return true;
         }
 
-        // If the user hasn't enabled the always-disable-analysis option we check the per-game
-        // setting.
+        // If the user hasn't enabled the always-disable-analysis option (or they do not participate in this game),
+        // we check the per-game setting.
         if (perGameSettingAppliesToNonPlayers) {
             // This is used for the SGF download which is disabled even for users that are not
             // participating in the game (or not signed in)

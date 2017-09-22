@@ -4514,9 +4514,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     protected getShouldPlayVoiceCountdown():boolean {{{
         return false;
     }}}
+    /**
+     * Returns true if the user has signed in and if the signed in user is a participating player in this game
+     * (and not only spectating), that is, if they are either white or black.
+     */
+    public isParticipatingPlayer():boolean { /* {{{ */
+        return this.engine.black_player_id === this.player_id ||
+               this.engine.white_player_id === this.player_id;
+    } /* }}} */
 }
-
-
 function plurality(num, single, plural) {{{
     if (num > 0) {
         if (num === 1) {
