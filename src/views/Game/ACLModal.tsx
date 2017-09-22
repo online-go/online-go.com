@@ -60,9 +60,10 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     componentWillUnmount() {
     }
     refresh = () => {
-        let url = this.props.gameId ? "games/%%/acl" : "reviews/%%/acl";
-        let id = this.props.gameId ? this.props.gameId : this.props.reviewId;
-        get(url, id)
+        (this.props.gameId
+            ? get("games/%%/acl", this.props.gameId)
+            : get("reviews/%%/acl", this.props.reviewId)
+        )
         .then((acl) => this.setState({acl: acl}))
         .catch(errorAlerter);
     }
@@ -103,7 +104,10 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         if (group_id) {
             obj.group_id = group_id;
         }
-        post(this.props.gameId ? `games/${this.props.gameId}/acl` : `reviews/${this.props.reviewId}/acl`, obj)
+        (this.props.gameId
+            ? post("games/%%/acl", this.props.gameId, obj)
+            : post("reviews/%%/acl", this.props.reviewId, obj)
+        )
         .then(this.refresh)
         .catch(errorAlerter);
 

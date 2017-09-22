@@ -219,7 +219,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                     className="TournamentList-table"
                     ref="table"
                     name="game-history"
-                    source={`tournaments/`}
+                    get='tournaments'
                     filter={filter}
                     orderBy={["-started", "time_start", "name"]}
                     columns={[

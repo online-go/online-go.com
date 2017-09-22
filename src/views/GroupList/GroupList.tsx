@@ -58,7 +58,7 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                         className=""
                         ref="table"
                         name="game-history"
-                        source={`groups/`}
+                        get='groups'
                         orderBy={["-member_count"]}
                         filter={{ "name__istartswith": "" }}
                         onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}

@@ -880,7 +880,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         <PaginatedTable
                             className="aliases"
                             name="aliases"
-                            source={`players/${this.user_id}/aliases/`}
+                            get={'players/%%/aliases'}
+                            getId={this.user_id}
                             columns={[
                                 {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
                                 {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
@@ -925,8 +926,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     className=""
                                     ref="game_table"
                                     name="game-history"
-                                    method="get"
-                                    source={`players/${this.user_id}/games/`}
+                                    get='players/%%/games'
+                                    getId={this.user_id}
                                     filter={{
                                         "source": "play",
                                         "ended__isnull": false,
@@ -960,8 +961,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         className=""
                                         ref="review_table"
                                         name="review-history"
-                                        method="get"
-                                        source={`reviews/`}
+                                        get={'reviews'}
                                         filter={{
                                             "owner_id": this.user_id,
                                         }}
