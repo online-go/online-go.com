@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {AdUnit} from "AdUnit";
+import {should_show_ads, AdUnit} from "AdUnit";
 import {Link, browserHistory} from "react-router";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
@@ -218,9 +218,9 @@ export class Play extends React.Component<PlayProperties, any> {
 
         return (
             <div className="Play container">
-                <AdUnit unit="cdm-zone-01" nag/>
+                <AdUnit unit="cdm-zone-01" nag />
 
-                <div className='row'>
+                <div className='row foo'>
                     <div className='col-sm-6'>
                         <Card>
                             {this.automatchContainer()}
@@ -234,7 +234,6 @@ export class Play extends React.Component<PlayProperties, any> {
                         </Card>
                     </div>
                 </div>
-
 
                 <div id="challenge-list-container">
                   <div id="challenge-list-inner-container">
@@ -332,12 +331,21 @@ export class Play extends React.Component<PlayProperties, any> {
                 <div className='automatch-container'>
                     <div className='automatch-header'>
                         {_("Finding you a game...")}
+                        {should_show_ads() &&
+                            <div className="spinner">
+                                <div className="double-bounce1"></div>
+                                <div className="double-bounce2"></div>
+                            </div>
+                        }
                     </div>
                     <div className='automatch-row-container'>
-                        <div className="spinner">
-                            <div className="double-bounce1"></div>
-                            <div className="double-bounce2"></div>
-                        </div>
+                        {should_show_ads()
+                            ? <AdUnit unit="cdm-zone-02" />
+                            : <div className="spinner">
+                                  <div className="double-bounce1"></div>
+                                  <div className="double-bounce2"></div>
+                              </div>
+                        }
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>

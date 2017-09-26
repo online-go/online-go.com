@@ -126,7 +126,9 @@ export class Overview extends React.Component<{}, any> {
                             }
                         </div>
                     </div>
-
+                    <div className="right-header" style={{justifyContent: 'center'}}>
+                        <AdUnit unit='cdm-zone-02' />
+                    </div>
                     <div className="right-header">
                         <h3>{_("Tournaments")}</h3>
                         <Link to="/tournaments">{_("All tournaments") /* translators: Link to view all tournaments */} &gt;</Link>

@@ -53,7 +53,7 @@ if (never_load_ads) {
 }
 
 
-function should_show_ads() {
+export function should_show_ads() {
     let user = data.get("user");
 
     if (user && (user.supporter && user.id !== 1)) {
