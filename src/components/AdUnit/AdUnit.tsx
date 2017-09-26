@@ -42,6 +42,7 @@ interface AdUnitProperties {
 
 
 const never_load_ads = false;
+const ROTATE_DELAY = 95 * 1000;
 let adblock_detector = new TypedEventEmitter<{'blocked': never}>();
 let ads_are_blocked = false;
 let zone_end = null;
@@ -76,7 +77,7 @@ export function should_show_ads() {
 }
 
 
-function refresh_ads() {
+export function refresh_ads(reset_rotate_interval:boolean = false) {
     if (!should_show_ads()) {
         termination_socket.emit('ad', 'supporter');
         return;
@@ -84,6 +85,12 @@ function refresh_ads() {
 
     if (refresh_delay_timeout) {
         return;
+    }
+
+
+    if (reset_rotate_interval  && rotate_timer) {
+        clearInterval(rotate_timer);
+        rotate_timer = setInterval(refresh_ads, ROTATE_DELAY);
     }
 
 
@@ -171,7 +178,7 @@ export class AdUnit extends React.Component<AdUnitProperties, any> {
         if (rotate_timer) {
             return;
         }
-        rotate_timer = setInterval(refresh_ads, 95 * 1000);
+        rotate_timer = setInterval(refresh_ads, ROTATE_DELAY);
     }
 
     componentWillUnmount() {

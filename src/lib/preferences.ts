@@ -34,6 +34,7 @@ let defaults = {
     "desktop-notifications": true,
     "asked-to-enable-desktop-notifications": false,
     "always-disable-analysis": false,
+    "show-ads-on-game-page": true,
 
     "sound-enabled": true,
     "sound-volume": 0.5,

@@ -24,6 +24,36 @@
     left: 0;
 }
 
+.outer-banner {
+    .Game, .Dock {
+        top: below-navbar + 5.4 !important;
+    }
+}
+
+.mobile-banner {
+    .Game, .Dock {
+        top: below-navbar + 2.9 !important;
+    }
+}
+
+/*
+@media (max-width: 728px) {
+    .outer-banner {
+        .Game, .Dock {
+            top: below-navbar + 2.9 !important;
+        }
+    }
+
+    .mobile-banner {
+        .Game, .Dock {
+            top: below-navbar + 2.9 !important;
+        }
+    }
+}
+*/
+
+
+
 
 .Game.portrait.squashed {
     overflow-y: scroll;
@@ -406,10 +436,7 @@ goban-view-bar-width=400px
         flex-basis: 0;
         min-width: 0px;
     }
-    .left-col.wide-skyscraper {
-        min-width: 170px;
-    }
-    .left-col.half-page {
+    .left-col.block {
         min-width: 310px;
     }
 

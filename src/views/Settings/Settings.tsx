@@ -71,6 +71,7 @@ export class Settings extends React.PureComponent<{}, any> {
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
+            show_ads_on_game_page: preferences.get('show-ads-on-game-page'),
             board_labeling: preferences.get("board-labeling"),
         };
     }
@@ -147,6 +148,25 @@ export class Settings extends React.PureComponent<{}, any> {
     setVoiceCountdown = (ev) => {{{
         preferences.set("sound-voice-countdown", ev.target.checked);
         this.setState({"voice_countdown": ev.target.checked});
+    }}}
+    setShowAdsOnGamePage = (ev) => {{{
+        if (!ev.target.checked) {
+            swal({
+                'text': _("Please consider becoming a site supporter instead of disabling these ads. The increased revenue from these ads is being used to expand OGS by providing better services to Asia, Europe, and neighboring regions."),
+                'showCancelButton': true,
+                confirmButtonText: _("Keep Ads"),
+                cancelButtonText: _("Disable Ads"),
+            })
+            .then((val) => {
+            })
+            .catch((e) => {
+                preferences.set("show-ads-on-game-page", false);
+                this.setState({show_ads_on_game_page: false});
+            });
+        } else {
+            preferences.set("show-ads-on-game-page", true);
+            this.setState({show_ads_on_game_page: true});
+        }
     }}}
     toggleVolume = (ev) => {{{
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
@@ -541,6 +561,14 @@ export class Settings extends React.PureComponent<{}, any> {
                     <dd>
                         <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
                     </dd>
+                    {(!user.supporter || null) &&
+                        <dt><label htmlFor="show-ads-on-game-page">{_("Show ads on game page")}</label></dt>
+                    }
+                    {(!user.supporter || null) &&
+                        <dd>
+                            <input type="checkbox" id="show-ads-on-game-page" checked={this.state.show_ads_on_game_page} onChange={this.setShowAdsOnGamePage}/>
+                        </dd>
+                    }
                     <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
                     <dd>
                         <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
@@ -548,7 +576,6 @@ export class Settings extends React.PureComponent<{}, any> {
                         {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
                         </i></div>
                     </dd>
-
                 </dl>
             </Card>
             {/* }}} */}

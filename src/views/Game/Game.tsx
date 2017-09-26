@@ -49,7 +49,7 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AdUnit} from "AdUnit";
+import {AdUnit, should_show_ads, refresh_ads} from "AdUnit";
 import * as moment from "moment";
 
 declare var swal;
@@ -86,12 +86,15 @@ interface GameChatLineProperties {
 
 
 export type ViewMode = "portrait"|"wide"|"square"|"zen";
-type AdClass = "large-rectangle"|"medium-rectangle"|"leaderboard"|"mobile-banner"|"wide-skyscraper"|"half-page"|"no-ads";
+type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
     refs: {
         goban;
         goban_container;
+        players;
+        action_bar;
+        play_controls;
         chat;
     };
 
@@ -144,9 +147,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             undo_requested: false,
             estimating_score: false,
             analyze_pencil_color: "#8DDD3C",
-            //show_ads: data.get('user').id === 1,
             show_submit: false,
-            show_ads: false,
             user_is_player: false,
             zen_mode: false,
             autoplaying: false,
@@ -257,6 +258,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         ) {
             this.deinitialize();
             this.goban_div.empty();
+
+            refresh_ads(true);
 
             this.setState({
                 portrait_tab: "game",
@@ -746,8 +749,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (this.computeViewMode() === "portrait") {
-            if (this.refs.goban_container.style.minHeight !== `${win.width() + 10}px`) {
-                this.refs.goban_container.style.minHeight = `${win.width() + 10}px`;
+            let w = win.width() + 10;
+            let max_h = win.height() - 32; /* 32 for navbar */
+            max_h -= $(this.refs.players).height();
+            max_h -= $(this.refs.action_bar).height();
+            max_h -= $(this.refs.play_controls).height();
+            let ad_class = this.getAdClass();
+            switch (ad_class) {
+                case 'mobile-banner':
+                    max_h -= 50;
+                    break;
+                case 'goban-banner':
+                case 'outer-banner':
+                    max_h -= 90;
+                    break;
+            }
+            w = Math.min(w, max_h);
+
+            if (this.refs.goban_container.style.minHeight !== `${w}px`) {
+                this.refs.goban_container.style.minHeight = `${w}px`;
             }
         } else {
             if (this.refs.goban_container.style.minHeight !== `initial`) {
@@ -764,6 +784,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.recenterGoban();
             return;
         }
+
 
         this.goban.setSquareSizeBasedOnDisplayWidth(
             Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
@@ -826,7 +847,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return win.height() < 680;
     }}}
     getAdClass(): AdClass {{{
-        if (!this.state.show_ads) {
+        let show_ad = should_show_ads() && preferences.get("show-ads-on-game-page");
+
+        if (!show_ad) {
             return "no-ads";
         }
 
@@ -837,41 +860,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let w = win.width() || 1;
         let h = win.height() || 1;
 
-        switch (this.computeViewMode()) {
-            case "portrait":
-                {
-                    if (w >= 728) {
-                        return this.ad_class = "leaderboard";
-                    }
-                    return this.ad_class = "mobile-banner";
-                }
-
-            case "square":
-                {
-                    if (h < 700) {
-                        return this.ad_class = "mobile-banner";
-                    }
-                    if (w >= 1280) {
-                        return this.ad_class = "large-rectangle";
-                    }
-                    return this.ad_class = "medium-rectangle";
-                }
-
-            case "wide":
-                {
-                    if (w >= 1900) {
-                        return  this.ad_class = "half-page";
-                        //return this.ad_class = 'large-rectangle';
-                    }
-                    return  this.ad_class = "wide-skyscraper";
-                    //return this.ad_class = 'medium-rectangle';
-                }
-
-
-            case "zen":
-                return this.ad_class = null;
-
+        if (w >= 1280) {
+            if (w - (300 + 400) > h - 90) { // 300 for left block, 400 for right col
+                return this.ad_class = 'block';
+            }
         }
+        if (w <= 728) {
+            return this.ad_class = 'mobile-banner';
+        }
+        if (w - 400 >= 728) {
+            return this.ad_class = 'goban-banner';
+        }
+        return this.ad_class = 'outer-banner';
     }}}
     toggleCoordinates() {{{
         let goban = this.goban;
@@ -1621,33 +1621,41 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     render() {{{
-        /*
-        if (!this.ad) {
-            this.ad = $(`<div class='ad ${this.getAdClass()}'>${Math.random()}</div>`)[0];
-        }
-        */
-        //const CHAT = <div className='chat'>chat</div>;
         const CHAT = <GameChat ref="chat" chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
-        //const FLEX_AD = this.state.show_ads ? <div className='ad-container'><PersistentElement elt={this.ad}/></div> : <div className='supporter'/> ;
-        const FLEX_AD = null;
-        //const CURSE_ATF_AD = <AdUnit unit='cdm-zone-01' nag/>;
-        //const CURSE_BTF_AD = <AdUnit unit='cdm-zone-04' nag/>;
         const review = !!this.review_id;
 
+        let ad_class = this.getAdClass();
+        let FLEX_AD = null;
+        switch (ad_class) {
+            case 'no-ads':
+                FLEX_AD = null;
+                break;
+
+            case 'block':
+                FLEX_AD = <AdUnit unit='cdm-zone-02' />;
+                break;
+
+            default:
+                FLEX_AD = <AdUnit unit='cdm-zone-01' />;
+        }
+
         return (
-            <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
+            <div className={(ad_class === 'outer-banner' || ad_class === 'mobile-banner') ? ad_class : ''}>
+             {((ad_class === 'outer-banner' || ad_class === 'mobile-banner') || null) && FLEX_AD}
+             <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
-                <div className={"left-col " + this.getAdClass()}>
-                    {(this.state.view_mode === "wide" || null) && FLEX_AD}
+
+                <div className={"left-col " + (ad_class === 'block' ? 'block' : 'no-ads')}>
+                    {(ad_class === "block" || null) && FLEX_AD}
                 </div>
 
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" || null) && FLEX_AD}
+                    {(ad_class === 'goban-banner' || null) && FLEX_AD}
 
                     {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
@@ -1720,6 +1728,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {this.frag_dock()}
                     </div>
                 }
+
+             </div>
             </div>
         );
     }}}
@@ -1777,7 +1787,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div className="play-controls">
+            <div ref='play_controls' className="play-controls">
                 <div className="game-action-buttons">{/* {{{ */}
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
@@ -2050,7 +2060,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div className="play-controls">
+            <div ref='play_controls' className="play-controls">
                 <div className="game-state">
                     {_("Review by")}: <Player user={this.state.review_owner_id} />
                     {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
@@ -2214,7 +2224,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         return (
-            <div className="players">
+            <div ref="players" className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
                   if (this.state[`historical_${color}`]) {
@@ -2286,7 +2296,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "dock") {
             return (
-                <div className="action-bar">
+                <div ref='action_bar' className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={"tab-icon ogs-goban"} />
                     </span>
@@ -2296,7 +2306,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "chat") {
             return (
-                <div className="action-bar">
+                <div ref='action_bar' className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={/*'tab-icon fa fa-list-ul'*/"tab-icon ogs-goban"} />
                     </span>
@@ -2305,7 +2315,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div className="action-bar">
+            <div ref='action_bar' className="action-bar">
                 <span className="icons" />{/* for flex centering */}
                 <span className="controls">
                     <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
@@ -2487,18 +2497,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     </div>
                 </div>
             );
-            //            <button className='xs' onClick={()=>{
-            //                this.goban.giveVoice(player_id);
-            //                close_all_popovers();
-            //            }}>{_("Give Voice") /* translators: Allow user to voice chat in a review or demo */}</button>
-            //            <button className='xs' onClick={()=>{
-            //                this.goban.removeVoice(player_id);
-            //                close_all_popovers();
-            //            }}>{_("Remove Voice") /* translators: Remove ability for a user to voice chat in a demo or review */}</button>
         }
         return null;
     }}}
 }
+
 
 export function goban_view_mode(bar_width?: number): ViewMode {{{
     if (!bar_width) {
