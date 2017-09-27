@@ -462,7 +462,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 </div>
 
                 <div className='p'>
-                {_("This project is almost entirely supported by donations from players like you. By choosing to help support OGS financially, you are directly helping us keep this service online as well as enabling us to continually improve the service.")}
+                {_("This project is entirely supported by donations from players like you. By choosing to help support OGS financially, you are directly helping us keep this service online as well as enabling us to continually improve the service.")}
                 </div>
 
                 <div className='p'>
