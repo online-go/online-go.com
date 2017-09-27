@@ -35,6 +35,7 @@ import {longRankString, getUserRating, is_novice, is_provisional} from "rank_uti
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
+import {SupporterGoals} from "SupporterGoals";
 
 
 let UserRating = (props: {rating: number}) => {
@@ -81,6 +82,7 @@ export class Overview extends React.Component<{}, any> {
         return (
         <div id="Overview-Container">
             <AdUnit unit="cdm-zone-01" nag/>
+            <SupporterGoals />
             <div id="Overview">
                 <div className="left">
                     <EmailBanner />

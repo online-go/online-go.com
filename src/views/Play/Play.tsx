@@ -33,6 +33,7 @@ import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import * as data from "data";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
+import {SupporterGoals} from "SupporterGoals";
 
 
 interface PlayProperties {
@@ -219,7 +220,7 @@ export class Play extends React.Component<PlayProperties, any> {
         return (
             <div className="Play container">
                 <AdUnit unit="cdm-zone-01" nag />
-
+                <SupporterGoals />
                 <div className='row foo'>
                     <div className='col-sm-6'>
                         <Card>
