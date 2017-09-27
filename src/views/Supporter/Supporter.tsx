@@ -22,6 +22,8 @@ import {errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
+import * as ReactNumberFormat from 'react-number-format';
+
 
 declare var Braintree;
 declare var swal;
@@ -41,10 +43,19 @@ let amount_steps = [
     15.0,
     20.0,
     25.0,
+    0,
 ];
 
 let braintree_js_promise = null;
 let braintree = null;
+
+function getDecimalSeparator() {
+    return (1.1).toLocaleString().substring(1, 2);
+}
+
+function toFixedWithLocale(n:number, decimals:number = 2) {
+    return n.toFixed(decimals).replace('.', getDecimalSeparator());
+}
 
 export class Supporter extends React.PureComponent<SupporterProperties, any> {
     refs: {
@@ -68,6 +79,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 processing: false,
                 show_update_cc: false,
                 amount: 5.0,
+                custom_amount: 50.0,
                 amount_step: 4,
 
                 card_number_spaced: "",
@@ -130,12 +142,18 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }}}
 
     setAmount = (ev) => {{{
-
         this.setState({
             amount_step: parseInt(ev.target.value),
             amount: amount_steps[parseInt(ev.target.value)]
         });
-
+    }}}
+    updateCustomAmount = (ev, values) => {{{
+        this.setState({
+            custom_amount: values.floatValue
+        });
+    }}}
+    getAmount() {{{
+        return this.state.amount || this.state.custom_amount;
     }}}
 
     updateCardNumber = (ev) => {{{
@@ -284,7 +302,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return true;
     }}}
     processCC = () => {{{
-        let amount = this.state.amount;
+        let amount = this.getAmount();
 
         if (amount < 1.0) {
             return;
@@ -359,7 +377,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }}}
 
     processPaypal = () => {{{
-        let amount = this.state.amount;
+        let amount = this.getAmount();
 
         if (amount < 1.0) {
             return;
@@ -487,7 +505,19 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                 <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps.length - 1} step={1}/>
                             </div>
                             <div>
-                                <h3>{`$${this.state.amount.toFixed(2)}/` + _("month")}</h3>
+                                {this.state.amount === 0
+                                    ? <h3><ReactNumberFormat
+                                            prefix='$ '
+                                            suffix={' / ' + _("month")}
+                                            decimalSeparator={getDecimalSeparator()}
+                                            value={this.state.custom_amount}
+                                            decimalPrecision={2}
+                                            onChange={this.updateCustomAmount}
+                                            allowNegative={false}
+                                          />
+                                      </h3>
+                                    : <h3>{`$ ${toFixedWithLocale(this.getAmount(), 2)} / ` + _("month")}</h3>
+                                }
                             </div>
 
                             {this.cc_form()}
@@ -502,7 +532,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <input type="hidden" name="cmd" value="_xclick-subscriptions" />
                                     <input type="hidden" name="business" value={data.get("config.paypal_email")} />
                                     <input type="hidden" name="item_name" value="Supporter Account" />
-                                    <input type="hidden" name="a3" value={this.state.amount.toFixed(2)} />
+                                    <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />
                                     <input type="hidden" name="p3" value="1" />
                                     <input type="hidden" name="t3" value="M" />
                                     <input type="hidden" name="src" value="1" />
@@ -523,7 +553,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                 <p>
                                     {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
                                         {
-                                            "amount": parseFloat(this.state.purchase.price).toFixed(2),
+                                            "amount": toFixedWithLocale(parseFloat(this.state.purchase.price)),
                                             "card_type": this.state.payment_method.card_type,
                                             "last_four": this.state.payment_method.card_number,
                                             "month": this.state.payment_method.expiration_month,
@@ -560,7 +590,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                 <p>
                                     {interpolate(_("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!"),
                                         {
-                                            "amount": parseFloat(this.state.purchase.price).toFixed(2),
+                                            "amount": toFixedWithLocale(parseFloat(this.state.purchase.price), 2),
                                         })
                                     }
                                 </p>
@@ -615,7 +645,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         {_(`Save new card information`)}
                       </button>
                     : <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
-                        {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${this.state.amount.toFixed(2)}`})}
+                        {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
                       </button>
                 }
             </div>
