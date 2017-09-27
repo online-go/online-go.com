@@ -53,6 +53,11 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
         let loc2_done = goals.loc2 * 10;
         let loc2_left = (1.0 - goals.loc2) * 10;
 
+        //let loc1_text = _("Asia") + ` (${(goals.loc1 * 100.0).toFixed(1)}%)`;
+        //let loc2_text = _("Europe") + ` (${(goals.loc2 * 100.0).toFixed(1)}%)`;
+        let loc1_text = _("Asia");
+        let loc2_text = _("Europe");
+
         return (
             <div id='SupporterGoalsContainer'>
                 <div id='SupporterGoalText'>
@@ -61,12 +66,12 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
 
                 <div id='SupporterGoals'>
                     <div className="progress">
-                        <div className={`progress-bar ${goals.adfree >= 1 ? 'success' : 'primary'}`} style={{width: `${adfree_done}%`}}>Ad Free OGS!</div>
+                        <div className={`progress-bar ${goals.adfree >= 1 ? 'success' : 'primary'}`} style={{width: `${adfree_done}%`}}>Ad Free OGS! ({(goals.adfree * 100.0).toFixed(1)}%)</div>
                         {goals.adfree < 1 && <div className={`progress-bar default`} style={{width: `${adfree_left}%`}}>&nbsp;</div>}
-                        <div className={`progress-bar ${goals.loc1 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc1_done}%`}}>{goals.loc1 > 0.5 ? _("Asia") : <span>&nbsp;</span>}</div>
-                        {goals.loc1 < 1 && <div className={`progress-bar info`} style={{width: `${loc1_left}%`}}>{goals.loc1 <= 0.5 ? _("Asia") : <span>&nbsp;</span>}</div> }
-                        <div className={`progress-bar ${goals.loc2 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc2_done}%`}}>{goals.loc2 > 0.5 ? _("Europe") : <span>&nbsp;</span>}</div>
-                        {goals.loc2 < 1 && <div className={`progress-bar info`} style={{width: `${loc2_left}%`}}>{goals.loc2 <= 0.5 ? _("Europe") :  <span>&nbsp;</span>}</div> }
+                        <div className={`progress-bar ${goals.loc1 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc1_done}%`}}>{goals.loc1 > 0.5 ? loc1_text : <span>&nbsp;</span>}</div>
+                        {goals.loc1 < 1 && <div className={`progress-bar info`} style={{width: `${loc1_left}%`}}>{goals.loc1 <= 0.5 ? loc1_text : <span>&nbsp;</span>}</div> }
+                        <div className={`progress-bar ${goals.loc2 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc2_done}%`}}>{goals.loc2 > 0.5 ? loc2_text : <span>&nbsp;</span>}</div>
+                        {goals.loc2 < 1 && <div className={`progress-bar info`} style={{width: `${loc2_left}%`}}>{goals.loc2 <= 0.5 ? loc2_text :  <span>&nbsp;</span>}</div> }
                     </div>
                 </div>
             </div>
