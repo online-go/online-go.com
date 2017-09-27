@@ -23,6 +23,7 @@ import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import * as ReactNumberFormat from 'react-number-format';
+import { SupporterGoals } from 'SupporterGoals';
 
 
 declare var Braintree;
@@ -457,6 +458,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         let supporter_text = (
             <div className='main-paragraph'>
+
                 <div className='p'>
                     {interpolate("Hello! As you may or may not know, Online-Go.com is an ever evolving community project driven by countless Go enthusiasts. First established in 2005, Online-Go.com has grown to be the first place almost all beginners find themselves at when they're first learning about the game, and is home to an ever growing community of veteran players as well. Bringing in on average {{number_of_new_players}} new players to the game per week, Online-Go.com is the fastest growing western Go server and is one of the most important facets, if not the most important facet, to the now-revitalizing western Go community.", {'number_of_new_players': 1200})}
                 </div>
@@ -491,6 +493,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         return (
         <div className="Supporter">
+            <SupporterGoals alwaysShow={true} />
+
             {supporter_text}
             {processing
                 ? <h1 style={{textAlign: "center", marginTop: "5em"}}>{_("Processing")}</h1>

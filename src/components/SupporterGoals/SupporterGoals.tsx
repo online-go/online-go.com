@@ -36,7 +36,7 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
     componentWillUnmount() { }
 
     render() {
-        if (data.get('user').is_supporter && !this.props.alwaysShow) {
+        if (data.get('user').supporter && !this.props.alwaysShow) {
             return null;
         }
 
