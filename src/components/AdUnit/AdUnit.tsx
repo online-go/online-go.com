@@ -57,6 +57,13 @@ if (never_load_ads) {
 export function should_show_ads() {
     let user = data.get("user");
 
+    if (user && (user.is_superuser || user.is_moderator)) {
+        return data.get("ad-override", false);
+    }
+
+    return false;
+
+    /*
     if (user && (user.supporter && user.id !== 1)) {
         return false;
     }
@@ -74,6 +81,7 @@ export function should_show_ads() {
     }
 
     return true;
+    */
 }
 
 
