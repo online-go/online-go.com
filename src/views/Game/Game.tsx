@@ -94,7 +94,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban_container;
         players;
         action_bar;
-        play_controls;
+        game_action_buttons;
+        game_state_label;
         chat;
     };
 
@@ -753,7 +754,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
             let max_h = win.height() - 32; /* 32 for navbar */
             max_h -= $(this.refs.players).height();
             max_h -= $(this.refs.action_bar).height();
-            max_h -= $(this.refs.play_controls).height();
+            if (this.refs.game_state_label) {
+                max_h -= $(this.refs.game_state_label).height();
+            }
+            if (this.refs.game_action_buttons) {
+                max_h -= $(this.refs.game_action_buttons).height();
+            }
             let ad_class = this.getAdClass();
             switch (ad_class) {
                 case 'mobile-banner':
@@ -1788,7 +1794,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div ref='play_controls' className="play-controls">
-                <div className="game-action-buttons">{/* {{{ */}
+                <div ref='game_action_buttons' className="game-action-buttons">{/* {{{ */}
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
                     }
@@ -1814,7 +1820,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
                 {/* }}} */}
-               <div className="game-state">{/*{{{*/}
+               <div ref='game_state_label' className="game-state">{/*{{{*/}
                     {(state.mode === "play" && state.phase === "play" || null) &&
                         <span>
                             {state.show_undo_requested
@@ -2061,7 +2067,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div ref='play_controls' className="play-controls">
-                <div className="game-state">
+                <div ref='game_state_label' className="game-state">
                     {_("Review by")}: <Player user={this.state.review_owner_id} />
                     {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
                         <div>
