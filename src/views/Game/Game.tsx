@@ -751,7 +751,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.computeViewMode() === "portrait") {
             let w = win.width() + 10;
-            let max_h = win.height() - 32; /* 32 for navbar */
+            /*
+            let max_h = win.height() - 32; // 32 for navbar
             max_h -= $(this.refs.players).height();
             max_h -= $(this.refs.action_bar).height();
             if (this.refs.game_state_label) {
@@ -771,6 +772,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     break;
             }
             w = Math.min(w, max_h);
+            */
 
             if (this.refs.goban_container.style.minHeight !== `${w}px`) {
                 this.refs.goban_container.style.minHeight = `${w}px`;
