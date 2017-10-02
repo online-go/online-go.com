@@ -449,6 +449,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.goban.setMode("analyze");
         }
 
+        // We need an initial score for the first display rendering (which is not set in the constructor).
+        // Best to get this from the engine, so we know we have the right structure...
+        this.state.score = this.goban.engine.computeScore(true);
+
+
         /* Title Updates {{{ */
         let last_title = window.document.title;
         this.last_move_viewed = 0;
