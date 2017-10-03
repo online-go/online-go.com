@@ -397,7 +397,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
 
                     <div className='automatch-settings'>
-                        <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}>{_("Settings")} <i className='fa fa-gear'/></span>
+                        <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/> {_("Settings")}</span>
                     </div>
                 </div>
             );
