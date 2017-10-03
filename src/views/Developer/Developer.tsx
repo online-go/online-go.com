@@ -33,6 +33,8 @@ export class Developer extends React.PureComponent<DeveloperProperties, any> {
         <div className="Developer container">
             <h1>{_("Source Code")}</h1>
             <h2><a href="https://github.com/online-go/online-go.com/">Source Code on GitHub</a></h2>
+            <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=star&count=true&size=large" frameborder="0" scrolling="0"></iframe>
+            <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=fork&count=true&size=large" frameborder="0" scrolling="0"></iframe>
 
             <h1>{_("Application management")}</h1>
             <h2><a href="/oauth2/applications/">OAuth2 Application Manager</a></h2>
