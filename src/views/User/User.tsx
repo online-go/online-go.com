@@ -214,7 +214,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
         let last_ip = this.state.user.last_ip;
-        get("host_ip_settings/", {"address": last_ip})
+        get("host_ip_settings", {"address": last_ip})
         .then((lst) => {
             this.setState({"host_ip_settings": lst.count ? lst.results[0] : {
                 "id": 0,
@@ -242,7 +242,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
             .then(() => $("#host-ip-saved").removeClass("hidden"));
         } else {
-            post("host_ip_settings/", obj)
+            post("host_ip_settings", obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();
@@ -712,7 +712,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         <PaginatedTable
                             className="aliases"
                             name="aliases"
-                            source={`players/${this.user_id}/aliases/`}
+                            get={'players/%%/aliases'}
+                            getId={this.user_id}
                             columns={[
                                 {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
                                 {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
@@ -757,8 +758,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     className=""
                                     ref="game_table"
                                     name="game-history"
-                                    method="get"
-                                    source={`players/${this.user_id}/games/`}
+                                    get='players/%%/games'
+                                    getId={this.user_id}
                                     filter={{
                                         "source": "play",
                                         "ended__isnull": false,
@@ -792,8 +793,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         className=""
                                         ref="review_table"
                                         name="review-history"
-                                        method="get"
-                                        source={`reviews/`}
+                                        get={'reviews'}
                                         filter={{
                                             "owner_id": this.user_id,
                                         }}

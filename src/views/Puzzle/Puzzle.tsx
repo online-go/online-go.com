@@ -349,7 +349,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             .catch(errorAlerter);
         } else {
             /* create */
-            post("puzzles/", {"puzzle": puzzle})
+            post("puzzles", {"puzzle": puzzle})
             .then((res) => {
                 browserHistory.push("/puzzles");
             })
@@ -357,7 +357,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
     }}}
     edit = () => {{{
-        get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
+        get("puzzles/collections", {page_size: 100, owner: data.get("user").id})
         .then((collections) => {
             this.setState({
                 editing: true,

@@ -20,6 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {deepCompare} from "misc";
 import * as data from "data";
+import {API} from 'api';
 
 interface PaginatedTableColumnProperties {
     cellProps?: any;
@@ -35,8 +36,11 @@ type SourceFunction = (filter: any, sorting: Array<string>) => Promise<any>;
 type GroupFunction = (data: Array<any>) => Array<any>;
 
 interface PaginatedTableProperties {
-    source: string | SourceFunction;
-    method?: "get" | "post";
+    source?: SourceFunction;
+    get?: keyof API['GET'];
+    getId?: number;
+    post?: keyof API['POST'];
+    postId?: number;
     pageSize?: number;
     columns: Array<PaginatedTableColumnProperties>;
     aliases?: string;
@@ -59,8 +63,6 @@ interface PaginatedTableProperties {
 export class PaginatedTable extends React.Component<PaginatedTableProperties, any> {
     filter: any = {};
     sorting: Array<string> = [];
-    source_url: string;
-    source_method: string;
     source_function: SourceFunction;
 
     constructor(props) {
@@ -79,12 +81,10 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             page_size: this.props.pageSize || (this.props.name ? data.get(`paginated-table.${this.props.name}.page_size`) : 0) || 10,
         });
         this.filter = this.props.filter || {};
-        if (typeof(this.props.source) === "string") {
-            this.source_url = this.props.source as string;
-            this.source_method = this.props.method || "get";
+        if (this.props.get || this.props.post) {
             this.source_function = this.ajax_loader.bind(this);
         } else {
-            this.source_function = this.props.source as SourceFunction;
+            this.source_function = this.props.source;
         }
         setTimeout(() => this.update(), 1);
     }
@@ -129,10 +129,18 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         if (order_by.length) {
             query["ordering"] = order_by.join(",");
         }
-        if (this.source_method === "get") {
-            return get(this.source_url, query); // TODO: Check the URLs and typify the result
+        if (this.props.get) {
+            if (this.props.getId) {
+                return get(this.props.get, this.props.getId, query);
+            }
+            return get(this.props.get, query);
         }
-        return post(this.source_url, query); // TODO: Check the URLs and typify the result again
+        else if (this.props.post) {
+            if (this.props.postId) {
+                return post(this.props.post, this.props.postId, query); // TODO: Check the URLs and typify the result again
+            }
+            return post(this.props.post, query);
+        }
     }
 
 

@@ -16,8 +16,7 @@
  */
 
 import {deepCompare} from "misc";
-import {URLCommunication, URLData, URLResult, translate_from_server, translate_to_server} from "compatibility/Communication";
-
+import { API, autotype } from 'api';
 
 
 export function api1ify(path) {
@@ -74,13 +73,32 @@ function initialize() {
 let requests_in_flight = {};
 let last_request_id: number = 0;
 
-interface RequestFunction<T extends keyof URLCommunication> {
-    <U extends keyof URLCommunication[T]>(url: U): Promise<URLResult[T][U]>;
-    <U extends keyof URLCommunication[T]>(url: U, id_or_data: number | URLData[T][U]): Promise<URLResult[T][U]>;
-    <U extends keyof URLCommunication[T]>(url: U, id: number, data: URLData[T][U]): Promise<URLResult[T][U]>;
+
+interface GetRequestFunction {
+    <URL extends keyof API['GET']>(url: URL): Promise<API['GET'][URL]['response']>;
+    <URL extends keyof API['GET']>(url: URL, id_or_data: number | API['GET'][URL]['request']): Promise<API['GET'][URL]['response']>;
+    <URL extends keyof API['GET']>(url: URL, id: number, data: API['GET'][URL]['request']): Promise<API['GET'][URL]['response']>;
 }
 
-export function request<T extends keyof URLCommunication>(type: T): RequestFunction<T> {
+interface PostRequestFunction {
+    <URL extends keyof API['POST']>(url: URL, data: API['POST'][URL]['request']): Promise<API['POST'][URL]['response']>;
+    <URL extends keyof API['POST']>(url: URL, id: number, data: API['POST'][URL]['request']): Promise<API['POST'][URL]['response']>;
+}
+interface PatchRequestFunction {
+    <URL extends keyof API['PATCH']>(url: URL, data: API['PATCH'][URL]['request']): Promise<API['PATCH'][URL]['response']>;
+    <URL extends keyof API['PATCH']>(url: URL, id: number, data: API['PATCH'][URL]['request']): Promise<API['PATCH'][URL]['response']>;
+}
+interface PutRequestFunction {
+    <URL extends keyof API['PUT']>(url: URL, data: API['PUT'][URL]['request']): Promise<API['PUT'][URL]['response']>;
+    <URL extends keyof API['PUT']>(url: URL, id: number, data: API['PUT'][URL]['request']): Promise<API['PUT'][URL]['response']>;
+}
+
+interface DeleteRequestFunction {
+    <URL extends keyof API['DELETE']>(url: URL): Promise<API['DELETE'][URL]['response']>;
+    <URL extends keyof API['DELETE']>(url: URL, id: number): Promise<API['DELETE'][URL]['response']>;
+}
+
+export function request<T extends keyof API>(type: T) {
     return (url, ...rest) => {
         initialize();
 
@@ -111,13 +129,7 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
         }
 
         let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
-        let real_data: any;
-        if (url in translate_to_server) {
-            real_data = translate_to_server[type][url](data);
-        }
-        else {
-            real_data = data;
-        }
+        let real_data = data;
 
         for (let req_id in requests_in_flight) {
             let req = requests_in_flight[req_id];
@@ -146,12 +158,8 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
                 contentType: "application/json",
                 success: (res) => {
                     delete requests_in_flight[request_id];
-                    if (url in translate_from_server) {
-                        resolve(translate_from_server[type][url](res));
-                    }
-                    else {
-                        resolve(res);
-                    }
+                    autotype(type, url, 'response', res);
+                    resolve(res);
                 },
                 error: (err) => {
                     delete requests_in_flight[request_id];
@@ -160,6 +168,7 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
                         console.warn(traceback.stack);
                     }
                     console.error(err);
+                    autotype(type, url, 'error', err);
                     reject(err);
                 }
             };
@@ -184,6 +193,8 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
                 }
             }
 
+            autotype(type, url, 'request', real_data);
+
             requests_in_flight[request_id].request = $.ajax(opts);
         });
 
@@ -191,16 +202,18 @@ export function request<T extends keyof URLCommunication>(type: T): RequestFunct
     };
 }
 
-export const get = request("GET");
-export const post = request("POST");
-export const put = request("PUT");
-export const patch = request("PATCH");
-export const del = request("DELETE");
+export const get = request("GET") as GetRequestFunction;
+export const post = request("POST") as PostRequestFunction;
+export const put = request("PUT") as PutRequestFunction;
+export const patch = request("PATCH") as PatchRequestFunction;
+export const del = request("DELETE") as DeleteRequestFunction;
 
-export function abort_requests_in_flight(url, type?: keyof URLCommunication) {
+export function abort_requests_in_flight<METHOD extends keyof API, URL extends keyof API[METHOD]>(type:METHOD, url: URL, id?: number) {
     for (let id in requests_in_flight) {
+        let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+
         let req = requests_in_flight[id];
-        if ((req.url === url) && (!type || type === req.type)) {
+        if ((req.url === real_url) && (!type || type === req.type)) {
             req.request.abort();
         }
     }

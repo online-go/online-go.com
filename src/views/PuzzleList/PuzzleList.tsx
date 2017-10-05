@@ -74,7 +74,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                     <PaginatedTable
                         className=""
                         ref="table"
-                        source={`puzzles/collections/`}
+                        get='puzzles/collections'
                         orderBy={[
                             "-rating",
                             "-rating_count"

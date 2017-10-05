@@ -71,7 +71,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                     className=""
                     ref="userlog"
                     name="userlog"
-                    source={`moderation/recent_users`}
+                    get='moderation/recent_users'
                     orderBy={["-timestamp"]}
                     filter={{ "username__istartswith": "" }}
                     columns={[
@@ -121,7 +121,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                     className=""
                     ref="modlog"
                     name="modlog"
-                    source={`moderation/`}
+                    get='moderation'
                     orderBy={["-timestamp"]}
                     filter={{ "player__username__istartswith": "" }}
                     columns={[
@@ -169,7 +169,7 @@ function moderate(player_id, prompt, obj) {{{
         }).then((reason) => {
             obj.moderation_note = reason;
             console.log(obj);
-            put("players/" + player_id + "/moderate", obj).then(resolve).catch(reject);
+            put("players/%%/moderate", player_id,  obj).then(resolve).catch(reject);
         }, reject);
     });
 }}}

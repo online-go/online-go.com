@@ -119,7 +119,7 @@ export class Settings extends React.PureComponent<{}, any> {
         .catch(errorAlerter);
     }}}
     startVacation = () => {{{
-        put("me/vacation")
+        put("me/vacation", {})
         .then((data) => {
             this.vacation_base_time = Date.now();
             this.setState({
@@ -291,7 +291,7 @@ export class Settings extends React.PureComponent<{}, any> {
     updateHideUIClass = (ev) => {{{
         let checked = ev.target.checked;
         this.setState({'hide_ui_class': !checked});
-        put(`me/settings`, 0, {
+        put("me/settings", {
             'site_preferences': {
                 'hide_ui_class': !checked
             }

@@ -119,7 +119,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 group_loaded: true,
             });
         }).catch(errorAlerter);
-        get("groups/%%/news/", group_id).then((news) => {
+        get("groups/%%/news", group_id).then((news) => {
             this.setState({news: news.results});
         }).catch(errorAlerter);
     }}}
@@ -170,7 +170,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         }
     }}}
     saveEditChanges() {{{
-        put(`groups/${this.state.group_id}`, this.state.group)
+        put('groups/%%', this.state.group_id, this.state.group)
         .then((res) => {
             console.log(res);
         }).catch(errorAlerter);
@@ -178,7 +178,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateIcon = (files) => {{{
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put("group/%%/icon", this.state.group_id, file)
+            put("groups/%%/icon", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -189,7 +189,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateBanner = (files) => {{{
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
-            put("group/%%/banner", this.state.group_id, file)
+            put("groups/%%/banner", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -250,7 +250,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return;
         }
         this.toggleNewNewsPost();
-        post("group/%%/news/", this.state.group_id, {
+        post("groups/%%/news", this.state.group_id, {
             title: this.state.new_news_title,
             content: this.state.new_news_body,
         })
@@ -279,7 +279,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            post("group/%%/news/", this.state.group_id, {
+            post("groups/%%/news", this.state.group_id, {
                 'id': entry.id,
                 'delete': true
             })
@@ -300,7 +300,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         this.refs.news.forceUpdate();
     }}}
     updateNewsPost = () => {{{
-        put(`group/${this.state.group_id}/news/`, this.state.editing_news)
+        put('groups/%%/news', this.state.group_id, this.state.editing_news)
         .then(() => {
             this.setState({editing_news: null});
             if (this.refs.news) {
@@ -334,7 +334,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
 
     inviteUser = (ev) => {{{
-        post("group/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
+        post("groups/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
             _("Player invited"); /* for translations */
@@ -526,7 +526,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 ref="news"
                                 className="news"
                                 name="news"
-                                source={`groups/${group.id}/news`}
+                                get={'groups/%%/news'}
+                                getId={group.id}
                                 pageSize={1}
                                 columns={[
                                     {header: _("News"), className: "none", render: (entry) =>
@@ -610,7 +611,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             ref="members"
                             className="members"
                             name="members"
-                            source={`groups/${group.id}/members`}
+                            get={'groups/%%/members'}
+                            getId={group.id}
                             groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                             columns={[
                                 {header: _("Members"), className: "", render: (X) => <Player icon user={X}/>},

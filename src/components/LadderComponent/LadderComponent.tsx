@@ -184,7 +184,6 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             );
         }
 
-
         return (
             <div className="LadderComponent">
                 <UIPush event="players-updated" channel={`ladder-${this.props.ladderId}`} action={this.updatePlayers} />
@@ -208,7 +207,8 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                     ref="ladder"
                     className="ladder"
                     name="ladder"
-                    source={`ladders/${this.props.ladderId}/players`}
+                    get='ladders/%%/players'
+                    getId={this.props.ladderId}
                     startingPage={startingPage}
                     pageSize={this.state.page_size}
                     pageSizeOptions={this.props.pageSizeOptions}

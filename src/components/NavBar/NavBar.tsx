@@ -171,7 +171,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         $(this.refs.omnisearch_input).blur();
     }
     abortOmnisearch() {
-        abort_requests_in_flight("ui/omniSearch");
+        abort_requests_in_flight('GET', "ui/omniSearch");
     }
     updateOmnisearch = (ev) => {
         try {

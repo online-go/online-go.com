@@ -76,7 +76,6 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.setState(update);
     }
     componentWillUnmount() {
-        abort_requests_in_flight("library/");
     }
     refresh(player_id: number) {
         let promise = get("library/%%", player_id);

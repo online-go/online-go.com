@@ -145,7 +145,7 @@ class Schedule extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {
-        get("tournament_schedules/", {page_size: 100})
+        get("tournament_schedules", {page_size: 100})
         .then((res) => {
             res.results.sort((a, b) => {
                 return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
@@ -219,7 +219,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                     className="TournamentList-table"
                     ref="table"
                     name="game-history"
-                    source={`tournaments/`}
+                    get='tournaments'
                     filter={filter}
                     orderBy={["-started", "time_start", "name"]}
                     columns={[

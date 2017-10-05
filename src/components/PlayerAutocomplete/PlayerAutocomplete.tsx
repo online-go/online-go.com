@@ -89,11 +89,11 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
             return;
         }
 
-        abort_requests_in_flight("players/");
+        abort_requests_in_flight('GET', 'players');
         this.current_search = value;
 
         if (value.length > 1) {
-            get("players/", {username__istartswith: value, page_size: 10})
+            get("players", {username__istartswith: value, page_size: 10})
             .then((res) => {
                 //console.log("RESULTS: ", res.results);
                 for (let user of res.results) {

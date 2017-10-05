@@ -74,7 +74,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
             settings.moderation_note = reason;
 
-            put(`players/${this.props.playerId}/moderate`, settings)
+            put('players/%%/moderate', this.props.playerId, settings)
             .then(() => {
                 this.close();
             })

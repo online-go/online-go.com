@@ -48,7 +48,7 @@ export class GroupCreate extends React.PureComponent<GroupCreateProperties, any>
                 is_public: this.state.is_public,
                 hide_details: this.state.hide_details,
             };
-            post("groups/", group)
+            post("groups", group)
             .then((group) => {
                 browserHistory.push(`/group/${group.id}`);
             })
