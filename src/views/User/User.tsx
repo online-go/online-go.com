@@ -44,7 +44,6 @@ import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
 
-
 declare let swal;
 
 interface UserProperties {

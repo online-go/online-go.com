@@ -74,12 +74,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     range_label;
     legend_label;
     date_extents;
+    win_loss_aggregate;
     win_loss_graphs:Array<any> = [];
     win_loss_bars:Array<any> = [];
     game_entries:Array<RatingEntry>;
     games_by_month:Array<RatingEntry>;
     games_by_day:Array<RatingEntry>;
     max_games_played_in_a_month:number;
+
+    win_loss_pie;
 
     ratings_x      = d3.scaleTime();
     timeline_x     = d3.scaleTime();
@@ -124,7 +127,9 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     timeline_chart;
     timeline_axis_labels;
     brush;
-    width;
+    width;  // whole width of this element
+    graph_width; // width of the part where the graph is drawn
+    pie_width; // width of the area for the pie chart
     height;
 
     constructor(props) {
@@ -216,17 +221,29 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         return this.props.size === 0 && this.props.speed === 'overall';
     }
 
-    initialize() {{{
-        let self = this;
+    setRanges = () => {{{
         let sizes = this.chart_sizes();
         let width = this.width = sizes.width;
+        let graph_width = this.graph_width = 2.0 * sizes.width / 3.0;
+
+        this.pie_width = sizes.width / 3.0;
         this.height = height;
 
-        this.ratings_x.range([0, width]);
-        this.timeline_x.range([0, width]);
+        this.ratings_x.range([0, graph_width]);
+        this.timeline_x.range([0, graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
+    }}}
+
+    initialize() {{{
+        let self = this;
+
+        this.setRanges();
+
+        let width = this.graph_width;
+        let height = this.height;
+
         this.rank_axis.tickFormat((rating:number) => {
             let rank = Math.round(rating_to_rank(rating));
             if (!is_rank_bounded(rank)) {
@@ -242,7 +259,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.svg = d3.select(this.chart_div)
             .append('svg')
             .attr('class', 'chart')
-            .attr('width', width + margin.left + margin.right)
+            .attr('width', this.width + margin.left + margin.right)
             .attr('height', height + margin.top + margin.bottom + 60);
 
         this.clip = this.svg.append('defs')
@@ -255,6 +272,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+        /* Win-loss pie chart goes to the right of the rating graph... */
+        let graph_right_side = this.graph_width + margin.left + margin.right;
+
+        this.win_loss_pie = this.svg.append('g')
+            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + (margin.top + this.height / 2.0) + ')');
+
+        /* Win-loss bar graphs ... */
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
@@ -487,6 +511,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.setState({loading: true});
         d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.setData);
     }}}
+
+    /* The area we can draw all of our charting in */
     chart_sizes() {{{
         let width = Math.max(chart_min_width, $(this.container).width()  - margin.left - margin.right);
         return {
@@ -494,6 +520,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             height: height,
         };
     }}}
+
     resize = (no_debounce:boolean = false) => {{{
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
@@ -505,21 +532,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             return;
         }
 
-        let sizes = this.chart_sizes();
+        this.setRanges();
+        let width = this.graph_width;
 
-        let width = this.width = sizes.width;
-        this.height = height;
-
-        this.ratings_x.range([0, width]);
-        this.timeline_x.range([0, width]);
-        this.ratings_y.range([height, 0]);
-        this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([60, 0]);
-
-        this.svg.attr('width', width + margin.left + margin.right);
+        this.svg.attr('width', this.width + margin.left + margin.right);
         this.svg.attr('height', height + margin.top + margin.bottom + 60);
-        this.clip.attr('width', width);
-        this.clip.attr('height', height);
+        //this.clip.attr('width', width);
+        //this.clip.attr('height', height);
 
         this.legend.attr('width', width);
         this.legend.attr('height', 30);
@@ -547,6 +566,48 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.onTimelineBrush();
         }
     }}}
+
+    plotWinLossPie = () => {{{
+        let agg = this.win_loss_aggregate;
+
+        /* with well spread data, wins on top and stronger on right of pie */
+        let pie_data = [
+            {label: 'wins-vs-stronger', count: agg.strong_wins},
+            {label: 'losses-vs-stronger', count: agg.strong_losses},
+            {label: 'losses-vs-weaker', count: agg.weak_losses},
+            {label: 'wins-vs-weaker', count: agg.weak_wins}
+        ];
+
+        let pie_colour_class = [
+            'strong-wins',
+            'strong-losses',
+            'weak-losses',
+            'weak-wins'
+        ];
+
+        let arc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(Math.min(this.pie_width, this.height) / 2.0 - 10);
+
+        let pie_values = d3.pie()
+            .value((d:any):number => (d.count))
+            .sort(null);
+
+        this.win_loss_pie.selectAll('path').remove();
+
+        this.win_loss_pie.selectAll('path')
+            .data(pie_values(pie_data as any))
+            .enter()
+            .append('path')
+            .attr('d', arc)
+            .attr('class', (d, i) => {
+                return pie_colour_class[i];
+            });
+        return true;
+
+    }}}
+
+    /* Callback function for data retrieval, which plots the retrieved data */
     setData = (err, data) => {{{
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
@@ -613,7 +674,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             }
         }
 
-        /* Plot */
+        /* Plot graph.... */
         let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
 
         this.ratings_x.domain(date_range);
@@ -644,6 +705,11 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_axis_labels
             .call(this.timeline_axis);
 
+        /* Plot win loss pie ... */
+
+        this.plotWinLossPie();
+
+        /* Plot win loss bar chart.... */
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
@@ -741,7 +807,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
         let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
-        return this.width * (days_in_month / days_in_range);
+        return this.graph_width * (days_in_month / days_in_range);
     }}}
     onTimelineBrush = () => {{{
         this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
@@ -802,23 +868,26 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     }}}
 
     render() {{{
+        this.computeWinLossNumbers();
+        if (!this.state.loading) {
+            this.plotWinLossPie();
+        }
         return (
             <div ref={(e) => this.container = e} className="RatingsChart">
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
                         ? <div className='nodata'>{_("No rated games played yet")}</div>
-                        : <PersistentElement elt={this.chart_div}/>
+                        : <div className='ratings-graph'>
+                            <PersistentElement elt={this.chart_div}/>
+                        </div>
                 }
-                {this.renderWinLossNumbers()}
+                {this.renderWinLossNumbersAsText()}
             </div>
         );
     }}}
-    renderWinLossNumbers() {{{
-        if (this.state.loading || this.state.nodata || !this.game_entries) {
-            return <div className='win-loss-stats' />;
-        }
 
+    computeWinLossNumbers() {{{
         let date_extents = [];
 
         if (this.state.hovered_date) {
@@ -848,18 +917,19 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             }
         }
 
-
         let agg = null;
         let start_time = date_extents[0].getTime();
         let end_time = date_extents[1].getTime();
 
-        for (let entry of this.game_entries) {
-            let time = entry.ended.getTime();
-            if (time >= start_time && time <= end_time) {
-                if (!agg) {
-                    agg = new RatingEntry(entry);
-                } else {
-                    agg.merge(entry);
+        if (!this.state.loading && !this.state.nodata && this.game_entries) {
+            for (let entry of this.game_entries) {
+                let time = entry.ended.getTime();
+                if (time >= start_time && time <= end_time) {
+                    if (!agg) {
+                        agg = new RatingEntry(entry);
+                    } else {
+                        agg.merge(entry);
+                    }
                 }
             }
         }
@@ -872,6 +942,16 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 strong_losses: 0,
             };
         }
+
+        this.win_loss_aggregate = agg;
+    }}}
+
+    renderWinLossNumbersAsText() {{{
+        if (this.state.loading || this.state.nodata || !this.game_entries) {
+            return <div className='win-loss-stats'/>;
+        }
+
+        let agg = this.win_loss_aggregate;
 
         return (
             <div className='win-loss-stats'>
