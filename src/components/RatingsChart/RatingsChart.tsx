@@ -52,7 +52,7 @@ let format_month = (d:Date) => moment(d).format('MMM YYYY');
 const margin   = {top: 30, right: 20, bottom: 100, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
-const chart_height = 310;
+const chart_height = 283;
 const date_legend_width = 70;
 const win_loss_bars_start_y = 155;
 const win_loss_bars_height = 65;
@@ -283,10 +283,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
-                /* GaJ: I added 27 to chart_height.  I'm not sure why this means that more needs to be added
-                   to the y translation here - I rounded up to 30 extra to add a little space under the chart legend */
-                /* Ideally this would be positioned relative to the bottom of the graph as per chart height */
-                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20 + 30) + ')')
+                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
                 .on('mouseover', () => {
                     this.helper.style('display', null);
                     this.dateLegend.style('display', null);
