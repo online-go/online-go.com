@@ -283,7 +283,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
-                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
+                /* GaJ: I added 27 to chart_height.  I'm not sure why this means that more needs to be added
+                   to the y translation here - I rounded up to 30 extra to add a little space under the chart legend */
+                /* Ideally this would be positioned relative to the bottom of the graph as per chart height */
+                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20 + 30) + ')')
                 .on('mouseover', () => {
                     this.helper.style('display', null);
                     this.dateLegend.style('display', null);
