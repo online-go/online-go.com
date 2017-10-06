@@ -52,7 +52,7 @@ let format_month = (d:Date) => moment(d).format('MMM YYYY');
 const margin   = {top: 30, right: 20, bottom: 100, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
-const chart_height = 283;
+const chart_height = 310;
 const date_legend_width = 70;
 const win_loss_bars_start_y = 155;
 const win_loss_bars_height = 65;
@@ -275,8 +275,9 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         /* Win-loss pie chart goes to the right of the rating graph... */
         let graph_right_side = this.graph_width + margin.left + margin.right;
 
+        /* the pie chart element is positioned at the centre of the circle of the pie */
         this.win_loss_pie = this.svg.append('g')
-            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + (margin.top + this.height / 2.0) + ')');
+            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
 
         /* Win-loss bar graphs ... */
         for (let i = 0; i < 5; ++i) {
@@ -570,13 +571,24 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     plotWinLossPie = () => {{{
         let agg = this.win_loss_aggregate;
 
-        /* with well spread data, wins on top and stronger on right of pie */
+        /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
         let pie_data = [
-            {label: 'wins-vs-stronger', count: agg.strong_wins},
-            {label: 'losses-vs-stronger', count: agg.strong_losses},
-            {label: 'losses-vs-weaker', count: agg.weak_losses},
-            {label: 'wins-vs-weaker', count: agg.weak_wins}
+            {
+                label:interpolate(pgettext( "Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins}),
+                count: agg.strong_wins},
+            {
+                label: interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses}),
+                count: agg.strong_losses},
+            {
+                label: interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses}),
+                count: agg.weak_losses},
+            {
+                label: interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins}),
+                count: agg.weak_wins
+            }
         ];
+
+        console.log("plotWinLossPie", pie_data)
 
         let pie_colour_class = [
             'strong-wins',
@@ -585,9 +597,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             'weak-wins'
         ];
 
+        let pie_radius = Math.min(this.pie_width, this.height) / 2.0 - 15; // just looks about right.
+
+        /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
+
         let arc = d3.arc()
             .innerRadius(0)
-            .outerRadius(Math.min(this.pie_width, this.height) / 2.0 - 10);
+            .outerRadius(pie_radius);
 
         let pie_values = d3.pie()
             .value((d:any):number => (d.count))
@@ -600,11 +616,36 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .enter()
             .append('path')
             .attr('d', arc)
-            .attr('class', (d, i) => {
-                return pie_colour_class[i];
-            });
-        return true;
+            .attr('class', (d, i) => (pie_colour_class[i]));
 
+        /* The legend with values... */
+
+        this.win_loss_pie.selectAll('rect').remove();
+        this.win_loss_pie.selectAll('text').remove();
+
+        // placement relative to centre of pie...
+
+        let legend_xoffset = -1.0 * pie_radius -20; // just looks about right
+        let legend_yoffset = pie_radius + 30;
+
+        /* It's nice to have the legend in a different order, just makes more sense.... */
+
+        let legend_order = [0, 1, 3, 2];
+
+        legend_order.forEach( (legend_item, i) => {
+            this.win_loss_pie
+                .append('rect')
+                .attr('class', pie_colour_class[legend_item])
+                .attr('x', legend_xoffset)
+                .attr('y', legend_yoffset + i * 20)
+                .attr('width', 15)
+                .attr('height', 15);
+            this.win_loss_pie
+                .append('text')
+                .text(pie_data[legend_item].label)
+                .attr('x', legend_xoffset + 15 + 10)
+                .attr('y', legend_yoffset + i * 20 + 12);
+        });
     }}}
 
     /* Callback function for data retrieval, which plots the retrieved data */
@@ -882,7 +923,6 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                             <PersistentElement elt={this.chart_div}/>
                         </div>
                 }
-                {this.renderWinLossNumbersAsText()}
             </div>
         );
     }}}
