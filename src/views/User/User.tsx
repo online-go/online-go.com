@@ -922,7 +922,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
 
                     <h2>{_("Activity")}</h2>
-                    <Card>
+                    <Card className="activity-card">
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">
