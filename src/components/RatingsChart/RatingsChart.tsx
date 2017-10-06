@@ -626,6 +626,13 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         let legend_xoffset = -1.0 * pie_radius - 20; // just looks about right
         let legend_yoffset = pie_radius + 30;
 
+        let total_games = agg.strong_wins + agg.strong_losses + agg.weak_wins + agg.weak_losses;
+
+        this.win_loss_pie.append('text')
+            .text(interpolate(pgettext( "Total Ranked Games", "Total of: {{total_games}} ranked games"), {total_games: total_games}))
+            .attr('x', -60)
+            .attr('y', -1.0 * pie_radius - 20);
+
         /* It's nice to have the legend in a different order, just makes more sense.... */
 
         let legend_order = [0, 1, 3, 2]; // index into pie_data[]
