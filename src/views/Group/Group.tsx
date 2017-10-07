@@ -439,8 +439,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                  </button>
                                               </div>
                                         : group.is_public
-                                            ? <button className="primary sm" disabled={user.anonymous} 
-                                            onClick={this.joinGroup}>{_("Join Group")}</button>
+                                            ? <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
                                                 ? <i>{_("This is a private group, you must be invited to join")}</i>
                                                 : this.state.invitation_request_pending
