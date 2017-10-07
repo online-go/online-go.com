@@ -297,7 +297,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                         {/* kinda brute force tr/td to get this centred - urk! My table-fu is weak! */}
                         <tr className='custom-games-list-header'>
-                            <td colSpan="8">{_("Custom Games")}</td>
+                            <td colSpan={8}>{_("Custom Games")}</td>
                         </tr>
 
                         <div className="challenge-row">
