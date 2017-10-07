@@ -78,7 +78,7 @@
             flex-grow: 1;
             flex-basis: 13rem;
             height: 4rem;
-            margin: 1rem;
+            margin: 0.9rem;
 
             .fa, .ogs-turtle {
                 //font-size: 1.2rem;
@@ -86,7 +86,7 @@
             }
             .ogs-turtle{
                 vertical-align: middle;
-                font-size: 1.3rem;
+                font-size: 1.2rem;
                 margin-bottom: 0;
             }
 
@@ -97,14 +97,50 @@
     }
 
     .automatch-settings {
+        font: 1rem;
         flex: 0;
         text-align: right;
+        align-content: right;
+        width: 100%
         margin-right: 0.5em;
         .automatch-settings-link {
             cursor: pointer;
             user-select: none;
         }
     }
+
+    .custom-game-row {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 50%;
+
+        button {
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-grow: 1;
+            flex-basis: 13rem;
+            height: 3rem;
+            margin: 1rem;
+
+            .fa {
+            //font-size: 1.2rem;
+                margin: 0.2rem;
+            }
+        }
+    }
+
+    .custom-game-header {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 100%;
+        justify-content: space-between;
+        align-items: left;
+        font-size: 1.3rem;
+        margin-top: 0.5rem;
+    }
+
 }
 
 
@@ -129,6 +165,11 @@
         font-size: 0.9em;
         vertical-align: middle;
         cursor: help;
+    }
+
+    .custom-games-list-header {
+        padding-bottom: 0.5rem;
+        font-weight: bold;
     }
 
     .challenge-row {
