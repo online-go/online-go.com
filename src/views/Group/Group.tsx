@@ -408,7 +408,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 }
 
                                 <div className="admins">
-                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
+                                    <b style={{marginRight: "1rem"}}>{_("Admins")}:</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
                                 </div>
 
                                 {(this.state.group_loaded || null) &&
@@ -422,29 +422,31 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                         </div>
                                                   )
                                                 : <div>
-                                                     <button className="primary xs" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
+                                                     <button className="primary sm" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
                                                          {_("Create news post")}
                                                      </button>
-                                                     <button className="primary xs" onClick={this.createTournament}>
+                                                     <button className="primary sm" onClick={this.createTournament}>
                                                          {_("Create Tournament")}
                                                      </button>
                                                   </div>
                                               )
                                             : <div>
-                                                 <button className="xs" disabled={this.state.is_admin} onClick={this.leaveGroup}>
+                                                 <button className="sm" disabled={this.state.is_admin} onClick={this.leaveGroup}>
                                                     {_("Leave Group")}
                                                  </button>
-                                                 <button className="primary xs" onClick={this.createTournament}>
+                                                 <button className="primary sm" onClick={this.createTournament}>
                                                      {_("Create Tournament")}
                                                  </button>
                                               </div>
                                         : group.is_public
-                                            ? <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
+                                            ? <button className="primary sm" disabled={user.anonymous} 
+                                            style={{marginBottom: "1em"}}
+                                            onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
                                                 ? <i>{_("This is a private group, you must be invited to join")}</i>
                                                 : this.state.invitation_request_pending
                                                     ? <i>{_("A request to join this group has been sent to the group administrators")}</i>
-                                                    : <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
+                                                    : <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
                                     )
                                 }
 
@@ -540,10 +542,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                             {this.state.is_admin &&
                                                 <div>
                                                     {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                        ?  <button className='xs' onClick={this.updateNewsPost} >{_("Save")}</button>
-                                                        :  <button className='xs' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
+                                                        ?  <button className='sm' onClick={this.updateNewsPost} >{_("Save")}</button>
+                                                        :  <button className='sm' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
                                                     }
-                                                    <button className='xs reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
+                                                    <button className='sm reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
                                                 </div>
                                             }
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
@@ -598,7 +600,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
-                                    <button className="btn primary xs" type="button"
+                                    <button className="btn primary sm" type="button"
                                         disabled={this.state.user_to_invite == null} onClick={this.inviteUser}>{_("Invite")}</button>
                                 </div>
                                 <div className="bold">{this.state.invite_result}</div>
@@ -651,14 +653,14 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         if (this.isAdmin(player_id)) {
             return (
                 <div className="actions">
-                    <button className="reject xs" onClick={() => this.unAdmin(player_id)}>{_("Un-Admin")}</button>
+                    <button className="reject sm" onClick={() => this.unAdmin(player_id)}>{_("Un-Admin")}</button>
                 </div>
             );
         } else {
             return (
                 <div className="actions">
-                    <button className="danger xs" onClick={() => this.kick(player_id)}>{_("Kick")}</button>
-                    <button className="reject xs" onClick={() => this.makeAdmin(player_id)}>{_("Make Admin")}</button>
+                    <button className="danger sm" onClick={() => this.kick(player_id)}>{_("Kick")}</button>
+                    <button className="reject sm" onClick={() => this.makeAdmin(player_id)}>{_("Make Admin")}</button>
                 </div>
             );
         }
