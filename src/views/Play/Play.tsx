@@ -295,10 +295,14 @@ export class Play extends React.Component<PlayProperties, any> {
 
                         <div style={{marginTop: "2em"}}></div>
 
-                        {/* kinda brute force tr/td to get this centred - urk! My table-fu is weak! */}
-                        <tr className='custom-games-list-header'>
-                            <td colSpan={8}>{_("Custom Games")}</td>
-                        </tr>
+                        {/* There must be a better way to get the header in the centre! At least this doesn't cause warnings :) */}
+                        <div className='custom-games-list-header-row'>
+                            <span className='cell'></span>
+                            <span className='cell'></span>
+                            <span className='cell'></span>
+                            <span className='cell'>{_("Custom Games")}</span>
+                        </div>
+
 
                         <div className="challenge-row">
                             <span className="cell break">{_("Short Games")}</span>

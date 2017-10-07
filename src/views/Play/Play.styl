@@ -167,9 +167,16 @@
         cursor: help;
     }
 
-    .custom-games-list-header {
-        padding-bottom: 0.5rem;
+    .custom-games-list-header-row {
+        display: table-row;
         font-weight: bold;
+        white-space: nowrap;
+
+        .cell {
+            padding-left: 0.5em;
+            display: table-cell;
+            padding-bottom: 0.5rem;
+        }
     }
 
     .challenge-row {
