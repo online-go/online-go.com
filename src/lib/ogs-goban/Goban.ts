@@ -28,7 +28,6 @@ import {TypedEventEmitter} from "TypedEventEmitter";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
 
-
 export const GOBAN_FONT =  "Verdana,Arial,sans-serif";
 declare let swal;
 
@@ -36,6 +35,10 @@ const SCORE_ESTIMATION_TRIALS = 1000;
 const SCORE_ESTIMATION_TOLERANCE = 0.30;
 const AUTOSCORE_TRIALS = 1000;
 const AUTOSCORE_TOLERANCE = 0.30;
+
+/* Note that this could be set by a user preference if necessary - '0' means "no nudging stones". */
+const NUDGE_PERCENT = 10;  // percent of stone radius to randomly nudge stones (and also to shrink them to make space)
+const NUDGE_SCALE = (100 - NUDGE_PERCENT) / 100;
 
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
@@ -217,8 +220,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private theme_line_color;
     private theme_star_color;
     private theme_stone_radius;
-    private theme_white;
-    private theme_white_stones;
+    private theme_white;    private theme_white_stones;
     private theme_white_text_color;
     private themes;
     private title_div;
@@ -226,6 +228,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private white_clock;
     private white_name;
 
+    private stone_offsets:any;
 
     constructor(config, preloaded_data?) { /* {{{ */
         super();
@@ -242,8 +245,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             C[k] = config[k];
         }
         config = C;
-
-
 
         /* Apply config */
         //window['active_gobans'][this.goban_id] = this;
@@ -346,6 +347,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.bounds.right < this.width - 1) { this.draw_right_labels = false; }
         if (this.bounds.bottom < this.height - 1) { this.draw_bottom_labels = false; }
 
+
+        /* random offsets of stones for "realistic fuzzy looking" display */
+        this.stone_offsets = [];
+        for (let y = 0; y < this.height; ++y) {
+            this.stone_offsets[y] = [];
+            for (let x = 0; x < this.width; ++x) {
+                this.stone_offsets[y][x] = null; // means "we didn't set one yet"
+            }
+        }
 
         if (typeof(config["square_size"]) === "function") {
             this.square_size = config["square_size"](this);
@@ -2043,7 +2053,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             oy = -s * this.bounds.top;
         }
 
-        let cx;
+        let cx; // the centre of this square
         let cy;
         let draw_last_move = !this.dont_draw_last_move;
 
@@ -2074,8 +2084,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.engine && this.engine.cur_move.lookupMove(i, j, this.engine.player, false)) {
             movetree_contains_this_square = true;
         }
-
-
 
         let have_text_to_draw = false;
         let text_color = this.theme_blank_text_color;
@@ -2136,11 +2144,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             } else {
                 ctx.lineWidth = 1;
             }
-            if (have_text_to_draw) {
-                ctx.strokeStyle = this.theme_faded_line_color;
-            } else {
-                ctx.strokeStyle = this.theme_line_color;
-            }
+
+            ctx.strokeStyle = this.theme_line_color;
+
             ctx.lineCap = "butt";
             ctx.beginPath();
             ctx.moveTo(Math.floor(sx), my);
@@ -2148,6 +2154,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             ctx.moveTo(mx, Math.floor(sy));
             ctx.lineTo(mx, Math.floor(ey));
             ctx.stroke();
+
+            /* Lighten the lines where the text will go, but not beyond the bounds of a
+               stone on this square (otherwise the lightened line protrudes distractingly
+               out from under the stone)
+             */
+
+            if (have_text_to_draw) {
+                let stone_min_area = this.theme_stone_radius * NUDGE_SCALE;
+                ctx.beginPath();
+                ctx.strokeStyle = this.theme_faded_line_color;
+                ctx.moveTo(Math.max(cx - stone_min_area, sx), my);
+                ctx.lineTo(Math.min(cx + stone_min_area, ex), my);
+                ctx.moveTo(mx, Math.max(cy - stone_min_area, sy));
+                ctx.lineTo(mx, Math.min(cy + stone_min_area, ey));
+                ctx.stroke();
+            }
+
         }}}
 
         /* Draw star points */
@@ -2219,6 +2242,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }}}
 
+        let nx = cx;  // nudged x & y
+        let ny = cy;
 
         /* Draw stones & hovers */
         {{{
@@ -2296,7 +2321,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
 
-
                 if (!(this.autoplaying_puzzle_move && !stone_color)) {
                     text_color = color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
 
@@ -2306,12 +2330,35 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         ctx.globalAlpha = 0.6;
                         shadow_ctx = null;
                     }
+                    else {
+                        /* It's a real stone, so nudge it, for realism of display */
+
+                        let nudge_amount = (NUDGE_PERCENT / 100) * this.theme_stone_radius;
+
+                        let x_nudge = 0;
+                        let y_nudge = 0;
+
+                        if (!this.stone_offsets[i][j]) {
+                            /* we didn't nudge it yet, so do so now... */
+                            x_nudge = nudge_amount * 2 * (Math.random() - 0.5);
+                            y_nudge = nudge_amount  * 2 * (Math.random() - 0.5);
+
+                            this.stone_offsets[i][j] = {x: x_nudge, y: y_nudge};
+                        }
+                        else {
+                            x_nudge = this.stone_offsets[i][j].x;
+                            y_nudge = this.stone_offsets[i][j].y;
+                        }
+
+                        nx = nx + x_nudge;
+                        ny = ny + y_nudge;
+                    }
                     if (color === 1) {
                         let stone = this.theme_black_stones[((i + 1) * 53) * ((j + 1) * 97) % this.theme_black_stones.length];
-                        this.theme_black.placeBlackStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
+                        this.theme_black.placeBlackStone(ctx, shadow_ctx, stone, nx, ny, this.theme_stone_radius);
                     } else {
                         let stone = this.theme_white_stones[((i + 1) * 53) * ((j + 1) * 97) % this.theme_white_stones.length];
-                        this.theme_white.placeWhiteStone(ctx, shadow_ctx, stone, cx, cy, this.theme_stone_radius);
+                        this.theme_white.placeWhiteStone(ctx, shadow_ctx, stone, nx, ny, this.theme_stone_radius);
                     }
                     ctx.restore();
                 }
@@ -2335,7 +2382,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
 
             draw_x = false;
-
 
             if (draw_x) {
                 ctx.beginPath();
@@ -2409,8 +2455,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }}}
 
-
-
         /* Draw letters and numbers */
         let letter_was_drawn = false;
         {{{
@@ -2432,7 +2476,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 letter = altmarking;
             }
 
-
             if (this.show_variation_move_numbers
                 && !letter
                 && !(pos.circle || pos.triangle || pos.chat_triangle || pos.cross || pos.square)
@@ -2449,7 +2492,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
             }
-
 
             if (letter) {
                 letter_was_drawn = true;
@@ -2468,6 +2510,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
                 let xx = cx - metrics.width / 2;
                 let yy = cy + (/WebKit|Trident/.test(navigator.userAgent) ? this.square_size * -0.03 : 1); /* middle centering is different on firefox */
+
+                if (this.stone_offsets[i][j]) {
+                    xx = xx + this.stone_offsets[i][j].x;
+                    yy = yy + this.stone_offsets[i][j].y;
+                }
+
                 ctx.textBaseline = "middle";
                 if (transparent) {
                     ctx.globalAlpha = 0.6;
@@ -2491,8 +2539,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
             }
 
-
-
             if (pos.circle || hovermark === "circle") {
                 ctx.lineCap = "round";
                 ctx.save();
@@ -2501,8 +2547,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     ctx.globalAlpha = 0.6;
                 }
                 ctx.strokeStyle = symbol_color;
-                ctx.lineWidth = this.square_size * 0.075;
-                ctx.arc(cx, cy, this.square_size * 0.25, 0, 2 * Math.PI, false);
+                ctx.lineWidth = this.square_size * 0.075 * NUDGE_SCALE;
+
+                ctx.arc(nx, ny, this.square_size * 0.25 * NUDGE_SCALE, 0, 2 * Math.PI, false);
                 ctx.stroke();
                 ctx.restore();
                 draw_last_move = false;
@@ -2518,13 +2565,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (pos.chat_triangle) {
                     ctx.strokeStyle = "#00aaFF";
                 }
-                ctx.lineWidth = this.square_size * 0.075;
+                ctx.lineWidth = this.square_size * 0.075 * NUDGE_SCALE;
                 let theta = -(Math.PI * 2) / 4;
-                let r = this.square_size * 0.30;
-                ctx.moveTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
+                let r = this.square_size * 0.30 * NUDGE_SCALE;
+                ctx.moveTo(nx + r * Math.cos(theta), cy + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(nx + r * Math.cos(theta), ny + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(nx + r * Math.cos(theta), ny + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(nx + r * Math.cos(theta), ny + r * Math.sin(theta));
                 ctx.stroke();
                 ctx.restore();
                 draw_last_move = false;
@@ -2537,11 +2584,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (transparent) {
                     ctx.globalAlpha = 0.6;
                 }
-                let r = Math.max(1, this.metrics.mid * 0.35);
-                ctx.moveTo(cx - r, cy - r);
-                ctx.lineTo(cx + r, cy + r);
-                ctx.moveTo(cx + r, cy - r);
-                ctx.lineTo(cx - r, cy + r);
+                let r = Math.max(1, this.metrics.mid * 0.35 * NUDGE_SCALE);
+                ctx.moveTo(nx - r, ny - r);
+                ctx.lineTo(nx + r, ny + r);
+                ctx.moveTo(nx + r, ny - r);
+                ctx.lineTo(nx - r, ny + r);
                 ctx.strokeStyle = symbol_color;
                 ctx.stroke();
                 ctx.restore();
@@ -2556,12 +2603,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (transparent) {
                     ctx.globalAlpha = 0.6;
                 }
-                let r = Math.max(1, this.metrics.mid * 0.40);
-                ctx.moveTo(cx - r, cy - r);
-                ctx.lineTo(cx + r, cy - r);
-                ctx.lineTo(cx + r, cy + r);
-                ctx.lineTo(cx - r, cy + r);
-                ctx.lineTo(cx - r, cy - r);
+                let r = Math.max(1, this.metrics.mid * 0.40 * NUDGE_SCALE);
+                ctx.moveTo(nx - r, ny - r);
+                ctx.lineTo(nx + r, ny - r);
+                ctx.lineTo(nx + r, ny + r);
+                ctx.lineTo(nx - r, ny + r);
+                ctx.lineTo(nx - r, ny - r);
                 ctx.strokeStyle = symbol_color;
                 ctx.stroke();
                 ctx.restore();
@@ -2569,7 +2616,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
 
         }}}
-
 
         /* Clear last move */
         if (this.last_move && this.engine && !this.last_move.is(this.engine.cur_move)) { /* {{{ */
@@ -2583,17 +2629,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (this.engine.cur_move.x === i && this.engine.cur_move.y === j && this.engine.board[j][i] &&
                   (this.engine.phase === "play" || (this.engine.phase === "finished"))
             ) {
-                let xx = -1;
-                let yy = -1;
                 this.last_move = this.engine.cur_move;
 
-                let r = this.square_size * 0.35;
+                let r = this.square_size * 0.25 * NUDGE_SCALE;
 
                 if (i >= 0 && j >= 0) {
                     ctx.beginPath();
                     ctx.strokeStyle = stone_color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
-                    ctx.lineWidth = this.square_size * 0.075;
-                    ctx.arc(cx, cy, this.square_size * 0.25, 0, 2 * Math.PI, false);
+                    ctx.lineWidth = this.square_size * 0.075  * NUDGE_SCALE;
+                    ctx.arc(nx, ny, r, 0, 2 * Math.PI, false);
                     ctx.stroke();
                 }
             }
@@ -3057,7 +3101,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
     private computeThemeStoneRadius(metrics) {{{
         // Scale proportionally in general
-        let r = this.square_size * 0.488;
+        let r = this.square_size * 0.488 * NUDGE_SCALE;
 
         // Prevent pixel sharing in low-res
         if (this.square_size % 2 === 0) {
