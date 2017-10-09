@@ -108,7 +108,7 @@ export class Overview extends React.Component<{}, any> {
                         <PlayerIcon id={user.id} size={80} />
 
                         <div className="profile-right">
-                            <div>
+                            <div style={{fontSize: '1.2em'}}>
                                 <Player user={user} nodetails rank={false} />
                             </div>
                             {rating && rating.professional &&
@@ -128,33 +128,27 @@ export class Overview extends React.Component<{}, any> {
                             }
                         </div>
                     </div>
-                    <div className="right-header" style={{justifyContent: 'center'}}>
+
+                    <div style={{justifyContent: 'center'}}>
                         <AdUnit unit='cdm-zone-02' />
                     </div>
-                    <div className="right-header">
-                        <h3>{_("Tournaments")}</h3>
-                        <Link to="/tournaments">{_("All tournaments") /* translators: Link to view all tournaments */} &gt;</Link>
-                    </div>
-                    <TournamentList />
 
-                    <div className="right-header">
-                        <h3>{_("Ladders")}</h3>
-                        <Link to="/ladders">{_("All ladders") /* translators: Link to view all ladders */} &gt;</Link>
-                    </div>
-                    <LadderList />
+                    <div className="overview-categories">
+                        <h3><Link to="/tournaments"><i className="fa fa-trophy"></i> {_("Tournaments")}</Link></h3>
+                        <TournamentList />
 
-                    <div className="right-header">
-                        <h3>{_("Groups")}</h3>
-                        <Link to="/groups">{_("Find Groups") /* translators: Link to view all groups */} &gt;</Link>
-                    </div>
-                    <GroupList />
+                        <h3><Link to="/ladders"><i className="fa fa-list-ol"></i> {_("Ladders")}</Link></h3>
+                        <LadderList />
 
-                    <div className="right-header">
-                        <h3>{_("Friends")}</h3>
-                        <Link to="/chat">{_("Meet some in Chat!") /* translators: Meet some friends in chat */} &gt;</Link>
+                        <h3><Link to="/groups"><i className="fa fa-users"></i> {_("Groups")}</Link></h3>
+                        <GroupList />
+
+                        <h3><Link to="/chat"><i className="fa fa-comment-o"></i> {_("Chat with friends")}</Link></h3>
+                        <FriendList />
                     </div>
-                    <FriendList />
+
                 </div>
+
             </div>
         </div>
         );
