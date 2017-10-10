@@ -130,7 +130,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     conditional_move_tree;
     leave_pushed_analysis: () => void = null;
     stashed_conditional_moves = null;
-
+    volume_sound_debounce: any = null;
 
     decide_white: () => void;
     decide_black: () => void;
@@ -1605,8 +1605,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sound_enabled: enabled,
         });
         let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
-        sfx.play("stone-" + (idx + 1));
+
+        if (this.volume_sound_debounce) {
+            clearTimeout(this.volume_sound_debounce);
+        }
+
+        this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
     }}}
+
     saveVolume = () => {{{
         let enabled = this.state.volume > 0;
         preferences.set("sound-volume", this.state.volume);
@@ -2375,7 +2381,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
 
-
         return (
             <Dock>
                 {(this.tournament_id || null) &&
@@ -2398,6 +2403,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         value={this.state.volume} min={0} max={1.0} step={0.01}
                     /> <i className="fa fa-save" onClick={this.saveVolume} style={{cursor: "pointer"}}/>
                 </a>
+
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>
                 <a onClick={this.toggleCoordinates}><i className="ogs-coordinates"></i> {_("Toggle coordinates")}</a>
                 <a onClick={this.showGameInfo}><i className="fa fa-info"></i> {_("Game information")}</a>
