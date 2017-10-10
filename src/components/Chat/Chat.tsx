@@ -33,6 +33,7 @@ import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {users_by_rank} from 'chat_manager';
+import * as moment from "moment";
 
 declare let swal;
 
@@ -648,6 +649,7 @@ export class Chat extends React.Component<ChatProperties, any> {
 
     render() {{{
         let sorted_user_list = this.sortedUserList();
+        let last_line = null;
 
         let chan_class = (chan: string): string => {
             return (chan in this.state.joined_channels ? " joined" : " unjoined") +
@@ -757,7 +759,11 @@ export class Chat extends React.Component<ChatProperties, any> {
                         onScroll={this.updateScrollPosition}
                         onClick={this.focusInput}
                         >
-                        {this.state.chat_log.map((line) => <ChatLine key={line.message.i} line={line}/>)}
+                        {this.state.chat_log.map((line, idx) => {
+                            let ll = last_line;
+                            last_line = line;
+                            return <ChatLine key={line.message.i} line={line} lastline={ll} />;
+                        })}
                     </div>
                     <div className="input-container ">
                         {showChannels &&
@@ -828,6 +834,7 @@ function generateChatSearchLine(urlString, command, body) {
 
 function ChatLine(props) {{{
     let line = props.line;
+    let lastline = props.lastline;
     let user = line;
 
     if (line.system) {
@@ -835,9 +842,19 @@ function ChatLine(props) {{{
     }
 
     let message = line.message;
+    let ts_ll = lastline ? new Date(lastline.message.t * 1000) : null;
     let ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
+    let show_date: JSX.Element = null;
+
+    if (!lastline || (ts && ts_ll)) {
+        if (ts) {
+            if (!lastline || (moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD"))) {
+                show_date = <div className="date">{moment(ts).format("LL")}</div>;
+            }
+        }
+    }
 
     if (typeof(body) === 'string') {
         if (body.substr(0, 4) === '/me ') {
@@ -876,7 +893,8 @@ function ChatLine(props) {{{
         }
             data-chat-id={message.i}
         >
-            {(ts) && <span title={ts.toDateString()} className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
+        {show_date}
+            {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
             {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
             <span className="body">{chat_markup(body)}</span>
         </div>
