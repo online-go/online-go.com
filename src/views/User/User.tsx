@@ -750,7 +750,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <Card>
                             <div>{/* loading-container="game_history.settings().$loading" */}
                                 <div className="search">
-                                    <PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                    <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
                                 </div>
 
                                 <PaginatedTable
@@ -785,7 +785,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <Card>
                                 <div>{/* loading-container="game_history.settings().$loading" */}
                                     <div className="search">
-                                        <PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                        <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
                                     </div>
 
                                     <PaginatedTable
