@@ -244,9 +244,19 @@
     }
 
     .search {
-        text-align: right;
-    }
+        display: flex;
+        align-items: flex-end;
 
+        i { // the search icon
+            // This would give us the themed underline
+            // .. but it is bugged in Chrome.
+            // @extend input;
+            font-size: smaller;
+            margin-left: 1 rem;
+            padding-right: 0.25 rem;
+            padding-bottom: 0.4em;
+        }
+    }
 
     .avatar-and-ratings-row {
         display: flex;
