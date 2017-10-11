@@ -63,7 +63,17 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
 
     render() {
         return (
-        <div>
+        <div className="page-width">
+            <div className="page-nav">
+                <h2 style={{marginLeft: '1rem'}}><i className="fa fa-list-ol"></i> {_("Ladders")}</h2>
+                <div>
+                    {this.state.ladders.map((ladder, idx) => (
+                    <Link key={idx} to={`/ladder/${ladder.id}`}>
+                        {_(ladder.board_size+'x'+ladder.board_size)} 
+                    </Link>
+                ))}
+                </div>
+            </div>
             <AdUnit unit="cdm-zone-01" nag/>
             <div className="LadderList">
                 {this.state.ladders.map((ladder, idx) => (
