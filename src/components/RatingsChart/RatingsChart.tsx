@@ -82,6 +82,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     games_by_day:Array<RatingEntry>;
     max_games_played_in_a_month:number;
 
+    show_pie;
     win_loss_pie;
 
     ratings_x      = d3.scaleTime();
@@ -223,14 +224,24 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
     setRanges = () => {{{
         let sizes = this.chart_sizes();
-        let width = this.width = sizes.width;
-        let graph_width = this.graph_width = 2.0 * sizes.width / 3.0;
+
+        this.width = sizes.width;
+        this.graph_width = 2.0 * sizes.width / 3.0;
+
+        if (this.width > 768) {  /* it gets too bunched up to show the pie */
+            this.show_pie = true;
+        }
+        else {
+            this.show_pie = false;
+            this.graph_width = this.width;
+        }
 
         this.pie_width = sizes.width / 3.0;
+
         this.height = height;
 
-        this.ratings_x.range([0, graph_width]);
-        this.timeline_x.range([0, graph_width]);
+        this.ratings_x.range([0, this.graph_width]);
+        this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([60, 0]);
@@ -275,7 +286,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         /* Win-loss pie chart goes to the right of the rating graph... */
         let graph_right_side = this.graph_width + margin.left + margin.right;
 
-        /* the pie chart element is positioned at the centre of the circle of the pie */
+        /* The pie chart element is positioned at the centre of the circle of the pie.
+           We need to create this even if show_pie is false, because it might become true from resizing... */
         this.win_loss_pie = this.svg.append('g')
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
 
@@ -741,6 +753,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.rating_chart
             .datum(this.games_by_day)
             .attr('d', this.rating_line as any);
+        if (this.width < 768) {
+            this.selected_axis.tickArguments([4]); // avoid crammed up tick labels
+            this.timeline_axis.tickArguments([4]);
+        }
         this.x_axis_date_labels.call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
@@ -751,9 +767,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.timeline_axis_labels
             .call(this.timeline_axis);
 
-        /* Plot win loss pie ... */
 
-        this.plotWinLossPie();
+        if (this.show_pie) {
+            this.plotWinLossPie();
+        }
 
         /* Plot win loss bar chart.... */
         const W = (d:RatingEntry, alpha:number) => {
@@ -915,7 +932,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
     render() {{{
         this.computeWinLossNumbers();
-        if (!this.state.loading) {
+        if (!this.state.loading && this.show_pie) {
             this.plotWinLossPie();
         }
         return (
@@ -928,6 +945,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                             <PersistentElement elt={this.chart_div}/>
                         </div>
                 }
+                {this.show_pie ? "" : this.renderWinLossNumbersAsText()}
             </div>
         );
     }}}
@@ -991,7 +1009,6 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.win_loss_aggregate = agg;
     }}}
 
-    /* How the win loss numbers used to be displayed... not used at present */
     renderWinLossNumbersAsText() {{{
         if (this.state.loading || this.state.nodata || !this.game_entries) {
             return <div className='win-loss-stats'/>;
