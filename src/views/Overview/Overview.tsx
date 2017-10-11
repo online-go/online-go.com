@@ -80,7 +80,7 @@ export class Overview extends React.Component<{}, any> {
         let rating = user ? getUserRating(user, 'overall', 0) : null;
 
         return (
-        <div id="Overview-Container">
+        <div id="Overview-Container" className="page-width">
             <AdUnit unit="cdm-zone-01" nag/>
             <SupporterGoals />
             <div id="Overview">

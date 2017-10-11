@@ -1087,15 +1087,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         }
 
 
-        return (
-        <div className="Tournament">
+        return ( 
+        <div className="Tournament page-width">
             <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
             <UIPush event="reload-tournament" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
 
             <div className="top-details">{/* {{{ */}
                 <div >
                     {!editing
-                        ? <h2>{tournament.name}</h2>
+                        ? <h2><i className="fa fa-trophy"></i> {tournament.name}</h2>
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
                     {!editing && !loading &&
