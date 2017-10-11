@@ -25,7 +25,7 @@ html, body, #main-content {
 }
 html, body, #main-content, #main-content > div {
     margin: 0;
-    padding: 0;
+    padding: 0 0 50px 0;
     min-height: 100%;
     themed background-color background-color;
     themed color text-color;
@@ -99,6 +99,37 @@ a.primary:active, a.primary:hover, .primary.clickable:hover, .primary.fakelink:h
     themed color text-color
 }
 
+
+.page-width {
+    align-self: center;
+    align-content: left;
+    width: 100%;
+    max-width: 1110px;
+    padding: 0.7rem 1rem;
+}
+
+.page-nav{
+    display: flex;
+    justify-content: space-between; 
+    margin-bottom: 2rem;
+    width: 100%;
+
+    .fa-search{
+        margin-bottom: 2px;
+    }
+
+    .SearchInput {
+        display: inline-block;
+        margin: 0 1rem;
+    }
+
+    > div {
+        padding-top: 1.2rem;
+        > a {
+            margin: 0 1rem;
+        }
+    }
+}
 
 .fg-shade0 { 
     themed color shade0
