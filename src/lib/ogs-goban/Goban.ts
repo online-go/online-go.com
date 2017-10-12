@@ -36,7 +36,7 @@ const SCORE_ESTIMATION_TOLERANCE = 0.30;
 const AUTOSCORE_TRIALS = 1000;
 const AUTOSCORE_TOLERANCE = 0.30;
 
-const STONE_SPACING_SCALE = 0.976; // Factor by which stone size is reduced to leave a gap when touching
+const STONE_SPACING_SCALE = 0.98; // Factor by which stone size is reduced to leave a gap when touching
 
 /* Note that this could be set by a user preference if necessary - '0' means "no nudging stones". */
 const NUDGE_PERCENT = 8;  // percent of stone radius to use for randomly nudging stones
@@ -2342,8 +2342,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         if (!this.stone_offsets[i][j]) {
                             let nudge_space = (NUDGE_PERCENT / 100) * this.theme_stone_radius / NUDGE_SCALE; // note that radius was already scaled
 
-                            x_nudge = nudge_space * (2 * (Math.random() - 0.5));
-                            y_nudge = nudge_space * (2 * (Math.random() - 0.5));
+                            x_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1);//(2 * (Math.random() - 0.5));
+                            y_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1);//(2 * (Math.random() - 0.5));
 
                             this.stone_offsets[i][j] = {x: x_nudge, y: y_nudge};
                         }
@@ -2352,9 +2352,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                             y_nudge = this.stone_offsets[i][j].y;
                         }
 
-                        nx = nx + x_nudge;
-                        ny = ny + y_nudge;
-
+                        nx = nx + Math.round(x_nudge);
+                        ny = ny + Math.round(y_nudge);
+                        
                         /* Note that letters and marks on this stone will be displaced by this amount as well.... */
                     }
                     if (color === 1) {
