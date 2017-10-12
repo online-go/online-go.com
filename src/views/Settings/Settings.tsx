@@ -418,248 +418,256 @@ export class Settings extends React.PureComponent<{}, any> {
 
         return (
         <div className="Settings container">
-            <Card>
-                <h3>{_("General Settings")}</h3>
-                <dl>
-                    <dt>{_("Language")}</dt>
-                    <dd><LanguagePicker /></dd>
+            <div className="row">
+                <div className="col-sm-7">
+                    <Card>
+                        <h3>{_("General Settings")}</h3>
+                        <dl>
+                            <dt>{_("Language")}</dt>
+                            <dd><LanguagePicker /></dd>
 
-                    <dt>{_("Profanity filter")}</dt>
-                    <dd>
-                        <select multiple onChange={this.updateProfanityFilter} value={this.state.profanity_filter} >
-                            {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
-                                <option key={lang} value={lang}>{languages[lang]}</option>
-                            ))}
-                        </select>
-                    </dd>
+                            <dt>{_("Profanity filter")}</dt>
+                            <dd>
+                                <select multiple onChange={this.updateProfanityFilter} value={this.state.profanity_filter} >
+                                    {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
+                                        <option key={lang} value={lang}>{languages[lang]}</option>
+                                    ))}
+                                </select>
+                            </dd>
 
-                    <dt>{_("Game thumbnail list threshold")}</dt>
-                    <dd>
-                        <select onChange={this.updateGameListThreshold} value={this.state.game_list_threshold}>
-                            <option value={0}>{_("Always show list")}</option>
-                            {[3, 5, 10, 25, 50, 100, 200].map((value, idx) =>
-                                <option key={idx} value={value}>{value}</option>
-                            )}
-                        </select>
-                    </dd>
+                            <dt>{_("Game thumbnail list threshold")}</dt>
+                            <dd>
+                                <select onChange={this.updateGameListThreshold} value={this.state.game_list_threshold}>
+                                    <option value={0}>{_("Always show list")}</option>
+                                    {[3, 5, 10, 25, 50, 100, 200].map((value, idx) =>
+                                        <option key={idx} value={value}>{value}</option>
+                                    )}
+                                </select>
+                            </dd>
 
-                    <dt>{_("Desktop notifications")}</dt>
-                    <dd>
-                        <input type="checkbox"
-                                checked={this.state.desktop_notifications_enabled}
-                                onChange={this.updateDesktopNotifications}
-                                disabled={!this.state.desktop_notifications_enableable}
-                                id="desktop_notifications"/>
-                        <label htmlFor="desktop_notifications">
-                            {this.state.desktop_notifications_enabled ? _("Enabled") : _("Disabled")}
-                        </label>
-                        {!this.state.desktop_notifications_enableable &&
-                            <div><i>
-                            {_("Desktop notifications are not supported by your browser")}
-                            </i></div>
-                        }
-                    </dd>
+                            <dt>{_("Desktop notifications")}</dt>
+                            <dd>
+                                <input type="checkbox"
+                                        checked={this.state.desktop_notifications_enabled}
+                                        onChange={this.updateDesktopNotifications}
+                                        disabled={!this.state.desktop_notifications_enableable}
+                                        id="desktop_notifications"/>
+                                <label htmlFor="desktop_notifications">
+                                    {this.state.desktop_notifications_enabled ? _("Enabled") : _("Disabled")}
+                                </label>
+                                {!this.state.desktop_notifications_enableable &&
+                                    <div><i>
+                                    {_("Desktop notifications are not supported by your browser")}
+                                    </i></div>
+                                }
+                            </dd>
 
-                    {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
-                    {(user.supporter || null) &&
-                        <dd>
-                            <input type="checkbox"
-                                    checked={!this.state.hide_ui_class}
-                                    onChange={this.updateHideUIClass}
-                                    id='hide_ui_class'
-                                    />
-                            <label htmlFor="hide_ui_class">
-                                {!this.state.hide_ui_class ? _("Enabled") : _("Disabled")}
-                            </label>
-                        </dd>
-                    }
-                </dl>
-            </Card>
+                            {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
+                            {(user.supporter || null) &&
+                                <dd>
+                                    <input type="checkbox"
+                                            checked={!this.state.hide_ui_class}
+                                            onChange={this.updateHideUIClass}
+                                            id='hide_ui_class'
+                                            />
+                                    <label htmlFor="hide_ui_class">
+                                        {!this.state.hide_ui_class ? _("Enabled") : _("Disabled")}
+                                    </label>
+                                </dd>
+                            }
+                        </dl>
+                    </Card>
 
-            <Card>{/* {{{ */}
-                <h3>
-                    {this.state.profile.on_vacation
-                        ?  <span className="vacation-status">
-                               <i className="fa fa-smile-o"></i>
-                                   &nbsp; {_("You are on vacation")} &nbsp;
-                               <i className="fa fa-smile-o"></i>
-                           </span>
-                        : <span>{_("Vacation Control")}</span>
-                    }
-                </h3>
-                <div className="vacation-container">
-                    <div>
-                        {this.state.profile.on_vacation
-                            ? <button onClick={this.endVacation} className="primary">{_("End vacation")}</button>
-                            : <button onClick={this.startVacation} className="primary">{_("Go on vacation")}</button>
-                        }
-                    </div>
+                    <Card>{/* {{{ */}
+                        <h3>{_("Game Preferences")}</h3>
+                        <dl>
+                            <dt>{_("Sound")}</dt>
+                            <dd className="inline-flex">
+                                <i className={"fa volume-icon " +
+                                    (this.state.volume === 0 ? "fa-volume-off"
+                                        : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                                        onClick={this.toggleVolume}
+                                /> <input type="range"
+                                    onChange={this.setVolume}
+                                    value={this.state.volume} min={0} max={1.0} step={0.01}
+                                /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
+                                    {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
+                                </span>
+                            </dd>
+                            <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
+                            <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
+                            <dt>{_("Board labeling")}</dt>
+                            <dd>
+                                <select value={this.state.board_labeling} onChange={this.setBoardLabeling}>
+                                    <option value="automatic">{_("Automatic")}</option>
+                                    <option value="A1">A1</option>
+                                    <option value="1-1">1-1</option>
+                                </select>
+                            </dd>
 
-                    <div>
-                        {(!this.state.profile.on_vacation || null) &&
-                            <i>
-                            {_("This will pause any correspondence games you are in until you end your vacation")}
-                            </i>
-                        }
-                    </div>
-
-                    <div>{interpolate(_("You have {{vacation_left}} of vacation available"),
-                                      {vacation_left: this.state.vacation_left})
-                    }</div>
-                </div>
-            </Card>
-            {/* }}} */}
-
-            <Card>{/* {{{ */}
-                <h3>{_("Game Preferences")}</h3>
-                <dl>
-                    <dt>{_("Sound")}</dt>
-                    <dd className="inline-flex">
-                        <i className={"fa volume-icon " +
-                            (this.state.volume === 0 ? "fa-volume-off"
-                                : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                                onClick={this.toggleVolume}
-                        /> <input type="range"
-                            onChange={this.setVolume}
-                            value={this.state.volume} min={0} max={1.0} step={0.01}
-                        /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
-                            {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
-                        </span>
-                    </dd>
-                    <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
-                    <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
-                    <dt>{_("Board labeling")}</dt>
-                    <dd>
-                        <select value={this.state.board_labeling} onChange={this.setBoardLabeling}>
-                            <option value="automatic">{_("Automatic")}</option>
-                            <option value="A1">A1</option>
-                            <option value="1-1">1-1</option>
-                        </select>
-                    </dd>
-
-                    <dt>{_("Live game submit mode")}</dt>
-                    <dd>
-                        <select value={this.state.live_submit_mode} onChange={this.setLiveSubmitMode}>
-                            <option value="single">{_("One-click to move")}</option>
-                            <option value="double">{_("Double-click to move")}</option>
-                            <option value="button">{_("Submit-move button")}</option>
-                        </select>
-                    </dd>
-                    <dt>{_("Correspondence submit mode")}</dt>
-                    <dd>
-                        <select value={this.state.corr_submit_mode} onChange={this.setCorrSubmitMode}>
-                            <option value="single">{_("One-click to move")}</option>
-                            <option value="double">{_("Double-click to move")}</option>
-                            <option value="button">{_("Submit-move button")}</option>
-                        </select>
-                    </dd>
-                    <dt><label htmlFor="autoadvance">{_("Auto-advance to next game after making a move")}</label></dt>
-                    <dd>
-                        <input id="autoadvance" type="checkbox" checked={this.state.autoadvance} onChange={this.setAutoAdvance} />
-                    </dd>
-                    <dt>{_("Autoplay delay (in seconds)")}</dt>
-                    <dd>
-                        <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
-                    </dd>
-                    {(!user.supporter || null) &&
-                        <dt><label htmlFor="show-ads-on-game-page">{_("Show ads on game page")}</label></dt>
-                    }
-                    {(!user.supporter || null) &&
-                        <dd>
-                            <input type="checkbox" id="show-ads-on-game-page" checked={this.state.show_ads_on_game_page} onChange={this.setShowAdsOnGamePage}/>
-                        </dd>
-                    }
-                    <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
-                    <dd>
-                        <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
-                        <div><i>
-                        {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
-                        </i></div>
-                    </dd>
-                </dl>
-            </Card>
-            {/* }}} */}
+                            <dt>{_("Live game submit mode")}</dt>
+                            <dd>
+                                <select value={this.state.live_submit_mode} onChange={this.setLiveSubmitMode}>
+                                    <option value="single">{_("One-click to move")}</option>
+                                    <option value="double">{_("Double-click to move")}</option>
+                                    <option value="button">{_("Submit-move button")}</option>
+                                </select>
+                            </dd>
+                            <dt>{_("Correspondence submit mode")}</dt>
+                            <dd>
+                                <select value={this.state.corr_submit_mode} onChange={this.setCorrSubmitMode}>
+                                    <option value="single">{_("One-click to move")}</option>
+                                    <option value="double">{_("Double-click to move")}</option>
+                                    <option value="button">{_("Submit-move button")}</option>
+                                </select>
+                            </dd>
+                            <dt><label htmlFor="autoadvance">{_("Auto-advance to next game after making a move")}</label></dt>
+                            <dd>
+                                <input id="autoadvance" type="checkbox" checked={this.state.autoadvance} onChange={this.setAutoAdvance} />
+                            </dd>
+                            <dt>{_("Autoplay delay (in seconds)")}</dt>
+                            <dd>
+                                <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
+                            </dd>
+                            {(!user.supporter || null) &&
+                                <dt><label htmlFor="show-ads-on-game-page">{_("Show ads on game page")}</label></dt>
+                            }
+                            {(!user.supporter || null) &&
+                                <dd>
+                                    <input type="checkbox" id="show-ads-on-game-page" checked={this.state.show_ads_on_game_page} onChange={this.setShowAdsOnGamePage}/>
+                                </dd>
+                            }
+                            <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
+                            <dd>
+                                <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
+                                <div><i>
+                                {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
+                                </i></div>
+                            </dd>
+                        </dl>
+                    </Card>
+                    {/* }}} */}
 
 
-            <Card>{/* {{{ */}
-                <h3>{_("Account Settings")}</h3>
-
-                <dl>
-                    <dt>{_("Email address")}</dt>
-                    <dd><input type="email" name="new_email"
-                        value={this.state.profile.email}
-                        onChange={this.updateEmail}
-                    />
-                    {!this.state.email_changed ? null :
-                        <button disabled={!this.emailIsValid()} className="primary" onClick={this.saveEmail}>
-                            {this.emailIsValid() ? _("Update email address") : _("Email address is not valid")}
-                        </button>
-                    }
-                    {this.state.email_message && <div>{this.state.email_message}</div>}
-                    {this.state.profile.email && !this.state.email_changed && !data.get('user').email_validated &&
-                        <div>
-                            <div className='awaiting-validation-text'>
-                                {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}
+                    <Card>{/* {{{ */}
+                        <h3>{_("Email Notifications")}</h3>
+                        {_("Email me a notification when ...")}
+                        {Object.keys(this.state.notifications).map((k, idx) =>
+                            <div className="notification-option" key={k}>
+                                <input type="checkbox" id={k}
+                                    checked={this.state.notifications[k].value.email}
+                                    onChange={this.updateNotification(k)}
+                                />
+                                <label htmlFor={k}>{_(this.state.notifications[k].description)}</label>
                             </div>
-                            <button onClick={this.resendValidationEmail}>{_("Resend validation email")}</button>
-                        </div>
-                    }
-                    </dd>
+                        )}
+                    </Card>
+                    {/* }}} */}
 
-                    <dt>{_("Password")}</dt>
-                    <dd className="password-update">
-                        <div>
-                        <input type="password" name="new_password1"
-                            value={this.state.password1}
-                            onChange={this.updatePassword1}
-                            />
+
+                    {aga_ratings_enabled && /* {{{ */
+                        <Card>
+                            <h3>{_("AGA Settings")}</h3>
+
+
+                        </Card>
+                    /* }}} */}
+
+                </div>
+                <div className="col-sm-5">
+
+                    <Card>{/* {{{ */}
+                        <h3>
+                            {this.state.profile.on_vacation
+                                ?  <span className="vacation-status">
+                                       <i className="fa fa-smile-o"></i>
+                                           &nbsp; {_("You are on vacation")} &nbsp;
+                                       <i className="fa fa-smile-o"></i>
+                                   </span>
+                                : <span>{_("Vacation Control")}</span>
+                            }
+                        </h3>
+                        <div className="vacation-container">
+                            <div>
+                                {this.state.profile.on_vacation
+                                    ? <button onClick={this.endVacation} className="primary">{_("End vacation")}</button>
+                                    : <button onClick={this.startVacation} className="primary">{_("Go on vacation")}</button>
+                                }
+                            </div>
+
+                            <div>
+                                {(!this.state.profile.on_vacation || null) &&
+                                    <i>
+                                    {_("This will pause any correspondence games you are in until you end your vacation")}
+                                    </i>
+                                }
+                            </div>
+
+                            <div>{interpolate(_("You have {{vacation_left}} of vacation available"),
+                                              {vacation_left: this.state.vacation_left})
+                            }</div>
                         </div>
-                        <div>
-                        <input placeholder={_("(again)")} type="password" name="new_password2"
-                            value={this.state.password2}
-                            onChange={this.updatePassword2}
+                    </Card>
+                    {/* }}} */}
+
+
+                    <Card>{/* {{{ */}
+                        <h3>{_("Account Settings")}</h3>
+
+                        <dl>
+                            <dt>{_("Email address")}</dt>
+                            <dd><input type="email" name="new_email"
+                                value={this.state.profile.email}
+                                onChange={this.updateEmail}
                             />
-                        </div>
-                        <div>
-                            {this.state.password1.length === 0 ? null :
-                                <button disabled={!this.passwordIsValid()} className="primary" onClick={this.savePassword}>
-                                    {this.passwordIsValid() ?  _("Update password") :  _("Passwords don't match")}
+                            {!this.state.email_changed ? null :
+                                <button disabled={!this.emailIsValid()} className="primary" onClick={this.saveEmail}>
+                                    {this.emailIsValid() ? _("Update email address") : _("Email address is not valid")}
                                 </button>
                             }
-                        </div>
-                    </dd>
-                </dl>
+                            {this.state.email_message && <div>{this.state.email_message}</div>}
+                            {this.state.profile.email && !this.state.email_changed && !data.get('user').email_validated &&
+                                <div>
+                                    <div className='awaiting-validation-text'>
+                                        {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}
+                                    </div>
+                                    <button onClick={this.resendValidationEmail}>{_("Resend validation email")}</button>
+                                </div>
+                            }
+                            </dd>
 
-                <i><Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link></i>
+                            <dt>{_("Password")}</dt>
+                            <dd className="password-update">
+                                <div>
+                                <input type="password" name="new_password1"
+                                    value={this.state.password1}
+                                    onChange={this.updatePassword1}
+                                    />
+                                </div>
+                                <div>
+                                <input placeholder={_("(again)")} type="password" name="new_password2"
+                                    value={this.state.password2}
+                                    onChange={this.updatePassword2}
+                                    />
+                                </div>
+                                <div>
+                                    {this.state.password1.length === 0 ? null :
+                                        <button disabled={!this.passwordIsValid()} className="primary" onClick={this.savePassword}>
+                                            {this.passwordIsValid() ?  _("Update password") :  _("Passwords don't match")}
+                                        </button>
+                                    }
+                                </div>
+                            </dd>
+                        </dl>
+
+                        <i><Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link></i>
 
 
-            </Card>
-            {/* }}} */}
+                    </Card>
+                    {/* }}} */}
 
-            <Card>{/* {{{ */}
-                <h3>{_("Email Notifications")}</h3>
-                {_("Email me a notification when ...")}
-                {Object.keys(this.state.notifications).map((k, idx) =>
-                    <div className="notification-option" key={k}>
-                        <input type="checkbox" id={k}
-                            checked={this.state.notifications[k].value.email}
-                            onChange={this.updateNotification(k)}
-                        />
-                        <label htmlFor={k}>{_(this.state.notifications[k].description)}</label>
-                    </div>
-                )}
-            </Card>
-            {/* }}} */}
-
-
-            {aga_ratings_enabled && /* {{{ */
-                <Card>
-                    <h3>{_("AGA Settings")}</h3>
-
-
-                </Card>
-            /* }}} */}
-
+                </div>
+            </div>
         </div>
         );
     }
