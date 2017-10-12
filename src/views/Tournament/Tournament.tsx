@@ -1087,7 +1087,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         }
 
 
-        return ( 
+        return (
         <div className="Tournament page-width">
             <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
             <UIPush event="reload-tournament" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>

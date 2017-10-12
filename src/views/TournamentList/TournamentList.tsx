@@ -131,7 +131,6 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
                             }}/>
                         </div>
                     )}
-                
                 </div>
             </div>
         );

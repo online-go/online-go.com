@@ -69,7 +69,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
                 <div>
                     {this.state.ladders.map((ladder, idx) => (
                     <Link key={idx} to={`/ladder/${ladder.id}`}>
-                        {_(ladder.board_size + 'x' + ladder.board_size)} 
+                        {_(ladder.board_size + 'x' + ladder.board_size)}
                     </Link>
                 ))}
                 </div>

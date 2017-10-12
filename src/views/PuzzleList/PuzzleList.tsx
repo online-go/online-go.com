@@ -65,7 +65,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                     <AdUnit unit="cdm-zone-01" nag/>
 
                     <div className="puzzle-list-container" style={{clear:'both'}}>
-                        
+
                         <div className="page-nav">
 
                             <h2><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</h2>
@@ -84,7 +84,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                 />
                             </div>
                         </div>
-                        
+
                         <PaginatedTable
                             className=""
                             ref="table"

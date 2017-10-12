@@ -87,7 +87,7 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                             {header: _("Members"), className: () => "member-count",                    render: (X) => X.member_count},
                         ]}
                     />
-                    
+
                 </div>
             </div>
         </div>
