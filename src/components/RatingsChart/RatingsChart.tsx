@@ -644,7 +644,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .text(interpolate(pgettext( "Total Ranked Games", "Total of: {{total_games}} ranked games"), {total_games: total_games}))
             .attr('x', -60)
             .attr('y', -1.0 * pie_radius - 20)
-            .attr('class', "pie-title")
+            .attr('class', "pie-title");
 
         /* It's nice to have the legend in a different order, just makes more sense.... */
 
