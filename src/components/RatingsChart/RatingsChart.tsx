@@ -626,7 +626,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .enter()
             .append('path')
             .attr('d', arc)
-            .attr('class', (d, i) => (pie_colour_class[i]));
+            .attr('class', (d, i) => ("pie " +  pie_colour_class[i]));
 
         /* The legend with values... */
 
@@ -643,7 +643,8 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.win_loss_pie.append('text')
             .text(interpolate(pgettext( "Total Ranked Games", "Total of: {{total_games}} ranked games"), {total_games: total_games}))
             .attr('x', -60)
-            .attr('y', -1.0 * pie_radius - 20);
+            .attr('y', -1.0 * pie_radius - 20)
+            .attr('class', "pie-title")
 
         /* It's nice to have the legend in a different order, just makes more sense.... */
 
