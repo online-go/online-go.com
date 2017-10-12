@@ -2342,8 +2342,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         if (!this.stone_offsets[i][j]) {
                             let nudge_space = (NUDGE_PERCENT / 100) * this.theme_stone_radius / NUDGE_SCALE; // note that radius was already scaled
 
-                            x_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1);//(2 * (Math.random() - 0.5));
-                            y_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1);//(2 * (Math.random() - 0.5));
+                            x_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1); //(2 * (Math.random() - 0.5));
+                            y_nudge = nudge_space * (Math.random() > 0.5 ? -1 : 1); //(2 * (Math.random() - 0.5));
 
                             this.stone_offsets[i][j] = {x: x_nudge, y: y_nudge};
                         }
@@ -2354,7 +2354,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
                         nx = nx + Math.round(x_nudge);
                         ny = ny + Math.round(y_nudge);
-                        
                         /* Note that letters and marks on this stone will be displaced by this amount as well.... */
                     }
                     if (color === 1) {
