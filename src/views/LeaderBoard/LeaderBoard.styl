@@ -20,11 +20,18 @@
     .row {
         margin: 2em;
     }
-    h2,h3,h4,h5 {
+    h3,h4,h5 {
         white-space: nowrap;
     }
-    h1 {
-        text-align: center;
+    h2 {
+        > span {
+            color: silver;
+            margin: 0 0.5rem;
+
+            &:hover {
+                color: grey;
+            }
+        }
     }
     .points {
         font-size: 0.8em;

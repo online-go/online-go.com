@@ -123,10 +123,10 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
 
     render() {
         return (
-            <div className="LeaderBoard container">
+            <div className="LeaderBoard page-width">
                 <AdUnit unit="cdm-zone-01" nag/>
 
-                <h1>{_("Site Wide Leaderboards")}</h1>
+                <h2><span>{_("Site Wide")}</span> <i className="fa fa-list-ol"></i> {_("Leaderboards")} </h2>
                 <Card>
                     {this.state.leaderboards.map((row, ridx) => (
                         <div key={ridx} className="row">
