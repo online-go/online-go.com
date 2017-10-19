@@ -750,7 +750,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <Card>
                             <div>{/* loading-container="game_history.settings().$loading" */}
                                 <div className="search">
-                                    <PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                    <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
                                 </div>
 
                                 <PaginatedTable
@@ -785,7 +785,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <Card>
                                 <div>{/* loading-container="game_history.settings().$loading" */}
                                     <div className="search">
-                                        <PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                        <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
                                     </div>
 
                                     <PaginatedTable
@@ -847,9 +847,12 @@ export class User extends React.PureComponent<UserProperties, any> {
                         <Card>
                             <h5 style={center}>{interpolate("You have won {{vs.wins}} out of {{vs.total}} games against {{username}}", {"vs.wins": this.state.vs.wins, "vs.total": this.state.vs.total, "username": user.username})}</h5>
                             <div className="progress">
-                                <div className="progress-bar games-won" style={{width: this.state.vs.winPercent + "%"}}>{this.state.vs.wins}</div>
-                                <div className="progress-bar games-lost" style={{width: this.state.vs.lossPercent + "%"}}>{this.state.vs.losses}</div>
-                                <div className="progress-bar primary" style={{width: this.state.vs.drawPercent + "%"}}>{this.state.vs.draws}</div>
+                                 {(this.state.vs.winPercent > 0) &&
+                                  <div className="progress-bar games-won" style={{width: this.state.vs.winPercent + "%"}}>{this.state.vs.wins}</div>}
+                                 {(this.state.vs.lossPercent > 0) &&
+                                  <div className="progress-bar games-lost" style={{width: this.state.vs.lossPercent + "%"}}>{this.state.vs.losses}</div>}
+                                 {(this.state.vs.drawPercent > 0) &&
+                                   <div className="progress-bar primary" style={{width: this.state.vs.drawPercent + "%"}}>{this.state.vs.draws}</div>}
                             </div>
 
                             {this.state.vs.recent5.map((game, idx) => (
