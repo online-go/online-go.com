@@ -71,6 +71,7 @@
         justify-content: space-around;
         align-content: stretch
         width: 100%;
+        flex-wrap: wrap;
 
         button {
             font-size: 1.1rem;
@@ -79,7 +80,8 @@
             flex-basis: 13rem;
             height: 4rem;
             margin: 0.9rem;
-            min-width: 160px; // so none shrink less wider than the widest
+            min-width: 155px; // to stop shrinking and expanding differently to others
+            max-width: 155px;
 
             .fa, .ogs-turtle {
                 //font-size: 1.2rem;
@@ -123,6 +125,8 @@
             flex-basis: 13rem;
             height: 3rem;
             margin: 1rem;
+            min-width: 155px; // to stop shrinking and expanding differently to others
+            max-width: 155px;
 
             .fa {
             //font-size: 1.2rem;
