@@ -356,7 +356,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             {/* Left Nav */}
             <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
                 <div className="search-row">
-                    <icon className="fa fa-search"/>
+                    <i className="fa fa-search"/>
                     <input ref="omnisearch_input" type="text"
                            className="OmniSearch-input"
                            value={this.state.omnisearch_string}
