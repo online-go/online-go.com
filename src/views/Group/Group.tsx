@@ -543,12 +543,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     {header: _("News"), className: "none", render: (entry) =>
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} 
-                                                style={{width:'100%'}} 
-                                                onChange={this.updateNewsTitle}/></h2>
+                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
                                                 : <h2>{entry.title}</h2>
                                             }
-
                                             <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
                                             {this.state.is_admin &&
                                                 <div>
