@@ -404,7 +404,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div className="col-sm-10">
                                 {!editing
                                     ? <h2>{group.name}</h2>
-                                    : <input type="text" placeholder={_("Group name")} value={group.name} onChange={this.setGroupName} />
+                                    : <input type="text" placeholder={_("Group name")} style={{width: 'calc(100% - 30px)'}} value={group.name} onChange={this.setGroupName} />
                                 }
 
                                 <div className="admins">
@@ -543,7 +543,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     {header: _("News"), className: "none", render: (entry) =>
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
+                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} 
+                                                style={{width:'100%'}} 
+                                                onChange={this.updateNewsTitle}/></h2>
                                                 : <h2>{entry.title}</h2>
                                             }
 
