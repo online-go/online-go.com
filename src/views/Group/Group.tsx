@@ -404,7 +404,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div className="col-sm-10">
                                 {!editing
                                     ? <h2>{group.name}</h2>
-                                    : <input type="text" placeholder={_("Group name")} value={group.name} onChange={this.setGroupName} />
+                                    : <input type="text" placeholder={_("Group name")} style={{width: 'calc(100% - 30px)'}} value={group.name} onChange={this.setGroupName} />
                                 }
 
                                 <div className="admins">
@@ -520,6 +520,17 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
+                    <div className="new-news">
+                        {(this.state.show_new_news_post || null) &&
+                            <div>
+                                <input ref="new_news_title" type="text" placeholder={_("Title")} value={this.state.new_news_title} onChange={this.setNewNewsTitle}/>
+                                <textarea ref="new_news_body" rows={7} placeholder={_("News")} value={this.state.new_news_body} onChange={this.setNewNewsBody}/>
+                                <button className="reject" onClick={this.toggleNewNewsPost}>{_("Cancel")}</button>
+                                <button className="primary" onClick={this.postNewNews}>{_("Post!")}</button>
+                            </div>
+                        }
+                    </div>
+
                     {(this.state.news.length > 0 || null) &&
                         <Card style={{minHeight: "12rem"}}>
                             <PaginatedTable
@@ -532,10 +543,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     {header: _("News"), className: "none", render: (entry) =>
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
+                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
                                                 : <h2>{entry.title}</h2>
                                             }
-
                                             <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
                                             {this.state.is_admin &&
                                                 <div>
@@ -556,17 +566,6 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             />
                         </Card>
                     }
-
-                    <div className="new-news">
-                        {(this.state.show_new_news_post || null) &&
-                            <div>
-                                <input ref="new_news_title" type="text" placeholder={_("Title")} value={this.state.new_news_title} onChange={this.setNewNewsTitle}/>
-                                <textarea ref="new_news_body" rows={7} placeholder={_("News")} value={this.state.new_news_body} onChange={this.setNewNewsBody}/>
-                                <button className="reject" onClick={this.toggleNewNewsPost}>{_("Cancel")}</button>
-                                <button className="primary" onClick={this.postNewNews}>{_("Post!")}</button>
-                            </div>
-                        }
-                    </div>
 
                     <Card>
                         <h3>{_("Open Tournaments")}</h3>
