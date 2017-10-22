@@ -355,11 +355,13 @@ export class NavBar extends React.PureComponent<{}, any> {
 
             {/* Left Nav */}
             <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
-                <input ref="omnisearch_input" type="text"
-                    className="OmniSearch-input"
-                    value={this.state.omnisearch_string}
-                    onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
-
+                <div className="search-row">
+                    <i className="fa fa-search"/>
+                    <input ref="omnisearch_input" type="text"
+                           className="OmniSearch-input"
+                           value={this.state.omnisearch_string}
+                           onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
+                </div>
                 {(!omnisearch_searching || null) && /* {{{ */
                     <ul id="items">
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
