@@ -283,15 +283,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        /* Win-loss pie chart goes to the right of the rating graph... */
+        /* Win-loss pie chart goes to the right of the rating graph */
         let graph_right_side = this.graph_width + margin.left + margin.right;
 
         /* The pie chart element is positioned at the centre of the circle of the pie.
-           We need to create this even if show_pie is false, because it might become true from resizing... */
+           We need to create this even if show_pie is false, because it might become true from resizing */
         this.win_loss_pie = this.svg.append('g')
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
 
-        /* Win-loss bar graphs ... */
+        /* Win-loss bar graphs */
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
@@ -628,12 +628,12 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('d', arc)
             .attr('class', (d, i) => ("pie " +  pie_colour_class[i]));
 
-        /* The legend with values... */
+        /* The legend with values */
 
         this.win_loss_pie.selectAll('rect').remove();
         this.win_loss_pie.selectAll('text').remove();
 
-        // placement relative to centre of pie...
+        /* placement relative to centre of pie */
 
         let legend_xoffset = -1.0 * pie_radius - 20; // just looks about right
         let legend_yoffset = pie_radius + 30;
@@ -646,7 +646,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             .attr('y', -1.0 * pie_radius - 20)
             .attr('class', "pie-title");
 
-        /* It's nice to have the legend in a different order, just makes more sense.... */
+        /* It's nice to have the legend in a different order, just makes more sense */
 
         let legend_order = [0, 1, 3, 2]; // index into pie_data[]
 
@@ -733,7 +733,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             }
         }
 
-        /* Plot graph.... */
+        /* Plot graph */
         let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
 
         this.ratings_x.domain(date_range);
@@ -773,7 +773,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.plotWinLossPie();
         }
 
-        /* Plot win loss bar chart.... */
+        /* Plot win loss bar chart */
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
@@ -946,7 +946,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                             <PersistentElement elt={this.chart_div}/>
                         </div>
                 }
-                {this.show_pie ? "" : this.renderWinLossNumbersAsText()}
+                {this.show_pie ? null : this.renderWinLossNumbersAsText()}
             </div>
         );
     }}}
