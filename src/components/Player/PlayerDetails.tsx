@@ -235,6 +235,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
                         <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        <div style={{width: '48%'}}></div>
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
                         {friends[this.props.playerId]
                             ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>

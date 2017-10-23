@@ -315,7 +315,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                                     <input type="text" value={this.state.new_collection_name} onChange={this.setNewCollectionName} placeholder={_("New collection name")} />
                                     <div className="row">
                                         <input type="checkbox" id="private" checked={this.state.new_collection_private} onChange={this.setNewCollectionPrivate} />
-                                        <label htmlFor="private">{_("Create as a private collection")}</label>
+                                        <label htmlFor="private"><i className="fa fa-lock"></i>{_("Private collection")}</label>
                                     </div>
                                 </div>
                             }

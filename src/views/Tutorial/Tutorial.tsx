@@ -119,7 +119,7 @@ abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, 
 
     render() {
         return (
-            <div className='Tutorial'>
+            <div className='Tutorial page-width'>
                 <div className='TutorialPage'>
                     <div className='tutorial-text'>
                         {this.text()}
