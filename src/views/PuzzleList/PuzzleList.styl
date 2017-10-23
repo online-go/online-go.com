@@ -23,20 +23,19 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 0 1rem;
     
 
     .puzzle-list-container {
-        margin-top: 2rem;
+        width: 100%;
+
+        td.icon{
+            width: 70px;
+        }
     }
 
-    .name {
+    td.name {
         font-weight: bold;
-    }
-
-    .create-a-new-puzzle-link-container {
-        padding-top: 1rem;
-        font-weight: bold;
-        text-align: center;
     }
 
     .MiniGoban {
@@ -48,6 +47,11 @@
         text-align: center;
     }
     .rating-count {
-        font-size: font-size-smaller;
+        color: #919191;
+    }
+    .rating {
+        .fa-star, .fa-star-half-o{
+            color: #FFB74D;
+        }
     }
 }

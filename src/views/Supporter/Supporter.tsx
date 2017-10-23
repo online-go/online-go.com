@@ -493,9 +493,13 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         return (
         <div className="Supporter">
-            <SupporterGoals alwaysShow={true} />
-
+        <div className="row">
+            <div className="col-sm-7">
+            <h2><i className="fa fa-star"></i> {_("Support OGS")}</h2>
             {supporter_text}
+            </div>
+
+            <div className="col-sm-5">
             {processing
                 ? <h1 style={{textAlign: "center", marginTop: "5em"}}>{_("Processing")}</h1>
                 : !this.state.is_supporter
@@ -611,6 +615,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
                       </div>
             }
+            </div>
+        </div>
         </div>
         );
     }
