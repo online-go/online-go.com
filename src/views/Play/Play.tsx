@@ -221,7 +221,7 @@ export class Play extends React.Component<PlayProperties, any> {
             <div className="Play container">
                 <AdUnit unit="cdm-zone-01" nag />
                 <SupporterGoals />
-                <div className='row foo'>
+                <div className='row'>
                     <div className='col-sm-6'>
                         <Card>
                             {this.automatchContainer()}
