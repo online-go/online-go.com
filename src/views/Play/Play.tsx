@@ -377,24 +377,33 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='automatch-row-container'>
                         <div className='automatch-row'>
                             <button className='primary' onClick={() => this.findMatch("blitz")}>
-                                <i className="fa fa-bolt" /> {_("Blitz")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-bolt" /> {_("Blitz")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                </div>
                             </button>
                             <button className='primary' onClick={() => this.findMatch("live")}>
-                                <i className="fa fa-clock-o" /> {_("Normal")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-clock-o" /> {_("Normal")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                </div>
                             </button>
                         </div>
                         <div className='automatch-row'>
                             <button className='primary' onClick={this.newComputerGame}>
-                                <i className="fa fa-desktop" /> {_("Computer")}
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-desktop" /> {_("Computer")}
+                                    <span className='time-per-move'></span>
+                                </div>
                             </button>
                             <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
-                                {this.state.disableCorrespondenceButton
-                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                }
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                <div className='play-button-text-root'>
+                                    {this.state.disableCorrespondenceButton
+                                        ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
+                                        : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
+                                    }
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                </div>
                             </button>
                         </div>
                         <div className='automatch-settings'>

@@ -66,6 +66,7 @@
         justify-content: center;
     }
 
+
     .automatch-row {
         display: flex;
         justify-content: space-around;
@@ -78,19 +79,40 @@
             font-weight: bold;
             flex-grow: 1;
             flex-basis: 13rem;
+            max-width: 13rem;
             height: 4rem;
-            margin: 0.9rem;
-            min-width: 165px; // to stop shrinking and expanding differently to others
-            max-width: 165px;
+            margin: 0.5rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: stretch;
+            align-content: stretch;
+            justify-content: center;
+
+            .play-button-text-root {
+                position: relative;
+                vertical-align: middle;
+
+                .time-per-move {
+                    position: absolute;
+                    bottom: -1.2rem;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                }
+            }
 
             .fa, .ogs-turtle {
-                //font-size: 1.2rem;
                 margin: 0.2rem;
             }
-            .ogs-turtle{
-                vertical-align: middle;
-                font-size: 1.2rem;
-                margin-bottom: 0;
+
+            .ogs-turtle {
+                position: relative;
+                width: 1.0rem;
+            }
+            .ogs-turtle::before {
+                position: absolute;
+                top: -0.5rem;
+                left: 0;
             }
 
             .time-per-move {
@@ -120,20 +142,19 @@
         display: flex;
         justify-content: space-around;
         align-content: stretch
-        width: 50%;
+        width: 100%;
 
         button {
             font-size: 1.1rem;
             font-weight: bold;
             flex-grow: 1;
-            flex-basis: 13rem;
+            width: 100%;
+            max-width: 13rem;
+            margin: 0.5rem;
             height: 3rem;
-            margin: 1rem;
-            min-width: 155px; // to stop shrinking and expanding differently to others
-            max-width: 155px;
+            height: 4rem;
 
             .fa {
-            //font-size: 1.2rem;
                 margin: 0.2rem;
             }
         }
