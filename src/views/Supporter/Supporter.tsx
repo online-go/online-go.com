@@ -483,6 +483,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         if (user.anonymous) {
             return (
                 <div className="Supporter">
+                    <SupporterGoals alwaysShow />
+
                     {supporter_text}
                     <p>
                         <i>To donate, you'll first need to log in.</i>
@@ -493,7 +495,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         return (
         <div className="Supporter">
-        <div className="row">
+          <SupporterGoals alwaysShow />
+          <div className="row">
             <div className="col-sm-7">
             <h2><i className="fa fa-star"></i> {_("Support OGS")}</h2>
             {supporter_text}
@@ -616,7 +619,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                       </div>
             }
             </div>
-        </div>
+          </div>
         </div>
         );
     }
