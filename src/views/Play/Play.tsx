@@ -221,7 +221,7 @@ export class Play extends React.Component<PlayProperties, any> {
             <div className="Play container">
                 <AdUnit unit="cdm-zone-01" nag />
                 <SupporterGoals />
-                <div className='row foo'>
+                <div className='row'>
                     <div className='col-sm-6'>
                         <Card>
                             {this.automatchContainer()}
@@ -294,6 +294,15 @@ export class Play extends React.Component<PlayProperties, any> {
                         ))}
 
                         <div style={{marginTop: "2em"}}></div>
+
+                        {/* There must be a better way to get the header in the centre! At least this doesn't cause warnings :) */}
+                        <div className='custom-games-list-header-row'>
+                            <span className='cell'></span>
+                            <span className='cell'></span>
+                            <span className='cell'></span>
+                            <span className='cell'>{_("Custom Games")}</span>
+                        </div>
+
 
                         <div className="challenge-row">
                             <span className="cell break">{_("Short Games")}</span>
@@ -368,37 +377,48 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='automatch-row-container'>
                         <div className='automatch-row'>
                             <button className='primary' onClick={() => this.findMatch("blitz")}>
-                                <i className="fa fa-bolt" /> {_("Blitz")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-bolt" /> {_("Blitz")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                </div>
                             </button>
                             <button className='primary' onClick={() => this.findMatch("live")}>
-                                <i className="fa fa-clock-o" /> {_("Normal")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-clock-o" /> {_("Normal")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                </div>
                             </button>
                         </div>
                         <div className='automatch-row'>
                             <button className='primary' onClick={this.newComputerGame}>
-                                <i className="fa fa-desktop" /> {_("Computer")}
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-desktop" /> {_("Computer")}
+                                    <span className='time-per-move'></span>
+                                </div>
                             </button>
-                            <button className='primary' onClick={this.newCustomGame}>
-                                <i className="fa fa-cog" /> {_("Custom")}
-                            </button>
-                        </div>
-
-                        <div className='automatch-row'>
                             <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
-                                {this.state.disableCorrespondenceButton
-                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                }
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                <div className='play-button-text-root'>
+                                    {this.state.disableCorrespondenceButton
+                                        ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
+                                        : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
+                                    }
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div className='automatch-settings'>
+                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
+                        </div>
+                        <div className='custom-game-header'>
+                            <div>{_("Custom Game")}</div>
+                        </div>
+                        <div className='custom-game-row'>
+                            <button className='primary' onClick={this.newCustomGame}>
+                                <i className="fa fa-cog" /> {_("Create")}
                             </button>
                         </div>
                     </div>
 
-                    <div className='automatch-settings'>
-                        <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/> {_("Settings")}</span>
-                    </div>
                 </div>
             );
         }

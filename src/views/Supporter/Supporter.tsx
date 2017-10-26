@@ -470,7 +470,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 <div className='p'>
                     {_("When you become a supporter you also get a few perks!")}
 
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! All ads on OGS are removed for you while you're logged in.")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! By supporting OGS, we are able to operate this site without ads. Furthermore, if we have to turn them back on in the future, you won't see them!")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_("Golden name! Your username will show up in gold (You can turn this off in settings if you want.)")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_("Golden orb next to your name in chat! (You can turn this off in settings if you want.)")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_('Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!')}</span></div>
@@ -483,6 +483,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         if (user.anonymous) {
             return (
                 <div className="Supporter">
+                    <SupporterGoals alwaysShow />
+
                     {supporter_text}
                     <p>
                         <i>To donate, you'll first need to log in.</i>
@@ -493,7 +495,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         return (
         <div className="Supporter">
-        <div className="row">
+          <SupporterGoals alwaysShow />
+          <div className="row">
             <div className="col-sm-7">
             <h2><i className="fa fa-star"></i> {_("Support OGS")}</h2>
             {supporter_text}
@@ -616,7 +619,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                       </div>
             }
             </div>
-        </div>
+          </div>
         </div>
         );
     }

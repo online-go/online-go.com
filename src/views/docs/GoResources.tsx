@@ -136,7 +136,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="http://www.gocommentary.com/free-tutorial-videos.html">Go Commentary Videos</a></span>,
                 <span><Flag country={en}/> <a href="https://badukmovies.com/">Baduk Movies</a></span>,
                 <span><Flag country={eu}/> <a href="http://eurogotv.com/">EuroGoTV Go Broadcasts</a></span>,
-                <span><Flag country={en}/> <a href="http://www.twitch.tv/directory/game/Go%20%28Board%20Game%29">Twitch Live Streams for Go</a></span>
+                <span><Flag country={en}/> <a href="https://go.twitch.tv/directory/game/Go">Twitch Live Streams for Go</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
