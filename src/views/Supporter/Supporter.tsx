@@ -470,7 +470,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 <div className='p'>
                     {_("When you become a supporter you also get a few perks!")}
 
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! All ads on OGS are removed for you while you're logged in.")}</span></div>
+                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! By supporting OGS, we are able to operate this site without ads. Furthermore, if we have to turn them back on in the future, you won't see them!")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_("Golden name! Your username will show up in gold (You can turn this off in settings if you want.)")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_("Golden orb next to your name in chat! (You can turn this off in settings if you want.)")}</span></div>
                     <div className='perk'><i className='fa fa-circle'/><span>{_('Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!')}</span></div>
