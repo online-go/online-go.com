@@ -908,7 +908,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }}}
     showGameInfo() {{{
-        openGameInfoModal(this.goban.engine, this.state.annulled, this.creator_id || this.goban.review_owner_id);
+        openGameInfoModal(this.goban.engine,
+            this.state[`historical_black`] || this.goban.engine.players.black,
+            this.state[`historical_white`] || this.goban.engine.players.white,
+            this.state.annulled, this.creator_id || this.goban.review_owner_id);
     }}}
     showLinkModal() {{{
         openGameLinkModal(this.goban);
