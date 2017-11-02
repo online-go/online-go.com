@@ -522,7 +522,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     }}}
     refreshData() {{{
         this.setState({loading: true});
-        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.setData);
+        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.loadDataAndPlot);
     }}}
 
     /* The area we can draw all of our charting in */
@@ -558,6 +558,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
 
         this.dateLegend.attr('width', width);
         this.dateLegend.attr('height', 30);
+
         this.range_label.attr('transform', 'translate(' + width + ', 0)');
         this.x_axis_date_labels.attr('transform', 'translate(0 ,' + height + ')');
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
@@ -570,6 +571,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.mouseArea.attr('height', height);
         this.timeline_axis_labels .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
         this.brush.extent([[0, 0], [width, secondary_charts_height]]);
+
+        let graph_right_side = this.graph_width + margin.left + margin.right;
+        this.win_loss_pie
+            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
 
         if (this.games_by_day) {
             this.timeline_chart
@@ -667,7 +672,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     }}}
 
     /* Callback function for data retrieval, which plots the retrieved data */
-    setData = (err, data) => {{{
+    loadDataAndPlot = (err, data) => {{{
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (data.length === 1) {
@@ -773,7 +778,10 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             this.plotWinLossPie();
         }
 
-        /* Plot win loss bar chart */
+        this.plotWinLossBars();
+    }}}
+
+    plotWinLossBars = () => {{{
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
@@ -850,6 +858,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
                 .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
         );
     }}}
+
     getUTCMonthWidth(d:Date):number {{{
         let days_in_month;
 
