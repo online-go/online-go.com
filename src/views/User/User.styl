@@ -400,4 +400,24 @@
         }
     }
 
+    .game-history-table, .review-history-table {
+        .name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result {
+            white-space: nowrap;
+        }
+
+         .library-lost-result, .library-won-result, .library-tie-result {
+            overflow: hidden;
+        }
+
+        .name {
+            max-width: 15rem;
+            overflow: hidden;
+        }
+
+        .player {
+            max-width: 10rem;
+            overflow: hidden;
+        }
+    }
+
 }

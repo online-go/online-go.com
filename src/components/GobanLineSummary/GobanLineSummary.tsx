@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
+import {Link} from 'react-router';
 import {_, interpolate} from "translate";
 import {Goban} from "goban";
 import * as data from "data";
 import {PersistentElement} from "PersistentElement";
-import {navigateTo} from "misc";
 import {rankString} from "rank_utils";
 import {Player} from "Player";
 
@@ -122,10 +122,6 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
         });
     }
 
-    gotoGame = (ev) => {
-        navigateTo(`/game/${this.props.id}`, ev);
-    }
-
     render() {
         let player;
         let opponent;
@@ -144,12 +140,10 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             opponent_clock = this.black_clock;
         }
         return (
-            <div className={ `GobanLineSummary `
+            <Link to={`/game/${this.props.id}`} className={ `GobanLineSummary `
                             + (this.state.current_users_move ? " current-users-move" : "")
                             + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
-                 onClick={this.gotoGame}
-                 onMouseUp={this.gotoGame}
                 >
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
@@ -178,7 +172,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
                     </div>
                 }
-            </div>
+            </Link>
         );
     }
 }

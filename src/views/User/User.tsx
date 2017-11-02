@@ -753,7 +753,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 </div>
 
                                 <PaginatedTable
-                                    className=""
+                                    className="game-history-table"
                                     ref="game_table"
                                     name="game-history"
                                     method="get"
@@ -788,7 +788,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     </div>
 
                                     <PaginatedTable
-                                        className=""
+                                        className="review-history-table"
                                         ref="review_table"
                                         name="review-history"
                                         method="get"

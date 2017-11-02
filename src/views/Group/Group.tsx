@@ -643,10 +643,6 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return null;
         }
 
-        if (data.get("user").id === player_id) {
-            return null;
-        }
-
         if (this.isAdmin(player_id)) {
             return (
                 <div className="actions">
