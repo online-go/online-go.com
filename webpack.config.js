@@ -78,7 +78,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.`)
         //"react-datetime": "Datetime",
         //"react-autosuggest": "Autosuggest",
         //"react-redux": "ReactRedux",
-        "redux": "Redux",
+        //"redux": "Redux",
         "blueimp-md5": "md5",
         //"eventemitter3": "EventEmitter",
         "markdown-it": "markdownit",
