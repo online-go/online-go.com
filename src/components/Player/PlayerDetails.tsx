@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {toast} from "toast";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";

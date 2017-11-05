@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate, cc_to_country_name} from "translate";
 import {post, get, put, del} from "requests";
 import {PaginatedTable} from "PaginatedTable";

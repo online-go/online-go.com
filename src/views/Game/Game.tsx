@@ -19,7 +19,8 @@ import * as data from "data";
 import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
 import {KBShortcut} from "KBShortcut";
@@ -61,9 +62,11 @@ let win = $(window);
 let active_game_view = null;
 
 interface GameProperties {
-    params: {
-        game_id?: string,
-        review_id?: string,
+    match: {
+        params: {
+            game_id?: string,
+            review_id?: string,
+        }
     };
 }
 
@@ -140,8 +143,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         super(props);
         window["Game"] = this;
 
-        this.game_id = this.props.params.game_id ? parseInt(this.props.params.game_id) : 0;
-        this.review_id = this.props.params.review_id ? parseInt(this.props.params.review_id) : 0;
+        this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
+        this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
             view_mode: false,
             squashed: goban_view_squashed(),
@@ -255,8 +258,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentWillReceiveProps(nextProps) {{{
         if (
-            this.props.params.game_id !== nextProps.params.game_id ||
-            this.props.params.review_id !== nextProps.params.review_id
+            this.props.match.params.game_id !== nextProps.match.params.game_id ||
+            this.props.match.params.review_id !== nextProps.match.params.review_id
         ) {
             this.deinitialize();
             this.goban_div.empty();
@@ -274,8 +277,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 historical_white: null,
             });
 
-            this.game_id = nextProps.params.game_id ? parseInt(nextProps.params.game_id) : 0;
-            this.review_id = nextProps.params.review_id ? parseInt(nextProps.params.review_id) : 0;
+            this.game_id = nextProps.match.params.game_id ? parseInt(nextProps.match.params.game_id) : 0;
+            this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
             console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
@@ -283,8 +286,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentDidUpdate(prevProps, prevState) {{{
         if (
-            this.props.params.game_id !== prevProps.params.game_id ||
-            this.props.params.review_id !== prevProps.params.review_id
+            this.props.match.params.game_id !== prevProps.match.params.game_id ||
+            this.props.match.params.review_id !== prevProps.match.params.review_id
         ) {
             this.initialize();
             this.sync_state();

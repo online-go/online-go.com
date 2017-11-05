@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_} from "translate";
 import {Card} from "material";
 import {GameList} from "GameList";

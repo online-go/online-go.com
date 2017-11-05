@@ -23,7 +23,7 @@ import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
 import {isLiveGame} from "TimeControl";
 import {post, del} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {challenge_text_description} from "ChallengeModal";
 import {Player} from "Player";
 import {FabX, FabCheck} from "material";

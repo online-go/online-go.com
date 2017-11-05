@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";

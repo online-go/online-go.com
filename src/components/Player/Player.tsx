@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {shouldOpenNewTab, errorLogger} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
 import {close_all_popovers, popover} from "popover";

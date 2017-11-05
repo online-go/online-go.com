@@ -74,7 +74,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.`)
     externals: {
         "react": "React",
         "react-dom": "ReactDOM",
-        "react-router": "ReactRouter",
+        //"react-router": "ReactRouter",
         "react-datetime": "Datetime",
         //"react-autosuggest": "Autosuggest",
         "react-redux": "ReactRedux",

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {_} from "translate";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import * as data from "data";
 
 interface SupporterGoalsProperties {

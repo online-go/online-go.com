@@ -18,7 +18,7 @@
 import * as data from "data";
 import * as player_cache from "player_cache";
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate, cc_to_country_name, sorted_locale_countries} from "translate";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {openModal} from 'Modal';
 import {NotesModal} from 'NotesModal';
 import {post, get, put, del, patch} from "requests";
@@ -48,7 +48,9 @@ import {RatingsChart} from 'RatingsChart';
 declare let swal;
 
 interface UserProperties {
-    params: any;
+    match: {
+        params: any
+    };
     // id?: any,
     // user?: any,
     // callback?: ()=>any,
@@ -129,14 +131,14 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.params.user_id !== this.props.params.user_id) {
+        if (nextProps.params.user_id !== this.props.match.params.user_id) {
             this.setState({"user": null, resolved: false});
             this.resolve(nextProps);
         }
     }
     resolve(props) {
         this.setState({"user": null, editing:  /edit/.test(window.location.hash)});
-        this.user_id = parseInt(props.params.user_id || data.get("user").id);
+        this.user_id = parseInt(props.match.params.user_id || data.get("user").id);
         get("players/%%/full", this.user_id).then((state) => {
             this.setState({resolved: true});
             try {

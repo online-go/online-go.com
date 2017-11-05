@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import online_status from "online_status";
 import * as data from "data";
 import {get} from "requests";
