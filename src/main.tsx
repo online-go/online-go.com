@@ -125,7 +125,7 @@ try {
 
 /*** Layout our main view and routes ***/
 const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
-const PageNotFound = () => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
+const PageNotFound = (props, state) => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
 const Default = () => (
     data.get("config.user").anonymous
         ?  <ObserveGames/>

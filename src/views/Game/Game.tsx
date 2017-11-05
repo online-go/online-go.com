@@ -165,7 +165,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
         };
-        this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
+
+        (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = $("<div class='Goban'>");

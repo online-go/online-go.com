@@ -69,7 +69,7 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
 export class ChatUserList extends ChatUsers<ChatUserListProperties> {
     constructor(props) {
         super(props);
-        this.state.user_sort_order = preferences.get("chat.user-sort-order");
+        (this.state as any).user_sort_order = preferences.get("chat.user-sort-order");
     }
 
     toggleSortOrder = () => {{{
