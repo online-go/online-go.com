@@ -31,7 +31,6 @@ data.setDefault("config", {
     }
 });
 
-
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Router, Route, Switch } from "react-router-dom";
