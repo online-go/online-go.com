@@ -199,12 +199,6 @@
     "@types/d3-voronoi" "*"
     "@types/d3-zoom" "*"
 
-"@types/eventemitter3@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@types/eventemitter3/-/eventemitter3-2.0.2.tgz#94b57c2568c4f09479d64812f625317b12a6edd0"
-  dependencies:
-    eventemitter3 "*"
-
 "@types/fixed-data-table@^0.6.30":
   version "0.6.32"
   resolved "https://registry.yarnpkg.com/@types/fixed-data-table/-/fixed-data-table-0.6.32.tgz#6eb149fdca8abe4c34a7a11be39d182e25233634"
@@ -1479,7 +1473,7 @@ event-stream@^3.1.7:
     stream-combiner "~0.0.4"
     through "~2.3.1"
 
-eventemitter3@*, eventemitter3@^2.0.3:
+eventemitter3@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-2.0.3.tgz#b5e1079b59fb5e1ba2771c0a993be060a58c99ba"
 

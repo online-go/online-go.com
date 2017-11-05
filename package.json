@@ -38,7 +38,6 @@
   "dependencies": {
     "@types/blueimp-md5": "^1.1.30",
     "@types/d3": "^4.9.0",
-    "@types/eventemitter3": "^2.0.2",
     "@types/fixed-data-table": "^0.6.30",
     "@types/jquery": "^2.0.34",
     "@types/markdown-it": "^0.0.2",
