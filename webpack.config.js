@@ -5,8 +5,49 @@ console.log('node path :', process.env.NODE_PATH)
 var path = require('path');
 let fs = require('fs');
 var webpack = require('webpack');
+const pkg = require('./package.json');
 
 const production = process.env.PRODUCTION ? true : false;
+
+
+let plugins = [];
+
+plugins.push(new webpack.BannerPlugin(
+`Copyright (C) 2012-2017  Online-Go.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+`));
+
+plugins.push(
+    new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor',
+        minChunks: function (module) {
+            return module.context && module.context.indexOf('node_modules') !== -1;
+        }
+    })
+);
+
+if (production) {
+    plugins.push(
+        new webpack.DefinePlugin({
+            "process.env": { 
+                NODE_ENV: JSON.stringify("production") 
+            }
+        })
+    );
+}
+
 
 module.exports = {
     entry: {
@@ -27,7 +68,7 @@ module.exports = {
     },
     output: {
         path: __dirname + '/dist',
-        filename: '[name].js'
+        filename: production ? '[name].min.js' : '[name].js'
     },
     module: {
         loaders: [
@@ -45,47 +86,15 @@ module.exports = {
         maxEntrypointSize: 1024 * 1024 * 2.5,
     },
 
-    plugins: [
-        new webpack.BannerPlugin(`Copyright (C) 2012-2017  Online-Go.com
+    plugins: plugins,
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.`)
-    ],
-
-    //devtool: 'eval',
     devtool: 'source-map',
-    //devtool: 'cheap-module-source-map',
-    //devtool: 'cheap-source-map',
 
     // When importing a module whose path matches one of the following, just
     // assume a corresponding global variable exists and use that instead.
     // This is important because it allows us to avoid bundling all of our
     // dependencies, which allows browsers to cache those libraries between builds.
     externals: {
-        "react": "React",
-        "react-dom": "ReactDOM",
-        "react-router": "ReactRouter",
-        "react-datetime": "Datetime",
-        //"react-autosuggest": "Autosuggest",
-        "react-redux": "ReactRedux",
-        "redux": "Redux",
-        "blueimp-md5": "md5",
-        //"eventemitter3": "EventEmitter",
-        "markdown-it": "markdownit",
-        "moment": "moment",
-        "d3": "d3",
-        "es6-promise": "ES6Promise",
-
         "swal": "swal", // can't seem to import anyways
     },
 };

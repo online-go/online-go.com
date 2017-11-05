@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
@@ -49,7 +50,9 @@ declare var swal;
 let ranks = amateurRanks();
 
 interface TournamentProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 /* TODO: Implement me TD Options */
@@ -70,10 +73,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     constructor(props) { /* {{{ */
         super(props);
 
-        let tournament_id = parseInt(this.props.params.tournament_id) || 0;
+        let tournament_id = parseInt(this.props.match.params.tournament_id) || 0;
 
         this.state = {
-            new_tournament_group_id: parseInt(this.props.params.group_id) || 0,
+            new_tournament_group_id: parseInt(this.props.match.params.group_id) || 0,
             tournament_id: tournament_id,
             loading: true,
             tournament: {
@@ -149,9 +152,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         setExtraActionCallback(null);
     }}}
     componentWillReceiveProps(next_props) {{{
-        if (next_props.params.tournament_id !== this.props.params.tournament_id) {
-            this.setState({tournament_id: parseInt(next_props.params.tournament_id)});
-            this.resolve(parseInt(next_props.params.tournament_id));
+        if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
+            this.setState({tournament_id: parseInt(next_props.match.params.tournament_id)});
+            this.resolve(parseInt(next_props.match.params.tournament_id));
         }
     }}}
     abort_requests() {{{

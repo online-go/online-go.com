@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, post, get, put, del} from "requests";
 import {KBShortcut} from "KBShortcut";
@@ -39,8 +40,10 @@ import {MoveTree} from 'goban';
 declare var swal;
 
 interface PuzzleProperties {
-    params: {
-        puzzle_id: string
+    match: {
+        params: {
+            puzzle_id: string
+        }
     };
 }
 
@@ -102,12 +105,12 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }
 
     componentDidMount() {{{
-        this.fetchPuzzle(parseInt(this.props.params.puzzle_id));
+        this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         this.onResize();
         $(window).on("resize", this.onResize as () => void);
     }}}
     componentWillReceiveProps(next_props) {{{
-        if (this.props.params.puzzle_id !== next_props.params.puzzle_id) {
+        if (this.props.match.params.puzzle_id !== next_props.match.params.puzzle_id) {
             this.reinitialize();
             this.setState({
                 loaded: false,
@@ -116,7 +119,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 show_wrong: false,
                 editing: false,
             });
-            this.fetchPuzzle(parseInt(next_props.params.puzzle_id));
+            this.fetchPuzzle(parseInt(next_props.match.params.puzzle_id));
         }
     }}}
     componentWillUnmount() {{{
@@ -286,7 +289,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }}}
 
     ratePuzzle = (value) => {{{
-        put("puzzles/%%/rate", +this.props.params.puzzle_id, {rating: value})
+        put("puzzles/%%/rate", +this.props.match.params.puzzle_id, {rating: value})
         .then(ignore)
         .catch(errorAlerter);
         this.setState({
@@ -340,9 +343,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         puzzle.puzzle_player_move_mode = this.state.puzzle.puzzle_player_move_mode;
 
 
-        if (parseInt(this.props.params.puzzle_id)) {
+        if (parseInt(this.props.match.params.puzzle_id)) {
             /* save */
-            put("puzzles/%%", +this.props.params.puzzle_id, {"puzzle": puzzle})
+            put("puzzles/%%", +this.props.match.params.puzzle_id, {"puzzle": puzzle})
             .then((res) => {
                 window.location.reload();
             })
@@ -380,7 +383,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             if (randomize_transform !== preferences.get("puzzle.randomize.transform")  ||
                 randomize_color !== preferences.get("puzzle.randomize.color")
             ) {
-                this.fetchPuzzle(parseInt(this.props.params.puzzle_id));
+                this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
             }
         });
     }}}
@@ -506,7 +509,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             showCancelButton: true,
         })
         .then(() => {
-            del("puzzles/%%", +this.props.params.puzzle_id)
+            del("puzzles/%%", +this.props.match.params.puzzle_id)
             .then(() => browserHistory.push(`/puzzles`))
             .catch(errorAlerter);
         })
@@ -564,7 +567,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 <dl className="horizontal">
                     <dt>{_("Puzzle")}</dt>
                     <dd>
-                        <select value={this.props.params.puzzle_id} onChange={this.jumpToPuzzle} id="selected_puzzle" >
+                        <select value={this.props.match.params.puzzle_id} onChange={this.jumpToPuzzle} id="selected_puzzle" >
                             {this.state.puzzle_collection_summary.map((puzzle, idx) => (
                                 <option key={idx} value={puzzle.id}>{puzzle.name}</option>
                             ))}
@@ -800,7 +803,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                         </dl>
 
                         <div className="space-around">
-                            {(this.props.params.puzzle_id !== "new" || null) &&
+                            {(this.props.match.params.puzzle_id !== "new" || null) &&
                                 <button className="reject" onClick={this.deletePuzzle}>{_("Remove puzzle")}</button>
                             }
                             <button className="primary" onClick={this.setMovesStep}>{_("Next")} &rarr;</button>

@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import {should_show_ads, AdUnit} from "AdUnit";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
 import {post, get, del} from "requests";

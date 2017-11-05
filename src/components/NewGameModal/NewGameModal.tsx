@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {challenge, challengeComputer, createCorrespondence, createBlitz,

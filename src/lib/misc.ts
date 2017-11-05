@@ -17,7 +17,7 @@
 
 import {_, interpolate, pgettext} from "translate";
 import {post} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 
 declare var swal;
 

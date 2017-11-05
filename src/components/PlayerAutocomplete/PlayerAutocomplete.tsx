@@ -50,7 +50,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         if (this.props.playerId) {
             let user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {
-                this.state.value = user.username;
+                (this.state as any).value = user.username;
             }
         }
     }

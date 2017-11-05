@@ -18,7 +18,7 @@
 import * as data from "data";
 import * as player_cache from "player_cache";
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {Modal, openModal} from "Modal";
@@ -179,18 +179,20 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             forking_game: !!this.props.initialState,
         };
 
+        let state:any = this.state;
+
 
         if (this.props.config) {
             if (this.props.config.challenge) {
-                this.state.challenge = Object.assign(this.state.challenge, this.props.config.challenge);
+                state.challenge = Object.assign(this.state.challenge, this.props.config.challenge);
             }
 
             if (this.props.config.conf) {
-                this.state.conf = Object.assign(this.state.conf, this.props.config.conf);
+                state.conf = Object.assign(this.state.conf, this.props.config.conf);
             }
 
             if (this.props.config.time_control) {
-                this.state.initial_time_control = this.props.config.time_control;
+                state.initial_time_control = this.props.config.time_control;
             }
         }
 
@@ -202,7 +204,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             }
             if (!found_bot)  {
-                this.state.conf.bot_id = bots_list()[0].id;
+                state.conf.bot_id = bots_list()[0].id;
             }
         }
 

@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del, put, get, abort_requests_in_flight} from "requests";
 import {errorAlerter, ignore} from "misc";
@@ -40,7 +41,9 @@ import {PlayerAutocomplete} from "PlayerAutocomplete";
 declare var swal;
 
 interface GroupProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 export class Group extends React.PureComponent<GroupProperties, any> {
@@ -55,7 +58,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         super(props);
         this.state = {
             group: {
-                id: parseInt(props.params.group_id),
+                id: parseInt(props.match.params.group_id),
                 admins: [],
                 ladder_ids: [],
                 name: "",
@@ -71,7 +74,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             invitation_request_pending: false,
             news: [],
             members: [],
-            group_id: parseInt(props.params.group_id),
+            group_id: parseInt(props.match.params.group_id),
             editing: false,
             show_new_news_post: false,
             new_icon: null,
@@ -88,13 +91,13 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
-        this.resolve(parseInt(this.props.params.group_id));
+        this.resolve(parseInt(this.props.match.params.group_id));
     }}}
     componentWillUnmount() {{{
         setExtraActionCallback(null);
     }}}
     componentWillReceiveProps(next_props) {{{
-        let group_id = parseInt(next_props.params.group_id);
+        let group_id = parseInt(next_props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({group_id: group_id});
@@ -572,21 +575,21 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         <TournamentList filter={{
                             started__isnull: true,
                             ended__isnull: true,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
 
                         <h3>{_("Active Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: false,
                             ended__isnull: true,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
 
                         <h3>{_("Finished Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: false,
                             ended__isnull: false,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
                     </Card>
 

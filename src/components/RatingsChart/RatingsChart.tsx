@@ -22,7 +22,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';

@@ -94,13 +94,15 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         if (ogs_release === "") {
+            let state:any = this.state;
+
             /* debug mode */
-            this.state.card_number_spaced = "4111 1111 1111 1111";
-            this.state.card_exp_spaced = "12 / 20";
-            this.state.cvc = "123";
-            this.state.fname = "John";
-            this.state.lname = "Gough";
-            this.state.email = "anoek@online-go.com";
+            state.card_number_spaced = "4111 1111 1111 1111";
+            state.card_exp_spaced = "12 / 20";
+            state.cvc = "123";
+            state.fname = "John";
+            state.lname = "Gough";
+            state.email = "anoek@online-go.com";
         }
     }
 
