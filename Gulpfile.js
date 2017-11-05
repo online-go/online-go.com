@@ -16,6 +16,7 @@ const cssnano      = require('cssnano');
 const inline_svg   = require('postcss-inline-svg');
 const gulpTsLint   = require('gulp-tslint');
 const tslint       = require('tslint');
+const html_minifier= require('html-minifier').minify;
 
 let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
 
@@ -30,6 +31,7 @@ gulp.task('background_webpack', background_webpack);
 gulp.task('watch_tslint', () => { gulp.watch([ts_sources], ['tslint']); });
 gulp.task('dev-server', dev_server);
 gulp.task('tslint', lint);
+gulp.task('minify-index', minify_index);
 
 
 let lint_debounce = null;
@@ -222,7 +224,9 @@ function dev_server(done) {
                 case 'RELEASE': return '';
                 case 'VERSION': return '';
                 case 'LANGUAGE_VERSION': return '';
+                case 'VENDOR_HASH_DOTJS': return 'js';
                 case 'VERSION_DOTJS': return 'js';
+                case 'OGS_VERSION_HASH_DOTJS': return 'js';
                 case 'VERSION_DOTCSS': return 'css';
                 case 'LANGUAGE_VERSION_DOTJS': return 'js';
                 case 'EXTRA_CONFIG':
@@ -239,5 +243,30 @@ function dev_server(done) {
         res.setHeader("Content-Length", index.length);
         res.status(200).send(index);
     });
-
 }
+
+
+function minify_index(done) {
+    let _index = fs.readFileSync('src/index.html', {encoding: 'utf-8'});
+    let supported_langages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
+
+    let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
+        switch (parameter) {
+            case 'VENDOR_HASH_DOTJS': return process.env['VENDOR_HASH'] + '.js';
+            case 'OGS_VERSION_HASH_DOTJS': return process.env['OGS_VERSION_HASH'] + '.js';
+        }
+        return '{{' + parameter + '}}';
+    });
+
+    let res = html_minifier(index, {
+        minifyJS: true,
+        minifyCSS: true,
+        collapseWhitespace:true,
+        collapseInlineTagWhitespace:true,
+        removeComments: true,
+    });
+
+    console.log(res);
+    done();
+}
+
