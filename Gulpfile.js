@@ -19,8 +19,7 @@ const tslint       = require('tslint');
 
 let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
 
-//gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html", "watch_tslint"]);
-gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html" ]);
+gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html", "watch_tslint"]);
 gulp.task('watch_dist_js', () => { gulp.watch(['dist/*.js'], livereload.reload); });
 gulp.task('watch_html', () => { gulp.watch(['src/*.html'], livereload.reload); });
 gulp.task('watch_styl', () => { gulp.watch(['src/**/*.styl', 'src/*.styl'], ['build_styl']); });
