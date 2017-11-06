@@ -418,6 +418,7 @@ export class Settings extends React.PureComponent<{}, any> {
 
         return (
         <div className="Settings container">
+            <h2 className="page-title"><i class="fa fa-gear"></i>{_("Settings")}</h2>
             <div className="row">
                 <div className="col-sm-7">
                     <Card>
