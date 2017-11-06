@@ -35,6 +35,7 @@ import * as data from "data";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
+import {rankString} from "rank_utils";
 
 
 interface PlayProperties {
@@ -301,13 +302,14 @@ export class Play extends React.Component<PlayProperties, any> {
                             <span className='cell'></span>
                             <span className='cell'></span>
                             <span className='cell'></span>
+                            <span className='cell'></span>
                             <span className='cell'>{_("Custom Games")}</span>
                         </div>
 
 
                         <div className="challenge-row">
                             <span className="cell break">{_("Short Games")}</span>
-                            {this.cellBreaks(7)}
+                            {this.cellBreaks(8)}
                         </div>
 
                         {this.gameListHeaders()}
@@ -318,7 +320,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                         <div className="challenge-row" style={{marginTop: "1em"}}>
                             <span className="cell break">{_("Long Games")}</span>
-                            {this.cellBreaks(7)}
+                            {this.cellBreaks(8)}
                         </div>
 
                         {this.gameListHeaders()}
@@ -446,8 +448,9 @@ export class Play extends React.Component<PlayProperties, any> {
                     {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                 </span>
                 <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                    <Player user={this.extractUser(C)}/>
+                    <Player user={this.extractUser(C)} rank={false} />
                 </span>
+                {commonSpan(rankString(C.rank), "center")}
                 <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}
                 </span>
@@ -472,6 +475,7 @@ export class Play extends React.Component<PlayProperties, any> {
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
+            <span className="head">{_("Rank")}</span>
             <span className="head">{_("Size")}</span>
             <span className="head">{_("Time")}</span>
             <span className="head">{_("Ranked")}</span>
