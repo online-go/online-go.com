@@ -87,47 +87,51 @@ export class Team extends React.PureComponent<{}, any> {
 
 
         return (
-            <div className="container" style={{paddingTop: "2em", textAlign: "center"}}>
-                <div style={{display: "inline-block", textAlign: "left"}}>
-                    <div style={{display: "inline-block", width: "20em", textAlign: "justify"}}>
-                        {_('Online-Go.com is maintained by a small handful of dedicated volunteers, drop them a "Thank You!" message sometime!')}
+            <div className="container page-width">
+                <h2>{_("Team")}</h2>
+                <div style={{display: "inline-block", textAlign: "justify"}}>
+                    {_('Online-Go.com is maintained by a small handful of dedicated volunteers, drop them a "Thank You!" message sometime!')}
+                </div>
+                <div className="row" style={{paddingLeft: "2em"}}>
+                    <div className="col-sm-6">
+                        <h3>{_("Moderators")}</h3>
+                        {moderators.map((u, idx) => (
+                            <div key={u.id} >
+                                <span style={{display: "inline-block", width: "3em"}}>
+                                    {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
+                                </span>
+                                <span style={{display: "inline-block", width: "8em"}}>
+                                    <Player user={u} />
+                                </span>
+                                {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
+                            </div>
+                        ))}
                     </div>
-
-                    <h3>{_("Moderators")}</h3>
-                    {moderators.map((u, idx) => (
-                        <div key={u.id} >
-                            <span style={{display: "inline-block", width: "3em"}}>
-                                {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
-                            </span>
-                            <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
-                            </span>
-                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
-                        </div>
-                    ))}
-                    <h3>{_("Lead Developers")}</h3>
-                    {developers.map((u, idx) => (
-                        <div key={u.id}>
-                            <span style={{display: "inline-block", width: "3em"}}>
-                                {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
-                            </span>
-                            <span style={{display: "inline-block", width: "8em"}}>
-                                <Player user={u} />
-                            </span>
-                            {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
-                        </div>
-                    ))}
-                    <h3>{_("Github Contributors")}</h3>
-                    {this.state.contributors.map((u, idx) => (
-                        <div key={u.id}>
-                            <span style={{display: "inline-block", width: "3em"}}>
-                                <img src={u.avatar_url} width={15} height={15}/>
-                            </span>
-                            <span style={{display: "inline-block", width: "8em"}}>
-                                <a href={u.html_url}>{u.login}</a>
-                            </span>
-                        </div>
-                    ))}
+                    <div className="col-sm-6">
+                        <h3>{_("Lead Developers")}</h3>
+                        {developers.map((u, idx) => (
+                            <div key={u.id}>
+                                <span style={{display: "inline-block", width: "3em"}}>
+                                    {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
+                                </span>
+                                <span style={{display: "inline-block", width: "8em"}}>
+                                    <Player user={u} />
+                                </span>
+                                {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
+                            </div>
+                        ))}
+                        <h3>{_("Github Contributors")}</h3>
+                        {this.state.contributors.map((u, idx) => (
+                            <div key={u.id}>
+                                <span style={{display: "inline-block", width: "3em"}}>
+                                    <img src={u.avatar_url} width={15} height={15}/>
+                                </span>
+                                <span style={{display: "inline-block", width: "8em"}}>
+                                    <a href={u.html_url}>{u.login}</a>
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
