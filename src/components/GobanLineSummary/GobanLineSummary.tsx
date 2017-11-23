@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 import {_, interpolate} from "translate";
 import {Goban} from "goban";
 import * as data from "data";
@@ -127,18 +127,21 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
         let opponent;
         let player_clock;
         let opponent_clock;
+
         if (this.props.player && this.props.player.id === this.props.black.id) {
             player = this.props.black;
             opponent = this.props.white;
             player_clock = this.black_clock;
             opponent_clock = this.white_clock;
         }
+
         if (this.props.player && this.props.player.id === this.props.white.id) {
             player = this.props.white;
             opponent = this.props.black;
             player_clock = this.white_clock;
             opponent_clock = this.black_clock;
         }
+
         return (
             <Link to={`/game/${this.props.id}`} className={ `GobanLineSummary `
                             + (this.state.current_users_move ? " current-users-move" : "")
