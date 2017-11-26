@@ -1586,10 +1586,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                     </Link>
                                                 </td>
 
-                                                <td className="points">{m.player.points}</td>
-                                                {(tournament.ended || null) && <td className="points">{m.player.sos}</td>}
-                                                {(tournament.ended || null) && <td className="points">{m.player.sodos}</td>}
-                                                <td className="notes">{m.player.notes}</td>
+                                                <td className="points">{m.player && m.player.points}</td>
+                                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sos}</td>}
+                                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sodos}</td>}
+                                                <td className="notes">{m.player && m.player.notes}</td>
                                             </tr>
                                             );
                                         })}
