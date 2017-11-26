@@ -112,6 +112,15 @@
           else window.addEventListener('load', loadDeferredStyles);
       </script>
 
+      <script>
+          /* Raven is used to capture and report errors to sentry.io */
+          function configure_raven() {
+              if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
+                  Raven.config('https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615').install()
+              }
+          }
+      </script>
+      <script defer src="https://cdn.ravenjs.com/3.20.1/raven.min.js" crossorigin="anonymous" onLoad='configure_raven()'></script>
       <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
       <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
@@ -211,7 +220,8 @@
 
       <script type="text/javascript">
         /* Google analytics {{{ */
-        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)/* && !(/beta/.test(document.location.host))*/) {
+        //if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)/* && !(/beta/.test(document.location.host))*/) {
+        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
             console.log("Welcome to OGS");
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

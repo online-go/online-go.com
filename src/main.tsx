@@ -46,6 +46,7 @@ import {init_tabcomplete} from "tabcomplete";
 import * as player_cache from "player_cache";
 import {toast} from 'toast';
 
+import {ErrorBoundary} from "ErrorBoundary";
 import {NavBar} from "NavBar";
 import {Announcements} from "Announcements";
 import {SignIn} from "SignIn";
@@ -126,7 +127,19 @@ try {
 
 
 /*** Layout our main view and routes ***/
-const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
+const Main = props => (
+    <div>
+        <ErrorBoundary>
+            <NavBar/>
+        </ErrorBoundary>
+        <ErrorBoundary>
+            <Announcements/>
+        </ErrorBoundary>
+        <ErrorBoundary>
+            {props.children}
+        </ErrorBoundary>
+    </div>
+);
 const PageNotFound = (props, state) => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
 const Default = () => (
     data.get("config.user").anonymous
