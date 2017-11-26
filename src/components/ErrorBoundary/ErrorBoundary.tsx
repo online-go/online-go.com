@@ -23,7 +23,7 @@ declare var Raven;
 declare var ogs_current_language;
 declare var ogs_version;
 
-export class ErrorBoundary extends React.PureComponent<{}, any> {
+export class ErrorBoundary extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
