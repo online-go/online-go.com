@@ -626,7 +626,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
             setTimeout(() => {
                 try {
-                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight
+                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
                 } catch (e) {
                 }
             } , 100);
