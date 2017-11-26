@@ -624,7 +624,12 @@ export class Chat extends React.Component<ChatProperties, any> {
     autoscroll() {{{
         if (this.scrolled_to_bottom) {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
-            setTimeout(() => this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight, 100);
+            setTimeout(() => {
+                try {
+                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight
+                } catch (e) {
+                }
+            } , 100);
         }
     }}}
 
