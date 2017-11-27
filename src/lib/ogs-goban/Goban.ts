@@ -1086,7 +1086,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             msg["moves"] =  diff.moves;
         }
 
-        console.log(where, msg);
         this.socket.send(where, msg);
     } /* }}} */
     public message(msg, timeout?) { /* {{{ */
