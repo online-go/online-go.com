@@ -68,7 +68,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
 
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
-            if (id === parseInt(props.id || props.user.id || props.user.user_id)) {
+            if (id === this.getId(props)) {
                 if (this.mounted && this.state.url !== url) {
                     this.setState({url: url});
                 }
@@ -78,7 +78,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentDidMount() {
         this.mounted = true;
-        let id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
+        let id = this.getId(this.props);
         if (!isNaN(id) && id > 0) {
             this.subscriber.on(id);
         }
