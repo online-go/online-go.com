@@ -29,7 +29,7 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<any, {}> {
-    div
+    div;
 
     last_width = 0;
     last_height = 0;
