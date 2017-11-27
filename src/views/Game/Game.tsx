@@ -744,11 +744,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.resize_debounce = null;
         }
 
-        /*
         if (!this.goban) {
             return;
         }
-        */
 
         this.goban.setGameClock(this.goban.last_clock); /* this forces a clock refresh, important after a layout when the dom could have been replaced */
 
