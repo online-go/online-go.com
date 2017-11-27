@@ -151,7 +151,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && <div className="player"><Player user={opponent} rank /></div> }
+                {player && <div className="player"><Player user={opponent} fakelink rank /></div> }
                 {player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={player_clock} />
@@ -163,13 +163,13 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                     </div>
                 }
 
-                {!player && <div className="player"><Player user={this.props.black} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.black} fakelink rank/></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
                     </div>
                 }
-                {!player && <div className="player"><Player user={this.props.white} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.white} fakelink /></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />

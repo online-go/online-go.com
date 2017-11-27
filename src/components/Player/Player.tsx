@@ -42,6 +42,7 @@ interface PlayerProperties {
     flare?: boolean;
     online?: boolean;
     nolink?: boolean;
+    fakelink?: boolean;
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
     noextracontrols?: boolean; /* Disable extra controls */
     disableCacheUpdate?: boolean;
@@ -215,11 +216,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
-
         let username = player.username || player.name;
-        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+        if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return (
-                <span ref="elt" {...main_attrs}>
+                <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
                     {username}
@@ -240,7 +240,11 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     display_details = (event) => {
-        if (shouldOpenNewTab(event)) {
+        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return;
+        }
+
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get popup warnings */
             return;
         }
@@ -249,7 +253,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         event.preventDefault();
 
         let player_id = this.state.user.id || this.state.user.player_id;
-        if (this.props.nodetails) {
+        if (shouldOpenNewTab(event)) {
+            let uri = `/player/${player_id}`;
+            let player = player_cache.lookup(player_id);
+            if (player) {
+                uri += "/" + encodeURIComponent(player.username);
+            }
+            window.open(uri, "_blank");
+        } else if (this.props.nodetails) {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
