@@ -411,7 +411,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             let I = setInterval(() => {
                 this.onResize(true);
                 setTimeout(() => {
-                    if (Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight) > 0) {
+                    if (!this.goban || (this.ref_goban_container && Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight) > 0)) {
                         clearInterval(I);
                     }
                 }, 1);
