@@ -51,9 +51,10 @@ export class ErrorBoundary extends React.Component<{}, any> {
             if (!Raven.isSetup()) {
                 console.info("Dev system detected, not reporting error to sentry.io");
             } else {
+                let user = data.get('user') || {id:0, username: 'guest'};
                 try {
                     Raven.setTagsContext({
-                        'ogs_version': ogs_version
+                        'version': ogs_version || 'dev'
                     });
                 } catch (e) {
                     console.error(e);
@@ -61,12 +62,25 @@ export class ErrorBoundary extends React.Component<{}, any> {
                 try {
                     Raven.setUserContext({
                         'id': data.get('user').id,
-                        'language': ogs_current_language || 'unknown',
+                        'username': data.get('user').username,
                     });
                 } catch (e) {
                     console.error(e);
+                    try {
+                        Raven.setUserContext();
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }
-                Raven.captureException(error, { extra: info });
+                try {
+                    Raven.setExtraContext(Object.assign({
+                        'language': ogs_current_language || 'unknown',
+                    }, info));
+                } catch (e) {
+                    console.error(e);
+                }
+
+                Raven.captureException(error);
             }
         } catch (e) {
             console.error(e);
