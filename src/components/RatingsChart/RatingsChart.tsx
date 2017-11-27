@@ -59,7 +59,7 @@ const win_loss_bars_height = 65;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-export class RatingsChart extends React.PureComponent<RatingsChartProperties, any> {
+export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     container;
     chart_div;
     svg;
