@@ -161,22 +161,27 @@ export function emitNotification(title, body, cb?) {{{
                     console.error(e);
                 }
 
-                let notification = new Notification(title,
-                    {
-                        body: body,
-                        icon: "https://cdn.online-go.com/favicon.ico",
-                        dir: "auto",
-                        lang: "",
-                        tag: "ogs"
-                    }
-                );
-                if (cb) {
-                    notification.onclick = cb;
-                }
+                try {
+                    let notification = new Notification(title,
+                        {
+                            body: body,
+                            icon: "https://cdn.online-go.com/favicon.ico",
+                            dir: "auto",
+                            lang: "",
+                            tag: "ogs"
+                        }
+                    );
 
-                setTimeout(() => {
-                    notification.close();
-                }, preferences.get("notification-timeout") * 1000);
+                    if (cb) {
+                        notification.onclick = cb;
+                    }
+
+                    setTimeout(() => {
+                        notification.close();
+                    }, preferences.get("notification-timeout") * 1000);
+                } catch (e) {
+                    console.info(e);
+                }
             }, delay);
         } else {
             //console.log("Ignoring notificaiton sent within the first few seconds of page load", title, body);
