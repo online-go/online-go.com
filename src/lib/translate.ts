@@ -157,7 +157,8 @@ export function interpolate(str: string, params: any): string {
         let idx = 0;
         return str.replace(/%[sd]/g, (_, __, position) => {
             if (idx >= params.length) {
-                throw new Error(`Missing array index ${idx} for string: ${str}`);
+                //throw new Error(`Missing array index ${idx} for string: ${str}`);
+                console.warn(`Missing array index ${idx} for string: ${str}`);
             }
             return params[idx++];
         });
@@ -165,7 +166,8 @@ export function interpolate(str: string, params: any): string {
     if (typeof(params) === "object") {
         return str.replace(/{{([^}]+)}}/g,  (_, key, position) => {
             if (!(key in params)) {
-                throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
+                //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
+                console.warn(`Missing interpolation key: ${key} for string: ${str}`);
             }
             return params[key];
         });
