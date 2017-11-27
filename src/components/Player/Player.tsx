@@ -16,6 +16,8 @@
  */
 
 import * as React from "react";
+import {Link} from "react-router-dom";
+import { routes } from 'routes';
 import {browserHistory} from "ogsHistory";
 import {shouldOpenNewTab, errorLogger} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
@@ -214,33 +216,40 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
 
-        return (
-            <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                {(props.flag || null) && <Flag country={player.country}/>}
-                {player.username || player.name}
-            </span>
-        );
+        let username = player.username || player.name;
+        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return (
+                <span ref="elt" {...main_attrs}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </span>
+            );
+        } else {
+            let player_id = this.state.user.id || this.state.user.player_id;
+            let uri = `player/${player_id}/${encodeURIComponent(username)}`;
+
+            return (
+                <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </a>
+            );
+        }
     }
 
     display_details = (event) => {
-        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+        if (shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get popup warnings */
             return;
         }
-        else {
-            event.stopPropagation();
-        }
+
+        event.stopPropagation();
+        event.preventDefault();
 
         let player_id = this.state.user.id || this.state.user.player_id;
-        if (shouldOpenNewTab(event)) {
-            let uri = `/player/${player_id}`;
-            let player = player_cache.lookup(player_id);
-            if (player) {
-                uri += "/" + encodeURIComponent(player.username);
-            }
-            window.open(uri, "_blank");
-        }
-        else if (this.props.nodetails) {
+        if (this.props.nodetails) {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
