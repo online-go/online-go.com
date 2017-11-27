@@ -42,7 +42,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
 
     constructor(props:PlayerIconProps) {
         super(props);
-        let id = this.getId(props)
+        let id = this.getId(props);
         if (!id) {
             this.state = { url: null };
             return;
