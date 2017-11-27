@@ -131,7 +131,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.params.user_id !== this.props.match.params.user_id) {
+        if (nextProps.match.params.user_id !== this.props.match.params.user_id) {
             this.setState({"user": null, resolved: false});
             this.resolve(nextProps);
         }
