@@ -1592,9 +1592,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         })
         .catch(() => 0);
     }}}
-    handleMoveTreeResize(_w, _h) {{{
-        console.log("TODO: handleMoveTreeResize");
-    }}}
     setChatLog = (chat_log) => {{{
         this.setState({chat_log: chat_log});
     }}}
@@ -2048,7 +2045,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <div>
                         {this.frag_analyze_button_bar()}
 
-                        <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                        <Resizable id="move-tree-container" className="vertically-resizable">
                             <canvas id="move-tree-canvas"></canvas>
                         </Resizable>
 
@@ -2111,7 +2108,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         }
                     </div>
 
-                    <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                    <Resizable id="move-tree-container" className="vertically-resizable">
                         <canvas id="move-tree-canvas"></canvas>
                     </Resizable>
 
