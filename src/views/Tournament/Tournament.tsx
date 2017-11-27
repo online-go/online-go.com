@@ -412,8 +412,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     bindHovers(black, match.black);
                     bindHovers(white, match.white);
 
-                    if (match.result[0] === "B") { black.addClass("win"); }
-                    if (match.result[0] === "W") { white.addClass("win"); }
+                    let result = match.result && match.result.length > 0 ? match.result[0] : '';
+                    if (result === "B") { black.addClass("win"); }
+                    if (result === "W") { white.addClass("win"); }
 
                     matchdiv.append(black);
                     matchdiv.append(white);
@@ -422,7 +423,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         div: matchdiv,
                         black_src: round_num > 0 ? lastbucket[match.black] : null,
                         white_src: round_num > 0 ? lastbucket[match.white] : null,
-                        black_won: match.result[0] === "B",
+                        black_won: result === "B",
                         match: match,
                         second_bracket: false,
                         round: round_num,
