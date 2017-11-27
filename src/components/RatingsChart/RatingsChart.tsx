@@ -529,14 +529,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.range_label.attr('transform', 'translate(' + width + ', 0)');
         this.x_axis_date_labels.attr('transform', 'translate(0 ,' + height + ')');
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
-        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 5) + ', 0)');
+        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 10) + ', 0)');
 
         //this.verticalCrosshairLine.attr('y1', height);
         this.helper.attr('transform', 'translate(' + width + ', 0)');
         this.horizontalCrosshairLine.attr('x1', width);
         this.mouseArea.attr('width', width);
         this.mouseArea.attr('height', height);
-        this.timeline_axis_labels .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
+        this.timeline_axis_labels.attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
+        this.timeline_axis_labels.call(this.timeline_axis);
         this.brush.extent([[0, 0], [width, secondary_charts_height]]);
 
         if (this.games_by_day) {
