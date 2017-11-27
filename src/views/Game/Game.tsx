@@ -837,11 +837,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }}}
     setLabelHandler = (event) => {{{
-        if (document.activeElement.tagName === "INPUT" ||
-            document.activeElement.tagName === "TEXTAREA" ||
-            document.activeElement.tagName === "SELECT"
-        ) {
-            return;
+        try {
+            if (document.activeElement.tagName === "INPUT" ||
+                document.activeElement.tagName === "TEXTAREA" ||
+                document.activeElement.tagName === "SELECT"
+            ) {
+                return;
+            }
+        } catch (e) {
         }
 
         if (this.goban && this.goban.mode === "analyze") {
