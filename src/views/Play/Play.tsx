@@ -35,7 +35,7 @@ import * as data from "data";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
-import {rankString} from "rank_utils";
+import {boundedRankString} from "rank_utils";
 
 
 interface PlayProperties {
@@ -450,7 +450,7 @@ export class Play extends React.Component<PlayProperties, any> {
                 <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
                     <Player user={this.extractUser(C)} rank={false} />
                 </span>
-                {commonSpan(rankString(C.rank), "center")}
+                {commonSpan(boundedRankString(C.rank), "center")}
                 <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}
                 </span>

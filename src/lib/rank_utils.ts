@@ -148,6 +148,10 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 }
 
 
+export function boundedRankString(r, with_tenths?:boolean) {
+    return rankString(bounded_rank(r), with_tenths);
+}
+
 export function rankString(r, with_tenths?:boolean) {
     let provisional = false;
 
