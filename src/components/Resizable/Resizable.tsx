@@ -29,9 +29,7 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<any, {}> {
-    refs: {
-        div
-    };
+    div
 
     last_width = 0;
     last_height = 0;
@@ -43,8 +41,12 @@ export class Resizable extends React.Component<any, {}> {
     }
 
     checkForResize() {
-        let width = this.refs.div.clientWidth;
-        let height = this.refs.div.clientHeight;
+        if (!this.div) {
+            return;
+        }
+
+        let width = this.div.clientWidth;
+        let height = this.div.clientHeight;
 
         if (this.last_width !== width || this.last_height !== height) {
             this.last_width = width;
@@ -56,8 +58,8 @@ export class Resizable extends React.Component<any, {}> {
     }
 
     componentDidMount() {
-        this.last_width = this.refs.div.clientWidth;
-        this.last_height = this.refs.div.clientHeight;
+        this.last_width = this.div.clientWidth;
+        this.last_height = this.div.clientHeight;
         this.check_interval = setInterval(this.checkForResize, 50);
     }
     componentWillUnmount() {
@@ -66,7 +68,7 @@ export class Resizable extends React.Component<any, {}> {
 
     render() {
         return (
-            <div ref="div" id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
+            <div ref={el => this.div = el} id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
         );
     }
 }
