@@ -468,11 +468,15 @@ export class Chat extends React.Component<ChatProperties, any> {
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().attr("data-channel");
+            }
         }
 
         if (!channel) {
             throw new Error(`Invalid channel ID: ${channel}`);
         }
+
         let state_update: any = {};
         if (channel !== this.state.active_channel) {
             state_update.active_channel = channel;
