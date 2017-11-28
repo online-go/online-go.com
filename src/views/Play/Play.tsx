@@ -41,9 +41,7 @@ interface PlayProperties {
 }
 
 export class Play extends React.Component<PlayProperties, any> {
-    refs: {
-        container
-    };
+    ref_container
     canvas: any;
 
     seekgraph: SeekGraph;
@@ -79,8 +77,12 @@ export class Play extends React.Component<PlayProperties, any> {
         this.seekgraph.destroy();
     }}}
     resize = () => {{{
-        let w = this.refs.container.offsetWidth;
-        let h = this.refs.container.offsetHeight;
+        if (!this.ref_container) {
+            return;
+        }
+
+        let w = this.ref_container.offsetWidth;
+        let h = this.ref_container.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -229,7 +231,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='col-sm-6'>
                         <Card>
-                            <div ref="container" className="seek-graph-container">
+                            <div ref={el => this.ref_container = el} className="seek-graph-container">
                                 <PersistentElement elt={this.canvas} />
                             </div>
                         </Card>
