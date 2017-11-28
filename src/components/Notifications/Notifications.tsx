@@ -114,9 +114,16 @@ export function emitNotification(title, body, cb?) {{{
                     {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
                     <div>
                         <FabCheck onClick={() => {
-                            Notification.requestPermission().then((perm) => {
-                                emitNotification(title, body, cb);
-                            }).catch((err) => console.error(err));
+                            try {
+                                Notification.requestPermission().then((perm) => {
+                                    emitNotification(title, body, cb);
+                                }).catch((err) => console.error(err));
+                            } catch (e) {
+                                /* deprecated usage, but only way supported on safari currently */
+                                Notification.requestPermission((perm) => {
+                                    emitNotification(title, body, cb);
+                                });
+                            }
                             t.close();
                         }}/>
                         <FabX onClick={() => t.close()}/>

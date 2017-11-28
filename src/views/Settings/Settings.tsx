@@ -253,7 +253,6 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
-        console.log('=>', enabled);
 
         if (!enabled) {
             this.setState({'desktop_notifications_enabled': false});
@@ -273,7 +272,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 }
 
                 if ((Notification as any).permission === 'default') {
-                    Notification.requestPermission((perm) => {
+                    let onRequestResult = (perm) => {
                         if (perm === "granted") {
                             this.setState({'desktop_notifications_enabled': true});
                             console.log("granted notification permission");
@@ -281,7 +280,15 @@ export class Settings extends React.PureComponent<{}, any> {
                             this.setState({'desktop_notifications_enabled': false});
                             toast(<div>{_("You have previously denied desktop notifications on OGS, you will need to go into your browser settings and change your decision there to enable them.")}</div>);
                         }
-                    });
+                    };
+
+                    try {
+                        Notification.requestPermission().then(onRequestResult);
+                    } catch (e) {
+                        /* deprecated usage, but only way supported on safari currently */
+                        Notification.requestPermission(onRequestResult);
+                    }
+
                 }
             }
         } catch (e) {
