@@ -947,44 +947,44 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
         this.setState({editing: false});
     }
-    setTournamentName = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {name: ev.target.value})});
-    setStartTime = (t) => this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
-    setTournamentType = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
-    setLowerBar = (ev) => {
+    setTournamentName  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {name: ev.target.value})});
+    setStartTime       = (t)  => this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
+    setTournamentType  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
+    setLowerBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {lower_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setUpperBar = (ev) => {
+    setUpperBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {upper_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setPlayersStart = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {players_start: ev.target.value})});
-    setMaximumPlayers = (ev) => {
+    setPlayersStart    = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {players_start: ev.target.value})});
+    setMaximumPlayers  = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {maximum_players: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setAutoStartOnMax = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
-    setFirstPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
+    setAutoStartOnMax          = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
+    setFirstPairingMethod      = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
     setSubsequentPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {subsequent_pairing_method: ev.target.value})});
-    setTournamentExclusivity = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
+    setTournamentExclusivity   = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
 
-    setNumberOfRounds = (ev) => {
+    setNumberOfRounds  = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {num_rounds: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setGroupSize = (ev) => {
+    setGroupSize       = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {group_size: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setRules = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {rules: ev.target.value})});
-    setHandicap = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {handicap: ev.target.value})});
-    setBoardSize = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {board_size: ev.target.value})});
+    setRules           = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {rules: ev.target.value})});
+    setHandicap        = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {handicap: ev.target.value})});
+    setBoardSize       = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {board_size: ev.target.value})});
     setAnalysisEnabled = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {analysis_enabled: ev.target.checked})});
-    setMinRank = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
-    setMaxRank = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
+    setMinRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
+    setMaxRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
     setExcludeProvisionalPlayers = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclude_provisional: !ev.target.checked})});
-    setDescription = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
-    setTimeControl = (tc) => {
+    setDescription     = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
+    setTimeControl     = (tc) => {
         console.log(tc);
         this.setState({tournament: Object.assign({}, this.state.tournament, {time_control_parameters: tc})});
     }
