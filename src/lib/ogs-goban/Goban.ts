@@ -206,21 +206,21 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private stone_removal_clock;
     private submitBlinkTimer;
     private syncToCurrentReviewMove;
-    private theme_black;
+    public  theme_black;            /* public for access by our MoveTree render methods */
     private theme_black_stones;
-    private theme_black_text_color;
+    public  theme_black_text_color; /* public for access by our MoveTree render methods */
     private theme_blank_text_color;
-    private theme_board;
+    public  theme_board;            /* public for access by our MoveTree render methods */
     private theme_faded_line_color;
     private theme_faded_star_color;
     private theme_faded_text_color;
     private theme_line_color;
     private theme_star_color;
     private theme_stone_radius;
-    private theme_white;
+    public  theme_white;            /* public for access by our MoveTree render methods */
     private theme_white_stones;
-    private theme_white_text_color;
-    private themes;
+    public  theme_white_text_color; /* public for access by our MoveTree render methods */
+    public  themes;                 /* public for access by our MoveTree render methods */
     private title_div;
     private waiting_for_game_to_begin;
     private white_clock;
