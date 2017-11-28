@@ -29,7 +29,7 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<any, {}> {
-    div;
+    div:HTMLDivElement = null;
 
     last_width = 0;
     last_height = 0;
@@ -37,16 +37,39 @@ export class Resizable extends React.Component<any, {}> {
 
     constructor(props) {
         super(props);
-        this.checkForResize = this.checkForResize.bind(this);
     }
 
-    checkForResize() {
+    checkForResize = () => {
         if (!this.div) {
             return;
         }
 
-        let width = this.div.clientWidth;
-        let height = this.div.clientHeight;
+        let width:number;
+        let height:number;
+
+        try {
+            height = this.div.clientHeight;
+            width = this.div.clientWidth;
+        } catch (e) {
+            /*
+            We're seeing an error
+
+               null is not an object (evaluating 'this.div.clientHeight')
+
+            on mobile safari 11.0
+
+            With the !this.div guard, it seems like this should not be
+            possible, but reality seems to be different.
+
+              - anoek 2017-11-28
+            */
+
+            console.warn('Resizable.checkForResize errored out');
+            console.warn(e);
+            console.warn('This was: ', this);
+            console.warn('Div was: ', this.div);
+            throw e;
+        }
 
         if (this.last_width !== width || this.last_height !== height) {
             this.last_width = width;
