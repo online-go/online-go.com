@@ -96,7 +96,8 @@ export function getRelativeEventPosition(event) { /* {{{ */
         y = event.pageY - offset.top;
     } else {
         console.log("Missing event tap/click location:", event);
-        return;
+        x = -1000;
+        y = -1000;
     }
 
     return {"x": x, "y": y};
