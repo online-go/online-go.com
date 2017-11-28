@@ -551,9 +551,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         return d;
                     }
 
-                    let arank = a.player_id ? players[a.player_id].ranking * 2 : players[a.match.black].ranking + players[a.match.white].ranking;
-                    let brank = b.player_id ? players[b.player_id].ranking * 2 : players[b.match.black].ranking + players[b.match.white].ranking;
-                    return -(arank - brank);
+                    const compute_rank = (e) => {
+                        if (e.player_id && e.player_id in players) {
+                            return players[e.player_id].ranking * 2;
+                        }
+                        if (e.match && e.match.black && e.match.white && e.match.black in players && e.match.white in players) {
+                            return players[e.match.black].ranking + players[e.match.white].ranking
+                        }
+                        return -1000;
+                    }
+
+                    return -(compute_rank(a) - compute_rank(b));
                 });
 
 
