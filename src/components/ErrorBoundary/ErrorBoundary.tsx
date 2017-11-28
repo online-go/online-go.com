@@ -75,12 +75,19 @@ export class ErrorBoundary extends React.Component<{}, any> {
                 try {
                     Raven.setExtraContext(Object.assign({
                         'language': ogs_current_language || 'unknown',
+                        'version': ogs_version || 'dev'
                     }, info));
                 } catch (e) {
                     console.error(e);
                 }
 
                 Raven.captureException(error);
+
+                /* clear out the info stuff */
+                Raven.setExtraContext({
+                    'language': ogs_current_language || 'unknown',
+                    'version': ogs_version || 'dev'
+                });
             }
         } catch (e) {
             console.error(e);
@@ -104,3 +111,11 @@ export class ErrorBoundary extends React.Component<{}, any> {
         return this.props.children;
     }
 }
+
+window['test_raven'] = () => {
+    try {
+        throw new Error('RAVEN TEST');
+    } catch (e) {
+        console.log(Raven.captureException(e));
+    }
+};

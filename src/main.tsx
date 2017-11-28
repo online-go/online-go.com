@@ -49,6 +49,7 @@ import {toast} from 'toast';
 import "debug";
 
 declare const swal;
+declare const Raven;
 
 
 /*** Load our config ***/
@@ -59,6 +60,15 @@ data.watch("config", (config) => {
 });
 get("ui/config").then((config) => data.set("config", config));
 data.watch("config.user", (user) => {
+    try {
+        Raven.setUserContext({
+            'id': user.id,
+            'username': user.username,
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
     player_cache.update(user);
     data.set("user", user);
     window["user"] = user;

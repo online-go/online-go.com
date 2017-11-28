@@ -118,7 +118,14 @@
               if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
                   Raven.config('https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',{
                       release: '{{VERSION}}' || 'dev'
-                  }).install()
+                  }).install();
+                  Raven.setTagsContext({
+                      version: '{{VERSION}}' || 'dev'
+                  });
+                  Raven.setExtraContext({
+                      language: ogs_current_language || 'unknown',
+                      version: ogs_version || 'dev'
+                  });
               }
           }
       </script>
