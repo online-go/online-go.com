@@ -345,19 +345,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
         $(window).on("resize", this.onResize as () => void);
         $(document).on("keypress", this.setLabelHandler);
-        //chat_handlers = goban_chat_initialize($scope);
-        //let live_suffix = (game.time_per_move || 86400) < (30*60) ? "-live" : "";
-        //let label_position = $.jStorage.get("go.settings.label-position", "all");
+
         let label_position = preferences.get("label-positioning");
         let opts: any = {
             "board_div": this.goban_div,
-            //"title_div": $("#goban-primary-ctrl"),
             "black_clock": "#game-black-clock",
             "white_clock": "#game-white-clock",
             "stone_removal_clock": "#stone-removal-clock",
             "node_textarea": "#game-move-node-text",
-            //"game_type": $scope.game.type,
-            //"game_source": $scope.game.source,
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
@@ -367,26 +362,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
             },
 
-            /*
-            "onChat": function(m,t) { chat_handlers.handleChat(m,t); },
-            "onChatReset": function() { chat_handlers.handleChatReset(); },
-            "onPendingResignation": function(player_id, delay) {
-                if (global_user && player_id === global_user.id) {
-                    if (!leaving_page) {
-                        //console.log("I disconnected from another tab, but I guess I have multiple open, clearing resignation ");
-                        goban.clearPendingResignation();
-                    }
-                } else {
-                    //console.log("Player " + player_id + " disconnected, will be resigning in "+ delay + "ms");
-                }
-            },
-            "onPendingResignationCleared": function(player_id, delay) {
-                //console.log("Player " + player_id + " reconnected, resignation canceled");
-            },
-            "onClearChatLogs": function() {
-                chat_handlers.clearChatLogs();
-            },
-            */
             "game_id": null,
             "review_id": null,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
@@ -396,11 +371,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "move_tree_div": "#move-tree-container",
             "move_tree_canvas": "#move-tree-canvas",
             "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
-
-            //"square_size": 10,
-            //"wait_for_game_to_start": $scope.game.started == null,
-            //"width": $scope.game.width,
-            //"height": $scope.game.height,
         };
 
         if (opts.display_width <= 0) {
@@ -423,26 +393,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             opts.isPlayerController = () => this.goban.review_controller_id === data.get("user").id;
         }
 
-        console.log(opts);
-
-        /*
-        if (global_user) {
-            opts.username = global_user.username;
-            opts.chat_player_id = global_user.id;
-            opts.chat_auth = $scope.game_chat_auth;
-        }
-        if ($scope.auth) {
-            opts.auth = $scope.auth;
-        }
-        */
-
-        //goban = new Goban(opts, initial_gamedata);
         this.goban = new Goban(opts);
         this.onResize(true);
-        //global_goban = this.goban;
         window["global_goban"] = this.goban;
-        //window["this.goban"] = goban;
-        //$scope.goban = goban;
         if (this.review_id) {
             this.goban.setMode("analyze");
         }
@@ -489,21 +442,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
-            /*
-            if (!(chat_log in this.chats)) {
-                this.chats[chat_log] = [];
-            }
-            this.chats[chat_log].push(line);
-            */
-
             this.debouncedChatUpdate();
         });
         this.goban.on("chat-reset", () => {
-            /*
-            for (let k in this.chats) {
-                this.chats[k] = [];
-            }
-            */
             this.chat_log.length = 0;
             this.debouncedChatUpdate();
         });
