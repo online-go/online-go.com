@@ -604,7 +604,13 @@ export class MoveTree {
         if (!this.marks) {
             this.clearMarks();
         }
-        return this.marks[y][x];
+
+        if (y < this.marks.length && x < this.marks[y].length) {
+            return this.marks[y][x];
+        } else {
+            console.warn('getMarks called with invalid x,y = ', x, y, ' engine width/height = ', this.engine.width, this.engine.height);
+            return {};
+        }
     } /* }}} */
     setActivePath(path_number:number):void { /* {{{ */
         this.active_path_number = path_number;
