@@ -2609,7 +2609,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
 
 function parsePosition(position: string) {{{
-    if (!active_game_view) { return; }
+    if (!active_game_view || !position) {
+        return {
+            i: -1,
+            j: -1
+        };
+    }
     let goban = active_game_view.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
@@ -2622,7 +2627,7 @@ function parsePosition(position: string) {{{
         i = -1;
         j = -1;
     }
-    return {"i": i, "j": j};
+    return {i: i, j: j};
 }}}
 function highlight_position(event) {{{
     if (!active_game_view) { return; }
