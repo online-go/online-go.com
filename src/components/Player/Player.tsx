@@ -227,7 +227,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             );
         } else {
             let player_id = this.state.user.id || this.state.user.player_id;
-            let uri = `player/${player_id}/${encodeURIComponent(username)}`;
+            let uri = `/player/${player_id}/${encodeURIComponent(username)}`;
 
             return (
                 <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
