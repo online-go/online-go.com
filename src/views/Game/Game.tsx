@@ -50,7 +50,6 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AdUnit, should_show_ads, refresh_ads} from "AdUnit";
 import * as moment from "moment";
 
 declare var swal;
@@ -113,7 +112,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     set_analyze_tool: any = {};
     score_popups: any = { };
     ad: HTMLElement;
-    ad_class: AdClass = null;
     autoplay_timer = null;
     stone_removal_accept_timeout: any = null;
     conditional_move_list = [];
@@ -261,8 +259,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         ) {
             this.deinitialize();
             this.goban_div.empty();
-
-            refresh_ads(true);
 
             this.setState({
                 portrait_tab: "game",
@@ -756,29 +752,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.computeViewMode() === "portrait") {
             let w = win.width() + 10;
-            /*
-            let max_h = win.height() - 32; // 32 for navbar
-            max_h -= $(this.ref_players).height();
-            max_h -= $(this.ref_action_bar).height();
-            if (this.ref_game_state_label) {
-                max_h -= $(this.ref_game_state_label).height();
-            }
-            if (this.ref_game_action_buttons) {
-                max_h -= $(this.ref_game_action_buttons).height();
-            }
-            let ad_class = this.getAdClass();
-            switch (ad_class) {
-                case 'mobile-banner':
-                    max_h -= 50;
-                    break;
-                case 'goban-banner':
-                case 'outer-banner':
-                    max_h -= 90;
-                    break;
-            }
-            w = Math.min(w, max_h);
-            */
-
             if (this.ref_goban_container.style.minHeight !== `${w}px`) {
                 this.ref_goban_container.style.minHeight = `${w}px`;
             }
@@ -861,33 +834,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     computeSquashed(): boolean {{{
         return win.height() < 680;
-    }}}
-    getAdClass(): AdClass {{{
-        let show_ad = should_show_ads() && preferences.get("show-ads-on-game-page");
-
-        if (!show_ad) {
-            return "no-ads";
-        }
-
-        if (this.ad_class) {
-            return this.ad_class;
-        }
-
-        let w = win.width() || 1;
-        let h = win.height() || 1;
-
-        if (w >= 1280) {
-            if (w - (300 + 400) > h - 90) { // 300 for left block, 400 for right col
-                return this.ad_class = 'block';
-            }
-        }
-        if (w <= 728) {
-            return this.ad_class = 'mobile-banner';
-        }
-        if (w - 400 >= 728) {
-            return this.ad_class = 'goban-banner';
-        }
-        return this.ad_class = 'outer-banner';
     }}}
     toggleCoordinates() {{{
         let goban = this.goban;
@@ -1648,37 +1594,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
         const review = !!this.review_id;
 
-        let ad_class = this.getAdClass();
-        let FLEX_AD = null;
-        switch (ad_class) {
-            case 'no-ads':
-                FLEX_AD = null;
-                break;
-
-            case 'block':
-                FLEX_AD = <AdUnit unit='cdm-zone-02' />;
-                break;
-
-            default:
-                FLEX_AD = <AdUnit unit='cdm-zone-01' />;
-        }
-
         return (
-            <div className={(ad_class === 'outer-banner' || ad_class === 'mobile-banner') ? ad_class : ''}>
-             {((ad_class === 'outer-banner' || ad_class === 'mobile-banner') || null) && FLEX_AD}
+            <div>
              <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
-
-                <div className={"left-col " + (ad_class === 'block' ? 'block' : 'no-ads')}>
-                    {(ad_class === "block" || null) && FLEX_AD}
+                <div className="left-col">
                 </div>
 
-
                 <div className="center-col">
-                    {(ad_class === 'goban-banner' || null) && FLEX_AD}
-
                     {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
@@ -1743,7 +1668,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {/*
                         <div className='filler'/>
                         */}
-                        {(this.state.view_mode === "square" || null) && FLEX_AD}
                         {(this.state.view_mode === "wide" || null) && CHAT}
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 

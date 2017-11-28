@@ -21,7 +21,6 @@ import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
-import {AdUnit} from "AdUnit";
 import * as data from "data";
 
 declare var swal;
@@ -94,7 +93,6 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
         return (
         <div>
-            <AdUnit unit="cdm-zone-01" nag/>
             <div className="Ladder">
                 <Card>
                     <h2>{this.state.ladder && this.state.ladder.name}</h2>

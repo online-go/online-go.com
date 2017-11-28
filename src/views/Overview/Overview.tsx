@@ -20,7 +20,6 @@ import {Link} from "react-router-dom";
 import {_} from "translate";
 import {Card} from "material";
 import {GameList} from "GameList";
-import {AdUnit} from "AdUnit";
 import {createOpenChallenge} from "ChallengeModal";
 import {UIPush} from "UIPush";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -102,7 +101,6 @@ export class Overview extends React.Component<{}, any> {
 
         return (
         <div id="Overview-Container">
-            <AdUnit unit="cdm-zone-01" nag/>
             <SupporterGoals />
             <div id="Overview">
                 <div className="left">
@@ -148,10 +146,6 @@ export class Overview extends React.Component<{}, any> {
                                 </div>
                             }
                         </div>
-                    </div>
-
-                    <div style={{justifyContent: 'center'}}>
-                        <AdUnit unit='cdm-zone-02' />
                     </div>
 
                     <div className="overview-categories">

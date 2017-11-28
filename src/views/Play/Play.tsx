@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import {should_show_ads, AdUnit} from "AdUnit";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -221,7 +220,6 @@ export class Play extends React.Component<PlayProperties, any> {
 
         return (
             <div className="Play container">
-                <AdUnit unit="cdm-zone-01" nag />
                 <SupporterGoals />
                 <div className='row'>
                     <div className='col-sm-6'>
@@ -344,21 +342,12 @@ export class Play extends React.Component<PlayProperties, any> {
                 <div className='automatch-container'>
                     <div className='automatch-header'>
                         {_("Finding you a game...")}
-                        {should_show_ads() &&
-                            <div className="spinner">
-                                <div className="double-bounce1"></div>
-                                <div className="double-bounce2"></div>
-                            </div>
-                        }
                     </div>
                     <div className='automatch-row-container'>
-                        {should_show_ads()
-                            ? <AdUnit unit="cdm-zone-02" />
-                            : <div className="spinner">
-                                  <div className="double-bounce1"></div>
-                                  <div className="double-bounce2"></div>
-                              </div>
-                        }
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>

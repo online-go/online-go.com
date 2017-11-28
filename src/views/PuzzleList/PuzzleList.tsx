@@ -25,7 +25,6 @@ import {MiniGoban} from "MiniGoban";
 import {SearchInput} from "misc-ui";
 import {StarRating} from "StarRating";
 import {longRankString, rankString} from "rank_utils";
-import {AdUnit} from "AdUnit";
 import {navigateTo} from "misc";
 import * as data from "data";
 import * as moment from "moment";
@@ -62,8 +61,6 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
         return (
             <div className="page-width">
                 <div className="PuzzleList container">
-                    <AdUnit unit="cdm-zone-01" nag/>
-
                     <div className="puzzle-list-container" style={{clear:'both'}}>
 
                         <div className="page-nav">

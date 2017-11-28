@@ -23,7 +23,6 @@ import {post, get} from "requests";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
 import {errorAlerter} from "misc";
-import {AdUnit} from "AdUnit";
 
 /* Ensure these get picked up in our translations */
 _("Site 19x19 Ladder");
@@ -74,7 +73,6 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
                 ))}
                 </div>
             </div>
-            <AdUnit unit="cdm-zone-01" nag/>
             <div className="LadderList">
                 {this.state.ladders.map((ladder, idx) => (
                     <Card key={idx}>

@@ -19,7 +19,6 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import { get} from "requests";
 import {errorAlerter} from "misc";
-import {AdUnit} from "AdUnit";
 import {Player} from "Player";
 import {Card} from "material";
 
@@ -124,8 +123,6 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     render() {
         return (
             <div className="LeaderBoard page-width">
-                <AdUnit unit="cdm-zone-01" nag/>
-
                 <h2><span>{_("Site Wide")}</span> <i className="fa fa-list-ol"></i> {_("Leaderboards")} </h2>
                 <Card>
                     {this.state.leaderboards.map((row, ridx) => (
