@@ -481,6 +481,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 if (!obj.match) {
                     return true;
                 }
+                if (!obj.match.result) {
+                    return false;
+                }
                 if (obj.match.result[0] === "B" && obj.match.black === player_id) {
                     return true;
                 }
