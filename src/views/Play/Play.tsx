@@ -41,7 +41,7 @@ interface PlayProperties {
 }
 
 export class Play extends React.Component<PlayProperties, any> {
-    ref_container
+    ref_container:HTMLDivElement;
     canvas: any;
 
     seekgraph: SeekGraph;

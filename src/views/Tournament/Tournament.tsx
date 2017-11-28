@@ -556,10 +556,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             return players[e.player_id].ranking * 2;
                         }
                         if (e.match && e.match.black && e.match.white && e.match.black in players && e.match.white in players) {
-                            return players[e.match.black].ranking + players[e.match.white].ranking
+                            return players[e.match.black].ranking + players[e.match.white].ranking;
                         }
                         return -1000;
-                    }
+                    };
 
                     return -(compute_rank(a) - compute_rank(b));
                 });

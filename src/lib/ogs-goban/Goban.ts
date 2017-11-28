@@ -1959,7 +1959,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
 
         this.__last_pt = pt;
@@ -1973,7 +1975,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
         this.__last_pt = this.xy2ij(-1, -1);
     } /* }}} */
