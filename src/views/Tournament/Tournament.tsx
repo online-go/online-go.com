@@ -1663,12 +1663,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             <th></th>
                                         </tr>
                                         {selected_round.byes.map((player, idx) => {
+                                            if (!player) {
+                                                return <tr key={idx} />;
+                                            }
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
-                                                {(player || null) && <td className="player"><Player user={player} icon/></td>}
+                                                <td className="player"><Player user={player} icon/></td>
                                                 <td className="points">{player.points}</td>
-                                                {(tournament.ended || null) && <td className="points">{player.sos}</td>}
+                                                {((player && tournament.ended) || null) && <td className="points">{player.sos}</td>}
                                                 {(tournament.ended || null) && <td className="points">{player.sodos}</td>}
                                                 <td className="notes">{player.notes}</td>
                                             </tr>
