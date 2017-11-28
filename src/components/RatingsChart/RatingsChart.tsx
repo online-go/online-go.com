@@ -551,7 +551,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     setData = (err, data) => {{{
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
-        if (data.length === 1) {
+        if (!data || data.length === 1) {
             this.setState({
                 loading: false,
                 nodata: true,
@@ -563,7 +563,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             });
         }
 
-        this.game_entries = data;
+        this.game_entries = data || [];
         this.game_entries.reverse();
 
         /* Group into days and process information like starting/ended rating/rank, increase/decrease, etc */
