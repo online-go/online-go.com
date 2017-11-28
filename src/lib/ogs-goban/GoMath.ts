@@ -25,30 +25,37 @@ export interface Move {
     edited?: boolean;
 }
 
+export interface BoardState {
+    width: number;
+    height: number;
+    board: Array<Array<number>>;
+    removal: Array<Array<number>>;
+}
+
+// [x, y, time_delta, edited?]
+export type MoveArray = [number, number, number, number|void];
+
 export class GoMath {
-    private engine: GoEngine;
-    public group_id_map: any;
-    public groups: any;
+    private state: BoardState;
+    public group_id_map: Array<Array<number>>;
+    public groups: Array<GoStoneGroup>;
 
-    constructor(engine, original_board?) { /* {{{ */
-        let self = this;
-        let groups = [null];
-        let group_id_map = [];
+    constructor(state:BoardState, original_board?:Array<Array<number>>) { /* {{{ */
+        let groups:Array<GoStoneGroup> = [null];
+        let group_id_map:Array<Array<number>> = null;
 
-        this.engine = engine;
+        this.state = state;
         this.group_id_map = group_id_map;
         this.groups = groups;
 
-        //console.log("::: h5", engine.board[4][7], original_board[4][7])
-
-        function floodFill(x, y, color, dame, id) {
-            if (x >= 0 && x < self.engine.width) {
-                if (y >= 0 && y < self.engine.height) {
-                    if (self.engine.board[y][x] === color
+        let floodFill = (x, y, color, dame, id) => {
+            if (x >= 0 && x < this.state.width) {
+                if (y >= 0 && y < this.state.height) {
+                    if (this.state.board[y][x] === color
                         && group_id_map[y][x] === 0
                         && (!original_board
-                            || ((!dame && (original_board[y][x] !== 0 || !self.engine.removal[y][x]))
-                                 || ( dame && (original_board[y][x] === 0 &&  self.engine.removal[y][x]))
+                            || ((!dame && (original_board[y][x] !== 0 || !this.state.removal[y][x]))
+                                 || ( dame && (original_board[y][x] === 0 &&  this.state.removal[y][x]))
                                )
                            )
                     ) {
@@ -60,19 +67,19 @@ export class GoMath {
                     }
                 }
             }
-        }
+        };
 
         /* Build groups */
-        group_id_map = GoMath.makeMatrix(this.engine.width, this.engine.height);
+        group_id_map = GoMath.makeMatrix(this.state.width, this.state.height);
         let groupId = 1;
-        for (let y = 0; y < self.engine.height; ++y) {
-            for (let x = 0; x < self.engine.width; ++x) {
+        for (let y = 0; y < this.state.height; ++y) {
+            for (let x = 0; x < this.state.width; ++x) {
                 if (group_id_map[y][x] === 0) {
-                    floodFill(x, y, self.engine.board[y][x], (original_board && self.engine.removal[y][x] && original_board[y][x] === 0), groupId++);
+                    floodFill(x, y, this.state.board[y][x], (original_board && this.state.removal[y][x] && original_board[y][x] === 0), groupId++);
                 }
 
                 if (!(group_id_map[y][x] in groups)) {
-                    groups.push(new GoStoneGroup(self.engine, group_id_map[y][x], self.engine.board[y][x], (original_board && self.engine.removal[y][x] && original_board[y][x] === 0)));
+                    groups.push(new GoStoneGroup(this.state, group_id_map[y][x], this.state.board[y][x], (original_board && this.state.removal[y][x] && original_board[y][x] === 0)));
                 }
                 groups[group_id_map[y][x]].addStone(x, y);
             }
@@ -86,18 +93,18 @@ export class GoMath {
                 if (x - 1 >= 0 && group_id_map[y][x - 1] !== gr.id) {
                     gr.addNeighborGroup(groups[group_id_map[y][x - 1]]);
                 }
-                if (x + 1 < self.engine.width  && group_id_map[y][x + 1] !== gr.id) {
+                if (x + 1 < this.state.width  && group_id_map[y][x + 1] !== gr.id) {
                     gr.addNeighborGroup(groups[group_id_map[y][x + 1]]);
                 }
                 if (y - 1 >= 0 && group_id_map[y - 1][x] !== gr.id) {
                     gr.addNeighborGroup(groups[group_id_map[y - 1][x]]);
                 }
-                if (y + 1 < self.engine.height && group_id_map[y + 1][x] !== gr.id) {
+                if (y + 1 < this.state.height && group_id_map[y + 1][x] !== gr.id) {
                     gr.addNeighborGroup(groups[group_id_map[y + 1][x]]);
                 }
                 for (let Y = -1; Y <= 1; ++Y) {
                     for (let X = -1; X <= 1; ++X) {
-                        if (x + X >= 0 && x + X < self.engine.width && y + Y >= 0 && y + Y < self.engine.height) {
+                        if (x + X >= 0 && x + X < this.state.width && y + Y >= 0 && y + Y < this.state.height) {
                             gr.addCornerGroup(x + X, y + Y, groups[group_id_map[y + Y][x + X]]);
                         }
                     }
@@ -120,10 +127,8 @@ export class GoMath {
     //    return this.groups[this.group_id_map[y][x]];
     //}; /* }}} */
 
-    public static makeMatrix(width, height, initialValue?) { /* {{{ */
-        if (!initialValue) {
-            initialValue = 0;
-        }
+    public static makeMatrix(width:number, height:number, initialValue:number = 0):Array<Array<number>> { /* {{{ */
+
 
         let ret = [];
         for (let y = 0; y < height; ++y) {
@@ -134,24 +139,24 @@ export class GoMath {
         }
         return ret;
     } /* }}} */
-    public static makeObjectMatrix(width, height) { /* {{{ */
-        let ret = new Array(height);
+    public static makeObjectMatrix<T>(width:number, height:number):Array<Array<T>> { /* {{{ */
+        let ret = new Array<Array<T>>(height);
         for (let y = 0; y < height; ++y) {
-            let row = new Array(width);
+            let row = new Array<T>(width);
             for (let x = 0; x < width; ++x) {
-                row[x] = {};
+                row[x] = {} as T;
             }
             ret[y] = row;
         }
         return ret;
     } /* }}} */
-    public static prettyCoords(x, y, board_height) { /* {{{ */
+    public static prettyCoords(x:number, y:number, board_height:number):string { /* {{{ */
         if (x >= 0) {
             return ("ABCDEFGHJKLMNOPQRSTUVWXYZ"[x]) + ("" + (board_height - y));
         }
         return "";
     } /* }}} */
-    private static convertMoveStringToArrayFormat(move_string, width, height) { /* {{{ */
+    private static convertMoveStringToArrayFormat(move_string:string, width:number, height:number):Array<MoveArray> { /* {{{ */
         let moves = GoMath.decodeMoves(move_string, width, height);
         let ret = [];
         for (let i = 0; i < moves.length; ++i) {
@@ -160,7 +165,7 @@ export class GoMath {
         }
         return ret;
     } /* }}} */
-    public static decodeMoves(move_obj, width?, height?): Array<Move> { /* {{{ */
+    public static decodeMoves(move_obj:MoveArray | string, width?:number, height?:number): Array<Move> { /* {{{ */
         let ret: Array<Move> = [];
 
         function decodeSingleMoveArray(arr) {
@@ -250,19 +255,19 @@ export class GoMath {
 
         return ret;
     } /* }}} */
-    private static char2num(ch) { /* {{{ */
+    private static char2num(ch:string):number { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghijklmnopqrstuvwxyz".indexOf(ch);
     } /* }}} */
-    private static pretty_char2num(ch) { /* {{{ */
+    private static pretty_char2num(ch:string):number { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghjklmnopqrstuvwxyz".indexOf(ch.toLowerCase());
     } /* }}} */
-    public static num2char(num) { /* {{{ */
+    public static num2char(num:number):string { /* {{{ */
         if (num === -1) { return "."; }
         return "abcdefghijklmnopqrstuvwxyz"[num];
     } /* }}} */
-    public static encodeMove(x, y?) { /* {{{ */
+    public static encodeMove(x, y?):string { /* {{{ */
         if (typeof(x) === "number") {
             return GoMath.num2char(x) + GoMath.num2char(y);
         } else {
@@ -275,23 +280,25 @@ export class GoMath {
             }
         }
     } /* }}} */
-    public static encodeMoves(lst) { /* {{{ */
+    public static encodeMoves(lst:Array<Move>):string { /* {{{ */
         let ret = "";
         for (let i = 0; i < lst.length; ++i) {
             ret += GoMath.encodeMove(lst[i]);
         }
         return ret;
     } /* }}} */
-    public static encodeMoveToArray(mv) { /* {{{ */
-        let arr = [mv.x, mv.y];
-        arr.push(mv.timedelta ? mv.timedelta : -1);
+    public static encodeMoveToArray(mv:Move):MoveArray { /* {{{ */
+        let arr:MoveArray = [mv.x, mv.y, mv.timedelta ? mv.timedelta : -1, undefined];
         if (mv.edited) {
-            arr.push(mv.color);
+            arr[3] = mv.color;
+        } else {
+            arr.pop();
         }
+        console.log(arr);
         return arr;
     } /* }}} */
-    public static encodeMovesToArray(moves) { /* {{{ */
-        let ret = [];
+    public static encodeMovesToArray(moves):Array<MoveArray> { /* {{{ */
+        let ret:Array<MoveArray> = [];
         for (let i = 0; i < moves.length; ++i) {
             ret.push(GoMath.encodeMoveToArray(moves[i]));
         }
@@ -299,11 +306,7 @@ export class GoMath {
     } /* }}} */
 
     /* Returns a sorted move string, this is used in our stone removal logic */
-    public static sortMoves(move_string) { /* {{{ */
-        if (!move_string) {
-            move_string = "";
-        }
-
+    public static sortMoves(move_string:string):string { /* {{{ */
         let moves = GoMath.decodeMoves(move_string);
         moves.sort((a, b) => {
             let av = (a.edited ? 1 : 0) * 10000 + a.x + a.y * 100;
