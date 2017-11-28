@@ -151,13 +151,18 @@ function sanitize_shortcut(shortcut) {
 
 $(() => {
     $(document).on("keydown", (e) => {
-        if (document.activeElement.tagName === "INPUT" ||
-            document.activeElement.tagName === "TEXTAREA" ||
-            document.activeElement.tagName === "SELECT") {
+        try {
+            if (document.activeElement.tagName === "INPUT" ||
+                document.activeElement.tagName === "TEXTAREA" ||
+                document.activeElement.tagName === "SELECT") {
 
-            if (!(e.keyCode in input_enabled_keys)) {
-                return true;
+                if (!(e.keyCode in input_enabled_keys)) {
+                    return true;
+                }
             }
+        } catch (e) {
+            /* ie 11 throws this */
+            console.warn(e);
         }
 
         let shortcut = "";
