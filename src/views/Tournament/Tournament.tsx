@@ -948,7 +948,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({editing: false});
     }
     setTournamentName  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {name: ev.target.value})});
-    setStartTime       = (t)  => this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
+    setStartTime       = (t)  => {
+        if (t && t.format) {
+            this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
+        }
+    }
     setTournamentType  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
     setLowerBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {lower_bar: ev.target.value});
