@@ -1921,7 +1921,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         } catch (e) {
             this.move_selected = false;
-            console.error(e);
+            console.info(e);
             this.errorHandler(e);
             this.emit("error");
             this.emit("update");
