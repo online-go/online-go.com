@@ -437,11 +437,11 @@ export class MoveTree {
         }
         return this.marks;
     }
-    setAllMarks(marks:any):void {
+    setAllMarks(marks:Array<Array<MarkInterface>>):void {
         this.marks = marks;
     }
     clearMarks():void { /* {{{ */
-        this.marks = GoMath.makeObjectMatrix(this.engine.width, this.engine.height);
+        this.marks = GoMath.makeObjectMatrix<MarkInterface>(this.engine.width, this.engine.height);
     } /* }}} */
     hasMarks():boolean { /* {{{ */
         if (!this.marks) {
