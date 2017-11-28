@@ -90,18 +90,18 @@ export const routes = (
             <Route path="/play" component={Play}/>
             <Route path="/chat" component={ChatView}/>
             <Route path="/observe-games" component={ObserveGames}/>
-            <Route path="/game/:game_id" component={Game}/>
             <Route path="/game/view/:game_id" component={Game}/>
-            <Route path="/review/:review_id" component={Game}/>
+            <Route path="/game/:game_id" component={Game}/>
             <Route path="/review/view/:review_id" exact component={Game}/>
-            <Route path="/demo/:review_id" component={Game}/>
+            <Route path="/review/:review_id" component={Game}/>
             <Route path="/demo/view/:review_id" component={Game}/>
+            <Route path="/demo/:review_id" component={Game}/>
 
+            <Route path="/player/settings" component={Settings}/>
+            <Route path="/player/supporter" component={Supporter}/>
             <Route path="/player/:user_id" component={User}/>
             <Route path="/player/:user_id/*" component={User}/>
             <Route path="/player/:user_id/**/*" component={User}/>
-            <Route path="/player/settings" component={Settings}/>
-            <Route path="/player/supporter" component={Supporter}/>
 
             <Route path="/user/view/:user_id" component={User}/>
             <Route path="/user/view/:user_id/*" component={User}/>
