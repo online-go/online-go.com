@@ -464,6 +464,10 @@ export class GoEngine {
         }
     } /* }}} */
     public jumpTo(node) { /* {{{ */
+        if (!node) {
+            console.error('Attempted to jump to a null node');
+            return;
+        }
         this.move_before_jump = this.cur_move;
         this.cur_move = node;
         if (node.state) {

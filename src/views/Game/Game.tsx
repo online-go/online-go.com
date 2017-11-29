@@ -970,8 +970,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     popupScores(color) {{{
         let goban = this.goban;
 
-        this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
-        goban.engine.cur_move.clearMarks();
+        if (goban.engine.cur_move) {
+            this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            goban.engine.cur_move.clearMarks();
+        } else {
+            this.orig_marks = null;
+        }
 
         let only_prisoners = false;
         let scores = goban.engine.computeScore(only_prisoners);
@@ -1020,7 +1024,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (!this.showing_scores) {
             goban.hideScores();
         }
-        goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        if (goban.engine.cur_move) {
+            goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        }
         goban.redraw();
         $("#" + color + "-score-details").children().remove();
     }}}
@@ -2748,8 +2754,12 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 let moves = body.moves;
 
                                 orig_move = goban.engine.cur_move;
-                                orig_marks = orig_move.marks;
-                                orig_move.clearMarks();
+                                if (orig_move) {
+                                    orig_marks = orig_move.marks;
+                                    orig_move.clearMarks();
+                                } else {
+                                    orig_marks = null;
+                                }
                                 goban.engine.followPath(parseInt(turn), moves);
 
                                 if (body.marks) {
