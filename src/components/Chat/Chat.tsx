@@ -471,6 +471,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             if (!channel) {
                 channel = $(channel_or_ev.target).parent().attr("data-channel");
             }
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().parent().attr("data-channel");
+            }
         }
 
         if (!channel) {
