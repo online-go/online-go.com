@@ -739,6 +739,15 @@ export class GoEngine {
                         return;
                     }
 
+                    try {
+                        console.warn("Stone already placed here stack trace: ");
+                        throw new Error("Stone already placed here stack trace: ");
+                    } catch (e) {
+                        try {
+                            console.warn(e.stack);
+                        } catch (__) {
+                        }
+                    }
                     throw new GoError(this, x, y, _("A stone has already been placed here"));
                 }
                 this.board[y][x] = this.player;
