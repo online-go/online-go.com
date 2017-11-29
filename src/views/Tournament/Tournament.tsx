@@ -383,6 +383,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let w = namewidth + $("#em10").width() * 4.0 / 10.0;
 
             let bindHovers = (div, id) => { /* {{{ */
+                if (typeof(id) !== 'number') {
+                    try {
+                        console.warn("ID = ", id);
+                        for (let k in id) {
+                            console.warn("ID.", k, '=', id[k]);
+                        }
+                    } catch (e) {
+                    }
+                    console.error('Tournament bind hover called with non numeric id');
+                }
+
                 div.mouseover(() => {
                     $(".elimination-player-hover").removeClass("elimination-player-hover");
                     $(".elimination-player-" + id).addClass("elimination-player-hover");
