@@ -62,7 +62,7 @@
     "react-datetime": "^2.10.3",
     "react-dom": "^16.1.1",
     "react-dropzone": "^3.7.3",
-    "react-number-format": "^3.0.1",
+    "react-number-format": "^3.0.2",
     "react-redux": "^4.4.6",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",

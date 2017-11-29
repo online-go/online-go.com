@@ -54,8 +54,12 @@ function getDecimalSeparator() {
     return (1.1).toLocaleString().substring(1, 2);
 }
 
+function getThousandSeparator() {
+    return (1000).toLocaleString().substring(1, 2);
+}
+
 function toFixedWithLocale(n:number, decimals:number = 2) {
-    return n.toFixed(decimals).replace('.', getDecimalSeparator());
+    return n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
 export class Supporter extends React.PureComponent<SupporterProperties, any> {
@@ -150,10 +154,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             amount: amount_steps[parseInt(ev.target.value)]
         });
     }}}
-    updateCustomAmount = (ev, values) => {{{
+    updateCustomAmount = (values) => {{{
+        console.log(values);
         this.setState({
-            custom_amount: values.floatValue
+            custom_amount: values.floatValue || 0.0
         });
+    }}}
+    isValueAllowed = (values) => {{{
+        return (values.floatValue || 0) >= 0;
     }}}
     getAmount() {{{
         return this.state.amount || this.state.custom_amount;
@@ -519,15 +527,17 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             </div>
                             <div>
                                 {this.state.amount === 0
-                                    ? <h3><ReactNumberFormat
-                                            prefix='$ '
-                                            suffix={' / ' + _("month")}
+                                    ? <h3>$<ReactNumberFormat
+                                            id='Supporter-custom-amount'
                                             decimalSeparator={getDecimalSeparator()}
+                                            thousandSeparator={getThousandSeparator()}
                                             value={this.state.custom_amount}
-                                            decimalPrecision={2}
-                                            onChange={this.updateCustomAmount}
+                                            decimalScale={2}
+                                            onValueChange={this.updateCustomAmount}
+                                            isAllowed={this.isValueAllowed}
                                             allowNegative={false}
                                           />
+                                          / {_("month")}
                                       </h3>
                                     : <h3>{`$ ${toFixedWithLocale(this.getAmount(), 2)} / ` + _("month")}</h3>
                                 }
