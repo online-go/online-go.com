@@ -286,7 +286,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.initialize();
             this.sync_state();
         }
-        this.onResize();
+        this.onResize(false, true);
     }}}
     componentDidMount() {{{
         this.initialize();
@@ -666,14 +666,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
             left: Math.ceil(this.ref_goban_container.offsetWidth - m.width) / 2,
         });
     }}}
-    onResize = (no_debounce?: boolean) => {{{
+    onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {{{
         //Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight)
-        if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
-            this.setState({
-                squashed: goban_view_squashed(),
-                view_mode: this.computeViewMode(),
-            });
-
+        if (!skip_state_update) {
+            if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
+                this.setState({
+                    squashed: goban_view_squashed(),
+                    view_mode: this.computeViewMode(),
+                });
+            }
         }
 
         if (this.resize_debounce) {
