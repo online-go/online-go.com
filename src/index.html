@@ -132,7 +132,16 @@
           function configure_raven() {
               if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
                   Raven.config('https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',{
-                      release: '{{VERSION}}' || 'dev'
+                      release: '{{VERSION}}' || 'dev',
+                      whitelistUrls: [
+                          'online-go.com',
+                          'online-baduk.com',
+                          'online-weiqi.com',
+                          'online-covay.com',
+                          'online-igo.com',
+                          'cdn.online-go.com',
+                          'beta.online-go.com'
+                      ]
                   }).install();
 
                   Raven.setTagsContext({
