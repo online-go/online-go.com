@@ -44,12 +44,13 @@ export class Resizable extends React.Component<any, {}> {
             return;
         }
 
+        let div = this.div;
         let width:number;
         let height:number;
 
         try {
-            height = this.div.clientHeight;
-            width = this.div.clientWidth;
+            height = div.clientHeight;
+            width = div.clientWidth;
         } catch (e) {
             /*
             We're seeing an error
@@ -67,7 +68,7 @@ export class Resizable extends React.Component<any, {}> {
             console.warn('Resizable.checkForResize errored out');
             console.warn(e);
             console.warn('This was: ', this);
-            console.warn('Div was: ', this.div);
+            console.warn('Div was: ', div, this.div);
             throw e;
         }
 
@@ -81,17 +82,21 @@ export class Resizable extends React.Component<any, {}> {
     }
 
     componentDidMount() {
-        this.last_width = this.div.clientWidth;
-        this.last_height = this.div.clientHeight;
+        let div = this.div;
+        this.last_width = div.clientWidth;
+        this.last_height = div.clientHeight;
         this.check_interval = setInterval(this.checkForResize, 50);
     }
+
     componentWillUnmount() {
         clearInterval(this.check_interval);
     }
 
+    setref_div = (el) => this.div = el;
+
     render() {
         return (
-            <div ref={el => this.div = el} id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
+            <div ref={this.setref_div} id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
         );
     }
 }
