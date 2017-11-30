@@ -298,8 +298,6 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         });
     }}}
     setTransformation(what): void {{{
-        console.log("[Puzzle] Transforming", what);
-
         let state = this.transform.stateForTransformation(what);
         if (state) {
             this.setState(state);

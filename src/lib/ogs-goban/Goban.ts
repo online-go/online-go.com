@@ -2930,7 +2930,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let vplace = (ch, x, y) => { /* places centered (horizontally & veritcally) text at x,y, with text going down vertically. */
             for (let i = 0; i < ch.length; ++i) {
                 let metrics = ctx.measureText(ch[i]);
-                console.log(metrics);
                 let xx = x - metrics.width / 2;
                 let yy = y;
                 let H = metrics.width; /* should be height in an ideal world, measureText doesn't seem to return it though. For our purposes this works well enough though. */

@@ -170,8 +170,6 @@ export class PuzzleEditor {
                 transform_x: this.transform.settings.transform_x,
             }, arr[0]);
 
-            console.log("[PuzzleEditing].fetchPuzzle ==>", puzzle);
-
             this.orig_puzzle = puzzle;
 
             let bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
@@ -210,45 +208,18 @@ export class PuzzleEditor {
         let opts: any = Object.assign({
             "board_div": goban_div,
             "interactive": true,
-            //"onUpdate": sync,
             "mode": "puzzle",
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            //"move_tree_div": "#game-move-tree-container",
-            //"move_tree_canvas": "#game-move-tree-canvas",
             "getPuzzlePlacementSetting": () => {
                 return {"mode": "play"};
             },
             "bounds": bounds,
             "player_id": 0,
             "server_socket": null,
-
-            //"square_size": function(goban) { return getGobanSquareSize(goban); },
-            /*
-            "onCorrectAnswer": function() {
-                $scope.show_correct = true;
-                $scope.show_wrong = false;
-                if (!$scope.$$phase) $scope.$digest();
-                console.log("Correct");
-                setTimeout(function() {
-                    $("#next_link").focus();
-                }, 1);
-                logSuccess();
-            },
-            "onWrongAnswer": function() {
-                $scope.show_wrong = true;
-                $scope.show_correct = false;
-                if (!$scope.$$phase) $scope.$digest();
-                console.log("Wrong");
-                attempts++;
-            },
-            */
-
-           square_size: 4
-
-            //"display_width": Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight),
+            "square_size": 4
         }, puzzle);
 
         let newState = null;
