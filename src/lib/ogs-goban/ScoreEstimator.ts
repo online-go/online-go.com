@@ -19,18 +19,93 @@ import {GoMath} from "./GoMath";
 import {GoEngine, encodeMove, encodeMoves} from "./GoEngine";
 import {_} from "./translate";
 
-/* manually init the module, we should be able to do this through the normal
- * require system but i can't figure it out right now */
+declare const CLIENT;
+declare const SERVER;
+
+
+/* This script is used on both the front end and back end, and the way the
+ * OGSScoreEstimator module is loaded is quite differente between the two.
+ *
+ * On the server, the OGSScoreEsimtator module is loaded by score-estimator.ts
+ * and teh set_OGSScoreEstimator function is called with the module.
+ *
+ * On the client, the OGSScoreEstimator script is loaded in an async fashion,
+ * so at some point that global variable becomes not null and can be used.
+ *
+ */
+
 declare var OGSScoreEstimator;
 let OGSScoreEstimator_initialized = false;
-
 let OGSScoreEstimatorModule;
 
 
-
+/* This is used on the server side */
 export function set_OGSScoreEstimator(mod) {
     OGSScoreEstimatorModule = mod;
+    init_score_estimator().then((tf) => console.info('Score estimator intialized'));
 }
+
+let init_promise:Promise<boolean> = null;
+
+export function init_score_estimator():Promise<boolean> {
+    if (CLIENT) {
+        if (OGSScoreEstimator_initialized) {
+            //console.log("Already initialized");
+            return Promise.resolve(true);
+        }
+
+        if (init_promise) {
+            //console.log("An existing promise");
+            return init_promise;
+        }
+
+        try {
+            if (!OGSScoreEstimatorModule && 'OGSScoreEstimator' in window && window['OGSScoreEstimator']) {
+                OGSScoreEstimatorModule = window['OGSScoreEstimator'];
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (OGSScoreEstimatorModule) {
+            //console.log("Already loaded");
+            OGSScoreEstimatorModule = OGSScoreEstimatorModule();
+            OGSScoreEstimator_initialized = true;
+            return Promise.resolve(true);
+        }
+
+        //console.log("Sync script");
+        let script:HTMLScriptElement = document.getElementById('ogs_score_estimator_script') as HTMLScriptElement;
+        let resolve, reject;
+        init_promise = new Promise<boolean>((_resolve, _reject) => {
+            resolve = _resolve;
+            reject  = _reject;
+        });
+
+        script.onload = () => {
+            OGSScoreEstimatorModule = OGSScoreEstimator;
+            OGSScoreEstimatorModule = OGSScoreEstimatorModule();
+            OGSScoreEstimator_initialized = true;
+            resolve(true);
+        };
+
+        return init_promise;
+    }
+
+
+    if (SERVER) {
+        OGSScoreEstimatorModule = OGSScoreEstimatorModule();
+        OGSScoreEstimator_initialized = true;
+        return Promise.resolve(true);
+    }
+}
+
+if (CLIENT) {
+    init_score_estimator().then((tf) => {
+        console.log('SE Initialized');
+    });
+}
+
 
 class SEGroup {
     points;
@@ -202,12 +277,7 @@ export class ScoreEstimator {
     } /* }}} */
     estimateScore(trials, tolerance) { /* {{{ */
         if (!OGSScoreEstimator_initialized) {
-            try {
-                OGSScoreEstimatorModule = OGSScoreEstimator;
-            } catch (e) {
-            }
-            OGSScoreEstimator_initialized = true;
-            OGSScoreEstimatorModule = OGSScoreEstimatorModule();
+            throw new Error("Score estimator not intialized yet");
         }
 
         /* NEW STUFF */

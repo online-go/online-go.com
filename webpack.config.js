@@ -38,15 +38,19 @@ plugins.push(
     })
 );
 
+let defines = {
+    PRODUCTION: production,
+    CLIENT: true,
+    SERVER: false,
+};
+
 if (production) {
-    plugins.push(
-        new webpack.DefinePlugin({
-            "process.env": { 
-                NODE_ENV: JSON.stringify("production") 
-            }
-        })
-    );
+    defines["process.env"] = { 
+        NODE_ENV: JSON.stringify("production") 
+    };
 }
+
+plugins.push(new webpack.DefinePlugin(defines));
 
 
 module.exports = {

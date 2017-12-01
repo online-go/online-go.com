@@ -20,7 +20,7 @@ import {GoStoneGroup} from "./GoStoneGroup";
 import {GoConditionalMove} from "./GoConditionalMove";
 import {GoThemes} from "./GoThemes";
 import {MoveTree} from "./MoveTree";
-import {ScoreEstimator} from "./ScoreEstimator";
+import {init_score_estimator, ScoreEstimator} from "./ScoreEstimator";
 import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingRatio,
     deepEqual, getRelativeEventPosition, getRandomInt, shortDurationString, dup
 } from "./GoUtil";
@@ -4022,7 +4022,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.auto_scoring_done = true;
 
         this.message(_("Processing..."), -1);
-        setTimeout(() => {
+        let do_score_estimation = () => {
             let se = new ScoreEstimator(null);
             se.init(this.engine, AUTOSCORE_TRIALS, AUTOSCORE_TOLERANCE);
             //console.error(se.area);
@@ -4055,6 +4055,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             });
 
             this.clearMessage();
+        }
+
+
+        setTimeout(() => {
+            init_score_estimator().then(do_score_estimation);
         }, 10);
     } /* }}} */
     private sendMove(mv) { /* {{{ */
