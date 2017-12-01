@@ -1236,7 +1236,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 let pos = getRelativeEventPosition(ev);
                 let pt = this.xy2ij(pos.x, pos.y);
                 if (pt.i >= 0 && pt.i < this.width && pt.j >= 0 && pt.j < this.height) {
-                    this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    if (this.score_estimate) {
+                        this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    }
                     this.emit("update");
                 }
                 return;
