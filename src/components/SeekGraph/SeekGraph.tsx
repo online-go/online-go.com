@@ -170,11 +170,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 //console.log(e);
             }
             else if ("delete" in e) {
-                let uid = this.challenges[e.challenge_id].system_message_id;
-                delete this.challenges[e.challenge_id];
-                if (uid) {
-                    //console.log("#line-" + (uid.replace(".", "\\.")));
-                    $("#line-" + (uid.replace(".", "\\."))).find("button").remove();
+                if (e.challenge_id in this.challenges) {
+                    let uid = this.challenges[e.challenge_id].system_message_id;
+                    delete this.challenges[e.challenge_id];
+                    if (uid) {
+                        //console.log("#line-" + (uid.replace(".", "\\.")));
+                        $("#line-" + (uid.replace(".", "\\."))).find("button").remove();
+                    }
                 }
             } else {
                 e.user_challenge = false;
