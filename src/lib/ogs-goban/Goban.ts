@@ -349,6 +349,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         if (typeof(config["square_size"]) === "function") {
             this.square_size = config["square_size"](this);
+            if (isNaN(this.square_size)) {
+                console.error("Invalid square size set: (NaN)");
+                this.square_size = 12;
+            }
         }
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
@@ -356,6 +360,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.bounded_width  + +this.draw_left_labels + +this.draw_right_labels,
                 this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
             );
+
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
+
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -1568,6 +1589,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
         );
         this.display_width = display_width;
+
+        if (isNaN(this.display_width)) {
+            console.error("Invalid display width. (NaN)");
+            this.display_width = 320;
+        }
+
+        if (isNaN(n_squares)) {
+            console.error("Invalid n_squares: ", n_squares);
+            console.error("bounded_width: ", this.bounded_width);
+            console.error("this.draw_left_labels: ", this.draw_left_labels);
+            console.error("this.draw_right_labels: ", this.draw_right_labels);
+            console.error("bounded_height: ", this.bounded_height);
+            console.error("this.draw_top_labels: ", this.draw_top_labels);
+            console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+            n_squares = 19;
+        }
+
         this.setSquareSize(Math.floor(this.display_width / n_squares));
     }}}
 
@@ -1992,7 +2030,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.square_size <= 0) {
             //console.error("Non positive square size set", this.square_size);
             //console.error(new Error().stack);
-            this.square_size = 1;
+            this.square_size = 12;
         }
 
         let ret = {
@@ -3086,7 +3124,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         this.theme_stone_radius = this.computeThemeStoneRadius(this.metrics);
         if (isNaN(this.theme_stone_radius)) {
-            console.error("setThemes was not able to find the board size, metrics were: ", this.metrics);
+            console.error("setThemes was not able to find the board size, metrics were: ", JSON.stringify(this.metrics));
             throw new Error("invalid stone radius computed");
         }
 
@@ -3177,7 +3215,22 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
             let n_squares = Math.max(this.bounded_width + +this.draw_left_labels + +this.draw_right_labels, this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels);
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -4055,7 +4108,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             });
 
             this.clearMessage();
-        }
+        };
 
 
         setTimeout(() => {

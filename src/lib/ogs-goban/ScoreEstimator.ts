@@ -76,7 +76,8 @@ export function init_score_estimator():Promise<boolean> {
 
         //console.log("Sync script");
         let script:HTMLScriptElement = document.getElementById('ogs_score_estimator_script') as HTMLScriptElement;
-        let resolve, reject;
+        let resolve;
+        let reject;
         init_promise = new Promise<boolean>((_resolve, _reject) => {
             resolve = _resolve;
             reject  = _reject;
