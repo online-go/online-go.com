@@ -178,7 +178,7 @@ export function users_by_rank(a, b) {
     let a_rank = Math.floor(bounded_rank(a));
     let b_rank = Math.floor(bounded_rank(b));
 
-    if (a_rank === b_rank) {
+    if (a_rank === b_rank && a.username && b.username) {
         return a.username.localeCompare(b.username);
     }
     return b_rank - a_rank;
