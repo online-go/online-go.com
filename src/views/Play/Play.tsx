@@ -367,6 +367,9 @@ export class Play extends React.Component<PlayProperties, any> {
                             <button className={size_enabled('13x13') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("13x13")}>13x13</button>
                             <button className={size_enabled('19x19') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("19x19")}>19x19</button>
                         </div>
+                        <div className='automatch-settings'>
+                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
+                        </div>
                     </div>
                     <div className='automatch-row-container'>
                         <div className='automatch-row'>
@@ -399,9 +402,6 @@ export class Play extends React.Component<PlayProperties, any> {
                                     <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
                                 </div>
                             </button>
-                        </div>
-                        <div className='automatch-settings'>
-                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
                         </div>
                         <div className='custom-game-header'>
                             <div>{_("Custom Game")}</div>
