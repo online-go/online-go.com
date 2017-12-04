@@ -236,8 +236,10 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }}}
 
     removeHints() {{{
-        let move = this.goban.engine.cur_move;
-        move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "hint", true));
+        if (this.goban) {
+            let move = this.goban.engine.cur_move;
+            move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "hint", true));
+        }
         this.setState({hintsOn: false});
     }}}
 
