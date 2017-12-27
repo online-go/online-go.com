@@ -148,6 +148,10 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 }
 
 
+export function boundedRankString(r, with_tenths?:boolean) {
+    return rankString(bounded_rank(r), with_tenths);
+}
+
 export function rankString(r, with_tenths?:boolean) {
     let provisional = false;
 
@@ -176,9 +180,20 @@ export function rankString(r, with_tenths?:boolean) {
     }
 
     if (r < 30) {
-        return interpolate(pgettext("Kyu", "%sk"), [(30 - r).toFixed(with_tenths ? 1 : 0)]);
+        if (with_tenths) {
+            r = (30 - r).toFixed(1);
+        } else {
+            r = Math.ceil(30 - r);
+        }
+        return interpolate(pgettext("Kyu", "%sk"), [r]);
     }
-    return interpolate(pgettext("Dan", "%sd"), [((r - 30) + 1).toFixed(with_tenths ? 1 : 0)]);
+
+    if (with_tenths) {
+        r = (r - 29).toFixed(1);
+    } else {
+        r = Math.floor(r - 29);
+    }
+    return interpolate(pgettext("Dan", "%sd"), [r]);
 }
 
 export function longRankString(r) {

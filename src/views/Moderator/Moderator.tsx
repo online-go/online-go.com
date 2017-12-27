@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, cc_to_country_name} from "translate";
 import {post, put} from "requests";
 import {PaginatedTable} from "PaginatedTable";

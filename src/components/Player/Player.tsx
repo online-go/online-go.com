@@ -16,7 +16,9 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import { routes } from 'routes';
+import {browserHistory} from "ogsHistory";
 import {shouldOpenNewTab, errorLogger} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
@@ -40,6 +42,7 @@ interface PlayerProperties {
     flare?: boolean;
     online?: boolean;
     nolink?: boolean;
+    fakelink?: boolean;
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
     noextracontrols?: boolean; /* Disable extra controls */
     disableCacheUpdate?: boolean;
@@ -57,11 +60,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         super(props);
         this.state = {
             is_online: false,
-            user: null,
+            user: typeof(props.user) === "object" ? props.user : null,
         };
-        if (typeof(props.user) === "object") {
-            this.state.user = props.user;
-        }
     }
 
     componentDidMount() {{{
@@ -216,23 +216,41 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
+        let username = player.username || player.name;
+        if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return (
+                <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </span>
+            );
+        } else {
+            let player_id = this.state.user.id || this.state.user.player_id;
+            let uri = `/player/${player_id}/${encodeURIComponent(username)}`;
 
-        return (
-            <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                {(props.flag || null) && <Flag country={player.country}/>}
-                {player.username || player.name}
-            </span>
-        );
+            return (
+                <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </a>
+            );
+        }
     }
 
     display_details = (event) => {
         if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return;
         }
-        else {
-            event.stopPropagation();
+
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get popup warnings */
+            return;
         }
+
+        event.stopPropagation();
+        event.preventDefault();
 
         let player_id = this.state.user.id || this.state.user.player_id;
         if (shouldOpenNewTab(event)) {
@@ -242,8 +260,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 uri += "/" + encodeURIComponent(player.username);
             }
             window.open(uri, "_blank");
-        }
-        else if (this.props.nodetails) {
+        } else if (this.props.nodetails) {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);

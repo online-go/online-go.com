@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
-import {browserHistory} from 'react-router';
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {Toast, toast} from 'toast';
 

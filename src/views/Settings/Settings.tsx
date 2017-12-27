@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
 import {errorAlerter, ignore} from "misc";
@@ -253,7 +253,6 @@ export class Settings extends React.PureComponent<{}, any> {
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
-        console.log('=>', enabled);
 
         if (!enabled) {
             this.setState({'desktop_notifications_enabled': false});
@@ -273,7 +272,7 @@ export class Settings extends React.PureComponent<{}, any> {
                 }
 
                 if ((Notification as any).permission === 'default') {
-                    Notification.requestPermission((perm) => {
+                    let onRequestResult = (perm) => {
                         if (perm === "granted") {
                             this.setState({'desktop_notifications_enabled': true});
                             console.log("granted notification permission");
@@ -281,7 +280,15 @@ export class Settings extends React.PureComponent<{}, any> {
                             this.setState({'desktop_notifications_enabled': false});
                             toast(<div>{_("You have previously denied desktop notifications on OGS, you will need to go into your browser settings and change your decision there to enable them.")}</div>);
                         }
-                    });
+                    };
+
+                    try {
+                        Notification.requestPermission().then(onRequestResult);
+                    } catch (e) {
+                        /* deprecated usage, but only way supported on safari currently */
+                        Notification.requestPermission(onRequestResult);
+                    }
+
                 }
             }
         } catch (e) {
@@ -418,6 +425,7 @@ export class Settings extends React.PureComponent<{}, any> {
 
         return (
         <div className="Settings container">
+            <h2 className="page-title"><i className="fa fa-gear"></i>{_("Settings")}</h2>
             <div className="row">
                 <div className="col-sm-7">
                     <Card>

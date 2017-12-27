@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import {should_show_ads, AdUnit} from "AdUnit";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
 import {post, get, del} from "requests";
@@ -34,15 +34,14 @@ import * as data from "data";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
+import {boundedRankString} from "rank_utils";
 
 
 interface PlayProperties {
 }
 
 export class Play extends React.Component<PlayProperties, any> {
-    refs: {
-        container
-    };
+    ref_container:HTMLDivElement;
     canvas: any;
 
     seekgraph: SeekGraph;
@@ -78,8 +77,12 @@ export class Play extends React.Component<PlayProperties, any> {
         this.seekgraph.destroy();
     }}}
     resize = () => {{{
-        let w = this.refs.container.offsetWidth;
-        let h = this.refs.container.offsetHeight;
+        if (!this.ref_container) {
+            return;
+        }
+
+        let w = this.ref_container.offsetWidth;
+        let h = this.ref_container.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -219,7 +222,6 @@ export class Play extends React.Component<PlayProperties, any> {
 
         return (
             <div className="Play container">
-                <AdUnit unit="cdm-zone-01" nag />
                 <SupporterGoals />
                 <div className='row'>
                     <div className='col-sm-6'>
@@ -229,7 +231,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='col-sm-6'>
                         <Card>
-                            <div ref="container" className="seek-graph-container">
+                            <div ref={el => this.ref_container = el} className="seek-graph-container">
                                 <PersistentElement elt={this.canvas} />
                             </div>
                         </Card>
@@ -300,13 +302,14 @@ export class Play extends React.Component<PlayProperties, any> {
                             <span className='cell'></span>
                             <span className='cell'></span>
                             <span className='cell'></span>
+                            <span className='cell'></span>
                             <span className='cell'>{_("Custom Games")}</span>
                         </div>
 
 
                         <div className="challenge-row">
                             <span className="cell break">{_("Short Games")}</span>
-                            {this.cellBreaks(7)}
+                            {this.cellBreaks(8)}
                         </div>
 
                         {this.gameListHeaders()}
@@ -317,7 +320,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                         <div className="challenge-row" style={{marginTop: "1em"}}>
                             <span className="cell break">{_("Long Games")}</span>
-                            {this.cellBreaks(7)}
+                            {this.cellBreaks(8)}
                         </div>
 
                         {this.gameListHeaders()}
@@ -341,21 +344,12 @@ export class Play extends React.Component<PlayProperties, any> {
                 <div className='automatch-container'>
                     <div className='automatch-header'>
                         {_("Finding you a game...")}
-                        {should_show_ads() &&
-                            <div className="spinner">
-                                <div className="double-bounce1"></div>
-                                <div className="double-bounce2"></div>
-                            </div>
-                        }
                     </div>
                     <div className='automatch-row-container'>
-                        {should_show_ads()
-                            ? <AdUnit unit="cdm-zone-02" />
-                            : <div className="spinner">
-                                  <div className="double-bounce1"></div>
-                                  <div className="double-bounce2"></div>
-                              </div>
-                        }
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>
@@ -372,6 +366,9 @@ export class Play extends React.Component<PlayProperties, any> {
                             <button className={size_enabled('9x9') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("9x9")}>9x9</button>
                             <button className={size_enabled('13x13') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("13x13")}>13x13</button>
                             <button className={size_enabled('19x19') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("19x19")}>19x19</button>
+                        </div>
+                        <div className='automatch-settings'>
+                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
                         </div>
                     </div>
                     <div className='automatch-row-container'>
@@ -405,9 +402,6 @@ export class Play extends React.Component<PlayProperties, any> {
                                     <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
                                 </div>
                             </button>
-                        </div>
-                        <div className='automatch-settings'>
-                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
                         </div>
                         <div className='custom-game-header'>
                             <div>{_("Custom Game")}</div>
@@ -445,8 +439,9 @@ export class Play extends React.Component<PlayProperties, any> {
                     {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                 </span>
                 <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                    <Player user={this.extractUser(C)}/>
+                    <Player user={this.extractUser(C)} rank={false} />
                 </span>
+                {commonSpan(boundedRankString(C.rank), "center")}
                 <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}
                 </span>
@@ -471,6 +466,7 @@ export class Play extends React.Component<PlayProperties, any> {
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
+            <span className="head">{_("Rank")}</span>
             <span className="head">{_("Size")}</span>
             <span className="head">{_("Time")}</span>
             <span className="head">{_("Ranked")}</span>

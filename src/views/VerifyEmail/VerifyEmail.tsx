@@ -16,10 +16,11 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {post} from "requests";
 import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
+import { parse } from 'query-string';
 
 declare var swal;
 
@@ -38,9 +39,11 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
     }
 
     componentDidMount() {
+        let q = parse(this.props.location.search);
+
         post("me/validateEmail", {
-            id: this.props.location.query.id,
-            verification: this.props.location.query.v,
+            id: q['id'],
+            verification: q['v'],
         })
         .then(() => {
             this.setState({verifying: false, message: _("Great, your email address has been verified!")});

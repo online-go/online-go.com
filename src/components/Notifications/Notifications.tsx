@@ -23,7 +23,7 @@ import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
 import {isLiveGame} from "TimeControl";
 import {post, del} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {challenge_text_description} from "ChallengeModal";
 import {Player} from "Player";
 import {FabX, FabCheck} from "material";
@@ -114,9 +114,16 @@ export function emitNotification(title, body, cb?) {{{
                     {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
                     <div>
                         <FabCheck onClick={() => {
-                            Notification.requestPermission().then((perm) => {
-                                emitNotification(title, body, cb);
-                            }).catch((err) => console.error(err));
+                            try {
+                                Notification.requestPermission().then((perm) => {
+                                    emitNotification(title, body, cb);
+                                }).catch((err) => console.error(err));
+                            } catch (e) {
+                                /* deprecated usage, but only way supported on safari currently */
+                                Notification.requestPermission((perm) => {
+                                    emitNotification(title, body, cb);
+                                });
+                            }
                             t.close();
                         }}/>
                         <FabX onClick={() => t.close()}/>
@@ -161,22 +168,27 @@ export function emitNotification(title, body, cb?) {{{
                     console.error(e);
                 }
 
-                let notification = new Notification(title,
-                    {
-                        body: body,
-                        icon: "https://cdn.online-go.com/favicon.ico",
-                        dir: "auto",
-                        lang: "",
-                        tag: "ogs"
-                    }
-                );
-                if (cb) {
-                    notification.onclick = cb;
-                }
+                try {
+                    let notification = new Notification(title,
+                        {
+                            body: body,
+                            icon: "https://cdn.online-go.com/favicon.ico",
+                            dir: "auto",
+                            lang: "",
+                            tag: "ogs"
+                        }
+                    );
 
-                setTimeout(() => {
-                    notification.close();
-                }, preferences.get("notification-timeout") * 1000);
+                    if (cb) {
+                        notification.onclick = cb;
+                    }
+
+                    setTimeout(() => {
+                        notification.close();
+                    }, preferences.get("notification-timeout") * 1000);
+                } catch (e) {
+                    console.info(e);
+                }
             }, delay);
         } else {
             //console.log("Ignoring notificaiton sent within the first few seconds of page load", title, body);

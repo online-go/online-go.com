@@ -16,11 +16,10 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_} from "translate";
 import {Card} from "material";
 import {GameList} from "GameList";
-import {AdUnit} from "AdUnit";
 import {createOpenChallenge} from "ChallengeModal";
 import {UIPush} from "UIPush";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -36,6 +35,7 @@ import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
 import {SupporterGoals} from "SupporterGoals";
+import {notification_manager} from "Notifications";
 
 
 let UserRating = (props: {rating: number}) => {
@@ -46,6 +46,8 @@ let UserRating = (props: {rating: number}) => {
 
 
 export class Overview extends React.Component<{}, any> {
+    private static defaultTitle = "OGS";
+
     constructor(props) {
         super(props);
         this.state = {
@@ -53,11 +55,27 @@ export class Overview extends React.Component<{}, any> {
                 active_games: [],
             },
             resolved: false,
+            boards_to_move_on: Object.keys(notification_manager.boards_to_move_on).length,
         };
     }
 
+    setTitle() {
+        let count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
+        window.document.title = `${count}${Overview.defaultTitle}`;
+    }
+
+    setBoardsToMoveOn = (boardsToMoveOn) => {
+        this.setState({boards_to_move_on: boardsToMoveOn});
+    }
+
     componentDidMount() {
+        this.setTitle();
+        notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
         this.refresh();
+    }
+
+    componentDidUpdate() {
+        this.setTitle();
     }
 
     refresh() {
@@ -72,6 +90,8 @@ export class Overview extends React.Component<{}, any> {
 
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
+        notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
+        window.document.title = Overview.defaultTitle;
     }
 
     render() {
@@ -81,7 +101,6 @@ export class Overview extends React.Component<{}, any> {
 
         return (
         <div id="Overview-Container">
-            <AdUnit unit="cdm-zone-01" nag/>
             <SupporterGoals />
             <div id="Overview">
                 <div className="left">
@@ -127,10 +146,6 @@ export class Overview extends React.Component<{}, any> {
                                 </div>
                             }
                         </div>
-                    </div>
-
-                    <div style={{justifyContent: 'center'}}>
-                        <AdUnit unit='cdm-zone-02' />
                     </div>
 
                     <div className="overview-categories">

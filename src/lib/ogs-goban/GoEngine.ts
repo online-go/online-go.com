@@ -22,6 +22,15 @@ import {ScoreEstimator} from "./ScoreEstimator";
 import {_} from "./translate";
 
 
+export interface GoEngineState {
+    player: number;
+    board_is_repeating: boolean;
+    white_prisoners: any;
+    black_prisoners: any;
+    udata_state: any;
+    board: Array<Array<number>>;
+}
+
 let __currentMarker = 0;
 
 export function encodeMove(x, y?) { /* {{{ */
@@ -298,8 +307,8 @@ export class GoEngine {
     public decodeMoves(move_obj) { /* {{{ */
         return GoMath.decodeMoves(move_obj, this.width, this.height);
     } /* }}} */
-    private getState() { /* {{{ */
-        let state = {
+    private getState():GoEngineState { /* {{{ */
+        let state:GoEngineState = {
             "player": this.player,
             "board_is_repeating": this.board_is_repeating,
             "white_prisoners": this.white_prisoners,
@@ -455,6 +464,10 @@ export class GoEngine {
         }
     } /* }}} */
     public jumpTo(node) { /* {{{ */
+        if (!node) {
+            console.error('Attempted to jump to a null node');
+            return;
+        }
         this.move_before_jump = this.cur_move;
         this.cur_move = node;
         if (node.state) {
@@ -536,7 +549,7 @@ export class GoEngine {
     private opponent() { /* {{{ */
         return this.player === 1 ? 2 : 1;
     } /* }}} */
-    public prettyCoords(x, y) { /* {{{ */
+    public prettyCoords(x:number, y:number):string { /* {{{ */
         return GoMath.prettyCoords(x, y, this.height);
     } /* }}} */
     private incrementCurrentMarker() { /* {{{ */
@@ -726,6 +739,15 @@ export class GoEngine {
                         return;
                     }
 
+                    try {
+                        console.warn("Stone already placed here stack trace: ");
+                        throw new Error("Stone already placed here stack trace: ");
+                    } catch (e) {
+                        try {
+                            console.warn(e.stack);
+                        } catch (__) {
+                        }
+                    }
                     throw new GoError(this, x, y, _("A stone has already been placed here"));
                 }
                 this.board[y][x] = this.player;

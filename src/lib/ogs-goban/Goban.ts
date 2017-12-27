@@ -20,7 +20,7 @@ import {GoStoneGroup} from "./GoStoneGroup";
 import {GoConditionalMove} from "./GoConditionalMove";
 import {GoThemes} from "./GoThemes";
 import {MoveTree} from "./MoveTree";
-import {ScoreEstimator} from "./ScoreEstimator";
+import {init_score_estimator, ScoreEstimator} from "./ScoreEstimator";
 import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingRatio,
     deepEqual, getRelativeEventPosition, getRandomInt, shortDurationString, dup
 } from "./GoUtil";
@@ -206,21 +206,21 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private stone_removal_clock;
     private submitBlinkTimer;
     private syncToCurrentReviewMove;
-    private theme_black;
+    public  theme_black;            /* public for access by our MoveTree render methods */
     private theme_black_stones;
-    private theme_black_text_color;
+    public  theme_black_text_color; /* public for access by our MoveTree render methods */
     private theme_blank_text_color;
-    private theme_board;
+    public  theme_board;            /* public for access by our MoveTree render methods */
     private theme_faded_line_color;
     private theme_faded_star_color;
     private theme_faded_text_color;
     private theme_line_color;
     private theme_star_color;
     private theme_stone_radius;
-    private theme_white;
+    public  theme_white;            /* public for access by our MoveTree render methods */
     private theme_white_stones;
-    private theme_white_text_color;
-    private themes;
+    public  theme_white_text_color; /* public for access by our MoveTree render methods */
+    public  themes;                 /* public for access by our MoveTree render methods */
     private title_div;
     private waiting_for_game_to_begin;
     private white_clock;
@@ -349,6 +349,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         if (typeof(config["square_size"]) === "function") {
             this.square_size = config["square_size"](this);
+            if (isNaN(this.square_size)) {
+                console.error("Invalid square size set: (NaN)");
+                this.square_size = 12;
+            }
         }
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
@@ -356,6 +360,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.bounded_width  + +this.draw_left_labels + +this.draw_right_labels,
                 this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
             );
+
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
+
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -1086,7 +1107,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             msg["moves"] =  diff.moves;
         }
 
-        console.log(where, msg);
         this.socket.send(where, msg);
     } /* }}} */
     public message(msg, timeout?) { /* {{{ */
@@ -1237,7 +1257,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 let pos = getRelativeEventPosition(ev);
                 let pt = this.xy2ij(pos.x, pos.y);
                 if (pt.i >= 0 && pt.i < this.width && pt.j >= 0 && pt.j < this.height) {
-                    this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    if (this.score_estimate) {
+                        this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    }
                     this.emit("update");
                 }
                 return;
@@ -1567,6 +1589,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
         );
         this.display_width = display_width;
+
+        if (isNaN(this.display_width)) {
+            console.error("Invalid display width. (NaN)");
+            this.display_width = 320;
+        }
+
+        if (isNaN(n_squares)) {
+            console.error("Invalid n_squares: ", n_squares);
+            console.error("bounded_width: ", this.bounded_width);
+            console.error("this.draw_left_labels: ", this.draw_left_labels);
+            console.error("this.draw_right_labels: ", this.draw_right_labels);
+            console.error("bounded_height: ", this.bounded_height);
+            console.error("this.draw_top_labels: ", this.draw_top_labels);
+            console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+            n_squares = 19;
+        }
+
         this.setSquareSize(Math.floor(this.display_width / n_squares));
     }}}
 
@@ -1922,7 +1961,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         } catch (e) {
             this.move_selected = false;
-            console.error(e);
+            console.info(e);
             this.errorHandler(e);
             this.emit("error");
             this.emit("update");
@@ -1960,7 +1999,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
 
         this.__last_pt = pt;
@@ -1974,7 +2015,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
         this.__last_pt = this.xy2ij(-1, -1);
     } /* }}} */
@@ -1987,7 +2030,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.square_size <= 0) {
             //console.error("Non positive square size set", this.square_size);
             //console.error(new Error().stack);
-            this.square_size = 1;
+            this.square_size = 12;
         }
 
         let ret = {
@@ -2927,7 +2970,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let vplace = (ch, x, y) => { /* places centered (horizontally & veritcally) text at x,y, with text going down vertically. */
             for (let i = 0; i < ch.length; ++i) {
                 let metrics = ctx.measureText(ch[i]);
-                console.log(metrics);
                 let xx = x - metrics.width / 2;
                 let yy = y;
                 let H = metrics.width; /* should be height in an ideal world, measureText doesn't seem to return it though. For our purposes this works well enough though. */
@@ -3082,7 +3124,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         this.theme_stone_radius = this.computeThemeStoneRadius(this.metrics);
         if (isNaN(this.theme_stone_radius)) {
-            console.error("setThemes was not able to find the board size, metrics were: ", this.metrics);
+            console.error("setThemes was not able to find the board size, metrics were: ", JSON.stringify(this.metrics));
             throw new Error("invalid stone radius computed");
         }
 
@@ -3173,7 +3215,22 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
             let n_squares = Math.max(this.bounded_width + +this.draw_left_labels + +this.draw_right_labels, this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels);
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -4018,7 +4075,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.auto_scoring_done = true;
 
         this.message(_("Processing..."), -1);
-        setTimeout(() => {
+        let do_score_estimation = () => {
             let se = new ScoreEstimator(null);
             se.init(this.engine, AUTOSCORE_TRIALS, AUTOSCORE_TOLERANCE);
             //console.error(se.area);
@@ -4051,6 +4108,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             });
 
             this.clearMessage();
+        };
+
+
+        setTimeout(() => {
+            init_score_estimator().then(do_score_estimation);
         }, 10);
     } /* }}} */
     private sendMove(mv) { /* {{{ */

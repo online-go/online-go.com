@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Card} from "material";
-import {AdUnit} from "AdUnit";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {shortTimeControl, shortShortTimeControl, computeAverageMoveTime} from "TimeControl";
@@ -60,8 +60,6 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
 
             <div className="page-width">
                 <div className="TournamentList container">
-                    <AdUnit unit="cdm-zone-01" nag/>
-
                     <div className="tabhead">
                         <h2><i className="fa fa-trophy"></i> {_("Tournaments")}</h2>
                         <div>

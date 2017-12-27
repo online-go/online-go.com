@@ -19,7 +19,7 @@ import * as React from "react";
 import {_} from "translate";
 import {Card} from "material";
 import {del, post, get} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {UIPush} from "UIPush";
 import {Player} from "Player";

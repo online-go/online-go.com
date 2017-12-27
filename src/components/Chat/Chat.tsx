@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Player} from "Player";
@@ -468,11 +468,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().attr("data-channel");
+            }
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().parent().attr("data-channel");
+            }
         }
 
         if (!channel) {
             throw new Error(`Invalid channel ID: ${channel}`);
         }
+
         let state_update: any = {};
         if (channel !== this.state.active_channel) {
             state_update.active_channel = channel;
@@ -624,7 +631,12 @@ export class Chat extends React.Component<ChatProperties, any> {
     autoscroll() {{{
         if (this.scrolled_to_bottom) {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
-            setTimeout(() => this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight, 100);
+            setTimeout(() => {
+                try {
+                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+                } catch (e) {
+                }
+            } , 100);
         }
     }}}
 

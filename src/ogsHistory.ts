@@ -15,33 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import createHistory from 'history/createBrowserHistory';
 
-.Developer {
-    // here
-    img {
-        max-width: 100%;
-    }
-
-    a {
-        @extends .monospace;
-    }
-
-    h1 {
-        margin-top: 2rem;
-    }
-
-    .github-link {
-        position: absolute;
-        top: navbar-height;
-        right: 0; 
-        border: 0;
-    }
-
-    iframe{
-        border-width: 0;
-        height: 2em;
-        width: 12em;
-        frameborder: 0;
-        scrolling: 0;
-    }
-}
+export const browserHistory = createHistory();

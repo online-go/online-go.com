@@ -17,7 +17,8 @@
 
 
 import * as React from "react";
-import {Link, browserHistory} from 'react-router';
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Goban} from "goban";
 import {PersistentElement} from "PersistentElement";
@@ -26,7 +27,9 @@ import {openNewGameModal} from "NewGameModal";
 
 
 interface TutorialProperties {
-    params:any;
+    match: {
+        params:any
+    };
 }
 
 const NUM_PAGES = 12;
@@ -37,7 +40,7 @@ export class Tutorial extends React.PureComponent<TutorialProperties, any> {
     }
 
     render() {
-        let page_number = parseInt(this.props.params.step || 0);
+        let page_number = parseInt(this.props.match.params.step || 0);
 
         switch (page_number) {
             case 0: return <ThisIsAGoban />;

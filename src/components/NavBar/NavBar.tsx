@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
@@ -391,7 +392,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                         <li><Link to="/tournaments"><i className="fa fa-trophy"></i>{_("Tournaments")}</Link></li>
                         <li><Link to="/ladders"><i className="fa fa-list-ol"></i>{_("Ladders")}</Link></li>
                         <li><Link to="/groups"><i className="fa fa-users"></i>{_("Groups")}</Link></li>
-                        <li><Link to="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</Link></li>
+                        <li><a href="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</a></li>
                         <li><Link to="/docs/about"><i className="fa fa-question-circle"></i>{_("About")}</Link></li>
                         <li><Link to="/docs/other-go-resources"><i className="fa fa-link"></i>{_("Other Go Resources")}</Link></li>
 

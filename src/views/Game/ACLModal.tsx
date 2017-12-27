@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, del} from "requests";
 import {openModal, Modal} from "Modal";

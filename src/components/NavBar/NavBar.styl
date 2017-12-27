@@ -149,13 +149,8 @@ navbar-width= 17rem;
     .rightnav, .leftnav {
         position: absolute;
         top: navbar-height;
-        //bottom: 0;
-        boder: 1px solid transparent;
-        themed boder-color shade2;
         themed background-color navbar-background-color;
         z-index: z.nav-menu.menu;
-        //min-height: 100%;
-        //overflow-y: scroll;
 
         user-select: none;
         width: navbar-width;
@@ -289,6 +284,10 @@ navbar-width= 17rem;
             &.fa-moon-o, &.fa-sun-o {
                 themed color fg
             }
+        }
+
+        a:hover i {
+            themed color shade0
         }
     }
 }

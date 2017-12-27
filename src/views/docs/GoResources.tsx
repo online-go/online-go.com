@@ -284,7 +284,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="http://www.emptytriangle.com/">Empty Triangle</a></span>,
                 <span><Flag country={en}/> <a href="http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html">Aji's Quest</a></span>,
                 <span><Flag country={de}/> <a href="http://www.rwro.de/">Aji's Quest (German)</a></span>,
-                <span><Flag country={en}/> <a href="http://almostsente.tumblr.com/">Almost Sente</a></span>
+                <span><Flag country={en}/> <a href="http://almostsente.tumblr.com/">Almost Sente</a></span>,
+                <span><Flag country={en}/> <a href="http://tigersmouth.org/articles.php?article_id=49">The Better move</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>

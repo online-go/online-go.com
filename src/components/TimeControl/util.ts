@@ -333,6 +333,9 @@ export function shortTimeControl(time_control) { /* {{{ */
         return "~" + durationString(time_control);
     }
 
+    if (time_control === null) {
+        return '';
+    }
 
     switch (time_control.system || time_control.time_control) {
         case "simple":
@@ -367,6 +370,10 @@ export function shortTimeControl(time_control) { /* {{{ */
 export function shortShortTimeControl(time_control) { /* {{{ */
     if (typeof(time_control) !== "object") {
         return "~" + shortDurationString(time_control);
+    }
+
+    if (time_control === null) {
+        return '';
     }
 
     switch (time_control.system || time_control.time_control) {

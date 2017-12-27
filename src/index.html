@@ -82,7 +82,7 @@
 
 
       <noscript id="deferred-styles">
-          <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700|Source+Code+Pro&amp;subset=latin-ext">
+          <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext">
           <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/css-social-buttons/1.2.0/css/zocial.min.css">
           <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
           <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/fixed-data-table/0.6.3/fixed-data-table.min.css">
@@ -112,28 +112,56 @@
           else window.addEventListener('load', loadDeferredStyles);
       </script>
 
-      <script defer src="https://cdn.online-go.com/lib/es6-promise/4.0.5/es6-promise.auto{{MIN}}.js"></script>
+      <script>
+          /* Raven is used to capture and report errors to sentry.io */
+          function configure_raven_language_version() {
+              if ('Raven' in window) {
+                  try {
+                      Raven.setExtraContext({
+                          language: ogs_current_language || 'unknown',
+                          version: ogs_version || 'dev'
+                      });
+                  } catch (e) {
+                      /* This code can be executed before the
+                       * ogs_current_language and ogs_version variables are
+                       * defined, in which case we'll try again when they are
+                       * definitely defined, so no biggie. */
+                  }
+              }
+          }
+          function configure_raven() {
+              if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
+                  Raven.config('https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',{
+                      release: '{{VERSION}}' || 'dev',
+                      whitelistUrls: [
+                          'online-go.com',
+                          'online-baduk.com',
+                          'online-weiqi.com',
+                          'online-covay.com',
+                          'online-igo.com',
+                          'cdn.online-go.com',
+                          'beta.online-go.com'
+                      ]
+                  }).install();
+
+                  Raven.setTagsContext({
+                      version: '{{VERSION}}' || 'dev'
+                  });
+
+                  configure_raven_language_version();
+              }
+          }
+      </script>
+      <script defer src="https://cdn.ravenjs.com/3.20.1/raven.min.js" crossorigin="anonymous" onLoad='configure_raven()'></script>
       <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
+      <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
       <script defer src="https://cdn.online-go.com/lib/socket.io/2.0.3/socket.io{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/moment.js/2.18.1/moment-with-locales{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/redux/3.6.0/redux{{MIN}}.js"></script>
-
-      <script defer src="https://cdn.online-go.com/lib/react/15.4.1/react{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/react/15.4.1/react-dom{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/react-router/2.8.1/ReactRouter{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/react-redux/4.4.6/react-redux{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/react-datetime/2.8.10/react-datetime{{MIN}}.js"></script>
-
-      <script defer src="https://cdn.online-go.com/lib/blueimp-md5/2.5.0/js/md5{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/eventemitter3/2.0.2/index.min.js"></script>
-
       <script defer src="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/markdown-it/8.3.1/markdown-it.min.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/d3/4.9.1/d3{{MIN}}.js"></script>
 
 
-      <script defer src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
+      <script id="ogs_score_estimator_script" async src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
+      <script type="text/javascript">var supported_languages = {{SUPPORTED_LANGUAGES}};</script>
       <script type="text/javascript">
         var ogs_version='{{VERSION}}';
         var ogs_release='{{RELEASE}}';
@@ -141,7 +169,6 @@
         var cdn_service = '{{CDN_SERVICE}}';
 
         /* Detect prefered language {{{ */
-        var supported_languages = {{SUPPORTED_LANGUAGES}};
 
         function isSupportedLanguage(lang) {
             if (!lang) {
@@ -202,7 +229,7 @@
             console.error(e);
         }
         window['ogs_current_language'] = ogs_current_language || 'en';
-        /* }}} */
+        configure_raven_language_version();
 
         /* Load our transations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
@@ -212,7 +239,7 @@
         /* Load OGS. We can override what script is loaded by setting the
          * 'ogs-script' entry in localStorage (useful for testing versions before they're
          * released to everyone) */
-        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}";
+        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{OGS_VERSION_HASH_DOTJS}}";
         try {
             if (localStorage.getItem('ogs-script')) {
                 ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
@@ -224,66 +251,29 @@
       </script>
 
       <script type="text/javascript">
-        /* Google analytics {{{ */
-        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)/* && !(/beta/.test(document.location.host))*/) {
+        /* Google analytics */
+        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
             console.log("Welcome to OGS");
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
                     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
                 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
             ga('create', 'UA-37743954-2', 'online-go.com');
-            //ga('send', 'pageview');
             window['ga'] = ga;
         } else {
             window['ga'] = null;
             console.log("Dev system detected, disabling google analytics");
         }
-        /* }}} */
       </script>
-
-    <!-- Begin comScore -->
-    <!--
-    <script type="text/javascript">
-    var _comscore = _comscore || [];
-    _comscore.push({ c1: "2", c2: "6035118" });
-    (function() {
-       var s = document.createElement("script"), el = document.getElementsByTagName("script")[0]; s.async = true;
-       s.src = (document.location.protocol == "https:" ? "https://sb" : "http://b") + ".scorecardresearch.com/beacon.js";
-       el.parentNode.insertBefore(s, el);
-    })();
-    </script>
-    <noscript>
-       <img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6035118&amp;cv=2.0&amp;cj=1" />
-    </noscript>
-    -->
-    <!-- End comScore -->
-
-    <!-- Nielsen Online SiteCensus -->
-    <!--
-    <script type="text/javascript">
-    (function () {
-       var d = new Image(1, 1);
-       d.onerror = d.onload = function () {
-           d.onerror = d.onload = null;
-       };
-       d.src = ["//secure-us.imrworldwide.com/cgi-bin/m?ci=us-603339h&cg=0&cc=1&si=", escape(window.location.href), "&rp=", escape(document.referrer), "&ts=compact&rnd=", (new Date()).getTime()].join('');
-    })();
-    </script>
-    <noscript>
-        <div><img src="//secure-us.imrworldwide.com/cgi-bin/m?ci=us-603339h&amp;cg=0&amp;cc=1&amp;ts=noscript" width="1" height="1" alt="" /></div>
-    </noscript>
-    -->
-    <!-- End Nielsen Online SiteCensus -->
-
-      <script>
+      <script type="text/javascript">
           function version_print_setters() {
-              ret = "\n\n";
+              var ret = "\n\n";
 
               var scripts = $("script"); 
               for (var idx = 0; idx < scripts.length; ++idx) {
                   var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
                   if (m) {
-                      let path = scripts[idx].src
+                      var path = scripts[idx].src
                       ret += "localStorage.setItem('ogs-script', '" + m[1] + "');\n";
                   }
               }
@@ -293,7 +283,7 @@
                   if (stylesheets[idx].rel === "stylesheet") {
                       var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)
                       if (m) {
-                          let path = stylesheets[idx].src
+                          var path = stylesheets[idx].src
                           ret += "localStorage.setItem('ogs-css', '" + m[1] + "');\n";
                       }
                   }

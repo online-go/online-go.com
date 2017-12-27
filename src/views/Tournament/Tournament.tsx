@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
@@ -49,7 +50,9 @@ declare var swal;
 let ranks = amateurRanks();
 
 interface TournamentProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 /* TODO: Implement me TD Options */
@@ -70,10 +73,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     constructor(props) { /* {{{ */
         super(props);
 
-        let tournament_id = parseInt(this.props.params.tournament_id) || 0;
+        let tournament_id = parseInt(this.props.match.params.tournament_id) || 0;
 
         this.state = {
-            new_tournament_group_id: parseInt(this.props.params.group_id) || 0,
+            new_tournament_group_id: parseInt(this.props.match.params.group_id) || 0,
             tournament_id: tournament_id,
             loading: true,
             tournament: {
@@ -149,9 +152,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         setExtraActionCallback(null);
     }}}
     componentWillReceiveProps(next_props) {{{
-        if (next_props.params.tournament_id !== this.props.params.tournament_id) {
-            this.setState({tournament_id: parseInt(next_props.params.tournament_id)});
-            this.resolve(parseInt(next_props.params.tournament_id));
+        if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
+            this.setState({tournament_id: parseInt(next_props.match.params.tournament_id)});
+            this.resolve(parseInt(next_props.match.params.tournament_id));
         }
     }}}
     abort_requests() {{{
@@ -380,6 +383,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let w = namewidth + $("#em10").width() * 4.0 / 10.0;
 
             let bindHovers = (div, id) => { /* {{{ */
+                if (typeof(id) !== 'number') {
+                    try {
+                        console.warn("ID = ", id);
+                        for (let k in id) {
+                            console.warn("ID.", k, '=', id[k]);
+                        }
+                    } catch (e) {
+                    }
+                    console.error('Tournament bind hover called with non numeric id');
+                }
+
                 div.mouseover(() => {
                     $(".elimination-player-hover").removeClass("elimination-player-hover");
                     $(".elimination-player-" + id).addClass("elimination-player-hover");
@@ -409,8 +423,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     bindHovers(black, match.black);
                     bindHovers(white, match.white);
 
-                    if (match.result[0] === "B") { black.addClass("win"); }
-                    if (match.result[0] === "W") { white.addClass("win"); }
+                    let result = match.result && match.result.length > 0 ? match.result[0] : '';
+                    if (result === "B") { black.addClass("win"); }
+                    if (result === "W") { white.addClass("win"); }
 
                     matchdiv.append(black);
                     matchdiv.append(white);
@@ -419,7 +434,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         div: matchdiv,
                         black_src: round_num > 0 ? lastbucket[match.black] : null,
                         white_src: round_num > 0 ? lastbucket[match.white] : null,
-                        black_won: match.result[0] === "B",
+                        black_won: result === "B",
                         match: match,
                         second_bracket: false,
                         round: round_num,
@@ -476,6 +491,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let playerWon = (obj, player_id) => { /* {{{ */
                 if (!obj.match) {
                     return true;
+                }
+                if (!obj.match.result) {
+                    return false;
                 }
                 if (obj.match.result[0] === "B" && obj.match.black === player_id) {
                     return true;
@@ -544,9 +562,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         return d;
                     }
 
-                    let arank = a.player_id ? players[a.player_id].ranking * 2 : players[a.match.black].ranking + players[a.match.white].ranking;
-                    let brank = b.player_id ? players[b.player_id].ranking * 2 : players[b.match.black].ranking + players[b.match.white].ranking;
-                    return -(arank - brank);
+                    const compute_rank = (e) => {
+                        if (e.player_id && e.player_id in players) {
+                            return players[e.player_id].ranking * 2;
+                        }
+                        if (e.match && e.match.black && e.match.white && e.match.black in players && e.match.white in players) {
+                            return players[e.match.black].ranking + players[e.match.white].ranking;
+                        }
+                        return -1000;
+                    };
+
+                    return -(compute_rank(a) - compute_rank(b));
                 });
 
 
@@ -940,44 +966,48 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
         this.setState({editing: false});
     }
-    setTournamentName = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {name: ev.target.value})});
-    setStartTime = (t) => this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
-    setTournamentType = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
-    setLowerBar = (ev) => {
+    setTournamentName  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {name: ev.target.value})});
+    setStartTime       = (t)  => {
+        if (t && t.format) {
+            this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
+        }
+    }
+    setTournamentType  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
+    setLowerBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {lower_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setUpperBar = (ev) => {
+    setUpperBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {upper_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setPlayersStart = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {players_start: ev.target.value})});
-    setMaximumPlayers = (ev) => {
+    setPlayersStart    = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {players_start: ev.target.value})});
+    setMaximumPlayers  = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {maximum_players: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setAutoStartOnMax = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
-    setFirstPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
+    setAutoStartOnMax          = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
+    setFirstPairingMethod      = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
     setSubsequentPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {subsequent_pairing_method: ev.target.value})});
-    setTournamentExclusivity = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
+    setTournamentExclusivity   = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
 
-    setNumberOfRounds = (ev) => {
+    setNumberOfRounds  = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {num_rounds: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setGroupSize = (ev) => {
+    setGroupSize       = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {group_size: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
-    setRules = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {rules: ev.target.value})});
-    setHandicap = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {handicap: ev.target.value})});
-    setBoardSize = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {board_size: ev.target.value})});
+    setRules           = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {rules: ev.target.value})});
+    setHandicap        = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {handicap: ev.target.value})});
+    setBoardSize       = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {board_size: ev.target.value})});
     setAnalysisEnabled = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {analysis_enabled: ev.target.checked})});
-    setMinRank = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
-    setMaxRank = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
+    setMinRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
+    setMaxRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
     setExcludeProvisionalPlayers = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclude_provisional: !ev.target.checked})});
-    setDescription = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
-    setTimeControl = (tc) => {
+    setDescription     = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
+    setTimeControl     = (tc) => {
         console.log(tc);
         this.setState({tournament: Object.assign({}, this.state.tournament, {time_control_parameters: tc})});
     }
@@ -1583,10 +1613,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                     </Link>
                                                 </td>
 
-                                                <td className="points">{m.player.points}</td>
-                                                {(tournament.ended || null) && <td className="points">{m.player.sos}</td>}
-                                                {(tournament.ended || null) && <td className="points">{m.player.sodos}</td>}
-                                                <td className="notes">{m.player.notes}</td>
+                                                <td className="points">{m.player && m.player.points}</td>
+                                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sos}</td>}
+                                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sodos}</td>}
+                                                <td className="notes">{m.player && m.player.notes}</td>
                                             </tr>
                                             );
                                         })}
@@ -1652,12 +1682,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             <th></th>
                                         </tr>
                                         {selected_round.byes.map((player, idx) => {
+                                            if (!player) {
+                                                return <tr key={idx} />;
+                                            }
                                             return (
                                             <tr key={idx} >
                                                 {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
-                                                {(player || null) && <td className="player"><Player user={player} icon/></td>}
+                                                <td className="player"><Player user={player} icon/></td>
                                                 <td className="points">{player.points}</td>
-                                                {(tournament.ended || null) && <td className="points">{player.sos}</td>}
+                                                {((player && tournament.ended) || null) && <td className="points">{player.sos}</td>}
                                                 {(tournament.ended || null) && <td className="points">{player.sodos}</td>}
                                                 <td className="notes">{player.notes}</td>
                                             </tr>

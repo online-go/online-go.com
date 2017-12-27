@@ -21,13 +21,14 @@ import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import {Card} from "material";
-import {AdUnit} from "AdUnit";
 import * as data from "data";
 
 declare var swal;
 
 interface LadderProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 export class Ladder extends React.PureComponent<LadderProperties, any> {
@@ -43,12 +44,12 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     componentDidMount() {
-        this.resolve(this.props.params.ladder_id);
+        this.resolve(this.props.match.params.ladder_id);
     }
 
     componentWillReceiveProps(next_props) {
-        if (this.props.params.ladder_id !== next_props.params.ladder_id) {
-            this.resolve(next_props.params.ladder_id);
+        if (this.props.match.params.ladder_id !== next_props.match.params.ladder_id) {
+            this.resolve(next_props.match.params.ladder_id);
         }
     }
 
@@ -59,9 +60,9 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     join = () => {
-        post("ladders/%%/players", this.props.params.ladder_id, {})
+        post("ladders/%%/players", this.props.match.params.ladder_id, {})
         .then(() => {
-            this.resolve(this.props.params.ladder_id);
+            this.resolve(this.props.match.params.ladder_id);
             this.refs.ladder_component.updatePlayers();
         })
         .catch(errorAlerter);
@@ -76,9 +77,9 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             "focusCancel": true
         })
         .then(() => {
-            del("ladders/%%/players", this.props.params.ladder_id)
+            del("ladders/%%/players", this.props.match.params.ladder_id)
             .then(() => {
-                this.resolve(this.props.params.ladder_id);
+                this.resolve(this.props.match.params.ladder_id);
                 this.refs.ladder_component.updatePlayers();
             })
             .catch(errorAlerter);
@@ -92,7 +93,6 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
         return (
         <div>
-            <AdUnit unit="cdm-zone-01" nag/>
             <div className="Ladder">
                 <Card>
                     <h2>{this.state.ladder && this.state.ladder.name}</h2>
@@ -105,7 +105,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
                     <LadderComponent
                         ref="ladder_component"
-                        ladderId={this.props.params.ladder_id}
+                        ladderId={this.props.match.params.ladder_id}
                         fullView
                         />
                 </Card>

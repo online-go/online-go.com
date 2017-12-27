@@ -19,7 +19,6 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import * as preferences from "preferences";
-import {AdUnit} from "AdUnit";
 import {GameList} from "GameList";
 import {comm_socket} from "sockets";
 
@@ -151,8 +150,6 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         return (
         <div className="ObserveGames">
             <div className="container">
-                <AdUnit unit="cdm-zone-01" nag/>
-
                 <div className="games">
                     <div className="header">
                         <div className="btn-group">

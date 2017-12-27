@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {toast} from "toast";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
@@ -113,7 +113,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             let player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();
             if (player) {
-                new_state = Object.assign(this.state, player);
+                new_state = Object.assign(new_state, this.state, player);
             }
             this.setState(new_state);
             setTimeout(() => {

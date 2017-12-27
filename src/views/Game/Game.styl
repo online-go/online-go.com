@@ -418,26 +418,18 @@ goban-view-bar-width=400px
         justify-content: space-between;
     }
     .left-col {
-        flex-basis: 15%;
+        flex-basis: 0;
         flex-shrink: 1;
         align-content: center;
         justify-content: center;
         padding-right: 0.3rem;
-        min-width: 340px;
+        min-width: 0px;
     }
     .right-col {
         flex-basis: 25%;
         padding-left: 0.3rem;
         padding-right: dock-collapsed-width + 0.3rem;
         min-width: 340px;
-    }
-
-    .left-col.no-ads {
-        flex-basis: 0;
-        min-width: 0px;
-    }
-    .left-col.block {
-        min-width: 310px;
     }
 
     &.wide {

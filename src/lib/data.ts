@@ -23,7 +23,6 @@ let store: Partial<LocalData> = {};
 let event_emitter = new TypedEventEmitter<LocalData>();
 let last_id = 0;
 
-
 export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | undefined): LocalData[K] {
     if (value === undefined) {
         remove(key);
@@ -34,7 +33,7 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | und
     try {
         localStorage.setItem(`ogs.${key}`, (serialise_data[key] || JSON.stringify)(value));
     } catch (e) {
-        console.error(e);
+        console.warn(`Failed to save setting ogs.${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`);
     }
 
     event_emitter.emit(key, value);

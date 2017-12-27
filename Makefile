@@ -12,13 +12,17 @@ node_modules:
 lint tslint:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --type-check --project tsconfig.json
 
-min:
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --display-modules --output-filename 'ogs.min.js' 
+min: minjs mincss
+
+mincss:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) gulp min_styl
-	@echo 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
 	@echo 'gzipped ogs.min.css: ' `gzip -9 dist/ogs.min.css -c | wc -c`
 
+minjs:
+	NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --display-modules
+	@echo 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
+	@echo 'gzipped vendor.min.js: ' `gzip -9 dist/vendor.min.js -c | wc -c`
 
-.PHONY: dev lint tslint min
+.PHONY: dev lint tslint min minjs mincss
 
 -include Makefile.production

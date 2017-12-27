@@ -17,7 +17,7 @@
 
 import {_, interpolate, pgettext} from "translate";
 import {post} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 
 declare var swal;
 
@@ -571,15 +571,25 @@ export function deepCompare(x: any, y: any) {{{
 let focus_window_id = "" + Math.random();
 try {
     $(window).focus(() => {
-        localStorage.setItem("focused_window", focus_window_id);
+        try {
+            localStorage.setItem("focused_window", focus_window_id);
+        } catch (e) {
+            // Ignored, safari in private mode errors out when setItem is called
+        }
     });
     $(window).blur(() => {
-        if (localStorage.getItem("focused_window") === focus_window_id) {
-            localStorage.removeItem("focused_window");
+        try {
+            if (localStorage.getItem("focused_window") === focus_window_id) {
+                localStorage.removeItem("focused_window");
+            }
+        } catch (e) {
         }
     });
     if (document.hasFocus()) {
-        localStorage.setItem("focused_window", focus_window_id);
+        try {
+            localStorage.setItem("focused_window", focus_window_id);
+        } catch (e) {
+        }
     }
 } catch (e) {
     console.error(e);

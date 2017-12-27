@@ -19,7 +19,8 @@ import * as data from "data";
 import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
 import {KBShortcut} from "KBShortcut";
@@ -49,7 +50,6 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AdUnit, should_show_ads, refresh_ads} from "AdUnit";
 import * as moment from "moment";
 
 declare var swal;
@@ -61,9 +61,11 @@ let win = $(window);
 let active_game_view = null;
 
 interface GameProperties {
-    params: {
-        game_id?: string,
-        review_id?: string,
+    match: {
+        params: {
+            game_id?: string,
+            review_id?: string,
+        }
     };
 }
 
@@ -89,15 +91,13 @@ export type ViewMode = "portrait"|"wide"|"square"|"zen";
 type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
-    refs: {
-        goban;
-        goban_container;
-        players;
-        action_bar;
-        game_action_buttons;
-        game_state_label;
-        chat;
-    };
+    ref_goban;
+    ref_goban_container;
+    ref_players;
+    ref_action_bar;
+    ref_game_action_buttons;
+    ref_game_state_label;
+    ref_chat;
 
     game_id: number;
     creator_id: number;
@@ -112,7 +112,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     set_analyze_tool: any = {};
     score_popups: any = { };
     ad: HTMLElement;
-    ad_class: AdClass = null;
     autoplay_timer = null;
     stone_removal_accept_timeout: any = null;
     conditional_move_list = [];
@@ -140,8 +139,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         super(props);
         window["Game"] = this;
 
-        this.game_id = this.props.params.game_id ? parseInt(this.props.params.game_id) : 0;
-        this.review_id = this.props.params.review_id ? parseInt(this.props.params.review_id) : 0;
+        this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
+        this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
             view_mode: false,
             squashed: goban_view_squashed(),
@@ -165,7 +164,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
         };
-        this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
+
+        (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = $("<div class='Goban'>");
@@ -254,13 +254,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentWillReceiveProps(nextProps) {{{
         if (
-            this.props.params.game_id !== nextProps.params.game_id ||
-            this.props.params.review_id !== nextProps.params.review_id
+            this.props.match.params.game_id !== nextProps.match.params.game_id ||
+            this.props.match.params.review_id !== nextProps.match.params.review_id
         ) {
             this.deinitialize();
             this.goban_div.empty();
-
-            refresh_ads(true);
 
             this.setState({
                 portrait_tab: "game",
@@ -273,8 +271,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 historical_white: null,
             });
 
-            this.game_id = nextProps.params.game_id ? parseInt(nextProps.params.game_id) : 0;
-            this.review_id = nextProps.params.review_id ? parseInt(nextProps.params.review_id) : 0;
+            this.game_id = nextProps.match.params.game_id ? parseInt(nextProps.match.params.game_id) : 0;
+            this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
             console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
@@ -282,20 +280,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentDidUpdate(prevProps, prevState) {{{
         if (
-            this.props.params.game_id !== prevProps.params.game_id ||
-            this.props.params.review_id !== prevProps.params.review_id
+            this.props.match.params.game_id !== prevProps.match.params.game_id ||
+            this.props.match.params.review_id !== prevProps.match.params.review_id
         ) {
             this.initialize();
             this.sync_state();
         }
-        this.onResize();
+        this.onResize(false, true);
     }}}
     componentDidMount() {{{
         this.initialize();
         if (this.computeViewMode() === "portrait") {
-            this.refs.goban_container.style.minHeight = `${screen.width}px`;
+            this.ref_goban_container.style.minHeight = `${screen.width}px`;
         } else {
-            this.refs.goban_container.style.minHeight = `initial`;
+            this.ref_goban_container.style.minHeight = `initial`;
         }
         this.onResize();
     }}}
@@ -347,19 +345,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
         $(window).on("resize", this.onResize as () => void);
         $(document).on("keypress", this.setLabelHandler);
-        //chat_handlers = goban_chat_initialize($scope);
-        //let live_suffix = (game.time_per_move || 86400) < (30*60) ? "-live" : "";
-        //let label_position = $.jStorage.get("go.settings.label-position", "all");
+
         let label_position = preferences.get("label-positioning");
         let opts: any = {
             "board_div": this.goban_div,
-            //"title_div": $("#goban-primary-ctrl"),
             "black_clock": "#game-black-clock",
             "white_clock": "#game-white-clock",
             "stone_removal_clock": "#stone-removal-clock",
             "node_textarea": "#game-move-node-text",
-            //"game_type": $scope.game.type,
-            //"game_source": $scope.game.source,
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
@@ -369,26 +362,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
             },
 
-            /*
-            "onChat": function(m,t) { chat_handlers.handleChat(m,t); },
-            "onChatReset": function() { chat_handlers.handleChatReset(); },
-            "onPendingResignation": function(player_id, delay) {
-                if (global_user && player_id === global_user.id) {
-                    if (!leaving_page) {
-                        //console.log("I disconnected from another tab, but I guess I have multiple open, clearing resignation ");
-                        goban.clearPendingResignation();
-                    }
-                } else {
-                    //console.log("Player " + player_id + " disconnected, will be resigning in "+ delay + "ms");
-                }
-            },
-            "onPendingResignationCleared": function(player_id, delay) {
-                //console.log("Player " + player_id + " reconnected, resignation canceled");
-            },
-            "onClearChatLogs": function() {
-                chat_handlers.clearChatLogs();
-            },
-            */
             "game_id": null,
             "review_id": null,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
@@ -397,19 +370,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
             "move_tree_div": "#move-tree-container",
             "move_tree_canvas": "#move-tree-canvas",
-            "display_width": Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight),
-
-            //"square_size": 10,
-            //"wait_for_game_to_start": $scope.game.started == null,
-            //"width": $scope.game.width,
-            //"height": $scope.game.height,
+            "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
         };
 
         if (opts.display_width <= 0) {
             let I = setInterval(() => {
                 this.onResize(true);
                 setTimeout(() => {
-                    if (Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight) > 0) {
+                    if (!this.goban || (this.ref_goban_container && Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight) > 0)) {
                         clearInterval(I);
                     }
                 }, 1);
@@ -425,26 +393,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             opts.isPlayerController = () => this.goban.review_controller_id === data.get("user").id;
         }
 
-        console.log(opts);
-
-        /*
-        if (global_user) {
-            opts.username = global_user.username;
-            opts.chat_player_id = global_user.id;
-            opts.chat_auth = $scope.game_chat_auth;
-        }
-        if ($scope.auth) {
-            opts.auth = $scope.auth;
-        }
-        */
-
-        //goban = new Goban(opts, initial_gamedata);
         this.goban = new Goban(opts);
         this.onResize(true);
-        //global_goban = this.goban;
         window["global_goban"] = this.goban;
-        //window["this.goban"] = goban;
-        //$scope.goban = goban;
         if (this.review_id) {
             this.goban.setMode("analyze");
         }
@@ -491,21 +442,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
-            /*
-            if (!(chat_log in this.chats)) {
-                this.chats[chat_log] = [];
-            }
-            this.chats[chat_log].push(line);
-            */
-
             this.debouncedChatUpdate();
         });
         this.goban.on("chat-reset", () => {
-            /*
-            for (let k in this.chats) {
-                this.chats[k] = [];
-            }
-            */
             this.chat_log.length = 0;
             this.debouncedChatUpdate();
         });
@@ -723,18 +662,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
     recenterGoban() {{{
         let m = this.goban.computeMetrics();
         $(this.goban_div).css({
-            top: Math.ceil(this.refs.goban_container.offsetHeight - m.height) / 2,
-            left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
+            top: Math.ceil(this.ref_goban_container.offsetHeight - m.height) / 2,
+            left: Math.ceil(this.ref_goban_container.offsetWidth - m.width) / 2,
         });
     }}}
-    onResize = (no_debounce?: boolean) => {{{
-        //Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
-        if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
-            this.setState({
-                squashed: goban_view_squashed(),
-                view_mode: this.computeViewMode(),
-            });
-
+    onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {{{
+        //Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight)
+        if (!skip_state_update) {
+            if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
+                this.setState({
+                    squashed: goban_view_squashed(),
+                    view_mode: this.computeViewMode(),
+                });
+            }
         }
 
         if (this.resize_debounce) {
@@ -742,53 +682,28 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.resize_debounce = null;
         }
 
-        /*
         if (!this.goban) {
             return;
         }
-        */
 
         this.goban.setGameClock(this.goban.last_clock); /* this forces a clock refresh, important after a layout when the dom could have been replaced */
 
-        if (!this.refs.goban_container) {
+        if (!this.ref_goban_container) {
             return;
         }
 
         if (this.computeViewMode() === "portrait") {
             let w = win.width() + 10;
-            /*
-            let max_h = win.height() - 32; // 32 for navbar
-            max_h -= $(this.refs.players).height();
-            max_h -= $(this.refs.action_bar).height();
-            if (this.refs.game_state_label) {
-                max_h -= $(this.refs.game_state_label).height();
-            }
-            if (this.refs.game_action_buttons) {
-                max_h -= $(this.refs.game_action_buttons).height();
-            }
-            let ad_class = this.getAdClass();
-            switch (ad_class) {
-                case 'mobile-banner':
-                    max_h -= 50;
-                    break;
-                case 'goban-banner':
-                case 'outer-banner':
-                    max_h -= 90;
-                    break;
-            }
-            w = Math.min(w, max_h);
-            */
-
-            if (this.refs.goban_container.style.minHeight !== `${w}px`) {
-                this.refs.goban_container.style.minHeight = `${w}px`;
+            if (this.ref_goban_container.style.minHeight !== `${w}px`) {
+                this.ref_goban_container.style.minHeight = `${w}px`;
             }
         } else {
-            if (this.refs.goban_container.style.minHeight !== `initial`) {
-                this.refs.goban_container.style.minHeight = `initial`;
+            if (this.ref_goban_container.style.minHeight !== `initial`) {
+                this.ref_goban_container.style.minHeight = `initial`;
             }
-            let w = this.refs.goban_container.offsetWidth;
-            if (this.refs.goban_container.style.flexBasis !== `${w}px`) {
-                this.refs.goban_container.style.flexBasis = `${w}px`;
+            let w = this.ref_goban_container.offsetWidth;
+            if (this.ref_goban_container.style.flexBasis !== `${w}px`) {
+                this.ref_goban_container.style.flexBasis = `${w}px`;
             }
         }
 
@@ -800,7 +715,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
+            Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight)
         );
 
         this.recenterGoban();
@@ -833,11 +748,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }}}
     setLabelHandler = (event) => {{{
-        if (document.activeElement.tagName === "INPUT" ||
-            document.activeElement.tagName === "TEXTAREA" ||
-            document.activeElement.tagName === "SELECT"
-        ) {
-            return;
+        try {
+            if (document.activeElement.tagName === "INPUT" ||
+                document.activeElement.tagName === "TEXTAREA" ||
+                document.activeElement.tagName === "SELECT"
+            ) {
+                return;
+            }
+        } catch (e) {
         }
 
         if (this.goban && this.goban.mode === "analyze") {
@@ -858,33 +776,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     computeSquashed(): boolean {{{
         return win.height() < 680;
-    }}}
-    getAdClass(): AdClass {{{
-        let show_ad = should_show_ads() && preferences.get("show-ads-on-game-page");
-
-        if (!show_ad) {
-            return "no-ads";
-        }
-
-        if (this.ad_class) {
-            return this.ad_class;
-        }
-
-        let w = win.width() || 1;
-        let h = win.height() || 1;
-
-        if (w >= 1280) {
-            if (w - (300 + 400) > h - 90) { // 300 for left block, 400 for right col
-                return this.ad_class = 'block';
-            }
-        }
-        if (w <= 728) {
-            return this.ad_class = 'mobile-banner';
-        }
-        if (w - 400 >= 728) {
-            return this.ad_class = 'goban-banner';
-        }
-        return this.ad_class = 'outer-banner';
     }}}
     toggleCoordinates() {{{
         let goban = this.goban;
@@ -1000,8 +891,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         this.chat_update_debounce = setTimeout(() => {
             this.chat_update_debounce = null;
-            if (this.refs.chat) {
-                this.refs.chat.forceUpdate();
+            if (this.ref_chat) {
+                this.ref_chat.forceUpdate();
             }
         }, 1);
     }}}
@@ -1067,10 +958,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (!data.get("user").anonymous) {
-            goban.sendChat(analysis, this.refs.chat.state.chat_log);
+            goban.sendChat(analysis, this.ref_chat.state.chat_log);
             this.last_analysis_sent = analysis;
         } else {
-            goban.message("Can't send to the " + this.refs.chat.state.chat_log  + " chat_log");
+            goban.message("Can't send to the " + this.ref_chat.state.chat_log  + " chat_log");
         }
     }}}
     openACL = () => {{{
@@ -1080,8 +971,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     popupScores(color) {{{
         let goban = this.goban;
 
-        this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
-        goban.engine.cur_move.clearMarks();
+        if (goban.engine.cur_move) {
+            this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            goban.engine.cur_move.clearMarks();
+        } else {
+            this.orig_marks = null;
+        }
 
         let only_prisoners = false;
         let scores = goban.engine.computeScore(only_prisoners);
@@ -1130,7 +1025,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (!this.showing_scores) {
             goban.hideScores();
         }
-        goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        if (goban.engine.cur_move) {
+            goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        }
         goban.redraw();
         $("#" + color + "-score-details").children().remove();
     }}}
@@ -1585,9 +1482,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         })
         .catch(() => 0);
     }}}
-    handleMoveTreeResize(_w, _h) {{{
-        console.log("TODO: handleMoveTreeResize");
-    }}}
     setChatLog = (chat_log) => {{{
         this.setState({chat_log: chat_log});
     }}}
@@ -1643,46 +1537,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     render() {{{
-        const CHAT = <GameChat ref="chat" chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
+        const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
         const review = !!this.review_id;
 
-        let ad_class = this.getAdClass();
-        let FLEX_AD = null;
-        switch (ad_class) {
-            case 'no-ads':
-                FLEX_AD = null;
-                break;
-
-            case 'block':
-                FLEX_AD = <AdUnit unit='cdm-zone-02' />;
-                break;
-
-            default:
-                FLEX_AD = <AdUnit unit='cdm-zone-01' />;
-        }
-
         return (
-            <div className={(ad_class === 'outer-banner' || ad_class === 'mobile-banner') ? ad_class : ''}>
-             {((ad_class === 'outer-banner' || ad_class === 'mobile-banner') || null) && FLEX_AD}
+            <div>
              <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
-
-                <div className={"left-col " + (ad_class === 'block' ? 'block' : 'no-ads')}>
-                    {(ad_class === "block" || null) && FLEX_AD}
+                <div className="left-col">
                 </div>
 
-
                 <div className="center-col">
-                    {(ad_class === 'goban-banner' || null) && FLEX_AD}
-
                     {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
-                        <div ref="goban_container" className="goban-container">
+                        <div ref={el => this.ref_goban_container = el} className="goban-container">
                             <PersistentElement className="Goban" elt={this.goban_div}/>
                         </div>
                     }
@@ -1743,7 +1616,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {/*
                         <div className='filler'/>
                         */}
-                        {(this.state.view_mode === "square" || null) && FLEX_AD}
                         {(this.state.view_mode === "wide" || null) && CHAT}
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
@@ -1809,8 +1681,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div ref='play_controls' className="play-controls">
-                <div ref='game_action_buttons' className="game-action-buttons">{/* {{{ */}
+            <div className="play-controls">
+                <div ref={el => this.ref_game_action_buttons = el} className="game-action-buttons">{/* {{{ */}
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
                     }
@@ -1836,7 +1708,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
                 {/* }}} */}
-               <div ref='game_state_label' className="game-state">{/*{{{*/}
+               <div ref={el => this.ref_game_state_label = el} className="game-state">{/*{{{*/}
                     {(state.mode === "play" && state.phase === "play" || null) &&
                         <span>
                             {state.show_undo_requested
@@ -2041,7 +1913,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <div>
                         {this.frag_analyze_button_bar()}
 
-                        <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                        <Resizable id="move-tree-container" className="vertically-resizable">
                             <canvas id="move-tree-canvas"></canvas>
                         </Resizable>
 
@@ -2082,8 +1954,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div ref='play_controls' className="play-controls">
-                <div ref='game_state_label' className="game-state">
+            <div className="play-controls">
+                <div ref={el => this.ref_game_state_label = el} className="game-state">
                     {_("Review by")}: <Player user={this.state.review_owner_id} />
                     {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
                         <div>
@@ -2104,7 +1976,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         }
                     </div>
 
-                    <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                    <Resizable id="move-tree-container" className="vertically-resizable">
                         <canvas id="move-tree-canvas"></canvas>
                     </Resizable>
 
@@ -2246,7 +2118,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         return (
-            <div ref="players" className="players">
+            <div ref={el => this.ref_players = el} className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
                   if (this.state[`historical_${color}`]) {
@@ -2318,7 +2190,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "dock") {
             return (
-                <div ref='action_bar' className="action-bar">
+                <div ref={el => this.ref_action_bar = el} className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={"tab-icon ogs-goban"} />
                     </span>
@@ -2328,7 +2200,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "chat") {
             return (
-                <div ref='action_bar' className="action-bar">
+                <div ref={el => this.ref_action_bar = el} className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={/*'tab-icon fa fa-list-ul'*/"tab-icon ogs-goban"} />
                     </span>
@@ -2337,7 +2209,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div ref='action_bar' className="action-bar">
+            <div ref={el => this.ref_action_bar = el} className="action-bar">
                 <span className="icons" />{/* for flex centering */}
                 <span className="controls">
                     <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
@@ -2620,9 +2492,7 @@ export class CountDown extends React.PureComponent<{to:Date}, any> { /* {{{ */
 
 /* Chat {{{ */
 export class GameChat extends React.PureComponent<GameChatProperties, any> {
-    refs: {
-        chat_log;
-    };
+    ref_chat_log;
 
     scrolled_to_bottom: boolean = true;
 
@@ -2657,19 +2527,19 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }}}
 
     updateScrollPosition() {{{
-        let tf = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
+        let tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
-            this.refs.chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
+            this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-        this.scrolled_to_bottom = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
+        this.scrolled_to_bottom = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
     }}}
     autoscroll() {{{
         if (this.scrolled_to_bottom) {
-            this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+            this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
             setTimeout(() => {
-                if (this.refs && this.refs.chat_log) {
-                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+                if (this.ref_chat_log) {
+                    this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
                 }
             }, 100);
         }
@@ -2698,7 +2568,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             <div className="chat-container">
                 <div className={"log-player-container" + (this.state.show_player_list ? " show-player-list" : "")}>
                     <div className="chat-log-container">
-                        <div ref="chat_log" className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
+                        <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
                             {this.props.chatlog.filter(this.chat_log_filter).map((line, idx) => {
                                 //console.log(">>>" ,line.chat_id)
                                 let ll = last_line;
@@ -2746,7 +2616,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
 
 function parsePosition(position: string) {{{
-    if (!active_game_view) { return; }
+    if (!active_game_view || !position) {
+        return {
+            i: -1,
+            j: -1
+        };
+    }
     let goban = active_game_view.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
@@ -2759,7 +2634,7 @@ function parsePosition(position: string) {{{
         i = -1;
         j = -1;
     }
-    return {"i": i, "j": j};
+    return {i: i, j: j};
 }}}
 function highlight_position(event) {{{
     if (!active_game_view) { return; }
@@ -2880,8 +2755,12 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 let moves = body.moves;
 
                                 orig_move = goban.engine.cur_move;
-                                orig_marks = orig_move.marks;
-                                orig_move.clearMarks();
+                                if (orig_move) {
+                                    orig_marks = orig_move.marks;
+                                    orig_move.clearMarks();
+                                } else {
+                                    orig_marks = null;
+                                }
                                 goban.engine.followPath(parseInt(turn), moves);
 
                                 if (body.marks) {

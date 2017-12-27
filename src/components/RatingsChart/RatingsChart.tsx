@@ -22,7 +22,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
@@ -59,7 +59,7 @@ const win_loss_bars_height = 65;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-export class RatingsChart extends React.PureComponent<RatingsChartProperties, any> {
+export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     container;
     chart_div;
     svg;
@@ -562,14 +562,15 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
         this.range_label.attr('transform', 'translate(' + width + ', 0)');
         this.x_axis_date_labels.attr('transform', 'translate(0 ,' + height + ')');
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
-        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 5) + ', 0)');
+        this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 10) + ', 0)');
 
         //this.verticalCrosshairLine.attr('y1', height);
         this.helper.attr('transform', 'translate(' + width + ', 0)');
         this.horizontalCrosshairLine.attr('x1', width);
         this.mouseArea.attr('width', width);
         this.mouseArea.attr('height', height);
-        this.timeline_axis_labels .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
+        this.timeline_axis_labels.attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
+        this.timeline_axis_labels.call(this.timeline_axis);
         this.brush.extent([[0, 0], [width, secondary_charts_height]]);
 
         let graph_right_side = this.graph_width + margin.left + margin.right;
@@ -675,7 +676,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
     loadDataAndPlot = (err, data) => {{{
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
-        if (data.length === 1) {
+        if (!data || data.length === 1) {
             this.setState({
                 loading: false,
                 nodata: true,
@@ -687,7 +688,7 @@ export class RatingsChart extends React.PureComponent<RatingsChartProperties, an
             });
         }
 
-        this.game_entries = data;
+        this.game_entries = data || [];
         this.game_entries.reverse();
 
         /* Group into days and process information like starting/ended rating/rank, increase/decrease, etc */

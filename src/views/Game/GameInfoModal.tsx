@@ -70,7 +70,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
               </div>
               <div className="body">
                 <dl className="horizontal">
-                    <dt>{_("engine")}</dt><dd>{engine.config.game_name}</dd>
+                    <dt>{_("Game")}</dt><dd>{engine.config.game_name}</dd>
                     {this.props.creatorId && <dt>{_("Creator")}</dt>}
                     {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
                     <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={this.props.black} /></dd>

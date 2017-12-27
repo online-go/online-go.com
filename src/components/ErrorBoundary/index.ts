@@ -16,4 +16,4 @@
  */
 
 
-export * from "./AdUnit";
+export * from "./ErrorBoundary";

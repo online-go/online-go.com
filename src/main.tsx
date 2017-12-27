@@ -33,7 +33,9 @@ data.setDefault("config", {
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Router, Route, IndexRoute, browserHistory } from "react-router";
+import { browserHistory } from './ogsHistory';
+import { routes } from "./routes";
+
 //import {Promise} from "es6-promise";
 import {get} from "requests";
 import {errorAlerter} from "misc";
@@ -44,40 +46,10 @@ import {init_tabcomplete} from "tabcomplete";
 import * as player_cache from "player_cache";
 import {toast} from 'toast';
 
-import {NavBar} from "NavBar";
-import {Announcements} from "Announcements";
-import {SignIn} from "SignIn";
-import {Register} from "Register";
-import {Overview} from "Overview";
-import {Admin} from "Admin";
-import {ChatView} from "ChatView";
-import {Developer} from "Developer";
-import {Game} from "Game";
-import {Group} from "Group";
-import {GroupCreate} from "GroupCreate";
-import {GroupList} from "GroupList";
-import {Ladder} from "Ladder";
-import {LadderList} from "LadderList";
-import {LeaderBoard} from "LeaderBoard";
-import {LibraryPlayer} from "LibraryPlayer";
-import {Play} from "Play";
-import {Moderator} from "Moderator";
-import {ObserveGames} from "ObserveGames";
-import {Puzzle} from "Puzzle";
-import {PuzzleList} from "PuzzleList";
-import {Supporter} from "Supporter";
-import {Tournament} from "Tournament";
-import {TournamentListMainView} from "TournamentList";
-import {Tutorial} from "Tutorial";
-import {User, UserByName} from "User";
-import {Settings} from "Settings";
-import {Styling} from "Styling";
-import {AnnouncementCenter} from "AnnouncementCenter";
-import {VerifyEmail} from "VerifyEmail";
-import * as docs from "docs";
 import "debug";
 
 declare const swal;
+declare const Raven;
 
 
 /*** Load our config ***/
@@ -88,6 +60,15 @@ data.watch("config", (config) => {
 });
 get("ui/config").then((config) => data.set("config", config));
 data.watch("config.user", (user) => {
+    try {
+        Raven.setUserContext({
+            'id': user.id,
+            'username': user.username,
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
     player_cache.update(user);
     data.set("user", user);
     window["user"] = user;
@@ -122,15 +103,6 @@ try {
     );
 }
 
-
-/*** Layout our main view and routes ***/
-const Main = props => (<div><NavBar/><Announcements/>{props.children}</div>);
-const PageNotFound = () => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
-const Default = () => (
-    data.get("config.user").anonymous
-        ?  <ObserveGames/>
-        :  <Overview/>
-);
 
 /** Connect to the chat service */
 let auth_connect_fn = () => {return; };
@@ -173,6 +145,9 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 
 /*** Google analytics ***/
 declare var ga;
+
+
+/* ga history hook  */
 browserHistory.listen(location => {
     try {
         let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
@@ -210,96 +185,5 @@ browserHistory.listen(location => {
 /*** Some finial initializations ***/
 init_tabcomplete();
 
-
-const routes = (
-<Router history={browserHistory}>
-    <Route path="/" component={Main}>
-        <IndexRoute component={Default}/>
-        <Route path="/sign-in" component={SignIn}/>
-        <Route path="/register" component={Register}/>
-        <Route path="/overview" component={Overview}/>
-
-        <Route path="/play" component={Play}/>
-        <Route path="/chat" component={ChatView}/>
-        <Route path="/observe-games" component={ObserveGames}/>
-        <Route path="/game/:game_id" component={Game}/>
-        <Route path="/game/view/:game_id" component={Game}/>
-        <Route path="/review/:review_id" component={Game}/>
-        <Route path="/review/view/:review_id" component={Game}/>
-        <Route path="/demo/:review_id" component={Game}/>
-        <Route path="/demo/view/:review_id" component={Game}/>
-
-        <Route path="/player/:user_id" component={User}/>
-        <Route path="/player/:user_id/*" component={User}/>
-        <Route path="/player/:user_id/**/*" component={User}/>
-        <Route path="/player/settings" component={Settings}/>
-        <Route path="/player/supporter" component={Supporter}/>
-
-        <Route path="/user/view/:user_id" component={User}/>
-        <Route path="/user/view/:user_id/*" component={User}/>
-        <Route path="/user/view/:user_id/**/*" component={User}/>
-        <Route path="/settings" component={Settings}/>
-        <Route path="/user/settings" component={Settings}/>
-        <Route path="/user/supporter" component={Supporter}/>
-        <Route path="/user/verifyEmail" component={VerifyEmail}/>
-        <Route path="/u/:username" component={UserByName}/>
-        <Route path="/user/:username" component={UserByName}/>
-
-        <Route path="/supporter" component={Supporter}/>
-        <Route path="/support" component={Supporter}/>
-        <Route path="/donate" component={Supporter}/>
-
-        {/*
-        <Route path="/library" component={Library}/>
-        <Route path="/library/game-history" component={LibraryGameHistory}/>
-        */}
-        <Route path="/library/:player_id/:collection_id" component={LibraryPlayer}/>
-        <Route path="/library/:player_id" component={LibraryPlayer}/>
-        <Route path="/groups" component={GroupList}/>
-        <Route path="/group/create" component={GroupCreate}/>
-        <Route path="/group/:group_id" component={Group}/>
-        <Route path="/tournament/new/:group_id" component={Tournament}/>
-        <Route path="/tournament/new" component={Tournament}/>
-        <Route path="/tournament/:tournament_id" component={Tournament}/>
-        <Route path="/tournaments/:tournament_id" component={Tournament}/>
-        <Route path="/tournaments" component={TournamentListMainView}/>
-        <Route path="/tournaments/" component={TournamentListMainView}/>
-        <Route path="/ladders" component={LadderList}/>
-        <Route path="/ladder/:ladder_id" component={Ladder}/>
-        <Route path="/puzzles" component={PuzzleList}/>
-        <Route path="/puzzle/:puzzle_id" component={Puzzle}/>
-        <Route path="/leaderboards" component={LeaderBoard}/>
-        <Route path="/leaderboard" component={LeaderBoard}/>
-        <Route path="/developer" component={Developer}/>
-        <Route path="/admin" component={Admin}/>
-        <Route path="/announcement-center" component={AnnouncementCenter}/>
-        {/*
-        <Route path="/admin/tournament-scheduler/:schedule_id" component={TournamentModify}/>
-        <Route path="/admin/tournament-schedule-list" component={AdminTournamentScheduleList}/>
-        */}
-        <Route path="/moderator" component={Moderator}/>
-        <Route path="/learn-to-play-go/:step" component={Tutorial}/>
-        <Route path="/learn-to-play-go" component={Tutorial}/>
-        <Route path="/docs/learn-to-play-go/:step" component={Tutorial}/>
-        <Route path="/docs/learn-to-play-go" component={Tutorial}/>
-
-        <Route path="/styling" component={Styling}/>
-
-
-        <Route path="/docs/about" component={docs.About}/>
-        <Route path="/docs/privacy-policy" component={docs.PrivacyPolicy}/>
-        <Route path="/docs/terms-of-service" component={docs.TermsOfService}/>
-        <Route path="/docs/contact-information" component={docs.ContactInformation}/>
-        <Route path="/docs/refund-policy" component={docs.RefundPolicy}/>
-
-        <Route path="/docs/go-rules-comparison-matrix" component={docs.RulesMatrix}/>
-        <Route path="/docs/changelog" component={docs.ChangeLog}/>
-        <Route path="/docs/team" component={docs.Team}/>
-        <Route path="/docs/other-go-resources" component={docs.GoResources}/>
-
-        <Route path="/*" component={PageNotFound}/>
-    </Route>
-</Router>);
-
+/* Initialization done, render!! */
 ReactDOM.render(routes, document.getElementById("main-content"));
-

@@ -1,28 +1,21 @@
 language: node_js
 
 node_js:
-  - 7.6
+  - 8.9
 
 env:
   - PRODUCTION=true
 
 build:
-  pre_ci_boot:
-    image_name: kkarczmarczyk/node-yarn
-    image_tag: 7.6
-    pull: false
-
-  pre_ci:
-    - echo "Pre CI"
-
   ci:
     - shippable_retry node_modules/.bin/yarn install
     - node_modules/.bin/gulp min_styl
-    - node_modules/.bin/tslint --type-check --project tsconfig.json 
-    - node_modules/.bin/webpack --optimize-minimize --devtool=source-map --display-modules --output-filename 'ogs.min.js'
+    - node_modules/.bin/tslint --project tsconfig.json 
+    - node_modules/.bin/webpack --optimize-minimize --devtool=source-map
 
   post_ci:
     - gzip -9 dist/ogs.min.js | wc -c
+    - gzip -9 dist/vendor.min.js | wc -c
     - gzip -9 dist/ogs.min.css | wc -c
 
   cache: true
