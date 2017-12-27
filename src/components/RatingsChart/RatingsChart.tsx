@@ -550,7 +550,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.svg.attr('width', this.width + margin.left + margin.right);
         this.svg.attr('height', height + margin.top + margin.bottom + 60);
-        //this.clip.attr('width', width);
+        this.clip.attr('width', width);
         //this.clip.attr('height', height);
 
         this.legend.attr('width', width);
