@@ -111,7 +111,8 @@ export let GoResources = (props) => {
                 <span><Flag country={un}/> <a href="http://www.playgo.to/iwtg/">The Interactive Way To Go</a></span>,
                 <span><Flag country={en}/> <a href="http://www.josekipedia.com/">Josekipedia</a></span>,
                 <span><Flag country={en}/> <a href="http://eidogo.com/#search">Eidogo's Pattern Search</a></span>,
-                <span><Flag country={en}/> <a href="http://ps.waltheri.net/">Waltheri's Pattern Search</a></span>
+                <span><Flag country={en}/> <a href="http://ps.waltheri.net/">Waltheri's Pattern Search</a></span>,
+                <span><Flag country={en}/> <a href="https://alphagoteach.deepmind.com/">AlphaGo Teaching Tool</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
@@ -154,7 +155,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="https://www.youtube.com/user/apetresc">Adrian Petrescu</a></span>,
                 <span><Flag country={en}/> <a href="https://www.youtube.com/user/longstridebaduk">LongstrideBaduk</a></span>,
                 <span><Flag country={es}/> <a href="https://www.youtube.com/user/EscueladeGodeBilbao">EscueladeGodeBilbao</a></span>,
-                <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">In Sente</a></span>
+                <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">In Sente</a></span>,
+                <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
