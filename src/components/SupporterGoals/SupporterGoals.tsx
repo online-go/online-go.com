@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
+import {_, interpolate} from "translate";
 import {Link} from "react-router-dom";
 import * as data from "data";
 
@@ -45,35 +45,37 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
             return null;
         }
 
-
-        let adfree_done = goals.adfree * 50;
-        let adfree_left = (1.0 - goals.adfree) * 50;
-        let loc1_done = goals.loc1 * 35;
-        let loc1_left = (1.0 - goals.loc1) * 35;
-        let loc2_done = goals.loc2 * 15;
-        let loc2_left = (1.0 - goals.loc2) * 15;
-
-        let loc1_text = _("Asia") + ` (${(goals.loc1 * 100.0).toFixed(1)}%)`;
-        //let loc2_text = _("Europe") + ` (${(goals.loc2 * 100.0).toFixed(1)}%)`;
-        //let loc1_text = _("Asia") + ;
-        let loc2_text = _("Europe");
+        let adfree_done = Math.min(100, goals.adfree * 100);
+        let adfree_left = (1.0 - goals.adfree) * 100;
+        let aprx_supporters_needed = Math.max(0, Math.round((1.0 - goals.adfree) * 960));
 
         return (
             <div id='SupporterGoalsContainer'>
                 <div id='SupporterGoalText'>
-                    <Link to='/user/supporter'>{_("Thanks to our supporters, we have met our first goal of being able to be completely ad free! Our two remaining financial goals are to be able to afford servers in Asia and Europe, which will greatly improve service around the world. Please consider chipping in!")} :)</Link>
+                    <Link to='/user/supporter'>{_("By supporting OGS you keep us ad free for everyone and fuel our development efforts. If you see a site supporter, tell them thanks! If you'd like to help chip in and become one, click this link, and thanks in advance!")} :)</Link>
                 </div>
 
                 <div id='SupporterGoals'>
                     <div className="progress">
-                        <div className={`progress-bar ${goals.adfree >= 1 ? 'success' : 'primary'}`} style={{width: `${adfree_done}%`}}>Ad Free OGS! ({(goals.adfree * 100.0).toFixed(1)}%)</div>
+                        <div className={`progress-bar ${goals.adfree >= 1 ? 'success' : 'primary'}`} style={{width: `${adfree_done}%`}}>
+                            {interpolate(_("Ad Free OGS! ({{percentage}}%)"), { 'percentage': (goals.adfree * 100.0).toFixed(1) })}
+                        </div>
                         {goals.adfree < 1 && <div className={`progress-bar default`} style={{width: `${adfree_left}%`}}>&nbsp;</div>}
-                        <div className={`progress-bar ${goals.loc1 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc1_done}%`}}>{goals.loc1 > 0.5 ? loc1_text : <span>&nbsp;</span>}</div>
-                        {goals.loc1 < 1 && <div className={`progress-bar default`} style={{width: `${loc1_left}%`}}>{goals.loc1 <= 0.5 ? loc1_text : <span>&nbsp;</span>}</div> }
-                        <div className={`progress-bar ${goals.loc2 >= 1 ? 'success' : 'primary'}`} style={{width: `${loc2_done}%`}}>{goals.loc2 > 0.5 ? loc2_text : <span>&nbsp;</span>}</div>
-                        {goals.loc2 < 1 && <div className={`progress-bar info`} style={{width: `${loc2_left}%`}}>{goals.loc2 <= 0.5 ? loc2_text :  <span>&nbsp;</span>}</div> }
                     </div>
                 </div>
+
+                <div id='SupporterCountLeftText'>
+                    { aprx_supporters_needed > 0 ?
+                        <Link to='/user/supporter'>{
+                            interpolate(_("Only ~{{supporters_needed}} more site supporters needed for our goal!"), {supporters_needed: aprx_supporters_needed})
+                        }</Link>
+                        :
+                        <Link to='/user/supporter'>{
+                            _("Thanks a ton to all of our site supporters that made this happen!")
+                        }</Link>
+                    }
+                </div>
+
             </div>
         );
     }
