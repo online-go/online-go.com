@@ -36,7 +36,8 @@ function sanitize(src) {
             '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height']
         },
         transformTags: {
-            'script': 'error'
+            'script': 'error',
+            'iframe': 'error'
         }
     });
 }
