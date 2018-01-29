@@ -59,6 +59,7 @@ export let GoResources = (props) => {
     let au = getLanguageFlag("au", country, "au");
     let ca = getLanguageFlag("ca", country, "ca");
     let ru = getLanguageFlag("ru", country, "ru");
+    let ar = getLanguageFlag("spanish", country, "ar");
 
 
     return (
@@ -156,7 +157,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a href="https://www.youtube.com/user/longstridebaduk">LongstrideBaduk</a></span>,
                 <span><Flag country={es}/> <a href="https://www.youtube.com/user/EscueladeGodeBilbao">EscueladeGodeBilbao</a></span>,
                 <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">In Sente</a></span>,
-                <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>
+                <span><Flag country={en}/> <a href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>,
+                <span><Flag country={ar}/> <a href="https://www.youtube.com/user/lucho4668 ">Luciano Zinni</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
