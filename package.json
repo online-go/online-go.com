@@ -5,7 +5,8 @@
   "license": "AGPL-3.0",
   "private": true,
   "scripts": {
-    "dev": "gulp"
+    "dev": "gulp",
+    "webpack": "webpack"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.1",
