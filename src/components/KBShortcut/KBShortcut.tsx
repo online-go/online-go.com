@@ -154,7 +154,8 @@ $(() => {
         try {
             if (document.activeElement.tagName === "INPUT" ||
                 document.activeElement.tagName === "TEXTAREA" ||
-                document.activeElement.tagName === "SELECT") {
+                document.activeElement.tagName === "SELECT" ||
+                document.activeElement.className === "qc-option") {
 
                 if (!(e.keyCode in input_enabled_keys)) {
                     return true;
