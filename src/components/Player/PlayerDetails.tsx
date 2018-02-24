@@ -227,7 +227,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         }
                         {rating && !rating.professional &&
                             <div>
-                                <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                                <span className="rank">{rating.partial_bounded_rank_label}</span>
                             </div>
                         }
                     </div>
