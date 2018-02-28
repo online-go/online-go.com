@@ -2685,14 +2685,13 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             if (user.qc_phrases === undefined) {
                 let qc_local = localStorage.getItem("ogs.qc.messages");
                 if (qc_local === null) {
-                    let qc_messages: string[] = [
-                        "Hi",
-                        "Have fun",
-                        "Sorry - misclick",
-                        "Good game",
-                        "Thanks for the game"
+                    user.qc_phrases = [
+                        _("Hi") + ".",
+                        _("Have fun") + ".",
+                        _("Sorry - misclick") + ".",
+                        _("Good game") + ".",
+                        _("Thanks for the game") + "."
                     ];
-                    user.qc_phrases = qc_messages.map((msg) => {return _(msg); });
                     localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
                 }
                 else {
@@ -2717,7 +2716,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         {
                         this.state.qc_editing
                         ? msg
-                        : (<a onClick={() => {this.sendQuickChat(msg + "."); }} >{msg + "."}</a>)
+                        : (<a onClick={() => {this.sendQuickChat(msg); }} >{msg}</a>)
                         }
                     </li>
             );
