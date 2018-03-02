@@ -68,6 +68,7 @@ export class Settings extends React.PureComponent<{}, any> {
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
             always_disable_analysis: preferences.get("always-disable-analysis"),
+            show_offline_friends: preferences.get("show-offline-friends"),
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
@@ -250,6 +251,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setAlwaysDisableAnalysis = (ev) => {{{
         preferences.set("always-disable-analysis", ev.target.checked),
         this.setState({always_disable_analysis: preferences.get("always-disable-analysis")});
+    }}}
+    setShowOfflineFriends = (ev) => {{{
+        preferences.set("show-offline-friends", ev.target.checked),
+        this.setState({show_offline_friends: preferences.get("show-offline-friends")});
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
@@ -468,6 +473,10 @@ export class Settings extends React.PureComponent<{}, any> {
                                     {_("Desktop notifications are not supported by your browser")}
                                     </i></div>
                                 }
+                            </dd>
+                            <dt><label htmlFor="show-offline-friends">{_("Show offline friends on list")}</label></dt>
+                            <dd>
+                                <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onChange={this.setShowOfflineFriends} />
                             </dd>
 
                             {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}

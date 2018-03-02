@@ -20,6 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
 import online_status from "online_status";
 import * as data from "data";
+import * as preferences from "preferences";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 
@@ -35,6 +36,7 @@ export class FriendList extends React.PureComponent<{}, any> {
         super(props);
         this.state = {
             friends: [],
+            show_offline_friends: preferences.get("show-offline-friends"),
             resolved: false
         };
     }
@@ -80,7 +82,7 @@ export class FriendList extends React.PureComponent<{}, any> {
 
         return (
             <div className="FriendList">
-                {this.state.friends.map((friend) => (
+                {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
                     <div key={friend.id} >
                         <Player user={friend} online rank noextracontrols />
                     </div>
