@@ -61,6 +61,7 @@ function build_styl(done) {
           sourcemaps.init(),
           stylus({
               compress: false,
+              'include css': true,
           }),
           postcss([
               autoprefixer({
@@ -93,6 +94,7 @@ function min_styl(done) {
           sourcemaps.init(),
           stylus({
               compress: false,
+              'include css': true,
           }),
           postcss([
               autoprefixer({
