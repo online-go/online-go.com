@@ -2493,6 +2493,7 @@ export class CountDown extends React.PureComponent<{to:Date}, any> { /* {{{ */
 /* Chat {{{ */
 export class GameChat extends React.PureComponent<GameChatProperties, any> {
     ref_chat_log;
+    qc_editableMsgs = null;
 
     scrolled_to_bottom: boolean = true;
 
@@ -2501,9 +2502,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.state = {
             chat_log: "main",
             show_player_list: false,
+            qc_visible: false,
+            qc_editing: false,
         };
         this.chat_log_filter = this.chat_log_filter.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
+        this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
     } /* }}} */
 
@@ -2512,11 +2516,21 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }}}
     onKeyPress(event) {{{
         if (event.charCode === 13) {
-            let input = event.target as HTMLInputElement;
-            this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
-            input.value = "";
-            return false;
+            if (event.target.className === "qc-option") {
+                this.saveEdit();
+                event.preventDefault();
+            }
+            else {
+                let input = event.target as HTMLInputElement;
+                this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
+                input.value = "";
+                return false;
+            }
         }
+    }}}
+
+    onFocus(event) {{{
+        this.hideQCOptions();
     }}}
 
     componentDidMount() {{{
@@ -2524,6 +2538,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }}}
     componentDidUpdate() {{{
         this.autoscroll();
+        if (this.qc_editableMsgs !== null && this.qc_editableMsgs[0] !== null) {
+            this.qc_editableMsgs[0].focus();
+        }
     }}}
 
     updateScrollPosition() {{{
@@ -2547,7 +2564,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     toggleChatLog = () => {{{
         let new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
         this.setState({
-            chat_log: new_chat_log
+            chat_log: new_chat_log,
+            qc_visible: false,
+            qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
     }}}
@@ -2557,6 +2576,46 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         });
     }}}
     togglePlayerListSortOrder = () => {{{
+    }}}
+
+    sendQuickChat = (msg: string) => {{{
+        this.props.gameview.goban.sendChat(msg, this.state.chat_log);
+        this.hideQCOptions();
+    }}}
+
+    showQCOptions = () => {{{
+        this.setState({
+            qc_visible: true
+        });
+    }}}
+
+    hideQCOptions = () => {{{
+        this.setState({
+            qc_visible: false,
+            qc_editing: false
+        });
+    }}}
+
+    startEdit = () => {{{
+        this.setState({
+            qc_editing: true
+        });
+    }}}
+
+    saveEdit = () => {{{
+        let user = data.get("user");
+        this.qc_editableMsgs.map((li, index) => {
+            user.qc_phrases[index] = li.innerHTML;
+        });
+        localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
+        this.finishEdit();
+    }}}
+
+    finishEdit = () => {{{
+        this.qc_editableMsgs = null;
+        this.setState({
+            qc_editing: false
+        });
     }}}
 
     render() {{{
@@ -2582,6 +2641,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         <ChatUserList channel={channel} />
                     }
                 </div>
+                {this.renderQC(user)}
                 <div className="chat-input-container input-group">
                     {((this.props.userIsPlayer && data.get('user').email_validated) || null) &&
                         <button
@@ -2602,7 +2662,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                                   )
                         }
                         onKeyPress={this.onKeyPress}
+                        onFocus={this.onFocus}
                     />
+                    {this.props.userIsPlayer && user.email_validated && this.props.gameview.game_id && this.state.chat_log === "main"
+                        ? <i className={"qc-toggle fa " + (this.state.qc_visible ? "fa-caret-down" : "fa-caret-up")} onClick={this.state.qc_visible ? this.hideQCOptions : this.showQCOptions}/>
+                        : null
+                    }
                     <ChatUserCount
                         chat={this}
                         active={this.state.show_player_list}
@@ -2611,6 +2676,66 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 </div>
             </div>
         );
+    }}}
+
+    renderQC = (user) => {{{
+        let quick_chat: JSX.Element = null;
+
+        if (this.state.qc_visible) {
+            if (user.qc_phrases === undefined) {
+                let qc_local = localStorage.getItem("ogs.qc.messages");
+                if (qc_local === null) {
+                    user.qc_phrases = [
+                        _("Hi") + ".",
+                        _("Have fun") + ".",
+                        _("Sorry - misclick") + ".",
+                        _("Good game") + ".",
+                        _("Thanks for the game") + "."
+                    ];
+                    localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
+                }
+                else {
+                    user.qc_phrases = JSON.parse(qc_local);
+                }
+            }
+
+            let lis = user.qc_phrases.map((msg, index) =>
+                    <li
+                        className="qc-option"
+                        key={index}
+                        contentEditable={this.state.qc_editing}
+                        onKeyPress={this.onKeyPress}
+                        ref={this.state.qc_editing
+                            ? (input) => {
+                                this.qc_editableMsgs = (index === 0 ? [] : this.qc_editableMsgs);
+                                this.qc_editableMsgs.push(input);
+                                }
+                            : null
+                        }
+                    >
+                        {
+                        this.state.qc_editing
+                        ? msg
+                        : (<a onClick={() => {this.sendQuickChat(msg); }} >{msg}</a>)
+                        }
+                    </li>
+            );
+
+            quick_chat =
+            <div className="qc-option-list-container">
+                {this.state.qc_editing
+                    ? (<span className="qc-edit">
+                        <button onClick={() => {this.saveEdit(); }} className='xs edit-button'><i className={"fa fa-save"}/> {_("Save")}</button>
+                        <button onClick={this.finishEdit} className='xs edit-button'><i className={"fa fa-times-circle"}/> {_("Cancel")}</button>
+                        </span>)
+                    : (<span className="qc-edit">
+                        <button onClick={this.startEdit} className='xs edit-button'><i className={"fa fa-pencil"}/> {_("Edit")}</button>
+                        </span>)
+                }
+                <ul>{lis}</ul>
+            </div>;
+        }
+        return quick_chat;
     }}}
 }
 
