@@ -310,23 +310,24 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Software")}</dt>
                 {scramble(
-                <span><i className="fa fa-windows"></i> <a href="http://www.ruijiang.com/multigo/">MultiGo</a></span>,
-                <span><i className="fa fa-windows"></i> <a href="http://www.smart-games.com/manyfaces.html">The Many Faces of Go</a></span>,
-                <span><i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=net.lrstudios.android.tsumego_workshop&hl=en">Tsumego Pro</a></span>,
-                <span><i className="fa fa-apple"></i> <a href="https://itunes.apple.com/app/smartgo-kifu/id364854741?mt=8&ign-mpt=uo%3D4">SmartGo Kifu</a></span>,
-                <span><i className="fa fa-linux"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a href="https://www.gnu.org/software/gnugo/gnugo.html">GNU Go</a></span>,
-                <span><i className="fa fa-linux"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a href="http://pachi.or.cz/">Pachi</a></span>,
-                <span><i className="fa fa-linux"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a href="http://gogui.sourceforge.net/">GoGui</a></span>,
-                <span><i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=net.lrstudios.android.pachi">Pachi for Android</a></span>,
-                <span><i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=nl.tengen.gridmaster">Go GridMaster</a></span>,
-                <span><i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=org.ligi.gobandroid_hd">Gobandroid HD</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=net.gowrite&hl=en">Hactar Go</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-android"></i> <a href="https://play.google.com/store/apps/details?id=lrstudios.games.ego&hl=en">Ely Go</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a href="http://smartgo.com/index.html">SmartGo</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <a href="https://gobooks.com/platforms.html">Go Books</a></span>,
+                <span><i className="fa fa-windows"/> <a href="http://www.ruijiang.com/multigo/">MultiGo</a></span>,
+                <span><i className="fa fa-windows"/> <Flag country={jp}/> <a href="http://www.nihonkiin.or.jp/teach/kiin_editor/">Kiin Editor</a></span>,
+                <span><i className="fa fa-windows"/> <a href="http://www.smart-games.com/manyfaces.html">The Many Faces of Go</a></span>,
+                <span><i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=net.lrstudios.android.tsumego_workshop&hl=en">Tsumego Pro</a></span>,
+                <span><i className="fa fa-apple"/> <a href="https://itunes.apple.com/app/smartgo-kifu/id364854741?mt=8&ign-mpt=uo%3D4">SmartGo Kifu</a></span>,
+                <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a href="https://www.gnu.org/software/gnugo/gnugo.html">GNU Go</a></span>,
+                <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a href="http://pachi.or.cz/">Pachi</a></span>,
+                <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a href="http://gogui.sourceforge.net/">GoGui</a></span>,
+                <span><i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=net.lrstudios.android.pachi">Pachi for Android</a></span>,
+                <span><i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=nl.tengen.gridmaster">Go GridMaster</a></span>,
+                <span><i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=org.ligi.gobandroid_hd">Gobandroid HD</a></span>,
+                <span><i className="fa fa-dollar"/> <i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=net.gowrite&hl=en">Hactar Go</a></span>,
+                <span><i className="fa fa-dollar"/> <i className="fa fa-android"/> <a href="https://play.google.com/store/apps/details?id=lrstudios.games.ego&hl=en">Ely Go</a></span>,
+                <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a href="http://smartgo.com/index.html">SmartGo</a></span>,
+                <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a href="https://gobooks.com/platforms.html">Go Books</a></span>,
                 <span>
                     <i className="fa fa-linux" /> <i className="fa fa-apple" /> <i className="fa fa-windows" /> <a href="https://www.sjeng.org/leela.html">Leela</a></span>,
-                <span><i className="fa fa-dollar"></i> <i className="fa fa-apple"></i> <a href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">EasyGo</a></span>
+                <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">EasyGo</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
