@@ -37,7 +37,8 @@ function sanitize(src) {
         },
         transformTags: {
             'script': 'error',
-            'iframe': 'error'
+            'iframe': 'error',
+            'style': 'error'
         }
     });
 }
