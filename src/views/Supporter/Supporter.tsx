@@ -636,6 +636,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
             <div className="col-sm-5">
                 {this.state.recurring_donations.length > 0 && <h3 style={{textAlign: 'center'}} >{_("Thank you for your support!")}</h3>}
+                {this.state.recurring_donations.length > 0 && <h5 style={{textAlign: 'center'}} >{_("(Note: The supporter goal progress bar can take up to 5 minutes to update)")}</h5>}
 
                 {this.state.recurring_donations.map((recurring_donation, idx) => {
                     let price = recurring_donation.price;
