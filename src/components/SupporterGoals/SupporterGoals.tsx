@@ -53,9 +53,13 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
             return null;
         }
 
+
         return (
             <div id='SupporterGoalsContainer'>
                 <div id='SupporterGoalText'>
+                    {Date.now() < 1522439762553 && /* TODO: DELETE me after 2018-04-01 */
+                        <div><b><Link to='/user/supporter'>One time, Annual, and donations in many currencies are now available!</Link></b></div>
+                    }
                     <Link to='/user/supporter'>{_("By supporting OGS you keep us ad free for everyone and fuel our development efforts. If you see a site supporter, tell them thanks! If you'd like to help chip in and become one, click this link, and thanks in advance!")} :)</Link>
                 </div>
 
