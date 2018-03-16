@@ -285,25 +285,28 @@ nowrap()
 
 
 
-@import "global_styl/mixins.styl";
-@import "global_styl/global.styl";
-@import "global_styl/bootstrap-esq.styl";
-@import "global_styl/misc-ui.styl";
-@import "global_styl/zocial-fixes.styl";
-@import "global_styl/ogs-font.styl";
-@import "lib/ogs-goban/Goban.styl";
-@import "global_styl/swal.styl";
-@import "global_styl/flags16.styl";
-@import "global_styl/flags32.styl";
-@import "global_styl/font-awesome-hacks.styl";
-@import "global_styl/react-datetime.styl";
-@import "global_styl/react-autosuggest.styl";
+@require "global_styl/mixins.styl";
+@require "global_styl/global.styl";
+@require "global_styl/bootstrap-esq.styl";
+@require "global_styl/misc-ui.styl";
+@require "global_styl/zocial-fixes.styl";
+@require "global_styl/ogs-font.styl";
+@require "lib/ogs-goban/Goban.styl";
+@require "global_styl/swal.styl";
+@require "global_styl/flags16.styl";
+@require "global_styl/flags32.styl";
+@require "global_styl/font-awesome-hacks.styl";
+@require "global_styl/react-datetime.styl";
+@require "global_styl/react-autosuggest.styl";
 
-@import "lib/popover.styl";
-@import "lib/toast.styl";
+@require "lib/popover.styl";
+@require "lib/toast.styl";
 
-@import "./components/material/*.styl";
-@import "./components/[A-Z]*/*.styl";
-@import "./views/[A-Z]*/*.styl";
-@import "./views/docs/*.styl";
+@require "./components/material/*.styl";
+@require "./components/[A-Z]*/*.styl";
+@require "./views/[A-Z]*/*.styl";
+@require "./views/docs/*.styl";
+
+
+@require '../node_modules/react-select/dist/react-select.css';
 

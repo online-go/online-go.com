@@ -65,6 +65,9 @@ let defaults = {
     "puzzle.zoom": true,
 
     "board-labeling": 'automatic',
+
+    "supporter.currency": "auto",
+    "supporter.interval": "month",
 };
 
 defaults['profanity-filter'][current_language] = true;

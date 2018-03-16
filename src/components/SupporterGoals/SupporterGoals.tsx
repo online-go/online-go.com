@@ -41,13 +41,17 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
         }
 
         let goals = data.get('config').supporter_goals;
-        if (!goals) {
+        if (!goals || goals.adfree < 0) {
             return null;
         }
 
         let adfree_done = Math.min(100, goals.adfree * 100);
         let adfree_left = (1.0 - goals.adfree) * 100;
-        let aprx_supporters_needed = Math.max(0, Math.round((1.0 - goals.adfree) * 960));
+        let approx_supporters_needed = goals.adfree_approximate_needed;
+
+        if (goals.adfree >= 1.0 && !this.props.alwaysShow) {
+            return null;
+        }
 
         return (
             <div id='SupporterGoalsContainer'>
@@ -65,9 +69,9 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
                 </div>
 
                 <div id='SupporterCountLeftText'>
-                    { aprx_supporters_needed > 0 ?
+                    { approx_supporters_needed > 0 ?
                         <Link to='/user/supporter'>{
-                            interpolate(_("Only ~{{supporters_needed}} more site supporters needed for our goal!"), {supporters_needed: aprx_supporters_needed})
+                            interpolate(_("Only ~{{supporters_needed}} more site supporters needed for our goal!"), {supporters_needed: approx_supporters_needed})
                         }</Link>
                         :
                         <Link to='/user/supporter'>{

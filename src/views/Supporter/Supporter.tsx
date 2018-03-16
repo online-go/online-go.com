@@ -22,33 +22,120 @@ import {errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
+import {PersistentElement} from 'PersistentElement';
 import * as ReactNumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
+import {Flag} from "Flag";
+import Select from 'react-select';
+import * as preferences from "preferences";
 
-
-declare var Braintree;
 declare var swal;
 declare var ogs_release;
+declare var StripeCheckout;
+declare var amex_express_checkout_callback;
+declare var MODE;
 
 interface SupporterProperties {
 }
 
-let amount_steps = [
-    1.0,
-    2.0,
-    3.0,
-    4.0,
-    5.0,
-    7.5,
-    10.0,
-    15.0,
-    20.0,
-    25.0,
-    0,
+let amex_express_checkout_button = document.getElementById('amex-express-checkout');
+
+let amount_steps = {
+    'month': [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        7.5,
+        10.0,
+        15.0,
+        20.0,
+        25.0,
+        50.0,
+        0,
+    ],
+    'year': [
+        5.0,
+        10.0,
+        15.0,
+        20.0,
+        25.0,
+        30.0,
+        50.0,
+        75.0,
+        100.00,
+        150.00,
+        200.00,
+        0,
+    ],
+    'one time': [
+        5.0,
+        10.0,
+        15.0,
+        20.0,
+        25.0,
+        30.0,
+        50.0,
+        75.0,
+        100.00,
+        150.00,
+        200.00,
+        0,
+    ],
+};
+
+
+// alipay list
+// aud, cad, eur, gbp, hkd, jpy, nzd, sgd, or usd
+
+/* Decimal information from: http://apps.cybersource.com/library/documentation/sbc/quickref/currencies.pdf */
+let currency_list = [
+    {'name': 'United States Dollar'        , 'iso': 'USD' ,  'flag': 'us', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': [/*default*/]},
+    {'name': 'Euro'                        , 'iso': 'EUR' ,  'flag': 'eu', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 1, 'locales':
+        ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LU', 'MT', 'NL', 'PT', 'SK', 'SL', 'ES']} ,
+    {'name': 'Russian Ruble'               , 'iso': 'RUB' ,  'flag': 'ru', 'scale': 50   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['RU']} ,
+    {'name': 'British Pound'               , 'iso': 'GBP' ,  'flag': 'gb', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['GB']} ,
+    {'name': 'Canadian Dollar'             , 'iso': 'CAD' ,  'flag': 'ca', 'scale': 1    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['CA']} ,
+    {'name': 'Japanese Yen'                , 'iso': 'JPY' ,  'flag': 'jp', 'scale': 100  , 'decimals': 0, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['JP']} ,
+    {'name': 'South Korean Won'            , 'iso': 'KRW' ,  'flag': 'kr', 'scale': 1000 , 'decimals': 0, 'cc': 1, 'paypal': 0, 'alipay': 1, 'sepa': 0, 'locales': ['KR']} ,
+    {'name': 'Hong Kong Dollar'            , 'iso': 'HKD' ,  'flag': 'hk', 'scale': 10   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['HK']} ,
+    {'name': 'Chinese Yuan'                , 'iso': 'CNY' ,  'flag': 'cn', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 1, 'sepa': 0, 'locales': ['CN']} ,
+
+    {'name': 'Argentine Peso'              , 'iso': 'ARS' ,  'flag': 'ar', 'scale': 10   , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['AR']} ,
+    {'name': 'Australian Dollar'           , 'iso': 'AUD' ,  'flag': 'au', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['AU']} ,
+    {'name': 'Brazilian Real'              , 'iso': 'BRL' ,  'flag': 'br', 'scale': 3.0  , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['BR']} ,
+    {'name': 'Bulgarian Lev'               , 'iso': 'BGN' ,  'flag': 'bg', 'scale': 1    , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['BG']} ,
+    {'name': 'Czech Koruna'                , 'iso': 'CZK' ,  'flag': 'cz', 'scale': 20   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['CZ']} ,
+    {'name': 'Danish Krone'                , 'iso': 'DKK' ,  'flag': 'dk', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['DK']} ,
+    {'name': 'Hungarian Forint'            , 'iso': 'HUF' ,  'flag': 'hu', 'scale': 250  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['HU']} ,
+    {'name': 'Icelandic Krona'             , 'iso': 'ISK' ,  'flag': 'is', 'scale': 100  , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['IS']} ,
+    {'name': 'Indian Rupee'                , 'iso': 'INR' ,  'flag': 'in', 'scale': 50   , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['IN']} ,
+    {'name': 'Mexican Peso'                , 'iso': 'MXN' ,  'flag': 'mx', 'scale': 10   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['MX']} ,
+    {'name': 'New Zealand Dollar'          , 'iso': 'NZD' ,  'flag': 'nz', 'scale': 1    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['NZ']} ,
+    {'name': 'Norwegian Krone'             , 'iso': 'NOK' ,  'flag': 'no', 'scale': 10   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['NO']} ,
+    {'name': 'Polish Zloty'                , 'iso': 'PLN' ,  'flag': 'pl', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['PL']} ,
+    {'name': 'Romanian Leu'                , 'iso': 'RON' ,  'flag': 'ro', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 0, 'alipay': 0, 'sepa': 0, 'locales': ['RO']} ,
+    {'name': 'Singapore Dollar'            , 'iso': 'SGD' ,  'flag': 'sg', 'scale': 1    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['SG']} ,
+    {'name': 'Swedish Krona'               , 'iso': 'SEK' ,  'flag': 'se', 'scale': 10   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['SE']} ,
+    {'name': 'Swiss Franc'                 , 'iso': 'CHF' ,  'flag': 'ch', 'scale': 1    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['CH']} ,
+    {'name': 'Thai Baht'                   , 'iso': 'THB' ,  'flag': 'th', 'scale': 30   , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': ['TH']} ,
+    {'name': 'United Arab Emirates Dirham' , 'iso': 'AED' ,  'flag': 'ae', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['AE']} ,
 ];
 
-let braintree_js_promise = null;
-let braintree = null;
+
+let interval_list = [
+    {'name': _('month'),    'interval': 'month'},
+    {'name': _('year'),     'interval': 'year'},
+    {'name': _('one time'), 'interval': 'one time'},
+];
+
+let interval_description = {
+    'month': _('Monthly donation'),
+    'year': _('Yearly donation'),
+    'one time': _('One time donation'),
+};
+
 
 function getDecimalSeparator() {
     return (1.1).toLocaleString().substring(1, 2);
@@ -61,6 +148,95 @@ function getThousandSeparator() {
 function toFixedWithLocale(n:number, decimals:number = 2) {
     return n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
+
+function formatMoney(currency: string, n:number) {
+    return Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency }).format(n);
+}
+
+function filterCurrencyOption(currency:any, text:string):boolean {
+    text = text.toLowerCase();
+    if (currency.iso.toLowerCase().indexOf(text) >= 0) {
+        return true;
+    }
+    if (currency.name.toLowerCase().indexOf(text) >= 0) {
+        return true;
+    }
+    return false;
+}
+
+function isPaypalEnabled(iso:string) {
+    return currency_list.filter(x => x.iso === iso)[0].paypal;
+}
+
+function getCurrencyScale(iso:string) {
+    return currency_list.filter(x => x.iso === iso)[0].scale;
+}
+
+function getCurrencyDecimals(iso:string) {
+    return currency_list.filter(x => x.iso === iso)[0].decimals;
+}
+
+function scaledAmountToFloat(amount:number, currency:string) {
+    return amount / Math.pow(10, getCurrencyDecimals(currency));
+}
+
+function guessCurrency() {
+    let currency = preferences.get('supporter.currency');
+    if (currency !== 'auto') {
+        return currency;
+    }
+
+    let lang = navigator.language;
+
+    for (let currency of currency_list) {
+        for (let locale of currency.locales) {
+            if (navigator.language.toUpperCase().indexOf(locale) > 0) {
+                return currency.iso;
+            }
+        }
+    }
+
+    return 'USD';
+}
+
+
+
+let amex_express_js_promise;
+let stripe_checkout_js_promise;
+let stripe_js_promise;
+let checkout = null;
+
+/* TODO: Delete this code after we're sure we don't need it anymore. This allows anoek
+ * to do some easy testing with the deprecated braintree system though, so we're keeping
+ * it for awhile. Should be safe to remove by 2018-06-01 if not before. */
+/**** DEPRECATED BRAINTREE CODE ****/
+let braintree_js_promise;
+let braintree;
+declare var Braintree;
+
+try {
+
+    if (data.get('user').id === 1) {
+        braintree_js_promise = new Promise((resolve, reject) => {
+            let script = document.createElement("script");
+            script.src = "https://js.braintreegateway.com/v1/braintree.js";
+            script.async = true;
+            script.charset = "utf-8";
+            script.onload = () => {
+                braintree = Braintree.create(data.get("config.braintree_cse"));
+            };
+            script.onerror = () => {
+                console.error('Failed to load braintree');
+            };
+            document.head.appendChild(script); //or something of the likes
+        });
+    }
+
+} catch (e) {
+
+}
+/**** END DEPRECATED BRAINTREE CODE ****/
+
 
 export class Supporter extends React.PureComponent<SupporterProperties, any> {
     refs: {
@@ -82,54 +258,78 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             this.state = {
                 loading: true,
                 processing: false,
+                disable_payment_buttons: false,
                 show_update_cc: false,
-                amount: 5.0,
+                amount: amount_steps[preferences.get('supporter.interval')][4],
                 custom_amount: 50.0,
                 amount_step: 4,
-
-                card_number_spaced: "",
-                card_exp_spaced: "",
-                cvc: "",
-                fname: "",
-                lname: "",
-                email: "",
+                currency: guessCurrency(),
+                interval: preferences.get('supporter.interval'),
                 last_transaction: null,
+                recurring_donations: [],
             };
-        }
-
-        if (ogs_release === "") {
-            let state:any = this.state;
-
-            /* debug mode */
-            state.card_number_spaced = "4111 1111 1111 1111";
-            state.card_exp_spaced = "12 / 20";
-            state.cvc = "123";
-            state.fname = "John";
-            state.lname = "Gough";
-            state.email = "anoek@online-go.com";
         }
     }
 
+
+    componentWillUnmount() {{{
+        $("body").append(amex_express_checkout_button);
+    }}}
+
     componentDidMount() {{{
-        if (!braintree_js_promise) {
-            braintree_js_promise = new Promise((resolve, reject) => {
+        amex_express_checkout_callback = (response) => {
+                post("me/process_stripe", {
+                    'interval': this.state.interval,
+                    'currency': this.state.currency,
+                    'amount': this.getAmount(),
+                    'stripe_amount': this.getStripeAmount(),
+                    'payment_method_token': {"id": response.token}
+                })
+                .then(() => {
+                    this.setState({processing: false});
+                    window.location.reload();
+                })
+                .catch(errorAlerter);
+        };
+
+        if (!amex_express_js_promise) {
+            amex_express_js_promise = new Promise((resolve, reject) => {
                 let script = document.createElement("script");
-                script.src = "https://js.braintreegateway.com/v1/braintree.js";
+                script.src = "https://icm.aexp-static.com/Internet/IMDC/US_en/RegisteredCard/AmexExpressCheckout/js/AmexExpressCheckout.js";
                 script.async = true;
                 script.charset = "utf-8";
                 script.onload = () => {
-                    braintree = Braintree.create(data.get("config.braintree_cse"));
                     resolve();
                 };
                 script.onerror = () => {
-                    reject("Unable to load braintree.js");
+                    reject("Unable to load stripe checkout");
                 };
-                document.head.appendChild(script); //or something of the likes
+                document.head.appendChild(script);
             });
         }
 
+
+
+        if (!stripe_checkout_js_promise) {
+            stripe_checkout_js_promise = new Promise((resolve, reject) => {
+                let script = document.createElement("script");
+                script.src = "https://checkout.stripe.com/checkout.js";
+                script.async = true;
+                script.charset = "utf-8";
+                script.onload = () => {
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject("Unable to load stripe checkout");
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+
+
         if (!data.get('user').anonymous) {
-            braintree_js_promise.then(() => {
+            stripe_checkout_js_promise.then(() => {
                 get("me/supporter")
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
@@ -146,13 +346,41 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             })
             .catch(errorAlerter);
         }
+
     }}}
 
     setAmount = (ev) => {{{
+        let step = parseInt(ev.target.value);
+        let amount = amount_steps[this.state.interval][parseInt(ev.target.value)];
+
         this.setState({
-            amount_step: parseInt(ev.target.value),
-            amount: amount_steps[parseInt(ev.target.value)]
+            amount_step: step,
+            amount: amount,
+            custom_amount: amount ? this.state.custom_amount : amount_steps[this.state.interval][amount_steps[this.state.interval].length - 2] * 2 * getCurrencyScale(this.state.currency)
         });
+    }}}
+    setCurrency = (currency) => {{{
+        let custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
+
+        if (currency) {
+            this.setState({
+                currency: currency,
+                custom_amount: Math.round(this.state.custom_amount * custom_amount_scale),
+            });
+            preferences.set("supporter.currency", currency);
+        }
+    }}}
+    setInterval = (interval) => {{{
+        if (interval) {
+            let step = this.state.amount_step;
+
+            this.setState({
+                interval: interval,
+                amount: amount_steps[interval][step],
+            });
+
+            preferences.set("supporter.interval", interval);
+        }
     }}}
     updateCustomAmount = (values) => {{{
         console.log(values);
@@ -164,88 +392,19 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return (values.floatValue || 0) >= 0;
     }}}
     getAmount() {{{
-        return this.state.amount || this.state.custom_amount;
-    }}}
-
-    updateCardNumber = (ev) => {{{
-        let groomed = ev.target.value;
-        if (this.state.card_number_spaced.length > 0) {
-            /* backspace should skip over spaces we've added */
-            if (this.state.card_number_spaced.length - 1 === groomed.length
-                && groomed === this.state.card_number_spaced.substr(0, groomed.length)
-                && this.state.card_number_spaced[groomed.length] === " "
-            ) {
-                groomed = groomed.substr(0, groomed.length - 1);
-            }
+        if (this.state.amount) {
+            return this.state.amount * getCurrencyScale(this.state.currency);
         }
-
-        groomed = groomed.replace(/[^0-9]/g, "");
-        if (groomed.length >= 12) {
-            groomed = groomed.substr(0, 12) + " " + groomed.substr(12);
-        }
-        if (groomed.length >= 8) {
-            groomed = groomed.substr(0, 8) + " " + groomed.substr(8);
-        }
-        if (groomed.length >= 4) {
-            groomed = groomed.substr(0, 4) + " " + groomed.substr(4);
-        }
-
-        this.setState({ card_number_spaced: groomed });
+        return this.state.custom_amount;
     }}}
-    updateExp = (ev) => {{{
-        let groomed = ev.target.value;
-
-        if (this.state.card_exp_spaced.length > 0) {
-            if (this.state.card_exp_spaced.length - 1 === groomed.length
-                && groomed.replace(/[^0-9]/g, "") === this.state.card_exp_spaced.replace(/[^0-9]/g, "")
-            ) {
-                groomed = groomed.replace(/[^0-9]/g, "");
-                groomed = groomed.substr(0, groomed.length - 1);
-            }
-
-            else if (
-                (
-                    groomed[groomed.length - 1] === "/"
-                    || groomed[groomed.length - 1] === "-"
-                    || groomed[groomed.length - 1] === " "
-                )
-                && groomed.replace(/[^\/ -]/g, "").length === 1
-            ) {
-                groomed = "" + parseInt(groomed.replace(/[^0-9]/g, "") || 0);
-                if (groomed.length === 1) {
-                    if (groomed !== "0") {
-                        groomed = "0" + groomed;
-                    }
-                }
-            }
-        }
-
-        groomed = groomed.replace(/[^0-9]/g, "");
-
-        if (groomed.length >= 2) {
-            groomed = groomed.substr(0, 2) + " / " + groomed.substr(2, 2);
-        }
-        this.setState({ card_exp_spaced: groomed });
-    }}}
-    updateCvc = (ev) => {{{
-        let groomed = ev.target.value;
-        groomed = groomed.replace(/[^0-9]/g, "").substr(0, 4);
-        this.setState({ cvc: groomed });
-    }}}
-    updateFname = (ev) => {{{
-        let groomed = ev.target.value;
-        this.setState({ fname: groomed });
-    }}}
-    updateLname = (ev) => {{{
-        let groomed = ev.target.value;
-        this.setState({ lname: groomed });
-    }}}
-    updateEmail = (ev) => {{{
-        let groomed = ev.target.value;
-        this.setState({ email: groomed });
+    getStripeAmount() {{{
+        /* Stripe wants amount values in whole number units of the smallest currency fraction, which
+         * is to say, $5.00 => 500 */
+        return this.getAmount() * Math.pow(10, getCurrencyDecimals(this.state.currency));
     }}}
 
-    cancelBraintree = () => {{{
+
+    cancelRecurringDonation(id) {{{
         swal({
             text: _("Are you sure you want to cancel your support for OGS?"),
             showCancelButton: true,
@@ -253,7 +412,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .then(() => {
             this.setState({processing: true});
-            del("me/supporter")
+            del(`me/purchases/${id}`)
             .then(() => {
                 window.location.reload();
             })
@@ -265,63 +424,15 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .catch(errorAlerter);
     }}}
-    validateCC = () => {{{
-        let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
 
-        if (ccnum.length < 12 || ccnum.length > 19 || !luhnChk(ccnum)) {
-            this.refs.ccnum.focus();
-            return false;
-        }
-
-        let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
-        let exp_month;
-        let exp_year;
-        if (!m || parseInt(m[1]) < 1 || parseInt(m[1]) > 12
-            || parseInt("20" + m[2]) < (new Date().getFullYear())
-            || (parseInt("20" + m[2]) === (new Date().getFullYear()) && parseInt(m[1]) - 1 < (new Date().getMonth()))
-        ) {
-            this.refs.ccexp.focus();
-            return false;
-        }
-        exp_month = parseInt(m[1]);
-        exp_year = parseInt("20" + m[2]);
-
-        if (this.state.cvc.length < 3) {
-            this.refs.cccvc.focus();
-            return false;
-        }
-
-        if (this.state.fname.trim().length < 1) {
-            this.refs.fname.focus();
-            return false;
-        }
-        if (this.state.lname.trim().length < 1) {
-            this.refs.lname.focus();
-            return false;
-        }
-
-        if (this.state.email.trim().length < 1) {
-            this.refs.email.focus();
-            return false;
-        }
-
-        if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/.test(this.state.email)) {
-            this.refs.email.focus();
-            return false;
-        }
-
-        return true;
-    }}}
-    processCC = () => {{{
+    /**** DEPRECATED BRAINTREE CODE ****/
+    DEPRECATEDprocessCC = () => {{{
         let amount = this.getAmount();
 
         if (amount < 1.0) {
             return;
         }
 
-        if (!this.validateCC()) {
-            return;
-        }
 
         if (this.state.processing) {
             console.log("Already clicked");
@@ -329,24 +440,22 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
         this.setState({processing: true});
 
-        let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
-        let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
-        let exp_month = parseInt(m[1]);
-        let exp_year = parseInt("20" + m[2]);
-
         this.createPaymentAccountAndMethod("braintree", {
-            "fname": this.state.fname.trim(),
-            "lname": this.state.lname.trim(),
-            "email": this.state.email,
-            "ccnum": ccnum,
-            "exp_month": exp_month,
-            "exp_year": exp_year,
-            "cccvc": this.state.cvc,
+            "fname": 'john',
+            "lname": 'dough',
+            "email": 'anoek@online-go.com',
+            "ccnum": '4111111111111111',
+            "exp_month": 12,
+            "exp_year": 2020,
+            "cccvc": 123,
         })
         .then((obj) => {
             let payment_account = obj.payment_account;
             let payment_method = obj.payment_method;
-            this.processSupporterSignup(payment_method, amount)
+            //this.processSupporterSignup(payment_method, amount)
+            let currency = this.state.currency;
+            let interval = this.state.interval;
+            this.processSupporterSignup('braintree', payment_method, amount, currency, interval)
             .then(() => {
                 window.location.reload();
             })
@@ -354,7 +463,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .catch(errorAlerter);
     }}}
-    updateCC = () => {{{
+
+    /*
+    DEPRECATEDupdateCC = () => {{{
         if (!this.validateCC()) {
             return;
         }
@@ -386,8 +497,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .catch(errorAlerter);
     }}}
+    */
+    /**** END DEPRECATED BRAINTREE CODE ****/
 
     processPaypal = () => {{{
+        if (this.state.disable_payment_buttons) {
+            return;
+        }
+
         let amount = this.getAmount();
 
         if (amount < 1.0) {
@@ -400,7 +517,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             console.log("Preparing paypal purchase", obj);
             let payment_account = obj.payment_account;
             let payment_method = obj.payment_method;
-            this.processSupporterSignup(payment_method, amount)
+            let currency = this.state.currency;
+            let interval = this.state.interval;
+            this.processSupporterSignup('paypal', payment_method, amount, currency, interval)
             .then(() => {
                 console.log("Navigating to paypal purchase page");
             });
@@ -430,10 +549,13 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         console.log("Creating payment account for vendor ", vendor, details);
         return post("me/payment_accounts", obj);
     }}}
-    processSupporterSignup(payment_method, amount) {{{
+    processSupporterSignup(vendor, payment_method, amount, currency, interval) {{{
         let promise = post("me/supporter", {
+            "vendor": vendor,
             "payment_method": payment_method,
             "price": amount,
+            "currency": currency,
+            "interval": interval,
         });
 
         promise
@@ -513,168 +635,276 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             </div>
 
             <div className="col-sm-5">
-            {processing
-                ? <h1 style={{textAlign: "center", marginTop: "5em"}}>{_("Processing")}</h1>
-                : !this.state.is_supporter
-                    ? <div className="main-paragraph">
-                        <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                            {_("How much would you like to donate?")}
-                        </p>
+                {this.state.recurring_donations.length > 0 && <h3 style={{textAlign: 'center'}} >{_("Thank you for your support!")}</h3>}
 
-                        <div className="details">
-                            <div>
-                                <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps.length - 1} step={1}/>
-                            </div>
-                            <div>
-                                {this.state.amount === 0
-                                    ? <h3>$<ReactNumberFormat
-                                            id='Supporter-custom-amount'
-                                            decimalSeparator={getDecimalSeparator()}
-                                            thousandSeparator={getThousandSeparator()}
-                                            value={this.state.custom_amount}
-                                            decimalScale={2}
-                                            onValueChange={this.updateCustomAmount}
-                                            isAllowed={this.isValueAllowed}
-                                            allowNegative={false}
-                                          />
-                                          / {_("month")}
-                                      </h3>
-                                    : <h3>{`$ ${toFixedWithLocale(this.getAmount(), 2)} / ` + _("month")}</h3>
-                                }
-                            </div>
+                {this.state.recurring_donations.map((recurring_donation, idx) => {
+                    let price = recurring_donation.price;
+                    let currency = recurring_donation.currency;
+                    let interval = recurring_donation.interval;
+                    let vendor = recurring_donation.account.payment_vendor;
+                    let account = recurring_donation.account;
+                    let method = recurring_donation.method;
 
-                            {this.cc_form()}
+                    return (
+                        <div key={recurring_donation.id}>
 
+                            {(vendor === "stripe" || null) &&
+                                <div className='recurring-donation'>
+                                    <p>
+                                        {interpolate(
+                                            interval === 'month'
+                                            ?  _("You are currently supporting us with {{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!")
+                                            : (interval === 'year'
+                                                ?  _("You are currently supporting us with {{amount}} per year from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!")
+                                                : "<ERROR: amount = {{amount}} interval = {{interval}}>"
+                                            ),
+                                            {
+                                                "amount": formatMoney(currency, price),
+                                                "card_type": method.card_type,
+                                                "interval": interval,
+                                                "last_four": method.card_number,
+                                                "month": method.expiration_month,
+                                                "year": method.expiration_year,
+                                            })
+                                        }
+                                    </p>
 
-                            <LineText>{_("or")}</LineText>
-
-                            <div className="paypal">
-                                <img className="paypal-button" src={`${cdn_release}/img/paypal.png`} onClick={this.processPaypal} />
-
-                                <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                                    <input type="hidden" name="cmd" value="_xclick-subscriptions" />
-                                    <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                                    <input type="hidden" name="item_name" value="Supporter Account" />
-                                    <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />
-                                    <input type="hidden" name="p3" value="1" />
-                                    <input type="hidden" name="t3" value="M" />
-                                    <input type="hidden" name="src" value="1" />
-                                    <input type="hidden" name="no_note" value="1" />
-                                    <input type="hidden" name="custom" value={data.get("user").id} />
-                                    <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                                    <input type="hidden" name="modify" value="1" />
-                                    <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
-                                </form>
-                            </div>
-                        </div>
-                      </div>
-                    : <div className='main-paragraph support-thanks'>
-                        <h3>{_("Thank you for your support!")}</h3>
-
-                        {(this.state.payment_account.payment_vendor === "braintree" || null) &&
-                            <div>
-                                <p>
-                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
-                                        {
-                                            "amount": toFixedWithLocale(parseFloat(this.state.purchase.price)),
-                                            "card_type": this.state.payment_method.card_type,
-                                            "last_four": this.state.payment_method.card_number,
-                                            "month": this.state.payment_method.expiration_month,
-                                            "year": this.state.payment_method.expiration_year,
-                                        })
+                                    {
+                                        <button className="btn" style={{marginTop: "3em"}} onClick={() => this.cancelRecurringDonation(recurring_donation.id)} disabled={this.state.processing}>
+                                            {_("Cancel this support")}
+                                        </button>
                                     }
-                                </p>
-
-                                <div style={{margin: '1rem'}}>
-                                    <PrettyTransactionInfo transaction={this.state.last_transaction}/>
                                 </div>
+                            }
 
+                            {(vendor === "paypal" || null) &&
+                                <div className='recurring-donation'>
+                                    <p>
+                                        {interpolate(
+                                            interval === 'month'
+                                            ?  _("You are currently supporting us with {{amount}} per month from your paypal account, thanks!")
+                                            : (interval === 'year'
+                                                ?  _("You are currently supporting us with {{amount}} per year from your paypal account, thanks!")
+                                                : "<ERROR: amount = {{amount}} interval = {{interval}}>"
+                                            ),
+                                            {
+                                                "amount": formatMoney(currency, price),
+                                            })
+                                        }
+                                    </p>
 
-                                {(this.state.show_update_cc || null) &&
-                                    this.cc_form(true)
-                                }
-
-                                {(!this.state.show_update_cc || null) &&
-                                    <button className="btn primary" style={{marginTop: "3em"}} onClick={() => this.setState({show_update_cc: true})}  disabled={this.state.processing}>
-                                        {_("Update card information")}
-                                    </button>
-                                }
-
-                                {(!this.state.show_update_cc || null) &&
-                                    <button className="btn" style={{marginTop: "3em"}} onClick={this.cancelBraintree}  disabled={this.state.processing}>
+                                    <button className="btn" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
                                         {_("Cancel this support")}
                                     </button>
-                                }
-                            </div>
-                        }
-
-                        {(this.state.payment_account.payment_vendor === "paypal" || null) &&
-                            <div>
-                                <p>
-                                    {interpolate(_("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!"),
-                                        {
-                                            "amount": toFixedWithLocale(parseFloat(this.state.purchase.price), 2),
-                                        })
-                                    }
-                                </p>
-
-                                <div style={{margin: '1rem'}}>
-                                    <PrettyTransactionInfo transaction={this.state.last_transaction}/>
                                 </div>
+                            }
 
-                                <button className="btn" style={{marginTop: "3em"}} onClick={this.cancelPaypal}  disabled={this.state.processing}>
-                                    {_("Cancel this support")}
-                                </button>
-                            </div>
-                        }
+                            {(vendor === "braintree" || null) &&
+                                <div className='recurring-donation'>
+                                    <p>
+                                        {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
+                                            {
+                                                "amount": toFixedWithLocale(parseFloat(price)),
+                                                "card_type": method.card_type,
+                                                "last_four": method.card_number,
+                                                "month": method.expiration_month,
+                                                "year": method.expiration_year,
+                                            })
+                                        }
+                                    </p>
 
+                                    {
+                                        <button className="btn" style={{marginTop: "3em"}} onClick={() => this.cancelRecurringDonation(recurring_donation.id)}  disabled={this.state.processing}>
+                                            {_("Cancel this support")}
+                                        </button>
+                                    }
+                                </div>
+                            }
+
+                        </div>
+                    );
+                })}
+
+
+                {this.state.recurring_donations.length > 0 && <hr/>}
+
+                <div className="main-paragraph">
+                  {this.state.recurring_donations.length > 0
+                    ? <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
+                          {_("Make an additional donation")}
+                      </p>
+                    : <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
+                          {_("How much would you like to donate?")}
+                      </p>
+                  }
+                  <div className="details">
+                      <div>
+                          <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps[this.state.interval].length - 1} step={1}/>
                       </div>
-            }
+                      <div>
+                          {this.state.amount === 0
+                              ? <div className='donation-summary'>
+                                  {this.renderCurrencySelect()}
+                                  <ReactNumberFormat
+                                          className='supporter-amount'
+                                          decimalSeparator={getDecimalSeparator()}
+                                          thousandSeparator={getThousandSeparator()}
+                                          value={this.state.custom_amount}
+                                          decimalScale={2}
+                                          onValueChange={this.updateCustomAmount}
+                                          isAllowed={this.isValueAllowed}
+                                          allowNegative={false}
+                                        />
+                                        / {this.renderIntervalSelect()}
+                                </div>
+                              : <div className='donation-summary'>
+                                  {this.renderCurrencySelect()}
+                                  <span className='supporter-amount'>{formatMoney(this.state.currency, this.getAmount())}
+                                  </span>
+                                  / {this.renderIntervalSelect()}
+                                </div>
+                          }
+                      </div>
+                      <hr/>
+                      <div className='payment-methods'>
+                          <div className='card-types'>
+                              <div>
+                                  <img src='https://cdn.online-go.com/payment_assets/visa.png' />
+                                  <img src='https://cdn.online-go.com/payment_assets/mastercard.png' />
+                              </div>
+                              <div>
+                                  <img src='https://cdn.online-go.com/payment_assets/amex.png' />
+                                  <img src='https://cdn.online-go.com/payment_assets/discover.png' />
+                              </div>
+                              <button className="primary" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
+                                  {_("Donate with Card")}
+                              </button>
+                              <div style={{'textAlign': 'right', 'marginTop': '1rem'}}>
+                                  <span className='powered-by-stripe' />
+                              </div>
+
+                              {data.get('user').id === 1 &&
+                                  <button className="danger" onClick={this.DEPRECATEDprocessCC}>
+                                    {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
+                                  </button>
+                              }
+                          </div>
+                          <div className='other-payment-options'>
+                              <PersistentElement elt={amex_express_checkout_button} />
+                              <div className="paypal">
+                                  <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                                      <input type="hidden" name="cmd" value={this.state.interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
+                                      <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                                      <input type="hidden" name="item_name" value="Supporter Account" />
+                                      {this.state.interval !== "one time" && <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />}
+                                      {this.state.interval !== "one time" && <input type="hidden" name="p3" value="1" />}
+                                      {this.state.interval !== "one time" && <input type="hidden" name="t3" value={this.state.interval === "month" ? "M" : "Y"} />}
+
+                                      {this.state.interval === "one time" && <input type="hidden" name="amount" value={this.getAmount().toFixed(2)} />}
+                                      <input type="hidden" name="src" value="1" />
+                                      <input type="hidden" name="no_note" value="1" />
+                                      <input type="hidden" name="currency_code" value={this.state.currency} />
+                                      <input type="hidden" name="custom" value={data.get("user").id} />
+                                      <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
+                                      <input type="hidden" name="modify" value="1" />
+                                      <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
+                                  </form>
+                                  <img className={"paypal-button " + (isPaypalEnabled(this.state.currency) ? "" : "grayed-out-image")} src={`${cdn_release}/img/paypal.png`}
+                                    onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} />
+                              </div>
+                          </div>
+                      </div>
+
+                  </div>
+                </div>
             </div>
           </div>
         </div>
         );
     }
 
-    cc_form(update?:boolean) {
+    renderCurrencySelect() {
         return (
-            <div className="cc-form">
-                <form acceptCharset="UTF-8" action="/payment" className="cardInfo" role="form" method="post" autoComplete="on">
-                    <div className="cc-number">
-                        <input ref="ccnum" name="cc-number" type="tel" className="cc-number" placeholder="•••• •••• •••• ••••"
-                            autoComplete="cc-number" required={true}
-                            value={this.state.card_number_spaced} onChange={this.updateCardNumber}/>
-                    </div>
-
-                    <div className="exp-cvc">
-                        <input ref="ccexp" name="cc-exp" type="tel" className="cc-exp" placeholder="MM / YY" autoComplete="cc-exp" required={true}
-                            value={this.state.card_exp_spaced} onChange={this.updateExp}/>
-                        <input ref="cccvc" name="cvc" type="tel" className="cc-cvc" placeholder={_("CVC")} autoComplete="cc-csc" required={true}
-                            value={this.state.cvc} onChange={this.updateCvc}/>
-                    </div>
-
-                    <div className="name">
-                        <input ref="fname" name="fname" type="text" className="fname" placeholder={_("First Name")} autoComplete="fname" required={true}
-                            value={this.state.fname} onChange={this.updateFname}/>
-                        <input ref="lname" name="lname" type="text" className="lname" placeholder={_("Last Name")} autoComplete="lname" required={true}
-                            value={this.state.lname} onChange={this.updateLname}/>
-                    </div>
-                    <div className="email">
-                        <input ref="email" name="email" type="email" className="fname" placeholder={_("Email")} autoComplete="email" required={true}
-                            value={this.state.email} onChange={this.updateEmail}/>
-                    </div>
-                </form>
-
-                {update
-                    ? <button className="primary" onClick={this.updateCC} disabled={this.state.processing}>
-                        {_(`Save new card information`)}
-                      </button>
-                    : <button className="primary" onClick={this.processCC} disabled={this.state.processing}>
-                        {interpolate(_(`Donate {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
-                      </button>
-                }
-            </div>
+            <Select
+                className='currency-select'
+                value={this.state.currency}
+                onChange={this.setCurrency}
+                options={currency_list}
+                simpleValue={true}
+                valueKey='iso'
+                clearable={false}
+                searchable={true}
+                autoBlur={true}
+                noResultsText={_("No results found")}
+                filterOption={filterCurrencyOption}
+                optionRenderer={(C) => <span className='currency-option'><span className='iso'>{C.iso}</span><Flag country={C.flag} /> </span>}
+                valueRenderer={(C) => <span className='currency-option'><span className='iso'>{C.iso}</span><Flag country={C.flag} /> </span>}
+            />
         );
+    }
+
+    renderIntervalSelect() {
+        return (
+            <Select
+                className='interval-select'
+                value={this.state.interval}
+                onChange={this.setInterval}
+                options={interval_list}
+                simpleValue={true}
+                valueKey='interval'
+                clearable={false}
+                searchable={false}
+                optionRenderer={(C) => <span>{C.name}</span>}
+                valueRenderer={(C) => <span>{C.name}</span>}
+            />
+        );
+    }
+
+
+    processStripe = () => {
+        this.setState({disable_payment_buttons: true});
+
+
+        checkout = StripeCheckout.configure({
+            key: data.get('config').stripe_pk,
+            image: 'https://cdn.online-go.com/icons/android-chrome-192x192.png',
+            locale: 'auto',
+            token: (token) => {
+                this.setState({processing: true});
+                console.log(token);
+
+                post("me/process_stripe", {
+                    'interval': this.state.interval,
+                    'currency': this.state.currency,
+                    'amount': this.getAmount(),
+                    'stripe_amount': this.getStripeAmount(),
+                    'payment_method_token': token
+                })
+                .then(() => {
+                    this.setState({processing: false});
+                    window.location.reload();
+                })
+                .catch(errorAlerter);
+            },
+            closed: () => {
+                console.log("Closed");
+                this.setState({disable_payment_buttons: false});
+            }
+        });
+        window['checkout'] = checkout;
+
+        checkout.open({
+            name: 'Online-Go.com',
+            description: interval_description[this.state.interval],
+            currency: this.state.currency,
+            amount: this.getStripeAmount(),
+        });
+
+
+        // Close Checkout on page navigation:
+        window.addEventListener('popstate', () => {
+            checkout.close();
+        });
     }
 
 
