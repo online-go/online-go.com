@@ -79,6 +79,9 @@ export class FriendList extends React.PureComponent<{}, any> {
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
     }}}
+    clickShowOfflineFriends = (ev) => {{{
+        ev.stopPropagation();
+    }}}
     render() {
         if (!this.state.resolved) {
             return null;
@@ -88,7 +91,7 @@ export class FriendList extends React.PureComponent<{}, any> {
             <div className="FriendList">
                 <dt>
                     <label htmlFor="show-offline-friends">{_("Show offline")}</label>
-                    <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onChange={this.setShowOfflineFriends} />
+                    <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onClick={this.clickShowOfflineFriends} onChange={this.setShowOfflineFriends} />
                 </dt>
                 {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
                     <div key={friend.id} >
