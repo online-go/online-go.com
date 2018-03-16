@@ -680,7 +680,13 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             {(vendor === "paypal" || null) &&
                                 <div className='recurring-donation'>
                                     <p>
-                                        {interpolate(_("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!"),
+                                        {interpolate(
+                                            interval === 'month'
+                                            ?  _("You are currently supporting us with ${{amount}} per month from your paypal account, thanks!")
+                                            : (interval === 'year'
+                                                ?  _("You are currently supporting us with ${{amount}} per year from your paypal account, thanks!")
+                                                : "<ERROR: amount = {{amount}} interval = {{interval}}>"
+                                            ),
                                             {
                                                 "amount": toFixedWithLocale(parseFloat(price), 2),
                                             })
