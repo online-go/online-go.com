@@ -223,8 +223,8 @@ function dev_server(done) {
                 case 'OG_DESCRIPTION': return '';
                 case 'SUPPORTED_LANGUAGES': return JSON.stringify(supported_langages);
 
-                case 'AMEX_CLIENT_ID': "kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg";
-                case 'AMEX_ENV': "qa";
+                case 'AMEX_CLIENT_ID': return "kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg";
+                case 'AMEX_ENV': return "qa";
 
                 case 'RELEASE': return '';
                 case 'VERSION': return '';
