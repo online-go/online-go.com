@@ -71,7 +71,7 @@
       {{EXTRA_CONFIG}}
   </head>
   <body>
-      <amex:init client_id="kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg" env="qa" callback="amexExpressCheckout"></amex:init>
+      <amex:init client_id="{{AMEX_CLIENT_ID}}" env="{{AMEX_ENV}}" callback="amexExpressCheckout"></amex:init>
       <div id='amex-express-checkout'></div>
       <script>
           var amex_express_checkout_callback = null;
