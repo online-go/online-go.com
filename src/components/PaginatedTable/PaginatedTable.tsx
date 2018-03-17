@@ -126,7 +126,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             query[k] = filter[k];
         }
         //console.log(query);
-        let order_by = this.state.orderBy.concat(sorting || []);
+        let order_by = (this.state.orderBy ? this.state.orderBy.concat(sorting || []) : []);
 
         if (order_by.length) {
             query["ordering"] = order_by.join(",");
