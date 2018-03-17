@@ -29,6 +29,7 @@ interface PaginatedTableColumnProperties {
     sortable?: boolean;
     striped?: boolean;
     className: ((row) => string) | string;
+    orderBy?: Array<string>;
 }
 
 type SourceFunction = (filter: any, sorting: Array<string>) => Promise<any>;
@@ -71,6 +72,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             page: this.props.startingPage || 1,
             num_pages: 0,
             page_size: 1,
+            orderBy: this.props.orderBy,
         };
     }
 
@@ -124,7 +126,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             query[k] = filter[k];
         }
         //console.log(query);
-        let order_by = this.props.orderBy ? this.props.orderBy.concat(sorting || []) : sorting || [];
+        let order_by = (this.state.orderBy ? this.state.orderBy.concat(sorting || []) : []);
 
         if (order_by.length) {
             query["ordering"] = order_by.join(",");
@@ -209,6 +211,61 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         $(ev.target).select();
     }
 
+    _sort = (order_by) => {
+        if (this.ordersMatch(order_by, this.state.orderBy)) {
+            order_by = this.reverseOrder(this.state.orderBy);
+        }
+        this.setState({
+            orderBy: order_by
+        });
+        setTimeout(() => this.update(), 1);
+    }
+
+    ordersMatch(order1, order2) {
+        let match = true;
+        if (order1.length === order2.length) {
+            for (let i in order1) {
+                if (order1[i].replace("-", "") !== order2[i].replace("-", "")) {
+                    match = false;
+                    break;
+                }
+            }
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
+    reverseOrder(order) {
+        let new_order_by = [];
+        for (let str of order) {
+            new_order_by.push(str.indexOf("-") === 0 ? str.substr(1) : "-" + str);
+        }
+        return new_order_by;
+    }
+
+    getHeader(order, header) {
+        let el;
+        if (order && order.length > 0) {
+            let clsName = "";
+            if (this.ordersMatch(this.state.orderBy, order)) {
+                let minus = false;
+                for (let o of this.state.orderBy) {
+                    if (o.indexOf("-") === 0) {
+                        minus = true;
+                        break;
+                    }
+                }
+                clsName = "fa fa-sort-" + (minus ? "down" : "up");
+            } else {
+                clsName = "fa fa-sort";
+            }
+            el = (<a className="sort-link">{header} <i className={clsName}/></a>);
+        } else {
+            el = header;
+        }
+        return el;
+    }
 
     render() {
         function cls(row, column): string {
@@ -256,7 +313,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
                 <table className={extra_classes}>
                     <thead>
                         <tr>
-                            {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps}>{column.header}</th>)}
+                            {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps} onClick={column.orderBy ? () => {this._sort(column.orderBy); } : null}>{this.getHeader(column.orderBy, column.header)}</th>)}
                         </tr>
                     </thead>
                     <tbody>
