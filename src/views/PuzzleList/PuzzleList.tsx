@@ -113,7 +113,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                  )
                                 },
 
-                                {header: _("Collection"),  className: () => "name", orderBy: ["name"],
+                                {header: _("Collection"),  className: () => "name",
                                  render: (X) => (
                                     <div>
                                         <div>{X.name}</div>
@@ -122,7 +122,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                  )
                                 },
 
-                                {header: _("Difficulty"),  className: () => "difficulty center", orderBy: ["min_rank", "max_rank"],
+                                {header: _("Difficulty"),  className: () => "difficulty center",
                                  render: (X) => (
                                      X.min_rank_string === X.max_rank_string
                                          ? <span>{X.min_rank_string}</span>
@@ -130,13 +130,13 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                  )
                                 },
 
-                                {header: _("Puzzles"),  className: () => "puzzle-count center", render: (X) => X.puzzle_count, orderBy: ["-puzzle_count"]},
-                                {header: _("Rating"),  className: () => "rating", orderBy: ["-rating", "-rating_count"], render: (X) =>
+                                {header: _("Puzzles"),  className: () => "puzzle-count center", render: (X) => X.puzzle_count},
+                                {header: _("Rating"),  className: () => "rating", render: (X) =>
                                     <span><StarRating value={X.rating}/> <span className="rating-count">({unitify(X.rating_count)})</span></span>
                                 },
-                                {header: _("Views"),  className: () => "view-count right", orderBy: ["-view_count"], render: (X) => unitify(X.view_count)},
-                                {header: _("Solved"),  className: () => "solved-count right", orderBy: ["-solved_count"], render: (X) => unitify(X.solved_count)},
-                                {header: _("Created"),  className: () => "date center", render: (X) => moment(new Date(X.created)).format("l"), orderBy: ["-created"]},
+                                {header: _("Views"),  className: () => "view-count right", render: (X) => unitify(X.view_count)},
+                                {header: _("Solved"),  className: () => "solved-count right", render: (X) => unitify(X.solved_count)},
+                                {header: _("Created"),  className: () => "date center", render: (X) => moment(new Date(X.created)).format("l")},
                             ]}
                         />
 
