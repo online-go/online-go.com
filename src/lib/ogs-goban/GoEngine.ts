@@ -1806,13 +1806,48 @@ export class GoEngine {
     public getMoveByLocation(x, y) { /* {{{ */
         let m = null;
         let cur_move = this.cur_move;
+        let branch_point = this.cur_move.getBranchPoint();
+        let prev_move = null;
+        while (!m && cur_move !== branch_point.parent) {
+            m = this.findMoveInBranch(x, y, cur_move, prev_move);
+            prev_move = cur_move;
+            cur_move = cur_move.parent;
+        }
+        if (!m) {
+            m = this.findMoveInTrunk(x, y, branch_point);
+        }
+        return m;
+    } /* }}} */
+
+    private findMoveInBranch(x, y, cur_move, nodeToSkip) {
+        if (nodeToSkip && cur_move.id === nodeToSkip.id) {
+            return null;
+        }
+        let m = null;
+        if (cur_move.x === x && cur_move.y === y) {
+            m = cur_move;
+        }
+        else {
+            for (let b of cur_move.branches) {
+                m = this.findMoveInBranch(x, y, b, nodeToSkip);
+                if (m) {
+                    break;
+                }
+            }
+        }
+        return m;
+    }
+
+    private findMoveInTrunk(x, y, branch_point) {
+        let m = null;
+        let cur_move = branch_point.trunk_next;
         while (!m && cur_move) {
             if (cur_move.x === x && cur_move.y === y) {
                 m = cur_move;
             }
-            cur_move = cur_move.next();
+            cur_move = cur_move.trunk_next;
         }
-        cur_move = this.cur_move.parent;
+        cur_move = branch_point.parent;
         while (!m && cur_move) {
             if (cur_move.x === x && cur_move.y === y) {
                 m = cur_move;
@@ -1820,7 +1855,7 @@ export class GoEngine {
             cur_move = cur_move.parent;
         }
         return m;
-    } /* }}} */
+    }
 
     public exportAsPuzzle() { /* {{{ */
         return {

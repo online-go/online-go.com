@@ -1,0 +1,89 @@
+{
+    "rules": {
+        "adjacent-overload-signatures": true,
+        "class-name": true,
+        "curly": true,
+        "eofline": true,
+        "file-header": [true, "[Cc]opyright ([(][Cc][)])?\\s*\\d{4}"],
+        "import-spacing": true,
+        "indent": [
+            true,
+            "spaces"
+        ],
+        "jsdoc-format": true,
+        "label-position": true,
+        "linebreak-style": [
+            true,
+            "LF"
+        ],
+        "no-angle-bracket-type-assertion": true,
+        "no-arg": true,
+        "no-conditional-assignment": true,
+        "no-consecutive-blank-lines": [
+            true,
+            3
+        ],
+        "no-construct": true,
+        "no-debugger": true,
+        "no-eval": true,
+        "no-internal-module": true,
+        "no-trailing-whitespace": true,
+        "no-unnecessary-initializer": true,
+        "no-unsafe-finally": true,
+        "no-invalid-this": [true, "check-function-in-method"],
+        "no-var-keyword": true,
+        "no-var-requires": true,
+        "one-line": [
+            true,
+            "check-catch",
+            "check-finally",
+            "check-open-brace",
+            "check-whitespace"
+        ],
+        "one-variable-per-declaration": [
+            true,
+            "ignore-for-loop"
+        ],
+        "only-arrow-functions": [
+            true,
+            "allow-declarations",
+            "allow-named-functions"
+        ],
+        "semicolon": [
+            true,
+            "always"
+        ],
+        "space-before-function-paren": [
+            true,
+            "never"
+        ],
+        "triple-equals": [
+            true,
+            "allow-null-check",
+            "allow-undefined-check"
+        ],
+        "typedef-whitespace": [
+            true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-decl  aration": "nospace",
+                "variable-declaration": "nospace"
+            }
+        ],
+        "typeof-compare": true,
+        "use-isnan": true,
+        "variable-name": [
+            true,
+            "ban-keywords"
+        ],
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-separator"
+        ]
+    }
+}
