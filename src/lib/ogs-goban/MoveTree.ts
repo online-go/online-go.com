@@ -614,8 +614,15 @@ export class MoveTree {
     } /* }}} */
     setActivePath(path_number:number):void { /* {{{ */
         this.active_path_number = path_number;
-        if (this.parent) {
-            this.parent.setActivePath(path_number);
+        let parent = this.parent;
+        while (parent) {
+            parent.active_path_number = path_number;
+            parent = parent.parent;
+        }
+        let next = this.next();
+        while (next) {
+            next.active_path_number = path_number;
+            next = next.next();
         }
     } /* }}} */
     getMoveStringToThisPoint():string { /* {{{ */
