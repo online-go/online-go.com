@@ -46,6 +46,7 @@ let defaults = {
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
     "profanity-filter": {"en": true},
+    "unicode-filter": false,
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,

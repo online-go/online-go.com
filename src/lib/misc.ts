@@ -18,6 +18,7 @@
 import {_, interpolate, pgettext} from "translate";
 import {post} from "requests";
 import {browserHistory} from "ogsHistory";
+import * as preferences from "preferences";
 
 declare var swal;
 
@@ -381,6 +382,17 @@ export function string_splitter(str: string, max_length: number= 200): Array<str
 export function ignore() {{{
     /* do nothing */
 }}}
+export function unicodeFilter(str:string):string {{{
+    if (preferences.get('unicode-filter')) {
+        return (str
+            .replace(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF])/g, "") /* 4 byte unicode */
+            .replace(/[\u1D00-\u1D7F\u1D80-\u1DBF\u1DC0-\u1DFF\u2070-\u209F\u20A0-\u20CF\u20D0-\u20FF\u2200-\u22FF\u2400-\u243F\u2440-\u245F\u2500-\u257F\u2580-\u259F\u25A0-\u25FF\u2600-\u26FF\u2700-\u27BF\u27C0-\u27EF\u27F0-\u27FF\u2800-\u28FF\u2900-\u297F\u2980-\u29FF\u2A00-\u2AFF\u2B00-\u2BFF\uD800-\uDB7F\uDB80-\uDBFF\uDC00-\uDFFF\uE000-\uF8FF\uFE00-\uFE0F\uFE10-\uFE1F\uFE50-\uFE6F\uFF00-\uFFEF\uFFF0-\uFFFF]/g, "") /* bunch of stuff that people might find annoying in usernames, care of http://kourge.net/projects/regexp-unicode-block */
+        );
+    }
+    return str;
+}}}
+
+
 
 
 const n2s_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

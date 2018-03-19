@@ -69,6 +69,7 @@ export class Settings extends React.PureComponent<{}, any> {
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
             always_disable_analysis: preferences.get("always-disable-analysis"),
             show_offline_friends: preferences.get("show-offline-friends"),
+            unicode_filter_usernames: preferences.get("unicode-filter"),
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
@@ -255,6 +256,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setShowOfflineFriends = (ev) => {{{
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
+    }}}
+    setUnicodeFilterUsernames = (ev) => {{{
+        preferences.set("unicode-filter", ev.target.checked),
+        this.setState({unicode_filter_usernames: preferences.get("unicode-filter")});
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
@@ -474,9 +479,15 @@ export class Settings extends React.PureComponent<{}, any> {
                                     </i></div>
                                 }
                             </dd>
+
                             <dt><label htmlFor="show-offline-friends">{_("Show offline friends on list")}</label></dt>
                             <dd>
                                 <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onChange={this.setShowOfflineFriends} />
+                            </dd>
+
+                            <dt><label htmlFor="unicode-filter-usernames">{_("Hide special unicode symbols in usernames")}</label></dt>
+                            <dd>
+                                <input id="unicode-filter-usernames" type="checkbox" checked={this.state.unicode_filter_usernames} onChange={this.setUnicodeFilterUsernames} />
                             </dd>
 
                             {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}

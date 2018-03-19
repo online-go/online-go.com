@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import { routes } from 'routes';
 import {browserHistory} from "ogsHistory";
-import {shouldOpenNewTab, errorLogger} from "misc";
+import {shouldOpenNewTab, errorLogger, unicodeFilter} from "misc";
 import {rankString, getUserRating, is_novice} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
@@ -216,7 +216,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
-        let username = player.username || player.name;
+        let username = unicodeFilter(player.username || player.name);
+
+
         if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return (
                 <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
@@ -257,7 +259,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             let uri = `/player/${player_id}`;
             let player = player_cache.lookup(player_id);
             if (player) {
-                uri += "/" + encodeURIComponent(player.username);
+                uri += "/" + encodeURIComponent(unicodeFilter(player.username));
             }
             window.open(uri, "_blank");
         } else if (this.props.nodetails) {
