@@ -20,54 +20,45 @@ import {GoThemes} from "goban";
 import {current_language} from "translate";
 
 let defaults = {
-    "one-click-submit-live": true,
-    "double-click-submit-live": false,
-    "one-click-submit-correspondence": false,
-    "double-click-submit-correspondence": false,
-    "label-positioning": "all",
-    "game-list-threshold": 10,
-    "show-move-numbers": true,
-    "show-variation-move-numbers": false,
-    "auto-advance-after-submit": true,
-    "notification-timeout": 10,
-    "autoplay-delay": 10000,
-    "desktop-notifications": true,
-    "asked-to-enable-desktop-notifications": false,
     "always-disable-analysis": false,
-    "show-offline-friends": true,
-    "show-ads-on-game-page": true,
-
-    "sound-enabled": true,
-    "sound-volume": 0.5,
-    "sound-voice-countdown": true,
-
-    "goban-theme-board": null,
-    "goban-theme-black": null,
-    "goban-theme-white": null,
-
-    "language": "auto",
-    "profanity-filter": {"en": true},
-    "chat.user-sort-order": "rank",
+    "asked-to-enable-desktop-notifications": false,
+    "auto-advance-after-submit": true,
+    "autoplay-delay": 10000,
+    "board-labeling": 'automatic',
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
     "chat.show-all-tournament-channels": true,
-
+    "chat.user-sort-order": "rank",
+    "desktop-notifications": true,
+    "double-click-submit-correspondence": false,
+    "double-click-submit-live": false,
+    "game-list-threshold": 10,
+    "goban-theme-black": null,
+    "goban-theme-board": null,
+    "goban-theme-white": null,
+    "label-positioning": "all",
+    "language": "auto",
+    "move-tree-numbering": "move-number",
+    "new-game-board-size": 19,
+    "notification-timeout": 10,
     "observed-games-page-size": 9,
     "observed-games-viewing": "live",
-
-    "new-game-board-size": 19,
-
-    "tournaments-tab": "correspondence",
-    "move-tree-numbering": "move-number",
-
+    "one-click-submit-correspondence": false,
+    "one-click-submit-live": true,
+    "profanity-filter": {"en": true},
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
-
-    "board-labeling": 'automatic',
-
+    "show-ads-on-game-page": true,
+    "show-move-numbers": true,
+    "show-offline-friends": true,
+    "show-variation-move-numbers": false,
+    "sound-enabled": true,
+    "sound-voice-countdown": true,
+    "sound-volume": 0.5,
     "supporter.currency": "auto",
     "supporter.interval": "month",
+    "tournaments-tab": "correspondence",
 };
 
 defaults['profanity-filter'][current_language] = true;
