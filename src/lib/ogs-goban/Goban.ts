@@ -2343,6 +2343,17 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (!(this.autoplaying_puzzle_move && !stone_color)) {
                     text_color = color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
 
+                    if (!this.theme_black_stones) {
+                        let err = new Error(`Goban.theme_black_stones not set. Current themes is ${JSON.stringify(this.themes)}`);
+                        setTimeout(() => { throw err; }, 1);
+                        return;
+                    }
+                    if (!this.theme_white_stones) {
+                        let err = new Error(`Goban.theme_white_stones not set. Current themes is ${JSON.stringify(this.themes)}`);
+                        setTimeout(() => { throw err; }, 1);
+                        return;
+                    }
+
                     ctx.save();
                     let shadow_ctx = this.shadow_ctx;
                     if (!stone_color || transparent) {
