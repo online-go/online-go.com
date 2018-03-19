@@ -15,15 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {LocalData, deserialise_data, serialise_data} from "compatibility/LocalData";
 import {TypedEventEmitter} from 'TypedEventEmitter';
 
-let defaults: Partial<LocalData> = {};
-let store: Partial<LocalData> = {};
-let event_emitter = new TypedEventEmitter<LocalData>();
+interface Events {
+    [name:string]: any;
+}
+
+let defaults = {};
+let store = {};
+let event_emitter = new TypedEventEmitter<Events>();
 let last_id = 0;
 
-export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | undefined): LocalData[K] {
+export function set(key: string, value: any | undefined): any {
     if (value === undefined) {
         remove(key);
         return value;
@@ -31,7 +34,7 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | und
 
     store[key] = value;
     try {
-        localStorage.setItem(`ogs.${key}`, (serialise_data[key] || JSON.stringify)(value));
+        localStorage.setItem(`ogs.${key}`, JSON.stringify(value));
     } catch (e) {
         console.warn(`Failed to save setting ogs.${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`);
     }
@@ -40,7 +43,7 @@ export function set<K extends keyof LocalData>(key: K, value: LocalData[K] | und
     return value;
 }
 
-export function setDefault<K extends keyof LocalData>(key: K, value: LocalData[K]): LocalData[K] {
+export function setDefault(key: string, value: any): any {
     defaults[key] = value;
     if (!(key in store)) {
         event_emitter.emit(key, value);
@@ -48,7 +51,7 @@ export function setDefault<K extends keyof LocalData>(key: K, value: LocalData[K
     return value;
 }
 
-export function remove<K extends keyof LocalData>(key: K): LocalData[K] {
+export function remove(key: string): any {
     event_emitter.emit(key, defaults[key]);
 
     try {
@@ -77,7 +80,7 @@ export function removeAll(): void {
     }
 }
 
-export function get<K extends keyof LocalData>(key: K, default_value?: LocalData[K]): LocalData[K] | undefined {
+export function get(key: string, default_value?: any): any | undefined {
     if (key in store) {
         return store[key];
     }
@@ -87,7 +90,7 @@ export function get<K extends keyof LocalData>(key: K, default_value?: LocalData
     return default_value;
 }
 
-export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K]) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+export function watch(key: string, cb: (data: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
     event_emitter.on(key, cb);
 
     let val = get(key);
@@ -96,7 +99,7 @@ export function watch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K]
     }
 }
 
-export function unwatch<K extends keyof LocalData>(key: K, cb: (data: LocalData[K]) => void): void {
+export function unwatch(key: string, cb: (data: any) => void): void {
     event_emitter.off(key, cb);
 }
 
@@ -125,7 +128,7 @@ try {
             key = key.substr(4);
             try {
                 let item = localStorage.getItem(`ogs.${key}`);
-                store[key] = (deserialise_data[key] || JSON.parse)(item);
+                store[key] = JSON.parse(item);
             } catch (e) {
                 console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
                 console.error(e);
