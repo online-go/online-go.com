@@ -144,7 +144,7 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 
 
 /*** Google analytics ***/
-declare var ga;
+declare var gtag;
 
 
 /* ga history hook  */
@@ -163,14 +163,12 @@ browserHistory.listen(location => {
             user_type = 'non-supporter';
         }
 
-        /*
-        console.log("send", "pageview", cleaned_path, {
-            dimension1: user_type
-        });
-        */
-        if (ga) {
-            window["ga"]("send", "pageview", cleaned_path, {
-                dimension1: user_type
+        if (gtag) {
+            window["gtag"]("config", 'UA-37743954-2', {
+                'page_path': cleaned_path,
+                'custom_map': {
+                    'dimension1': user_type
+                }
             });
         }
 
