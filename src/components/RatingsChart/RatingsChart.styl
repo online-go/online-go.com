@@ -21,6 +21,9 @@ rating-chart-height=380px;
     height: rating-chart-height;
     max-width: calc(100vw - 2em);
 
+    // Uncomment this to make charts resize.  But only when they support that.
+    // max-width: calc(100vw - 2em);
+
     svg {
         font-size: font-size-smaller;
     }
@@ -113,13 +116,15 @@ rating-chart-height=380px;
         }
     }
 
+    /* Bright for strong, darker for weak
+       green for win, red for loss ... */
     .weak-wins {
-        themed-lighten fill win 25%
-        themed-lighten background-color win 25%
-    }
-    .strong-wins {
         themed-darken fill win 25%
         themed-darken background-color win 25%
+    }
+    .strong-wins {
+        themed-lighten fill win 25%
+        themed-lighten background-color win 25%
     }
     .strong-losses {
         themed-lighten fill loss 25%
@@ -154,6 +159,14 @@ rating-chart-height=380px;
         height: 15px;
         display: inline-block;
         margin-right: 0.2rem;
+    }
+
+    .pie-title {
+        font-size: larger;
+    }
+    .pie {
+        themed stroke chart-area;
+        stroke-width: 1;
     }
 
     .date-legend-background {
