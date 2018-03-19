@@ -393,8 +393,6 @@ export function unicodeFilter(str:string):string {{{
 }}}
 
 
-
-
 const n2s_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const n2s_alphalen = n2s_alphabet.length;
 export function n2s(n?: number) {{{
