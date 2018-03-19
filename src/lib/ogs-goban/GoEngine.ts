@@ -1804,15 +1804,22 @@ export class GoEngine {
         return se.score();
     } /* }}} */
     public getMoveByLocation(x, y) { /* {{{ */
-        let m = this.cur_move;
-        while (m) {
-            if (m.x === x && m.y === y) {
-                return m;
-            } else {
-                m = m.parent;
+        let m = null;
+        let cur_move = this.cur_move;
+        while (!m && cur_move) {
+            if (cur_move.x === x && cur_move.y === y) {
+                m = cur_move;
             }
+            cur_move = cur_move.next();
         }
-        return null;
+        cur_move = this.cur_move.parent;
+        while (!m && cur_move) {
+            if (cur_move.x === x && cur_move.y === y) {
+                m = cur_move;
+            }
+            cur_move = cur_move.parent;
+        }
+        return m;
     } /* }}} */
 
     public exportAsPuzzle() { /* {{{ */
