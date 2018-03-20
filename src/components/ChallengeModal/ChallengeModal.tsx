@@ -477,11 +477,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     browserHistory.push(`/game/${game_id}`);
                 }
 
-                function onRejected() {
+                function onRejected(message?:string) {
                     off();
                     swal.close();
                     swal({
-                        text: _("Game offer was rejected"),
+                        text: message || _("Game offer was rejected"),
                     });
                 }
 
@@ -501,7 +501,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                          * drops, etc. */
                         notification_manager.deleteNotification(notification);
                         if (notification.game_id === game_id) {
-                            onRejected();
+                            onRejected(notification.message);
                         }
                     }
                 }
