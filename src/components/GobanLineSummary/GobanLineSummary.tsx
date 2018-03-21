@@ -30,6 +30,7 @@ interface GobanLineSummaryProps {
     white: any;
     player?: any;
     gobanref?: (goban:Goban) => void;
+    size?: number;
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
@@ -175,6 +176,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
                     </div>
                 }
+                <div className="size">{this.props.size}</div>
             </Link>
         );
     }
