@@ -112,6 +112,7 @@ export class GoEngine {
     private score;
     private score_prisoners;
     private score_stones;
+    private score_handicap;
     private score_territory;
     private score_territory_in_seki;
     private white_prisoners;
@@ -1210,7 +1211,7 @@ export class GoEngine {
 
         for (let color in {"black": "black", "white": "white"}) {
             ret[color].total = ret[color].stones + ret[color].territory + ret[color].prisoners + ret[color].komi;
-            if (this.score_stones) {
+            if (this.score_handicap) {
                 ret[color].total += ret[color].handicap;
             }
         }
@@ -1305,6 +1306,7 @@ export class GoEngine {
         defaults.score_territory = true;
         defaults.score_territory_in_seki = true;
         defaults.score_stones = true;
+        defaults.score_handicap = false;
         defaults.score_prisoners = true;
         defaults.score_passes = true;
         defaults.white_must_pass_last = false;
@@ -1318,6 +1320,7 @@ export class GoEngine {
                 defaults.score_prisoners = false;
                 defaults.allow_superko = false;
                 defaults.free_handicap_placement = true;
+                defaults.score_handicap = true;
                 if ("ogs_import" in game_obj) {
                     defaults.free_handicap_placement = false;
                 }
@@ -1329,6 +1332,7 @@ export class GoEngine {
                 defaults.allow_superko = false;
                 defaults.white_must_pass_last = true;
                 defaults.aga_handicap_scoring = true;
+                defaults.score_handicap = true;
                 break;
 
             case "japanese" :
