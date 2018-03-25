@@ -324,13 +324,8 @@ export class Play extends React.Component<PlayProperties, any> {
 
                             <div style={{marginTop: "2em"}}></div>
 
-                            {/* There must be a better way to get the header in the centre! At least this doesn't cause warnings :) */}
                             <div className='custom-games-list-header-row'>
-                                <span className='cell'></span>
-                                <span className='cell'></span>
-                                <span className='cell'></span>
-                                <span className='cell'></span>
-                                <span className='cell'>{_("Custom Games")}</span>
+                                {_("Custom Games")}
                             </div>
 
 
@@ -459,11 +454,10 @@ export class Play extends React.Component<PlayProperties, any> {
 
         if (!this.anyChallengesToShow(isLive)) {
             return (
-                <div className={"ineligible"}>
+                <div className="ineligible">
                     {this.state.show_all_challenges ?
-                        "(none)" :
-                        "(none available)"
-                    }
+                        _("(none)") :
+                        _("(none available)")}
                 </div>
             );
         }
