@@ -349,11 +349,11 @@ export class Play extends React.Component<PlayProperties, any> {
 
                             {this.challengeList(false)}
 
-                            <div className="showall-selector">
-                                <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
-                                       onChange={this.toggleShowAllChallenges}/>
-                                <label htmlFor="show-all-challenges">{_("Show all challenges")}</label>
-                            </div>
+                        </div>
+                        <div className="showall-selector">
+                            <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
+                                   onChange={this.toggleShowAllChallenges}/>
+                            <label htmlFor="show-all-challenges">{_("Show all challenges")}</label>
                         </div>
                     </div>
                 </div>
