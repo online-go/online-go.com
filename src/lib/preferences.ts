@@ -46,11 +46,11 @@ let defaults = {
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
     "profanity-filter": {"en": true},
-    "unicode-filter": false,
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
     "show-ads-on-game-page": true,
+    "show-all-challenges": false,
     "show-move-numbers": true,
     "show-offline-friends": true,
     "show-variation-move-numbers": false,
@@ -60,6 +60,7 @@ let defaults = {
     "supporter.currency": "auto",
     "supporter.interval": "month",
     "tournaments-tab": "correspondence",
+    "unicode-filter": false,
 };
 
 defaults['profanity-filter'][current_language] = true;

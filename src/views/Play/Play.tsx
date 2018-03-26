@@ -31,6 +31,7 @@ import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import * as data from "data";
+import * as preferences from "preferences";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
@@ -53,7 +54,7 @@ export class Play extends React.Component<PlayProperties, any> {
             live_list: [],
             correspondence_list: [],
             disableCorrespondenceButton: false,
-            show_all_challenges: false,
+            show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
         };
         this.canvas = $("<canvas>")[0];
@@ -227,6 +228,7 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
     toggleShowAllChallenges = () => {{{
+        preferences.set("show-all-challenges", !this.state.show_all_challenges);
         this.setState({show_all_challenges: !this.state.show_all_challenges});
     }}}
 
