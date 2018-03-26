@@ -169,6 +169,12 @@
         margin-top: 1rem;
     }
 
+    .showall-selector {
+        width: 100%;
+        text-align: left;
+        font-size: smaller;
+        padding-top: 1rem;
+    }
 }
 
 
@@ -195,16 +201,12 @@
         cursor: help;
     }
 
+    // Flex to escape from the table
     .custom-games-list-header-row {
-        display: table-row;
+        display: flex;
         font-weight: bold;
         white-space: nowrap;
-
-        .cell {
-            padding-left: 0.5em;
-            display: table-cell;
-            padding-bottom: 0.5rem;
-        }
+        padding-bottom: 0.5 rem;
     }
 
     .challenge-row {
@@ -248,6 +250,7 @@
 
         }
     }
+
 
     .automatch-challenge-row {
         .cell {
