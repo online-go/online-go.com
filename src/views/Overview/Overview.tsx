@@ -56,10 +56,14 @@ export class Overview extends React.Component<{}, any> {
         super(props);
 
         let show_translation_dialog = false;
-        if (ogs_missing_translation_count > 0
-            && !preferences.get("translation-dialog-never-show")
-            && (Date.now() - preferences.get("translation-dialog-dismissed")) > 14 * 86400 * 1000) {
-            show_translation_dialog = true;
+        try {
+            if (ogs_missing_translation_count > 0
+                && !preferences.get("translation-dialog-never-show")
+                && (Date.now() - preferences.get("translation-dialog-dismissed")) > 14 * 86400 * 1000) {
+                show_translation_dialog = true;
+            }
+        } catch (e) {
+            console.error(e);
         }
 
         this.state = {
@@ -167,7 +171,7 @@ export class Overview extends React.Component<{}, any> {
                             <Card className="translation-dialog">
                                 <FabX onClick={this.dismissTranslationDialog} />
 
-                                <div>{interpolate(_("Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are {{missing_translations}} missing translation strings. If you would like to help fix this, click the green button below, and thanks!"), {missing_translations: ogs_missing_translation_count})}</div>
+                                <div>{_("Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!")}</div>
 
                                 <a className='btn success' href='https://translate.online-go.com/'>{_("I'll help translate!")}</a>
 
