@@ -75,6 +75,7 @@ export class Settings extends React.PureComponent<{}, any> {
             hide_ui_class: false,
             show_ads_on_game_page: preferences.get('show-ads-on-game-page'),
             board_labeling: preferences.get("board-labeling"),
+            translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
         };
     }
 
@@ -260,6 +261,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setUnicodeFilterUsernames = (ev) => {{{
         preferences.set("unicode-filter", ev.target.checked),
         this.setState({unicode_filter_usernames: preferences.get("unicode-filter")});
+    }}}
+    setTranslationDialogNeverShow = (ev) => {{{
+        preferences.set("translation-dialog-never-show", ev.target.checked),
+        this.setState({translation_dialog_never_show: preferences.get("translation-dialog-never-show")});
     }}}
     updateDesktopNotifications = (ev) => {{{
         let enabled = ev.target.checked;
@@ -488,6 +493,11 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dt><label htmlFor="unicode-filter-usernames">{_("Hide special unicode symbols in usernames")}</label></dt>
                             <dd>
                                 <input id="unicode-filter-usernames" type="checkbox" checked={this.state.unicode_filter_usernames} onChange={this.setUnicodeFilterUsernames} />
+                            </dd>
+
+                            <dt><label htmlFor="translation-dialog-never-show">{_('Never show the "needs translation" message on the home page')}</label></dt>
+                            <dd>
+                                <input id="translation-dialog-never-show" type="checkbox" checked={this.state.translation_dialog_never_show} onChange={this.setTranslationDialogNeverShow} />
                             </dd>
 
                             {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}

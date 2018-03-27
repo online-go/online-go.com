@@ -60,6 +60,8 @@ let defaults = {
     "supporter.currency": "auto",
     "supporter.interval": "month",
     "tournaments-tab": "correspondence",
+    "translation-dialog-dismissed": 0,
+    "translation-dialog-never-show": false,
     "unicode-filter": false,
 };
 

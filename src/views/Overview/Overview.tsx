@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_} from "translate";
+import {_, interpolate} from "translate";
 import {Card} from "material";
 import {GameList} from "GameList";
 import {createOpenChallenge} from "ChallengeModal";
@@ -29,6 +29,7 @@ import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
 import * as data from "data";
+import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {longRankString, getUserRating, is_novice, is_provisional} from "rank_utils";
 import {FriendList} from "FriendList";
@@ -36,6 +37,8 @@ import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
 import {SupporterGoals} from "SupporterGoals";
 import {notification_manager} from "Notifications";
+import {FabX, FabCheck} from "material";
+
 
 
 let UserRating = (props: {rating: number}) => {
@@ -44,16 +47,26 @@ let UserRating = (props: {rating: number}) => {
     return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
 };
 
+declare var ogs_missing_translation_count;
 
 export class Overview extends React.Component<{}, any> {
     private static defaultTitle = "OGS";
 
     constructor(props) {
         super(props);
+
+        let show_translation_dialog = false;
+        if (ogs_missing_translation_count > 0
+            && !preferences.get("translation-dialog-never-show")
+            && (Date.now() - preferences.get("translation-dialog-dismissed")) > 14 * 86400 * 1000) {
+            show_translation_dialog = true;
+        }
+
         this.state = {
             overview: {
                 active_games: [],
             },
+            show_translation_dialog: show_translation_dialog,
             resolved: false,
             boards_to_move_on: Object.keys(notification_manager.boards_to_move_on).length,
         };
@@ -98,6 +111,7 @@ export class Overview extends React.Component<{}, any> {
         let user = data.get("config.user");
 
         let rating = user ? getUserRating(user, 'overall', 0) : null;
+
 
         return (
         <div id="Overview-Container">
@@ -149,6 +163,18 @@ export class Overview extends React.Component<{}, any> {
                     </div>
 
                     <div className="overview-categories">
+                        {this.state.show_translation_dialog &&
+                            <Card className="translation-dialog">
+                                <FabX onClick={this.dismissTranslationDialog} />
+
+                                <div>{interpolate(_("Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are {{missing_translations}} missing translation strings. If you would like to help fix this, click the green button below, and thanks!"), {missing_translations: ogs_missing_translation_count})}</div>
+
+                                <a className='btn success' href='https://translate.online-go.com/'>{_("I'll help translate!")}</a>
+
+                                <button className='btn xs never-show-this-message-button' onClick={this.neverShowTranslationDialog}>{_("Never show this message")}</button>
+                            </Card>
+                        }
+
                         <h3><Link to="/tournaments"><i className="fa fa-trophy"></i> {_("Tournaments")}</Link></h3>
                         <TournamentList />
 
@@ -167,6 +193,20 @@ export class Overview extends React.Component<{}, any> {
             </div>
         </div>
         );
+    }
+
+    dismissTranslationDialog = (ev) => {
+        preferences.set("translation-dialog-dismissed", Date.now());
+        this.setState({
+            show_translation_dialog: false
+        });
+    }
+
+    neverShowTranslationDialog = (ev) => {
+        preferences.set("translation-dialog-never-show", true);
+        this.setState({
+            show_translation_dialog: false
+        });
     }
 }
 
