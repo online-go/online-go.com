@@ -15,12 +15,13 @@ function main() {
     ui_keys = JSON.parse(ui_keys);
     languages = JSON.parse(languages);
     let exit_code = 0;
-    let promises = [];
+    let audit_promises = [];
+    let write_promises = [];
     let progress = {};
 
     for (let lang in languages) {
         let conv = lang.replace(/([a-z]+)-([a-zA-Z]+)/, (_, a, b)=>`${a}_${b.toUpperCase()}`);
-        promises.push(new Promise((resolve, reject) => {
+        audit_promises.push(new Promise((resolve, reject) => {
             PO.load(`./locale/${conv}.po`, (err, po) => {
                 if (err) {
                     console.log(`${err}`);
@@ -67,7 +68,7 @@ function main() {
 
                 if (errors > 0) {
                     console.log(`** BAD ** ${lang}: ${missing} missing ${errors} errors`);
-                    exit_code = 1;
+                    //exit_code = 1;
                 } else if (missing > 0) {
                     console.log(`MISSING ${lang}: ${missing} missing`);
                 } else {
@@ -76,16 +77,29 @@ function main() {
 
                 progress[lang] = missing; 
 
+                write_promises.push(new Promise((resolve, reject) => {
+                    fs.readFile(`./locale/${lang}.js`, 'utf8', (err, data) => {
+                        if (/ogs_missing_translation_count/.test(data)) {
+                            data.replace(/ogs_missing_translation_count = [0-9]+/, `ogs_missing_translation_count = ${missing}`);
+                        } else {
+                            data += `window.ogs_missing_translation_count = ${missing};`;
+                        }
+                        fs.writeFile(`./locale/${lang}.js`, data, resolve);
+                    })
+                }));
+
                 resolve();
             });
         }));
     }
 
-    Promise.all(promises).then(() => {
-        fs.writeFile('./locale/translation_progress.json', JSON.stringify(progress), () => {
-            process.exit(exit_code);
-        });
-    })
+    Promise.all(audit_promises).then(() => {
+        Promise.all(write_promises).then(() => {
+            fs.writeFile('./locale/translation_progress.json', JSON.stringify(progress), () => {
+                process.exit(exit_code);
+            });
+        }).catch((err) => console.error(err));
+    }).catch((err) => console.error(err));
     
     });
     });
