@@ -449,6 +449,8 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
     challengeList(isLive: boolean) {{{
+        let user = data.get("user");
+
         let timeControlClassName = (config) => {
             let isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
@@ -476,6 +478,10 @@ export class Play extends React.Component<PlayProperties, any> {
             (C.eligible || C.user_challenge || this.state.show_all_challenges ?
                     <div key={C.challenge_id} className="challenge-row">
                         <span className="cell" style={{textAlign: "center"}}>
+                            {user.is_moderator &&
+                                <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>
+                            }
+
                             {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
                             {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
