@@ -33,7 +33,7 @@ function sanitize(src) {
     return sanitizeHtml(src, {
         allowedTags: false, /* this means "all" */
         allowedAttributes: {
-            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height']
+            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height', 'class']
         },
         transformTags: {
             'script': 'error',
