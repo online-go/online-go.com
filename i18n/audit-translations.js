@@ -30,6 +30,7 @@ function main() {
 
                 let result = {};
                 let missing = 0;
+                let missing_strings = [];
                 let errors = 0;
                 for (let item of po.items) {
                     for (let str of [item.msgid, item.msgid_plural]) {
@@ -43,6 +44,7 @@ function main() {
                         for (let msg of item.msgstr) {
                             if (msg.trim() === "") {
                                 missing++;
+                                missing_strings.push(str);
                                 break;
                             }
 
@@ -71,6 +73,11 @@ function main() {
                     //exit_code = 1;
                 } else if (missing > 0) {
                     console.log(`MISSING ${lang}: ${missing} missing`);
+                    if (missing < 10) {
+                        for (let str of missing_strings) {
+                            console.log(`    ${str}`);
+                        }
+                    }
                 } else {
                     console.log(`GOOD ${lang}`);
                 }
