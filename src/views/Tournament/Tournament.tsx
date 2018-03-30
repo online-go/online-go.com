@@ -43,8 +43,6 @@ import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import * as d3 from "d3";
 
-
-
 declare var swal;
 
 let ranks = amateurRanks();
@@ -53,6 +51,23 @@ interface TournamentProperties {
     match: {
         params: any
     };
+}
+
+function sortDropoutsToBottom(player_a, player_b) {
+    // Sorting the players structure from a group array
+    // "bottom" is greater than "top" of the display list.
+    let player_a = player_a.player;
+    let player_b = player_b.player;
+
+    if (player_a.notes !== 'Resigned' && player_a.notes !== 'Disqualified' &&
+        (player_b.notes === 'Resigned' || player_b.notes === 'Disqualified')) {
+        return -1;
+    }
+    if (player_b.notes !== 'Resigned' && player_b.notes !== 'Disqualified' &&
+        (player_a.notes === 'Resigned' || player_a.notes === 'Disqualified')) {
+        return 1;
+    }
+    return player_b.points - player_a.points;
 }
 
 /* TODO: Implement me TD Options */
@@ -1534,14 +1549,18 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             {/* Round robin / simul style groups */}
                             {(selected_round && selected_round.groupify || null) &&
                                 <div>
-                                    {selected_round.groups.map((group, idx) => (
-                                        <div key={idx} className="round-group">
+                                    {selected_round.groups.map((group, idx) => {
+                                        // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
+                                        let sorted_players = [...group.players].sort(sortDropoutsToBottom);
+
+                                        return (
+                                            <div key={idx} className="round-group">
                                             <table>
                                                 <tbody>
                                                     <tr>
                                                         {(tournament.ended || null) && <th className="rank">{_("Rank")}</th>}
                                                         <th>{_("Player")}</th>
-                                                        {group.players.map((opponent, idx) => (
+                                                        {sorted_players.map((opponent, idx) => (
                                                             <th key={idx} className="rotated-title">
                                                                 {(opponent.player || null) && <span className="rotated"><Player user={opponent.player} icon></Player></span>}
                                                             </th>
@@ -1551,14 +1570,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                         {(tournament.ended || null) && <th className="rotated-title"><span className="rotated">&Sigma; {_("Defeated Scores")}</span></th>}
                                                         <th></th>
                                                     </tr>
-                                                    {group.players.map((player, idx) => {
+                                                    {sorted_players.map((player, idx) => {
                                                         player = player.player;
                                                         return (
                                                         <tr key={idx} >
                                                             {(tournament.ended || null) && <td className="rank">{player.rank}</td>}
 
                                                             <th className="player"><Player user={player} icon /></th>
-                                                            {group.players.map((opponent, idx) => (
+                                                            {sorted_players.map((opponent, idx) => (
                                                                 <td key={idx} className={"result " + selected_round.colors[player.id + "x" + opponent.id]}>
                                                                     <Link to={`/game/${selected_round.game_ids[player.id + "x" + opponent.id]}`}>
                                                                         {selected_round.results[player.id + "x" + opponent.id]}
@@ -1575,10 +1594,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                                 </tbody>
                                             </table>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             }
-
 
                             {/* Pair matches */}
                             {((selected_round && !selected_round.groupify && tournament.tournament_type !== "s_title") || null) &&
