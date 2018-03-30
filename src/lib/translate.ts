@@ -118,8 +118,6 @@ extended_countries.push(["_Tibet", gettext("Tibet")]);
 extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
 
-
-
 let fantasy_countries = [];
 let fantasy_countries_cc = {};
 fantasy_countries.push(["_Klingon", gettext("Klingon")]);
@@ -127,6 +125,7 @@ fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federat
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
 fantasy_countries.push(["_Starfleet", gettext("Starfleet")]);
 fantasy_countries.push(["_DOOP", gettext("DOOP")]);
+fantasy_countries.push(["_Esperanto", gettext("Esperantujo")]);  // Esperanto speakers pretend they come from Esperantujo!  Who knew!
 fantasy_countries.push(["_GoT_Arryn", gettext("House Arryn")]);
 fantasy_countries.push(["_GoT_Baratheon", gettext("House Baratheon")]);
 fantasy_countries.push(["_GoT_Greyjoy", gettext("House Greyjoy")]);
@@ -136,7 +135,6 @@ fantasy_countries.push(["_GoT_Stark", gettext("House Stark")]);
 fantasy_countries.push(["_GoT_Targaryen", gettext("House Targaryen")]);
 fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
-
 
 try {
     for (let e of fantasy_countries) {
