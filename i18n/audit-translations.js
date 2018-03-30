@@ -33,6 +33,10 @@ function main() {
                 let missing_strings = [];
                 let errors = 0;
                 for (let item of po.items) {
+                    if (item.obsolete) {
+                        continue;
+                    }
+
                     for (let str of [item.msgid, item.msgid_plural]) {
                         if (!str) {
                             continue;
