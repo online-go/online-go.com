@@ -56,18 +56,18 @@ interface TournamentProperties {
 function sortDropoutsToBottom(player_a, player_b) {
     // Sorting the players structure from a group array
     // "bottom" is greater than "top" of the display list.
-    let player_a = player_a.player;
-    let player_b = player_b.player;
+    let a = player_a.player;
+    let b = player_b.player;
 
-    if (player_a.notes !== 'Resigned' && player_a.notes !== 'Disqualified' &&
-        (player_b.notes === 'Resigned' || player_b.notes === 'Disqualified')) {
+    if (a.notes !== 'Resigned' && a.notes !== 'Disqualified' &&
+        (b.notes === 'Resigned' || b.notes === 'Disqualified')) {
         return -1;
     }
-    if (player_b.notes !== 'Resigned' && player_b.notes !== 'Disqualified' &&
-        (player_a.notes === 'Resigned' || player_a.notes === 'Disqualified')) {
+    if (b.notes !== 'Resigned' && b.notes !== 'Disqualified' &&
+        (a.notes === 'Resigned' || a.notes === 'Disqualified')) {
         return 1;
     }
-    return player_b.points - player_a.points;
+    return b.points - a.points;
 }
 
 /* TODO: Implement me TD Options */
