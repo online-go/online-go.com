@@ -188,7 +188,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             white={game.white}
                             player={this.props.player}
                             gobanref={(goban) => game.goban = goban}
-                            size={game.height}
+                            width={game.width}
+                            height={game.height}
                             />)}
                 </div>
             );
