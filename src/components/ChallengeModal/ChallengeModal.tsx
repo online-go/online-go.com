@@ -25,6 +25,7 @@ import {Modal, openModal} from "Modal";
 import {termination_socket} from "sockets";
 import {longRankString, rankString, getUserRating, MaxRank, amateurRanks, allRanks, rankList, bounded_rank} from "rank_utils";
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
+import {close_all_popovers, popover} from "popover";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
 import * as preferences from "preferences";
@@ -45,6 +46,7 @@ interface ChallengeModalProperties {
     initialState?: any;
     config?: any;
     autoCreate?: boolean;
+    waitingDiv?: any; // where to draw the dialog about waiting for an opponent
 }
 
 function deepAssign(obj1: any, obj2: any) {{{
@@ -424,33 +426,52 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.close();
 
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
-        .then((res) => {
+            .then((res) => {
                 console.log("Challenge response: ", res);
                 let challenge_id = res.challenge;
                 let game_id = typeof(res.game) === "object" ? res.game.id : res.game;
 
                 notification_manager.event_emitter.on("notification", checkForReject);
 
-                if (open_now) {
-                    swal({
-                        title: _("Waiting for opponent"),
-                        html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
-                        confirmButtonClass: "btn-danger",
-                        confirmButtonText: "Cancel",
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                    })
-                    .then(() => {
-                        off();
-                        /* cancel challenge */
-                        del((this.props.mode === "open" ? "challenges/%%" : "me/challenges/%%"), challenge_id)
+                let cancel_challenge = () => {
+                    off();
+                    /* cancel challenge */
+                    del((this.props.mode === "open" ? "challenges/%%" : "me/challenges/%%"), challenge_id)
                         .then(ignore)
                         .catch(ignore);
-                    })
-                    .catch(() => {
-                        off();
-                    });
+                };
 
+                if (open_now) {
+                    if (this.props.waitingDiv) {
+                        popover({
+                            elt: (
+                                <div className='waiting-for-opponent'>
+                                    <h2>Waiting for opponent</h2>
+                                    <div className="spinner"><div className="double-bounce1"></div><div className="double-bounce2"></div></div>
+                                    <button className='primary' onClick={() => {cancel_challenge(); close_all_popovers(); }}>
+                                        {_("Cancel")}
+                                    </button>
+                                </div>),
+                            cover: this.props.waitingDiv,
+                            container_class: 'waiting-for-opponent-container'
+                        });
+                    }
+                    else {
+                        swal({
+                            title: _("Waiting for opponent"),
+                        html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
+                            confirmButtonClass: "btn-danger",
+                            confirmButtonText: "Cancel",
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                        })
+                            .then(() => {
+                                cancel_challenge();
+                            })
+                            .catch(() => {
+                                off();
+                            });
+                    }
 
                     active_check();
                 } else {
@@ -967,7 +988,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     /* }}} */
 }
 
-export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {{{
+export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any, waiting_div?: any) {{{
     // TODO: Support challenge by player, w/ initial state, or computer
 
     if (player_id && typeof(player_id) !== "number") {
@@ -983,7 +1004,7 @@ export function challenge(player_id?: number, initial_state?: any, computer?: bo
         mode = "computer";
     }
 
-    return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} />);
+    return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} waitingDiv={waiting_div}/>);
 }}}
 export function createDemoBoard() {{{
     let mode: ChallengeModes = "demo";
