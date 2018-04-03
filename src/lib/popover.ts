@@ -116,7 +116,7 @@ export function popover(config: PopoverConfig): PopOver {
         } else {
             // Don't overlap the element we were supposed to be below.
             // If there is no space below, just go above it instead.
-            container.css({minWidth: minWidth, bottom:$(window).height() - rectangle.top, left: x});
+            container.css({minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x});
         }
     }
     else if (config.cover) {
