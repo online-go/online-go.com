@@ -1686,25 +1686,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
                     }
-                    {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "score estimation" || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
                     {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
                 {/* }}} */}
@@ -1798,7 +1779,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     </div>
                 }{/* }}} */}
                 {(this.state.phase === "finished" || null) &&  /* {{{ */
-                    <div>
+                    <div className="analyze-mode-buttons">     {/* not really analyze mode, but equivalent button position and look*/}
                         {(this.state.user_is_player && this.state.mode !== "score estimation" || null) &&
                             <button
                                 onClick={this.rematch}
@@ -1895,7 +1876,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                        }
 
                     </div>
-                }{/* }}} */}
+                }
+                {/* }}} */}
                 {(this.state.mode === "conditional" || null) &&  /* {{{ */
                     <div className="conditional-move-planner">
                       <div className="buttons">
@@ -1933,16 +1915,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     </div>
                 }{/* }}} */}
-
-                {/*
-                    (this.goban.engine.config.original_sgf || null) &&
-                    <div style={{paddingLeft: '0.5em', paddingRight: '0.5em'}}>
-                        <textarea id='game-move-node-text' placeholder={_("Move comments...")}
-                            rows={5}
-                            className='form-control'
-                            disabled={true}></textarea>
-                    </div>
-                */}
+                {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
+                   <div className="analyze-mode-buttons">
+                    <span>
+                        <button className="sm primary bold"
+                                onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                    </span>
+                   </div>
+                }
+                {(state.mode === "score estimation" || null) &&
+                <div className="analyze-mode-buttons">
+                    <span>
+                        <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
+                    </span>
+                </div>
+                }
             </div>
         );
     }}}
@@ -2010,6 +1997,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }}}
     frag_analyze_button_bar() {{{
+        let state = this.state;
         return (
         <div className="game-analyze-button-bar">
             {/*
@@ -2077,7 +2065,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
-
+             <div className="analyze-mode-buttons">
+                 {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
+                 <span>
+                     <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                     <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
+                 </span>
+                 }
+             </div>
         </div>
         );
     }}}
