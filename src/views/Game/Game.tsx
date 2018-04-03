@@ -2600,7 +2600,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     saveEdit = () => {{{
         let user = data.get("user");
         this.qc_editableMsgs.map((li, index) => {
-            user.qc_phrases[index] = li.innerHTML;
+            user.qc_phrases[index] = li.innerText.trim();
         });
         localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
         this.finishEdit();
