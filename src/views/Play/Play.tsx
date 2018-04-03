@@ -460,8 +460,8 @@ export class Play extends React.Component<PlayProperties, any> {
             return (
                 <div className="ineligible">
                     {this.state.show_all_challenges ?
-                        _("(none)") :
-                        _("(none available)")}
+                        _("(none)") /* translators: No challenges available */ :
+                        _("(none available)") /* translators: No challenges available */}
                 </div>
             );
         }
