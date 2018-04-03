@@ -33,15 +33,22 @@ dock-inline-height=500px
     padding-bottom: 1rem;
     z-index: z.dock;
 
-    -webkit-transition: all 0.1s ease-in;
-    -moz-transition: all 0.1s ease-in;
-    -o-transition: all 0.1s ease-in;
-    transition: all 0.1s ease-in;
+    -webkit-transition: all 0.1s ease-in 0s;
+    -moz-transition: all 0.1s ease-in 0s;
+    -o-transition: all 0.1s ease-in 0s;
+    transition: all 0.1s ease-in 0s;
+
     box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.26);
 
     &:hover {
         right: 0;
         box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.26);
+
+        -webkit-transition: all 0.1s ease-in 2s;
+        -moz-transition: all 0.1s ease-in 2s;
+        -o-transition: all 0.1s ease-in 2s;
+        transition: all 0.1s ease-in 2s;
+
     }
 
     div.line-item {
