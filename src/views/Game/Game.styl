@@ -115,12 +115,12 @@ goban-view-bar-width=400px
             justify-content: center;
             margin: 5px;
             button {
-                // this works in both light and dark theme
-                background: green;
-                border: darkgreen;
+                themed background-color success
+                themed-darken border-color success border-darken-amount
             }
             button:hover {
-                background: darkgreen;
+                themed-lighten background-color success button-highlight-brighten-amount
+                themed-darken border-color success button-border-highlight-darken-amount
             }
         }
         .pause-controls {
