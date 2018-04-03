@@ -177,7 +177,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
                     </div>
                 }
-                <div className="size">{this.props.width + "x" + this.props.width}</div>
+                <div className="size">{this.props.width + "x" + this.props.height}</div>
             </Link>
         );
     }
