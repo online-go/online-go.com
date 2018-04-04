@@ -29,11 +29,13 @@ interface PopupCoordinates {
 }
 
 interface PopoverConfig {
-    elt: React.ReactElement<any>;
-    at?: PopupCoordinates;
-    below?: React.ReactInstance;
+    elt: React.ReactElement<any>; // the contents of the popover
+    at?: PopupCoordinates; // the position to place the popover
+    below?: React.ReactInstance; // the element to place the popover below
+    cover?: React.ReactInstance; // an element to cover up with the popover
     minWidth?: number;
     minHeight?: number;
+    container_class?: string; // className attribute to add to the popover container
     //above?:HTMLElement;;
     //below?:HTMLElement;;
     //left?:HTMLElement;;
@@ -116,6 +118,19 @@ export function popover(config: PopoverConfig): PopOver {
             // If there is no space below, just go above it instead.
             container.css({minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x});
         }
+    }
+    else if (config.cover) {
+        let rectangle = ReactDOM.findDOMNode(config.cover).getBoundingClientRect();
+        x = rectangle.left + window.scrollX;
+        //x = Math.min(x, bounds.x - minWidth);
+
+        y = rectangle.top + window.scrollY;
+
+        container.css({top:y, left: x, width: rectangle.right - x, height: rectangle.bottom - y + window.scrollY});
+    }
+
+    if (config.container_class) {
+        container[0].className += " " + config.container_class;
     }
 
     $(document.body).append(backdrop);

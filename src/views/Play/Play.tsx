@@ -209,7 +209,8 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
     newCustomGame = () => {{{
-        challenge(null);
+        challenge(undefined, undefined, undefined, undefined,
+            document.getElementsByClassName('automatch-container')[0]);
     }}}
 
     toggleSize(size) {{{
