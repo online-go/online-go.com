@@ -126,7 +126,7 @@ export function popover(config: PopoverConfig): PopOver {
 
         y = rectangle.top + window.scrollY;
 
-        container.css({top:y, left: x, width: rectangle.right - x, height: rectangle.bottom - y});
+        container.css({top:y, left: x, width: rectangle.right - x, height: rectangle.bottom - y + window.scrollY});
     }
 
     if (config.container_class) {
