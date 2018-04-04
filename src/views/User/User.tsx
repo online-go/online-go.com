@@ -552,7 +552,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.name = r.name;
                 item.href = "/review/" + item.id;
-                item.historical = r.game.historical_ratings;
+                item.historical = r.game.historical_ratings || { 'black': item.black, 'white': item.white };
 
                 if (!item.name || item.name.trim() === "") {
                     item.name = item.href;
