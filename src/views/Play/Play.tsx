@@ -137,6 +137,15 @@ export class Play extends React.Component<PlayProperties, any> {
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
     }}}
 
+    cancelActiveLiveChallenges = () => {{{
+        // In theory there should only be one, but cancel them all anyhow...
+        this.state.live_list.forEach((c) => {
+           if (c.user_challenge) {
+               this.cancelOpenChallenge(c);
+           }
+        });
+    }}}
+
     extractUser(challenge) {{{
         return {
             id: challenge.user_id,
@@ -238,6 +247,11 @@ export class Play extends React.Component<PlayProperties, any> {
         return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
+    }}}
+
+    liveOwnChallengePending = () => {{{
+        let locp = this.state.live_list.some((c) => (c.user_challenge));
+        return locp;
     }}}
 
     render() {
@@ -383,6 +397,24 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>
+                    </div>
+                </div>
+            );
+        }
+        else if (this.liveOwnChallengePending()) {
+            return(
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Waiting for opponent..")}
+                    </div>
+                    <div className='automatch-row-container'>
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className='automatch-settings'>
+                        <button className='danger sm' onClick={this.cancelActiveLiveChallenges}>{pgettext("Cancel challenge", "Cancel")}</button>
                     </div>
                 </div>
             );

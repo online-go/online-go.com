@@ -432,7 +432,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 notification_manager.event_emitter.on("notification", checkForReject);
 
                 if (open_now) {
-                    swal({
+                    /* swal({
                         title: _("Waiting for opponent"),
                         html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
                         confirmButtonClass: "btn-danger",
@@ -442,7 +442,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     })
                     .then(() => {
                         off();
-                        /* cancel challenge */
+                        // cancel challenge
                         del((this.props.mode === "open" ? "challenges/%%" : "me/challenges/%%"), challenge_id)
                         .then(ignore)
                         .catch(ignore);
@@ -451,7 +451,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         off();
                     });
 
-
+                     */
                     active_check();
                 } else {
                     if (this.props.mode === "open") {
