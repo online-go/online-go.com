@@ -93,19 +93,29 @@ export function popover(config: PopoverConfig): PopOver {
     if (config.at) {
         x = config.at.x;
         y = config.at.y;
+
+        x = Math.min(x, bounds.x - minWidth);
+
+        if (y < bounds.y - minHeight) {
+            container.css({minWidth: minWidth, top: y, left: x});
+        } else {
+            container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+        }
     }
     else if (config.below) {
         let rectangle = ReactDOM.findDOMNode(config.below).getBoundingClientRect();
         x = rectangle.left + window.scrollX;
+        x = Math.min(x, bounds.x - minWidth);
+
         y = rectangle.bottom + window.scrollY;
-    }
 
-    x = Math.min(x, bounds.x - minWidth);
-
-    if (y < bounds.y - minHeight) {
-        container.css({minWidth: minWidth, top: y, left: x});
-    } else {
-        container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+        if (y < bounds.y - minHeight) {
+            container.css({minWidth: minWidth, top: y, left: x});
+        } else {
+            // Don't overlap the element we were supposed to be below.
+            // If there is no space below, just go above it instead.
+            container.css({minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x});
+        }
     }
 
     $(document.body).append(backdrop);
