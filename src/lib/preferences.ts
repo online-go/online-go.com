@@ -63,6 +63,7 @@ let defaults = {
     "translation-dialog-dismissed": 0,
     "translation-dialog-never-show": false,
     "unicode-filter": false,
+    "extended-columns": []
 };
 
 defaults['profanity-filter'][current_language] = true;

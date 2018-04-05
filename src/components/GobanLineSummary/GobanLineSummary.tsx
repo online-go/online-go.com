@@ -23,6 +23,7 @@ import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {rankString} from "rank_utils";
 import {Player} from "Player";
+import {rulesText} from "misc";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -32,6 +33,8 @@ interface GobanLineSummaryProps {
     gobanref?: (goban:Goban) => void;
     width?: number;
     height?: number;
+    game?: any;
+    columns?: any;
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
@@ -178,6 +181,21 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                     </div>
                 }
                 <div className="size">{this.props.width + "x" + this.props.height}</div>
+                {this.props.columns.rules != undefined &&
+                  <div className="size">{rulesText(this.props.game.rules)}</div>
+                }
+                {this.props.columns.analysis != undefined &&
+                  <div className="size">{!this.props.game.disable_analysis ? _("Yes") : _("No")}</div>
+                }
+                {this.props.columns.ranked != undefined &&
+                  <div className="size">{this.props.game.ranked ? _("Yes") : _("No")}</div>
+                }
+                {this.props.columns.handicap != undefined &&
+                  <div className="size">{this.props.game.handicap}</div>
+                }
+                {this.props.columns.weekendpause != undefined &&
+                  <div className="size">{this.props.game.pause_on_weekends ? _("Yes") : _("No")}</div>
+                }
             </Link>
         );
     }

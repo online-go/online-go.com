@@ -64,6 +64,7 @@ export class Settings extends React.PureComponent<{}, any> {
             email_changed: false,
             email_message: null,
             profanity_filter: Object.keys(preferences.get("profanity-filter")),
+            extended_columns: preferences.get("extended-columns"),
             game_list_threshold: preferences.get("game-list-threshold"),
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
@@ -245,6 +246,11 @@ export class Settings extends React.PureComponent<{}, any> {
         Array.prototype.filter.apply(ev.target.options, [x => x.selected]).map(opt => new_profanity_settings[opt.value] = true);
         preferences.set("profanity-filter", new_profanity_settings);
         this.setState({profanity_filter: Object.keys(new_profanity_settings)});
+    }}}
+    updateExtendedColumns = (ev) => {{{
+        const new_extended_columns = Array.prototype.filter.apply(ev.target.options, [x => x.selected]).map(opt => opt.value);
+        preferences.set("extended-columns", new_extended_columns);
+        this.setState({extended_columns: new_extended_columns});
     }}}
     setAutoAdvance = (ev) => {{{
         preferences.set("auto-advance-after-submit", ev.target.checked),
@@ -455,6 +461,17 @@ export class Settings extends React.PureComponent<{}, any> {
                                     {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
                                         <option key={lang} value={lang}>{languages[lang]}</option>
                                     ))}
+                                </select>
+                            </dd>
+
+                            <dt>{_("Extended columns")}</dt>
+                            <dd>
+                                <select multiple onChange={this.updateExtendedColumns} value={this.state.extended_columns} >
+                                  <option key="rules" value="rules">{_('Rules')}</option>
+                                  <option key="analysis" value="analysis">{_('Analysis')}</option>
+                                  <option key="ranked" value="ranked">{_('Rank')}</option>
+                                  <option key="handicap" value="handicap">{_('Handicap')}</option>
+                                  <option key="weekendpause" value="weekendpause">{_('Pauses on weekends')}</option>
                                 </select>
                             </dd>
 
