@@ -432,25 +432,31 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 notification_manager.event_emitter.on("notification", checkForReject);
 
                 if (open_now) {
-                    swal({
-                        title: _("Waiting for opponent"),
-                        html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
-                        confirmButtonClass: "btn-danger",
-                        confirmButtonText: "Cancel",
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                    })
-                    .then(() => {
-                        off();
-                        /* cancel challenge */
-                        del((this.props.mode === "open" ? "challenges/%%" : "me/challenges/%%"), challenge_id)
-                        .then(ignore)
-                        .catch(ignore);
-                    })
-                    .catch(() => {
-                        off();
-                    });
+                    if (this.props.mode !== "open") {
+                        /* This is a direct challenge, which can be made in any context (not necessarily one showing challenges)
+                           so it needs a dialog to let them know that we made the challenge.
 
+                           This doesn't _have to be_ a modal, but currently is a modal pending a different design.
+                         */
+                        swal({
+                            title: _("Waiting for opponent"),
+                            html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
+                            confirmButtonClass: "btn-danger",
+                            confirmButtonText: "Cancel",
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                        })
+                            .then(() => {
+                                off();
+                                // cancel challenge
+                                del("me/challenges/%%", challenge_id)
+                                    .then(ignore)
+                                    .catch(ignore);
+                            })
+                            .catch(() => {
+                                off();
+                            });
+                    }
 
                     active_check();
                 } else {
