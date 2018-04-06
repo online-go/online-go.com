@@ -31,7 +31,7 @@ export class Dock extends React.Component<any, any> {
         let delay = this.state.dock_delay;
         if (delay === MAX_DOCK_DELAY) {
             console.log("NO slide out");
-            delay = 99999
+            delay = 99999;
         }
         // open dock at speed set by preference 'dock-delay'
         let modified_transition = `all 0.1s ease-in ${delay}s`;
