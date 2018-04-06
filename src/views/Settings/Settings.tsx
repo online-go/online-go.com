@@ -76,6 +76,7 @@ export class Settings extends React.PureComponent<{}, any> {
             show_ads_on_game_page: preferences.get('show-ads-on-game-page'),
             board_labeling: preferences.get("board-labeling"),
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
+            dock_delay: preferences.get("dock-delay"),
         };
     }
 
@@ -148,6 +149,13 @@ export class Settings extends React.PureComponent<{}, any> {
             sound_enabled: enabled,
         });
     }}}
+
+    setDockDelay = (ev) => {{{
+        let new_delay = parseFloat(ev.target.value);
+        preferences.set("dock-delay", new_delay);
+        this.setState({"dock_delay": new_delay});
+    }}}
+
     setVoiceCountdown = (ev) => {{{
         preferences.set("sound-voice-countdown", ev.target.checked);
         this.setState({"voice_countdown": ev.target.checked});
@@ -516,7 +524,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </dl>
                     </Card>
 
-                    <Card>{/* {{{ */}
+                    <Card>
                         <h3>{_("Game Preferences")}</h3>
                         <dl>
                             <dt>{_("Sound")}</dt>
@@ -531,6 +539,14 @@ export class Settings extends React.PureComponent<{}, any> {
                                 /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
                                     {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
                                 </span>
+                            </dd>
+                            <dt>{_("Dock delay")}</dt>
+                            <dd className="inline-flex">
+                                <input type="range"
+                                       onChange={this.setDockDelay}
+                                          value={this.state.dock_delay} min={0} max={3.0} step={0.2}
+                                />
+                                <span>{this.state.dock_delay}s</span>
                             </dd>
                             <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
                             <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
