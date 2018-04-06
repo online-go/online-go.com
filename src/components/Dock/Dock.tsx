@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as preferences from "preferences";
+import { MAX_DOCK_DELAY } from 'Settings';
 
 export class Dock extends React.Component<any, any> {
     constructor(props) {
@@ -27,8 +28,13 @@ export class Dock extends React.Component<any, any> {
     }
 
     mouseEntered = (ev) => {
+        let delay = this.state.dock_delay;
+        if (delay === MAX_DOCK_DELAY) {
+            console.log("NO slide out");
+            delay = 99999
+        }
         // open dock at speed set by preference 'dock-delay'
-        let modified_transition = `all 0.1s ease-in ${this.state.dock_delay}s`;
+        let modified_transition = `all 0.1s ease-in ${delay}s`;
         let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
         // tested on Opera, Chrome, Safari, Edge, Firefox
         dock.style.transition = modified_transition;

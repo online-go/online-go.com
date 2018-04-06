@@ -30,7 +30,7 @@ let defaults = {
     "chat.show-all-tournament-channels": true,
     "chat.user-sort-order": "rank",
     "desktop-notifications": true,
-    "dock-delay": 1.5, // seconds.
+    "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "game-list-threshold": 10,

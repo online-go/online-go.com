@@ -32,6 +32,7 @@ import {profanity_regex} from 'profanity_filter';
 
 
 declare var swal;
+export const MAX_DOCK_DELAY = 3.0;
 
 export class Settings extends React.PureComponent<{}, any> {
     vacation_base_time = Date.now();
@@ -524,7 +525,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </dl>
                     </Card>
 
-                    <Card>
+                    <Card>{/* {{{ */}
                         <h3>{_("Game Preferences")}</h3>
                         <dl>
                             <dt>{_("Sound")}</dt>
@@ -540,13 +541,17 @@ export class Settings extends React.PureComponent<{}, any> {
                                     {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
                                 </span>
                             </dd>
-                            <dt>{_("Dock delay")}</dt>
+                            <dt>{_("Game control dock expansion delay") /* translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...) */}</dt>
                             <dd className="inline-flex">
                                 <input type="range"
                                        onChange={this.setDockDelay}
-                                          value={this.state.dock_delay} min={0} max={3.0} step={0.2}
+                                          value={this.state.dock_delay} min={0} max={MAX_DOCK_DELAY} step={0.1}
                                 />
-                                <span>{this.state.dock_delay}s</span>
+                                <span>&nbsp;{
+                                    this.state.dock_delay === MAX_DOCK_DELAY
+                                        ?  _("Off") /* translators: Indicates the dock slide out has been turned off */
+                                        : interpolate(_("{{number_of}} seconds"), { number_of:  this.state.dock_delay}) /* translators: Indicates the number of seconds to delay the slide out of the list of game buttons on the right side of the game page */
+                                }</span>
                             </dd>
                             <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
                             <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
