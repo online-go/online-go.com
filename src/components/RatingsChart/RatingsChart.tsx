@@ -786,7 +786,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
 
             // Don't plot bars for incomplete months at each end
-            let x = X(d,0);
+            let x = X(d, 0);
             w = isFinite(w) && x > 0 && (x + this.getUTCMonthWidth(d.ended) < this.graph_width)  ? w : 0;
             //console.log("W", w);
             return w;
