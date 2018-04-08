@@ -37,6 +37,7 @@ import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 
+const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for 1s while they move their mouse on it
 
 interface PlayProperties {
 }
@@ -56,6 +57,8 @@ export class Play extends React.Component<PlayProperties, any> {
             disableCorrespondenceButton: false,
             show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
+            freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
+            pending_challenges: [], // challenges received while frozen
         };
         this.canvas = $("<canvas>")[0];
     }
@@ -80,6 +83,12 @@ export class Play extends React.Component<PlayProperties, any> {
         this.seekgraph.destroy();
     }}}
 
+    componentDidUpdate() {{{
+        if (this.state.pending_challenges.length !== 0 && !this.state.freeze_challenge_list) {
+            this.updateChallenges(this.state.pending_challenges);
+        }
+    }}}
+
     resize = () => {{{
         if (!this.ref_container) {
             return;
@@ -96,6 +105,11 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
     updateChallenges = (challenges) => {{{
+        if (this.state.freeze_challenge_list) {
+            this.setState({pending_challenges: challenges});
+            return;
+        }
+
         let live = [];
         let corr = [];
         for (let i in challenges) {
@@ -122,7 +136,8 @@ export class Play extends React.Component<PlayProperties, any> {
 
         this.setState({
             live_list: live,
-            correspondence_list: corr
+            correspondence_list: corr,
+            pending_challenges: []
         });
     }}}
 
@@ -130,11 +145,13 @@ export class Play extends React.Component<PlayProperties, any> {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
+            this.unfreezeChallenges();
         }).catch(errorAlerter);
     }}}
 
     cancelOpenChallenge(challenge) {{{
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
+        this.unfreezeChallenges();
     }}}
 
     cancelActiveLiveChallenges = () => {{{
@@ -254,11 +271,21 @@ export class Play extends React.Component<PlayProperties, any> {
         return locp;
     }}}
 
+    freezeChallenges = () => {{{
+        if (!this.state.freeze_challenge_list) {
+            this.setState({freeze_challenge_list: true});
+            setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
+        }
+    }}}
+
+    unfreezeChallenges = () => {{{
+        this.setState({freeze_challenge_list: false});
+    }}}
+
     render() {
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
         let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
-
 
         return (
             <div className="Play container">
@@ -280,7 +307,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                 <div id="challenge-list-container">
                     <div id="challenge-list-inner-container">
-                        <div id="challenge-list">
+                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
 
                             {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
