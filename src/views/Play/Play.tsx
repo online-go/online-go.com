@@ -37,7 +37,7 @@ import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 
-const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for 1s while they move their mouse on it
+const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
 interface PlayProperties {
 }
@@ -83,8 +83,9 @@ export class Play extends React.Component<PlayProperties, any> {
         this.seekgraph.destroy();
     }}}
 
-    componentDidUpdate() {{{
-        if (this.state.pending_challenges.length !== 0 && !this.state.freeze_challenge_list) {
+    componentDidUpdate(prevProps, prevState) {{{
+        if (prevState.freeze_challenge_list && !this.state.freeze_challenge_list &&
+            this.state.pending_challenges.length !== 0) {
             this.updateChallenges(this.state.pending_challenges);
         }
     }}}
@@ -106,6 +107,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
     updateChallenges = (challenges) => {{{
         if (this.state.freeze_challenge_list) {
+            console.log("list store...");
             this.setState({pending_challenges: challenges});
             return;
         }
@@ -134,6 +136,7 @@ export class Play extends React.Component<PlayProperties, any> {
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
 
+        console.log("list update...");
         this.setState({
             live_list: live,
             correspondence_list: corr,
@@ -273,12 +276,14 @@ export class Play extends React.Component<PlayProperties, any> {
 
     freezeChallenges = () => {{{
         if (!this.state.freeze_challenge_list) {
+            console.log("Freeze challenges...");
             this.setState({freeze_challenge_list: true});
             setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
         }
     }}}
 
     unfreezeChallenges = () => {{{
+        console.log("Unfreeze challenges...");
         this.setState({freeze_challenge_list: false});
     }}}
 
