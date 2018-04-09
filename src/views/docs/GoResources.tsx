@@ -246,6 +246,7 @@ export let GoResources = (props) => {
                 <span><Flag country={"es"}/> <a href="http://aego.biz/">Asociación Española de GO</a></span>,
                 <span><Flag country={"se"}/> <a href="http://goforbundet.se">Svenska Goförbundet</a></span>,
                 <span><Flag country={"ru"}/> <a href="http://gofederation.ru">Russian Go Federation</a></span>
+                <span><Flag country={"pt"}/> <a href="http://www.go-portugal.org">Associação Portuguesa de Go</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
