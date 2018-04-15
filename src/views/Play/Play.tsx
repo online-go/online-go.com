@@ -107,11 +107,28 @@ export class Play extends React.Component<PlayProperties, any> {
 
     updateChallenges = (challenges) => {{{
         if (this.state.freeze_challenge_list) {
-            console.log("list store...");
-            this.setState({pending_challenges: challenges});
+            let live = this.state.live_list;
+            let corr = this.state.correspondence_list;
+            for (let list of [live, corr]) {
+                for (let i in list) {
+                    let id = list[i].challenge_id;
+                    if (!challenges[id]) {
+                        console.log("Challenge went away:", id);
+                        list[i].eligible = false;
+                        list[i].ineligible_reason = _("challenge no longer available"); /* translator: the person can't accept this challenge because it has been removed or accepted already */
+                    }
+                }
+            }
+            console.log("pending list store...");
+            this.setState({
+                pending_challenges: challenges,
+                live_list: live,
+                correspondence_list: corr
+            });
             return;
         }
 
+        console.log("Updating challenges with:", challenges);
         let live = [];
         let corr = [];
         for (let i in challenges) {
