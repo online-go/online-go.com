@@ -1954,7 +1954,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {this.frag_analyze_button_bar()}
 
                     <div className="space-around">
-                        <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
                         {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
                             this.state.review_out_of_sync &&
                             <button className="sm" onClick={this.syncToCurrentReviewMove}>
@@ -1998,10 +1997,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     frag_analyze_button_bar() {{{
         let state = this.state;
+
         return (
         <div className="game-analyze-button-bar">
             {/*
-            {(this.review || null) &&
+            {(this.review_id || null) &&
                 <i id='review-sync' className='fa fa-refresh {{goban.engine.cur_move.id !== goban.engine.cur_review_move.id ? "need-sync" : ""}}'
                     onClick={this.syncToCurrentReviewMove()} title={_("Sync to where the reviewer is at")}></i>
             }
@@ -2068,7 +2068,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
              <div className="analyze-mode-buttons">
                  {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
                  <span>
-                     <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                     {(!this.review_id || null) &&
+                        <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                     }
                      <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
                  </span>
                  }

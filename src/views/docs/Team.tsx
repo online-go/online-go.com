@@ -64,6 +64,7 @@ export class Team extends React.PureComponent<{}, any> {
         let hi = getLanguageFlag("hindi", country, "in");
         let gb = getLanguageFlag("gb", country, "gb");
         let se = getLanguageFlag("swedish", country, "se");
+        let cz = getLanguageFlag("czech", country, "cz");
 
         let moderators = [
             {"id": 784   , "username": "mlopezviedma" , "country": ["ar"] , "languages": [es, en]} ,
@@ -76,6 +77,8 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 66091 , "username": "Revar Isavé"  , "country": ["de"] , "languages": [de, gb]} ,
             {"id": 441   , "username": "VincentCB"    , "country": ["ca"] , "languages": [en, fr]} ,
             {"id": 55415 , "username": "sousys"       , "country": ["se"] , "languages": [se, en]} ,
+            {"id": 360861 , "username": "AdamR"       , "country": ["cz"] , "languages": [cz, en]} ,
+            {"id": 299041 , "username": "Razza99"     , "country": ["gb"] , "languages": [en]} ,
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
