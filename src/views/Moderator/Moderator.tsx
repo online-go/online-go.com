@@ -95,7 +95,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: _("Accounts") , render: (X) => X.browser_id_count} ,
                         {header: "IP"          , render: (X) => <span className='monospace small clip'>{X.last_ip}</span>} ,
                         {header: _("Country")  , render: (X) => <span>{cc_to_country_name(X.geoip.country)} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
-                        {header: _("Timezone") , render: (X) => X.last_timezone_offset/60} ,
+                        {header: _("Timezone") , render: (X) => X.last_timezone_offset / 60} ,
                         {header: "BID"         , render: (X) => <span className='monospace small clip'>{X.last_browser_id}</span>} ,
                         {header: "Fingerprint" , render: (X) => <span className='monospace small clip'>{X.last_fingerprint}</span>} ,
                     ]}
