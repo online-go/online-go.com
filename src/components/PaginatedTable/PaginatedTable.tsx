@@ -28,7 +28,7 @@ interface PaginatedTableColumnProperties {
     headerProps?: any;
     sortable?: boolean;
     striped?: boolean;
-    className: ((row) => string) | string;
+    className?: ((row) => string) | string;
     orderBy?: Array<string>;
 }
 
