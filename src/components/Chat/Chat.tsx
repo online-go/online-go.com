@@ -171,7 +171,6 @@ export class Chat extends React.Component<ChatProperties, any> {
             show_say_hi_placeholder: true,
         };
 
-        this.resolve();
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
@@ -198,6 +197,8 @@ export class Chat extends React.Component<ChatProperties, any> {
     }}}
 
     componentDidMount() {{{
+        this.resolve();
+
         comm_socket.on("connect", this.connect);
         comm_socket.on("disconnect", this.disconnect);
         if (comm_socket.connected) {
