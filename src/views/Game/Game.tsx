@@ -578,26 +578,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.showPrevious();
         this.goban.syncReviewMove();
     }}}
-    /* This is a workaround for a bug (?) in ogs-goban where a showNext to the
-       lastOfficialMove plus 1 does not set move_selected.  But at least in
-       analysis disabled mode, you would expect to be able to submit that move
-       Easiest thing is to just not let them "next" forwards to a previously submitted
-       speculative move that they went back from.  The (?) is because ogs-goban doesn't
-       know about analysis mode, so how does it know to set move_selected? Meanwhile,
-       sidestep the issue :)
-     */
-    goban_show_next() {{{
-        if (!(this.goban.isAnalysisDisabled() && this.goban.isLastOfficialMove())) {
-            this.goban.showNext();
-        }
-    }}}
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {{{
         let last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
         }
         this.checkAndEnterAnalysis(last_estimate_move);
-        this.goban_show_next();
+        this.goban.showNext();
         this.goban.syncReviewMove();
     }}}
     nav_next_10() {{{
@@ -605,7 +592,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
-            this.goban_show_next();
+            this.goban.showNext();
         }
         this.goban.syncReviewMove();
     }}}

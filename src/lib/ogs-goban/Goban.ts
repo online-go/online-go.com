@@ -3516,7 +3516,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.engine.setLastOfficialMove();
         this.updateTitleAndStonePlacement();
     } /* }}} */
-    public isLastOfficialMove() { /* {{{ */
+    protected isLastOfficialMove() { /* {{{ */
         return this.engine.isLastOfficialMove();
     } /* }}} */
 

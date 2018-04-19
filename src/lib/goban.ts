@@ -42,6 +42,21 @@ export class Goban extends OGSGoban {
         };
     }
 
+    showNext(dont_update_display?) {
+        /* This is a workaround for a bug (?) in ogs-goban where a showNext to the
+           lastOfficialMove plus 1 does not set move_selected.  But at least in
+           analysis disabled mode, you would expect to be able to submit that move
+           Easiest thing is to just not let them "next" forwards to a previously submitted
+           speculative move that they went back from.  The (?) is because ogs-goban doesn't
+           know about isAnalysisDisabled, so how does it know whether to set move_selected?
+           Meanwhile, sidestep the issue :)
+         */
+        if (this.isAnalysisDisabled() && this.isLastOfficialMove()) {
+            return;
+        }
+        super.showNext(dont_update_display);
+    }
+
     getClockDrift() {
         return get_clock_drift();
     }
