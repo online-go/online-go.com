@@ -55,7 +55,7 @@ const chart_min_width = 64;
 const chart_height = 283;
 const date_legend_width = 70;
 const win_loss_bars_start_y = 155;
-const win_loss_bars_height = 65;
+const win_loss_bars_height = 60;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
@@ -244,7 +244,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([60, 0]);
+        this.outcomes_y.range([win_loss_bars_height, 0]);
     }}}
 
     initialize() {{{
@@ -774,7 +774,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_axis_labels
             .call(this.timeline_axis);
 
-
         if (this.show_pie) {
             this.plotWinLossPie();
         }
@@ -785,7 +784,12 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     plotWinLossBars = () => {{{
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
-            return isFinite(w) ? w : 0;
+
+            // Don't plot bars for incomplete months at each end
+            let x = X(d, 0);
+            w = isFinite(w) && x > 0 && (x + this.getUTCMonthWidth(d.ended) < this.graph_width)  ? w : 0;
+            //console.log("W", w);
+            return w;
         };
         const X = (d:RatingEntry, alpha:number) => {
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
@@ -794,7 +798,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let s = start.getTime();
             let e = end.getTime();
             let x = this.ratings_x(s * (1 - alpha) + e * alpha);
-            return isFinite(x) ? x : 0;
+            x = isFinite(x) ? x : 0;
+            //console.log("X", x, alpha);
+            return x;
         };
         const H = (count:number) => {
             return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
@@ -808,6 +814,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
         this.win_loss_bars.length = 0;
 
+        //console.log("PWLB: games_by_month:", this.games_by_month);
+        //console.log("weak wins...");
         this.win_loss_bars.push(
             this.win_loss_graphs[0].selectAll('rect')
                 .data(this.games_by_month)
@@ -818,6 +826,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)))
                 .attr('height', (d:RatingEntry) => H(d.wins))
         );
+        //console.log("strong wins...");
         this.win_loss_bars.push(
             this.win_loss_graphs[1].selectAll('rect')
                 .data(this.games_by_month)
@@ -828,6 +837,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)))
                 .attr('height', (d:RatingEntry) => H(d.wins))
         );
+        //console.log("weak losses...");
         this.win_loss_bars.push(
             this.win_loss_graphs[2].selectAll('rect')
                 .data(this.games_by_month)
@@ -838,6 +848,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
+        //console.log("strong losses...");
         this.win_loss_bars.push(
             this.win_loss_graphs[3].selectAll('rect')
                 .data(this.games_by_month)
@@ -848,6 +859,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)))
                 .attr('height', (d:RatingEntry) => H(d.losses))
         );
+        //console.log("transparent...");
         this.win_loss_bars.push(
             this.win_loss_graphs[4].selectAll('rect')
                 .data(this.games_by_month)
