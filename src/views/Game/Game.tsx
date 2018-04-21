@@ -1628,7 +1628,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }}}
     frag_cancel_button() {{{
-        return <button className="bold cancel-button reject" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        if (this.state.view_mode === "portrait") {
+            return <button className="bold cancel-button reject" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        } else {
+            return <button className="xs bold cancel-button" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        }
     }}}
     frag_play_buttons(show_cancel_button) {{{
         let state = this.state;
