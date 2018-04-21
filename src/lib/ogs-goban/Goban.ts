@@ -3436,6 +3436,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.followConditionalPath(prev_path);
             }
         } else {
+            this.setSubmit(null); // once you go back, you can't be submitting, the Pass button should show.
             if (this.move_selected) {
                 this.jumpToLastOfficialMove();
                 return;
@@ -3515,7 +3516,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.engine.setLastOfficialMove();
         this.updateTitleAndStonePlacement();
     } /* }}} */
-    private isLastOfficialMove() { /* {{{ */
+    protected isLastOfficialMove() { /* {{{ */
         return this.engine.isLastOfficialMove();
     } /* }}} */
 
