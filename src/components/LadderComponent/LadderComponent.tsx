@@ -119,7 +119,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         let full_view = this.props.fullView;
         let startingPage = 1;
         if (!this.props.dontStartOnPlayersPage && this.state.ladder.player_rank > 0) {
-            startingPage = Math.max(1, Math.floor(this.state.ladder.player_rank / this.state.page_size) + 1);
+            startingPage = Math.max(1, Math.ceil(this.state.ladder.player_rank / this.state.page_size));
         }
 
         let thin_view = $(window).width() < 800;
