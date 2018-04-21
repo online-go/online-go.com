@@ -1091,7 +1091,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.show_undo_requested = (engine.undo_requested === engine.last_official_move.move_number);
             new_state.show_accept_undo = (goban.engine.playerToMove() === data.get("user").id || (goban.submit_move != null && goban.engine.playerNotToMove() === data.get("user").id) || null);
             new_state.show_title = (!goban.submit_move || goban.engine.playerToMove() !== data.get("user").id || null);
-            new_state.show_submit = !!goban.submit_move;
+            new_state.show_submit = !!goban.submit_move && (goban.engine.cur_move && goban.engine.cur_move.parent && goban.engine.last_official_move && goban.engine.cur_move.parent.id === goban.engine.last_official_move.id);
             new_state.player_to_move = goban.engine.playerToMove();
             new_state.player_not_to_move = goban.engine.playerNotToMove();
             new_state.is_my_move = new_state.player_to_move === data.get("user").id;
