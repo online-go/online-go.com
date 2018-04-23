@@ -84,6 +84,10 @@ export class Play extends React.Component<PlayProperties, any> {
         automatch_manager.off('start', this.onAutomatchStart);
         automatch_manager.off('cancel', this.onAutomatchCancel);
         this.seekgraph.destroy();
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+            this.list_freeze_timeout = null;
+        }
     }}}
 
     componentDidUpdate(prevProps, prevState) {{{
