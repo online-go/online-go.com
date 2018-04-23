@@ -49,6 +49,8 @@ export class Play extends React.Component<PlayProperties, any> {
     seekgraph: SeekGraph;
     resize_check_interval;
 
+    list_freeze_timeout;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -61,6 +63,7 @@ export class Play extends React.Component<PlayProperties, any> {
             pending_challenges: [], // challenges received while frozen
         };
         this.canvas = $("<canvas>")[0];
+        this.list_freeze_timeout = null;
     }
 
     componentDidMount() {{{
@@ -292,16 +295,20 @@ export class Play extends React.Component<PlayProperties, any> {
     }}}
 
     freezeChallenges = () => {{{
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+        }
         if (!this.state.freeze_challenge_list) {
             console.log("Freeze challenges...");
             this.setState({freeze_challenge_list: true});
-            setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
         }
+        this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
     }}}
 
     unfreezeChallenges = () => {{{
         console.log("Unfreeze challenges...");
         this.setState({freeze_challenge_list: false});
+        this.list_freeze_timeout = null;
     }}}
 
     render() {
