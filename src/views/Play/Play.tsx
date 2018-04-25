@@ -312,7 +312,10 @@ export class Play extends React.Component<PlayProperties, any> {
     unfreezeChallenges = () => {{{
         console.log("Unfreeze challenges...");
         this.setState({freeze_challenge_list: false});
-        this.list_freeze_timeout = null;
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+            this.list_freeze_timeout = null;
+        }
     }}}
 
     render() {
