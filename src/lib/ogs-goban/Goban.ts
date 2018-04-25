@@ -1685,7 +1685,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (this.mode === "play") {
                 $("#pass-resign-buttons").removeClass("hidden");
             }
-            if (this.engine.phase === "stone removal" || this.scoring_mode) { /* {{{ */
+            if ((this.engine.phase === "stone removal" || this.scoring_mode) && this.isParticipatingPlayer()) { /* {{{ */
                 let arrs;
                 if (event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) {
                     let removed = !this.engine.removal[y][x];
