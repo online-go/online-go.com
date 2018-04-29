@@ -121,7 +121,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     let id = list[i].challenge_id;
                     if (!challenges[id]) {
                         console.log("Challenge went away:", id);
-                        list[i].eligible = false;
+                        list[i].removed = true;
                         list[i].ineligible_reason = _("challenge no longer available"); /* translator: the person can't accept this challenge because it has been removed or accepted already */
                     }
                 }
@@ -577,8 +577,8 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>
                             }
 
-                            {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
-                            {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
+                            {(C.eligible && !C.removed || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
+                            {((!C.eligible || C.removed) && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                         </span>
                         <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
