@@ -49,13 +49,13 @@ export class Settings extends React.PureComponent<{}, any> {
             /* not all browsers support the Notification API */
         }
 
-
         this.state = {
             resolved: false,
             profile: {email: ""},
             notifications: {},
             vacation_left: "",
             volume: preferences.get("sound-volume"),
+            automatch_alert_volume: preferences.get("automatch-alert-volume"),
             voice_countdown: preferences.get("sound-voice-countdown"),
             sound_enabled: preferences.get("sound-enabled"),
             live_submit_mode: this.getSubmitMode("live"),
@@ -150,7 +150,16 @@ export class Settings extends React.PureComponent<{}, any> {
             sound_enabled: enabled,
         });
     }}}
+    setAutomatchAlertVolume = (ev) => {{{
+        this._setAutomatchAlertVolume(parseFloat(ev.target.value));
+    }}}
+    _setAutomatchAlertVolume(volume) {{{
+        preferences.set("automatch-alert-volume", volume);
 
+        this.setState({
+            automatch_alert_volume: volume,
+        });
+    }}}
     setDockDelay = (ev) => {{{
         let new_delay = parseFloat(ev.target.value);
         preferences.set("dock-delay", new_delay);
@@ -183,11 +192,24 @@ export class Settings extends React.PureComponent<{}, any> {
     toggleVolume = (ev) => {{{
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
     }}}
+    toggleAutomatchAlertVolume = (ev) => {{{
+        this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
+    }}}
     playSampleSound = () => {{{
         let num = Math.round(Math.random() * 10000) % 5;
         sfx.play("stone-" + (num + 1));
     }}}
-
+    playAutomatchAlert = () => {{{
+        let new_game_alert;
+        try {
+            new_game_alert = new Audio(preferences.get("automatch-alert-sound"));
+            let volume = preferences.get("automatch-alert-volume");
+            new_game_alert.volume = volume;
+            new_game_alert.play();
+        } catch (e) {
+            console.log("Failed playing automatch sound!");
+        }
+    }}}
     getSubmitMode(speed) {{{
         let single = preferences.get(`one-click-submit-${speed}` as any);
         let dbl = preferences.get(`double-click-submit-${speed}` as any);
@@ -541,7 +563,20 @@ export class Settings extends React.PureComponent<{}, any> {
                                     {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
                                 </span>
                             </dd>
-                            <dt>{_("Game control dock expansion delay") /* translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...) */}</dt>
+                            <dt>{_("Automatch Alert")}</dt> {/* translators: this is the volume control for the sound when an automatch starts */}
+                            <dd className="inline-flex">
+                                <i className={"fa volume-icon " +
+                                    (this.state.automatch_alert_volume === 0 ? "fa-volume-off"
+                                        : (this.state.automatch_alert_volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                                        onClick={this.toggleAutomatchAlertVolume}
+                                /> <input type="range"
+                                    onChange={this.setAutomatchAlertVolume}
+                                    value={this.state.automatch_alert_volume} min={0} max={1.0} step={0.01}
+                                /> <span onClick={this.playAutomatchAlert} style={{cursor: "pointer"}}>
+                                    {_("Test") /* translators: Play the automatch alert to test the volume */ } <i className="fa fa-play" />
+                                </span>
+                            </dd>
+                            <dt>{_("Game-control-dock pop-out delay") /* translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...) */}</dt>
                             <dd className="inline-flex">
                                 <input type="range"
                                        onChange={this.setDockDelay}
@@ -550,7 +585,7 @@ export class Settings extends React.PureComponent<{}, any> {
                                 <span>&nbsp;{
                                     this.state.dock_delay === MAX_DOCK_DELAY
                                         ?  _("Off") /* translators: Indicates the dock slide out has been turned off */
-                                        : interpolate(_("{{number_of}} seconds"), { number_of:  this.state.dock_delay}) /* translators: Indicates the number of seconds to delay the slide out of the list of game buttons on the right side of the game page */
+                                        : interpolate(_("{{number_of}} seconds"), { number_of:  this.state.dock_delay}) /* translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page */
                                 }</span>
                             </dd>
                             <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>

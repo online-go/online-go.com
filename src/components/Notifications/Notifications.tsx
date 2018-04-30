@@ -30,7 +30,6 @@ import {FabX, FabCheck} from "material";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {toast} from 'toast';
 
-
 declare let Notification: any;
 
 interface Events {
@@ -39,7 +38,6 @@ interface Events {
     "notification-list-updated": never;
     "notification-count": number;
 }
-
 
 // null or id of game that we're current viewing
 function getCurrentGameId() {
@@ -82,8 +80,6 @@ function formatTime(seconds) { /* {{{ */
     }
     return _("no time left");
 } /* }}} */
-
-
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;
@@ -211,6 +207,7 @@ class NotificationManager {
     turn_offset;
     auth;
     event_emitter: TypedEventEmitter<Events>;
+    new_game_alert;
 
     constructor() {{{
         window["notification_manager"] = this;
@@ -222,6 +219,14 @@ class NotificationManager {
         this.boards_to_move_on = {};
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
+        try {
+            this.new_game_alert = new Audio(preferences.get("automatch-alert-sound"));
+            let volume = preferences.get("automatch-alert-volume");
+            this.new_game_alert.volume = volume;
+        } catch (e) {
+            this.new_game_alert = null;
+            console.log("Failed setting up automatch sound");
+        }
     }}}
     setUser(user) {{{
         if (this.user && (user.id === this.user.id)) {
@@ -386,6 +391,9 @@ class NotificationManager {
                         if (notification.type === "gameStarted") {
                             title = _("Game Started");
                             body = _("Your game has started");
+                            if (this.new_game_alert) {
+                                this.new_game_alert.play();
+                            }
                         } else if (notification.type === "gameEnded") {
                             title = _("Game Ended");
                             body = _("Your game has ended");
