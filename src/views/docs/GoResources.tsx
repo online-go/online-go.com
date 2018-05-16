@@ -170,6 +170,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Sites")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a href="https://openstudyroom.org">Open Study Room</a></span>,
                 <span><Flag country={en}/> <a href="http://gobase.org/">GoBase.org</a></span>,
                 <span><Flag country={fr}/> <a href="http://rfg.jeudego.org/">Revue Française de Go</a></span>,
                 <span><Flag country={en}/> <a href="http://www.go4go.net/">Go4Go</a></span>,
@@ -186,6 +187,8 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Blogs")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a href="https://twitter.com/yikego_en">Yike Weiqi</a></span>,
+                <span><Flag country={fr}/> <a href="https://artdugo.fr">Art du Go</a></span>,
                 <span><Flag country={es}/> <a href="http://badukaires.com/">Badukaires</a></span>,
                 <span><Flag country={es}/> <a href="http://canbaduk.wordpress.com/">Canbaduk</a></span>,
                 <span><Flag country={en}/> <a href="http://weiqitogo.blogspot.com/">Weiqi to go!</a></span>,
