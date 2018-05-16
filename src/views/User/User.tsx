@@ -420,7 +420,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         let promise: Promise<void>;
         if (!data.get('user').is_moderator && (this.original_username !== username)) {
             promise = swal({
-                text: _("You can only change yourname once every 30 days. Are you sure you wish to change your username at this time?"),
+                text: _("You can only change your name once every 30 days. Are you sure you wish to change your username at this time?"),
                 showCancelButton: true,
             });
         }
