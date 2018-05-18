@@ -344,7 +344,6 @@ export class NavBar extends React.PureComponent<{}, any> {
                 </div>
 
                 <LineText>{_("Quick Links")}</LineText>
-                
                 <div className="quick-links">
                     <ul id="items">
                         {user && <li><Link to={`/user/view/${user.id}`}><i className="fa fa-user"></i> {_("Profile")}</Link></li>}
