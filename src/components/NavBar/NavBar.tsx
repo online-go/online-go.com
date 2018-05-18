@@ -343,6 +343,17 @@ export class NavBar extends React.PureComponent<{}, any> {
                     <GobanThemePicker />
                 </div>
 
+                <LineText>{_("Quick Links")}</LineText>
+                
+                <div className="quick-links">
+                    <ul id="items">
+                        {user && <li><Link to={`/user/view/${user.id}`}><i className="fa fa-user"></i> {_("Profile")}</Link></li>}
+                        {user && <li><Link to="/user/settings"><i className="fa fa-gear"></i> {_("Settings")}</Link></li>}
+                        <li><Link to="/user/supporter"><i className="fa fa-star"></i> {_("Support OGS")}</Link></li>
+                        {user && <li><span className="fakelink" onClick={logout}><i className="fa fa-sign-out"></i> {_("Logout")}</span></li>}
+                    </ul>
+                </div>
+
                 {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
                 {(show_debug || null) &&
                     <div style={{textAlign: "center"}}>
