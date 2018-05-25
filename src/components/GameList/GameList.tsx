@@ -23,6 +23,7 @@ import {termination_socket} from "sockets";
 import {MiniGoban} from "MiniGoban";
 import {GobanLineSummary} from "GobanLineSummary";
 import * as data from "data";
+import {rulesText} from "misc";
 
 interface GameListProps {
     list: Array<any>;
@@ -140,6 +141,78 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                         }
                     });
                     break;
+
+                case '-rules':
+                case 'rules':
+                    lst.sort((a, b) => {
+                        try {
+                            return rulesText(a.rules).localeCompare(rulesText(b.rules));
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
+
+                case '-analysis' :
+                case 'analysis' :
+                    lst.sort((a, b) => {
+                        try {
+                            let a_analysis = a.json.disable_analysis;
+                            let b_analysis = b.json.disable_analysis;
+
+                            return a_analysis;
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
+
+                case '-ranked' :
+                case 'ranked' :
+                    lst.sort((a, b) => {
+                        try {
+                            let a_ranked = a.json.ranked;
+                            let b_ranked = b.json.ranked;
+
+                            return a_ranked;
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
+
+                case '-handicap' :
+                case 'handicap' :
+                    lst.sort((a, b) => {
+                        try {
+                            let a_handicap = a.json.handicap;
+                            let b_handicap = b.json.handicap;
+
+                            return a_handicap - b_handicap;
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
+
+                case '-weekendpause' :
+                case 'weekendpause' :
+                    lst.sort((a, b) => {
+                        try {
+                            let a_weekendpause = a.json.pause_on_weekends;
+                            let b_weekendpause = b.json.pause_on_weekends;
+
+                            return a_weekendpause;
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
             }
 
             if (this.state.sort_order[0] === '-') {
@@ -159,6 +232,12 @@ export class GameList extends React.PureComponent<GameListProps, any> {
             let clock_sort            = sort_order === 'clock'          ? 'sorted-desc' : sort_order === '-clock'          ? 'sorted-asc' : '';
             let opponent_clock_sort   = sort_order === 'opponent-clock' ? 'sorted-desc' : sort_order === '-opponent-clock' ? 'sorted-asc' : '';
             let size                  = sort_order === 'size'           ? 'sorted-desc' : sort_order === '-size'           ? 'sorted-asc' : '';
+            let columns = preferences.get("extended-columns").reduce((columns, column) => {
+                columns[column] =  sort_order === column ? `${column}-desc` : sort_order === `-${column}` ? 'sorted-asc' : '';
+                return columns;
+              },
+              {}
+            );
 
             return (
                 <div className="GameList GobanLineSummaryContainer">
@@ -170,6 +249,21 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                               <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
                               <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
                               <div onClick={this.sortBy("size")} className={sortable + size}>{_("Size")}</div>
+                              {columns.rules != undefined &&
+                                <div onClick={this.sortBy("rules")} className={sortable + columns.rules}>{_("Rules")}</div>
+                              }
+                              {columns.analysis != undefined &&
+                                <div onClick={this.sortBy("analysis")} className={sortable + columns.analysis}>{_("Analysis")}</div>
+                              }
+                              {columns.ranked != undefined &&
+                                <div onClick={this.sortBy("ranked")} className={sortable + columns.ranked}>{_("Rank")}</div>
+                              }
+                              {columns.handicap != undefined &&
+                                <div onClick={this.sortBy("handicap")} className={sortable + columns.handicap}>{_("Handicap")}</div>
+                              }
+                              {columns.weekendpause != undefined &&
+                                <div onClick={this.sortBy("weekendpause")} className={sortable + columns.weekendpause}>{_("Pauses on weekends")}</div>
+                              }
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
                               <div >{pgettext("Game list move number", "Move")}</div>
@@ -190,6 +284,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             gobanref={(goban) => game.goban = goban}
                             width={game.width}
                             height={game.height}
+                            columns={columns}
+                            game={game.json}
                             />)}
                 </div>
             );
