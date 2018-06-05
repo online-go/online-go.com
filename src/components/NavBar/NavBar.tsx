@@ -35,6 +35,7 @@ import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
 import * as player_cache from "player_cache";
+import * as preferences from "preferences";
 
 let body = $(document.body);
 
@@ -298,7 +299,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 :
                 <section className="right">
                     <IncidentReportTracker />
-                    <TournamentIndicator />
+                    { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
                     <FriendIndicator />
                     <TurnIndicator />
                     <span className="icon-container" onClick={this.toggleRightNav}>

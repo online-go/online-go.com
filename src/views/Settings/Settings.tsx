@@ -78,6 +78,7 @@ export class Settings extends React.PureComponent<{}, any> {
             board_labeling: preferences.get("board-labeling"),
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
             dock_delay: preferences.get("dock-delay"),
+            show_tournament_indicator: preferences.get("show-tournament-indicator"),
         };
     }
 
@@ -266,6 +267,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setShowOfflineFriends = (ev) => {{{
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
+    }}}
+    setShowTournamentIndicator = (ev) => {{{
+        preferences.set("show-tournament-indicator", ev.target.checked),
+        this.setState({show_tournament_indicator: preferences.get("show-tournament-indicator")});
     }}}
     setUnicodeFilterUsernames = (ev) => {{{
         preferences.set("unicode-filter", ev.target.checked),
@@ -522,6 +527,11 @@ export class Settings extends React.PureComponent<{}, any> {
                                     </label>
                                 </dd>
                             }
+
+                            <dt><label htmlFor="show-tournament-indicator">{_("Show tournament indicator")}</label></dt>
+                            <dd>
+                                <input id="show-tournament-indicator" type="checkbox" checked={this.state.show_tournament_indicator} onChange={this.setShowTournamentIndicator} />
+                            </dd>
                         </dl>
                     </Card>
 
