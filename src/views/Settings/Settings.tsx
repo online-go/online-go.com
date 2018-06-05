@@ -200,15 +200,10 @@ export class Settings extends React.PureComponent<{}, any> {
         sfx.play("stone-" + (num + 1));
     }}}
     playAutomatchAlert = () => {{{
-        let new_game_alert;
-        try {
-            new_game_alert = new Audio(preferences.get("automatch-alert-sound"));
-            let volume = preferences.get("automatch-alert-volume");
-            new_game_alert.volume = volume;
-            new_game_alert.play();
-        } catch (e) {
-            console.log("Failed playing automatch sound!");
-        }
+        let t = sfx.volume_override;
+        sfx.volume_override = preferences.get("automatch-alert-volume");
+        sfx.play(preferences.get("automatch-alert-sound"));
+        sfx.volume_override = t;
     }}}
     getSubmitMode(speed) {{{
         let single = preferences.get(`one-click-submit-${speed}` as any);
