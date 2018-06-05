@@ -30,7 +30,6 @@ import {FabX, FabCheck} from "material";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {toast} from 'toast';
 
-
 declare let Notification: any;
 
 interface Events {
@@ -39,7 +38,6 @@ interface Events {
     "notification-list-updated": never;
     "notification-count": number;
 }
-
 
 // null or id of game that we're current viewing
 function getCurrentGameId() {
@@ -82,8 +80,6 @@ function formatTime(seconds) { /* {{{ */
     }
     return _("no time left");
 } /* }}} */
-
-
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;

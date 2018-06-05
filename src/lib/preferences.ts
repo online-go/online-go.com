@@ -20,6 +20,8 @@ import {GoThemes} from "goban";
 import {current_language} from "translate";
 
 let defaults = {
+    "automatch-alert-sound": "dingdingding",
+    "automatch-alert-volume": 0.3, // Control this important alert separately from "goban sounds"
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,

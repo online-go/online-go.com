@@ -19,8 +19,10 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
+import {sfx} from "goban";
 import {browserHistory} from "ogsHistory";
 import * as data from "data";
+import * as preferences from "preferences";
 import {Toast, toast} from 'toast';
 
 export type Speed = 'blitz' | 'live' | 'correspondence';
@@ -140,6 +142,11 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         if (entry.uuid === this.last_find_match_uuid) {
             browserHistory.push(`/game/view/${entry.game_id}`);
+
+            let t = sfx.volume_override;
+            sfx.volume_override = preferences.get("automatch-alert-volume");
+            sfx.play(preferences.get("automatch-alert-sound"));
+            sfx.volume_override = t;
         }
 
         this.emit('start', entry);

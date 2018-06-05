@@ -47,6 +47,7 @@ export class SFXManager {
             this.addAudio("beep3", "beep");
             this.addAudio("beepbeep", "beepbeep");
             this.addAudio("pass", "pass");
+            this.addAudio("dingdingding", "dingdingding");
         }
     }
     public play(name, play_even_if_window_doesnt_have_focus?) {
@@ -63,6 +64,8 @@ export class SFXManager {
                     volume = this.volume_override;
                 }
                 this.sfx[name].volume = volume;
+                this.sfx[name].pause();
+                this.sfx[name].currentTime = 0;
                 this.sfx[name].play();
             } catch (e) {
                 console.log("Error playing ", name);
