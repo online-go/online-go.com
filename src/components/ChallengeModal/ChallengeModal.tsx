@@ -481,12 +481,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 function onGamedata() {
                     off();
                     swal.close();
-                    
+
                     let t = sfx.volume_override;
                     sfx.volume_override = preferences.get("automatch-alert-volume");
                     sfx.play(preferences.get("automatch-alert-sound"));
                     sfx.volume_override = t;
-            
+
                     browserHistory.push(`/game/${game_id}`);
                 }
 
