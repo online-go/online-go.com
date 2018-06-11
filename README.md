@@ -29,4 +29,4 @@ regularly visits this github page and the issue tracker. As such:
 * https://online-go.com/oauth2/applications/ OAuth2 Application Manager (you must be signed into an account on OGS.)
 
 # Social Media
-Twitter: ![Twitter Follow](https://img.shields.io/twitter/follow/onlinegoserver.svg?style=social&label=Follow)
+![Twitter Follow](https://img.shields.io/twitter/follow/onlinegoserver.svg?style=social&label=Follow)
