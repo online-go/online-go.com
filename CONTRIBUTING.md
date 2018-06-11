@@ -21,14 +21,13 @@ connects to the beta server for testing.
 ## Getting Started
 * Sign up for a [GitHub account](https://github.com/signup/free).
 * Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the requrest for an enhancement exists.
-* Submit an issue if one does not exist.
-	Please include as much of the below information as possible:
-		* A clear summary.
-		* Operating System tested on.
-		* Browser used when bug appeared (or multiple browsers if you have replicated the bug.)
-		* Browser version.
-		* Steps to reproduce the issue.
-		* Any additional information that you might think is useful.
+* Submit an issue if one does not exist.  Please include as much of the below information as possible:
+  * A clear summary.
+  * Operating System tested on.
+  * Browser used when bug appeared (or multiple browsers if you have replicated the bug.)
+  * Browser version.
+  * Steps to reproduce the issue.
+  * Any additional information that you might think is useful.
 
 ## How to Make Changes
 
