@@ -3,7 +3,7 @@
 [![Run Status](https://api.shippable.com/projects/58b08461067893070065aab3/badge?branch=devel)](https://app.shippable.com/github/online-go/online-go.com/status/dashboard)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 ![website](https://img.shields.io/website-up-down-green-red/http/online-go.com/.svg?label=online-go)
-[![Build status](https://img.shields.io/badge/website-OnlineGo.svg)](https://online-go.com/)
+[![Build status](https://img.shields.io/badge/website-OnlineGo-1.svg)](https://online-go.com/)
 
 # Online-Go.com source code
 
