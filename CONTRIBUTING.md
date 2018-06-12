@@ -31,12 +31,12 @@ connects to the beta server for testing.
 
 ## How to Make Changes
 1. [Fork the repository](https://help.github.com/articles/fork-a-repo/).
-  * If you haven't done so, [set up git](https://help.github.com/articles/set-up-git/).
+    * If you haven't done so, [set up git](https://help.github.com/articles/set-up-git/).
 2. Clone the repository to your computer. (Found in step 2 of "keeping your fork synced" in the fork a repo help article.)
-  * To ensure you track the latest updates, you will want to configure git to sync your fork with the original online-go repository. (See step 3 in the same article.)
+    * To ensure you track the latest updates, you will want to configure git to sync your fork with the original online-go repository. (See step 3 in the same article.)
 3. [Create a branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/) on your local machine. Name it something that makes sense for your updates.
-  * This could also be done from the [git bash command line](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches).
-  * If you used the first method, you will need to ensure you [pull down your project's remote branches](https://stackify.com/git-checkout-remote-branch/).
+    * This could also be done from the [git bash command line](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches).
+    * If you used the first method, you will need to ensure you [pull down your project's remote branches](https://stackify.com/git-checkout-remote-branch/).
 4. Make the desired changes in the code or documentation.
 5. [Add, commit, and push](https://help.github.com/articles/adding-a-file-to-a-repository-using-the-command-line/) your changes to your forked repository.
 
