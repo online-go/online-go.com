@@ -45,3 +45,8 @@ connects to the beta server for testing.
 2. Select [`New Pull Request`](https://help.github.com/articles/creating-a-pull-request/).
 3. Write an appropriate title and comment for the proposed updates.
 4. Create the pull request.
+
+## Technologies Utilized
+This project is largely built with Typescript and React. If you are unfamiliar with these, please take a few minutes to familiarize yourself.
+* [React](https://reactjs.org/)
+* [Typescript](https://www.typescriptlang.org/)
