@@ -30,5 +30,3 @@ Online-go provides several resources that allows you to interact with the projec
 
 # Social Media
 [![Twitter Follow](https://img.shields.io/twitter/follow/onlinegoserver.svg?style=social&label=Follow)](https://twitter.com/onlinegoserver?lang=en)
-
-
