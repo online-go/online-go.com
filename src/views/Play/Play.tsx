@@ -468,7 +468,7 @@ export class Play extends React.Component<PlayProperties, any> {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
-                        {_("Waiting for opponent..")}
+                        {_("Waiting for opponent...")}
                     </div>
                     <div className='automatch-row-container'>
                         <div className="spinner">

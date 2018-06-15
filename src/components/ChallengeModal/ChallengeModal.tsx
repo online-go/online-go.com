@@ -27,6 +27,7 @@ import {longRankString, rankString, getUserRating, MaxRank, amateurRanks, allRan
 import {errorLogger, errorAlerter, rulesText, dup, ignore} from "misc";
 import {PlayerIcon} from "PlayerIcon";
 import {timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker} from "TimeControl";
+import {sfx} from "goban";
 import * as preferences from "preferences";
 import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
@@ -480,6 +481,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 function onGamedata() {
                     off();
                     swal.close();
+
+                    let t = sfx.volume_override;
+                    sfx.volume_override = preferences.get("automatch-alert-volume");
+                    sfx.play(preferences.get("automatch-alert-sound"));
+                    sfx.volume_override = t;
+
                     browserHistory.push(`/game/${game_id}`);
                 }
 
