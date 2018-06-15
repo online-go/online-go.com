@@ -99,7 +99,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     rating_line    = d3.line<RatingEntry>()
                        .curve(d3.curveLinear)
                        .x((d:RatingEntry) => this.ratings_x(d.ended))
-                       .y((d:RatingEntry) => this.ratings_y(d.rating));
+                       .y((d:RatingEntry) => this.ratings_y(d.rating - d.deviation));
 
     deviation_area = d3.area<RatingEntry>()
                        .curve(d3.curveBasis)
@@ -470,23 +470,22 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                     interpolate(
                         self.shouldDisplayRankInformation()
                         ? (
-                            pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
+                            pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}}")
                         ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
                         ,
                         {
                             rating: Math.floor(d.rating),
                             deviation: Math.round(d.deviation),
-                            rank: rankString(bounded_rank(rating_to_rank(d.rating)), true),
-                            rank_deviation: (rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)).toFixed(1),
+                            rank: rankString(bounded_rank(rating_to_rank(d.rating - d.deviation)), true),
                         }
                     )
                 );
                 self.dateLegendText.text(format_date(new Date(d.ended)));
                 self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(d.ended)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
-                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
+                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating - d.deviation) + ')');
                 //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
-                self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(d.rating) + ')');
+                self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(d.rating - d.deviation) + ')');
 
                 self.setState({hovered_date: new Date(d.ended)});
             });

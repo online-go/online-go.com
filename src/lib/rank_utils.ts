@@ -31,8 +31,6 @@ class Rating {
     rank_label:string;
     partial_rank:number;
     partial_rank_label:string;
-    rank_deviation_labels:Array<string>;
-    rank_deviation:number;
     professional:boolean;
     bounded_rank:number;
     bounded_rank_label:string;
@@ -119,15 +117,11 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
     ret.rating = rating.rating;
     ret.deviation = rating.deviation;
     ret.volatility = rating.volatility;
-    ret.rank = Math.floor(rating_to_rank(ret.rating));
-    ret.rank_deviation = rating_to_rank(ret.rating + ret.deviation) - rating_to_rank(ret.rating);
-    ret.partial_rank = rating_to_rank(ret.rating);
-    ret.rank_label = rankString(ret.rank, false);
+
+    ret.partial_rank = rating_to_rank(rating.rating - rating.deviation);
     ret.partial_rank_label = rankString(ret.partial_rank, true);
-    ret.rank_deviation_labels = [
-        rankString(rating_to_rank(ret.rating - ret.deviation), true),
-        rankString(rating_to_rank(ret.rating + ret.deviation), true),
-    ];
+    ret.rank = Math.floor(ret.partial_rank);
+    ret.rank_label = rankString(ret.rank, false);
     ret.bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.rank));
     ret.bounded_rank_label = rankString(ret.bounded_rank);
     ret.partial_bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.partial_rank));
@@ -141,7 +135,6 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
         ret.rank_label = rankString(user);
         ret.bounded_rank_label = rankString(user);
         ret.partial_rank_label = ret.rank_label;
-        ret.rank_deviation_labels = ['', ''];
     }
 
     return ret;
