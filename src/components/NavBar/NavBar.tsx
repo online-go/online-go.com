@@ -344,6 +344,10 @@ export class NavBar extends React.PureComponent<{}, any> {
                     <GobanThemePicker />
                 </div>
 
+                <div className="logout-right-container">
+                    {user && <button className="primary reject" onClick={logout}>{_("Logout")}</button>}
+                </div>
+
                 {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
                 {(show_debug || null) &&
                     <div style={{textAlign: "center"}}>
