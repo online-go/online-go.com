@@ -131,6 +131,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
     stashed_conditional_moves = null;
     volume_sound_debounce: any = null;
 
+    white_username: string = "White";
+    black_username: string = "Black";
+
     decide_white: () => void;
     decide_black: () => void;
     decide_tie: () => void;
@@ -404,30 +407,31 @@ export class Game extends React.PureComponent<GameProperties, any> {
         // Best to get this from the engine, so we know we have the right structure...
         this.setState({score: this.goban.engine.computeScore(true)});
 
-
-        /* Title Updates {{{ */
-        let last_title = window.document.title;
-        this.last_move_viewed = 0;
-        this.on_refocus_title = last_title;
-        this.goban.on("state_text", (state) => {
-            this.on_refocus_title = state.title;
-            if (state.show_moves_made_count) {
-                if (!this.goban) {
-                    window.document.title = state.title;
-                    return;
-                }
-                if (document.hasFocus()) {
-                    this.last_move_viewed = this.goban.engine.getMoveNumber();
-                    window.document.title = state.title;
+        if (preferences.get("dynamic-title")) {
+            /* Title Updates {{{ */
+            let last_title = window.document.title;
+            this.last_move_viewed = 0;
+            this.on_refocus_title = last_title;
+            this.goban.on("state_text", (state) => {
+                this.on_refocus_title = state.title;
+                if (state.show_moves_made_count) {
+                    if (!this.goban) {
+                        window.document.title = state.title;
+                        return;
+                    }
+                    if (document.hasFocus()) {
+                        this.last_move_viewed = this.goban.engine.getMoveNumber();
+                        window.document.title = state.title;
+                    } else {
+                        let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
+                        window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                    }
                 } else {
-                    let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
-                    window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                    window.document.title = state.title;
                 }
-            } else {
-                window.document.title = state.title;
-            }
-        });
-        /* }}} */
+            });
+            /* }}} */
+        }
 
         this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
         this.goban.on("title", (title) => this.setState({title: title}));
@@ -482,7 +486,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         });
 
-
         if (this.review_id) {
             this.goban.on("review.updated", () => {
                 this.sync_state();
@@ -492,16 +495,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
             });
         }
 
-
-
         if (this.game_id) {
             get("games/%%", this.game_id)
             .then((game) => {
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
+                    this.white_username = game.players.white.username;
                 }
                 if (game.players.black.id) {
                     player_cache.update(game.players.black, true);
+                    this.black_username = game.players.black.username;
+                }
+                if (this.white_username && this.black_username && !preferences.get("dynamic-title")) {
+                    this.on_refocus_title = this.black_username + " vs " + this.white_username;
+                    window.document.title = this.on_refocus_title;
+
                 }
                 this.creator_id = game.creator;
                 this.ladder_id = game.ladder;

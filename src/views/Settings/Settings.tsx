@@ -69,6 +69,7 @@ export class Settings extends React.PureComponent<{}, any> {
             autoadvance: preferences.get("auto-advance-after-submit"),
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
             always_disable_analysis: preferences.get("always-disable-analysis"),
+            dynamic_title: preferences.get("dynamic-title"),
             show_offline_friends: preferences.get("show-offline-friends"),
             unicode_filter_usernames: preferences.get("unicode-filter"),
             desktop_notifications_enabled: desktop_notifications_enabled,
@@ -280,6 +281,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setAlwaysDisableAnalysis = (ev) => {{{
         preferences.set("always-disable-analysis", ev.target.checked),
         this.setState({always_disable_analysis: preferences.get("always-disable-analysis")});
+    }}}
+    setDynamicTitle = (ev) => {{{
+        preferences.set("dynamic-title", ev.target.checked),
+        this.setState({dynamic_title: preferences.get("dynamic-title")});
     }}}
     setShowOfflineFriends = (ev) => {{{
         preferences.set("show-offline-friends", ev.target.checked),
@@ -641,6 +646,13 @@ export class Settings extends React.PureComponent<{}, any> {
                                 <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
                                 <div><i>
                                 {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
+                                </i></div>
+                            </dd>
+                            <dt><label htmlFor="dynamic-title">{_("Dynamic title")}</label></dt>
+                            <dd>
+                                <input id="dynamic-title" type="checkbox" checked={this.state.dynamic_title} onChange={this.setDynamicTitle} />
+                                <div><i>
+                                {_("Chose whether to show in the web page title who's turn it is (dynamic) or who the users are (not dynamic)")}
                                 </i></div>
                             </dd>
                         </dl>
