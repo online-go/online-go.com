@@ -35,6 +35,7 @@ let defaults = {
     "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
+    "dynamic-title": true,
     "game-list-threshold": 10,
     "goban-theme-black": null,
     "goban-theme-board": null,
