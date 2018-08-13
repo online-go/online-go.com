@@ -652,7 +652,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="dynamic-title" type="checkbox" checked={this.state.dynamic_title} onChange={this.setDynamicTitle} />
                                 <div><i>
-                                {_("Chose whether to show in the web page title who's turn it is (dynamic) or who the users are (not dynamic)")}
+                                {_("Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)")}
                                 </i></div>
                             </dd>
                         </dl>
