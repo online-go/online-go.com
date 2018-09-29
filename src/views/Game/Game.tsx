@@ -2311,7 +2311,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
-                {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
+                {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Guess score")}</a>} {/* Translators: this is the link to the "score estimator" - in English "guess" best conveys what this does */}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
