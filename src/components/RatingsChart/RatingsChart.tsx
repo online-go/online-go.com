@@ -81,6 +81,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     games_by_month:Array<RatingEntry>;
     games_by_day:Array<RatingEntry>;
     max_games_played_in_a_month:number;
+    destroyed = false;
 
     show_pie;
     win_loss_pie;
@@ -512,12 +513,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.refreshData();
     }}}
     deinitialize() {{{
+        this.destroyed = true;
         $(window).off("resize", this.resize as () => void);
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
         }
-
+        this.svg.remove();
     }}}
     refreshData() {{{
         this.setState({loading: true});
@@ -536,6 +538,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }}}
 
     resize = (no_debounce:boolean = false) => {{{
+        if (this.destroyed) {
+            return;
+        }
+
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
