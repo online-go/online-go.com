@@ -23,7 +23,9 @@ import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
-import { default as ReactNumberFormat } from 'react-number-format';
+//import { default as ReactNumberFormat } from 'react-number-format';
+//import NumberFormat from 'react-number-format';
+import * as NumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
 import {Flag} from "Flag";
 import Select from 'react-select';
@@ -34,6 +36,7 @@ declare var ogs_release;
 declare var StripeCheckout;
 declare var amex_express_checkout_callback;
 declare var MODE;
+const ReactNumberFormat:any = NumberFormat;
 
 interface SupporterProperties {
 }
@@ -747,6 +750,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                               ? <div className='donation-summary'>
                                   {this.renderCurrencySelect()}
                                   <ReactNumberFormat
+                                          type='text'
                                           className='supporter-amount'
                                           decimalSeparator={getDecimalSeparator()}
                                           thousandSeparator={getThousandSeparator()}
