@@ -103,7 +103,7 @@ export function popover(config: PopoverConfig): PopOver {
         }
     }
     else if (config.below) {
-        let rectangle = ReactDOM.findDOMNode(config.below).getBoundingClientRect();
+        let rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
         x = rectangle.left + window.scrollX;
         x = Math.min(x, bounds.x - minWidth);
 
@@ -122,5 +122,5 @@ export function popover(config: PopoverConfig): PopOver {
     $(document.body).append(container);
 
     ReactDOM.render(config.elt, container[0]);
-    return new PopOver(config, backdrop[0], container[0]);
+    return new PopOver(config, backdrop[0] as HTMLElement, container[0] as HTMLElement);
 }

@@ -245,7 +245,7 @@ export class Settings extends React.PureComponent<{}, any> {
         this.setState({'board_labeling': ev.target.value});
     }}}
 
-    notification_bindings= {};
+    notification_bindings = {};
     updateNotification(key) {{{
         if (!(key in this.notification_bindings)) {
             this.notification_bindings[key] = this._updateNotification.bind(this, key);

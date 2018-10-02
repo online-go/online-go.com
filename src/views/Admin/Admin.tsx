@@ -68,7 +68,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     }
 
 
-    updating= false;
+    updating = false;
     appendResult(text) {
         this.results.push(typeof(text) === "string" ? text : JSON.stringify(text, null, 4));
         if (this.updating) {

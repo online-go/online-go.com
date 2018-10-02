@@ -68,8 +68,6 @@ let rating_percentage = (rating: number) => {
 
 let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
 
-let center = {textAlign: "center"};
-let right = {textAlign: "right"};
 let inlineBlock = {display: "inline-block"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
@@ -677,27 +675,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         }
                         {/* }}} */}
                     </div>
-
-                    {/* ((window["user"] && window["user"].id !== user.id) || null) && <div  style={{marginTop: "1rem"}}>
-                        {(this.state.is_friend) && <button  className="btn btn-danger" onClick={() => this.removeFriend(this.user_id)}>{_("Remove Friend")}</button>}
-                        {(!this.state.is_friend && !this.state.friend_request_sent && !this.state.friend_request_received) && <button  className="btn btn-default"
-                                onClick={() => this.addFriend(this.user_id)}>{_("Add Friend")}</button> }
-                        {(!this.state.is_friend && this.state.friend_request_sent) && <span  className="btn btn-success disabled">{_("Friend request sent")}</span>}
-                        {(!this.state.is_friend && this.state.friend_request_received) && <button  className="btn btn-success"
-                                onClick={() => this.acceptFriend(this.user_id)}>{_("Accept Friend Request")}</button> }
-                        <button id="challenge" type="submit" className="btn btn-default" onClick={() => challenge(this.state.user.id)}>{_("Challenge to a Match")}</button>
-                        <button type="submit" className="btn btn-default" onClick={() => this.pm()}>{_("Send Message")}</button>
-                        <div style={right}>
-                            <span className="fakelink" onClick={() => alertModerator({user: this.user_id})}>{_("Report User")}</span>
-                        </div>
-                    </div> */}
                 </div>
-
-                {/*
-                (user.provisional_games_left || null) && <b >{interpolate(_("Note: This account is currently marked as provisional until {{user.provisional_games_left}} more games have been played"), {"user.provisional_games_left": user.provisional_games_left})}</b>
-                */}
-
-
             </div>
             {/* }}} */}
 
@@ -849,7 +827,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                     {(this.state.vs.total || null) && <div >
                         <Card>
-                            <h5 style={center}>{interpolate("You have won {{vs.wins}} out of {{vs.total}} games against {{username}}", {"vs.wins": this.state.vs.wins, "vs.total": this.state.vs.total, "username": user.username})}</h5>
+                            <h5 style={{textAlign: "center"}}>{interpolate("You have won {{vs.wins}} out of {{vs.total}} games against {{username}}", {"vs.wins": this.state.vs.wins, "vs.total": this.state.vs.total, "username": user.username})}</h5>
                             <div className="progress">
                                  {(this.state.vs.winPercent > 0) &&
                                   <div className="progress-bar games-won" style={{width: this.state.vs.winPercent + "%"}}>{this.state.vs.wins}</div>}
@@ -860,7 +838,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </div>
 
                             {this.state.vs.recent5.map((game, idx) => (
-                                <div style={center} key={idx}>
+                                <div style={{textAlign: "center"}} key={idx}>
                                     <span className="date">{game.pretty_date}</span> <a href={`/game/${game.game}`}>#{game.game}</a>
                                     {(game.state === "W") && <i  className="fa fa-check-circle-o won"></i>}
                                     {(game.state === "L") && <i  className="fa fa-times loss"></i>}
@@ -879,7 +857,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <h5>{_("Bot Engine")}</h5>
                             <input type="text" className="form-control" placeholder={_("Engine Name")} value={this.state.bot_ai}
                                    onChange={(event) => this.setState({"bot_ai": (event.target as HTMLInputElement).value})}/>
-                            <div style={right}>
+                            <div style={{textAlign: "right"}}>
                                 <button className="btn btn-xs btn-default" onClick={() => this.saveBot()}>{_("Save")}</button>
                             </div>
                         </div>

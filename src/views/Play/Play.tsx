@@ -561,7 +561,7 @@ export class Play extends React.Component<PlayProperties, any> {
             );
         }
 
-        let commonSpan = (text: string, align: string) => {
+        let commonSpan = (text: string, align: "center"|"left") => {
             return <span className="cell" style={{textAlign: align}}>
                 {text}
             </span>;

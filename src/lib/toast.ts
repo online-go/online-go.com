@@ -66,7 +66,7 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
     position_container.append(container);
 
     ReactDOM.render(element, container[0]);
-    let ret = new Toast(container[0], timeout);
+    let ret = new Toast(container[0] as HTMLElement, timeout);
     container.click((ev) => {
         if (
             ev.target.nodeName !== "BUTTON"

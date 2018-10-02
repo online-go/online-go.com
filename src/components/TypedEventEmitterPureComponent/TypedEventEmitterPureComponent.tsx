@@ -26,28 +26,28 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
         super(props);
     }
 
-    emit<K extends keyof Events>(event: K, arg?: Events[K]): boolean {
+    emit<K extends Extract<keyof Events, string>>(event: K, arg?: Events[K]): boolean {
         if (this.event_emitter) {
             return this.event_emitter.emit(event, arg);
         }
         return false;
     }
-    on<K extends keyof Events>(event: K, listener: (arg?: Events[K]) => any): this {
+    on<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
         this.__initialize_event_emitter();
         this.event_emitter.on(event, listener);
         return this;
     }
-    once<K extends keyof Events>(event: K, listener: (arg?: Events[K]) => any): this {
+    once<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
         this.__initialize_event_emitter();
         this.event_emitter.once(event, listener);
         return this;
     }
-    off<K extends keyof Events>(event: K, listener: (arg?: Events[K]) => any): this {
+    off<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
         this.__initialize_event_emitter();
         this.event_emitter.off(event, listener);
         return this;
     }
-    removeAllListeners<K extends keyof Events>(event?: K): this {
+    removeAllListeners<K extends Extract<keyof Events, string>>(event?: K): this {
         if (this.event_emitter) {
             this.event_emitter.removeAllListeners(event);
         }

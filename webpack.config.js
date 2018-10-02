@@ -29,6 +29,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `));
 
+    /*
 plugins.push(
     new webpack.optimize.CommonsChunkPlugin({
         name: 'vendor',
@@ -37,6 +38,7 @@ plugins.push(
         }
     })
 );
+*/
 
 let defines = {
     PRODUCTION: production,
@@ -44,16 +46,12 @@ let defines = {
     SERVER: false,
 };
 
-if (production) {
-    defines["process.env"] = { 
-        NODE_ENV: JSON.stringify("production") 
-    };
-}
 
 plugins.push(new webpack.DefinePlugin(defines));
 
 
 module.exports = {
+    mode: production ? 'production' : 'development',
     entry: {
         'ogs': './src/main.tsx',
     },
@@ -75,7 +73,7 @@ module.exports = {
         filename: production ? '[name].min.js' : '[name].js'
     },
     module: {
-        loaders: [
+        rules: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
             {
                 test: /\.tsx?$/,
@@ -90,9 +88,24 @@ module.exports = {
         maxEntrypointSize: 1024 * 1024 * 2.5,
     },
 
+    optimization: {
+        splitChunks: {
+            cacheGroups: {   
+                "vendor": {
+                    test: /[\\/]node_modules[\\/]/,   // <-- use the test property to specify which deps go here
+                    name: "vendor",
+                    chunks: "all",
+                    priority: -10
+                }
+            }
+        }
+    },
+
+
     plugins: plugins,
 
-    devtool: 'source-map',
+    devtool: production ? 'source-map' : 'eval-source-map',
+    //devtool: 'source-map',
 
     // When importing a module whose path matches one of the following, just
     // assume a corresponding global variable exists and use that instead.

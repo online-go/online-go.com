@@ -3303,8 +3303,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.setLastOfficialMove();
         this.emit("update");
 
-        if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in this.engine)) {
-            this.autoScore();
+        if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in (this as any).engine)) {
+            (this as any).autoScore();
         }
     } /* }}} */
     private set(x, y, player) { /* {{{ */

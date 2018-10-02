@@ -188,7 +188,7 @@ export class GoMath {
             }
             else {
                 for (let i = 0; i < move_obj.length; ++i) {
-                    let mv = move_obj[i];
+                    let mv:any = move_obj[i];
                     if (mv instanceof Array) {
                         ret.push(decodeSingleMoveArray(mv));
                     }

@@ -23,7 +23,7 @@ import * as data from "data";
 import {LineText} from "misc-ui";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
-import * as ReactNumberFormat from 'react-number-format';
+import { default as ReactNumberFormat } from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
 import {Flag} from "Flag";
 import Select from 'react-select';

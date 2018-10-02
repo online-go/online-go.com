@@ -31,7 +31,7 @@ interface IncidentReportTrackerProperties {
 }
 
 export class IncidentReportTracker extends React.PureComponent<IncidentReportTrackerProperties, any> {
-    active_incident_reports= {};
+    active_incident_reports = {};
 
     constructor(props) {
         super(props);

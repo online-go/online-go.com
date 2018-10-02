@@ -16,10 +16,10 @@
  */
 
 // Basic types used the the pubsub module. Saves typing and allows for easy modification.
-type CallbackTable<T> = {[K in keyof T]?: {[serial: number]: Callback<T, K>}};
-type Callback<T, K extends keyof T> = (channel: K, item: T[K]) => void;
+type CallbackTable<T> = {[K in Extract<keyof T, string>]?: {[serial: number]: Callback<T, K>}};
+type Callback<T, K extends Extract<keyof T, string>> = (channel: K, item: T[K]) => void;
 
-export interface Subscriber<T, K extends keyof T> {
+export interface Subscriber<T, K extends Extract<keyof T, string>> {
     on: (channels: K | Array<K>) => this;
     off: (channels: K | Array<K>) => this;
     channels: () => Array<K>;
@@ -38,14 +38,14 @@ export interface Subscriber<T, K extends keyof T> {
 // tell the publisher.Subscription which channels you're interested in hearing about.
 export class Publisher<T> {
     private callback_table: CallbackTable<T>;
-    public readonly Subscriber: new <K extends keyof T>(callback: Callback<T, K>) => Subscriber<T, K>;
+    public readonly Subscriber: new <K extends Extract<keyof T, string>>(callback: Callback<T, K>) => Subscriber<T, K>;
 
     constructor() {
         let serial: number = 0;
         let callback_table: CallbackTable<T> = {};
 
         this.callback_table = callback_table;
-        this.Subscriber = class Subscriber<K extends keyof T> extends AbstractSubscriber<T, K> {
+        this.Subscriber = class Subscriber<K extends Extract<keyof T, string>> extends AbstractSubscriber<T, K> {
             constructor(callback: Callback<T, K>) {
                 super(serial++, callback_table, callback);
             }
@@ -53,7 +53,7 @@ export class Publisher<T> {
     }
 
     // Publish a piece of information to anyone who is listening.
-    publish<K extends keyof T>(channel: K, item: T[K]): T[K] {
+    publish<K extends Extract<keyof T, string>>(channel: K, item: T[K]): T[K] {
         let callbacks = this.callback_table[channel] || {};
         for (let serial in callbacks) {
             callbacks[serial](channel, item);
@@ -76,7 +76,7 @@ export class Publisher<T> {
 // publication that this Subscriber can be subscribed to. If you don't wish
 // to narrow the type down, then you can specify K = keyof T or just allow
 // the compiler to infer the type.
-abstract class AbstractSubscriber<T, K extends keyof T> implements Subscriber<T, K> {
+abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> implements Subscriber<T, K> {
     private subscribed_channels: {[channel in K]?: boolean};
 
     constructor(private serial: number, private callback_table: CallbackTable<T>, private callback: Callback<T, K>) {
@@ -89,8 +89,8 @@ abstract class AbstractSubscriber<T, K extends keyof T> implements Subscriber<T,
     on(channels: K | Array<K>): this {
         let table = this.callback_table;
 
-        channels = typeof channels === "string" ? [channels] : channels;
-        for (let channel of channels) {
+        let ch:Array<string> = typeof channels === "string" ? [channels] : channels;
+        for (let channel of ch) {
             (table[channel] || (table[channel] = {}))[this.serial] = this.callback;
             this.subscribed_channels[channel] = true;
         }
