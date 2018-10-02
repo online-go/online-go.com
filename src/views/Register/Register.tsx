@@ -25,6 +25,7 @@ import {errorAlerter} from "misc";
 import {LineText} from "misc-ui";
 import {post, get} from "requests";
 import {get_ebi} from "SignIn";
+import cached from 'cached';
 
 declare var swal;
 
@@ -50,7 +51,7 @@ export class Register extends React.PureComponent<{}, any> {
                 "email": this.refs.email.value.trim(),
                 "ebi": get_ebi()
             }).then((config) => {
-                data.set("config", config);
+                data.set(cached.config, config);
                 console.log("Logged in!");
                 console.info(config);
                 browserHistory.replace("/");

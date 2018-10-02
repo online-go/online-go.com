@@ -47,6 +47,11 @@ export let cached = {
         },
 
         challenge_list: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.challenge_list, []);
+                return;
+            }
+
             get("me/challenges", {page_size: 30}).then((res) => {
                 for (let challenge of res.results) {
                     player_cache.update(challenge.challenger);
@@ -60,6 +65,11 @@ export let cached = {
         },
 
         group_invitations: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.group_invitations, []);
+                return;
+            }
+
             get("me/groups/invitations", {page_size: 100}).then((res) => {
                 let invitations = res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation);
                 data.set(cached.group_invitations, invitations);
@@ -69,6 +79,11 @@ export let cached = {
         },
 
         friends: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.friends, []);
+                return;
+            }
+
             get('ui/friends').then((res) => {
                 data.set(cached.friends, res.friends);
             }).catch((err) => {
@@ -77,6 +92,11 @@ export let cached = {
         },
 
         groups: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.groups, []);
+                return;
+            }
+
             get('me/groups', {page_size: 100}).then((res) => {
                 let groups = res.results;
                 groups.sort((a, b) => a.name.localeCompare(b.name));
@@ -87,6 +107,11 @@ export let cached = {
         },
 
         active_tournaments: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.active_tournaments, []);
+                return;
+            }
+
             get('me/tournaments', {ended__isnull: true, page_size: 100}).then((res) => {
                 let tournaments = res.results;
                 tournaments.sort((a, b) => a.name.localeCompare(b.name));
@@ -97,6 +122,11 @@ export let cached = {
         },
 
         ladders: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.ladders, []);
+                return;
+            }
+
             get('me/ladders').then((res) => {
                 let ladders = res.results;
                 ladders.sort((a, b) => a.name.localeCompare(b.name));
@@ -108,6 +138,11 @@ export let cached = {
         },
 
         blocks: () => {
+            if (data.get('user').anonymous) {
+                data.set(cached.blocks, {});
+                return;
+            }
+
             get("me/blocks")
             .then((blocks) => {
                 data.set(cached.blocks, blocks);
@@ -121,7 +156,10 @@ export let cached = {
 };
 
 
-setTimeout(() => {
+let current_user_id:number = 0;
+let refresh_debounce = setTimeout(refresh_all, 10);
+function refresh_all() {
+    refresh_debounce = null;
     cached.refresh.config();
 
     for (let k in cached.refresh) {
@@ -129,7 +167,17 @@ setTimeout(() => {
             cached.refresh[k]();
         }
     }
-}, 10);
+}
+
+data.watch('user', (user) => {
+    if (user.id != current_user_id) {
+        current_user_id = user.id;
+        if (refresh_debounce) {
+        clearTimeout(refresh_debounce);
+        }
+        refresh_debounce = setTimeout(refresh_all, 10);
+    }
+});
 
 push_manager.on('update-friend-list', cached.refresh.friends);
 push_manager.on('challenge-list-updated', cached.refresh.challenge_list);

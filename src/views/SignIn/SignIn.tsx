@@ -24,6 +24,7 @@ import {Card} from "material";
 import {LineText} from "misc-ui";
 import {errorAlerter, ignore} from "misc";
 import {post, get} from "requests";
+import cached from 'cached';
 
 declare var swal;
 declare function md5(str: string): string;
@@ -89,7 +90,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                     return;
                 }
 
-                data.set("config", config);
+                data.set(cached.config, config);
                 console.log("Logged in!");
                 console.info(config);
                 if (window.location.hash && window.location.hash[1] === "/") {

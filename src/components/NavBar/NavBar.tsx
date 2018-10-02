@@ -36,6 +36,7 @@ import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
+import cached from 'cached';
 
 let body = $(document.body);
 
@@ -68,8 +69,8 @@ let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
     get("/api/v0/logout").then((config) => {
-        data.set("config", config);
-        window.location.reload();
+        data.set(cached.config, config);
+        window.location.href = '/';
     });
 }
 
