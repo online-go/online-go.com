@@ -75,6 +75,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     }
 
     toggleFriendList = () => {
+        console.log("Toggle friend list");
         this.setState({
             show_friend_list: !this.state.show_friend_list
         });

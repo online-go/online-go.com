@@ -38,7 +38,6 @@ export class FriendList extends React.PureComponent<{}, any> {
         this.state = {
             friends: [],
             show_offline_friends: preferences.get("show-offline-friends"),
-            resolved: false
         };
     }
     friends_listener:any;
@@ -46,7 +45,6 @@ export class FriendList extends React.PureComponent<{}, any> {
     updateFriends = (friends) => {
         this.setState({
             friends: this.sortFriends(friends),
-            resolved: true
         });
     }
 
@@ -79,23 +77,22 @@ export class FriendList extends React.PureComponent<{}, any> {
     setShowOfflineFriends = (ev) => {{{
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
+        ev.stopPropagation();
     }}}
     clickShowOfflineFriends = (ev) => {{{
         ev.stopPropagation();
     }}}
+    eat = (ev) => {{{
+        ev.stopPropagation();
+    }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="FriendList">
-                <dt>
-                    <label htmlFor="show-offline-friends">{_("Show offline")}</label>
-                    <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onClick={this.clickShowOfflineFriends} onChange={this.setShowOfflineFriends} />
-                </dt>
+                <div className="show-offline">
+                    <input id="show-offline-friends" type="checkbox" checked={this.state.show_offline_friends} onClick={this.clickShowOfflineFriends} onChange={this.setShowOfflineFriends} /> <label onClick={this.eat} htmlFor="show-offline-friends">{_("Show offline")}</label>
+                </div>
                 {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
-                    <div key={friend.id} >
+                    <div className="friend-entry" key={friend.id} >
                         <Player user={friend} online rank noextracontrols />
                     </div>
                 ))}
