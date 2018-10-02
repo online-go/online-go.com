@@ -53,7 +53,6 @@ let defaults = {
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
-    "show-ads-on-game-page": true,
     "show-all-challenges": false,
     "show-move-numbers": true,
     "show-offline-friends": true,
