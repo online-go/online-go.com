@@ -185,6 +185,36 @@ navbar-width= 17rem;
         }
         .center {
         }
+
+        .quick-links {
+            margin: auto;
+            width: 65%;
+
+            li {
+                list-style-type: none;
+                list-style: none;
+
+                a, span.fakelink {
+                    display: block;
+                    line-height: 2.0rem;
+                    width: 100%;
+                }
+            }
+
+            i {
+                themed color shade1;
+                width: 1.5rem;
+                text-align: center;
+
+                &.fa-moon-o, &.fa-sun-o {
+                    themed color fg
+                }
+            }
+
+            a:hover i {
+                themed color shade0
+            }
+        }
     }
 
     .leftnav {
