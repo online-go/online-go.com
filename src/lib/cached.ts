@@ -70,7 +70,6 @@ export let cached = {
 
         friends: () => {
             get('ui/friends').then((res) => {
-                console.log("Cache friends refreshed");
                 data.set(cached.friends, res.friends);
             }).catch((err) => {
                 console.error("Error retrieving friends list: ", err);
