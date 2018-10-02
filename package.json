@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@types/blueimp-md5": "^1.1.30",
-    "@types/d3": "^4.12.0",
+    "@types/d3": "^5.0.0",
     "@types/fixed-data-table": "^0.6.30",
     "@types/jquery": "^2.0.34",
     "@types/markdown-it": "^0.0.4",
@@ -53,7 +53,7 @@
     "@types/socket.io-client": "^1.4.31",
     "@types/sweetalert": "^1.1.27",
     "blueimp-md5": "^2.10.0",
-    "d3": "^4.12.0",
+    "d3": "^5.7.0",
     "eventemitter3": "^2.0.3",
     "markdown-it": "^8.4.0",
     "moment": "^2.19.1",

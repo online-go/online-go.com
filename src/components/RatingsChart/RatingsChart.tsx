@@ -522,7 +522,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }}}
     refreshData() {{{
         this.setState({loading: true});
-        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`, makeRatingEntry, this.loadDataAndPlot);
+        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
+            makeRatingEntry
+        ).then(this.loadDataAndPlot);
     }}}
 
     /* The area we can draw all of our charting in */
@@ -673,7 +675,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }}}
 
     /* Callback function for data retrieval, which plots the retrieved data */
-    loadDataAndPlot = (err, data) => {{{
+    //loadDataAndPlot = (err, data) => {{{
+    loadDataAndPlot = (data) => {{{
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
