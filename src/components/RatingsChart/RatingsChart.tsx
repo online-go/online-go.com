@@ -146,7 +146,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
     componentDidMount() {{{
         this.initialize();
-        this.resize(true);
         if (this.shouldDisplayRankInformation()) {
             this.y_axis_rank_labels.style('display', null);
         } else {
@@ -950,7 +949,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             this.plotWinLossPie();
         }
         return (
-            <div ref={(e) => this.container = e} className="RatingsChart">
+            <div ref={(e) => {
+                this.container = e;
+                this.resize();
+            }} className="RatingsChart">
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
