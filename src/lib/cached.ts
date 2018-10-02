@@ -170,7 +170,7 @@ function refresh_all() {
 }
 
 data.watch('user', (user) => {
-    if (user.id != current_user_id) {
+    if (user.id !== current_user_id) {
         current_user_id = user.id;
         if (refresh_debounce) {
         clearTimeout(refresh_debounce);
