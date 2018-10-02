@@ -35,6 +35,7 @@ import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
 import {close_friend_list} from 'FriendList/FriendIndicator';
+import cached from 'cached';
 
 declare var swal;
 
@@ -45,7 +46,7 @@ interface PlayerDetailsProperties {
 }
 
 let friends = {};
-data.watch('friends', (friends_arr) => {
+data.watch(cached.friends, (friends_arr) => {
     friends = {};
     for (let friend of friends_arr) {
         friends[friend.id] = true;

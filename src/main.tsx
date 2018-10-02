@@ -45,6 +45,7 @@ import {_} from "translate";
 import {init_tabcomplete} from "tabcomplete";
 import * as player_cache from "player_cache";
 import {toast} from 'toast';
+import cached from 'cached';
 
 import "debug";
 
@@ -53,12 +54,12 @@ declare const Raven;
 
 
 /*** Load our config ***/
-data.watch("config", (config) => {
+data.watch(cached.config, (config) => {
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
 });
-get("ui/config").then((config) => data.set("config", config));
+
 data.watch("config.user", (user) => {
     try {
         Raven.setUserContext({

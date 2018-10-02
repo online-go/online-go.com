@@ -107,7 +107,7 @@ class UIPushManager {
     }
 }
 
-let push_manager = new UIPushManager();
+export let push_manager = new UIPushManager();
 
 export class UIPush extends React.Component<UIPushProperties, any> {
     handler: Handler = null;

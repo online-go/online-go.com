@@ -23,6 +23,7 @@ import * as data from "data";
 import * as preferences from "preferences";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
+import cached from 'cached';
 
 
 interface FriendListProperties {
@@ -50,11 +51,11 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
-        data.watch("friends", this.updateFriends); /* this is managed by our FriendIndicator */
+        data.watch(cached.friends, this.updateFriends); /* this is managed by our FriendIndicator */
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
     }}}
     componentWillUnmount() {{{
-        data.unwatch("friends", this.updateFriends);
+        data.unwatch(cached.friends, this.updateFriends);
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
     }}}
     resortFriends = () => {

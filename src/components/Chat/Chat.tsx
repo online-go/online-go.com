@@ -34,6 +34,8 @@ import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {users_by_rank} from 'chat_manager';
 import * as moment from "moment";
+import cached from 'cached';
+
 
 declare let swal;
 
@@ -174,30 +176,23 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    resolve() {{{
-        if (!data.get("user").anonymous) {
-            get("me/groups", {page_size: 30})
-            .then((groups) => {
-                this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
-                groups.results.map((g) => {
-                    getChannel("group-" + g.id).name = g.name;
-                });
-            })
-            .catch((err) => 0);
+    updateGroups = (groups) => {{{
+        this.setState({group_channels: groups});
+        groups.map((g) => {
+            getChannel("group-" + g.id).name = g.name;
+        });
+    }}}
 
-            get("me/tournaments", {ended__isnull:true, page_size: 30})
-            .then((tournaments) => {
-                this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))});
-                tournaments.results.map((t) => {
-                    getChannel("tournament-" + t.id).name = t.name;
-                });
-            })
-            .catch((err) => 0);
-        }
+    updateTournaments = (tournaments) => {{{
+        this.setState({tournament_channels: tournaments});
+        tournaments.map((t) => {
+            getChannel("tournament-" + t.id).name = t.name;
+        });
     }}}
 
     componentDidMount() {{{
-        this.resolve();
+        data.watch(cached.groups, this.updateGroups);
+        data.watch(cached.active_tournaments, this.updateTournaments);
 
         comm_socket.on("connect", this.connect);
         comm_socket.on("disconnect", this.disconnect);
@@ -236,6 +231,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.autoscroll();
     }}}
     componentWillUnmount() {{{
+        data.unwatch(cached.groups, this.updateGroups);
+        data.unwatch(cached.active_tournaments, this.updateTournaments);
         this.disconnect();
         comm_socket.off("connect", this.connect);
         comm_socket.off("disconnect", this.disconnect);

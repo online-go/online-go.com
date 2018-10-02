@@ -29,6 +29,7 @@ import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
 import * as data from "data";
+import cached from "cached";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {longRankString, getUserRating, is_novice, is_provisional} from "rank_utils";
@@ -227,39 +228,32 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        this.refresh();
+        data.watch(cached.groups, this.updateGroups);
+        data.watch(cached.group_invitations, this.updateGroupInvitations);
     }}}
-    refresh() {{{
-        get("me/groups", {}).then((res) => {
-            this.setState({"groups": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
-        get("me/groups/invitations", {page_size: 100}).then((res) => {
-            this.setState({"invitations": res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation)});
-        }).catch((err) => {
-            console.info("Caught", err);
-        });
+
+    updateGroups = (groups) => {{{
+        this.setState({"groups": groups});
     }}}
+    updateGroupInvitations = (invitations) => {{{
+        this.setState({"invitations": invitations});
+    }}}
+
     componentWillUnmount() {{{
-        abort_requests_in_flight("me/groups");
+        data.unwatch(cached.groups, this.updateGroups);
+        data.unwatch(cached.group_invitations, this.updateGroupInvitations);
     }}}
     acceptInvite(invite) {{{
         post("me/groups/invitations", {"request_id": invite.id})
-        .then(() => this.refresh())
-        .catch(() => this.refresh());
+        .then(() => 0)
+        .catch(() => 0);
     }}}
     rejectInvite(invite) {{{
         post("me/groups/invitations", {"request_id": invite.id, "delete": true})
-        .then(() => this.refresh())
-        .catch(() => this.refresh());
+        .then(() => 0)
+        .catch(() => 0);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-GroupList">
                 {this.state.invitations.map((invite) => (
@@ -285,36 +279,27 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
-            this.setState({"my_tournaments": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
+        data.watch(cached.active_tournaments, this.update);
+        /*
         get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
+        */
     }}}
+    update = (tournaments) => {{{
+        this.setState({"my_tournaments": tournaments});
+    }}}
+
     componentWillUnmount() {{{
         abort_requests_in_flight("me/tournaments");
+        data.unwatch(cached.active_tournaments, this.update);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-TournamentList">
-                {this.state.open_tournaments.map((tournament) => (
-                    <Link key={tournament.id} to={`/tournament/${tournament.id}`}><img src={tournament.icon}/> {tournament.name}</Link>
-                ))}
-                {(this.state.open_tournaments.length === 0 || null) &&
-                    null
-                }
-
                 {this.state.my_tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}><img src={tournament.icon}/> {tournament.name}</Link>
                 ))}
@@ -335,21 +320,18 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/ladders", {}).then((res) => {
-            this.setState({"ladders": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
+        data.watch(cached.ladders, this.update);
     }}}
+
+    update = (ladders) => {{{
+        this.setState({"ladders": ladders});
+    }}}
+
     componentWillUnmount() {{{
         abort_requests_in_flight("me/ladders");
+        data.unwatch(cached.ladders, this.update);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-LadderList">
                 {this.state.ladders.map((ladder) =>

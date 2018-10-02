@@ -29,6 +29,7 @@ import {profanity_filter} from "profanity_filter";
 import {challenge_text_description} from "ChallengeModal";
 import {FabX, FabCheck} from "material";
 import {ignore} from "misc";
+import cached from 'cached';
 
 
 export class ChallengesList extends React.PureComponent<{onAccept:() => void}, any> {
@@ -36,28 +37,17 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
         super(props);
         this.state = {
             challenges: [],
-            resolved: false
         };
     }
 
     componentDidMount() {{{
-        this.refresh();
+        data.watch(cached.challenge_list, this.update);
     }}}
     componentWillUnmount() {{{
+        data.unwatch(cached.challenge_list, this.update);
     }}}
-
-    refresh = () => {{{
-        get("me/challenges", {page_size: 30}).then((res) => {
-            for (let challenge of res.results) {
-                player_cache.update(challenge.challenger);
-                player_cache.update(challenge.challenged);
-                challenge.game.time_control = JSON.parse(challenge.game.time_control_parameters);
-            }
-            this.setState({"challenges": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
+    update = (challenge_list) => {{{
+        this.setState({"challenges": challenge_list});
     }}}
 
     deleteChallenge(challenge) {{{
@@ -84,14 +74,8 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
     render() {{{
         let user = data.get('user');
 
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="ChallengesList">
-                <UIPush event="challenge-list-updated" action={this.refresh} />
-
                 {(this.state.challenges.length > 0) &&
                     <h2>{_("Challenges")}</h2>
                 }

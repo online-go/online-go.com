@@ -50,12 +50,15 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     }
 
     componentWillMount() {{{
-        get("announcements")
-        .then((announcements) => {
-            for (let announcement of announcements) {
-                this.announce(announcement);
-            }
-        });
+        setTimeout(() => {
+            /* Defer this get so we can load whatever page we're on first */
+            get("announcements")
+            .then((announcements) => {
+                for (let announcement of announcements) {
+                    this.announce(announcement);
+                }
+            });
+        }, 20);
     }}}
 
     retract = (announcement) => {{{
