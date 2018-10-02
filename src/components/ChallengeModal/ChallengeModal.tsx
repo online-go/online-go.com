@@ -154,6 +154,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.game.initial_state = this.props.initialState;
             challenge.game.komi_auto = "custom";
             challenge.game.komi = this.props.initialState.komi;
+            challenge.game.ranked = false;
         }
 
         this.state = {
