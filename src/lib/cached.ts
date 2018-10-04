@@ -27,6 +27,14 @@ import * as player_cache from 'player_cache';
  * On load we refresh these keys, and on various ui-push events.
  */
 
+function anon() {
+    let user = data.get('config.user');
+    if (!user) {
+        return true;
+    }
+    return user.anonymous;
+}
+
 export let cached = {
     config: 'cached.config',
     friends: 'cached.friends',
@@ -47,7 +55,7 @@ export let cached = {
         },
 
         challenge_list: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.challenge_list, []);
                 return;
             }
@@ -65,7 +73,7 @@ export let cached = {
         },
 
         group_invitations: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.group_invitations, []);
                 return;
             }
@@ -79,7 +87,7 @@ export let cached = {
         },
 
         friends: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.friends, []);
                 return;
             }
@@ -92,7 +100,7 @@ export let cached = {
         },
 
         groups: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.groups, []);
                 return;
             }
@@ -107,7 +115,7 @@ export let cached = {
         },
 
         active_tournaments: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.active_tournaments, []);
                 return;
             }
@@ -122,7 +130,7 @@ export let cached = {
         },
 
         ladders: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.ladders, []);
                 return;
             }
@@ -138,7 +146,7 @@ export let cached = {
         },
 
         blocks: () => {
-            if (data.get('user').anonymous) {
+            if (anon()) {
                 data.set(cached.blocks, {});
                 return;
             }

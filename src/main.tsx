@@ -30,6 +30,14 @@ data.setDefault("config", {
         "pro": 0,
     }
 });
+data.setDefault("config.user", {
+    "anonymous": true,
+    "id": 0,
+    "username": "Guest",
+    "ranking": -100,
+    "country": "un",
+    "pro": 0,
+});
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
