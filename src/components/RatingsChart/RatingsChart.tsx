@@ -60,7 +60,7 @@ const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
 export class RatingsChart extends React.Component<RatingsChartProperties, any> {
-    container;
+    container = null;
     chart_div;
     svg;
     clip;
@@ -167,6 +167,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
     }}}
     componentWillUnmount() {{{
+        console.log("COmponent is unmounting");
         this.deinitialize();
     }}}
     componentWillReceiveProps(nextProps) {{{
@@ -501,7 +502,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.brush = d3.brushX()
             .extent([[0, 0], [width, secondary_charts_height]])
-            .on('brush', this.onTimelineBrush)
+            .on('brush',this.onTimelineBrush)
             .on('end', this.onTimelineBrush);
 
         this.timeline_graph.append('g')
@@ -520,6 +521,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             this.resize_debounce = null;
         }
         this.svg.remove();
+        this.container = null;
     }}}
     refreshData() {{{
         this.setState({loading: true});
@@ -949,16 +951,21 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.y_axis_rank_labels.call(this.rank_axis);
     }}}
 
+    setContainer = (e) => {
+        let need_resize = this.container === null;
+        this.container = e;
+        if (need_resize) {
+            this.resize();
+        }
+    }
+
     render() {{{
         this.computeWinLossNumbers();
         if (!this.state.loading && this.show_pie) {
             this.plotWinLossPie();
         }
         return (
-            <div ref={(e) => {
-                this.container = e;
-                this.resize();
-            }} className="RatingsChart">
+            <div ref={this.setContainer} className="RatingsChart">
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
