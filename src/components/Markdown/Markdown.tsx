@@ -39,6 +39,8 @@ function sanitize(src) {
             '*': {
                 'background-color': [/.*/],
                 'border': [/.*/],
+                'border-radius': [/.*/],
+                'border-color': [/.*/],
                 'box-shadow': [/.*/],
                 'color': [/.*/],
                 'font': [/.*/],
