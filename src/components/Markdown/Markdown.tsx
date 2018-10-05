@@ -35,6 +35,28 @@ function sanitize(src) {
         allowedAttributes: {
             '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height', 'class']
         },
+        allowedStyles: {
+            '*': {
+                'background-color': [/.*/],
+                'border': [/.*/],
+                'box-shadow': [/.*/],
+                'color': [/.*/],
+                'font': [/.*/],
+                'font-family': [/.*/],
+                'font-size': [/.*/],
+                'margin': [/.*/],
+                'margin-bottom': [/.*/],
+                'margin-left': [/.*/],
+                'margin-right': [/.*/],
+                'margin-top': [/.*/],
+                'padding': [/.*/],
+                'padding-bottom': [/.*/],
+                'padding-left': [/.*/],
+                'padding-right': [/.*/],
+                'padding-top': [/.*/],
+                'text-align': [/.*/],
+            }
+        },
         transformTags: {
             'script': 'error',
             'iframe': 'error',
