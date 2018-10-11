@@ -176,6 +176,7 @@ function dev_server(done) {
     devserver.use('/oauth2', beta_proxy('/oauth2'));
     devserver.use('/complete', beta_proxy('/complete'));
     devserver.use('/disconnect', beta_proxy('/disconnect'));
+    devserver.use('/OGSScoreEstimator', beta_proxy('/OGSScoreEstimator'));
 
     devserver.get('/locale/*', (req, res) => {
         let options = {
