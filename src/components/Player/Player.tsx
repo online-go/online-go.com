@@ -20,7 +20,7 @@ import {Link} from "react-router-dom";
 import { routes } from 'routes';
 import {browserHistory} from "ogsHistory";
 import {shouldOpenNewTab, errorLogger, unicodeFilter} from "misc";
-import {rankString, getUserRating, is_novice} from "rank_utils";
+import {rankString, getUserRating, is_novice, PROVISIONAL_RATING_CUTOFF} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
@@ -193,7 +193,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
             }
-            else if (rating.deviation >= 220) {
+            else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
                 rank_text = '?';
             }
             /*
