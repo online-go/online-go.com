@@ -44,7 +44,7 @@ export function gettext(msgid) {
 export function ngettext(singular, plural, count) {
     let key = singular + "" + plural;
     if (key in catalog) {
-        if (catalog[key].length == 1) {
+        if (catalog[key].length === 1) {
             count = 1;
         }
 
@@ -65,7 +65,7 @@ export function pgettext(context, msgid) {
 export function npgettext(context, singular, plural, count) {
     let key = context + "" + singular + "" + plural;
     if (key in catalog) {
-        if (catalog[key].length == 1) {
+        if (catalog[key].length === 1) {
             count = 1;
         }
         return catalog[key][count === 1 ? 0 : 1];
