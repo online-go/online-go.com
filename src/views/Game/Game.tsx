@@ -1764,12 +1764,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <span>
                             {state.winner
                                 ?
-                                (interpolate(pgettext("Game winner", "%s wins by %s"), [
-                                    (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
-                                    getOutcomeTranslation(this.goban.engine.outcome)
-                                ]))
+                                (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
+                                    "color": (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
+                                    "outcome": getOutcomeTranslation(this.goban.engine.outcome)
+                                }))
                                 :
-                                (interpolate(pgettext("Game winner", "Tie by %s"), [ pgettext("Game outcome", this.goban.engine.outcome)]))
+                                (interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {"outcome": pgettext("Game outcome", this.goban.engine.outcome)}))
                             }
                         </span>
                     }
