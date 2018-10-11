@@ -502,7 +502,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.brush = d3.brushX()
             .extent([[0, 0], [width, secondary_charts_height]])
-            .on('brush',this.onTimelineBrush)
+            .on('brush', this.onTimelineBrush)
             .on('end', this.onTimelineBrush);
 
         this.timeline_graph.append('g')
