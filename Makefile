@@ -10,7 +10,7 @@ node_modules:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) yarn install
 
 lint tslint:
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --type-check --project tsconfig.json
+	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --project tsconfig.json
 
 min: minjs mincss
 

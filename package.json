@@ -70,6 +70,7 @@
     "react-select": "^1.2.1",
     "react-tap-event-plugin": "^3.0.2",
     "redux": "^3.7.2",
-    "sanitize-html": "^1.14.1"
+    "sanitize-html": "^1.14.1",
+    "whatwg-fetch": "^3.0.0"
   }
 }

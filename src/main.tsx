@@ -16,6 +16,7 @@
  */
 
 /// <reference path="../typings_manual/index.d.ts" />
+import "whatwg-fetch"; /* polyfills window.fetch */
 
 import * as data from "data";
 
