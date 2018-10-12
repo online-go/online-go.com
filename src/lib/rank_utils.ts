@@ -166,6 +166,7 @@ export function rankString(r, with_tenths?:boolean) {
         if ('ratings' in r) {
             r = overall_rank(r);
         } else {
+            provisional = false;
             r = ranking;
         }
     }
