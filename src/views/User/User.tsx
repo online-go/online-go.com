@@ -28,7 +28,7 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString, getUserRating} from "rank_utils";
+import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
 import {durationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
@@ -1017,7 +1017,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                  onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
                 >
                 <div className='rating'>
-                    <span className='left'>{r.rating.toFixed(0)}</span>&plusmn;<span className='right'>{r.deviation.toFixed(0)}</span>
+                    <span className='left'>{humble_rating(r.rating, r.deviation).toFixed(0)}</span>&plusmn;<span className='right'>{r.deviation.toFixed(0)}</span>
                 </div>
             </div>
         );

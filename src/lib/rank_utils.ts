@@ -27,6 +27,7 @@ class Rating {
     rating:number;
     deviation:number;
     volatility:number;
+    provisional:boolean;
     rank:number;
     rank_label:string;
     partial_rank:number;
@@ -119,6 +120,7 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 
     ret.rating = rating.rating;
     ret.deviation = rating.deviation;
+    ret.provisional = rating.deviation >= PROVISIONAL_RATING_CUTOFF;
     ret.volatility = rating.volatility;
     ret.rank = Math.floor(rating_to_rank(ret.rating));
     ret.rank_deviation = rating_to_rank(ret.rating + ret.deviation) - rating_to_rank(ret.rating);

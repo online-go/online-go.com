@@ -21,7 +21,7 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-import {rankString, getUserRating, is_novice} from "rank_utils";
+import {rankString, getUserRating, is_novice, humble_rating} from "rank_utils";
 import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import {termination_socket} from "sockets";
@@ -223,12 +223,17 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         }
                         {rating && !rating.professional &&
                             <div>
-                                <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                                <span className="rating">{Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn; {Math.round(rating.deviation)}</span>
                             </div>
                         }
-                        {rating && !rating.professional &&
+                        {rating && !rating.professional && !rating.provisional &&
                             <div>
                                 <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional && rating.provisional &&
+                            <div>
+                                <span className="rank">{_("Provisional rank")}</span>
                             </div>
                         }
                     </div>

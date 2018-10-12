@@ -36,6 +36,7 @@ import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
+import * as player_cache from "player_cache";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -140,6 +141,7 @@ export class Play extends React.Component<PlayProperties, any> {
         let corr = [];
         for (let i in challenges) {
             let C = challenges[i];
+            player_cache.fetch(C.user_id).then(() => 0); /* just get the user data ready ready if we don't already have it */
             C.ranked_text = C.ranked ? _("Yes") : _("No");
             if (C.handicap === -1) {
                 C.handicap_text = _("Auto");
@@ -160,7 +162,7 @@ export class Play extends React.Component<PlayProperties, any> {
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
 
-        console.log("list update...");
+        //console.log("list update...");
         this.setState({
             live_list: live,
             correspondence_list: corr,
@@ -303,14 +305,14 @@ export class Play extends React.Component<PlayProperties, any> {
             clearTimeout(this.list_freeze_timeout);
         }
         if (!this.state.freeze_challenge_list) {
-            console.log("Freeze challenges...");
+            //console.log("Freeze challenges...");
             this.setState({freeze_challenge_list: true});
         }
         this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
     }}}
 
     unfreezeChallenges = () => {{{
-        console.log("Unfreeze challenges...");
+        //console.log("Unfreeze challenges...");
         this.setState({freeze_challenge_list: false});
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
@@ -354,7 +356,7 @@ export class Play extends React.Component<PlayProperties, any> {
                             {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
                                 <span className="head"></span>
-                                <span className="head">{_("Rank")}</span>
+                                    {/* <span className="head">{_("Rank")}</span> */}
                                 <span className="head">{_("Size")}</span>
                                 <span className="head">{_("Time Control")}</span>
                                 <span className="head">{_("Handicap")}</span>
@@ -582,9 +584,9 @@ export class Play extends React.Component<PlayProperties, any> {
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                         </span>
                         <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                            <Player user={this.extractUser(C)} rank={false} />
+                            <Player user={this.extractUser(C)} rank={true} />
                         </span>
-                        {commonSpan(boundedRankString(C.rank), "center")}
+                        {/*commonSpan(boundedRankString(C.rank), "center")*/}
                         <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                             {C.width}x{C.height}
                         </span>
@@ -611,7 +613,7 @@ export class Play extends React.Component<PlayProperties, any> {
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
-            <span className="head">{_("Rank")}</span>
+            {/* <span className="head">{_("Rank")}</span> */}
             <span className="head">{_("Size")}</span>
             <span className="head">{_("Time")}</span>
             <span className="head">{_("Ranked")}</span>
