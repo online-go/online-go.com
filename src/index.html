@@ -180,7 +180,6 @@
       <script defer src="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2{{MIN}}.js"></script>
 
 
-      <script id="ogs_score_estimator_script" async src="/OGSScoreEstimator/OGSScoreEstimator-0.6.1.js"></script>
       <script type="text/javascript">var supported_languages = {{SUPPORTED_LANGUAGES}};</script>
       <script type="text/javascript">
         var ogs_version='{{VERSION}}';
@@ -268,6 +267,24 @@
             console.error(e);
         }
         document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
+
+      </script>
+
+      <script>
+        try {
+            var script = document.createElement('script');
+            script.id = "ogs_score_estimator_script";
+            if (typeof WebAssembly === "object")  {
+                console.log("WASM support detected, score estimator will be fast"); 
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.6.2.js";
+            } else {
+                console.log("No WASM support detected, score estimator falling back to ASM.js mode"); 
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.6.2.asm.js";
+            }
+            document.head.appendChild(script);
+        } catch (e) {
+            console.error(e);
+        }
       </script>
 
 
