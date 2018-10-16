@@ -170,7 +170,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
     }}}
     componentWillUnmount() {{{
-        console.log("COmponent is unmounting");
         this.deinitialize();
     }}}
     componentWillReceiveProps(nextProps) {{{
