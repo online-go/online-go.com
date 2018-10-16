@@ -29,6 +29,7 @@ import {getRelativeEventPosition, errorAlerter} from "misc";
 import {rankString, bounded_rank} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
+import * as player_cache from "player_cache";
 
 declare let swal;
 
@@ -690,7 +691,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             } else {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{"user_id": C.user_id, "ranking": C.rank, "username": C.username}} rank />), f[0]);
+                let U = player_cache.lookup(C.user_id) || {"user_id": C.user_id, "ranking": C.rank, "username": C.username};
+                ReactDOM.render((<Player user={U} rank disableCacheUpdate />), f[0]);
 
                 let details_html = ", " +
                     (C.ranked ? _("Ranked") : _("Unranked"))

@@ -32,7 +32,7 @@ import * as data from "data";
 import cached from "cached";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
-import {longRankString, getUserRating, is_novice, is_provisional} from "rank_utils";
+import {longRankString, getUserRating, is_novice, is_provisional, humble_rating} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
@@ -156,7 +156,7 @@ export class Overview extends React.Component<{}, any> {
                             }
                             {rating && !rating.professional &&
                                 <div>
-                                    <span className="rating">{Math.round(rating.rating)} &plusmn; {Math.round(rating.deviation)}</span>
+                                    <span className="rating">{Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn; {Math.round(rating.deviation)}</span>
                                 </div>
                             }
                             {rating && !rating.professional && !is_novice(user) && !is_provisional(user) &&
@@ -214,8 +214,6 @@ export class Overview extends React.Component<{}, any> {
         });
     }
 }
-
-
 
 export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     constructor(props) {

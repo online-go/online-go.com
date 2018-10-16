@@ -34,6 +34,7 @@ import {
     rankString,
     is_novice,
     is_rank_bounded,
+    humble_rating,
     bounded_rank
 } from 'rank_utils';
 
@@ -98,9 +99,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     rank_axis      = d3.axisRight(this.ratings_y);
 
     rating_line    = d3.line<RatingEntry>()
-                       .curve(d3.curveLinear)
+                       //.curve(d3.curveLinear)
+                       .curve(d3.curveMonotoneX)
                        .x((d:RatingEntry) => this.ratings_x(d.ended))
-                       .y((d:RatingEntry) => this.ratings_y(d.rating));
+                       .y((d:RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
 
     deviation_area = d3.area<RatingEntry>()
                        .curve(d3.curveBasis)
@@ -113,7 +115,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                        .curve(d3.curveMonotoneX)
                        .x((d:RatingEntry) => this.timeline_x(d.ended))
                        .y0(secondary_charts_height)
-                       .y1((d:RatingEntry) => this.timeline_y(d.rating));
+                       //.y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
+                       .y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
 
     deviation_chart;
     rating_chart;
@@ -475,19 +478,20 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                         ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
                         ,
                         {
-                            rating: Math.floor(d.rating),
+                            //rating: Math.floor(d.rating),
+                            rating: Math.floor(humble_rating(d.rating, d.deviation)),
                             deviation: Math.round(d.deviation),
-                            rank: rankString(bounded_rank(rating_to_rank(d.rating)), true),
+                            rank: rankString(bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))), true),
                             rank_deviation: (rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)).toFixed(1),
                         }
                     )
                 );
                 self.dateLegendText.text(format_date(new Date(d.ended)));
                 self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(d.ended)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
-                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
+                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
                 //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
                 //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
-                self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(d.rating) + ')');
+                self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
 
                 self.setState({hovered_date: new Date(d.ended)});
             });
@@ -760,7 +764,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         game_count_extent[0] = 0;
         this.outcomes_y.domain(d3.extent(game_count_extent));
         this.timeline_x.domain(this.ratings_x.domain());
-        this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return d.rating; })) as any);
+        this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
         this.setState({date_extents: this.date_extents.slice()});
         this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
