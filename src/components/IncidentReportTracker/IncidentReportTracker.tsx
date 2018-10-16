@@ -21,9 +21,14 @@ import {_, pgettext, interpolate} from "translate";
 import {comm_socket} from "sockets";
 import {post, get} from "requests";
 import * as data from "data";
+import * as preferences from "preferences";
 import {Player} from "Player";
 import {ignore, errorAlerter} from "misc";
 import * as moment from "moment";
+import {emitNotification} from "Notifications";
+import {browserHistory} from "ogsHistory";
+
+
 
 declare var swal;
 
@@ -110,9 +115,28 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                 .catch(ignore);
             };
 
+            if (!(report.id in this.active_incident_reports)) {
+                if (data.get("user").is_moderator && preferences.get("notify-on-incident-report")) {
+                    emitNotification("Incident Report",
+                        report.reporting_user.username + ": " + report.reporter_note,
+                        () => {
+                            if (report.reported_game) {
+                                browserHistory.push(`/game/${report.reported_game}`);
+                            }
+                            else if (report.reported_review) {
+                                browserHistory.push(`/review/${report.reported_review}`);
+                            }
+                            else if (report.reported_user) {
+                                browserHistory.push(`/user/view/${report.reported_user.id}`);
+                            }
+                        }
+                    );
+                }
+            }
             this.active_incident_reports[report.id] = report;
         }
 
+        let user = data.get("user");
         let reports = [];
         let normal_ct = 0;
         let sandbag_ct = 0;
@@ -122,7 +146,9 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             if (eq_bagger(report.reporter_note)) {
                 sandbag_ct++;
             } else {
-                normal_ct++;
+                if (report.moderator === null || report.moderator.id === user.id) {
+                    normal_ct++;
+                }
             }
         }
 
@@ -133,7 +159,15 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             if (!eq_bagger(a.reporter_note) && eq_bagger(b.reporter_note)) {
                 return -1;
             }
-            return parseInt(a.id) - parseInt(b.id);
+
+            if (a.moderator && a.moderator.id !== user.id && !b.moderator) {
+                return 1;
+            }
+            if (b.moderator && b.moderator.id !== user.id && !a.moderator) {
+                return -1;
+            }
+
+            return parseInt(b.id) - parseInt(a.id);
         });
 
         this.setState({

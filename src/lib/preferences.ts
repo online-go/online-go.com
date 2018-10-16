@@ -67,6 +67,7 @@ let defaults = {
     "translation-dialog-never-show": false,
     "unicode-filter": false,
     "show-tournament-indicator": true,
+    "notify-on-incident-report": true,
 };
 
 defaults['profanity-filter'][current_language] = true;

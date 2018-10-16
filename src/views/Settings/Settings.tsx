@@ -75,6 +75,7 @@ export class Settings extends React.PureComponent<{}, any> {
             desktop_notifications_enabled: desktop_notifications_enabled,
             desktop_notifications_enableable: typeof(Notification) !== "undefined",
             hide_ui_class: false,
+            incident_report_notifications: preferences.get("notify-on-incident-report"),
             board_labeling: preferences.get("board-labeling"),
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
             dock_delay: preferences.get("dock-delay"),
@@ -336,6 +337,12 @@ export class Settings extends React.PureComponent<{}, any> {
         });
     }}}
 
+    updateIncidentReportNotifications = (ev) => {{{
+        let checked = ev.target.checked;
+        this.setState({'incident_report_notifications': checked});
+        preferences.set("notify-on-incident-report", checked);
+    }}}
+
     updatePassword1 = (ev) => {{{
         this.setState({password1: ev.target.value});
     }}}
@@ -534,6 +541,22 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="show-tournament-indicator" type="checkbox" checked={this.state.show_tournament_indicator} onChange={this.setShowTournamentIndicator} />
                             </dd>
+
+                            {(user.is_moderator || null) &&
+                                <dt><label htmlFor="incident-report-notifications">{_("Notify me when an incident is submitted for moderation")}</label></dt>
+                            }
+                            {(user.is_moderator || null) &&
+                                <dd>
+                                    <input type="checkbox"
+                                            checked={this.state.incident_report_notifications}
+                                            onChange={this.updateIncidentReportNotifications}
+                                            id='incident_report_notifications'
+                                            />
+                                    <label htmlFor="incident_report_notifications">
+                                        {this.state.incident_report_notifications ? _("Enabled") : _("Disabled")}
+                                    </label>
+                                </dd>
+                            }
                         </dl>
                     </Card>
 
