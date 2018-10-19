@@ -187,7 +187,7 @@
         var ogs_language_version='{{LANGUAGE_VERSION}}';
         var cdn_service = '{{CDN_SERVICE}}';
 
-        /* Detect prefered language {{{ */
+        /* Detect preferred language {{{ */
 
         function isSupportedLanguage(lang) {
             if (!lang) {
@@ -209,7 +209,7 @@
             return null;
         }
 
-        function getPreferedLanguage() {
+        function getPreferredLanguage() {
             try {
                 var set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
                 var lang = isSupportedLanguage(set_lang);
@@ -243,7 +243,7 @@
 
         var ogs_current_language = 'en';
         try {
-            ogs_current_language = getPreferedLanguage();
+            ogs_current_language = getPreferredLanguage();
         } catch (e) {
             console.error(e);
         }

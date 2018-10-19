@@ -55,11 +55,16 @@ import {init_tabcomplete} from "tabcomplete";
 import * as player_cache from "player_cache";
 import {toast} from 'toast';
 import cached from 'cached';
+import * as moment from 'moment';
 
 import "debug";
 
 declare const swal;
 declare const Raven;
+
+/*** Initialize moment in our current language ***/
+declare function getPreferredLanguage();
+moment.locale(getPreferredLanguage());
 
 
 /*** Load our config ***/
