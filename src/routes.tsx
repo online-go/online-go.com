@@ -161,7 +161,6 @@ export const routes = (
             <Route path="/docs/refund-policy" component={docs.RefundPolicy}/>
 
             <Route path="/docs/go-rules-comparison-matrix" component={docs.RulesMatrix}/>
-            <Route path="/docs/changelog" component={docs.ChangeLog}/>
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
 

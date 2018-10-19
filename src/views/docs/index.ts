@@ -18,6 +18,5 @@
 export * from "./About";
 export * from "./legal";
 export * from "./RulesMatrix";
-export * from "./ChangeLog";
 export * from "./Team";
 export * from "./GoResources";
