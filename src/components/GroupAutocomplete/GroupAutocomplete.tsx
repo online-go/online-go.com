@@ -18,9 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, abort_requests_in_flight} from "requests";
-
-import _Autosuggest = require("react-autosuggest");
-let Autosuggest = _Autosuggest as any;
+import * as Autosuggest from 'react-autosuggest';
 
 interface GroupAutocompleteProperties {
     onComplete: (user) => void;
@@ -106,11 +104,12 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             suggestions: []
         });
     }}}
-    onBlur = (ev, {focusedSuggestion}) => {{{
+    //onBlur = (ev, {focusedSuggestion}) => {{{
+    onBlur = (ev, {highlightedSuggestion}) => {{{
         if (this.tabbed_out) {
-            if (focusedSuggestion) {
-                this.setState({value: getSuggestionValue(focusedSuggestion)});
-                this.complete(getSuggestionValue(focusedSuggestion));
+            if (highlightedSuggestion) {
+                this.setState({value: getSuggestionValue(highlightedSuggestion)});
+                this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
     }}}
@@ -141,7 +140,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
                     getSuggestionValue={getSuggestionValue}
                     renderSuggestion={renderSuggestion}
-                    focusFirstSuggestion={true}
+                    highlightFirstSuggestion={true}
                     inputProps={inputProps}
                     />
             </span>
