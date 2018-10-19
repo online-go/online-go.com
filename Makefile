@@ -23,6 +23,10 @@ minjs:
 	@echo 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
 	@echo 'gzipped vendor.min.js: ' `gzip -9 dist/vendor.min.js -c | wc -c`
 
+analyze:
+	#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --profile --json > analyze.json
+	npm run webpack-bundle-analyzer dist/ analyze.json
+
 .PHONY: dev lint tslint min minjs mincss
 
 -include Makefile.production

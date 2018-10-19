@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "gulp",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
   "devDependencies": {
     "autoprefixer": "^9.1.5",
@@ -33,6 +34,7 @@
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "webpack": "^4.20.2",
+    "webpack-bundle-analyzer": "",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.10.1"
   },
@@ -71,6 +73,7 @@
     "react-tap-event-plugin": "^3.0.2",
     "redux": "^3.7.2",
     "sanitize-html": "^1.14.1",
+    "webpack-bundle-analyzer": "^3.0.3",
     "whatwg-fetch": "^3.0.0"
   }
 }

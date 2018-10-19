@@ -1,7 +1,5 @@
 'use strict';
 
-console.log('node path :', process.env.NODE_PATH)
-
 var path = require('path');
 let fs = require('fs');
 var webpack = require('webpack');
