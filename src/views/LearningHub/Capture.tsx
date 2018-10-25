@@ -18,15 +18,12 @@
 import * as React from "react";
 import {LearningPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
-import {LearningHubSectionProperties} from './LearningHubSectionProperties';
+import {LearningHubSection} from './LearningHubSection';
 
 
-export class Capture extends React.PureComponent<LearningHubSectionProperties, any>  {
-    pages:Array<typeof LearningPage>;
-    constructor(props) {
-        super(props);
-
-        this.pages = [
+export class Capture extends LearningHubSection {
+    static pages():Array<typeof LearningPage> {
+        return [
             Page1,
             Page2,
             Page3,
@@ -35,18 +32,9 @@ export class Capture extends React.PureComponent<LearningHubSectionProperties, a
         ];
     }
 
-    render() {
-        let page = this.props.page || 0;
-        page = Math.min(page, this.pages.length);
-        page = Math.max(page, 0);
-        let P:typeof LearningPage = this.pages[page];
-        return <P
-            title={pgettext("tutorial section on capturing", "Capture!")}
-            npages={this.pages.length}
-            curpage={page}
-            nextSection={this.props.nextSection}
-            />;
-    }
+    static section():string { return "capture"; }
+    static title():string { return pgettext("Tutorial section on capturing", "Capture!"); }
+    static subtext():string { return pgettext("Tutorial section on capturing", "Surrounding stones"); }
 }
 
 class Page1 extends LearningPage {

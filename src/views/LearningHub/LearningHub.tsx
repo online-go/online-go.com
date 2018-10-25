@@ -19,11 +19,108 @@
 import * as React from "react";
 import {Card, CardLink} from "material";
 import {_, pgettext, interpolate} from "translate";
+import {LearningHubSection} from './LearningHubSection';
+import {DummyPage} from './LearningPage';
 import {Capture} from './Capture';
 import {Defend} from './Defend';
 import {Territory} from './Territory';
 import {EndingTheGame} from './EndingTheGame';
 
+
+export class TheBoard extends LearningHubSection {
+    static section():string { return "the-board"; }
+    static title():string { return pgettext("Tutorial section on the board", "The board!"); }
+    static subtext():string { return pgettext("Tutorial section on the board", "Corners, sides, middle"); }
+}
+export class Ladders extends LearningHubSection {
+    static section():string { return "ladders"; }
+    static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
+    static subtext():string { return pgettext("Tutorial section on ladders", ""); }
+}
+export class Snapback extends LearningHubSection {
+    static section():string { return "snapback"; }
+    static title():string { return pgettext("Tutorial section on snapback", "Snapback!"); }
+    static subtext():string { return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group"); }
+}
+export class FalseEyes extends LearningHubSection {
+    static section():string { return "false-eyes"; }
+    static title():string { return pgettext("Tutorial section on false eyes", "False Eyes"); }
+    static subtext():string { return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes"); }
+}
+export class CuttingStones extends LearningHubSection {
+    static section():string { return "cutting-stones"; }
+    static title():string { return pgettext("Tutorial section on cutting stones", "Cutting Stones"); }
+    static subtext():string { return pgettext("Tutorial section on cutting stones", ""); }
+}
+export class JumpingStones extends LearningHubSection {
+    static section():string { return "jumping-stones"; }
+    static title():string { return pgettext("Tutorial section on jumping stones", "Jumping Stones"); }
+    static subtext():string { return pgettext("Tutorial section on jumping stones", ""); }
+}
+
+export class Semeai extends LearningHubSection {
+    static section():string { return "semeai"; }
+    static title():string { return pgettext("Tutorial section on semeai", "Semeai"); }
+    static subtext():string { return pgettext("Tutorial section on semeai", "Attacking eachother"); }
+}
+export class CountingLiberties extends LearningHubSection {
+    static section():string { return "counting-liberties"; }
+    static title():string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
+    static subtext():string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
+}
+export class Seki extends LearningHubSection {
+    static section():string { return "seki"; }
+    static title():string { return pgettext("Tutorial section on seki", "Seki"); }
+    static subtext():string { return pgettext("Tutorial section on seki", "Mutual life"); }
+}
+export class KoBattles extends LearningHubSection {
+    static section():string { return "ko-battles"; }
+    static title():string { return pgettext("Tutorial section on ko battles", "Ko Battles!"); }
+    static subtext():string { return pgettext("Tutorial section on ko battles", "Exploiting the Ko rule"); }
+}
+
+export class WhatIsGo extends LearningHubSection {
+    static section():string { return "what-is-go"; }
+    static title():string { return pgettext("Tutorial section on what is go", "What is Go?"); }
+    static subtext():string { return pgettext("Tutorial section on what is go", ""); }
+}
+export class SportOfGoAndGoAsArt extends LearningHubSection {
+    static section():string { return "sport-of-go-and-go-as-art"; }
+    static title():string { return pgettext("Tutorial section on the sport of Go", "Sport of Go"); }
+    static subtext():string { return pgettext("Tutorial section on the sport of Go", "Go as Art"); }
+}
+export class BenefitsOfLearningGo extends LearningHubSection {
+    static section():string { return "benefits-of-learning-go"; }
+    static title():string { return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go"); }
+    static subtext():string { return pgettext("Tutorial section on beneifts to learning go", "It's more than just a game!"); }
+}
+export class BasicMannersOfGo extends LearningHubSection {
+    static section():string { return "basic-manners-of-go"; }
+    static title():string { return pgettext("Tutorial section on the manners in the game", "Basic manners of Go"); }
+    static subtext():string { return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!"); }
+}
+export class Terminology extends LearningHubSection {
+    static section():string { return "terminology"; }
+    static title():string { return pgettext("Tutorial section on terminology", "Terminology"); }
+    static subtext():string { return pgettext("Tutorial section on terminology", "Say what now?"); }
+}
+
+
+let sections = [
+    [pgettext("Learning hub section title", "Fundamentals"),
+        [Capture, Defend, Territory, EndingTheGame]],
+    [pgettext("Learning hub section title", "Intermediate"),
+        [TheBoard, Ladders, Snapback, FalseEyes, CuttingStones, JumpingStones]],
+    [pgettext("Learning hub section title", "Advanced"),
+        [Semeai, CountingLiberties, Seki, KoBattles ]],
+    [pgettext("Learning hub section title", "About The Game"),
+        [WhatIsGo, SportOfGoAndGoAsArt, BenefitsOfLearningGo, BasicMannersOfGo, Terminology]],
+];
+
+let allsections:Array<typeof LearningHubSection> = [];
+for (let S of sections) {
+    allsections = allsections.concat(S[1]);
+}
 
 interface LearningHubProperties {
     match: {
@@ -40,33 +137,53 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
     }
 
     render() {
-        return <div id='LearningHub'>{this._render()}</div>;
+        let section = this._render();
+
+        if (section) {
+            return (
+                <div id='LearningHub'>
+                    <SectionNav />
+                    {section}
+                </div>
+            );
+        } else {
+            return <div id='LearningHub'> <Index /> </div>;
+        }
     }
     _render() {
-        //let page = parseInt(this.props.match.params.section || 0);
-        let section = (this.props.match.params.section || "index").toLowerCase();
+        let section_name = (this.props.match.params.section || "index").toLowerCase();
+        let section;
+        let next_section_name = '';
 
-        switch (section) {
-            /* Beginner */
-            case "capture":
-                return <Capture page={this.props.match.params.page} nextSection='defend' />;
-
-            case "defend":
-                return <Defend page={this.props.match.params.page} nextSection='territory' />;
-
-            case "territory":
-                return <Territory page={this.props.match.params.page} nextSection='ending-the-game' />;
-
-            case "ending-the-game":
-                return <EndingTheGame page={this.props.match.params.page} nextSection='about-the-board' />;
-
-            /* Intermediate */
-
-
-            default:
-            case "index":
-                return <Index />;
+        for (let i = 0; i < allsections.length; ++i) {
+            if (allsections[i].section() === section_name) {
+                section = allsections[i];
+                if (i + 1 < allsections.length) {
+                    next_section_name = allsections[i + 1].section();
+                }
+            }
         }
+
+        if (section) {
+            let S = section;
+            return <S page={this.props.match.params.page} nextSection={next_section_name} title={S.title()} pages={S.pages()} />;
+        }
+
+        return null;
+    }
+}
+
+class SectionNav extends React.PureComponent<{}, any>  {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div className='LearningHub-section-nav'>
+                section nav
+            </div>
+        );
     }
 }
 
@@ -80,161 +197,25 @@ class Index extends React.PureComponent<{}, any>  {
         return (
             <div id='LearningHub-Index'>
 
-            {/*
-            <div id='LearningHub-progress-box-container'>
-            <Card id='LearningHub-progress-box' >
-                <div id='LearningHub-progress-box-bottom-half'>
-                    <h2>{_("Learn Go by playing!")}</h2>
-                    <div className="progress">
-                    <div className="progress-bar primary" style={{width: progress + "%"}} />
-                    </div>
-                    <div>
-                    {interpolate(_("Progress: {{progress_percent}}%"), {progress_percent: progress})}
-                    </div>
-                </div>
-            </Card>
-            </div>
-            */}
-
             <div id='LearningHub-list'>
-            <h2>Fundamentals</h2>
-            <div className='section'>
-                <CardLink className='next' to='/learning-hub/capture'>
-                    <img src='' />
-                    <div>
-                        <h1>Capture</h1>
-                        <h3>Surrounding stones</h3>
+                {sections.map((arr) =>
+                    <div key={arr[0]} className='section'>
+                        <h2>{arr[0]}</h2>
+                        {arr[1].map((S) => {
+                            return (
+                                <CardLink key={S.section()} className='next' to={`/learning-hub/${S.section()}`}>
+                                    <img src='' />
+                                    <div>
+                                        <h1>{S.title()}</h1>
+                                        <h3>{S.subtext()}</h3>
+                                    </div>
+                                </CardLink>
+                            );
+                        })}
                     </div>
-                </CardLink>
-                <CardLink className='next' to='/learning-hub/defend'>
-                    <img src='' />
-                    <div>
-                        <h1>Defend</h1>
-                        <h3>Two eyes or death</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/territory'>
-                    <img src='' />
-                    <div>
-                        <h1>Territory</h1>
-                        <h3>Stake your claim</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='done' to='/learning-hub/ending-the-game'>
-                    <img src='' />
-                    <div>
-                        <h1>Ending the Game</h1>
-                        <h3>Pass and Pass</h3>
-                    </div>
-                </CardLink>
+                )}
             </div>
 
-            <h2>Intermediate</h2>
-            <div className='section'>
-                <CardLink className='next' to='/learning-hub/the-board'>
-                    <img src='' />
-                    <div>
-                        <h1>The board</h1>
-                        <h3>Corners, sides, middle</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/ladders'>
-                    <img src='' />
-                    <div>
-                        <h1>Ladders</h1>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/snapback'>
-                    <img src='' />
-                    <div>
-                        <h1>Snapback</h1>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/false-eyes'>
-                    <img src='' />
-                    <div>
-                        <h1>False Eyes</h1>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/cutting-stones'>
-                    <img src='' />
-                    <div>
-                        <h1>Cutting Stones</h1>
-                    </div>
-                </CardLink>
-                <CardLink className='done' to='/learning-hub/jumping-stones'>
-                    <img src='' />
-                    <div>
-                        <h1>Jumping Stones</h1>
-                    </div>
-                </CardLink>
-            </div>
-
-            <h2>Advanced</h2>
-            <div className='section'>
-                <CardLink className='todo' to='/learning-hub/semeai'>
-                    <img src='' />
-                    <div>
-                        <h1>Semeai</h1>
-                        <h3>Attacking eachother</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='next' to='/learning-hub/counting-liberties'>
-                    <img src='' />
-                    <div>
-                        <h1>Counting Liberties</h1>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/mutual-life'>
-                    <img src='' />
-                    <div>
-                        <h1>Seki</h1>
-                        <h3>Mutal life</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/ko-battles'>
-                    <img src='' />
-                    <div>
-                        <h1>Ko Battles</h1>
-                        <h3>Exploiting the Ko rule</h3>
-                    </div>
-                </CardLink>
-            </div>
-
-            <h2>About the game</h2>
-            <div className='section'>
-                <CardLink className='todo' to='/learning-hub/what-is-go'>
-                    <img src='' />
-                    <div>
-                        <h3>What is Go?</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/sport-of-go-and-go-as-art'>
-                    <img src='' />
-                    <div>
-                        <h3>Sport of Go and Go as Art</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/benefits-of-learning-go'>
-                    <img src='' />
-                    <div>
-                        <h3>Benefits of Learning Go</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/basic-manners-of-go'>
-                    <img src='' />
-                    <div>
-                        <h3>Basic Manners of Go</h3>
-                    </div>
-                </CardLink>
-                <CardLink className='todo' to='/learning-hub/terminology'>
-                    <img src='' />
-                    <div>
-                        <h3>Terminology</h3>
-                    </div>
-                </CardLink>
-            </div>
-            </div>
             </div>
         );
     }

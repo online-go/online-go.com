@@ -18,30 +18,18 @@
 import * as React from "react";
 import {LearningPage, DummyPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
-import {LearningHubSectionProperties} from './LearningHubSectionProperties';
+import {LearningHubSection} from './LearningHubSection';
 
-export class EndingTheGame extends React.PureComponent<LearningHubSectionProperties, any>  {
-    pages:Array<typeof LearningPage>;
-    constructor(props) {
-        super(props);
-
-        this.pages = [
+export class EndingTheGame extends LearningHubSection {
+    static pages():Array<typeof LearningPage> {
+        return [
             DummyPage,
             DummyPage,
             DummyPage,
         ];
     }
 
-    render() {
-        let page = this.props.page || 0;
-        page = Math.min(page, this.pages.length);
-        page = Math.max(page, 0);
-        let P:typeof LearningPage = this.pages[page];
-        return <P
-            title={pgettext("tutorial section on ending the game", "Ending the game.")}
-            npages={this.pages.length}
-            curpage={page}
-            nextSection={this.props.nextSection}
-            />;
-    }
+    static section():string { return "ending-the-game"; }
+    static title():string { return pgettext("Tutorial section name on learning how to end the game", "End the game!"); }
+    static subtext():string { return pgettext("Tutorial section subtext on learning how to end the game", "Pass and pass"); }
 }

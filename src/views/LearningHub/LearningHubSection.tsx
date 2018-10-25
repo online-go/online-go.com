@@ -17,10 +17,19 @@
 
 import * as React from "react";
 import {LearningPage, DummyPage} from './LearningPage';
-import {_, pgettext, interpolate} from "translate";
-import {LearningHubSection} from './LearningHubSection';
 
-export class Territory extends LearningHubSection {
+interface LearningHubSectionProperties {
+    page: number;
+    title: string;
+    nextSection: string;
+    pages: Array<typeof LearningPage>;
+}
+
+export abstract class LearningHubSection extends React.PureComponent<LearningHubSectionProperties, any> {
+    constructor(props) {
+        super(props);
+    }
+
     static pages():Array<typeof LearningPage> {
         return [
             DummyPage,
@@ -28,8 +37,20 @@ export class Territory extends LearningHubSection {
             DummyPage,
         ];
     }
+    static section():string { return "missing"; }
+    static title():string { return "Missing"; }
+    static subtext():string { return "Missing"; }
 
-    static section():string { return "territory"; }
-    static title():string { return pgettext("Tutorial section name on creating territory", "Territory!"); }
-    static subtext():string { return pgettext("Tutorial section subtext on creating territory", "Stake your claim"); }
+    render() {
+        let page = this.props.page || 0;
+        page = Math.min(page, this.props.pages.length);
+        page = Math.max(page, 0);
+        let P:typeof LearningPage = this.props.pages[page];
+        return <P
+            title={this.props.title}
+            npages={this.props.pages.length}
+            curpage={page}
+            nextSection={this.props.nextSection}
+            />;
+    }
 }
