@@ -186,7 +186,7 @@ class SectionNav extends React.Component<{}, any>  {
 
     render() {
         let pathname = window.location.pathname;
-        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/)
+        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/);
         let section_name = (m && m[2]) || "";
         let page = (m && m[4]) || 0;
 
@@ -233,7 +233,7 @@ class Index extends React.PureComponent<{}, any>  {
                         <h2>{arr[0]}</h2>
                         {arr[1].map((S) => {
                             return (
-                                <CardLink key={S.section()} className={getSectionClass(S.section()} to={`/learning-hub/${S.section()}`}>
+                                <CardLink key={S.section()} className={getSectionClass(S.section())} to={`/learning-hub/${S.section()}`}>
                                     <img src='' />
                                     <div>
                                         <h1>{S.title()}</h1>
@@ -255,12 +255,12 @@ function getSectionClass(section_name:string):string {
     /* TODO: We're going to track progress and mark these as complete / not */
 
     for (let S of sections) {
-        for (let i=0; i < S[1].length; ++i) {
+        for (let i = 0; i < S[1].length; ++i) {
             if (S[1][i].section() === section_name) {
                 if (i === 0) {
                     return 'next';
                 }
-                if (i === S[1].length-1) {
+                if (i === S[1].length - 1) {
                     return 'done';
                 }
                 return 'todo';
