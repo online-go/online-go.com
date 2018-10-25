@@ -17,6 +17,7 @@
 
 
 import * as React from "react";
+import {Link} from "react-router-dom";
 import {Card, CardLink} from "material";
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
@@ -166,22 +167,51 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
 
         if (section) {
             let S = section;
-            return <S page={this.props.match.params.page} nextSection={next_section_name} title={S.title()} pages={S.pages()} />;
+            return <S
+                page={this.props.match.params.page}
+                nextSection={next_section_name}
+                title={S.title()}
+                pages={S.pages()}
+            />;
         }
 
         return null;
     }
 }
 
-class SectionNav extends React.PureComponent<{}, any>  {
+class SectionNav extends React.Component<{}, any>  {
     constructor(props) {
         super(props);
     }
 
     render() {
+        let pathname = window.location.pathname;
+        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/)
+        let section_name = (m && m[2]) || "";
+        let page = (m && m[4]) || 0;
+
+        console.log(section_name, page);
+
         return (
             <div className='LearningHub-section-nav'>
-                section nav
+                <Link to='/learning-hub/'><i className='fa fa-graduation-cap'/> {pgettext("Learning hub menu", "Menu")}</Link>
+
+                {sections.map((arr) =>
+                    <div key={arr[0]} className='section'>
+                        <Link to={`/learning-hub/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
+                        {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) ? // is our active section?
+                            arr[1].map((S) => {
+                            return (
+                                <Link key={S.section()}
+                                    className={S.section() === section_name ? 'active' : ''}
+                                    to={`/learning-hub/${S.section()}`}
+                                >
+                                    {S.title()}
+                                </Link>
+                            );
+                        }) : null}
+                    </div>
+                )}
             </div>
         );
     }
@@ -203,7 +233,7 @@ class Index extends React.PureComponent<{}, any>  {
                         <h2>{arr[0]}</h2>
                         {arr[1].map((S) => {
                             return (
-                                <CardLink key={S.section()} className='next' to={`/learning-hub/${S.section()}`}>
+                                <CardLink key={S.section()} className={getSectionClass(S.section()} to={`/learning-hub/${S.section()}`}>
                                     <img src='' />
                                     <div>
                                         <h1>{S.title()}</h1>
@@ -219,4 +249,23 @@ class Index extends React.PureComponent<{}, any>  {
             </div>
         );
     }
+}
+
+function getSectionClass(section_name:string):string {
+    /* TODO: We're going to track progress and mark these as complete / not */
+
+    for (let S of sections) {
+        for (let i=0; i < S[1].length; ++i) {
+            if (S[1][i].section() === section_name) {
+                if (i === 0) {
+                    return 'next';
+                }
+                if (i === S[1].length-1) {
+                    return 'done';
+                }
+                return 'todo';
+            }
+        }
+    }
+
 }

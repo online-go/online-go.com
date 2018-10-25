@@ -60,14 +60,15 @@
         flex-direction: column;
         justify-content: center;
 
-        >h2 {
-            //font-weight: 300;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            themed(color, shade2);
-        }
 
         .section {
+            > h2 {
+                width: 100%;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+                themed(color, shade2);
+            }
+
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
@@ -120,8 +121,55 @@
             }
         }
     }
+
 }
 
+
+.LearningHub-section-nav {
+    display: flex;
+    flex-direction: column;
+    width: 17rem;
+    margin: 2rem;
+    margin-top: 5rem;
+
+    > a { /* main menu */
+        font-size: font-size-big;
+        themed(color, shade0);
+    }
+
+    h2 {
+        margin: 0;
+        padding: 0.3rem;
+        padding-left: 0;
+        text-wrap: nowrap;
+        themed(color, shade2);
+        &:hover {
+            themed(color, shade0);
+        }
+
+        border-bottom: 1px solid #000;
+        themed(border-color, shade3);
+    }
+
+    .section {
+        display: flex;
+        flex-direction: column;
+        a {
+            padding: 0.5rem;
+            themed(color, shade1);
+            text-decoration: none;
+            &:hover {
+                themed(color, shade0);
+            }
+
+            &.active {
+                themed(background-color, primary);
+                themed(color, colored-background-fg);
+            }
+        }
+
+    }
+}
 
 
 .LearningPage {
