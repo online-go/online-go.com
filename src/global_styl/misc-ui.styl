@@ -36,6 +36,14 @@
     }
 }
 
+@keyframes pulsate-reject {
+    0%, 100% { 
+    }
+    50% {
+        box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.35);
+        background-color: lighten(themes["light"]["reject"], 15%);
+    }
+}
 
 .flex {
     display: flex;
@@ -137,5 +145,8 @@
     -webkit-transform: scale(1.0);
   }
 }
+
+
+
 
 /* }}} */

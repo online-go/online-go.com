@@ -1,0 +1,218 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+#LearningHub {
+    display: flex;
+    justify-content: center;
+}
+
+#LearningHub-Index {
+    display: flex;
+    flex-direction: row;
+    max-width: 60rem;
+    justify-content: center;
+
+    .learning-hub-active {
+        background-color: #3893E8;
+        color: #fff;
+    }
+
+    #LearningHub-progress-box {
+        width: 17rem;
+        flex: 0;
+        text-align: center;
+
+        img {
+            margin-top: 1rem;
+            width: 90%;
+        }
+
+        .progress {
+            height: 1rem;
+        }
+
+        padding: 0;
+    }
+
+    #LearningHub-progress-box-bottom-half {
+        //background-color: #D7E9FA;
+    }
+
+
+    #LearningHub-list {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        >h2 {
+            //font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            themed(color, shade2);
+        }
+
+        .section {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            .next {
+                background-color: #3EA2FF;
+                &:hover {
+                    background-color: #3893e8;
+                    transition: background-color 0.3s ease;
+                }
+            }
+            .todo {
+                background-color: #F29E47;
+                &:hover {
+                    background-color: #f57c00;
+                    transition: background-color 0.3s ease;
+                }
+            }
+            .done {
+                background-color: #56C75B;
+                &:hover {
+                    background-color: #4CAF50;
+                    transition: background-color 0.3s ease;
+                }
+            }
+
+            .Card {
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+                width: 23rem;
+                height: 5rem;
+                color: #f9f9f9;
+                border-radius: .3rem;
+                text-align: left;
+
+                img {
+                    width: 4rem;
+                    height: 4rem;
+                    margin: 1.0rem
+                    margin-left: 0.5rem
+                }
+
+                h1, h2, h3 {
+                    margin: 0;
+                }
+
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+
+
+.LearningPage {
+    padding-top: 4rem;
+    display: flex;
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: center;
+
+}
+
+.LearningPage-pages {
+    margin-left: 1rem;
+    height: 18rem;
+    width: 15rem;
+    border: 1px solid #0f0;
+    themed(border-color, shade4);
+
+    display: flex;
+    flex-direction: column;
+
+    .header {
+        text-align: center;
+        themed-darken(background-color, primary, 00%);
+        themed(color, colored-background-fg);
+    }
+
+    .text {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        align-items: stretch;
+        align-content: center;
+        justify-content: center;
+        text-align: center;
+        > div {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .failed {
+            themed-darken(background-color, reject, 30%);
+            themed(color, colored-background-fg);
+
+            .reject {
+                animation: pulsate-reject  2.0s infinite ease-in-out;
+            }
+        }
+
+        .complete {
+            themed(background-color, success);
+            themed(color, colored-background-fg);
+        }
+        
+    }
+
+    .pages {
+        display: flex;
+        flex-direction: row;
+
+        .page {
+            flex: 1;
+            text-align: center;
+            padding: 0.3rem;
+            border-left: 1px solid #0f0;
+            border-top: 1px solid #0f0;
+            themed(border-color, shade4);
+            themed(color, shade1);
+            cursor: pointer;
+
+            &.active {
+                themed(background-color, primary);
+                themed(color, colored-background-fg);
+                &:hover {
+                    themed-lighten(background-color, primary, 20%);
+                    themed(color, colored-background-fg);
+                }
+            }
+
+            &:first-child {
+                border-left: 0;
+            }
+
+            &:hover {
+                text-decoration: none;
+                themed(color, shade0);
+                themed(background-color, shade4);
+            }
+        }
+
+    }
+}
+

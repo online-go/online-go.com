@@ -25,6 +25,12 @@ export const Card = props => (
     </div>
 );
 
+export const CardLink = props => (
+    <Link {...props} className={"Card " + (props.className || "")}>
+        {props.children}
+    </Link>
+);
+
 export const FabCheck = props => (
     <div {...props} className="fab primary raiser">
         <svg viewBox="0 0 24 24" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" style={{pointerEvents: "none", display: "block"}}><g><polygon points="9,16.2 4.8,12 3.4,13.4 9,19 21,7 19.6,5.6 "></polygon></g></svg>
@@ -46,6 +52,7 @@ export const FabAdd = props => (
 
 export default {
     Card: Card,
+    CardLink: CardLink,
     FabX: FabX,
     FabCheck: FabCheck,
     FabAdd: FabAdd,

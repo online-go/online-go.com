@@ -48,6 +48,7 @@ import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
 import { TournamentListMainView } from "TournamentList";
 import { Tutorial } from "Tutorial";
+import { LearningHub } from "LearningHub";
 import { User, UserByName } from "User";
 import { Settings } from "Settings";
 import { Styling } from "Styling";
@@ -146,6 +147,9 @@ export const routes = (
             <Route path="/admin/tournament-schedule-list" component={AdminTournamentScheduleList}/>
             */}
             <Route path="/moderator" component={Moderator}/>
+            <Route path="/learning-hub/:section/:page" component={LearningHub}/>
+            <Route path="/learning-hub/:section" component={LearningHub}/>
+            <Route path="/learning-hub" component={LearningHub}/>
             <Route path="/learn-to-play-go/:step" component={Tutorial}/>
             <Route path="/learn-to-play-go" component={Tutorial}/>
             <Route path="/docs/learn-to-play-go/:step" component={Tutorial}/>
