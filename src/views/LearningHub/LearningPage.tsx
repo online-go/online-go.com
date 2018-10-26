@@ -21,11 +21,13 @@ import {GoMath} from 'ogs-goban/GoMath';
 import {InstructionalGoban} from "./InstructionalGoban";
 import {sfx} from "ogs-goban/SFXManager";
 import {browserHistory} from "ogsHistory";
+import {setSectionPageCompleted, getSectionPageCompleted} from './util';
 
 interface LearningPageProperties {
     title:string;
     npages:number;
     curpage:number;
+    section:string;
     nextSection:string;
 }
 
@@ -53,8 +55,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         };
     }
     next = () => {{{
+        setSectionPageCompleted(this.props.section, this.props.curpage);
+
+        this.correct_answer_triggered = false;
+        this.error_triggered = false;
+        this.wrong_answer_triggered = false;
+
         if (this.props.curpage + 1 < this.props.npages) {
-            console.log(window.location.pathname.replace(/\/[0-9]*$/, '') + '/' + (this.props.curpage + 1));
             browserHistory.push(window.location.pathname.replace(/\/[0-9]+/, '') + '/' + (this.props.curpage + 1));
         } else {
             browserHistory.push('/learning-hub/' + this.props.nextSection);
@@ -182,7 +189,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             if (i === this.props.curpage) {
                 links.push(<span key={i} onClick={this.reset} className='page active'>{i + 1}</span>);
             } else {
-                links.push(<Link key={i} to={this.pagehref(i)} className='page'>{i + 1}</Link>);
+                links.push(<Link key={i} to={this.pagehref(i)} className='page'>
+                    {getSectionPageCompleted(this.props.section, i) ? <i className='fa fa-star' /> : <span>{i + 1}</span>}
+                </Link>);
             }
         }
 

@@ -17,11 +17,13 @@
 
 import * as React from "react";
 import {LearningPage, DummyPage} from './LearningPage';
+import {getFirstUncompletedPage} from './util';
 
 interface LearningHubSectionProperties {
     page: number;
     title: string;
     nextSection: string;
+    section: string;
     pages: Array<typeof LearningPage>;
 }
 
@@ -42,7 +44,7 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
     static subtext():string { return "Missing"; }
 
     render() {
-        let page = this.props.page || 0;
+        let page = this.props.page || getFirstUncompletedPage(this.props.section);
         page = Math.min(page, this.props.pages.length);
         page = Math.max(page, 0);
         let P:typeof LearningPage = this.props.pages[page];
@@ -50,6 +52,7 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
             title={this.props.title}
             npages={this.props.pages.length}
             curpage={page}
+            section={this.props.section}
             nextSection={this.props.nextSection}
             />;
     }

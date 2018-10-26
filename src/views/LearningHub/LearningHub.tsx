@@ -17,111 +17,18 @@
 
 
 import * as React from "react";
+import * as data from "data";
 import {Link} from "react-router-dom";
 import {Card, CardLink} from "material";
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
-import {DummyPage} from './LearningPage';
-import {Capture} from './Capture';
-import {Defend} from './Defend';
-import {Territory} from './Territory';
-import {EndingTheGame} from './EndingTheGame';
+import {sections, allsections} from './sections';
+import {Ribbon} from 'misc-ui';
+import {getSectionCompletion} from './util';
+import {ignore, errorAlerter, getPrintableError} from "misc";
+import {browserHistory} from "ogsHistory";
 
-
-export class TheBoard extends LearningHubSection {
-    static section():string { return "the-board"; }
-    static title():string { return pgettext("Tutorial section on the board", "The board!"); }
-    static subtext():string { return pgettext("Tutorial section on the board", "Corners, sides, middle"); }
-}
-export class Ladders extends LearningHubSection {
-    static section():string { return "ladders"; }
-    static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
-    static subtext():string { return pgettext("Tutorial section on ladders", ""); }
-}
-export class Snapback extends LearningHubSection {
-    static section():string { return "snapback"; }
-    static title():string { return pgettext("Tutorial section on snapback", "Snapback!"); }
-    static subtext():string { return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group"); }
-}
-export class FalseEyes extends LearningHubSection {
-    static section():string { return "false-eyes"; }
-    static title():string { return pgettext("Tutorial section on false eyes", "False Eyes"); }
-    static subtext():string { return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes"); }
-}
-export class CuttingStones extends LearningHubSection {
-    static section():string { return "cutting-stones"; }
-    static title():string { return pgettext("Tutorial section on cutting stones", "Cutting Stones"); }
-    static subtext():string { return pgettext("Tutorial section on cutting stones", ""); }
-}
-export class JumpingStones extends LearningHubSection {
-    static section():string { return "jumping-stones"; }
-    static title():string { return pgettext("Tutorial section on jumping stones", "Jumping Stones"); }
-    static subtext():string { return pgettext("Tutorial section on jumping stones", ""); }
-}
-
-export class Semeai extends LearningHubSection {
-    static section():string { return "semeai"; }
-    static title():string { return pgettext("Tutorial section on semeai", "Semeai"); }
-    static subtext():string { return pgettext("Tutorial section on semeai", "Attacking eachother"); }
-}
-export class CountingLiberties extends LearningHubSection {
-    static section():string { return "counting-liberties"; }
-    static title():string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
-    static subtext():string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
-}
-export class Seki extends LearningHubSection {
-    static section():string { return "seki"; }
-    static title():string { return pgettext("Tutorial section on seki", "Seki"); }
-    static subtext():string { return pgettext("Tutorial section on seki", "Mutual life"); }
-}
-export class KoBattles extends LearningHubSection {
-    static section():string { return "ko-battles"; }
-    static title():string { return pgettext("Tutorial section on ko battles", "Ko Battles!"); }
-    static subtext():string { return pgettext("Tutorial section on ko battles", "Exploiting the Ko rule"); }
-}
-
-export class WhatIsGo extends LearningHubSection {
-    static section():string { return "what-is-go"; }
-    static title():string { return pgettext("Tutorial section on what is go", "What is Go?"); }
-    static subtext():string { return pgettext("Tutorial section on what is go", ""); }
-}
-export class SportOfGoAndGoAsArt extends LearningHubSection {
-    static section():string { return "sport-of-go-and-go-as-art"; }
-    static title():string { return pgettext("Tutorial section on the sport of Go", "Sport of Go"); }
-    static subtext():string { return pgettext("Tutorial section on the sport of Go", "Go as Art"); }
-}
-export class BenefitsOfLearningGo extends LearningHubSection {
-    static section():string { return "benefits-of-learning-go"; }
-    static title():string { return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go"); }
-    static subtext():string { return pgettext("Tutorial section on beneifts to learning go", "It's more than just a game!"); }
-}
-export class BasicMannersOfGo extends LearningHubSection {
-    static section():string { return "basic-manners-of-go"; }
-    static title():string { return pgettext("Tutorial section on the manners in the game", "Basic manners of Go"); }
-    static subtext():string { return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!"); }
-}
-export class Terminology extends LearningHubSection {
-    static section():string { return "terminology"; }
-    static title():string { return pgettext("Tutorial section on terminology", "Terminology"); }
-    static subtext():string { return pgettext("Tutorial section on terminology", "Say what now?"); }
-}
-
-
-let sections = [
-    [pgettext("Learning hub section title", "Fundamentals"),
-        [Capture, Defend, Territory, EndingTheGame]],
-    [pgettext("Learning hub section title", "Intermediate"),
-        [TheBoard, Ladders, Snapback, FalseEyes, CuttingStones, JumpingStones]],
-    [pgettext("Learning hub section title", "Advanced"),
-        [Semeai, CountingLiberties, Seki, KoBattles ]],
-    [pgettext("Learning hub section title", "About The Game"),
-        [WhatIsGo, SportOfGoAndGoAsArt, BenefitsOfLearningGo, BasicMannersOfGo, Terminology]],
-];
-
-let allsections:Array<typeof LearningHubSection> = [];
-for (let S of sections) {
-    allsections = allsections.concat(S[1]);
-}
+declare var swal;
 
 interface LearningHubProperties {
     match: {
@@ -170,50 +77,13 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
             return <S
                 page={this.props.match.params.page}
                 nextSection={next_section_name}
+                section={S.section()}
                 title={S.title()}
                 pages={S.pages()}
             />;
         }
 
         return null;
-    }
-}
-
-class SectionNav extends React.Component<{}, any>  {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        let pathname = window.location.pathname;
-        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/);
-        let section_name = (m && m[2]) || "";
-        let page = (m && m[4]) || 0;
-
-        console.log(section_name, page);
-
-        return (
-            <div className='LearningHub-section-nav'>
-                <Link to='/learning-hub/'><i className='fa fa-graduation-cap'/> {pgettext("Learning hub menu", "Menu")}</Link>
-
-                {sections.map((arr) =>
-                    <div key={arr[0]} className='section'>
-                        <Link to={`/learning-hub/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
-                        {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) ? // is our active section?
-                            arr[1].map((S) => {
-                            return (
-                                <Link key={S.section()}
-                                    className={S.section() === section_name ? 'active' : ''}
-                                    to={`/learning-hub/${S.section()}`}
-                                >
-                                    {S.title()}
-                                </Link>
-                            );
-                        }) : null}
-                    </div>
-                )}
-            </div>
-        );
     }
 }
 
@@ -232,40 +102,165 @@ class Index extends React.PureComponent<{}, any>  {
                     <div key={arr[0]} className='section'>
                         <h2>{arr[0]}</h2>
                         {arr[1].map((S) => {
+                            let className = getSectionClassName(S.section());
                             return (
-                                <CardLink key={S.section()} className={getSectionClass(S.section())} to={`/learning-hub/${S.section()}`}>
+                                <CardLink key={S.section()}
+                                    className={className + ' Ribboned'} to={`/learning-hub/${S.section()}`}>
                                     <img src='' />
                                     <div>
                                         <h1>{S.title()}</h1>
                                         <h3>{S.subtext()}</h3>
                                     </div>
+                                    {className !== 'todo' ? <Ribbon>{this.ribbonText(S.section())}</Ribbon> : null}
                                 </CardLink>
                             );
                         })}
                     </div>
                 )}
+
+                <div className='section'>
+                    <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
+                    <CardLink className={'done'} to={`/register`}>
+                        <img src='' />
+                        <div>
+                            <h1>{pgettext("Sign up for an account", "Register")}</h1>
+                            <h3>{_("Get a free Online-Go account")}</h3>
+                        </div>
+                    </CardLink>
+
+                    <CardLink className={'done'} to={`/puzzles`}>
+                        <img src='' />
+                        <div>
+                            <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
+                            <h3>{_("Practice by solving Go puzzles")}</h3>
+                        </div>
+                    </CardLink>
+
+                    <CardLink className={'done'} to={`/play`}>
+                        <img src='' />
+                        <div>
+                            <h1>{_("Play people")}</h1>
+                            <h3>{_("Play people from around the world")}</h3>
+                        </div>
+                    </CardLink>
+
+                    <CardLink className={'done'} to={`/play`}>
+                        <img src='' />
+                        <div>
+                            <h1>{_("Play machine")}</h1>
+                            <h3>{_("Play against the computer")}</h3>
+                        </div>
+                    </CardLink>
+                </div>
             </div>
 
             </div>
         );
     }
+
+    ribbonText(section_name:string) {
+        let sc = getSectionCompletion(section_name);
+        if (sc.completed) {
+            return (
+                <span>
+                    <i className='fa fa-star' />
+                    <i className='fa fa-star' />
+                    <i className='fa fa-star' />
+                </span>
+            );
+        }
+        if (sc.started) {
+            return (
+                <span>
+                    {sc.finished} / {sc.total}
+                </span>
+            );
+        }
+
+        return <span>{pgettext("Play a tutorial section", "play!")}</span>;
+    }
 }
 
-function getSectionClass(section_name:string):string {
-    /* TODO: We're going to track progress and mark these as complete / not */
 
-    for (let S of sections) {
-        for (let i = 0; i < S[1].length; ++i) {
-            if (S[1][i].section() === section_name) {
-                if (i === 0) {
-                    return 'next';
-                }
-                if (i === S[1].length - 1) {
-                    return 'done';
-                }
-                return 'todo';
-            }
-        }
+class SectionNav extends React.Component<{}, any>  {
+    constructor(props) {
+        super(props);
     }
 
+    render() {
+        let pathname = window.location.pathname;
+        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/);
+        let section_name = (m && m[2]) || "";
+        let page = (m && m[4]) || 0;
+
+        return (
+            <div className='LearningHub-section-nav'>
+                <Link to='/learning-hub/'><i className='fa fa-graduation-cap'/> {pgettext("Learning hub menu", "Menu")}</Link>
+
+                {sections.map((arr) =>
+                    <div key={arr[0]} className='section'>
+                        <Link to={`/learning-hub/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
+                        {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) ? // is our active section?
+                            arr[1].map((S) => {
+                            return (
+                                <Link key={S.section()}
+                                    className={S.section() === section_name ? 'active' : ''}
+                                    to={`/learning-hub/${S.section()}`}
+                                >
+                                    {S.title()}
+                                {this.getProgressText(S.section())}
+                                </Link>
+                            );
+                        }) : null}
+                    </div>
+                )}
+
+                <span className='reset-progress' onClick={this.resetProgress}>
+                    {pgettext("Reset learning hub progress", "Reset progress")}
+                </span>
+            </div>
+        );
+    }
+
+    resetProgress = () => {
+        swal({text: _("Are you sure you wish to reset your tutorial progress?"), showCancelButton: true})
+        .then(() => {
+            console.log("Removing");
+            data.removePrefix("learning-hub.");
+            browserHistory.push('/learning-hub');
+        })
+        .catch(ignore);
+
+    }
+
+    getProgressText(section_name:string) {
+        let sc = getSectionCompletion(section_name);
+
+        if (sc.completed) {
+            return (
+                <span className='progress-text'><i className='fa fa-star' /></span>
+            );
+        }
+        if (sc.started) {
+            return (
+                <span className='progress-text'>{sc.finished} / {sc.total}</span>
+            );
+        }
+
+        return null;
+    }
+}
+
+function getSectionClassName(section_name:string):string {
+    let sc = getSectionCompletion(section_name);
+    if (sc.completed) {
+        return 'done';
+    }
+    if (sc.started) {
+        return 'next';
+    }
+    if (sc.first) {
+        return 'next';
+    }
+    return 'todo';
 }

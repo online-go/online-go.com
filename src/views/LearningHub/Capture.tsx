@@ -44,17 +44,19 @@ class Page1 extends LearningPage {
     }
     config() {
         return {
-            'initial_state': {
+            mode: "puzzle",
+            initial_state: {
                 'black': 'd5e6f5',
                 'white': 'e5'
-            }
+            },
+            move_tree: this.makePuzzleMoveTree(
+                [
+                    "e4"
+                ],
+                [
+                ]
+            )
         };
-    }
-    complete() {
-        return this.moveNumber() === 1 && this.at("e5") === 0;
-    }
-    failed() {
-        return this.moveNumber() > 0 && !this.complete();
     }
 }
 class Page2 extends LearningPage {
