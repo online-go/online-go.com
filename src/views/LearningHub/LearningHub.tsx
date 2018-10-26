@@ -225,7 +225,6 @@ class SectionNav extends React.Component<{}, any>  {
     resetProgress = () => {
         swal({text: _("Are you sure you wish to reset your tutorial progress?"), showCancelButton: true})
         .then(() => {
-            console.log("Removing");
             data.removePrefix("learning-hub.");
             browserHistory.push('/learning-hub');
         })

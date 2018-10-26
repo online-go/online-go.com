@@ -76,7 +76,6 @@ export function removePrefix(key_prefix: string): any {
     });
 
     for (let key in hits) {
-        console.log("Removing ", key);
         localStorage.removeItem(`ogs.${key}`);
         delete store[key];
         event_emitter.emit(key, defaults[key]);
