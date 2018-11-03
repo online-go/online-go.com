@@ -88,6 +88,8 @@ export let GoResources = (props) => {
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Mariano López Minnucci</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/81_little_lions.pdf">81 Little Lions (9x9 intro)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Françisa d'Alsace</span></span>,
+                    <span><Flag country={ru}/> <a rel="noopener" href="https://cdn.online-go.com/81_little_lions_ru.pdf">81 львёнок</a>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Françisa d'Alsace / Рочев Антон</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Seong-June Kim</span>
