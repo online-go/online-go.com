@@ -22,6 +22,7 @@ import {DummyPage} from './LearningPage';
 import {Capture} from './Capture';
 import {Defend} from './Defend';
 import {SnapBack} from './SnapBack';
+import {Seki} from './Seki';
 import {Territory} from './Territory';
 import {EndingTheGame} from './EndingTheGame';
 
@@ -61,11 +62,6 @@ export class CountingLiberties extends LearningHubSection {
     static section():string { return "counting-liberties"; }
     static title():string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
     static subtext():string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
-}
-export class Seki extends LearningHubSection {
-    static section():string { return "seki"; }
-    static title():string { return pgettext("Tutorial section on seki", "Seki"); }
-    static subtext():string { return pgettext("Tutorial section on seki", "Mutual life"); }
 }
 export class KoBattles extends LearningHubSection {
     static section():string { return "ko-battles"; }
