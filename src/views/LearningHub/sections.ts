@@ -21,6 +21,7 @@ import {LearningHubSection} from './LearningHubSection';
 import {DummyPage} from './LearningPage';
 import {Capture} from './Capture';
 import {Defend} from './Defend';
+import {SnapBack} from './SnapBack';
 import {Territory} from './Territory';
 import {EndingTheGame} from './EndingTheGame';
 
@@ -34,11 +35,6 @@ export class Ladders extends LearningHubSection {
     static section():string { return "ladders"; }
     static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
     static subtext():string { return pgettext("Tutorial section on ladders", ""); }
-}
-export class Snapback extends LearningHubSection {
-    static section():string { return "snapback"; }
-    static title():string { return pgettext("Tutorial section on snapback", "Snapback!"); }
-    static subtext():string { return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group"); }
 }
 export class FalseEyes extends LearningHubSection {
     static section():string { return "false-eyes"; }
@@ -108,7 +104,7 @@ export let sections = [
     [pgettext("Learning hub section title", "Fundamentals"),
         [Capture, Defend, Territory, EndingTheGame]],
     [pgettext("Learning hub section title", "Intermediate"),
-        [TheBoard, Ladders, Snapback, FalseEyes, CuttingStones, JumpingStones]],
+        [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],
     [pgettext("Learning hub section title", "Advanced"),
         [Semeai, CountingLiberties, Seki, KoBattles ]],
     /*

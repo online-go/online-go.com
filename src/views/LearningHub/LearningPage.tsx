@@ -147,7 +147,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                 for (let branch of cur.branches) {
                     if (branch.x === path[0].x && branch.y === path[0].y) {
                         path.shift();
-                        walk(cur, path, cb);
+                        walk(branch, path, cb);
                         return;
                     }
                 }
