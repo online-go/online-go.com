@@ -40,6 +40,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     wrong_answer_triggered:boolean = false;
     error_triggered:boolean = false;
 
+    static underConstruction():boolean { return false; }
+
     constructor(props) {
         super(props);
         this._config = Object.assign({
@@ -257,6 +259,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
 export class DummyPage extends LearningPage {
     constructor(props) { super(props); }
+    static underConstruction():boolean { return true; }
     text() {
         return "Dummy page";
     }

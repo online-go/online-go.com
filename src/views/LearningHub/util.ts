@@ -17,6 +17,7 @@
 
 import * as data from "data";
 import {sections, allsections} from './sections';
+import {LearningHubSection} from './LearningHubSection';
 
 interface SectionCompletion {
     first:boolean;      /* if this is the first section in a category */
@@ -65,6 +66,16 @@ export function getSectionCompletion(section_name:string):SectionCompletion {
         finished,
         total
     };
+}
+
+export function getSectionByName(section_name:string):typeof LearningHubSection {
+    for (let S of allsections) {
+        if (S.section() === section_name) {
+            return S;
+        }
+    }
+
+    return null;
 }
 
 export function getFirstUncompletedPage(section_name:string):number {

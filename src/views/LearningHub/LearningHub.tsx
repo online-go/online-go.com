@@ -24,7 +24,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 import {sections, allsections} from './sections';
 import {Ribbon} from 'misc-ui';
-import {getSectionCompletion} from './util';
+import {getSectionCompletion, getSectionByName} from './util';
 import {ignore, errorAlerter, getPrintableError} from "misc";
 import {browserHistory} from "ogsHistory";
 
@@ -252,6 +252,12 @@ class SectionNav extends React.Component<{}, any>  {
 
 function getSectionClassName(section_name:string):string {
     let sc = getSectionCompletion(section_name);
+
+    let S = getSectionByName(section_name);
+    if (S.pages()[0].underConstruction()) {
+        return 'under-construction';
+    }
+
     if (sc.completed) {
         return 'done';
     }
