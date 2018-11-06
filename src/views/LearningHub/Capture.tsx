@@ -138,8 +138,6 @@ class Page4 extends LearningPage {
 
 }
 
-
-
 class Page5 extends LearningPage {
     constructor(props) {
         super(props);
@@ -163,34 +161,6 @@ class Page5 extends LearningPage {
                     "c3c2",
                     "b2c2",
                     "d4c2",
-                ]
-            )
-        };
-    }
-
-}
-
-class Page9 extends LearningPage {
-    constructor(props) {
-        super(props);
-    }
-
-    text() {
-        return _("Capture the two white stones at e3 and e4");
-    }
-    config() {
-        return {
-            mode: "puzzle",
-            initial_state: {
-                'black': 'd4d3e2f2g3e5',
-                'white': 'e4e3f5g4'
-            },
-            move_tree: this.makePuzzleMoveTree(
-                [
-                    "f4f3f4"
-                ],
-                [
-                    "f3f4"
                 ]
             )
         };
