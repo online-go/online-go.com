@@ -49,6 +49,7 @@ export let cached = {
         config: () => {
             get('ui/config').then((config) => {
                 data.set(cached.config, config);
+                data.set('config', config);
             }).catch((err) => {
                 console.error("Error retrieving friends list: ", err);
             });
