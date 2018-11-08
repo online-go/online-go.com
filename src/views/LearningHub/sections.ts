@@ -24,6 +24,7 @@ import {Defend} from './Defend';
 import {SnapBack} from './SnapBack';
 import {Seki} from './Seki';
 import {Territory} from './Territory';
+import {Ko} from './Ko';
 import {EndingTheGame} from './EndingTheGame';
 
 
@@ -63,12 +64,6 @@ export class CountingLiberties extends LearningHubSection {
     static title():string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
     static subtext():string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
 }
-export class KoBattles extends LearningHubSection {
-    static section():string { return "ko-battles"; }
-    static title():string { return pgettext("Tutorial section on ko battles", "Ko Battles!"); }
-    static subtext():string { return pgettext("Tutorial section on ko battles", "Exploiting the Ko rule"); }
-}
-
 export class WhatIsGo extends LearningHubSection {
     static section():string { return "what-is-go"; }
     static title():string { return pgettext("Tutorial section on what is go", "What is Go?"); }
@@ -102,7 +97,7 @@ export let sections = [
     [pgettext("Learning hub section title", "Intermediate"),
         [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],
     [pgettext("Learning hub section title", "Advanced"),
-        [Semeai, CountingLiberties, Seki, KoBattles ]],
+        [Semeai, CountingLiberties, Seki, Ko ]],
     /*
     [pgettext("Learning hub section title", "About The Game"),
         [WhatIsGo, SportOfGoAndGoAsArt, BenefitsOfLearningGo, BasicMannersOfGo, Terminology]],
