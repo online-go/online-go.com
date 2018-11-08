@@ -27,6 +27,8 @@ import {Ribbon} from 'misc-ui';
 import {getSectionCompletion, getSectionByName} from './util';
 import {ignore, errorAlerter, getPrintableError} from "misc";
 import {browserHistory} from "ogsHistory";
+import {MiniGoban} from "MiniGoban";
+
 
 declare var swal;
 
@@ -103,10 +105,19 @@ class Index extends React.PureComponent<{}, any>  {
                         <h2>{arr[0]}</h2>
                         {arr[1].map((S) => {
                             let className = getSectionClassName(S.section());
+                            let p = (new (S.pages()[0]));
+                            let config = p.config();
+                            if (!config.width) {
+                                config.width = 9;
+                                config.height = 9;
+                            }
+                            delete config['mode'];
+                            delete config['move_tree'];
                             return (
                                 <CardLink key={S.section()}
                                     className={className + ' Ribboned'} to={`/learning-hub/${S.section()}`}>
-                                    <img src='' />
+
+                                    <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
                                     <div>
                                         <h1>{S.title()}</h1>
                                         <h3>{S.subtext()}</h3>
