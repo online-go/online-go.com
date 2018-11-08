@@ -26,6 +26,7 @@ export class Defend extends LearningHubSection {
             Page1,
             Page2,
             Page3,
+            Page4,
         ];
     }
 
@@ -130,4 +131,38 @@ class Page3 extends LearningPage {
         };
     }
 
+}
+
+class Page4 extends LearningPage {
+    constructor(props) {
+        super(props);
+    }
+
+    text() {
+        return _("Empty space that is completely surrounded by your stones is called \"territory\". Protect your territory from white.");
+    }
+    config() {
+        return {
+            mode: "puzzle",
+            initial_state: {black: "gagbgcgegfgghgig", white: "fafbfcgdfefffg"},
+            move_tree: this.makePuzzleMoveTree(
+                [
+                    "h6f6",
+                ],
+                [
+                    "h7h6h5j6",
+                    "h7h6j6j5j7h5",
+                    "h7h6j6j5h5j7",
+
+                    "h5h6h7j6",
+                    "h5h6j6j7j5h7",
+                    "h5h6j6j7h7j5",
+
+                    "f6e6",
+                    "j6h6h7j5j7h5",
+                    "j6h6h5j7j5h7",
+                ]
+            )
+        };
+    }
 }

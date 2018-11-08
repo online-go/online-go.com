@@ -23,7 +23,7 @@ import {Capture} from './Capture';
 import {Defend} from './Defend';
 import {SnapBack} from './SnapBack';
 import {Seki} from './Seki';
-import {Territory} from './Territory';
+//import {Territory} from './Territory';
 import {Ko} from './Ko';
 import {EndingTheGame} from './EndingTheGame';
 import {TheBoard} from './TheBoard';
@@ -89,7 +89,7 @@ export class Terminology extends LearningHubSection {
 
 export let sections = [
     [pgettext("Learning hub section title", "Fundamentals"),
-        [Capture, Defend, Territory, EndingTheGame]],
+        [Capture, Defend, /*Territory, */ EndingTheGame]],
     [pgettext("Learning hub section title", "Intermediate"),
         [TheBoard, Ladders, SnapBack, FalseEyes, CuttingStones, JumpingStones]],
     [pgettext("Learning hub section title", "Advanced"),
