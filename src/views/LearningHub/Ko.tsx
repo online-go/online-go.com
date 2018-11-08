@@ -51,7 +51,7 @@ class Page1 extends LearningPage {
         return {
             mode: "puzzle",
 
-            initial_state: {black: "afbfcfcgdhcidi", white: "agbgahchbi"}
+            initial_state: {black: "afbfcfcgdhcidi", white: "agbgahchbi"},
             move_tree: this.makePuzzleMoveTree(
                 [
                     "b2d3a1"
@@ -75,7 +75,7 @@ class Page2 extends LearningPage {
         return {
             mode: "puzzle",
 
-            initial_state: {black: "ecedeedfegehfh", white: "fdcedefeefgfcgdgfg"}
+            initial_state: {black: "ecedeedfegehfh", white: "fdcedefeefgfcgdgfg"},
             move_tree: this.makePuzzleMoveTree(
                 [
                     "f4c4e4"
@@ -101,7 +101,7 @@ class Page3 extends LearningPage {
         return {
             mode: "puzzle",
 
-            initial_state: {black: "fcfdgehfggfhgh", white: "edfeefgffgeh"}
+            initial_state: {black: "fcfdgehfggfhgh", white: "edfeefgffgeh"},
             move_tree: this.makePuzzleMoveTree(
                 [
                     "f4e3e5"
@@ -131,7 +131,7 @@ class Page4 extends LearningPage {
             width: 13,
             height: 13,
 
-            initial_state: {black: "bgcgchcicjbkalclbm", white: "bebfagbhaibibjak"}
+            initial_state: {black: "bgcgchcicjbkalclbm", white: "bebfagbhaibibjak"},
             move_tree: this.makePuzzleMoveTree(
                 [
                     "a8a9a4a6a8"
