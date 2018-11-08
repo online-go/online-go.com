@@ -52,8 +52,8 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
         if (section) {
             return (
                 <div id='LearningHub'>
-                    <SectionNav />
                     {section}
+                    <SectionNav />
                 </div>
             );
         } else {

@@ -19,6 +19,8 @@
 #LearningHub {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: row-reverse;
 
     .fa-star {
         color: #FFA100;
@@ -217,11 +219,15 @@
     padding-top: 4rem;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 
     justify-content: center;
     align-items: center;
 
 }
+
+
+
 
 .LearningPage-pages {
     margin-left: 1rem;
@@ -305,3 +311,17 @@
     }
 }
 
+
+@media (max-width: 40rem) {
+
+    .LearningPage {
+        padding-top: 0rem;
+    }
+
+    .LearningPage-pages {
+        width: 95%;
+    }
+    .LearningHub-section-nav {
+        width: 95%;
+    }
+}
