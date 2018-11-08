@@ -26,13 +26,9 @@ import {Seki} from './Seki';
 import {Territory} from './Territory';
 import {Ko} from './Ko';
 import {EndingTheGame} from './EndingTheGame';
+import {TheBoard} from './TheBoard';
 
 
-export class TheBoard extends LearningHubSection {
-    static section():string { return "the-board"; }
-    static title():string { return pgettext("Tutorial section on the board", "The board!"); }
-    static subtext():string { return pgettext("Tutorial section on the board", "Corners, sides, middle"); }
-}
 export class Ladders extends LearningHubSection {
     static section():string { return "ladders"; }
     static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
