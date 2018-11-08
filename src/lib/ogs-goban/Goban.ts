@@ -73,6 +73,7 @@ interface Events {
         game_id: number;
         player_id: number;
     };
+    "set-for-removal": {x:number, y:number, removed:boolean};
 }
 
 
@@ -3319,6 +3320,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.getMarks(x, y).remove = false;
         }
         this.drawSquare(x, y);
+        this.emit("set-for-removal", {x, y, removed});
     } /* }}} */
     public showScores(score) { /* {{{ */
         this.hideScores();

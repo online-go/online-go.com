@@ -26,6 +26,7 @@ interface InstructionalGobanProps {
     height?: number;
     displayWidth?: number;
     onUpdate?: () => void;
+    onSetStoneRemoval?: (obj:any) => void;
     config: any;
 }
 
@@ -83,13 +84,20 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         }, this.props.config);
         window['goban'] = this.goban;
 
-        this.goban.setMode("puzzle");
+        this.goban.setMode(this.props.config.mode || "puzzle");
+        if (this.props.config.engine_phase) {
+            this.goban.engine.phase = this.props.config.engine_phase;
+        }
         this.goban.on("update", () => {
             if (this.props.onUpdate) {
                 this.props.onUpdate();
             }
         });
-
+        this.goban.on("set-for-removal", (obj:any) => {
+            if (this.props.config.onSetStoneRemoval) {
+                this.props.config.onSetStoneRemoval(obj);
+            }
+        });
         if (this.props.config['onCorrectAnswer']) {
             this.goban.on("puzzle-correct-answer", this.props.config.onCorrectAnswer);
         }

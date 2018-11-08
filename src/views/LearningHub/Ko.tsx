@@ -123,7 +123,7 @@ class Page4 extends LearningPage {
     }
 
     text() {
-        return _("White just captured a stone with A3. Find a place to play where white must capture to move past the Ko rule and take whites group at B5");
+        return _("White just captured a stone with A3. Find a place to play where white must capture to move past the ko rule and take whites group at B5. This is called a \"ko threat\"");
     }
     config() {
         return {

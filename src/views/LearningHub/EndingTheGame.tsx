@@ -23,7 +23,8 @@ import {LearningHubSection} from './LearningHubSection';
 export class EndingTheGame extends LearningHubSection {
     static pages():Array<typeof LearningPage> {
         return [
-            Page1
+            Page1,
+            Page2
         ];
     }
 
@@ -59,5 +60,34 @@ class Page1 extends LearningPage {
 
     complete() {
         return this.pass_pressed;
+    }
+}
+
+class Page2 extends LearningPage {
+    success = false;
+
+    constructor(props) {
+        super(props);
+    }
+
+    text() {
+        return _("After both players have passed, you enter a \"Stone Removal Phase\", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it's quicker. Remove the dead black stones by clicking them. ");
+    }
+    config() {
+        return {
+            mode: "play",
+            engine_phase: "stone removal",
+            initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
+            onSetStoneRemoval: () => {
+                if (this.refs.igoban.goban.engine.getStoneRemovalString() === "fafbgbhb") {
+                    this.success = true;
+                    this.onUpdate();
+                }
+            }
+        };
+    }
+
+    complete() {
+        return this.success;
     }
 }

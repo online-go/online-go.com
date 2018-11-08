@@ -94,7 +94,7 @@ class Page2 extends LearningPage {
                     "k6", "l6", "m6", "n6",
                     "k5", "l5", "m5", "n5",
                 ], [ ],
-            13,13)
+            13, 13)
         };
     }
 }
@@ -126,7 +126,7 @@ class Page3 extends LearningPage {
                     "k4",
                     "q4",
                 ], [ ],
-            19,19)
+            19, 19)
         };
     }
 }
