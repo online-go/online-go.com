@@ -23,13 +23,41 @@ import {LearningHubSection} from './LearningHubSection';
 export class EndingTheGame extends LearningHubSection {
     static pages():Array<typeof LearningPage> {
         return [
-            DummyPage,
-            DummyPage,
-            DummyPage,
+            Page1
         ];
     }
 
     static section():string { return "ending-the-game"; }
     static title():string { return pgettext("Tutorial section name on learning how to end the game", "End the game!"); }
     static subtext():string { return pgettext("Tutorial section subtext on learning how to end the game", "Pass and pass"); }
+}
+
+class Page1 extends LearningPage {
+    pass_pressed = false;
+
+    constructor(props) {
+        super(props);
+    }
+
+    text() {
+        return _("When you don't think there are any more good moves to make, to end the game both players pass their turns. This game is finished. Click pass to end it.");
+    }
+    button() {
+        return <div>
+            <button className='primary' onClick={() => { this.pass_pressed = true; this.onUpdate(); }}>{_("Pass")}</button>
+        </div>;
+    }
+    config() {
+        return {
+            mode: "puzzle",
+            initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
+            move_tree: this.makePuzzleMoveTree(
+                [ "b6" /* dummy to trigger fail */ ], [ ]
+            )
+        };
+    }
+
+    complete() {
+        return this.pass_pressed;
+    }
 }

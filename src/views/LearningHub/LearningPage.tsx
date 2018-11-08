@@ -178,6 +178,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     abstract text();
     abstract config():{initial_state:{black?:string, white?:string}};
+    button():any { return null; }
     complete():boolean {
         return false;
     }
@@ -227,7 +228,10 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                                 </div>
                             }
                             {!correct && !fail &&
-                                this.text()
+                                <div>
+                                    {this.text()}
+                                    {this.button()}
+                                </div>
                             }
                         </div>
 
