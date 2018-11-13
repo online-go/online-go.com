@@ -102,8 +102,9 @@ module.exports = {
 
     plugins: plugins,
 
-    devtool: production ? 'source-map' : 'eval-source-map',
-    //devtool: 'source-map',
+    //devtool: production ? 'source-map' : 'eval-source-map',
+    /* NOTE: The default needs to be source-map for the i18n translation stuff to work. Specifically, using eval-source-map makes it impossible for our xgettext-js parser to parse the embedded source. */
+    devtool: 'source-map',
 
     // When importing a module whose path matches one of the following, just
     // assume a corresponding global variable exists and use that instead.
