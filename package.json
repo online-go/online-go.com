@@ -33,7 +33,8 @@
     "ts-loader": "^5.2.1",
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
-    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack": "^4.25.1",
     "webpack-bundle-analyzer": "",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.10.1"
