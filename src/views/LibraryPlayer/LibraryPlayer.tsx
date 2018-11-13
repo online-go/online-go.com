@@ -334,7 +334,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
 
 
 
-                <Dropzone ref="dropzone" className="Dropzone" onDrop={this.uploadSGFs} multiple={true} disableClick>
+                <Dropzone ref="dropzone" className="Dropzone" accept=".sgf" onDrop={this.uploadSGFs} multiple={true} disableClick>
                     <Card>
 
                         {owner &&
