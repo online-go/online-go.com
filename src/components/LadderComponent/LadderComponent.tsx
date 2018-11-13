@@ -223,7 +223,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                 (lp.player.id !== user.id && lp.can_challenge || null) && ( lp.can_challenge.challengeable
                                     ? <button className="primary xs" onClick={this.challenge.bind(this, lp)}>{_("Challenge")}</button>
                                     : <span className="not-challengable"
-                                          data-title={lp.can_challenge.reason}
+                                          data-title={canChallengeTooltip(lp.can_challenge)}
                                           onClick={tooltip}
                                           onMouseOver={tooltip}
                                           onMouseOut={tooltip}
@@ -260,4 +260,25 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             </div>
         );
     }
+}
+
+function canChallengeTooltip(obj:any):string {
+    if (obj.reason_code) {
+        switch (obj.reason_code) {
+            case 0x001: return pgettext("Can't challenge player in ladder because: ", "Can't challenge yourself");
+            case 0x002: return pgettext("Can't challenge player in ladder because: ", "Player is a lower rank than you");
+            case 0x003: return pgettext("Can't challenge player in ladder because: ", "Player is not in the ladder");
+            case 0x004: return pgettext("Can't challenge player in ladder because: ", "Player's rank is too high");
+            case 0x005: return interpolate(pgettext("Can't challenge player in ladder because: ", "Already playing {{number}} games you've initiated"), {"number": obj.reason_parameter })
+            case 0x006: return pgettext("Can't challenge player in ladder because: ", "Already playing a game against this person");
+            case 0x007: return pgettext("Can't challenge player in ladder because: ", "Last challenge within 7 days");
+            case 0x008: return pgettext("Can't challenge player in ladder because: ", "Player already has the maximum number of challenges");
+        }
+    }
+
+    if (obj.reason) {
+        return obj.reason;
+    }
+
+    return null;
 }
