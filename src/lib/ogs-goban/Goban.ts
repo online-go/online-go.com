@@ -380,7 +380,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
-        this.setThemes(this.getSelectedThemes(), true);
+        let first_pass = true;
+        let watcher = this.watchSelectedThemes((themes) => {
+            this.setThemes(themes, first_pass ? true : false);
+            first_pass = false;
+        });
+        this.on("destroy", () => watcher.remove());
         this.message_div = null;
         this.message_timeout = null;
 
@@ -476,6 +481,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     }}}
     protected defaultConfig():any {{{
         return {};
+    }}}
+    protected watchSelectedThemes(cb):{ remove:() => any } {{{
+        return { remove: () => {} };
     }}}
 
     protected getLocation():string {{{
