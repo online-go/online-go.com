@@ -209,7 +209,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                     ref="ladder"
                     className="ladder"
                     name="ladder"
-                    source={`ladders/${this.props.ladderId}/players`}
+                    source={`ladders/${this.props.ladderId}/players` + (full_view ? '' : '?no_challenge_information=1')}
                     startingPage={startingPage}
                     pageSize={this.state.page_size}
                     pageSizeOptions={this.props.pageSizeOptions}
