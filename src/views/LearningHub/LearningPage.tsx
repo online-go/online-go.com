@@ -202,7 +202,6 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         let fail:boolean = this.error_triggered || this.wrong_answer_triggered || this.failed();
 
         return (
-            <div className='Tutorial page-width'>
                 <div className='LearningPage'>
                     <InstructionalGoban
                         ref='igoban'
@@ -239,9 +238,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                             {links}
                         </div>
                     </div>
-
                 </div>
-            </div>
         );
     }
 

@@ -16,7 +16,14 @@
  */
 
 
+#LearningHub-container {
+    display: flex;
+    justify-content: center;
+}
+
 #LearningHub {
+    width: 100%;
+    max-width: 80rem;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -37,7 +44,6 @@
 #LearningHub-Index {
     display: flex;
     flex-direction: row;
-    max-width: 80rem;
     justify-content: center;
 
     .learning-hub-active {
@@ -184,6 +190,7 @@
 
 
 .LearningPage {
+    flex: 1;
     padding-top: 4rem;
     display: flex;
     flex-direction: row;
