@@ -53,7 +53,13 @@ export function resizeDeviceScaledCanvas(_canvas, width, height) { /* {{{ */
         // now scale the context to counter
         // the fact that we've manually scaled
         // our canvas element
-        context.scale(ratio, ratio);
+
+        try {
+            context.scale(ratio, ratio);
+        } catch (e) {
+            __deviceCanvasScalingRatio = 1.0;
+            console.warning(e);
+        }
     } else {
         canvas.width = width;
         canvas.height = height;
