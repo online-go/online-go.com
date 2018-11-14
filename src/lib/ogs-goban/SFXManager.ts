@@ -64,7 +64,14 @@ export class SFXManager {
                     volume = this.volume_override;
                 }
                 this.sfx[name].volume = volume;
-                this.sfx[name].pause();
+                try {
+                    if ((this.sfx[name] as any).active) {
+                        this.sfx[name].pause();
+                    }
+                } catch (e) {
+                    this.sfx[name].pause();
+                }
+
                 this.sfx[name].currentTime = 0;
                 this.sfx[name].play();
             } catch (e) {
