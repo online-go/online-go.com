@@ -25,15 +25,11 @@ import {SnapBack} from './SnapBack';
 import {Seki} from './Seki';
 //import {Territory} from './Territory';
 import {Ko} from './Ko';
+import {Ladders} from './Ladders';
 import {EndingTheGame} from './EndingTheGame';
 import {TheBoard} from './TheBoard';
 
 
-export class Ladders extends LearningHubSection {
-    static section():string { return "ladders"; }
-    static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
-    static subtext():string { return pgettext("Tutorial section on ladders", ""); }
-}
 export class FalseEyes extends LearningHubSection {
     static section():string { return "false-eyes"; }
     static title():string { return pgettext("Tutorial section on false eyes", "False Eyes"); }
