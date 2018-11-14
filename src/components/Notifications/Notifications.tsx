@@ -180,7 +180,12 @@ export function emitNotification(title, body, cb?) {{{
                     }
 
                     setTimeout(() => {
-                        notification.close();
+                        try {
+                            /* this isn't supported on MS Edge yet */
+                            notification.close();
+                        } catch (e) {
+                            console.warn(e);
+                        }
                     }, preferences.get("notification-timeout") * 1000);
                 } catch (e) {
                     console.info(e);
