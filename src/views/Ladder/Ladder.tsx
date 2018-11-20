@@ -49,6 +49,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             ladder: null,
             ladder_size: 1,
             topVisibleEntry: 0,
+            highlight_rank: -1,
             scrollToIndex: undefined,
         };
     }
@@ -76,7 +77,8 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             this.setState({
                 ladder: ladder,
                 ladder_size: ladder.size,
-                scrollToIndex: ladder.player_rank > 0 ? ladder.player_rank + 3 : undefined,
+                highlight_rank: ladder.player_rank > 0 ? ladder.player_rank : -1,
+                scrollToIndex: ladder.player_rank > 0 ? ladder.player_rank : undefined,
             });
         })
         .catch(errorAlerter);
@@ -113,6 +115,9 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
     updateAutocompletedPlayer = (user) => {
         console.log(user);
+        if (user) {
+            this.setState({ scrollToIndex: Math.max(0, user.ladder_rank - 1), highlight_rank: user.ladder_rank });
+        }
     }
 
 
@@ -127,7 +132,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                 <div className='Ladder-header'>
                     <h2>{this.state.ladder && this.state.ladder.name}</h2>
 
-                    <PlayerAutocomplete onComplete={this.updateAutocompletedPlayer} />
+                    <PlayerAutocomplete ladderId={this.props.match.params.ladder_id} onComplete={this.updateAutocompletedPlayer} />
 
                     {(this.state.ladder && this.state.ladder.player_rank > 0)
                       ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
@@ -153,33 +158,6 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             </div>
             </div>
         );
-
-        //scrollTop={scrollTop}
-
-        /*
-                <WindowScroller>
-                    {({ height, isScrolling, onChildScroll, scrollTop }) => (
-                        <AutoSizer disableHeight>
-                            {({width}) => (
-                                <List
-                                autoHeight
-                                height={height}
-                                isScrolling={isScrolling}
-                                onScroll={onChildScroll}
-                                overscanRowCount={20}
-                                rowCount={this.state.ladder_size}
-                                rowHeight={120}
-                                rowRenderer={this.renderRow}
-                                scrollTop={scrollTop}
-                                width={width}
-                                />
-                            )}
-                        </AutoSizer>
-                    )}
-                </WindowScroller>
-                */
-
-
     }
 
     invalidate = () => {
@@ -197,6 +175,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                 <LadderRow
                     index={index}
                     ladder={this}
+                    highlightRank={this.state.highlight_rank}
                     isScrolling={isScrolling} />
             </div>
         );
@@ -264,6 +243,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 interface LadderRowProperties {
     index:number;
     isScrolling:boolean;
+    highlightRank:number;
     ladder:Ladder;
 }
 
@@ -289,6 +269,10 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
         }
 
         if (this.props.isScrolling !== nextProps.isScrolling) {
+            return true;
+        }
+
+        if (this.props.highlightRank !== nextProps.highlightRank) {
             return true;
         }
 
@@ -355,7 +339,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
         // <b>{_("Challenging") /* Translators: List of players that have been challenged by this player in a ladder */}: </b>
 
         return (
-            <div className='LadderRow'>
+            <div className={'LadderRow' + (row && row.rank === this.props.highlightRank ? ' highlight' : '')}>
                 <div className='ladder-player'>
                     <span className='rank'># {(row && row.rank) || (this.props.index + 1)}</span>
 
