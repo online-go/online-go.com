@@ -70,12 +70,11 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     resolve(ladder_id) {
         get("ladders/%%", ladder_id)
         .then((ladder) => {
-            console.log("Scroll to index: ", ladder.player_rank);
             this.setState({
                 ladder: ladder,
                 ladder_size: ladder.size,
                 highlight_rank: ladder.player_rank > 0 ? ladder.player_rank : -1,
-                scrollToIndex: ladder.player_rank > 0 ? ladder.player_rank : undefined,
+                scrollToIndex: Math.max(0, ladder.player_rank - 1),
             });
         })
         .catch(errorAlerter);
@@ -109,13 +108,14 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         .catch(() => 0);
     }
 
-
     updateAutocompletedPlayer = (user) => {
         if (user) {
-            this.setState({ scrollToIndex: Math.max(0, user.ladder_rank - 1), highlight_rank: user.ladder_rank });
+            this.setState({
+                scrollToIndex: Math.max(0, user.ladder_rank - 1),
+                highlight_rank: user.ladder_rank
+            });
         }
     }
-
 
     render() {
         let user = data.get("user");
@@ -172,9 +172,6 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             </div>
         );
     }
-
-    //let PAGE_SIZE = 20;
-    //let ladder_cache:{[ladder_id:number]: {[page_number:number]: any}} = {};
 
     cache:{[index:number]: any} = {};
     requests_in_flight:{[page_number:number]: Promise<any>} = {};
@@ -286,8 +283,6 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        //console.log("UPdatinged");
-        /* TODO: Filtering will need to have another prop available to trigger a reload */
         if (prevProps.index !== this.props.index
             || this.props.isScrolling !== prevProps.isScrolling
             || this.props.invalidationCount !== prevProps.invalidationCount
