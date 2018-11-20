@@ -74,8 +74,6 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         this.forceUpdate();
     }
 
-
-
     reload = () => {{{
         get("ladders/%%", this.props.ladderId)
         .then((ladder) => this.setState({ladder: ladder}))

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {del, get, post} from "requests";
+import {del, get, post, abort_requests_in_flight} from "requests";
 import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
@@ -38,10 +38,6 @@ interface LadderProperties {
 }
 
 export class Ladder extends React.PureComponent<LadderProperties, any> {
-    refs: {
-        ladder_component
-    };
-
     constructor(props) {
         super(props);
         this.state = {
@@ -51,6 +47,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             topVisibleEntry: 0,
             highlight_rank: -1,
             scrollToIndex: undefined,
+            invalidationCount: 0,
         };
     }
 
@@ -87,8 +84,8 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     join = () => {
         post("ladders/%%/players", this.props.match.params.ladder_id, {})
         .then(() => {
+            this.invalidate();
             this.resolve(this.props.match.params.ladder_id);
-            this.refs.ladder_component.updatePlayers();
         })
         .catch(errorAlerter);
     }
@@ -104,8 +101,8 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         .then(() => {
             del("ladders/%%/players", this.props.match.params.ladder_id)
             .then(() => {
+                this.invalidate();
                 this.resolve(this.props.match.params.ladder_id);
-                this.refs.ladder_component.updatePlayers();
             })
             .catch(errorAlerter);
         })
@@ -114,7 +111,6 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
 
     updateAutocompletedPlayer = (user) => {
-        console.log(user);
         if (user) {
             this.setState({ scrollToIndex: Math.max(0, user.ladder_rank - 1), highlight_rank: user.ladder_rank });
         }
@@ -134,9 +130,13 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
                     <PlayerAutocomplete ladderId={this.props.match.params.ladder_id} onComplete={this.updateAutocompletedPlayer} />
 
-                    {(this.state.ladder && this.state.ladder.player_rank > 0)
-                      ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
-                      : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
+                    {(this.state.ladder && (!this.state.ladder.group || this.state.ladder.player_is_member_of_group)) &&
+                        <span>
+                            {(this.state.ladder.player_rank > 0)
+                              ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
+                              : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
+                            }
+                        </span>
                     }
                 </div>
 
@@ -144,14 +144,14 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                     <AutoSizer>
                         {({width, height}) => (
                             <List
-                            height={height}
-                            width={width}
-                            overscanRowCount={20}
-                            rowHeight={120}
-                            rowCount={this.state.ladder_size}
-                            rowRenderer={this.renderRow}
-                            scrollToIndex={this.state.scrollToIndex}
-                            />
+                                height={height}
+                                width={width}
+                                overscanRowCount={20 - (this.state.invalidationCount % 2) /* forces refresh */}
+                                rowHeight={120}
+                                rowCount={this.state.ladder_size}
+                                rowRenderer={this.renderRow}
+                                scrollToIndex={this.state.scrollToIndex}
+                                />
                         )}
                     </AutoSizer>
                 </div>
@@ -160,21 +160,13 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         );
     }
 
-    invalidate = () => {
-        console.error("Should be invalidating results and refreshing");
-    }
-
-
-    jumpToVisibleEntry(num) {
-        console.error("TODO: Jump to entry ", num);
-    }
-
     renderRow = ({index, isScrolling, isVisible, key, style}) => {
         return (
             <div className='LadderRow-container' key={key} style={style} >
                 <LadderRow
                     index={index}
                     ladder={this}
+                    invalidationCount={this.state.invalidationCount}
                     highlightRank={this.state.highlight_rank}
                     isScrolling={isScrolling} />
             </div>
@@ -186,6 +178,13 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
 
     cache:{[index:number]: any} = {};
     requests_in_flight:{[page_number:number]: Promise<any>} = {};
+
+    invalidate = () => {
+        abort_requests_in_flight(`ladders/${this.props.match.params.ladder_id}/players`, 'GET');
+        this.requests_in_flight = {};
+        this.cache = {};
+        this.setState({invalidationCount: this.state.invalidationCount + 1});
+    }
 
     load = (idx:number, only_from_cache:boolean): Promise<any> | any => {
         const PAGE_SIZE = 20;
@@ -207,6 +206,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         this.requests_in_flight[page] = new Promise((resolve, reject) => {
             get(`ladders/${this.props.match.params.ladder_id}/players`, {page, page_size: PAGE_SIZE})
             .then((obj) => {
+                delete this.requests_in_flight[page];
                 let start = (page - 1) * PAGE_SIZE;
 
                 for (let i = 0; i < obj.results.length; ++i) {
@@ -220,6 +220,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                 resolve();
             })
             .catch(() => {
+                delete this.requests_in_flight[page];
                 reject();
             });
         });
@@ -245,6 +246,7 @@ interface LadderRowProperties {
     isScrolling:boolean;
     highlightRank:number;
     ladder:Ladder;
+    invalidationCount:number;
 }
 
 export class LadderRow extends React.Component<LadderRowProperties, any> {
@@ -276,13 +278,20 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
             return true;
         }
 
+        if (this.props.invalidationCount !== nextProps.invalidationCount) {
+            return true;
+        }
+
         return false;
     }
 
     componentDidUpdate(prevProps, prevState) {
         //console.log("UPdatinged");
         /* TODO: Filtering will need to have another prop available to trigger a reload */
-        if (prevProps.index !== this.props.index || this.props.isScrolling !== prevProps.isScrolling) {
+        if (prevProps.index !== this.props.index
+            || this.props.isScrolling !== prevProps.isScrolling
+            || this.props.invalidationCount !== prevProps.invalidationCount
+        ) {
             this.sync();
         }
     }
@@ -343,7 +352,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                 <div className='ladder-player'>
                     <span className='rank'># {(row && row.rank) || (this.props.index + 1)}</span>
 
-                    {row && <Player flag nolink user={row.player}/> }
+                    {row && <Player flag nochallenge user={row.player}/> }
 
                     {row && !user.anonymous &&
                         <span className='challenge'>
@@ -401,7 +410,6 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
     }
 
     challenge(ladder_player) {
-        console.log(ladder_player);
         swal({
             "text": interpolate(_("Are you ready to start your game with {{player_name}}?"), /* translators: ladder challenge */
                          {player_name: ladder_player.player.username}),

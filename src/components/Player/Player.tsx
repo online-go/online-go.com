@@ -44,6 +44,7 @@ interface PlayerProperties {
     nolink?: boolean;
     fakelink?: boolean;
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
+    nochallenge?: boolean; /* don't show the challenge button in the details box */
     noextracontrols?: boolean; /* Disable extra controls */
     disableCacheUpdate?: boolean;
 }
@@ -285,7 +286,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
 
             popover({
-                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} chatId={chat_id} />),
+                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} nochallenge={this.props.nochallenge} chatId={chat_id} />),
                 below: this.refs.elt,
                 minWidth: 240,
                 minHeight: 250,
