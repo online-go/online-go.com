@@ -51,9 +51,9 @@ export class VerticalSlider extends React.PureComponent<VerticalSliderProps, any
         }
     }
 
-    _onChangeComplete = (value) => {
+    _onChangeComplete = (ev) => {
         if (this.props.onChangeComplete) {
-            this.props.onChangeComplete(this._numOrDate(value));
+            this.props.onChangeComplete(ev);
         }
     }
 

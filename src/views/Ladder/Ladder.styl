@@ -16,43 +16,124 @@
  */
 
 
-.Ladder {
-    // here
+.Ladder-container {
     display: flex;
+    align-items: stretch;
+    justify-content: center;
+    max-height: "calc(100vh - %s - 0.2rem)" % navbar-height;
+    height: "calc(100vh - %s - 0.2rem)" % navbar-height;
+}
+
+.Ladder {
+    flex: 1;
+    width: 100%;
     align-items: center;
     justify-content: center;
+    display: flex;
+    flex-direction: column;
 
 
-    h2 {
-        text-align: center;
+    .Ladder-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 40rem;
+        width: 100%;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+
+        h2 {
+            margin: 0;
+            display: inline-block;
+        }
     }
 
-    .Card {
-        width: 50rem;
-        position: relative;
-        max-width: 100vw;
-        min-height: 30rem;
+    .AutoSizer-container {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        overflow-y: hidden;
         overflow-x: hidden;
     }
 
-    @media only screen and (min-width: 640px) {
-        .actions {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
+
+    .LadderRow-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .LadderRow {
+        overflow: hidden;
+        max-width: 40rem;
+        width: 100vw;
+        mheight: 120px;
+
+        .ladder-player {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 0.5rem;
+            font-size: font-size-big;
+
+            .not-challengable {
+                font-size: font-size-normal;
+                themed color shade2;
+            }
+
+
+            .rank {
+                margin-left: 0.5rem;
+            }
+
+            .challenge {
+                flex: 1;
+                text-align: right;
+                margin-right: 1.0rem;
+
+            }
+        }
+        .challenges {
+            max-width: 100vw;
+
+            .outgoing, .incoming {
+                display: flex;
+                flex-direction: row;
+
+                .arrow {
+                    flex: 0;
+                    display: inline-block;
+                    text-align: center;
+                    margin-left: 1.5rem;
+                }
+
+                .challenge-list {
+                    display: inline-block;
+                    flex: 1;
+                    flex-wrap: wrap;
+                    display: flex;
+
+                    .challenge-rank {
+                        @extend .monospace;
+                        margin-right: 0.3rem;
+                    }
+                    .challenge-link {
+                        margin-right: 1.0rem;
+                    }
+                }
+            }
         }
     }
-    .actions {
-        text-align: center;
-        margin-bottom: 1rem;
-    }
+}
 
-    table {
-        border-collapse: collapse;
+.LadderRow {
+    .rank {
+        @extend .monospace;
+        display: inline-block;
+        width: 5rem;
     }
-
-    td  {
-        border-bottom: 1px solid transparent;
-        themed border-color shade3
+    > .Player {
+        display: inline-block;
+        width: 10rem;
     }
 }
