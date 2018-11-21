@@ -364,7 +364,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                             }
                         </span>
 
-                        {row && !user.anonymous &&
+                        {row && !user.anonymous && row.can_challenge &&
                             <span className='challenge'>
                                 { row.can_challenge.challengeable
                                      ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
