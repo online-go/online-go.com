@@ -70,6 +70,19 @@
         width: 100vw;
         height: 30px;
 
+        .rank {
+            @extend .monospace;
+            display: inline-block;
+            min-width: 5rem;
+            max-width: 5rem;
+            width: 5rem;
+        }
+
+        &.highlight {
+            themed background-color search-highlight;
+        }
+
+
         .ladder-player {
             display: flex;
             flex-direction: row;
@@ -82,15 +95,22 @@
                 themed color shade2;
             }
 
+            > .Player {
+                display: inline-block;
+                width: 10rem;
+                overflow: hidden;
+            }
 
             .rank {
-                margin-left: 0.5rem;
+                margin-left: 0.1rem;
+                white-space: nowrap;
             }
 
             .right {
                 flex: 1;
                 text-align: right;
                 margin-right: 1.0rem;
+                white-space: nowrap;
 
                 .incoming {
                 }
@@ -139,21 +159,6 @@
     }
 }
 
-.LadderRow {
-    .rank {
-        @extend .monospace;
-        display: inline-block;
-        width: 5rem;
-    }
-    > .Player {
-        display: inline-block;
-        width: 10rem;
-    }
-
-    &.highlight {
-        themed background-color search-highlight;
-    }
-}
 
 .Ladder-challenge-details {
     box-shadow: 0px 2px 3px rgba(0,0,0,0.2);
