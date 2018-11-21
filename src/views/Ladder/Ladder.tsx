@@ -28,6 +28,10 @@ import {Player} from "Player";
 import {UIPush} from "UIPush";
 import tooltip from "tooltip";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
+import {close_all_popovers, popover} from "popover";
+import {browserHistory} from "ogsHistory";
+
+
 
 declare var swal;
 
@@ -147,7 +151,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                                 height={height}
                                 width={width}
                                 overscanRowCount={20 - (this.state.invalidationCount % 2) /* forces refresh */}
-                                rowHeight={120}
+                                rowHeight={30}
                                 rowCount={this.state.ladder_size}
                                 rowRenderer={this.renderRow}
                                 scrollToIndex={this.state.scrollToIndex}
@@ -349,24 +353,39 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
 
                     {row && <Player flag nochallenge user={row.player}/> }
 
-                    {row && !user.anonymous &&
-                        <span className='challenge'>
-                            {
-                                (row.player.id !== user.id && row.can_challenge || null) && ( row.can_challenge.challengeable
-                                    ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
-                                    : <span className="not-challengable"
+                    <span className='right'>
+                        <span className='btn-group'>
+                            {((challenging && challenging.length) || null) &&
+                                <button className='xs danger outgoing' onClick={this.challengeDetails}>{challenging.length}</button>
+                            }
+
+                            {((challenged_by && challenged_by.length) || null) &&
+                                <button className='xs info incoming' onClick={this.challengeDetails}>{challenged_by.length}</button>
+                            }
+                        </span>
+
+                        {row && !user.anonymous &&
+                            <span className='challenge'>
+                                { row.can_challenge.challengeable
+                                     ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
+                                     : <button className="xs not-challengable"
                                           data-title={canChallengeTooltip(row.can_challenge)}
                                           onClick={tooltip}
                                           onMouseOver={tooltip}
                                           onMouseOut={tooltip}
                                           onMouseMove={tooltip}
-                                          >{_("Not challengable")}</span>
-                                )
-                            }
-                        </span>
-                    }
+                                          >{_("Challenge")}</button>
+                                }
+                            </span>
+                        }
+                    </span>
                 </div>
 
+            </div>
+        );
+
+
+        /*
                 <div className='challenges'>
                     {((challenging && challenging.length) || null) &&
                         <div className='outgoing'>
@@ -400,8 +419,70 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                         </div>
                     }
                 </div>
+        */
+
+
+    }
+
+
+    challengeDetails = (event) => {
+        if (!this.state.row) {
+            return;
+        }
+
+        let row = this.state.row;
+        let challenged_by = row && row.incoming_challenges;
+        let challenging = row && row.outgoing_challenges;
+
+        close_all_popovers();
+
+        popover({
+            elt: (<div className='Ladder-challenge-details'>
+
+                <h3>
+                    <Player flag nochallenge user={row.player}/>
+                </h3>
+
+
+                {((challenging && challenging.length) || null) &&
+                    <div className='outgoing'>
+                        <b>{_("Challenging") /* Translators: List of players that have been challenged by this player in a ladder */}: </b>
+
+                        <span className='challenge-list'>
+                            {challenging.map((challenge, idx) => (
+                                <span key={idx} className="fake-link challenge-link" onClick={(ev) => browserHistory.push(`/game/${challenge.game_id}`)}>
+                                    <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                    <Player nolink user={challenge.player} />
+                                </span>
+                            ))}
+                        </span>
+                    </div>
+                }
+
+                {((challenged_by && challenged_by.length) || null) &&
+                    <div className='incoming'>
+                         <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
+
+                        <span className='challenge-list'>
+                            {challenged_by.map((challenge, idx) => (
+                                <span key={idx} className="fake-link challenge-link" onClick={(ev) => browserHistory.push(`/game/${challenge.game_id}`)}>
+                                    <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                    <Player nolink user={challenge.player} />
+                                </span>
+                            ))}
+                        </span>
+                    </div>
+                }
+
             </div>
-        );
+            ),
+            below: event.target,
+            minWidth: 240,
+            minHeight: 200,
+        });
+
+
+
     }
 
     challenge(ladder_player) {
