@@ -79,7 +79,7 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 55415 , "username": "sousys"       , "country": ["se"] , "languages": [se, en]} ,
             {"id": 360861 , "username": "AdamR"       , "country": ["cz"] , "languages": [cz, en]} ,
             {"id": 299041 , "username": "Razza99"     , "country": ["gb"] , "languages": [en]} ,
-            {"id": 412892 , "username": "GreenAsJade" , "country": ["au"] , "languages": [en]} ,
+            {"id": 412892 , "username": "Eugene" , "country": ["au"] , "languages": [en]} ,
             {"id": 445315 , "username": "BHydden"     , "country": ["au"] , "languages": [en]} ,
             {"id": 391401 , "username": "Conrad Melville", "country": ["us"] , "languages": [en]} ,
         ];
