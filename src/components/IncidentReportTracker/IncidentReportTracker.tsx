@@ -105,6 +105,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             report.set_note = (ev) => {
                 swal({
                     input: "text",
+                    inputValue: report.moderator_note,
                     showCancelButton: true,
                 })
                 .then((txt) => {
@@ -203,17 +204,21 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                         <div className="IncidentReportList-results">
                             {this.state.reports.map((report, idx) => (
                                 <div className="incident" key={report.id}>
+                                    <div className="spread">
+                                        {report.moderator ?
+                                            <Player user={report.moderator} icon />
+                                            :
+                                        <div className="unclaimed"> (unclaimed)</div>}
+                                    </div>
                                     {(report.reporter_note || null) && <h4 className="notes">{report.reporter_note}</h4>}
+
                                     {(report.system_note || null) && <h4 className="notes">{report.system_note}</h4>}
+
                                     <div className="notes"><i>{report.moderator_note || ""}</i></div>
 
-                                    {(report.moderator || null) &&
-                                        <div className="spread">
-                                            <Player user={report.moderator} icon />
-                                        </div>
-                                    }
                                     <div className="spread">
                                         {(report.url || null) && <a href={report.url} target="_blank">{report.url}</a>}
+
                                         {(report.reported_user || null) &&
                                             <span>{_("Reported user")}: <Player user={report.reported_user} icon /></span>
                                         }
@@ -225,6 +230,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         }
                                     </div>
 
+
                                     <div className="spread">
                                         {((!report.moderator && user.is_moderator) || null) &&
                                             <button className="primary xs" onClick={report.claim}>{_("Claim")}</button>
@@ -235,17 +241,17 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         {((!report.moderator && report.reporting_user && user.id === report.reporting_user.id) || null) &&
                                             <button className="reject xs" onClick={report.cancel}>{_("Cancel")}</button>
                                         }
-                                    </div>
+
 
                                     {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
-                                        <div className="spread">
-                                            <button className="success xs"  onClick={report.good_report}>{_("Good report")}</button>
-                                            <button className="info xs"  onClick={report.set_note}>{_("Note")}</button>
-                                            <button className="danger xs"  onClick={report.unclaim}>{_("Unclaim")}</button>
-                                            <button className="reject xs"  onClick={report.bad_report}>{_("Bad report")}</button>
-                                        </div>
-                                    }
-
+                                            <button className="success xs"  onClick={report.good_report}>{_("Good report")}</button>}
+                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                            <button className="info xs"  onClick={report.set_note}>{_("Note")}</button>}
+                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                            <button className="danger xs"  onClick={report.unclaim}>{_("Unclaim")}</button>}
+                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                            <button className="reject xs"  onClick={report.bad_report}>{_("Bad report")}</button>}
+                                    </div>
                                     <div className="spread">
                                         {(report.reporting_user)
                                             ? <Player user={report.reporting_user} icon />
