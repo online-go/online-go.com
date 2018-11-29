@@ -109,65 +109,69 @@ class Index extends React.PureComponent<{}, any>  {
                 {sections.map((arr) =>
                     <div key={arr[0]} className='section'>
                         <h2>{arr[0]}</h2>
-                        {arr[1].map((S) => {
-                            let className = getSectionClassName(S.section());
-                            let p = (new (S.pages()[0]));
-                            let config = p.config();
-                            if (!config.width) {
-                                config.width = 9;
-                                config.height = 9;
-                            }
-                            delete config['mode'];
-                            delete config['move_tree'];
-                            return (
-                                <CardLink key={S.section()}
-                                    className={className + ' Ribboned'} to={`/learning-hub/${S.section()}`}>
+                        <div className='contents'>
+                            {arr[1].map((S) => {
+                                let className = getSectionClassName(S.section());
+                                let p = (new (S.pages()[0]));
+                                let config = p.config();
+                                if (!config.width) {
+                                    config.width = 9;
+                                    config.height = 9;
+                                }
+                                delete config['mode'];
+                                delete config['move_tree'];
+                                return (
+                                    <CardLink key={S.section()}
+                                        className={className + ' Ribboned'} to={`/learning-hub/${S.section()}`}>
 
-                                    <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
-                                    <div>
-                                        <h1>{S.title()}</h1>
-                                        <h3>{S.subtext()}</h3>
-                                    </div>
-                                    {className !== 'todo' ? <Ribbon>{this.ribbonText(S.section())}</Ribbon> : null}
-                                </CardLink>
-                            );
-                        })}
+                                        <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
+                                        <div>
+                                            <h1>{S.title()}</h1>
+                                            <h3>{S.subtext()}</h3>
+                                        </div>
+                                        {className !== 'todo' ? <Ribbon>{this.ribbonText(S.section())}</Ribbon> : null}
+                                    </CardLink>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
 
                 <div className='section'>
                     <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
-                    <CardLink className={'done'} to={`/register`}>
-                        <img src='' />
-                        <div>
-                            <h1>{pgettext("Sign up for an account", "Register")}</h1>
-                            <h3>{_("Get a free Online-Go account")}</h3>
-                        </div>
-                    </CardLink>
+                    <div className='contents'>
+                        <CardLink className={'done'} to={`/register`}>
+                            <img src='' />
+                            <div>
+                                <h1>{pgettext("Sign up for an account", "Register")}</h1>
+                                <h3>{_("Get a free Online-Go account")}</h3>
+                            </div>
+                        </CardLink>
 
-                    <CardLink className={'done'} to={`/puzzles`}>
-                        <img src='' />
-                        <div>
-                            <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
-                            <h3>{_("Practice by solving Go puzzles")}</h3>
-                        </div>
-                    </CardLink>
+                        <CardLink className={'done'} to={`/puzzles`}>
+                            <img src='' />
+                            <div>
+                                <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
+                                <h3>{_("Practice by solving Go puzzles")}</h3>
+                            </div>
+                        </CardLink>
 
-                    <CardLink className={'done'} to={`/play`}>
-                        <img src='' />
-                        <div>
-                            <h1>{_("Play people")}</h1>
-                            <h3>{_("Play people from around the world")}</h3>
-                        </div>
-                    </CardLink>
+                        <CardLink className={'done'} to={`/play`}>
+                            <img src='' />
+                            <div>
+                                <h1>{_("Play people")}</h1>
+                                <h3>{_("Play people from around the world")}</h3>
+                            </div>
+                        </CardLink>
 
-                    <CardLink className={'done'} to={`/play`}>
-                        <img src='' />
-                        <div>
-                            <h1>{_("Play machine")}</h1>
-                            <h3>{_("Play against the computer")}</h3>
-                        </div>
-                    </CardLink>
+                        <CardLink className={'done'} to={`/play`}>
+                            <img src='' />
+                            <div>
+                                <h1>{_("Play machine")}</h1>
+                                <h3>{_("Play against the computer")}</h3>
+                            </div>
+                        </CardLink>
+                    </div>
                 </div>
             </div>
 

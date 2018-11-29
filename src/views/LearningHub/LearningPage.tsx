@@ -79,7 +79,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     componentDidMount() {{{
         this.setState({show_next: this.complete()});
-        sfx.play("tutorial-ping");
+        //sfx.play("tutorial-ping");
     }}}
     showReset():boolean {{{
         return false;

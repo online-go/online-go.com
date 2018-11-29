@@ -51,27 +51,6 @@
         color: #fff;
     }
 
-    #LearningHub-progress-box {
-        width: 17rem;
-        flex: 0;
-        text-align: center;
-
-        img {
-            margin-top: 1rem;
-            width: 90%;
-        }
-
-        .progress {
-            height: 1rem;
-        }
-
-        padding: 0;
-    }
-
-    #LearningHub-progress-box-bottom-half {
-        //background-color: #D7E9FA;
-    }
-
 
     #LearningHub-list {
         text-align: center;
@@ -82,17 +61,29 @@
 
 
         .section {
-            > h2 {
-                width: 100%;
-                letter-spacing: 8px;
-                text-transform: uppercase;
-                themed(color, shade2);
-            }
-
+            margin-top: 3rem;
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            justify-content: center;
+
+            > h2 {
+                flex: 1;
+                text-align: right;
+                width: 30%;
+                min-width: 15rem;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+                themed(color, shade2);
+                padding-right: 3rem;
+            }
+
+            > .contents  {
+                flex: 1;
+                min-width: 24rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
 
             .under-construction {
                 background-image: repeating-linear-gradient( -45deg, darken(#FFCC00, 30%), darken(#FFCC00, 10%) 10px, #000 10px, #000 20px);

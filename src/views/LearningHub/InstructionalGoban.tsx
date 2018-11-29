@@ -19,6 +19,7 @@
 import * as React from "react";
 import {post, get} from "requests";
 import {Goban} from "goban";
+import {sfx} from "ogs-goban/SFXManager";
 import {PersistentElement} from "PersistentElement";
 
 interface InstructionalGobanProps {
@@ -83,6 +84,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             "height" : (this.props.config ? this.props.config.height : 9)
         }, this.props.config);
         window['goban'] = this.goban;
+        this.goban.play_movement_sounds = true;
 
         this.goban.setMode(this.props.config.mode || "puzzle");
         if (this.props.config.engine_phase) {
@@ -92,6 +94,16 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             if (this.props.onUpdate) {
                 this.props.onUpdate();
             }
+        });
+
+        let last_stone_sound = -1;
+        this.goban.on("puzzle-place", (o:any) => {
+            let idx;
+            do {
+                idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
+            } while (idx === last_stone_sound);
+            last_stone_sound = idx;
+            sfx.play("stone-" + (idx + 1));
         });
         this.goban.on("set-for-removal", (obj:any) => {
             if (this.props.config.onSetStoneRemoval) {
