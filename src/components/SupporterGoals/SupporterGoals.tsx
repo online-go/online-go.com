@@ -24,16 +24,32 @@ interface SupporterGoalsProperties {
     alwaysShow?:boolean;
 }
 
-export class SupporterGoals extends React.Component<SupporterGoalsProperties, any> {
+export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
         };
     }
 
-    //shouldComponentUpdate(nextProps, nextState) { }
-    componentDidMount() { }
-    componentWillUnmount() { }
+    getHoursVisitedSinceGoalsShown() {
+        /* counts and returns hours of play since the last reset of our goal shown counter */
+        let d = new Date();
+        let this_hour=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}`;
+
+        if (data.get('last-visited-since-goals-shown') !== this_hour) {
+            data.set('last-visited-since-goals-shown', this_hour);
+            let hours_visited_since_goals_shown = data.get('hours-visited-since-goals-shown') || 0;
+            hours_visited_since_goals_shown += 1;
+            data.set('hours-visited-since-goals-shown', hours_visited_since_goals_shown);
+        }
+
+        return data.get('hours-visited-since-goals-shown');
+    }
+
+    resetHoursVisitedSinceGoalsShown() {
+        data.set('last-visited-since-goals-shown', null);
+        data.set('hours-visited-since-goals-shown', 0);
+    }
 
     render() {
         if (data.get('user').supporter && !this.props.alwaysShow) {
@@ -49,7 +65,16 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
         let adfree_left = (1.0 - goals.adfree) * 100;
         let approx_supporters_needed = goals.adfree_approximate_needed;
 
-        if (goals.adfree >= 1.0 && !this.props.alwaysShow) {
+        let show_goals_anyway = false;
+        const hours_of_play_before_showing_goals = 30;
+        if (this.getHoursVisitedSinceGoalsShown() > hours_of_play_before_showing_goals) {
+            this.resetHoursVisitedSinceGoalsShown();
+        }
+        if (this.getHoursVisitedSinceGoalsShown() === hours_of_play_before_showing_goals) {
+            show_goals_anyway = true;
+        }
+
+        if ((goals.adfree >= 1.0 && !this.props.alwaysShow) && !show_goals_anyway) {
             return null;
         }
 
@@ -57,9 +82,6 @@ export class SupporterGoals extends React.Component<SupporterGoalsProperties, an
         return (
             <div id='SupporterGoalsContainer'>
                 <div id='SupporterGoalText'>
-                    {Date.now() < 1522439762553 && /* TODO: DELETE me after 2018-04-01 */
-                        <div><b><Link to='/user/supporter'>{_("One time, Annual, and donations in many currencies are now available!")}</Link></b></div>
-                    }
                     <Link to='/user/supporter'>{_("By supporting OGS you keep us ad free for everyone and fuel our development efforts. If you see a site supporter, tell them thanks! If you'd like to help chip in and become one, click this link, and thanks in advance!")} :)</Link>
                 </div>
 
