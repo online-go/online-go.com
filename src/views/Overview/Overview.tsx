@@ -126,7 +126,7 @@ export class Overview extends React.Component<{}, any> {
                     <EmailBanner />
                     <ChallengesList onAccept={() => this.refresh()} />
 
-                    {user && user.provisional &&
+                    {(user && user.provisional || null) &&
                         <div className='learn-how-to-play'>
                             <Link to="/learn-to-play-go" className="btn info">{_("New to Go? Click here to learn how to play!")}</Link>
                         </div>
