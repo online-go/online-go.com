@@ -143,7 +143,7 @@ class Index extends React.PureComponent<{}, any>  {
                     <div className='contents'>
                         {(!user || user.anonymous) &&
                             <CardLink className={'done'} to={`/register`}>
-                                <img src='' />
+                                <i className='fa fa-thumbs-up' />
                                 <div>
                                     <h1>{pgettext("Sign up for an account", "Register")}</h1>
                                     <h3>{_("Get a free Online-Go account")}</h3>
@@ -152,7 +152,7 @@ class Index extends React.PureComponent<{}, any>  {
                         }
 
                         <CardLink className={'done'} to={`/puzzles`}>
-                            <img src='' />
+                            <i className='fa fa-puzzle-piece' />
                             <div>
                                 <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
                                 <h3>{_("Practice by solving Go puzzles")}</h3>
@@ -160,7 +160,7 @@ class Index extends React.PureComponent<{}, any>  {
                         </CardLink>
 
                         <CardLink className={'done'} to={`/play`}>
-                            <img src='' />
+                            <i className='ogs-goban' />
                             <div>
                                 <h1>{_("Play people")}</h1>
                                 <h3>{_("Play people from around the world")}</h3>
@@ -168,7 +168,7 @@ class Index extends React.PureComponent<{}, any>  {
                         </CardLink>
 
                         <CardLink className={'done'} to={`/play`}>
-                            <img src='' />
+                            <i className='fa fa-desktop' />
                             <div>
                                 <h1>{_("Play machine")}</h1>
                                 <h3>{_("Play against the computer")}</h3>
