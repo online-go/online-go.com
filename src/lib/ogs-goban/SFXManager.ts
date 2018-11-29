@@ -69,11 +69,19 @@ export class SFXManager {
                         this.sfx[name].pause();
                     }
                 } catch (e) {
-                    this.sfx[name].pause();
+                    try {
+                        this.sfx[name].pause();
+                    } catch (e) {
+                        /* ignore */
+                    }
                 }
 
-                this.sfx[name].currentTime = 0;
-                this.sfx[name].play();
+                try {
+                    this.sfx[name].currentTime = 0;
+                    this.sfx[name].play();
+                } catch (e) {
+                    console.warn(e);
+                }
             } catch (e) {
                 console.log("Error playing ", name);
                 console.log(e);
