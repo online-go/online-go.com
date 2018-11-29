@@ -102,6 +102,7 @@ class Index extends React.PureComponent<{}, any>  {
 
     render() {
         const progress = 9;
+        let user = data.get('user');
         return (
             <div id='LearningHub-Index'>
 
@@ -122,7 +123,7 @@ class Index extends React.PureComponent<{}, any>  {
                                 delete config['move_tree'];
                                 return (
                                     <CardLink key={S.section()}
-                                        className={className + ' Ribboned'} to={`/learning-hub/${S.section()}`}>
+                                        className={className + ' Ribboned'} to={`/learn-to-play-go/${S.section()}`}>
 
                                         <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
                                         <div>
@@ -140,13 +141,15 @@ class Index extends React.PureComponent<{}, any>  {
                 <div className='section'>
                     <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
                     <div className='contents'>
-                        <CardLink className={'done'} to={`/register`}>
-                            <img src='' />
-                            <div>
-                                <h1>{pgettext("Sign up for an account", "Register")}</h1>
-                                <h3>{_("Get a free Online-Go account")}</h3>
-                            </div>
-                        </CardLink>
+                        {(!user || user.anonymous) &&
+                            <CardLink className={'done'} to={`/register`}>
+                                <img src='' />
+                                <div>
+                                    <h1>{pgettext("Sign up for an account", "Register")}</h1>
+                                    <h3>{_("Get a free Online-Go account")}</h3>
+                                </div>
+                            </CardLink>
+                        }
 
                         <CardLink className={'done'} to={`/puzzles`}>
                             <img src='' />
@@ -210,23 +213,24 @@ class SectionNav extends React.Component<{}, any>  {
 
     render() {
         let pathname = window.location.pathname;
-        let m = window.location.pathname.match(/\/learning-hub(\/([^\/]+))?(\/([0-9]+))?/);
+        let m = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
         let section_name = (m && m[2]) || "";
         let page = (m && m[4]) || 0;
+        console.log(m, section_name, page);
 
         return (
             <div className='LearningHub-section-nav'>
-                <Link to='/learning-hub/'><i className='fa fa-graduation-cap'/> {pgettext("Learning hub menu", "Menu")}</Link>
+                <Link to='/learn-to-play-go/'><i className='fa fa-graduation-cap'/> {pgettext("Learning hub menu", "Menu")}</Link>
 
                 {sections.map((arr) =>
                     <div key={arr[0]} className='section'>
-                        <Link to={`/learning-hub/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
+                        <Link to={`/learn-to-play-go/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
                         {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) ? // is our active section?
                             arr[1].map((S) => {
                             return (
                                 <Link key={S.section()}
                                     className={S.section() === section_name ? 'active' : ''}
-                                    to={`/learning-hub/${S.section()}`}
+                                    to={`/learn-to-play-go/${S.section()}`}
                                 >
                                     {S.title()}
                                 {this.getProgressText(S.section())}
@@ -247,7 +251,7 @@ class SectionNav extends React.Component<{}, any>  {
         swal({text: _("Are you sure you wish to reset your tutorial progress?"), showCancelButton: true})
         .then(() => {
             data.removePrefix("learning-hub.");
-            browserHistory.push('/learning-hub');
+            browserHistory.push('/learn-to-play-go');
         })
         .catch(ignore);
 

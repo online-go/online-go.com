@@ -66,7 +66,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         if (this.props.curpage + 1 < this.props.npages) {
             browserHistory.push(window.location.pathname.replace(/\/[0-9]+/, '') + '/' + (this.props.curpage + 1));
         } else {
-            browserHistory.push('/learning-hub/' + this.props.nextSection);
+            browserHistory.push('/learn-to-play-go/' + this.props.nextSection);
         }
     }}}
     reset = () => {{{
