@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {openModal, Modal} from "Modal";
-import {timeControlDescription} from "TimeControl";
+import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
 import {errorAlerter} from "misc";
 
@@ -89,6 +89,9 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
               </div>
               <div className="body">
                 <p>{time_control_description}</p>
+                {usedForCheating(challenge.time_control_parameters) ?
+                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting is sometimes abused to cheat.  Accept at your own risk.</p> :
+                    ""}
                 <hr/>
                 <dl className="horizontal">
                   <dt>{_("Your color")}</dt><dd>{player_color}</dd>

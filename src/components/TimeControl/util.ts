@@ -405,6 +405,30 @@ export function shortShortTimeControl(time_control) { /* {{{ */
             return "[error: " + (time_control.system || time_control.time_control) + "]";
     }
 }  /* }}} */
+
+export function usedForCheating(time_control) {
+    if (typeof(time_control) !== "object") {
+        return "~" + shortDurationString(time_control);
+    }
+
+    if (time_control === null) {
+        return '';
+    }
+
+    switch (time_control.system || time_control.time_control) {
+
+        case "absolute":
+            return true;
+        default:
+            if (time_control.main_time < 5) {
+                return true;
+            }
+            else {
+                return false;
+            }
+    }
+}
+
 export function timeControlSystemText(system) { /* {{{ */
     switch (system) {
         case "simple"   : return pgettext("time control system", "simple");
