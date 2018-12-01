@@ -43,13 +43,21 @@
         }
     }
 
+    .report-header {
+        display: flex;
+        flex-direction: row;
+        .report-id {
+            padding-right: 1 em;
+        }
+        .unclaimed {
+            font-style: italic;
+        }        
+    }
+    
     .spread {
         display: flex;
         justify-content: space-between;
         padding-top: 0.7rem;
-        .unclaimed {
-            font-style: italic;
-        }
     }
 
     .incident {
