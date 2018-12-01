@@ -427,7 +427,7 @@ export function usedForCheating(time_control) {
         case "byoyomi":
             return time_control.main_time < QUESTIONABLE_SECONDS_PER_MOVE && time_control.period_time < QUESTIONABLE_SECONDS_PER_MOVE;
 
-        // haven't seen silliness, not sure about sensible criteria     
+        // haven't seen silliness, not sure about sensible criteria
         case "fischer":
         case "none":
         default:
