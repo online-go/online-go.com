@@ -356,7 +356,7 @@ export class Play extends React.Component<PlayProperties, any> {
                             {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
                                 <span className="head"></span>
-                                    {/* <span className="head">{_("Rank")}</span> */}
+                                <span className="head">{_("Rank")}</span>
                                 <span className="head">{_("Size")}</span>
                                 <span className="head">{_("Time Control")}</span>
                                 <span className="head">{_("Handicap")}</span>
