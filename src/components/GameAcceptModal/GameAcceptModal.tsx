@@ -90,7 +90,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
               <div className="body">
                 <p>{time_control_description}</p>
                 {usedForCheating(challenge.time_control_parameters) ?
-                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting is sometimes abused to cheat.  Accept at your own risk.</p> :
+                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting is sometimes abused to cheat or suprise.  Accept at your own risk.</p> :
                     ""}
                 <hr/>
                 <dl className="horizontal">
