@@ -194,6 +194,25 @@ browserHistory.listen(location => {
 
 });
 
+/*** Progressive Web App ***/
+
+try {
+  // This API is available only over HTTPS.
+  navigator.serviceWorker.register('/pwa.js').then(
+    res => console.log('PWA handler registered.'),
+    err => console.warn('PWA registration failed:', err));
+
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', e => {
+    console.log('Got the PWA beforeinstallprompt event.');
+    e.preventDefault();
+    // Now we can invoke e.prompt(), but Chrome already has
+    // the Install PWA button in the settings.
+  });
+} catch (err) {
+  console.warn('PWA registration failed:', err);
+}
 
 /*** Some finial initializations ***/
 init_tabcomplete();

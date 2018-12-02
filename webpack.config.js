@@ -52,6 +52,7 @@ module.exports = {
     mode: production ? 'production' : 'development',
     entry: {
         'ogs': './src/main.tsx',
+        'pwa': './src/pwa.ts',
     },
     resolve: {
         modules: [
