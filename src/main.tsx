@@ -202,8 +202,6 @@ try {
     res => console.log('PWA handler registered.'),
     err => console.warn('PWA registration failed:', err));
 
-  let deferredPrompt;
-
   window.addEventListener('beforeinstallprompt', e => {
     console.log('Got the PWA beforeinstallprompt event.');
     e.preventDefault();
