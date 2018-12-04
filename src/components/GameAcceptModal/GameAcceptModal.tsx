@@ -88,7 +88,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
               <div className="body">
                 <p>{time_control_description}</p>
                 {usedForCheating(challenge.time_control_parameters) ?
-                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting sometimes causes problems.  Accept at your own risk.</p> :
+                    <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}</p> :
                     ""}
                 <hr/>
                 <dl className="horizontal">
@@ -98,7 +98,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                   <dt>{_("Komi")}</dt>
                     <dd>
                     {challenge.komi || _("Automatic")}
-                    {/*challenge.komi ? <span title="Custom komi setting - accept at your own discretion."><i className="fa fa-exclamation-triangle cheat-warning"></i></span> : ""*/}
+                    {/*challenge.komi ? <span title=_("Custom komi setting - accept at your own discretion.")><i className="fa fa-exclamation-triangle cheat-warning"></i></span> : ""*/}
                     </dd>
                   <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
                   <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>

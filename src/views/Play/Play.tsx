@@ -593,8 +593,8 @@ export class Play extends React.Component<PlayProperties, any> {
                         <span className={timeControlClassName(C)}>
                             {shortShortTimeControl(C.time_control_parameters)}
                             {usedForCheating(C.time_control_parameters) ?
-                                <span title="Unusual time setting - accept at your own risk.">
-                                    <i className="cheat-indicator fa fa-exclamation-triangle fa-xs"/>
+                                <span title={_("Unusual time setting - accept at your own risk.")}>
+                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
                                 </span>
                             : ""}
                         </span>
