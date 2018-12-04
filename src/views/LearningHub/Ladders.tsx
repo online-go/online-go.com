@@ -35,7 +35,8 @@ export class Ladders extends LearningHubSection {
 
     static section():string { return "ladders"; }
     static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
-    static subtext():string { return pgettext("Tutorial section on ladders", ""); }
+    //static subtext():string { return pgettext("Tutorial section on ladders", ""); }
+    static subtext():string { return ""; }
 }
 
 class Page1 extends LearningPage {

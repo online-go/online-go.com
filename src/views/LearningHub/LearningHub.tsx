@@ -146,7 +146,17 @@ class Index extends React.PureComponent<{}, any>  {
                                 <i className='fa fa-thumbs-up' />
                                 <div>
                                     <h1>{pgettext("Sign up for an account", "Register")}</h1>
-                                    <h3>{_("Get a free Online-Go account")}</h3>
+                                    <h3>{_("Get a free Online-Go account to play Go!")}</h3>
+                                </div>
+                            </CardLink>
+                        }
+
+                        {!(!user || user.anonymous) &&
+                            <CardLink className={'done'} to={`/play`}>
+                                <i className='ogs-goban' />
+                                <div>
+                                    <h1>{_("Play Go!")}</h1>
+                                    <h3>{_("Play people from around the world, or against the computer")}</h3>
                                 </div>
                             </CardLink>
                         }
@@ -159,21 +169,6 @@ class Index extends React.PureComponent<{}, any>  {
                             </div>
                         </CardLink>
 
-                        <CardLink className={'done'} to={`/play`}>
-                            <i className='ogs-goban' />
-                            <div>
-                                <h1>{_("Play people")}</h1>
-                                <h3>{_("Play people from around the world")}</h3>
-                            </div>
-                        </CardLink>
-
-                        <CardLink className={'done'} to={`/play`}>
-                            <i className='fa fa-desktop' />
-                            <div>
-                                <h1>{_("Play machine")}</h1>
-                                <h3>{_("Play against the computer")}</h3>
-                            </div>
-                        </CardLink>
                     </div>
                 </div>
             </div>
