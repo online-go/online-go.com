@@ -68,8 +68,6 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         let time_control_description = timeControlDescription(challenge.time_control_parameters);
         let player_color = _(challenge.challenger_color);
 
-        console.log(challenge);
-
         if (challenge.challenger_color === "black")          { player_color = _("White");     }
         else if (challenge.challenger_color === "white")     { player_color = _("Black");     }
         else if (challenge.challenger_color === "automatic") { player_color = _("Automatic"); }
@@ -90,14 +88,18 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
               <div className="body">
                 <p>{time_control_description}</p>
                 {usedForCheating(challenge.time_control_parameters) ?
-                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting is sometimes abused to cheat or suprise.  Accept at your own risk.</p> :
+                    <p><i className="fa fa-exclamation-triangle cheat-warning"></i> Note: this time setting sometimes causes problems.  Accept at your own risk.</p> :
                     ""}
                 <hr/>
                 <dl className="horizontal">
                   <dt>{_("Your color")}</dt><dd>{player_color}</dd>
                   <dt>{_("Ranked")}</dt><dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
                   <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
-                  <dt>{_("Komi")}</dt><dd>{challenge.komi || _("Automatic")}</dd>
+                  <dt>{_("Komi")}</dt>
+                    <dd>
+                    {challenge.komi || _("Automatic")}
+                    {/*challenge.komi ? <span title="Custom komi setting - accept at your own discretion."><i className="fa fa-exclamation-triangle cheat-warning"></i></span> : ""*/}
+                    </dd>
                   <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
                   <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
                       {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
@@ -115,7 +117,6 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
 
 
 export function openGameAcceptModal(challenge): Promise<any> {
-    console.log(challenge);
 
     return new Promise((resolve, reject) => {
         openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);

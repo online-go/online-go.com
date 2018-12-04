@@ -592,12 +592,11 @@ export class Play extends React.Component<PlayProperties, any> {
                         </span>
                         <span className={timeControlClassName(C)}>
                             {shortShortTimeControl(C.time_control_parameters)}
-                            {/* possibly too over the top to display this here...
-                            usedForCheating(C.time_control_parameters) ?
+                            {usedForCheating(C.time_control_parameters) ?
                                 <span title="Unusual time setting - accept at your own risk.">
                                     <i className="cheat-indicator fa fa-exclamation-triangle fa-xs"/>
                                 </span>
-                            : ""*/}
+                            : ""}
                         </span>
                         {commonSpan(C.ranked_text, "center")}
                         {commonSpan(C.handicap_text, "center")}

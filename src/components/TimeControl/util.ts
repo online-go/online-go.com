@@ -419,7 +419,7 @@ export function usedForCheating(time_control) {
             return time_control.per_move < QUESTIONABLE_SECONDS_PER_MOVE;
 
         case "absolute":
-            return time_control.total_time <= 600; // Arguably absolute time cheaters don't use > 10 min.  I've seen reports complaining about abuse at 10min though.
+            return time_control.total_time <= 900; // Arguably absolute time cheaters don't use > 10 min.  I've seen reports complaining about abuse at 10min though, so set this a bit higher.
 
         case "canadian":
             return time_control.main_time < QUESTIONABLE_SECONDS_PER_MOVE && time_control.period_time / time_control.stones_per_period < QUESTIONABLE_SECONDS_PER_MOVE;
