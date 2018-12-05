@@ -191,7 +191,6 @@ browserHistory.listen(location => {
     } catch (e) {
         console.log(e);
     }
-
 });
 
 

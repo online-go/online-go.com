@@ -48,6 +48,7 @@ import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
 import { TournamentListMainView } from "TournamentList";
 import { Tutorial } from "Tutorial";
+import { LearningHub } from "LearningHub";
 import { User, UserByName } from "User";
 import { Settings } from "Settings";
 import { Styling } from "Styling";
@@ -146,10 +147,21 @@ export const routes = (
             <Route path="/admin/tournament-schedule-list" component={AdminTournamentScheduleList}/>
             */}
             <Route path="/moderator" component={Moderator}/>
-            <Route path="/learn-to-play-go/:step" component={Tutorial}/>
-            <Route path="/learn-to-play-go" component={Tutorial}/>
-            <Route path="/docs/learn-to-play-go/:step" component={Tutorial}/>
-            <Route path="/docs/learn-to-play-go" component={Tutorial}/>
+            <Route path="/learning-hub/:section/:page" component={LearningHub}/>
+            <Route path="/learning-hub/:section" component={LearningHub}/>
+            <Route path="/learning-hub" component={LearningHub}/>
+
+            <Route path="/learn-to-play-go/:section/:page" component={LearningHub}/>
+            <Route path="/learn-to-play-go/:section" component={LearningHub}/>
+            <Route path="/learn-to-play-go" component={LearningHub}/>
+            <Route path="/docs/learn-to-play-go/:section/:page" component={LearningHub}/>
+            <Route path="/docs/learn-to-play-go/:section" component={LearningHub}/>
+            <Route path="/docs/learn-to-play-go" component={LearningHub}/>
+
+            <Route path="/crash-course-learn-to-play-go/:step" component={Tutorial}/>
+            <Route path="/crash-course-learn-to-play-go" component={Tutorial}/>
+            <Route path="/docs/crash-course-learn-to-play-go/:step" component={Tutorial}/>
+            <Route path="/docs/crash-course-learn-to-play-go" component={Tutorial}/>
 
             <Route path="/styling" component={Styling}/>
 

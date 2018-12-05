@@ -17,6 +17,8 @@
 
 import * as React from "react";
 import {Card, FabX, FabCheck, FabAdd } from "material";
+import {Link} from "react-router-dom";
+import {Ribbon} from "misc-ui";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import {toast} from "toast";
@@ -442,8 +444,35 @@ export class Styling extends React.PureComponent<{}, any> {
             <hr/>
             <p>Pargraph block</p>
             <div>Normal text</div>
+            <div><Link to='/styling'>Link text</Link></div>
             <code>Code block</code>
+            <div className='big'>Big text</div>
+            <div className='mid'>Mid text</div>
+            <div className='normal'>Normal text</div>
+            <div className='small'>Small text</div>
+            <div className='smaller'>Smaller text</div>
+            <div className='extra-small'>Extra small text</div>
         </Card>
+
+        <div className='row'>
+            <div className='col-xs-4'>
+                <Card className='next h4rem Ribboned'>
+                    <Ribbon>Next</Ribbon>
+
+                </Card>
+            </div>
+            <div className='col-xs-4'>
+                <Card className='todo h4rem Ribboned'>
+                    <Ribbon>Todo</Ribbon>
+                </Card>
+            </div>
+            <div className='col-xs-4'>
+                <Card className='done h4rem Ribboned'>
+                    <Ribbon>Done</Ribbon>
+                </Card>
+            </div>
+        </div>
+
 
     </div>
     ); }

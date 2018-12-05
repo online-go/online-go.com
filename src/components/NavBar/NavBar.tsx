@@ -383,7 +383,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                         </Link></li>
                         */}
 
-                        <li><Link to='/learn-to-play-go'><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
+                        <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
                         <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</Link></li>
                         {/* <li><Link to='/library'><i className='fa fa-university'></i> {_("Server Library")}</Link></li> */}
                         {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i> {_("SGF Library")}</Link></li>}

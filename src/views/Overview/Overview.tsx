@@ -126,6 +126,12 @@ export class Overview extends React.Component<{}, any> {
                     <EmailBanner />
                     <ChallengesList onAccept={() => this.refresh()} />
 
+                    {(user && user.provisional || null) &&
+                        <div className='learn-how-to-play'>
+                            <Link to="/learn-to-play-go" className="btn info">{_("New to Go? Click here to learn how to play!")}</Link>
+                        </div>
+                    }
+
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
                             <h2>{_("Active Games")}</h2>
@@ -137,7 +143,7 @@ export class Overview extends React.Component<{}, any> {
                     {((this.state.resolved && this.state.overview.active_games.length === 0) || null) &&
                         <div className="no-active-games">
                             <div style={{"marginBottom": "1rem"}}>{_("You're not currently playing any games.")}</div>
-                            <Link to="/play" className="btn primary">Find a game</Link>
+                            <Link to="/play" className="btn primary">{_("Find a game")}</Link>
                         </div>
                     }
                 </div>

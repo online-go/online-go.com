@@ -48,6 +48,10 @@ export class SFXManager {
             this.addAudio("beepbeep", "beepbeep");
             this.addAudio("pass", "pass");
             this.addAudio("dingdingding", "dingdingding");
+            this.addAudio("tutorial-bling", "tutorial-bling");
+            this.addAudio("tutorial-pass", "tutorial-pass");
+            this.addAudio("tutorial-fail", "tutorial-fail");
+            this.addAudio("tutorial-ping", "tutorial-ping");
         }
     }
     public play(name, play_even_if_window_doesnt_have_focus?) {
@@ -89,6 +93,22 @@ export class SFXManager {
             }
         }
     }
+
+    public stopAll() {
+        for (let n in this.sfx) {
+            try {
+                if ((this.sfx[name] as any).active) {
+                    this.sfx[name].pause();
+                }
+            } catch (e) {
+                try {
+                    this.sfx[name].pause();
+                } catch (e) {
+                    /* ignore */
+                }
+            }
+        }
+    }
     private addAudio(name, pathname) {
         if (!this.enabled && (this.volume_override == null || this.volume_override === 0)) { return; }
 
@@ -115,10 +135,12 @@ export class SFXManager {
 
         this.sfx[name] = this.loaded[pathname] = audio;
     }
+
 }
 
 
 export const sfx = new SFXManager();
+window['sfx'] = sfx;
 
 let I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */

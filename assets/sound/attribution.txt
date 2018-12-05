@@ -1,0 +1,23 @@
+beepbeep
+beep
+dingdingding
+female-en-10
+female-en-1
+female-en-2
+female-en-3
+female-en-4
+female-en-5
+female-en-6
+female-en-7
+female-en-8
+female-en-9
+pass
+stone1
+stone2
+stone3
+stone4
+stone5
+tutorial-bling    lichess standard sound set
+tutorial-fail     lichess standard sound set
+tutorial-pass     lichess standard sound set
+tutorial-ping     lichess other sound set

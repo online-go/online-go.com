@@ -73,6 +73,8 @@ interface Events {
         game_id: number;
         player_id: number;
     };
+    "set-for-removal": {x:number, y:number, removed:boolean};
+    "puzzle-place": {x:number, y:number};
 }
 
 
@@ -1749,6 +1751,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (puzzle_mode === "place") {
                     if (!double_tap) { /* we get called for each tap, then once for the final double tap so we only want to process this x2 */
                         this.engine.place(x, y, true, false, true, false, false);
+                        this.emit("puzzle-place", {x, y});
                     }
                 }
                 if (puzzle_mode === "play") {
@@ -1765,6 +1768,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                                 ++calls;
 
                                 this.engine.place(mv_x, mv_y, true, false, true, false, false);
+                                this.emit("puzzle-place", {x : mv_x, y : mv_y});
                                 if (this.engine.cur_move.wrong_answer) {
                                     this.emit("puzzle-wrong-answer");
                                 }
@@ -3319,6 +3323,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.getMarks(x, y).remove = false;
         }
         this.drawSquare(x, y);
+        this.emit("set-for-removal", {x, y, removed});
     } /* }}} */
     public showScores(score) { /* {{{ */
         this.hideScores();

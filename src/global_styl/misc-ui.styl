@@ -36,6 +36,14 @@
     }
 }
 
+@keyframes pulsate-reject {
+    0%, 100% { 
+    }
+    50% {
+        box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.35);
+        background-color: lighten(themes["light"]["reject"], 15%);
+    }
+}
 
 .flex {
     display: flex;
@@ -78,6 +86,10 @@
     input {
         padding-left: 1.6em;
     }
+}
+
+.h4rem {
+    min-height: 4rem;
 }
 
 /* Tooltip {{{ */ 
@@ -139,3 +151,61 @@
 }
 
 /* }}} */
+
+
+/** Ribbon / Ribboned **/
+.Ribboned {
+    position: relative;
+}
+
+.Ribbon-container {
+    overflow: hidden;
+    display: block;
+    position: absolute;
+    top: -0.1rem;
+    right: -0.1rem;
+    width: 6rem;
+    height: 6rem;
+
+    .Ribbon {
+        position: relative;
+        font-weight: bold;
+        padding: 0.4rem;
+        top: 1.0rem;
+        left: -1.0rem;
+        width: 10.0rem;
+        text-align: center;
+        transform: rotate(45deg);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.15);
+        background-color: rgba(255, 255, 255, 0.3);
+
+        &.primary {
+            themed-lighten(background-color, primary, 40%);
+            themed(color, colored-background-fg);
+        }
+        &.reject {
+            themed-lighten(background-color, reject, 40%);
+            themed(color, colored-background-fg);
+        }
+        &.success {
+            themed-lighten(background-color, primary, 40%);
+            themed(color, colored-background-fg);
+        }
+    }
+}
+
+
+
+.next {
+    .Ribbon {
+        themed-lighten(background-color, primary, 40%);
+        themed(color, colored-background-fg);
+    }
+
+}
+.done {
+    .Ribbon {
+        themed-lighten(background-color, success, 40%);
+        themed(color, colored-background-fg);
+    }
+}

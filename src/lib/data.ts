@@ -66,6 +66,22 @@ export function remove(key: string): any {
     }
 }
 
+export function removePrefix(key_prefix: string): any {
+    let hits = {};
+
+    Object.keys(store).map((key) => {
+        if (key.indexOf(key_prefix) === 0) {
+            hits[key] = key;
+        }
+    });
+
+    for (let key in hits) {
+        localStorage.removeItem(`ogs.${key}`);
+        delete store[key];
+        event_emitter.emit(key, defaults[key]);
+    }
+}
+
 export function removeAll(): void {
     let keys = [];
     for (let key in store) {
