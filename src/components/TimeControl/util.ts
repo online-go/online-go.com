@@ -19,6 +19,8 @@ import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 
+const QUESTIONABLE_SECONDS_PER_MOVE = 5;  // less than this gets alerted to players about to accept
+
 const times = [ /* {{{ */
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
     15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
@@ -405,6 +407,34 @@ export function shortShortTimeControl(time_control) { /* {{{ */
             return "[error: " + (time_control.system || time_control.time_control) + "]";
     }
 }  /* }}} */
+
+export function usedForCheating(time_control) {
+    if (typeof(time_control) !== "object" || time_control === null) {
+        return false;
+    }
+
+    switch (time_control.system || time_control.time_control) {
+
+        case "simple":
+            return time_control.per_move < QUESTIONABLE_SECONDS_PER_MOVE;
+
+        case "absolute":
+            return time_control.total_time <= 900; // Arguably absolute time cheaters don't use > 10 min.  I've seen reports complaining about abuse at 10min though, so set this a bit higher.
+
+        case "canadian":
+            return time_control.main_time < QUESTIONABLE_SECONDS_PER_MOVE && time_control.period_time / time_control.stones_per_period < QUESTIONABLE_SECONDS_PER_MOVE;
+
+        case "byoyomi":
+            return time_control.main_time < QUESTIONABLE_SECONDS_PER_MOVE && time_control.period_time < QUESTIONABLE_SECONDS_PER_MOVE;
+
+        // haven't seen silliness, not sure about sensible criteria
+        case "fischer":
+        case "none":
+        default:
+            return false;
+    }
+}
+
 export function timeControlSystemText(system) { /* {{{ */
     switch (system) {
         case "simple"   : return pgettext("time control system", "simple");

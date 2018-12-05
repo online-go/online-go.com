@@ -23,7 +23,7 @@ import {Card} from "material";
 import {post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
-import {shortShortTimeControl} from "TimeControl";
+import {shortShortTimeControl, usedForCheating} from "TimeControl";
 import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
@@ -592,6 +592,11 @@ export class Play extends React.Component<PlayProperties, any> {
                         </span>
                         <span className={timeControlClassName(C)}>
                             {shortShortTimeControl(C.time_control_parameters)}
+                            {usedForCheating(C.time_control_parameters) ?
+                                <span title={_("Unusual time setting - accept at your own risk.")}>
+                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                                </span>
+                            : ""}
                         </span>
                         {commonSpan(C.ranked_text, "center")}
                         {commonSpan(C.handicap_text, "center")}
@@ -615,7 +620,7 @@ export class Play extends React.Component<PlayProperties, any> {
             <span className="head">{_("Player")}</span>
             {/* <span className="head">{_("Rank")}</span> */}
             <span className="head">{_("Size")}</span>
-            <span className="head">{_("Time")}</span>
+            <span className="head time-control-header">{_("Time")}</span>
             <span className="head">{_("Ranked")}</span>
             <span className="head">{_("Handicap")}</span>
             <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
