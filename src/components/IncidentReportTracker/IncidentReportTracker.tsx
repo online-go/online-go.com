@@ -209,13 +209,15 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         {report.moderator ?
                                             <Player user={report.moderator} icon />
                                             :
-                                        <div className="unclaimed"> (unclaimed)</div>}
+                                            (user.is_moderator) ?
+                                                <button className="primary xs" onClick={report.claim}>{_("Claim")}</button> : _("(pending moderator)")
+                                        }
                                     </div>
                                     {(report.reporter_note || null) && <h4 className="notes">{report.reporter_note}</h4>}
 
                                     {(report.system_note || null) && <h4 className="notes">{report.system_note}</h4>}
 
-                                    <div className="notes"><i>{report.moderator_note || ""}</i></div>
+                                    <div className="notes"><i>{user.is_moderator ? report.moderator_note || "" : ""}</i></div>
 
                                     <div className="spread">
                                         {(report.url || null) && <a href={report.url} target="_blank">{report.url}</a>}
@@ -233,9 +235,6 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
 
 
                                     <div className="spread">
-                                        {((!report.moderator && user.is_moderator) || null) &&
-                                            <button className="primary xs" onClick={report.claim}>{_("Claim")}</button>
-                                        }
                                         {((report.moderator && user.is_moderator && user.id !== report.moderator.id) || null) &&
                                             <button className="danger xs" onClick={report.claim}>{_("Steal")}</button>
                                         }
