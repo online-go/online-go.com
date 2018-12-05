@@ -210,7 +210,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                             <Player user={report.moderator} icon />
                                             :
                                             (user.is_moderator) ?
-                                                <button className="primary xs" onClick={report.claim}>{_("Claim")}</button> : _("(pending moderator)") 
+                                                <button className="primary xs" onClick={report.claim}>{_("Claim")}</button> : _("(pending moderator)")
                                         }
                                     </div>
                                     {(report.reporter_note || null) && <h4 className="notes">{report.reporter_note}</h4>}
