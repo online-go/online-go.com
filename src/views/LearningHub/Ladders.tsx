@@ -54,10 +54,13 @@ class Page1 extends LearningPage {
             initial_state: {black: "fceddegedfffeg", white: "fdgdeefeef"},
             move_tree: this.makePuzzleMoveTree(
                 [
-                    "h6g7g8h7j7h8h9j8j9"
+                    "h6g7g8h7j7h8h9j8j9",
+                    "h6g7g8h7j7h8j8h9g9h5j9",
+                    "h6g7g8h7h8j7j6j8j9",
+                    "h6g7g8h7h8j7j8j6j5",
                 ],
                 [
-                    ""
+                    "h6g7g8h7j7h8j8h9j9j6",
                 ]
             )
         };
