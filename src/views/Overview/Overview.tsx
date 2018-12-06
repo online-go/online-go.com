@@ -32,6 +32,7 @@ import * as data from "data";
 import cached from "cached";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
+import {DismissableNotification} from "DismissableNotification";
 import {longRankString, getUserRating, is_novice, is_provisional, humble_rating} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
@@ -126,10 +127,14 @@ export class Overview extends React.Component<{}, any> {
                     <EmailBanner />
                     <ChallengesList onAccept={() => this.refresh()} />
 
-                    {(user && user.provisional || null) &&
-                        <div className='learn-how-to-play'>
-                            <Link to="/learn-to-play-go" className="btn info">{_("New to Go? Click here to learn how to play!")}</Link>
-                        </div>
+
+                    {(user && user.provisional) &&
+                        <DismissableNotification
+                            className="learn-how-to-play"
+                            dismissedKey="learn-how-to-play"
+                            >
+                            <Link to="/learn-to-play-go">{_("New to Go? Click here to learn how to play!")}</Link>
+                        </DismissableNotification>
                     }
 
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
