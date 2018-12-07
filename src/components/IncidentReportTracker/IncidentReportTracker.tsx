@@ -205,7 +205,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                             {this.state.reports.map((report, idx) => (
                                 <div className="incident" key={report.id}>
                                     <div className="report-header">
-                                        <div className="report-id">{"#" + report.id + ":"}</div>
+                                        <div className="report-id">{"R" + report.id.substr(-3.3) + ":"}</div>
                                         {report.moderator ?
                                             <Player user={report.moderator} icon />
                                             :
