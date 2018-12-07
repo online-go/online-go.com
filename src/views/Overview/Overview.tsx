@@ -128,7 +128,7 @@ export class Overview extends React.Component<{}, any> {
                     <ChallengesList onAccept={() => this.refresh()} />
 
 
-                    {(user && user.provisional) &&
+                    {((user && user.provisional) || null) &&
                         <DismissableNotification
                             className="learn-how-to-play"
                             dismissedKey="learn-how-to-play"
