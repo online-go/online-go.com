@@ -33,11 +33,11 @@ import cached from "cached";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {DismissableNotification} from "DismissableNotification";
-import {longRankString, getUserRating, is_novice, is_provisional, humble_rating} from "rank_utils";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
 import {SupporterGoals} from "SupporterGoals";
+import {ProfileCard} from "ProfileCard";
 import {notification_manager} from "Notifications";
 import {FabX, FabCheck} from "material";
 
@@ -116,9 +116,6 @@ export class Overview extends React.Component<{}, any> {
     render() {
         let user = data.get("config.user");
 
-        let rating = user ? getUserRating(user, 'overall', 0) : null;
-
-
         return (
         <div id="Overview-Container">
             <SupporterGoals />
@@ -153,30 +150,7 @@ export class Overview extends React.Component<{}, any> {
                     }
                 </div>
                 <div className="right">
-                    <div className="profile">
-                        <PlayerIcon id={user.id} size={80} />
-
-                        <div className="profile-right">
-                            <div style={{fontSize: '1.2em'}}>
-                                <Player user={user} nodetails rank={false} />
-                            </div>
-                            {rating && rating.professional &&
-                                <div>
-                                    <span className="rank">{rating.rank_label}</span>
-                                </div>
-                            }
-                            {rating && !rating.professional &&
-                                <div>
-                                    <span className="rating">{Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn; {Math.round(rating.deviation)}</span>
-                                </div>
-                            }
-                            {rating && !rating.professional && !is_novice(user) && !is_provisional(user) &&
-                                <div>
-                                    <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    <ProfileCard user={user} />
 
                     <div className="overview-categories">
                         {this.state.show_translation_dialog &&
@@ -205,7 +179,6 @@ export class Overview extends React.Component<{}, any> {
                     </div>
 
                 </div>
-
             </div>
         </div>
         );
