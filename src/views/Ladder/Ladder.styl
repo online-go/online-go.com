@@ -69,6 +69,28 @@
         max-width: 30rem;
         width: 100vw;
         height: 30px;
+        cursor: pointer;
+
+
+        &.not-challengable {
+            .Player, .right {
+                color #888 !important;
+            }
+        }
+
+        &.challengable {
+            .Player, .right {
+                themed-important color link-color
+            }
+        }
+
+        &:hover {
+            themed background-color shade4
+        }
+
+        .Player {
+            cursor: pointer;
+        }
 
         .rank {
             @extend .monospace;
@@ -112,49 +134,19 @@
                 white-space: nowrap;
 
                 .incoming {
+                    text-align: right;
                 }
+
                 .outgoing {
+                    text-align: left;
                 }
 
-                .challenge {
+                .incoming, .outgoing {
+                    display: inline-block;
+                    width: 1.2rem;
                 }
             }
         }
-        /*
-        .challenges {
-            max-width: 100vw;
-
-            .outgoing, .incoming {
-                display: flex;
-                flex-direction: row;
-
-                .arrow {
-                    flex: 0;
-                    display: inline-block;
-                    text-align: center;
-                    margin-left: 1.5rem;
-                }
-
-                .challenge-list {
-                    display: inline-block;
-                    flex: 1;
-                    flex-wrap: wrap;
-                    display: flex;
-
-                    .challenge-rank {
-                        @extend .monospace;
-                        margin-right: 0.3rem;
-                    }
-                    .challenge-link {
-                        margin-right: 1.0rem;
-                        .Player {
-                            cursor: pointer !important;
-                        }
-                    }
-                }
-            }
-        }
-        */
     }
 }
 
@@ -188,5 +180,13 @@
                 cursor: pointer !important;
             }
         }
+    }
+
+    .challenge-button-or-text {
+        margin-bottom: 1rem;
+    }
+
+    .not-challengable {
+
     }
 }

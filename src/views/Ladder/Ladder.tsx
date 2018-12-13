@@ -346,14 +346,30 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
         // <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
         // <b>{_("Challenging") /* Translators: List of players that have been challenged by this player in a ladder */}: </b>
 
+        let row_class = "challengable";
+        if (row && !user.anonymous && row.can_challenge && !row.can_challenge.challengeable) {
+            row_class = "not-challengable";
+        }
+
         return (
-            <div className={'LadderRow' + (row && row.rank === this.props.highlightRank ? ' highlight' : '')}>
+            <div onClick={this.challengeDetails} className={'LadderRow ' + (row && row.rank === this.props.highlightRank ? ' highlight ' : '') + row_class}>
                 <div className='ladder-player'>
                     <span className='rank'># {(row && row.rank) || (this.props.index + 1)}</span>
 
-                    {row && <Player flag nochallenge user={row.player}/> }
+                    {row && <Player flag nochallenge nolink user={row.player}/> }
 
                     <span className='right'>
+
+                        {(challenging || null) &&
+                            <span className='outgoing'>{challenging.length || ""}</span>
+                        }
+
+                        {(challenged_by || null) &&
+                            <span className='incoming'>{challenged_by.length || ""}</span>
+                        }
+
+
+                        {/*
                         <span className='btn-group'>
                             {((challenging && challenging.length) || null) &&
                                 <button className='xs danger outgoing' onClick={this.challengeDetails}>{challenging.length}</button>
@@ -363,65 +379,12 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                                 <button className='xs info incoming' onClick={this.challengeDetails}>{challenged_by.length}</button>
                             }
                         </span>
-
-                        {row && !user.anonymous && row.can_challenge &&
-                            <span className='challenge'>
-                                { row.can_challenge.challengeable
-                                     ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
-                                     : <button className="xs not-challengable"
-                                          data-title={canChallengeTooltip(row.can_challenge)}
-                                          onClick={tooltip}
-                                          onMouseOver={tooltip}
-                                          onMouseOut={tooltip}
-                                          onMouseMove={tooltip}
-                                          >{_("Challenge")}</button>
-                                }
-                            </span>
-                        }
+                        */}
                     </span>
                 </div>
 
             </div>
         );
-
-
-        /*
-                <div className='challenges'>
-                    {((challenging && challenging.length) || null) &&
-                        <div className='outgoing'>
-                            <span className='arrow'>
-                                &rarr;
-                            </span>
-                            <span className='challenge-list'>
-                                {challenging.map((challenge, idx) => (
-                                    <Link key={idx} className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
-                                    </Link>
-                                ))}
-                            </span>
-                        </div>
-                    }
-
-                    {((challenged_by && challenged_by.length) || null) &&
-                        <div className='incoming'>
-                            <span className='arrow'>
-                                &larr;
-                            </span>
-                            <span className='challenge-list'>
-                                {challenged_by.map((challenge, idx) => (
-                                    <Link key={idx} className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
-                                    </Link>
-                                ))}
-                            </span>
-                        </div>
-                    }
-                </div>
-        */
-
-
     }
 
 
@@ -441,7 +404,20 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
 
                 <h3>
                     <Player flag nochallenge user={row.player}/>
+
                 </h3>
+
+                {row && row.can_challenge &&
+                    <div className='challenge-button-or-text'>
+                        { row.can_challenge.challengeable
+                             ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
+                             : <div className='not-challengable'>
+                                  {canChallengeTooltip(row.can_challenge)}
+                               </div>
+                        }
+                    </div>
+                }
+
 
 
                 {((challenging && challenging.length) || null) &&
