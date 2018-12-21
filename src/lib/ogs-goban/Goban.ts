@@ -2312,9 +2312,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         color = this.edit_color === "black" ? 2 : 1;
                     }
                 }
-                else if (this.move_selected && this.engine.handicapMovesLeft() <= 0) {
-
-                    color = this.engine.otherPlayer();
+                else if (this.move_selected) {
+                    if (this.engine.handicapMovesLeft() <= 0) {
+                        color = this.engine.otherPlayer();
+                    }   else {
+                            color = this.engine.player;
+                    }
                 }
                 else if (this.mode === "puzzle") {
                     if (this.getPuzzlePlacementSetting) {
@@ -2765,8 +2768,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 else if (this.mode === "edit" || (this.mode === "analyze" && this.analyze_tool === "stone" && this.analyze_subtool !== "alternate")) {
                     color = this.edit_color === "black" ? 1 : 2;
                 }
-                else if (this.move_selected && this.engine.handicapMovesLeft() <= 0) {
-                    color = this.engine.otherPlayer();
+                else if (this.move_selected) {
+                    if (this.engine.handicapMovesLeft() <= 0) {
+                        color = this.engine.otherPlayer();
+                    }   else {
+                            color = this.engine.player;
+                    }
                 }
                 else {
                     color = this.engine.player;
