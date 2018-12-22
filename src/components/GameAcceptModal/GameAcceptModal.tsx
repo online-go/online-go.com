@@ -97,8 +97,9 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                   <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
                   <dt>{_("Komi")}</dt>
                     <dd>
-                    {challenge.komi || _("Automatic")}
-                    {/*challenge.komi ? <span title=_("Custom komi setting - accept at your own discretion.")><i className="fa fa-exclamation-triangle cheat-warning"></i></span> : ""*/}
+                    {challenge.komi ?
+                    <span title={_("Custom komi setting - accept at your own discretion.")}>{challenge.komi}<i className="fa fa-exclamation-triangle cheat-alert"></i></span>
+                    : _("Automatic")}
                     </dd>
                   <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
                   <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
