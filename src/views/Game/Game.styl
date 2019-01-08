@@ -530,6 +530,14 @@ goban-view-bar-width=400px
     }
 }
 
+
+.chat-container {
+    /* Prevent silly Firefox from collapsing empty editable lines */
+    .qc-option[contenteditable=true]{
+        min-height: 1 em;
+    }
+}
+
 .ad.large-rectangle,
 .ad.medium-rectangle,
 .ad.leaderboard,
