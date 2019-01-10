@@ -395,7 +395,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                         <li><Link to="/ladders"><i className="fa fa-list-ol"></i>{_("Ladders")}</Link></li>
                         <li><Link to="/groups"><i className="fa fa-users"></i>{_("Groups")}</Link></li>
                         <li><a href="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</a></li>
-                        <li><Link to="/docs/about"><i className="fa fa-question-circle"></i>{_("About")}</Link></li>
+                        <li><Link to="/docs/about"><i className="fa fa-info-circle"></i>{_("About")}</Link></li>
+                        <li><a href="https://github.com/online-go/online-go.com/wiki"><i className="fa fa-question-circle"></i>{_("Documentation & FAQ")}</a></li>
                         <li><Link to="/docs/other-go-resources"><i className="fa fa-link"></i>{_("Other Go Resources")}</Link></li>
 
                         {user && <li className="divider"></li>}
