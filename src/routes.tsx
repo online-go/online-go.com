@@ -54,6 +54,7 @@ import { Settings } from "Settings";
 import { Styling } from "Styling";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
+import { GobanTest } from "GobanTest";
 
 import * as docs from "docs";
 
@@ -163,8 +164,10 @@ export const routes = (
             <Route path="/docs/crash-course-learn-to-play-go/:step" component={Tutorial}/>
             <Route path="/docs/crash-course-learn-to-play-go" component={Tutorial}/>
 
-            <Route path="/styling" component={Styling}/>
-
+            {/* these aren't meant to be linked anywhere, just entered by hand
+                for developers looking to test and play with things */}
+            <Route path="/dev/styling" component={Styling}/>
+            <Route path="/dev/goban-test" component={GobanTest}/>
 
             <Route path="/docs/about" component={docs.About}/>
             <Route path="/docs/privacy-policy" component={docs.PrivacyPolicy}/>
