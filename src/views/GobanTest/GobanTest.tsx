@@ -63,7 +63,7 @@ export class GobanTest extends React.Component<{}, any> {
         let mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
-            this.goban.height)
+            this.goban.height);
         let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
         this.setState({ move_string });
     }
