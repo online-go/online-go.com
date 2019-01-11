@@ -20,6 +20,7 @@ export class SFXManager {
     private enabled = false;
     private loaded: {[id:string]: HTMLAudioElement} = {};
     private sfx: {[id:string]: HTMLAudioElement} = {};
+    private play_state: {[id:string]: string} = {};
     public volume_override:number = null;
 
     constructor() {
@@ -68,17 +69,7 @@ export class SFXManager {
                     volume = this.volume_override;
                 }
                 this.sfx[name].volume = volume;
-                try {
-                    if ((this.sfx[name] as any).active) {
-                        this.sfx[name].pause();
-                    }
-                } catch (e) {
-                    try {
-                        this.sfx[name].pause();
-                    } catch (e) {
-                        /* ignore */
-                    }
-                }
+                this.pause(name);
 
                 try {
                     this.sfx[name].currentTime = 0;
@@ -93,20 +84,27 @@ export class SFXManager {
             }
         }
     }
-
-    public stopAll() {
-        for (let n in this.sfx) {
-            try {
+    public pause(name:string) {
+        try {
+            if (this.play_state[name] === 'playing') {
                 if ((this.sfx[name] as any).active) {
                     this.sfx[name].pause();
                 }
-            } catch (e) {
-                try {
-                    this.sfx[name].pause();
-                } catch (e) {
-                    /* ignore */
-                }
             }
+        } catch (e) {
+            try {
+                if (this.play_state[name] === 'playing') {
+                    this.sfx[name].pause();
+                }
+            } catch (e) {
+                /* ignore */
+            }
+        }
+    }
+
+    public stopAll() {
+        for (let n in this.sfx) {
+            this.pause(n);
         }
     }
     private addAudio(name, pathname) {
@@ -134,6 +132,12 @@ export class SFXManager {
         document.getElementsByTagName('BODY')[0].appendChild(audio);
 
         this.sfx[name] = this.loaded[pathname] = audio;
+
+        let elt = $(this.sfx[name]);
+        this.play_state[name] = 'stopped';
+        elt.on("playing", _ => this.play_state[name] = 'playing');
+        elt.on("ended", _ => this.play_state[name] = 'stopped');
+        elt.on("pause", _ => this.play_state[name] = 'stopped');
     }
 
 }
