@@ -3901,7 +3901,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
     public setMarks(marks, dont_draw?) { /* {{{ */
         for (let key in marks) {
+            console.log(key);
             let locations = this.engine.decodeMoves(marks[key]);
+            console.log(locations);
             for (let i = 0; i < locations.length; ++i) {
                 let pt = locations[i];
                 this.setMark(pt.x, pt.y, key, dont_draw);

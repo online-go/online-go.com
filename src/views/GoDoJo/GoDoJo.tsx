@@ -23,6 +23,7 @@ import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
+import { tickStep } from "d3";
 
 export class GoDoJo extends React.Component<{}, any> {
     refs: {
@@ -70,16 +71,30 @@ export class GoDoJo extends React.Component<{}, any> {
     }
 
     componentDidMount = () => {
-        /* sanity testing that we can manipulate the board */
+        /* sanity testing that we can manipulate the board
         this.goban.engine.place(0, 0);
         this.goban.setMarks({"A" : GoMath.encodeMove(1, 1)});
         this.goban.setMarks({"A" : GoMath.encodeMove(2, 2)});
         this.goban.clearMark(1, 1, "B");
+        */
 
         /* Initiate joseki playing sequence with the root from the server */
         fetch('http://localhost:8081/position', {mode: 'cors'})
-            .then(response => response.json())
-            .then(result => console.log(result));
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                this.renderJosekiPosition(body);
+            } );
+    }
+
+    renderJosekiPosition = (joseki_node) => {
+        this.goban.engine.cur_move.clearMarks();
+        console.log(joseki_node);
+        joseki_node["_embedded"]["moves"].forEach((option, index) => {
+            const id = GoMath.num2char(index).toUpperCase();
+            let mark = {};
+            mark[id]= GoMath.encodeMove(option["placement"]);
+            this.goban.setMarks(mark);
+        });
     }
 
     render() {
