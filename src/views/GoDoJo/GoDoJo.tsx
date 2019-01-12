@@ -23,7 +23,6 @@ import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
-import { tickStep } from "d3";
 
 export class GoDoJo extends React.Component<{}, any> {
     refs: {
@@ -86,13 +85,20 @@ export class GoDoJo extends React.Component<{}, any> {
             } );
     }
 
+    encodeServerPlacement = (placement) => {
+        // seems like this function should be part of GoMath, but I can't see how to get at the board height from in there.
+        const x = placement.charAt(0).toLowerCase();
+        const y = GoMath.num2char(this.goban.height - parseInt(placement.charAt(1)));
+        return x + y;
+    }
+
     renderJosekiPosition = (joseki_node) => {
         this.goban.engine.cur_move.clearMarks();
         console.log(joseki_node);
         joseki_node["_embedded"]["moves"].forEach((option, index) => {
             const id = GoMath.num2char(index).toUpperCase();
             let mark = {};
-            mark[id]= GoMath.encodeMove(option["placement"]);
+            mark[id]= this.encodeServerPlacement(option["placement"]);
             this.goban.setMarks(mark);
         });
     }

@@ -270,8 +270,6 @@ export class GoMath {
     public static encodeMove(x, y?):string { /* {{{ */
         if (typeof(x) === "number") {
             return GoMath.num2char(x) + GoMath.num2char(y);
-        } else if (typeof(x) === "string" && x.length === 2) {
-            return(x.charAt(0).toLowerCase() + GoMath.num2char(parseInt(x.charAt(1))));
         } else {
             let mv = x;
 
