@@ -274,6 +274,7 @@ export let GoResources = (props) => {
                 <span><Flag country={au}/> <a rel="noopener" href="http://www.australiango.asn.au/">Australian Go Association</a></span>,
                 <span><Flag country={un}/> <a rel="noopener" href="http://intergofed.org/">International Go Federation</a></span>,
                 <span><Flag country={eu}/> <a rel="noopener" href="http://www.eurogofed.org/">European Go Federation</a></span>,
+                <span><Flag country={"cy"}/> <a rel="noopener" href="http://www.cyprus-go.org/">Cyprus Go Association</a></span>,
                 <span><Flag country={"ar"}/> <a rel="noopener" href="http://www.go.org.ar/">Asociación Argentina de Go</a></span>,
                 <span><Flag country={"us"}/> <a rel="noopener" href="http://agfgo.org/">American Go Foundation</a></span>,
                 <span><Flag country={"es"}/> <a rel="noopener" href="http://aego.biz/">Asociación Española de GO</a></span>,
@@ -312,6 +313,7 @@ export let GoResources = (props) => {
                 <span><Flag country={us}/> <a rel="noopener" href="http://agfgo.org/pages/store-playing.php">AGF Store</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="http://www.algorithmicartisan.com/gostones/">Exotic Go Stones</a></span>,
                 <span><Flag country={jp}/> <a rel="noopener" href="http://www.kurokigoishi.co.jp/english/">Kurokigoishi</a></span>,
+                <span><Flag country={eu}/> <a rel="noopener" href="https://www.schaakengo.nl/goshop-keima/">Schaak en Go winkel het Paard</a></span>,
                 <span><Flag country={"se"}/> <a rel="noopener" href="http://gobutiken.se">Gobutiken</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
