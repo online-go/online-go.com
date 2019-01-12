@@ -259,7 +259,7 @@ export class GoMath {
         if (ch === ".") { return -1; }
         return "abcdefghijklmnopqrstuvwxyz".indexOf(ch);
     } /* }}} */
-    private static pretty_char2num(ch:string):number { /* {{{ */
+    public static pretty_char2num(ch:string):number { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghjklmnopqrstuvwxyz".indexOf(ch.toLowerCase());
     } /* }}} */

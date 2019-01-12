@@ -64,7 +64,7 @@ export class GoDoJo extends React.Component<{}, any> {
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
             this.goban.height);
-        console.log(mvs);
+        console.log("Move placed: ", mvs);
         let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
         this.setState({ move_string });
     }
@@ -85,10 +85,12 @@ export class GoDoJo extends React.Component<{}, any> {
             } );
     }
 
-    encodeServerPlacement = (placement) => {
+    encodeServerPlacement = (placement: String) => { // "C12"
         // seems like this function should be part of GoMath, but I can't see how to get at the board height from in there.
-        const x = String.fromCharCode(placement.charAt(0).charCodeAt(0) - 1).toLowerCase();
+        // "placement" is in "pretty char" format (no "i").  encoded coords are in "num2char" format (have an "i")
+        const x = GoMath.num2char(GoMath.pretty_char2num(placement.charAt(0).toLowerCase()));
         const y = GoMath.num2char(this.goban.height - parseInt(placement.substring(1)));
+        console.log(placement, x,y);
         return x + y;
     }
 
