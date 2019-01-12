@@ -259,7 +259,7 @@ export class GoMath {
         if (ch === ".") { return -1; }
         return "abcdefghijklmnopqrstuvwxyz".indexOf(ch);
     } /* }}} */
-    public static pretty_char2num(ch:string):number { /* {{{ */
+    private static pretty_char2num(ch:string):number { /* {{{ */
         if (ch === ".") { return -1; }
         return "abcdefghjklmnopqrstuvwxyz".indexOf(ch.toLowerCase());
     } /* }}} */
@@ -280,6 +280,11 @@ export class GoMath {
             }
         }
     } /* }}} */
+    public static encodePrettyCoord(coord: string, height: number) { // "C12" with no "I"
+        const x = GoMath.num2char(GoMath.pretty_char2num(coord.charAt(0).toLowerCase()));
+        const y = GoMath.num2char(height - parseInt(coord.substring(1)));
+        return x + y;
+    }
     public static encodeMoves(lst:Array<Move>):string { /* {{{ */
         let ret = "";
         for (let i = 0; i < lst.length; ++i) {
