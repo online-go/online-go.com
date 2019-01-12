@@ -87,8 +87,8 @@ export class GoDoJo extends React.Component<{}, any> {
 
     encodeServerPlacement = (placement) => {
         // seems like this function should be part of GoMath, but I can't see how to get at the board height from in there.
-        const x = placement.charAt(0).toLowerCase();
-        const y = GoMath.num2char(this.goban.height - parseInt(placement.charAt(1)));
+        const x = String.fromCharCode(placement.charAt(0).charCodeAt(0) - 1).toLowerCase();
+        const y = GoMath.num2char(this.goban.height - parseInt(placement.substring(1)));
         return x + y;
     }
 
