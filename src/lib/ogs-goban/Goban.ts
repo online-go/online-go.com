@@ -4042,7 +4042,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
     } /* }}} */
-    private clearMark(x, y, mark) { /* {{{ */
+    public clearMark(x, y, mark) { /* {{{ */
         try {
             if (typeof(mark) === "number") {
                 mark = "" + mark;
