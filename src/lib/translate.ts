@@ -113,6 +113,7 @@ extended_countries.push(["_Commonwealth",  gettext("Commonwealth")]);
 extended_countries.push(["_England",  gettext("England")]);
 extended_countries.push(["_Islamic_Conference", gettext("Islamic Conference")]);
 extended_countries.push(["_Kosovo", gettext("Kosovo")]);
+extended_countries.push(["_Lord_Howe_Island", gettext("Lord Howe Island")])
 extended_countries.push(["_NATO", gettext("NATO")]);
 extended_countries.push(["_Northern_Cyprus", gettext("Northern Cyprus")]);
 extended_countries.push(["_Northern_Ireland", gettext("Northern Ireland")]);
