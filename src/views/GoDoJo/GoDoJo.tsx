@@ -23,6 +23,7 @@ import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
+import { partition } from "d3";
 
 export class GoDoJo extends React.Component<{}, any> {
     refs: {
@@ -38,6 +39,7 @@ export class GoDoJo extends React.Component<{}, any> {
 
         this.state = {
             move_string: "",
+            next_moves: []
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -58,6 +60,37 @@ export class GoDoJo extends React.Component<{}, any> {
         window["global_goban"] = this.goban;
     }
 
+    componentDidMount = () => {
+        /* Initiate joseki playing sequence with the root from the server */
+        const serverRootPosition = "http://localhost:8081/position/?id=root";
+        this.fetchNextMovesFor(serverRootPosition);
+    }
+
+    fetchNextMovesFor = (placementUrl) => {
+        fetch(placementUrl, {mode: 'cors'})
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            this.processNewJosekiPosition(body._embedded.moves);
+        } );
+    }
+
+    processNewJosekiPosition = (next_moves: Array<any>) => {
+        this.setState({next_moves});
+        this.renderJosekiPosition(next_moves);
+    }
+
+    // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
+    renderJosekiPosition = (next_moves:  Array<any>) => {
+        this.goban.engine.cur_move.clearMarks();
+        console.log("rendering joseki options :", next_moves);
+        next_moves.forEach((option, index) => {
+            const id = GoMath.num2char(index).toUpperCase();
+            let mark = {};
+            mark[id] = GoMath.encodePrettyCoord(option["placement"], this.goban.height);
+            this.goban.setMarks(mark);
+        });
+    }
+
     /* This is called every time a move is played or anything else changes about the state of the board */
     onUpdate = () => {
         let mvs = GoMath.decodeMoves(
@@ -66,33 +99,20 @@ export class GoDoJo extends React.Component<{}, any> {
             this.goban.height);
         console.log("Move placed: ", mvs);
         let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
-        this.setState({ move_string });
+        if (move_string !== this.state.move_string) {
+            this.setState({ move_string });
+            this.processPlacement(mvs[mvs.length - 1]);
+        }
     }
 
-    componentDidMount = () => {
-        /* sanity testing that we can manipulate the board
-        this.goban.engine.place(0, 0);
-        this.goban.setMarks({"A" : GoMath.encodeMove(1, 1)});
-        this.goban.setMarks({"A" : GoMath.encodeMove(2, 2)});
-        this.goban.clearMark(1, 1, "B");
-        */
-
-        /* Initiate joseki playing sequence with the root from the server */
-        fetch('http://localhost:8081/position', {mode: 'cors'})
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                this.renderJosekiPosition(body);
-            } );
-    }
-
-    renderJosekiPosition = (joseki_node) => {
-        this.goban.engine.cur_move.clearMarks();
-        console.log(joseki_node);
-        joseki_node["_embedded"]["moves"].forEach((option, index) => {
-            const id = GoMath.num2char(index).toUpperCase();
-            let mark = {};
-            mark[id]= GoMath.encodePrettyCoord(option["placement"], this.goban.height);
-            this.goban.setMarks(mark);
+    processPlacement(move: any) {
+        const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
+        console.log("Processing placement at:", placement);
+        this.state.next_moves.forEach((option) => {
+            if (option.placement === placement) {
+                console.log("Match on", option);
+                this.fetchNextMovesFor(option._links.self.href);
+            }
         });
     }
 
