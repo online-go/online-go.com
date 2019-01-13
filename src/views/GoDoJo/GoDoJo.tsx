@@ -40,6 +40,8 @@ export class GoDoJo extends React.Component<{}, any> {
 
         this.state = {
             move_string: "",
+            position_title: "",
+            position_description: ""
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -50,13 +52,13 @@ export class GoDoJo extends React.Component<{}, any> {
             "mode": "puzzle",
             "player_id": 0,
             "server_socket": null,
-            "square_size": 30
+            "square_size": 20
         };
 
         this.goban_opts = opts;
         this.goban = new Goban(opts);
         this.goban.setMode("puzzle");
-        this.goban.on("update", () => this.onUpdate());
+        this.goban.on("update", () => this.onBoardUpdate());
         window["global_goban"] = this.goban;
     }
 
@@ -64,6 +66,11 @@ export class GoDoJo extends React.Component<{}, any> {
         /* Initiate joseki playing sequence with the root from the server */
         const serverRootPosition = "http://localhost:8081/position/?id=root";
         this.fetchNextMovesFor(serverRootPosition);
+
+        /* This should be in an onResize */
+        this.goban.setSquareSizeBasedOnDisplayWidth(
+            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
+        );
     }
 
     fetchNextMovesFor = (placementUrl) => {
@@ -76,6 +83,10 @@ export class GoDoJo extends React.Component<{}, any> {
     }
 
     processNewJosekiPosition = (position) => {
+        this.setState({
+            position_title: position.title,
+            position_description: position.description
+        });
         this.next_moves = position._embedded.moves;
         this.renderJosekiPosition(this.next_moves);
     }
@@ -92,14 +103,14 @@ export class GoDoJo extends React.Component<{}, any> {
     }
 
     /* This is called every time a move is played or anything else changes about the state of the board */
-    onUpdate = () => {
+    onBoardUpdate = () => {
         let mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
             this.goban.height);
-        console.log("Move placed: ", mvs);
         let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
         if (move_string !== this.state.move_string) {
+            console.log("Move placed: ", mvs[mvs.length - 1]);
             this.setState({ move_string });
             this.processPlacement(mvs[mvs.length - 1]);
         }
@@ -122,9 +133,17 @@ export class GoDoJo extends React.Component<{}, any> {
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div}/>
                     </div>
+                    <div>
+                        {this.state.move_string !== "" ? "Moves made: " + this.state.move_string : ""}
+                    </div>
                 </div>
-                <div>
-                    {this.state.move_string !== "" ? "Moves made: " + this.state.move_string: ""}
+                <div className="right-col">
+                <div className="position-header">
+                        {this.state.position_title}
+                    </div>
+                    <div className="position-description">
+                        {this.state.position_description}
+                    </div>
                 </div>
             </div>
         );

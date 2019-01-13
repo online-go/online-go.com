@@ -17,4 +17,66 @@
 
 
 .GoDoJo {
+    /* Settings copied from Game.styl, to match behaviour as closely as possible */
+    position: absolute;
+    top: below-navbar;
+    bottom: 0;
+    right: 0;
+    left: 0;
+
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+
+    .center-col {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        .goban-container {
+        }
+    }
+    .goban-container {
+        flex-grow: 1;
+        //flex-shrink: 1;
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        .Goban {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+    .left-col, .right-col {
+        display: flex;
+        width: goban-view-bar-width
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: auto;
+        flex-direction: column;
+        //align-content: stretch;
+        //align-items: stretch;
+        //justify-content: space-between;
+    }
+    .left-col {
+        flex-basis: 0;
+        flex-shrink: 1;
+        align-content: center;
+        justify-content: center;
+        padding-right: 0.3rem;
+        min-width: 0px;
+    }
+    .right-col {
+        flex-basis: 25%;
+        padding-left: 0.3rem;
+        padding-right: dock-collapsed-width + 0.3rem;
+        min-width: 340px;
+    }
+
 }
