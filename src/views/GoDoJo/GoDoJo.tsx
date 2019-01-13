@@ -23,7 +23,6 @@ import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
-import { partition } from "d3";
 
 export class GoDoJo extends React.Component<{}, any> {
     refs: {
@@ -34,12 +33,13 @@ export class GoDoJo extends React.Component<{}, any> {
     goban_div: any;
     goban_opts: any = {};
 
+    next_moves: Array<any> = []; // these are the moves that the server has told us are avaiable as joseki moves from the current board position
+
     constructor(props) {
         super(props);
 
         this.state = {
             move_string: "",
-            next_moves: []
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -70,19 +70,19 @@ export class GoDoJo extends React.Component<{}, any> {
         fetch(placementUrl, {mode: 'cors'})
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
-            this.processNewJosekiPosition(body._embedded.moves);
+            console.log("Server response:", body);
+            this.processNewJosekiPosition(body);
         } );
     }
 
-    processNewJosekiPosition = (next_moves: Array<any>) => {
-        this.setState({next_moves});
-        this.renderJosekiPosition(next_moves);
+    processNewJosekiPosition = (position) => {
+        this.next_moves = position._embedded.moves;
+        this.renderJosekiPosition(this.next_moves);
     }
 
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
     renderJosekiPosition = (next_moves:  Array<any>) => {
-        this.goban.engine.cur_move.clearMarks();
-        console.log("rendering joseki options :", next_moves);
+        this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         next_moves.forEach((option, index) => {
             const id = GoMath.num2char(index).toUpperCase();
             let mark = {};
@@ -108,9 +108,8 @@ export class GoDoJo extends React.Component<{}, any> {
     processPlacement(move: any) {
         const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
         console.log("Processing placement at:", placement);
-        this.state.next_moves.forEach((option) => {
+        this.next_moves.forEach((option) => {
             if (option.placement === placement) {
-                console.log("Match on", option);
                 this.fetchNextMovesFor(option._links.self.href);
             }
         });
@@ -125,7 +124,7 @@ export class GoDoJo extends React.Component<{}, any> {
                     </div>
                 </div>
                 <div>
-                    Moves made: {this.state.move_string}
+                    {this.state.move_string !== "" ? "Moves made: " + this.state.move_string: ""}
                 </div>
             </div>
         );
