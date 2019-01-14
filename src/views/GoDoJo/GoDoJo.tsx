@@ -127,7 +127,11 @@ export class GoDoJo extends React.Component<{}, any> {
             this.fetchNextMovesFor(chosen_move._links.self.href);
             this.setState({current_move_category: chosen_move.category});
         } else {
-            this.setState({position_title: "", position_description: "", current_move_category : ""})
+            this.setState({
+                position_title: "",
+                position_description: "",
+                current_move_category : "Experiment"
+            });
         }
     }
 
@@ -145,7 +149,10 @@ export class GoDoJo extends React.Component<{}, any> {
                 <div className="right-col">
                     <div className="position-header">
                         <h2>{this.state.position_title}</h2>
-                        <h3>{this.state.current_move_category}</h3>
+                        <div className="move-category">
+                            <div>{this.state.current_move_category !== "" ? "Last move:" : ""}</div>
+                            <h3>{this.state.current_move_category}</h3>
+                        </div>
                     </div>
                     <div className="position-description">
                         {this.state.position_description}
