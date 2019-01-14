@@ -70,8 +70,8 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
 
         if (challenge.challenger_color === "black")          { player_color = _("White");     }
         else if (challenge.challenger_color === "white")     { player_color = _("Black");     }
-        else if (challenge.challenger_color === "automatic") { player_color = _("Automatic"); }
-        else if (challenge.challenger_color === "random")    { player_color = _("Random");    }
+        else if (challenge.challenger_color === "random")    { player_color = _("Nigiri");    }
+        else if (challenge.challenger_color === "automatic") { player_color = _("Strength"); }
 
         return (
           <div className="Modal GameAcceptModal" ref="modal">

@@ -128,7 +128,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
-            challenger_color: "automatic",
+            challenger_color: "random",
             game: {
                 name: "",
                 rules: "japanese",
@@ -858,10 +858,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <div className="controls">
                         <div className="checkbox">
                             <select value={this.state.challenge.challenger_color} onChange={this.update_challenge_color} id="challenge-color" className="challenge-dropdown form-control">
-                                <option value="automatic">{_("Automatic")}</option>
+                                <option value="random">{_("Nigiri")}</option>                                
+                                <option value="automatic">{_("Strength")}</option>
                                 <option value="black">{_("Black")}</option>
                                 <option value="white">{_("White")}</option>
-                                <option value="random">{_("Random")}</option>
                             </select>
                         </div>
                     </div>
@@ -1166,7 +1166,7 @@ export let blitz_config = { /* {{{ */
         restrict_rank: true,
     },
     challenge: {
-        challenger_color: "automatic",
+        challenger_color: "random",
         game: {
             name: "",
             rules: "japanese",
@@ -1192,7 +1192,7 @@ export let live_config = { /* {{{ */
         restrict_rank: true,
     },
     challenge: {
-        challenger_color: "automatic",
+        challenger_color: "random",
         game: {
             name: "",
             rules: "japanese",
@@ -1218,7 +1218,7 @@ export let correspondence_config = { /* {{{ */
         restrict_rank: true,
     },
     challenge: {
-        challenger_color: "automatic",
+        challenger_color: "random",
         game: {
             name: "",
             rules: "japanese",
