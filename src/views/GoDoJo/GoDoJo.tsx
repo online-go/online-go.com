@@ -120,12 +120,15 @@ export class GoDoJo extends React.Component<{}, any> {
     processPlacement(move: any) {
         const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
         console.log("Processing placement at:", placement);
-        this.next_moves.forEach((option) => {
-            if (option.placement === placement) {
-                this.fetchNextMovesFor(option._links.self.href);
-                this.setState({current_move_category: option.category})
-            }
-        });
+
+        const chosen_move = this.next_moves.find(move => move.placement === placement);
+
+        if (chosen_move !== undefined) {
+            this.fetchNextMovesFor(chosen_move._links.self.href);
+            this.setState({current_move_category: chosen_move.category});
+        } else {
+            this.setState({position_title: "", position_description: "", current_move_category : ""})
+        }
     }
 
     render() {
