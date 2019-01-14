@@ -41,7 +41,8 @@ export class GoDoJo extends React.Component<{}, any> {
         this.state = {
             move_string: "",
             position_title: "",
-            position_description: ""
+            position_description: "",
+            current_move_category: ""
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -122,6 +123,7 @@ export class GoDoJo extends React.Component<{}, any> {
         this.next_moves.forEach((option) => {
             if (option.placement === placement) {
                 this.fetchNextMovesFor(option._links.self.href);
+                this.setState({current_move_category: option.category})
             }
         });
     }
@@ -138,8 +140,9 @@ export class GoDoJo extends React.Component<{}, any> {
                     </div>
                 </div>
                 <div className="right-col">
-                <div className="position-header">
-                        {this.state.position_title}
+                    <div className="position-header">
+                        <h2>{this.state.position_title}</h2>
+                        <h3>{this.state.current_move_category}</h3>
                     </div>
                     <div className="position-description">
                         {this.state.position_description}
