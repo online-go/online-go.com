@@ -16,4 +16,4 @@
  */
 
 
-export * from "./GoDoJo";
+export * from "./Joseki";

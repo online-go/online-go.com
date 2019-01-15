@@ -32,7 +32,7 @@ import { Admin } from "Admin";
 import { ChatView } from "ChatView";
 import { Developer } from "Developer";
 import { Game } from "Game";
-import { GoDoJo } from "GoDoJo";
+import { Joseki } from "Joseki";
 import { Group } from "Group";
 import { GroupCreate } from "GroupCreate";
 import { GroupList } from "GroupList";
@@ -99,6 +99,8 @@ export const routes = (
             <Route path="/review/:review_id" component={Game}/>
             <Route path="/demo/view/:review_id" component={Game}/>
             <Route path="/demo/:review_id" component={Game}/>
+
+            <Route path="/joseki" component={Joseki}/>
 
             <Route path="/player/settings" component={Settings}/>
             <Route path="/player/supporter" component={Supporter}/>
@@ -169,7 +171,6 @@ export const routes = (
                 for developers looking to test and play with things */}
             <Route path="/dev/styling" component={Styling}/>
             <Route path="/dev/goban-test" component={GobanTest}/>
-            <Route path="/dev/godojo" component={GoDoJo}/>
 
             <Route path="/docs/about" component={docs.About}/>
             <Route path="/docs/privacy-policy" component={docs.PrivacyPolicy}/>

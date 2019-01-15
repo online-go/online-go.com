@@ -16,7 +16,7 @@
  */
 
 
-.GoDoJo {
+.Joseki {
     /* Settings copied from Game.styl, to match behaviour as closely as possible */
     position: absolute;
     top: below-navbar;
@@ -42,7 +42,7 @@
     .goban-container {
         flex-grow: 1;
         //flex-shrink: 1;
-        flex-basis: 100%;
+        flex-basis: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -73,7 +73,7 @@
         min-width: 0px;
     }
     .right-col {
-        flex-basis: 25%;
+        flex-basis: 50%;
         padding-left: 0.3rem;
         padding-right: dock-collapsed-width + 0.3rem;
         min-width: 340px;
@@ -87,15 +87,28 @@
     }
 
     .right-col {
-        .position-header {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
+        padding-left: 2em;
 
-            .move-category {
+        justify-content: space-between; // push the status info to the bottom of the screen
+
+        .top-stuff {
+            padding-top: 1em;
+
+            .mode-control {
                 display: flex;
-                flex-direction: vertical;
+                flex-direction: row;
+                justify-content: flex-end;
+                .btn {
+                    min-width: 5em;
+                }
             }
+            .position-header {
+            }
+        }
+        .status-info {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 3em;
         }
     }
 }

@@ -18,13 +18,14 @@
 /* A page for looking up and playing against josekis */
 
 import * as React from "react";
+import {_, pgettext, interpolate} from "translate";
 import {KBShortcut} from "KBShortcut";
 import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
 
-export class GoDoJo extends React.Component<{}, any> {
+export class Joseki extends React.Component<{}, any> {
     refs: {
         goban_container;
     };
@@ -33,7 +34,7 @@ export class GoDoJo extends React.Component<{}, any> {
     goban_div: any;
     goban_opts: any = {};
 
-    next_moves: Array<any> = []; // these are the moves that the server has told us are avaiable as joseki moves from the current board position
+    next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
     constructor(props) {
         super(props);
@@ -64,11 +65,15 @@ export class GoDoJo extends React.Component<{}, any> {
     }
 
     componentDidMount = () => {
+        $(window).on("resize", this.onResize as () => void);
+        this.onResize();  // make Goban size itself properly after the DOM is rendered
+
         /* Initiate joseki playing sequence with the root from the server */
         const serverRootPosition = "http://localhost:8081/position/?id=root";
         this.fetchNextMovesFor(serverRootPosition);
+    }
 
-        /* This should be in an onResize */
+    onResize = () => {
         this.goban.setSquareSizeBasedOnDisplayWidth(
             Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
         );
@@ -135,27 +140,44 @@ export class GoDoJo extends React.Component<{}, any> {
         }
     }
 
+    setExploreMode = () => {
+
+    }
+
     render() {
         return (
-            <div className={"GoDoJo"}>
+            <div className={"Joseki"}>
                 <div className={"center-col"}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div}/>
                     </div>
-                    <div>
-                        {this.state.move_string !== "" ? "Moves made: " + this.state.move_string : ""}
-                    </div>
                 </div>
                 <div className="right-col">
-                    <div className="position-header">
-                        <h2>{this.state.position_title}</h2>
-                        <div className="move-category">
-                            <div>{this.state.current_move_category !== "" ? "Last move:" : ""}</div>
-                            <h3>{this.state.current_move_category}</h3>
+                    <div className = "top-stuff">
+                        <div className="mode-control">
+                        <button className="btn s primary" onClick={this.setExploreMode}>
+                             {_("Explore")}
+                        </button>
+                        <button className="btn s primary" onClick={this.setExploreMode}>
+                             {_("Play")}
+                        </button>
+                         <button className="btn s primary" onClick={this.setExploreMode}>
+                             {_("Edit")}
+                        </button>
+                        </div>
+                        <div className="position-header">
+                            <h2>{this.state.position_title}</h2>
+                        </div>
+                        <div className="position-description">
+                            {this.state.position_description}
                         </div>
                     </div>
-                    <div className="position-description">
-                        {this.state.position_description}
+                    <div className="status-info">
+                        <div className="move-category">
+                            {this.state.current_move_category !== "" ? "Last move: " : "" +
+                                this.state.current_move_category}
+                        </div>
+                        {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
                     </div>
                 </div>
             </div>
