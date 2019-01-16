@@ -313,7 +313,6 @@ export let GoResources = (props) => {
                 <span><Flag country={us}/> <a rel="noopener" href="http://agfgo.org/pages/store-playing.php">AGF Store</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="http://www.algorithmicartisan.com/gostones/">Exotic Go Stones</a></span>,
                 <span><Flag country={jp}/> <a rel="noopener" href="http://www.kurokigoishi.co.jp/english/">Kurokigoishi</a></span>,
-                <span><Flag country={eu}/> <a rel="noopener" href="https://www.schaakengo.nl/goshop-keima/">Schaak en Go winkel het Paard</a></span>,
                 <span><Flag country={"se"}/> <a rel="noopener" href="http://gobutiken.se">Gobutiken</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
@@ -362,6 +361,8 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-dollar"/> <i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=lrstudios.games.ego&hl=en">Ely Go</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://smartgo.com/index.html">SmartGo</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a rel="noopener" href="https://gobooks.com/platforms.html">Go Books</a></span>,
+
+                <span><i className="fa fa-windows"/> <a rel="noopener" href="https://www.bestopenbook.com">LZ Opening Book</a></span>,
                 <span>
                     <i className="fa fa-linux" /> <i className="fa fa-apple" /> <i className="fa fa-windows" /> <a rel="noopener" href="https://www.sjeng.org/leela.html">Leela</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a rel="noopener" href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">EasyGo</a></span>
