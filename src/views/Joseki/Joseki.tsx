@@ -30,6 +30,10 @@ enum PageMode {
     Explore, Play, Edit
 }
 
+enum EditState {
+    UpdatePosition, FinalizeMove
+}
+
 export class Joseki extends React.Component<{}, any> {
     refs: {
         goban_container;
@@ -127,7 +131,7 @@ export class Joseki extends React.Component<{}, any> {
         });
     }
 
-    /* This is called every time a move is played or anything else changes about the state of the board */
+    /* This is called every time a move is played on the Goban or anything else changes about the state of the board */
     onBoardUpdate = () => {
         let mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
@@ -142,29 +146,48 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     processPlacement(move: any) {
+        /* They've clicked a stone onto the board in a new position */
         const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
         console.log("Processing placement at:", placement);
 
         const chosen_move = this.next_moves.find(move => move.placement === placement);
 
         if (chosen_move !== undefined) {
+            /* The database already knows about this move, so we just get and display the new position information */
             this.fetchNextMovesFor(chosen_move._links.self.href);
             this.setState({current_move_category: chosen_move.category});
         } else {
-            this.setState({
-                position_title: "",
-                position_description: "",
-                current_move_category : "Experiment"
-            });
+            /* This isn't in the database */
+            if (this.state.mode === PageMode.Edit) {
+                this.setState({
+                    position_title: "tbd",
+                    position_description: "tbd",
+                    current_move_category : "Proposed Position"
+                });
+                this.finalizeNewMove();
+            } else {
+                this.setState({
+                    position_title: "",
+                    position_description: "",
+                    current_move_category : "Experiment"
+                });
+            }
         }
     }
 
+    finalizeNewMove = () => {
+        /* They plonked a stone on the board that might be a new move proposal.  Find out, and save it if so... */
+        this.setState({edit_state: EditState.FinalizeMove});
+    }
+
     setExploreMode = () => {
+        if (this.state.mode !== PageMode.Edit) { // If they were editing, they want to continue from the same place
+            this.resetBoard();
+            this.resetJosekiSequence();  // This triggers the joseki display machinery
+        }
         this.setState({
             mode: PageMode.Explore,
         });
-        this.resetBoard();
-        this.resetJosekiSequence();
     }
 
     setPlayMode = () => {
@@ -172,15 +195,20 @@ export class Joseki extends React.Component<{}, any> {
             mode: PageMode.Play,
         });
         this.resetBoard();
+        // ... tbd - do playing with joseki :)
     }
 
     setEditMode = () => {
+        // If they clicked in new moves before going into edit mode, let them add them now
+        const new_edit_state: EditState = (this.state.current_move_category === "Experiment") ?
+            EditState.FinalizeMove : EditState.UpdatePosition;
+
         this.setState({
             mode: PageMode.Edit,
+            edit_state: new_edit_state
         });
-        this.resetBoard();
+       /* (We don't reset the board here, they want to edit from this position!) */
     }
-
 
     resetBoard = () => {
         this.next_moves = [];
@@ -234,10 +262,46 @@ export class Joseki extends React.Component<{}, any> {
                 return (
                     <ExplorePane title={this.state.position_title} description={this.state.position_description}/>
                 );
+            case (PageMode.Edit) :
+                return (
+                    <EditPane edit_state={this.state.edit_state} save_new_move={this.saveNewMove}/>
+                );
             default :
                 return (
                     <div> (not implemented yet!)</div>
                 );
+        }
+    }
+
+    saveNewMove = () => {}
+}
+
+interface EditProps {
+    edit_state: EditState;
+    save_new_move: () => void;
+}
+
+class EditPane extends React.Component<EditProps> {
+    setType = () => {};
+
+    default_tmp: string = "Ideal";
+
+    render = () => {
+        if (this.props.edit_state === EditState.FinalizeMove) {
+            return (
+                <div className="move-type-selection">
+                    <span>{_("This move is: ")}</span>
+                    <select value={this.default_tmp} onChange={this.setType} >
+                        <option value='Ideal'>{_("Ideal")}</option>
+                        <option value='Good'>{_("Good")}</option>
+                    </select>
+                    <button className="btn xs primary" onClick={this.props.save_new_move}>
+                        {_("Save")}
+                    </button>
+                </div>
+            );
+        } else {
+            return ("(edit mode)")
         }
     }
 }
