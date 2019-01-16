@@ -24,6 +24,11 @@ import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
+import { getSectionPageCompleted } from "../LearningHub/util";
+
+enum PageMode {
+    Explore, Play, Edit
+}
 
 export class Joseki extends React.Component<{}, any> {
     refs: {
@@ -40,13 +45,23 @@ export class Joseki extends React.Component<{}, any> {
         super(props);
 
         this.state = {
-            move_string: "",
+            move_string: "",  // This is used for making sure we know what the current move is.
             position_title: "",
             position_description: "",
-            current_move_category: ""
+            current_move_category: "",
+            mode: PageMode.Explore,
         };
 
         this.goban_div = $("<div className='Goban'>");
+
+        this.initializeGoban();
+    }
+
+    initializeGoban = () => {
+        // this can be called at any time to reset the board
+        if (this.goban != null) {
+            this.goban.destroy();
+        }
 
         let opts = {
             "board_div": this.goban_div,
@@ -68,6 +83,10 @@ export class Joseki extends React.Component<{}, any> {
         $(window).on("resize", this.onResize as () => void);
         this.onResize();  // make Goban size itself properly after the DOM is rendered
 
+        this.resetJosekiSequence(); // initialise joseki playing sequence with server
+    }
+
+    resetJosekiSequence = () => {
         /* Initiate joseki playing sequence with the root from the server */
         const serverRootPosition = "http://localhost:8081/position/?id=root";
         this.fetchNextMovesFor(serverRootPosition);
@@ -141,41 +160,52 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     setExploreMode = () => {
+        this.setState({
+            mode: PageMode.Explore,
+        });
+        this.resetBoard();
+        this.resetJosekiSequence();
+    }
 
+    setPlayMode = () => {
+        this.setState({
+            mode: PageMode.Play,
+        });
+        this.resetBoard();
+    }
+
+    setEditMode = () => {
+        this.setState({
+            mode: PageMode.Edit,
+        });
+        this.resetBoard();
+    }
+
+
+    resetBoard = () => {
+        this.next_moves = [];
+        this.setState({move_string: ""});
+        this.initializeGoban();
+        this.onResize();
     }
 
     render() {
         return (
             <div className={"Joseki"}>
-                <div className={"center-col"}>
+                <div className={"left-col"}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div}/>
                     </div>
                 </div>
                 <div className="right-col">
                     <div className = "top-stuff">
-                        <div className="mode-control">
-                        <button className="btn s primary" onClick={this.setExploreMode}>
-                             {_("Explore")}
-                        </button>
-                        <button className="btn s primary" onClick={this.setExploreMode}>
-                             {_("Play")}
-                        </button>
-                         <button className="btn s primary" onClick={this.setExploreMode}>
-                             {_("Edit")}
-                        </button>
-                        </div>
-                        <div className="position-header">
-                            <h2>{this.state.position_title}</h2>
-                        </div>
-                        <div className="position-description">
-                            {this.state.position_description}
-                        </div>
+                        {this.renderModeControl()}
+                        {this.renderModePane()}
                     </div>
                     <div className="status-info">
                         <div className="move-category">
-                            {this.state.current_move_category !== "" ? "Last move: " : "" +
-                                this.state.current_move_category}
+                            {this.state.current_move_category === "" ? "" :
+                            "Last move: " + this.state.current_move_category}
                         </div>
                         {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
                     </div>
@@ -183,4 +213,51 @@ export class Joseki extends React.Component<{}, any> {
             </div>
         );
     }
+
+    renderModeControl = () => (
+        <div className="mode-control">
+            <button className="btn s primary" onClick={this.setExploreMode}>
+                 {_("Explore")}
+            </button>
+            <button className="btn s primary" onClick={this.setPlayMode}>
+                {_("Play")}
+            </button>
+            <button className="btn s primary" onClick={this.setEditMode}>
+                {_("Edit")}
+            </button>
+        </div>
+    )
+
+    renderModePane = () => {
+        switch (this.state.mode) {
+            case (PageMode.Explore) :
+                return (
+                    <ExplorePane title={this.state.position_title} description={this.state.position_description}/>
+                );
+            default :
+                return (
+                    <div> (not implemented yet!)</div>
+                );
+        }
+    }
 }
+
+interface ExploreProps {
+    title: string;
+    description: string;
+}
+
+class ExplorePane extends React.Component<ExploreProps> {
+    render = () => (
+        <React.Fragment>
+            <div className="position-header">
+                <h2>{this.props.title}</h2>
+            </div>
+            <div className="position-description">
+                {this.props.description}
+            </div>
+        </React.Fragment>
+    )
+}
+
+
