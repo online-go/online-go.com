@@ -26,6 +26,16 @@ import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 
+enum MoveCategory {
+    // needs to match Move.java
+    // conceivably, should fetch these from the back end?
+    IDEAL = "Ideal",
+    GOOD = "Good",
+    MISTAKE = "Mistake",
+    TRICK = "Trick",
+    QUESTION = "Question"
+}
+
 enum PageMode {
     Explore, Play, Edit
 }
@@ -103,6 +113,7 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     fetchNextMovesFor = (placementUrl) => {
+        /* TBD: error handling, cancel on new route */
         fetch(placementUrl, {mode: 'cors'})
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -273,35 +284,55 @@ export class Joseki extends React.Component<{}, any> {
         }
     }
 
-    saveNewMove = () => {}
+    saveNewMove = (move_type) => {
+        console.log(move_type);
+    }
 }
 
 interface EditProps {
     edit_state: EditState;
-    save_new_move: () => void;
+    save_new_move: (move_type) => void;
 }
 
-class EditPane extends React.Component<EditProps> {
-    setType = () => {};
+class EditPane extends React.Component<EditProps, any> {
+    selections: any = null;
 
-    default_tmp: string = "Ideal";
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            move_type: MoveCategory[Object.keys(MoveCategory)[0]]  // the first in the list
+        };
+
+        // create the set of select option elements from the valid MoveCategory items
+        this.selections = Object.keys(MoveCategory).map((selection, i) => (
+            <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
+        ));
+    }
+
+    onTypeChange = (e) => {
+        this.setState({move_type: e.target.value});
+    }
+
+    saveNewMove = (e) => {
+        this.props.save_new_move(this.state.move_type);
+    }
 
     render = () => {
         if (this.props.edit_state === EditState.FinalizeMove) {
             return (
                 <div className="move-type-selection">
-                    <span>{_("This move is: ")}</span>
-                    <select value={this.default_tmp} onChange={this.setType} >
-                        <option value='Ideal'>{_("Ideal")}</option>
-                        <option value='Good'>{_("Good")}</option>
+                    <span>{_("This sequence is: ")}</span>
+                    <select value={this.state.move_type} onChange={this.onTypeChange}>
+                        {this.selections}
                     </select>
-                    <button className="btn xs primary" onClick={this.props.save_new_move}>
+                    <button className="btn xs primary" onClick={this.saveNewMove}>
                         {_("Save")}
                     </button>
                 </div>
             );
         } else {
-            return ("(edit mode)")
+            return ("(edit mode)");
         }
     }
 }
