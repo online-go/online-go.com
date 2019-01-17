@@ -53,6 +53,8 @@ export class Joseki extends React.Component<{}, any> {
     goban_div: any;
     goban_opts: any = {};
 
+    current_placement = "";  // the coordinates of the most recently placed stone
+    current_position_url = ""; // the self url for the position that the server returned for the current placement
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
     constructor(props) {
@@ -127,6 +129,7 @@ export class Joseki extends React.Component<{}, any> {
             position_title: position.title,
             position_description: position.description
         });
+        this.current_position_url = position._links.self.href;
         this.next_moves = position._embedded.moves;
         this.renderJosekiPosition(this.next_moves);
     }
@@ -160,6 +163,8 @@ export class Joseki extends React.Component<{}, any> {
         /* They've clicked a stone onto the board in a new position */
         const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
         console.log("Processing placement at:", placement);
+
+        this.current_placement = placement;
 
         const chosen_move = this.next_moves.find(move => move.placement === placement);
 
@@ -222,6 +227,7 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     resetBoard = () => {
+        console.log("Resetting board...");
         this.next_moves = [];
         this.setState({move_string: ""});
         this.initializeGoban();
@@ -285,7 +291,23 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     saveNewMove = (move_type) => {
-        console.log(move_type);
+        // Here the person has confirmed that the move sequence on the board is of "move_type" and should be saved to the server
+        // Ultimately this could be a series of moves from the last known board position.
+        // Assuming it is just one move for now.
+
+        fetch(this.current_position_url, {
+            method: 'post',
+            headers: {
+              'Accept': 'application/json, text/plain, */*',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({placement: this.current_placement, category: move_type})
+          }).then(res => res.json())
+            .then(body => {
+                console.log("Server response to POST:", body);
+                this.processNewJosekiPosition(body);
+                this.setState({edit_state: EditState.UpdatePosition});
+            });
     }
 }
 
