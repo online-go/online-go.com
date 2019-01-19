@@ -47,6 +47,14 @@ enum EditState {
     UpdatePosition, FinalizeMove, PositionSaved
 }
 
+const ColorMap = {
+    "IDEAL": "#007c18",
+    "GOOD": "#577a00",
+    "MISTAKE": "#ff4300",
+    "TRICK": "#ffff00",
+    "QUESTION": "#00ccff",
+};
+
 export class Joseki extends React.Component<{}, any> {
     refs: {
         goban_container;
@@ -127,6 +135,7 @@ export class Joseki extends React.Component<{}, any> {
         } );
     }
 
+    // Decode a response from the server into state we need, and display accordingly
     processNewJosekiPosition = (position) => {
         this.setState({
             position_title: position.title,
@@ -140,12 +149,14 @@ export class Joseki extends React.Component<{}, any> {
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
     renderJosekiPosition = (next_moves:  Array<any>) => {
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
+        let new_options = {};
         next_moves.forEach((option, index) => {
             const id = GoMath.num2char(index).toUpperCase();
-            let mark = {};
-            mark[id] = GoMath.encodePrettyCoord(option["placement"], this.goban.height);
-            this.goban.setMarks(mark);
+            new_options[id] = {};
+            new_options[id].move = GoMath.encodePrettyCoord(option["placement"], this.goban.height);
+            new_options[id].color = ColorMap[option["category"]];
         });
+        this.goban.setColoredMarks(new_options);
     }
 
     /* This is called every time a move is played on the Goban or anything else changes about the state of the board */
@@ -302,8 +313,19 @@ export class Joseki extends React.Component<{}, any> {
 
     updateDescription = (new_description) => {
         // send the new description to the sever.
-        /// when that is done:
-        this.setState({edit_state: EditState.PositionSaved});
+        fetch(this.current_position_url, {
+            method: 'put',
+            headers: {
+              'Accept': 'application/json, text/plain, */*',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({description: new_description})
+          }).then(res => res.json())
+            .then(body => {
+                console.log("Server response to PUT:", body);
+                this.processNewJosekiPosition(body);
+                this.setState({edit_state: EditState.PositionSaved});
+            });
     }
 
     saveNewMove = (move_type) => {
