@@ -18,6 +18,8 @@
 /* A page for looking up and playing against josekis */
 
 import * as React from "react";
+import * as ReactMarkdown from "react-markdown";
+
 import {_, pgettext, interpolate} from "translate";
 import {KBShortcut} from "KBShortcut";
 import {PersistentElement} from "PersistentElement";
@@ -25,6 +27,7 @@ import {errorAlerter, dup, ignore} from "misc";
 import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
+
 
 enum MoveCategory {
     // needs to match Move.java
@@ -41,7 +44,7 @@ enum PageMode {
 }
 
 enum EditState {
-    UpdatePosition, FinalizeMove
+    UpdatePosition, FinalizeMove, PositionSaved
 }
 
 export class Joseki extends React.Component<{}, any> {
@@ -277,17 +280,30 @@ export class Joseki extends React.Component<{}, any> {
         switch (this.state.mode) {
             case (PageMode.Explore) :
                 return (
-                    <ExplorePane title={this.state.position_title} description={this.state.position_description}/>
+                    <ExplorePane
+                        title={this.state.position_title}
+                        description={this.state.position_description}/>
                 );
             case (PageMode.Edit) :
                 return (
-                    <EditPane edit_state={this.state.edit_state} save_new_move={this.saveNewMove}/>
+                    <EditPane
+                        title={this.state.position_title}
+                        description={this.state.position_description}
+                        edit_state={this.state.edit_state}
+                        save_new_move={this.saveNewMove}
+                        update_description={this.updateDescription}/>
                 );
             default :
                 return (
                     <div> (not implemented yet!)</div>
                 );
         }
+    }
+
+    updateDescription = (new_description) => {
+        // send the new description to the sever.
+        /// when that is done:
+        this.setState({edit_state: EditState.PositionSaved});
     }
 
     saveNewMove = (move_type) => {
@@ -312,8 +328,11 @@ export class Joseki extends React.Component<{}, any> {
 }
 
 interface EditProps {
+    title: string;
+    description: string;
     edit_state: EditState;
     save_new_move: (move_type) => void;
+    update_description: (description) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -323,7 +342,9 @@ class EditPane extends React.Component<EditProps, any> {
         super(props);
 
         this.state = {
-            move_type: MoveCategory[Object.keys(MoveCategory)[0]]  // the first in the list
+            move_type: MoveCategory[Object.keys(MoveCategory)[0]],  // the first in the list
+            description: this.props.description,
+            editing_position: true
         };
 
         // create the set of select option elements from the valid MoveCategory items
@@ -332,12 +353,31 @@ class EditPane extends React.Component<EditProps, any> {
         ));
     }
 
+    componentWillReceiveProps = (new_props) => {
+        // the description of the current position gets updated as the parent fetches the new moves
+        this.setState({description: new_props.description});
+    }
+
     onTypeChange = (e) => {
         this.setState({move_type: e.target.value});
     }
 
     saveNewMove = (e) => {
         this.props.save_new_move(this.state.move_type);
+        this.setState({editing_position: true});
+    }
+
+    handleEditInput = (e) => {
+        this.setState({description: e.target.value});
+    }
+
+    saveDescription = (e) => {
+        this.props.update_description(this.state.description);
+        this.setState({editing_position: false});
+    }
+
+    editDescription = () => {
+        this.setState({editing_position: true});
     }
 
     render = () => {
@@ -354,7 +394,44 @@ class EditPane extends React.Component<EditProps, any> {
                 </div>
             );
         } else {
-            return ("(edit mode)");
+            return (
+                <React.Fragment>
+                    <div className="position-header">
+                        <h2>{this.props.title}</h2>
+                    </div>
+
+                    <div className="description-edit">
+                        {this.state.editing_position ?
+                            /* Entry form for the new description */
+                            <React.Fragment>
+                                <div className="edit-label">Position description:</div>
+                                <textarea onChange={this.handleEditInput} value={this.state.description}/>
+                                <div className="position-edit-button">
+                                    <button className="btn xs primary" onClick={this.saveDescription}>
+                                        {_("Save")}
+                                    </button>
+                                </div>
+                                <div className="edit-label">Preview:</div>
+                            </React.Fragment> : ""
+                        }
+
+                        {/* The actual description always rendered here */}
+                        <ReactMarkdown source={this.state.description}/>
+
+                        { ! this.state.editing_position ?
+                            <React.Fragment>
+                            { this.state.description.length === 0 ?
+                                <div className="edit-label">(position description)</div> : ""
+                            }
+                            <div className="position-edit-button">
+                                <button className="btn xs primary" onClick={this.editDescription}>
+                                    {_("Edit")}
+                                </button>
+                            </div>
+                            </React.Fragment> : "" }
+                    </div>
+                </React.Fragment>
+            );
         }
     }
 }
@@ -371,7 +448,7 @@ class ExplorePane extends React.Component<ExploreProps> {
                 <h2>{this.props.title}</h2>
             </div>
             <div className="position-description">
-                {this.props.description}
+                <ReactMarkdown source={this.props.description}/>
             </div>
         </React.Fragment>
     )
