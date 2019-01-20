@@ -209,6 +209,7 @@ export class Joseki extends React.Component<{}, any> {
                     position_description: "",
                     current_move_category : "Experiment"
                 });
+
             }
         }
     }
@@ -283,14 +284,14 @@ export class Joseki extends React.Component<{}, any> {
 
     renderModeControl = () => (
         <div className="mode-control">
-            <button className="btn s primary" onClick={this.setExploreMode}>
+            <button className={"btn s " + (this.state.mode !== PageMode.Explore ? "primary" : "")} onClick={this.setExploreMode}>
                  {_("Explore")}
             </button>
-            <button className="btn s primary" onClick={this.setPlayMode}>
+            <button className={"btn s " + (this.state.mode !== PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            <button className="btn s primary" onClick={this.setEditMode}>
-                {_("Edit")}
+            <button className={"btn s " + (this.state.mode !== PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
+                {this.state.current_move_category === "Experiment" ? _("Save") : _("Edit")}
             </button>
         </div>
     )
@@ -348,7 +349,11 @@ export class Joseki extends React.Component<{}, any> {
             .then(body => {
                 console.log("Server response to POST:", body);
                 this.processNewJosekiPosition(body);
-                this.setState({edit_state: EditState.UpdatePosition});
+                this.setState({
+                    edit_state: EditState.UpdatePosition,
+                    current_move_category: move_type
+                });
+
             });
     }
 }
