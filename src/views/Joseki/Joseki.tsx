@@ -48,9 +48,9 @@ enum EditState {
 }
 
 const ColorMap = {
-    "IDEAL": "#007c18",
-    "GOOD": "#577a00",
-    "MISTAKE": "#ff4300",
+    "IDEAL": "#008300",
+    "GOOD": "#436600",
+    "MISTAKE": "#b3001e",
     "TRICK": "#ffff00",
     "QUESTION": "#00ccff",
 };
