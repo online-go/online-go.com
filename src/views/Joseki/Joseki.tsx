@@ -284,13 +284,13 @@ export class Joseki extends React.Component<{}, any> {
 
     renderModeControl = () => (
         <div className="mode-control">
-            <button className={"btn s " + (this.state.mode !== PageMode.Explore ? "primary" : "")} onClick={this.setExploreMode}>
+            <button className={"btn s primary " + (this.state.mode === PageMode.Explore ? "selected" : "")} onClick={this.setExploreMode}>
                  {_("Explore")}
             </button>
-            <button className={"btn s " + (this.state.mode !== PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
+            <button className={"btn s primary " + (this.state.mode === PageMode.Play ? "selected" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            <button className={"btn s " + (this.state.mode !== PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
+            <button className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "Experiment" ? _("Save") : _("Edit")}
             </button>
         </div>
@@ -373,9 +373,9 @@ class EditPane extends React.Component<EditProps, any> {
         super(props);
 
         this.state = {
-            move_type: MoveCategory[Object.keys(MoveCategory)[0]],  // the first in the list
-            description: this.props.description,
-            editing_position: true
+            move_type: MoveCategory[Object.keys(MoveCategory)[0]],  // initialize with the first in the list
+            new_description: this.props.description,  // the description with edit-updates
+            editing_description: false  // they have to click the edit button to start editing the position description
         };
 
         // create the set of select option elements from the valid MoveCategory items
@@ -384,9 +384,11 @@ class EditPane extends React.Component<EditProps, any> {
         ));
     }
 
-    componentWillReceiveProps = (new_props) => {
-        // the description of the current position gets updated as the parent fetches the new moves
-        this.setState({description: new_props.description});
+    componentDidUpdate = (prevProps, prevState) => {
+        /* The parent updates the description when the user clicks on existing positions in Edit mode */
+        if (prevProps.description !== this.props.description) {
+            this.setState({new_description: this.props.description});
+        }
     }
 
     onTypeChange = (e) => {
@@ -395,20 +397,20 @@ class EditPane extends React.Component<EditProps, any> {
 
     saveNewMove = (e) => {
         this.props.save_new_move(this.state.move_type);
-        this.setState({editing_position: true});
+        this.setState({editing_description: true});
     }
 
     handleEditInput = (e) => {
-        this.setState({description: e.target.value});
+        this.setState({new_description: e.target.value});
     }
 
     saveDescription = (e) => {
-        this.props.update_description(this.state.description);
-        this.setState({editing_position: false});
+        this.props.update_description(this.state.new_description);
+        this.setState({editing_description: false});
     }
 
     editDescription = () => {
-        this.setState({editing_position: true});
+        this.setState({editing_description: true});
     }
 
     render = () => {
@@ -432,11 +434,11 @@ class EditPane extends React.Component<EditProps, any> {
                     </div>
 
                     <div className="description-edit">
-                        {this.state.editing_position ?
+                        {this.state.editing_description ?
                             /* Entry form for the new description */
                             <React.Fragment>
                                 <div className="edit-label">Position description:</div>
-                                <textarea onChange={this.handleEditInput} value={this.state.description}/>
+                                <textarea onChange={this.handleEditInput} value={this.state.new_description}/>
                                 <div className="position-edit-button">
                                     <button className="btn xs primary" onClick={this.saveDescription}>
                                         {_("Save")}
@@ -447,11 +449,11 @@ class EditPane extends React.Component<EditProps, any> {
                         }
 
                         {/* The actual description always rendered here */}
-                        <ReactMarkdown source={this.state.description}/>
+                        <ReactMarkdown source={this.state.new_description}/>
 
-                        { ! this.state.editing_position ?
+                        { ! this.state.editing_description ?
                             <React.Fragment>
-                            { this.state.description.length === 0 ?
+                            { this.state.new_description.length === 0 ?
                                 <div className="edit-label">(position description)</div> : ""
                             }
                             <div className="position-edit-button">
