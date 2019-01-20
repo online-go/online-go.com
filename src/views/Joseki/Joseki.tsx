@@ -28,6 +28,11 @@ import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 
+const godojo_headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Godojo-Auth-Token' : 'foofer'
+      };
 
 enum MoveCategory {
     // needs to match Move.java
@@ -127,7 +132,10 @@ export class Joseki extends React.Component<{}, any> {
 
     fetchNextMovesFor = (placementUrl) => {
         /* TBD: error handling, cancel on new route */
-        fetch(placementUrl, {mode: 'cors'})
+        fetch(placementUrl, {
+            mode: 'cors',
+            headers: godojo_headers
+            })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
             console.log("Server response:", body);
@@ -315,10 +323,8 @@ export class Joseki extends React.Component<{}, any> {
         // send the new description to the sever.
         fetch(this.current_position_url, {
             method: 'put',
-            headers: {
-              'Accept': 'application/json, text/plain, */*',
-              'Content-Type': 'application/json'
-            },
+            mode: 'cors',
+            headers: godojo_headers,
             body: JSON.stringify({description: new_description})
           }).then(res => res.json())
             .then(body => {
@@ -335,10 +341,8 @@ export class Joseki extends React.Component<{}, any> {
 
         fetch(this.current_position_url, {
             method: 'post',
-            headers: {
-              'Accept': 'application/json, text/plain, */*',
-              'Content-Type': 'application/json'
-            },
+            mode: 'cors',
+            headers: godojo_headers,
             body: JSON.stringify({placement: this.current_placement, category: move_type})
           }).then(res => res.json())
             .then(body => {
