@@ -28,6 +28,8 @@ import {Goban, GoMath} from "goban";
 import {Resizable} from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 
+const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
+
 const godojo_headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ export class Joseki extends React.Component<{}, any> {
 
     resetJosekiSequence = () => {
         /* Initiate joseki playing sequence with the root from the server */
-        const serverRootPosition = "http://localhost:8081/position/?id=root";
+        const serverRootPosition = server_url + "position?id=root";
         this.fetchNextMovesFor(serverRootPosition);
     }
 
