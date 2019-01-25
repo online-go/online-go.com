@@ -19,22 +19,24 @@
 
 import * as React from "react";
 import * as ReactMarkdown from "react-markdown";
+import * as jwt from "jsonwebtoken";
 
-import {_, pgettext, interpolate} from "translate";
-import {KBShortcut} from "KBShortcut";
-import {PersistentElement} from "PersistentElement";
-import {errorAlerter, dup, ignore} from "misc";
-import {Goban, GoMath} from "goban";
-import {Resizable} from "Resizable";
+import * as data from "data";
+import { _, pgettext, interpolate } from "translate";
+import { KBShortcut } from "KBShortcut";
+import { PersistentElement } from "PersistentElement";
+import { errorAlerter, dup, ignore } from "misc";
+import { Goban, GoMath } from "goban";
+import { Resizable } from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 
 const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
 
 const godojo_headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Godojo-Auth-Token' : 'foofer'
-      };
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Godojo-Auth-Token': 'foofer'
+};
 
 enum MoveCategory {
     // needs to match Move.java
@@ -70,6 +72,7 @@ export class Joseki extends React.Component<{}, any> {
     goban: Goban;
     goban_div: any;
     goban_opts: any = {};
+    user_jwt: string = "";
 
     current_placement = "";  // the coordinates of the most recently placed stone
     current_position_url = ""; // the self url for the position that the server returned for the current placement
@@ -118,6 +121,50 @@ export class Joseki extends React.Component<{}, any> {
         this.onResize();  // make Goban size itself properly after the DOM is rendered
 
         this.resetJosekiSequence(); // initialise joseki playing sequence with server
+
+        /* Fake up user details JWT - OGS server will provide this */
+        const supposedly_private_key = "\
+-----BEGIN RSA PRIVATE KEY-----\n\
+MIIBOgIBAAJBAIwcsDli8iZtiIV9VjKXBxsmiSGkRCf3vi6y3wIaG7XDLEaXOzME\
+HsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQJBAIBCbstJmXO2Byhz0Olk\
+uZuQDi5eqgmQT2d+VIkfD0i15pPykN7VH7fiWBfVB/a5HYoyjse83Go6dm5TfjVM\
+FOECIQD5lx/q1bPYfESipVHz8C6Icm309cTQ2JQ/Z8YiyU+r8QIhAI+10tL0gf0r\
+CX7ncB7qj8A4YqLc9/VBuE6Wjxfh43+DAiBA6fpGJICa/G8Jcj/nVv9zQ3evr0Aa\
+JUohV4cjwwHysQIgPQajLj3ybUW3VJKHRDmrLZ9EE5DuItHzqDu7LBMafm0CIGij\
+DC+PapafkYFst0MSOS3wj3fvip7rs+moEF4D1ZQG\n\
+-----END RSA PRIVATE KEY-----";
+
+        const totally_public_key = "\
+-----BEGIN PUBLIC KEY-----\n\
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIwcsDli8iZtiIV9VjKXBxsmiSGkRCf3\
+vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
+-----END PUBLIC KEY-----";
+
+        const user_info = data.get("user");
+
+        const payload = {
+            username: user_info.username
+        };
+
+        const i = 'OGS';          // Issuer
+        const s = 'Josekis';        // Subject
+        const a = 'godojo'; // Audience
+
+        const signOptions = {
+            issuer: i,
+            subject: s,
+            audience: a,
+            expiresIn: "12h",
+            algorithm: "RS256" as any
+        };
+
+        this.user_jwt = jwt.sign(payload, supposedly_private_key, signOptions);
+        console.log(this.user_jwt);
+
+        const verifyOptions = signOptions;
+        verifyOptions.algorithm = ["RS256"];
+        let legit = jwt.verify(this.user_jwt, totally_public_key, verifyOptions);
+        console.log(legit);
     }
 
     resetJosekiSequence = () => {
@@ -137,12 +184,12 @@ export class Joseki extends React.Component<{}, any> {
         fetch(placementUrl, {
             mode: 'cors',
             headers: godojo_headers
-            })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            console.log("Server response:", body);
-            this.processNewJosekiPosition(body);
-        } );
+        })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                console.log("Server response:", body);
+                this.processNewJosekiPosition(body);
+            });
     }
 
     // Decode a response from the server into state we need, and display accordingly
@@ -157,7 +204,7 @@ export class Joseki extends React.Component<{}, any> {
     }
 
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
-    renderJosekiPosition = (next_moves:  Array<any>) => {
+    renderJosekiPosition = (next_moves: Array<any>) => {
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
         next_moves.forEach((option, index) => {
@@ -195,21 +242,21 @@ export class Joseki extends React.Component<{}, any> {
         if (chosen_move !== undefined) {
             /* The database already knows about this move, so we just get and display the new position information */
             this.fetchNextMovesFor(chosen_move._links.self.href);
-            this.setState({current_move_category: chosen_move.category});
+            this.setState({ current_move_category: chosen_move.category });
         } else {
             /* This isn't in the database */
             if (this.state.mode === PageMode.Edit) {
                 this.setState({
                     position_title: "tbd",
                     position_description: "tbd",
-                    current_move_category : "Proposed Position"
+                    current_move_category: "Proposed Position"
                 });
                 this.finalizeNewMove();
             } else {
                 this.setState({
                     position_title: "",
                     position_description: "",
-                    current_move_category : "Experiment"
+                    current_move_category: "Experiment"
                 });
 
             }
@@ -218,7 +265,7 @@ export class Joseki extends React.Component<{}, any> {
 
     finalizeNewMove = () => {
         /* They plonked a stone on the board that might be a new move proposal.  Find out, and save it if so... */
-        this.setState({edit_state: EditState.FinalizeMove});
+        this.setState({ edit_state: EditState.FinalizeMove });
     }
 
     setExploreMode = () => {
@@ -248,13 +295,13 @@ export class Joseki extends React.Component<{}, any> {
             mode: PageMode.Edit,
             edit_state: new_edit_state
         });
-       /* (We don't reset the board here, they want to edit from this position!) */
+        /* (We don't reset the board here, they want to edit from this position!) */
     }
 
     resetBoard = () => {
         console.log("Resetting board...");
         this.next_moves = [];
-        this.setState({move_string: ""});
+        this.setState({ move_string: "" });
         this.initializeGoban();
         this.onResize();
     }
@@ -264,18 +311,18 @@ export class Joseki extends React.Component<{}, any> {
             <div className={"Joseki"}>
                 <div className={"left-col"}>
                     <div ref="goban_container" className="goban-container">
-                        <PersistentElement className="Goban" elt={this.goban_div}/>
+                        <PersistentElement className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
                 <div className="right-col">
-                    <div className = "top-stuff">
+                    <div className="top-stuff">
                         {this.renderModeControl()}
                         {this.renderModePane()}
                     </div>
                     <div className="status-info">
                         <div className="move-category">
                             {this.state.current_move_category === "" ? "" :
-                            "Last move: " + this.state.current_move_category}
+                                "Last move: " + this.state.current_move_category}
                         </div>
                         {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
                     </div>
@@ -287,7 +334,7 @@ export class Joseki extends React.Component<{}, any> {
     renderModeControl = () => (
         <div className="mode-control">
             <button className={"btn s primary " + (this.state.mode === PageMode.Explore ? "selected" : "")} onClick={this.setExploreMode}>
-                 {_("Explore")}
+                {_("Explore")}
             </button>
             <button className={"btn s primary " + (this.state.mode === PageMode.Play ? "selected" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
@@ -300,22 +347,22 @@ export class Joseki extends React.Component<{}, any> {
 
     renderModePane = () => {
         switch (this.state.mode) {
-            case (PageMode.Explore) :
+            case (PageMode.Explore):
                 return (
                     <ExplorePane
                         title={this.state.position_title}
-                        description={this.state.position_description}/>
+                        description={this.state.position_description} />
                 );
-            case (PageMode.Edit) :
+            case (PageMode.Edit):
                 return (
                     <EditPane
                         title={this.state.position_title}
                         description={this.state.position_description}
                         edit_state={this.state.edit_state}
                         save_new_move={this.saveNewMove}
-                        update_description={this.updateDescription}/>
+                        update_description={this.updateDescription} />
                 );
-            default :
+            default:
                 return (
                     <div> (not implemented yet!)</div>
                 );
@@ -328,12 +375,12 @@ export class Joseki extends React.Component<{}, any> {
             method: 'put',
             mode: 'cors',
             headers: godojo_headers,
-            body: JSON.stringify({description: new_description})
-          }).then(res => res.json())
+            body: JSON.stringify({ description: new_description })
+        }).then(res => res.json())
             .then(body => {
                 console.log("Server response to PUT:", body);
                 this.processNewJosekiPosition(body);
-                this.setState({edit_state: EditState.PositionSaved});
+                this.setState({ edit_state: EditState.PositionSaved });
             });
     }
 
@@ -346,8 +393,8 @@ export class Joseki extends React.Component<{}, any> {
             method: 'post',
             mode: 'cors',
             headers: godojo_headers,
-            body: JSON.stringify({placement: this.current_placement, category: move_type})
-          }).then(res => res.json())
+            body: JSON.stringify({ placement: this.current_placement, category: move_type })
+        }).then(res => res.json())
             .then(body => {
                 console.log("Server response to POST:", body);
                 this.processNewJosekiPosition(body);
@@ -389,30 +436,30 @@ class EditPane extends React.Component<EditProps, any> {
     componentDidUpdate = (prevProps, prevState) => {
         /* The parent updates the description when the user clicks on existing positions in Edit mode */
         if (prevProps.description !== this.props.description) {
-            this.setState({new_description: this.props.description});
+            this.setState({ new_description: this.props.description });
         }
     }
 
     onTypeChange = (e) => {
-        this.setState({move_type: e.target.value});
+        this.setState({ move_type: e.target.value });
     }
 
     saveNewMove = (e) => {
         this.props.save_new_move(this.state.move_type);
-        this.setState({editing_description: true});
+        this.setState({ editing_description: true });
     }
 
     handleEditInput = (e) => {
-        this.setState({new_description: e.target.value});
+        this.setState({ new_description: e.target.value });
     }
 
     saveDescription = (e) => {
         this.props.update_description(this.state.new_description);
-        this.setState({editing_description: false});
+        this.setState({ editing_description: false });
     }
 
     editDescription = () => {
-        this.setState({editing_description: true});
+        this.setState({ editing_description: true });
     }
 
     render = () => {
@@ -440,7 +487,7 @@ class EditPane extends React.Component<EditProps, any> {
                             /* Entry form for the new description */
                             <React.Fragment>
                                 <div className="edit-label">Position description:</div>
-                                <textarea onChange={this.handleEditInput} value={this.state.new_description}/>
+                                <textarea onChange={this.handleEditInput} value={this.state.new_description} />
                                 <div className="position-edit-button">
                                     <button className="btn xs primary" onClick={this.saveDescription}>
                                         {_("Save")}
@@ -451,19 +498,19 @@ class EditPane extends React.Component<EditProps, any> {
                         }
 
                         {/* The actual description always rendered here */}
-                        <ReactMarkdown source={this.state.new_description}/>
+                        <ReactMarkdown source={this.state.new_description} />
 
-                        { ! this.state.editing_description ?
+                        {!this.state.editing_description ?
                             <React.Fragment>
-                            { this.state.new_description.length === 0 ?
-                                <div className="edit-label">(position description)</div> : ""
-                            }
-                            <div className="position-edit-button">
-                                <button className="btn xs primary" onClick={this.editDescription}>
-                                    {_("Edit")}
-                                </button>
-                            </div>
-                            </React.Fragment> : "" }
+                                {this.state.new_description.length === 0 ?
+                                    <div className="edit-label">(position description)</div> : ""
+                                }
+                                <div className="position-edit-button">
+                                    <button className="btn xs primary" onClick={this.editDescription}>
+                                        {_("Edit")}
+                                    </button>
+                                </div>
+                            </React.Fragment> : ""}
                     </div>
                 </React.Fragment>
             );
@@ -483,7 +530,7 @@ class ExplorePane extends React.Component<ExploreProps> {
                 <h2>{this.props.title}</h2>
             </div>
             <div className="position-description">
-                <ReactMarkdown source={this.props.description}/>
+                <ReactMarkdown source={this.props.description} />
             </div>
         </React.Fragment>
     )

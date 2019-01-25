@@ -59,6 +59,7 @@
     "blueimp-md5": "^2.10.0",
     "d3": "^5.7.0",
     "eventemitter3": "^2.0.3",
+    "jsonwebtoken": "^8.4.0",
     "markdown-it": "^8.4.2",
     "moment": "^2.22.2",
     "query-string": "^5.0.1",
