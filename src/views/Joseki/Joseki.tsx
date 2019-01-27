@@ -30,9 +30,10 @@ import { Goban, GoMath } from "goban";
 import { Resizable } from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 
-const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
+//const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
+const server_url = "http://localhost:8081/";
 
-const godojo_headers = {
+let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'X-Godojo-Auth-Token': 'foofer'
@@ -72,7 +73,6 @@ export class Joseki extends React.Component<{}, any> {
     goban: Goban;
     goban_div: any;
     goban_opts: any = {};
-    user_jwt: string = "";
 
     current_placement = "";  // the coordinates of the most recently placed stone
     current_position_url = ""; // the self url for the position that the server returned for the current placement
@@ -120,8 +120,12 @@ export class Joseki extends React.Component<{}, any> {
         $(window).on("resize", this.onResize as () => void);
         this.onResize();  // make Goban size itself properly after the DOM is rendered
 
-        this.resetJosekiSequence(); // initialise joseki playing sequence with server
+        godojo_headers["X-User-Info"] = this.fakeUpUserinfo();
 
+        this.resetJosekiSequence(); // initialise joseki playing sequence with server
+    }
+
+    fakeUpUserinfo = () => {
         /* Fake up user details JWT - OGS server will provide this */
         const supposedly_private_key = "\
 -----BEGIN RSA PRIVATE KEY-----\n\
@@ -158,13 +162,13 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             algorithm: "RS256" as any
         };
 
-        this.user_jwt = jwt.sign(payload, supposedly_private_key, signOptions);
-        console.log(this.user_jwt);
+        const user_jwt = jwt.sign(payload, supposedly_private_key, signOptions);
 
         const verifyOptions = signOptions;
         verifyOptions.algorithm = ["RS256"];
-        let legit = jwt.verify(this.user_jwt, totally_public_key, verifyOptions);
+        let legit = jwt.verify(user_jwt, totally_public_key, verifyOptions);
         console.log(legit);
+        return user_jwt;
     }
 
     resetJosekiSequence = () => {
@@ -181,6 +185,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     fetchNextMovesFor = (placementUrl) => {
         /* TBD: error handling, cancel on new route */
+        console.log("fetch headers:", godojo_headers);
         fetch(placementUrl, {
             mode: 'cors',
             headers: godojo_headers
@@ -271,7 +276,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     setExploreMode = () => {
         if (this.state.mode !== PageMode.Edit) { // If they were editing, they want to continue from the same place
             this.resetBoard();
-            this.resetJosekiSequence();  // This triggers the joseki display machinery
+            this.resetJosekiSequence();  // This re-triggers the joseki display machinery from the root position
         }
         this.setState({
             mode: PageMode.Explore,
@@ -359,7 +364,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                         title={this.state.position_title}
                         description={this.state.position_description}
                         edit_state={this.state.edit_state}
-                        save_new_move={this.saveNewMove}
+                        save_new_sequence={this.saveNewSequence}
                         update_description={this.updateDescription} />
                 );
             default:
@@ -386,8 +391,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     saveNewMove = (move_type) => {
         // Here the person has confirmed that the move sequence on the board is of "move_type" and should be saved to the server
-        // Ultimately this could be a series of moves from the last known board position.
-        // Assuming it is just one move for now.
+        // This could actually be a series of moves from the last known board position.
+        // This routine is only for when there is only one new move!
 
         fetch(this.current_position_url, {
             method: 'post',
@@ -405,13 +410,32 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
             });
     }
+    saveNewSequence = (move_type) => {
+        // Here the person has added a bunch of moves then clicked "save"
+        fetch(server_url + "positions/", {
+            method: 'post',
+            mode: 'cors',
+            headers: godojo_headers,
+            body: JSON.stringify({ sequence: this.state.move_string, category: move_type })
+        }).then(res => res.json())
+            .then(body => {
+                console.log("Server response to sequence POST:", body);
+                this.processNewJosekiPosition(body);
+                this.setState({
+                    edit_state: EditState.UpdatePosition,
+                    current_move_category: move_type
+                });
+
+            });
+    }
 }
 
 interface EditProps {
     title: string;
     description: string;
     edit_state: EditState;
-    save_new_move: (move_type) => void;
+    //save_new_move: (move_type) => void;
+    save_new_sequence: (move_type) => void;
     update_description: (description) => void;
 }
 
@@ -443,9 +467,14 @@ class EditPane extends React.Component<EditProps, any> {
     onTypeChange = (e) => {
         this.setState({ move_type: e.target.value });
     }
-
+/*
     saveNewMove = (e) => {
         this.props.save_new_move(this.state.move_type);
+        this.setState({ editing_description: true });
+    }
+*/
+    saveNewSequence = (e) => {
+        this.props.save_new_sequence(this.state.move_type);
         this.setState({ editing_description: true });
     }
 
@@ -470,7 +499,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <select value={this.state.move_type} onChange={this.onTypeChange}>
                         {this.selections}
                     </select>
-                    <button className="btn xs primary" onClick={this.saveNewMove}>
+                    <button className="btn xs primary" onClick={this.saveNewSequence}>
                         {_("Save")}
                     </button>
                 </div>
