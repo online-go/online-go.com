@@ -540,6 +540,18 @@ export class GoEngine {
 
         return false;
     } /* }}} */
+    public jumpToOfficialMoveNumber(move_number:number) {
+        if (this.dontStoreBoardHistory) { return; }
+
+        while (this.showPrevious()) {
+            // spin
+        }
+        for (let i = 0; i < move_number; ++i) {
+            if (this.cur_move.next(true)) {
+                this.jumpTo(this.cur_move.next(true));
+            }
+        }
+    }
 
     private isMoveLegal(x, y) { /* {{{ */
         return true;
