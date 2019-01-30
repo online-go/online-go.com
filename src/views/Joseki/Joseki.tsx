@@ -40,7 +40,7 @@ let godojo_headers = {        // note: user JWT is added to this later
 };
 
 enum MoveCategory {
-    // needs to match Move.java
+    // needs to match definition in BoardPosition.java
     // conceivably, should fetch these from the back end?
     IDEAL = "Ideal",
     GOOD = "Good",
@@ -360,8 +360,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     updateDescription = (new_description, move_type) => {
         // Send the new description to the sever.
-        // We can only do that if the move itself has already been saved.
-        if (this.state.current_move_category == "new") {
+        // We can only do that if the move itself has already been saved
+        // ... in which case, we save it now, with the current move_type.
+        // move_type is only used if the move itself has _not_ been saved.
+        // This method is not for editing an existing move_type.
+        if (this.state.current_move_category === "new") {
             this.saveNewSequence(move_type);
             this.new_description_pending = new_description;
             console.log("set pending description ", this.new_description_pending);
@@ -371,59 +374,51 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: new_description })
+                body: JSON.stringify({ description: new_description, move_type: "" })
             }).then(res => res.json())
                 .then(body => {
-                    console.log("Server response to PUT:", body);
+                    console.log("Server response to description PUT:", body);
                     this.processNewJosekiPosition(body);
                 });
             this.new_description_pending = "";
-            console.log("reset pending description")
+            console.log("reset pending description");
         }
     }
 
-    /* Not used, legacy
-    saveNewMove = (move_type) => {
-        // Here the person has confirmed that the move sequence on the board is of "move_type" and should be saved to the server
-        // This routine is only for when there is only one new move!
-
-        fetch(this.current_position_url, {
-            method: 'post',
-            mode: 'cors',
-            headers: godojo_headers,
-            body: JSON.stringify({ placement: this.current_placement, category: move_type })
-        }).then(
-            res => res.json()
-        ).then(body => {
-            console.log("Server response to POST:", body);
-            this.processNewJosekiPosition(body);
-            this.setState({
-                current_move_category: move_type
-            });
-            }
-        });
-    }
-    */
-
     saveNewSequence = (move_type) => {
-        // Here the person has added a bunch of moves then clicked "save"
-        fetch(server_url + "positions/", {
-            method: 'post',
-            mode: 'cors',
-            headers: godojo_headers,
-            body: JSON.stringify({ sequence: this.state.move_string, category: move_type })
-        }).then(res => res.json())
-            .then(body => {
-                console.log("Server response to sequence POST:", body);
-                this.processNewJosekiPosition(body);
-                this.setState({
-                    current_move_category: move_type
+        if (this.state.current_move_category !== "new") {
+            // they must have pressed save on a current position.
+            fetch(this.current_position_url, {
+                method: 'put',
+                mode: 'cors',
+                headers: godojo_headers,
+                body: JSON.stringify({ description: this.state.position_description, move_type: move_type.toUpperCase() })
+            }).then(res => res.json())
+                .then(body => {
+                    console.log("Server response to sequence PUT:", body);
+                    this.processNewJosekiPosition(body);
                 });
-                // Now that we have the new position in place, it is safe to save it's description
-                if (this.new_description_pending !== "") {
-                    this.updateDescription(this.new_description_pending, move_type);
-                }
-            });
+        }
+        else {
+            // Here the person has added a bunch of moves then clicked "save"
+            fetch(server_url + "positions/", {
+                method: 'post',
+                mode: 'cors',
+                headers: godojo_headers,
+                body: JSON.stringify({ sequence: this.state.move_string, category: move_type })
+            }).then(res => res.json())
+                .then(body => {
+                    console.log("Server response to sequence POST:", body);
+                    this.processNewJosekiPosition(body);
+                    this.setState({
+                        current_move_category: move_type
+                    });
+                    // Now that we have the new position in place, it is safe to save it's description
+                    if (this.new_description_pending !== "") {
+                        this.updateDescription(this.new_description_pending, move_type);
+                    }
+                });
+        }
     }
 }
 
