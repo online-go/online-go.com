@@ -80,6 +80,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         let ct: number = parseInt(ev.target.value);
         preferences.set("observed-games-page-size", ct);
         this.setState({page_size: ct});
+        this.setPage(1);
         setTimeout(this.refresh, 1);
     }}}
     refresh = () => {{{
