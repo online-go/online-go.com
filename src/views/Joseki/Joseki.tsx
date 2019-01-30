@@ -53,10 +53,6 @@ enum PageMode {
     Explore, Play, Edit
 }
 
-enum EditState {
-    UpdatePosition, FinalizeMove, PositionSaved
-}
-
 const ColorMap = {
     "IDEAL": "#008300",
     "GOOD": "#436600",
@@ -78,14 +74,16 @@ export class Joseki extends React.Component<{}, any> {
     current_position_url = ""; // the self url for the position that the server returned for the current placement
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
+    new_description_pending = ""; // A description they've entered that we haven't sent to the server yet
+
     constructor(props) {
         super(props);
 
         this.state = {
             move_string: "",  // This is used for making sure we know what the current move is.
-            position_title: "",
             position_description: "",
             current_move_category: "",
+            new_description: "",
             mode: PageMode.Explore,
         };
 
@@ -200,7 +198,6 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     // Decode a response from the server into state we need, and display accordingly
     processNewJosekiPosition = (position) => {
         this.setState({
-            position_title: position.title,
             position_description: position.description
         });
         this.current_position_url = position._links.self.href;
@@ -250,27 +247,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             this.setState({ current_move_category: chosen_move.category });
         } else {
             /* This isn't in the database */
-            if (this.state.mode === PageMode.Edit) {
-                this.setState({
-                    position_title: "tbd",
-                    position_description: "tbd",
-                    current_move_category: "Proposed Position"
-                });
-                this.finalizeNewMove();
-            } else {
-                this.setState({
-                    position_title: "",
-                    position_description: "",
-                    current_move_category: "Experiment"
-                });
-
-            }
+            this.setState({
+                position_description: "tbd",
+                current_move_category: "new"
+            });
         }
-    }
-
-    finalizeNewMove = () => {
-        /* They plonked a stone on the board that might be a new move proposal.  Find out, and save it if so... */
-        this.setState({ edit_state: EditState.FinalizeMove });
     }
 
     setExploreMode = () => {
@@ -292,13 +273,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     setEditMode = () => {
-        // If they clicked in new moves before going into edit mode, let them add them now
-        const new_edit_state: EditState = (this.state.current_move_category === "Experiment") ?
-            EditState.FinalizeMove : EditState.UpdatePosition;
-
         this.setState({
             mode: PageMode.Edit,
-            edit_state: new_edit_state
         });
         /* (We don't reset the board here, they want to edit from this position!) */
     }
@@ -306,7 +282,10 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     resetBoard = () => {
         console.log("Resetting board...");
         this.next_moves = [];
-        this.setState({ move_string: "" });
+        this.setState({
+            move_string: "",
+            current_move_category: ""
+        });
         this.initializeGoban();
         this.onResize();
     }
@@ -322,12 +301,15 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 <div className="right-col">
                     <div className="top-stuff">
                         {this.renderModeControl()}
-                        {this.renderModePane()}
+                        {this.renderModeMainPane()}
                     </div>
                     <div className="status-info">
                         <div className="move-category">
                             {this.state.current_move_category === "" ? "" :
-                                "Last move: " + this.state.current_move_category}
+                                "Last move: " +
+                                (this.state.current_move_category === "new" ? (
+                                    this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
+                                    this.state.current_move_category)}
                         </div>
                         {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
                     </div>
@@ -345,53 +327,64 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 {_("Play")}
             </button>
             <button className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
-                {this.state.current_move_category === "Experiment" ? _("Save") : _("Edit")}
+                {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
             </button>
         </div>
     )
 
-    renderModePane = () => {
-        switch (this.state.mode) {
-            case (PageMode.Explore):
-                return (
-                    <ExplorePane
-                        title={this.state.position_title}
-                        description={this.state.position_description} />
-                );
-            case (PageMode.Edit):
-                return (
-                    <EditPane
-                        title={this.state.position_title}
-                        description={this.state.position_description}
-                        edit_state={this.state.edit_state}
-                        save_new_sequence={this.saveNewSequence}
-                        update_description={this.updateDescription} />
-                );
-            default:
-                return (
-                    <div> (not implemented yet!)</div>
-                );
+    renderModeMainPane = () => {
+        if (this.state.mode === PageMode.Explore ||
+            this.state.move_string === "" // you can't edit the empty board
+        ) {
+            return (
+                <ExplorePane
+                    title={this.state.position_title}
+                    description={this.state.position_description} />
+            );
+        }
+        else if (this.state.mode === PageMode.Edit) {
+            return (
+                <EditPane
+                    title={this.state.position_title}
+                    description={this.state.position_description}
+                    save_new_sequence={this.saveNewSequence}
+                    update_description={this.updateDescription} />
+            );
+        }
+        else {
+            return (
+                <div> (not implemented yet!)</div>
+            );
         }
     }
 
-    updateDescription = (new_description) => {
-        // send the new description to the sever.
-        fetch(this.current_position_url, {
-            method: 'put',
-            mode: 'cors',
-            headers: godojo_headers,
-            body: JSON.stringify({ description: new_description })
-        }).then(res => res.json())
-            .then(body => {
-                console.log("Server response to PUT:", body);
-                this.processNewJosekiPosition(body);
-                this.setState({ edit_state: EditState.PositionSaved });
-            });
+    updateDescription = (new_description, move_type) => {
+        // Send the new description to the sever.
+        // We can only do that if the move itself has already been saved.
+        if (this.state.current_move_category == "new") {
+            this.saveNewSequence(move_type);
+            this.new_description_pending = new_description;
+            console.log("set pending description ", this.new_description_pending);
+        }
+        else {
+            fetch(this.current_position_url, {
+                method: 'put',
+                mode: 'cors',
+                headers: godojo_headers,
+                body: JSON.stringify({ description: new_description })
+            }).then(res => res.json())
+                .then(body => {
+                    console.log("Server response to PUT:", body);
+                    this.processNewJosekiPosition(body);
+                });
+            this.new_description_pending = "";
+            console.log("reset pending description")
+        }
     }
 
+    /* Not used, legacy
     saveNewMove = (move_type) => {
         // Here the person has confirmed that the move sequence on the board is of "move_type" and should be saved to the server
-        // This could actually be a series of moves from the last known board position.
         // This routine is only for when there is only one new move!
 
         fetch(this.current_position_url, {
@@ -399,17 +392,19 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             mode: 'cors',
             headers: godojo_headers,
             body: JSON.stringify({ placement: this.current_placement, category: move_type })
-        }).then(res => res.json())
-            .then(body => {
-                console.log("Server response to POST:", body);
-                this.processNewJosekiPosition(body);
-                this.setState({
-                    edit_state: EditState.UpdatePosition,
-                    current_move_category: move_type
-                });
-
+        }).then(
+            res => res.json()
+        ).then(body => {
+            console.log("Server response to POST:", body);
+            this.processNewJosekiPosition(body);
+            this.setState({
+                current_move_category: move_type
             });
+            }
+        });
     }
+    */
+
     saveNewSequence = (move_type) => {
         // Here the person has added a bunch of moves then clicked "save"
         fetch(server_url + "positions/", {
@@ -422,10 +417,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 console.log("Server response to sequence POST:", body);
                 this.processNewJosekiPosition(body);
                 this.setState({
-                    edit_state: EditState.UpdatePosition,
                     current_move_category: move_type
                 });
-
+                // Now that we have the new position in place, it is safe to save it's description
+                if (this.new_description_pending !== "") {
+                    this.updateDescription(this.new_description_pending, move_type);
+                }
             });
     }
 }
@@ -433,10 +430,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 interface EditProps {
     title: string;
     description: string;
-    edit_state: EditState;
-    //save_new_move: (move_type) => void;
     save_new_sequence: (move_type) => void;
-    update_description: (description) => void;
+    update_description: (description, move_type) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -448,7 +443,6 @@ class EditPane extends React.Component<EditProps, any> {
         this.state = {
             move_type: MoveCategory[Object.keys(MoveCategory)[0]],  // initialize with the first in the list
             new_description: this.props.description,  // the description with edit-updates
-            editing_description: false  // they have to click the edit button to start editing the position description
         };
 
         // create the set of select option elements from the valid MoveCategory items
@@ -467,15 +461,9 @@ class EditPane extends React.Component<EditProps, any> {
     onTypeChange = (e) => {
         this.setState({ move_type: e.target.value });
     }
-/*
-    saveNewMove = (e) => {
-        this.props.save_new_move(this.state.move_type);
-        this.setState({ editing_description: true });
-    }
-*/
+
     saveNewSequence = (e) => {
         this.props.save_new_sequence(this.state.move_type);
-        this.setState({ editing_description: true });
     }
 
     handleEditInput = (e) => {
@@ -483,17 +471,12 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     saveDescription = (e) => {
-        this.props.update_description(this.state.new_description);
-        this.setState({ editing_description: false });
-    }
-
-    editDescription = () => {
-        this.setState({ editing_description: true });
+        this.props.update_description(this.state.new_description, this.state.move_type);
     }
 
     render = () => {
-        if (this.props.edit_state === EditState.FinalizeMove) {
-            return (
+        return (
+            <React.Fragment>
                 <div className="move-type-selection">
                     <span>{_("This sequence is: ")}</span>
                     <select value={this.state.move_type} onChange={this.onTypeChange}>
@@ -503,47 +486,29 @@ class EditPane extends React.Component<EditProps, any> {
                         {_("Save")}
                     </button>
                 </div>
-            );
-        } else {
-            return (
-                <React.Fragment>
-                    <div className="position-header">
-                        <h2>{this.props.title}</h2>
+
+                <div className="description-edit">
+
+                    <div className="edit-label">Position description:</div>
+                    <textarea onChange={this.handleEditInput} value={this.state.new_description} />
+                    <div className="position-edit-button">
+                        <button className="btn xs primary" onClick={this.saveDescription}>
+                            {_("Save")}
+                        </button>
                     </div>
+                    <div className="edit-label">Preview:</div>
 
-                    <div className="description-edit">
-                        {this.state.editing_description ?
-                            /* Entry form for the new description */
-                            <React.Fragment>
-                                <div className="edit-label">Position description:</div>
-                                <textarea onChange={this.handleEditInput} value={this.state.new_description} />
-                                <div className="position-edit-button">
-                                    <button className="btn xs primary" onClick={this.saveDescription}>
-                                        {_("Save")}
-                                    </button>
-                                </div>
-                                <div className="edit-label">Preview:</div>
-                            </React.Fragment> : ""
-                        }
 
-                        {/* The actual description always rendered here */}
-                        <ReactMarkdown source={this.state.new_description} />
+                    {/* The actual description always rendered here */}
+                    <ReactMarkdown source={this.state.new_description} />
 
-                        {!this.state.editing_description ?
-                            <React.Fragment>
-                                {this.state.new_description.length === 0 ?
-                                    <div className="edit-label">(position description)</div> : ""
-                                }
-                                <div className="position-edit-button">
-                                    <button className="btn xs primary" onClick={this.editDescription}>
-                                        {_("Edit")}
-                                    </button>
-                                </div>
-                            </React.Fragment> : ""}
-                    </div>
-                </React.Fragment>
-            );
-        }
+                    {/* Here is the edit box for the markdown source of the description */}
+                    {this.state.new_description.length === 0 ?
+                        <div className="edit-label">(position description)</div> : ""
+                    }
+                </div>
+            </React.Fragment>
+        );
     }
 }
 

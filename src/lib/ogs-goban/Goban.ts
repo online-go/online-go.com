@@ -2136,9 +2136,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             have_text_to_draw = true;
         }
 
-        if (i === 9 && j === 9 ) {
-            console.log("Drawing ", i, j, pos);
-        }
         /* clear and draw lines */
         {{{
             let l = i * s + ox;
