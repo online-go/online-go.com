@@ -49,8 +49,6 @@ export class Analysis extends React.Component<AnalysisProperties, any> {
     constructor(props) {
         super(props);
 
-        console.log(props);
-
         this.state = {
             move_string: "",
             loading: true,
@@ -68,8 +66,6 @@ export class Analysis extends React.Component<AnalysisProperties, any> {
     load() {
         get(`/termination-api/analysis/${this.game_id}/${this.analysis_id}`)
         .then((res) => {
-            console.log(res);
-
             let opts = {
                 "board_div": this.goban_div,
                 "interactive": true,
@@ -85,8 +81,6 @@ export class Analysis extends React.Component<AnalysisProperties, any> {
             this.goban.setMode("puzzle");
             this.goban.on("update", () => this.onUpdate());
             window["global_goban"] = this.goban;
-
-            console.log("asdf");
 
             let entries = [];
 
@@ -111,10 +105,7 @@ export class Analysis extends React.Component<AnalysisProperties, any> {
                 });
             }
 
-            console.log(entries);
-
             this.setState({loading: false, entries});
-
         }).catch(err => {
             console.error(err);
             this.setState({err: _("Error loading game analysis")});
@@ -134,7 +125,6 @@ export class Analysis extends React.Component<AnalysisProperties, any> {
 
 
     setMove = (move_number:number):void => {
-        console.log("Should be setting move number to ", move_number);
         this.goban.engine.jumpToOfficialMoveNumber(move_number);
     }
 

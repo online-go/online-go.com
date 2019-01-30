@@ -59,6 +59,7 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
     full_line;
     x_axis;
     mouse;
+    mouse_rect;
     move_crosshair;
     full_crosshair;
     fast_crosshair;
@@ -179,8 +180,8 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
 
         let mouse_down = false;
         let last_move = -1;
-        this.mouse = this.svg.append('g')
-            .append('rect')
+        this.mouse_rect = this.svg.append('g').append('rect');
+        this.mouse_rect
             .attr('class', 'overlay')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
             .attr('width', width)
@@ -321,6 +322,10 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
             .select(".domain")
             .remove();
 
+        console.log("wtf");
+        this.mouse_rect
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            .attr('width', this.width);
 
         this.fast_crosshair.attr('x1', this.width);
         this.full_crosshair.attr('x1', this.width);
@@ -337,7 +342,6 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
     }
 
     render() {
-        console.log("rendering");
         return (
             <div ref={this.setContainer} className="AnalysisPredictionChart">
                 {this.state.loading
