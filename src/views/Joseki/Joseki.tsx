@@ -70,8 +70,8 @@ export class Joseki extends React.Component<{}, any> {
     goban_div: any;
     goban_opts: any = {};
 
-    current_placement = "";  // the coordinates of the most recently placed stone
-    current_position_url = ""; // the self url for the position that the server returned for the current placement
+    current_position_url = "";  // the self url for the position that the server returned for the current placement
+    last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
     new_description_pending = ""; // A description they've entered that we haven't sent to the server yet
@@ -203,6 +203,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             position_description: position.description
         });
         this.current_position_url = position._links.self.href;
+        this.last_server_placement = position.placement;
         this.next_moves = position._embedded.moves;
         this.previous_position = position._embedded.parent;
         this.renderJosekiPosition(this.next_moves);
@@ -254,12 +255,16 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
         console.log("Processing placement at:", placement);
 
-        this.current_placement = placement;
-
         if (this.backstepping) {
             this.backstepping = false;
-            this.fetchNextMovesFor(this.previous_position._links.self.href);
-            this.setState({ current_move_category: this.previous_position.category });
+            if (this.state.current_move_category !== "new") {
+                this.fetchNextMovesFor(this.previous_position._links.self.href);
+                this.setState({ current_move_category: this.previous_position.category });
+            }
+            else if (placement === this.last_server_placement) {
+                // We have back stepped back to known moves
+                this.fetchNextMovesFor(this.current_position_url);
+            }
         }
         else {
             const chosen_move = this.next_moves.find(move => move.placement === placement);
@@ -315,6 +320,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     backOneMove = () => {
+        // They clicked the back button ... tell goban and let it call us back with the result
         this.backstepping = true;
         this.goban.showPrevious();
     }
