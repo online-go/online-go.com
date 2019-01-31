@@ -75,6 +75,8 @@ export class Joseki extends React.Component<{}, any> {
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
     new_description_pending = ""; // A description they've entered that we haven't sent to the server yet
+    previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
+    backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
 
     constructor(props) {
         super(props);
@@ -202,6 +204,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         });
         this.current_position_url = position._links.self.href;
         this.next_moves = position._embedded.moves;
+        this.previous_position = position._embedded.parent;
         this.renderJosekiPosition(this.next_moves);
     }
 
@@ -224,40 +227,60 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
             this.goban.height);
-        let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
+
+        let move_string;
+        let the_move;
+
+        if (mvs.length > 0) {
+            move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
+            the_move = mvs[mvs.length - 1];
+        }
+        else { // empty board
+            move_string = "";
+            the_move = null;
+        }
         if (move_string !== this.state.move_string) {
-            console.log("Move placed: ", mvs[mvs.length - 1]);
+            console.log("Move placed: ", the_move);
             this.setState({ move_string });
-            this.processPlacement(mvs[mvs.length - 1]);
+            this.processPlacement(the_move);
         }
     }
 
     processPlacement(move: any) {
-        /* They've clicked a stone onto the board in a new position */
-        const placement = GoMath.prettyCoords(move.x, move.y, this.goban.height);
+        /* They've clicked a stone onto the board in a new position, or hit "back" to arrive at an old position */
+        const placement = move !== null ?
+            GoMath.prettyCoords(move.x, move.y, this.goban.height) :
+            "root";
+
         console.log("Processing placement at:", placement);
 
         this.current_placement = placement;
 
-        const chosen_move = this.next_moves.find(move => move.placement === placement);
+        if (this.backstepping) {
+            this.backstepping = false;
+            this.fetchNextMovesFor(this.previous_position._links.self.href);
+            this.setState({ current_move_category: this.previous_position.category });
+        }
+        else {
+            const chosen_move = this.next_moves.find(move => move.placement === placement);
 
-        if (chosen_move !== undefined) {
-            /* The database already knows about this move, so we just get and display the new position information */
-            this.fetchNextMovesFor(chosen_move._links.self.href);
-            this.setState({ current_move_category: chosen_move.category });
-        } else {
-            /* This isn't in the database */
-            this.setState({
-                position_description: "tbd",
-                current_move_category: "new"
-            });
+            if (chosen_move !== undefined) {
+                /* The database already knows about this move, so we just get and display the new position information */
+                this.fetchNextMovesFor(chosen_move._links.self.href);
+                this.setState({ current_move_category: chosen_move.category });
+            } else {
+                /* This isn't in the database */
+                this.setState({
+                    position_description: "tbd",
+                    current_move_category: "new"
+                });
+            }
         }
     }
 
     setExploreMode = () => {
         if (this.state.mode !== PageMode.Edit) { // If they were editing, they want to continue from the same place
             this.resetBoard();
-            this.resetJosekiSequence();  // This re-triggers the joseki display machinery from the root position
         }
         this.setState({
             mode: PageMode.Explore,
@@ -288,6 +311,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         });
         this.initializeGoban();
         this.onResize();
+        this.resetJosekiSequence();
+    }
+
+    backOneMove = () => {
+        this.backstepping = true;
+        this.goban.showPrevious();
     }
 
     render() {
@@ -300,7 +329,13 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 </div>
                 <div className="right-col">
                     <div className="top-stuff">
-                        {this.renderModeControl()}
+                        <div className="top-bar">
+                            <div className="move-controls">
+                                <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
+                                <i className="fa fa-step-backward" onClick={this.backOneMove}></i>
+                            </div>
+                            {this.renderModeControl()}
+                        </div>
                         {this.renderModeMainPane()}
                     </div>
                     <div className="status-info">
