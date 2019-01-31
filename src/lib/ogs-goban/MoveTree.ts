@@ -27,7 +27,7 @@ export interface MarkInterface {
     letter?           : string;
     transient_letter? : string;
     score?            : string | boolean;
-    chat_triangle?    : string;
+    chat_triangle?    : boolean;
     remove?           : boolean;
     stone_removed?    : boolean;
     mark_x?           : boolean;

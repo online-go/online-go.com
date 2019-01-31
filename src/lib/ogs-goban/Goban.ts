@@ -2068,7 +2068,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
     }  /* }}} */
 
-    private drawSquare(i, j) { /* {{{ */
+    public drawSquare(i, j) { /* {{{ */
         if (i < 0 || j < 0) { return; }
         if (this.__draw_state[j][i] !== this.drawingHash(i, j)) {
             this.__drawSquare(i, j);

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2012-2017  Online-Go.com
  *
@@ -15,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This code was derived from https://github.com/billneff79/d3-stock which
- * is a d3.js v4 port of https://github.com/arnauddri/d3-stock */
-
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
@@ -27,10 +25,21 @@ import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
-import {AnalysisEntry, makeAnalysisEntry} from './AnalysisEntry';
+import {Game} from './Game';
 
+export class AnalysisEntry {
+    move: number;
+    fast_prediction: number;
+    full_prediction: number;
 
-interface AnalysisPredictionChartProperties {
+    constructor(obj) {
+        this.move = parseInt(obj.move);
+        this.fast_prediction = parseFloat(obj.fast_prediction);
+        this.full_prediction = parseFloat(obj.full_prediction);
+    }
+}
+
+interface AIAnalysisChartProperties {
     entries: Array<AnalysisEntry>;
     setmove: (move_number:number) => void;
 }
@@ -42,7 +51,7 @@ let margin = { top: 15, right: 20, bottom: 30, left: 50 };
 let width = svgWidth - margin.left - margin.right;
 let height = svgHeight - margin.top - margin.bottom;
 
-export class AnalysisPredictionChart extends React.Component<AnalysisPredictionChartProperties, any> {
+export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, any> {
     container = null;
     chart_div;
     svg;
@@ -253,7 +262,6 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
         this.resize();
     }
 
-    /* Callback function for data retrieval, which plots the retrieved data */
     plot() {
         if (this.props.entries.length <= 0) {
             this.setState({
@@ -300,7 +308,7 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
         }
 
         if (!no_debounce) {
-            this.resize_debounce = (setTimeout(() => this.resize(true), 10)) as number;
+            this.resize_debounce = setTimeout(() => this.resize(true), 10);
             return;
         }
 
@@ -343,7 +351,7 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
 
     render() {
         return (
-            <div ref={this.setContainer} className="AnalysisPredictionChart">
+            <div ref={this.setContainer} className="AIAnalysisChart">
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
@@ -353,6 +361,27 @@ export class AnalysisPredictionChart extends React.Component<AnalysisPredictionC
                         </div>
                 }
             </div>
+        );
+    }
+}
+
+
+interface AIAnalysisProperties {
+    game: Game;
+    move: number;
+}
+
+
+export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+    }
+
+    render() {
+        return (
+            <div>Hello</div>
         );
     }
 }
