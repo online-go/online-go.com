@@ -29,6 +29,8 @@ import { errorAlerter, dup, ignore } from "misc";
 import { Goban, GoMath } from "goban";
 import { Resizable } from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
+import { PlayerIcon } from "PlayerIcon";
+import { Player } from "Player";
 
 //const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
 const server_url = "http://localhost:8081/";
@@ -85,7 +87,6 @@ export class Joseki extends React.Component<{}, any> {
             move_string: "",  // This is used for making sure we know what the current move is.
             position_description: "",
             current_move_category: "",
-            new_description: "",
             mode: PageMode.Explore,
         };
 
@@ -146,13 +147,16 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
         const user_info = data.get("user");
 
+        // console.log("Loaded user info: ", user_info);
+
         const payload = {
-            username: user_info.username
+            username: user_info.username,
+            user_id: user_info.id
         };
 
-        const i = 'OGS';          // Issuer
-        const s = 'Josekis';        // Subject
-        const a = 'godojo'; // Audience
+        const i = 'OGS';     // Issuer
+        const s = 'Josekis'; // Subject
+        const a = 'godojo';  // Audience
 
         const signOptions = {
             issuer: i,
@@ -200,7 +204,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     // Decode a response from the server into state we need, and display accordingly
     processNewJosekiPosition = (position) => {
         this.setState({
-            position_description: position.description
+            position_description: position.description,
+            contributor_id: position.contributor
         });
         this.current_position_url = position._links.self.href;
         this.last_server_placement = position.placement;
@@ -276,7 +281,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             } else {
                 /* This isn't in the database */
                 this.setState({
-                    position_description: "tbd",
+                    position_description: "## Joseki",
                     current_move_category: "new"
                 });
             }
@@ -343,6 +348,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                             {this.renderModeControl()}
                         </div>
                         {this.renderModeMainPane()}
+
                     </div>
                     <div className="status-info">
                         <div className="move-category">
@@ -352,6 +358,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                                     this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
                                     this.state.current_move_category)}
                         </div>
+                        {this.state.move_string !== "" && this.state.current_move_category !== "new" ?
+                        <div className="contributor">
+                            <span>Contributor:</span> <Player user={this.state.contributor_id}/>
+                        </div> : ""
+                        }
                         {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
                     </div>
                 </div>
@@ -379,14 +390,13 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         ) {
             return (
                 <ExplorePane
-                    title={this.state.position_title}
-                    description={this.state.position_description} />
+                    description={this.state.position_description}
+                    position_type={this.state.current_move_category} />
             );
         }
         else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
-                    title={this.state.position_title}
                     description={this.state.position_description}
                     save_new_sequence={this.saveNewSequence}
                     update_description={this.updateDescription} />
@@ -464,7 +474,6 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 }
 
 interface EditProps {
-    title: string;
     description: string;
     save_new_sequence: (move_type) => void;
     update_description: (description, move_type) => void;
@@ -549,19 +558,17 @@ class EditPane extends React.Component<EditProps, any> {
 }
 
 interface ExploreProps {
-    title: string;
     description: string;
+    position_type: string;
 }
 
 class ExplorePane extends React.Component<ExploreProps> {
     render = () => (
         <React.Fragment>
-            <div className="position-header">
-                <h2>{this.props.title}</h2>
-            </div>
+            {this.props.position_type !== "new"  ?
             <div className="position-description">
                 <ReactMarkdown source={this.props.description} />
-            </div>
+            </div> : "" }
         </React.Fragment>
     )
 }
