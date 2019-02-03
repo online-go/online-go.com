@@ -19,6 +19,7 @@
 
 import * as React from "react";
 import * as ReactMarkdown from "react-markdown";
+import {Link} from "react-router-dom";
 import * as jwt from "jsonwebtoken";
 
 import * as data from "data";
@@ -31,6 +32,7 @@ import { Resizable } from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 import { PlayerIcon } from "PlayerIcon";
 import { Player } from "Player";
+import { moveCursor } from "readline";
 
 //const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
 const server_url = "http://localhost:8081/";
@@ -63,7 +65,14 @@ const ColorMap = {
     "QUESTION": "#00ccff",
 };
 
-export class Joseki extends React.Component<{}, any> {
+interface JosekiProps {
+    match: {
+        params: any
+    };
+    location: any
+}
+
+export class Joseki extends React.Component<JosekiProps, any> {
     refs: {
         goban_container;
     };
@@ -76,6 +85,8 @@ export class Joseki extends React.Component<{}, any> {
     last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
+    load_sequence_to_board = false; // True if we need to load the stones from the sequence from the server onto the board
+
     new_description_pending = ""; // A description they've entered that we haven't sent to the server yet
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
@@ -83,6 +94,7 @@ export class Joseki extends React.Component<{}, any> {
     constructor(props) {
         super(props);
 
+        console.log(props);
         this.state = {
             move_string: "",  // This is used for making sure we know what the current move is.
             position_description: "",
@@ -95,7 +107,7 @@ export class Joseki extends React.Component<{}, any> {
         this.initializeGoban();
     }
 
-    initializeGoban = () => {
+    initializeGoban = (initial_position?) => {
         // this can be called at any time to reset the board
         if (this.goban != null) {
             this.goban.destroy();
@@ -107,9 +119,12 @@ export class Joseki extends React.Component<{}, any> {
             "mode": "puzzle",
             "player_id": 0,
             "server_socket": null,
-            "square_size": 20
+            "square_size": 20,
         };
 
+        if (initial_position !== undefined) {
+            opts["moves"] = initial_position;
+        }
         this.goban_opts = opts;
         this.goban = new Goban(opts);
         this.goban.setMode("puzzle");
@@ -123,7 +138,13 @@ export class Joseki extends React.Component<{}, any> {
 
         godojo_headers["X-User-Info"] = this.fakeUpUserinfo();
 
-        this.resetJosekiSequence(); // initialise joseki playing sequence with server
+        const target_position = this.props.match.params.pos || "root";
+
+        if (target_position !== "root") {
+            this.load_sequence_to_board = true;
+        }
+
+        this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
     }
 
     fakeUpUserinfo = () => {
@@ -175,10 +196,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         return user_jwt;
     }
 
-    resetJosekiSequence = () => {
-        /* Initiate joseki playing sequence with the root from the server */
-        const serverRootPosition = server_url + "position?id=root";
-        this.fetchNextMovesFor(serverRootPosition);
+    resetJosekiSequence = (pos: String) => {
+        // as the server for the moves from postion pos
+        const targetPositionUrl = server_url + "position?id=" + pos;
+        console.log(targetPositionUrl);
+        this.fetchNextMovesFor(targetPositionUrl);
     }
 
     onResize = () => {
@@ -197,15 +219,31 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
                 console.log("Server response:", body);
+
                 this.processNewJosekiPosition(body);
+
+                if (this.load_sequence_to_board) {
+                    this.loadSequenceToBoard(body.play);
+                    this.load_sequence_to_board = false;
+                }
             });
+    }
+
+    loadSequenceToBoard = (sequence: string) => {
+        // We expect sequence to come from the server in the form ".root.K10.L11"
+        console.log("Loading server supplied position", sequence);
+        const ogs_move_string = sequence.substr(6).replace(/\./g, '');
+        this.initializeGoban(ogs_move_string);
+        this.onBoardUpdate();
     }
 
     // Decode a response from the server into state we need, and display accordingly
     processNewJosekiPosition = (position) => {
         this.setState({
             position_description: position.description,
-            contributor_id: position.contributor
+            contributor_id: position.contributor,
+            current_move_category: position.category,
+            current_node_id: position.nodeId
         });
         this.current_position_url = position._links.self.href;
         this.last_server_placement = position.placement;
@@ -227,7 +265,10 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         this.goban.setColoredMarks(new_options);
     }
 
-    /* This is called every time a move is played on the Goban or anything else changes about the state of the board */
+    /* This is called every time a move is played on the Goban
+       or anything else changes about the state of the board (back-step, sequence load)
+
+       We ask the board engine what the position is now, and update the display accordingly */
     onBoardUpdate = () => {
         let mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
@@ -253,7 +294,10 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     processPlacement(move: any) {
-        /* They've clicked a stone onto the board in a new position, or hit "back" to arrive at an old position */
+        /* They've either
+            clicked a stone onto the board in a new position,
+            or hit "back" to arrive at an old position,
+            or we got here during "loading a new sequence" */
         const placement = move !== null ?
             GoMath.prettyCoords(move.x, move.y, this.goban.height) :
             "root";
@@ -271,13 +315,15 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 this.fetchNextMovesFor(this.current_position_url);
             }
         }
-        else {
+        else if (this.load_sequence_to_board) {
+            console.log("nothing to do in process placement");
+        }
+        else  { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
             if (chosen_move !== undefined) {
                 /* The database already knows about this move, so we just get and display the new position information */
                 this.fetchNextMovesFor(chosen_move._links.self.href);
-                this.setState({ current_move_category: chosen_move.category });
             } else {
                 /* This isn't in the database */
                 this.setState({
@@ -285,6 +331,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     current_move_category: "new"
                 });
             }
+        }
+    }
+
+    componentDidUpdate (prevProps) {
+        if (prevProps.location.key !== this.props.location.key) {
+            this.componentDidMount();  // force reload of position if they click a new position link
         }
     }
 
@@ -321,7 +373,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         });
         this.initializeGoban();
         this.onResize();
-        this.resetJosekiSequence();
+        this.resetJosekiSequence("root");
     }
 
     backOneMove = () => {
@@ -331,6 +383,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     render() {
+        console.log("rendering ", this.state.move_string);
         return (
             <div className={"Joseki"}>
                 <div className={"left-col"}>
@@ -347,8 +400,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                             </div>
                             {this.renderModeControl()}
                         </div>
-                        {this.renderModeMainPane()}
 
+                        {this.renderModeMainPane()}
                     </div>
                     <div className="status-info">
                         <div className="move-category">
@@ -358,12 +411,18 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                                     this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
                                     this.state.current_move_category)}
                         </div>
-                        {this.state.move_string !== "" && this.state.current_move_category !== "new" ?
-                        <div className="contributor">
+
+                        <div className={"contributor" +
+                            ((this.state.move_string === "" || this.state.current_move_category === "new") ? " hide" : "")}>
+
                             <span>Contributor:</span> <Player user={this.state.contributor_id}/>
-                        </div> : ""
-                        }
-                        {"Moves made: " + (this.state.move_string !== "" ? this.state.move_string : "(none)")}
+                        </div>
+                        <span>Moves made:</span>
+                        {this.state.move_string !== "" ?
+                            this.state.current_move_category !== "new" ?
+                                <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
+                                <span>{this.state.move_string}</span> :
+                            <span>(none)</span>}
                     </div>
                 </div>
             </div>
@@ -425,7 +484,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: new_description, move_type: "" })
+                body: JSON.stringify({ description: new_description, category: "" })
             }).then(res => res.json())
                 .then(body => {
                     console.log("Server response to description PUT:", body);
@@ -443,7 +502,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: this.state.position_description, move_type: move_type.toUpperCase() })
+                body: JSON.stringify({ description: this.state.position_description, category: move_type.toUpperCase() })
             }).then(res => res.json())
                 .then(body => {
                     console.log("Server response to sequence PUT:", body);
