@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import * as ReactMarkdown from "react-markdown";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import * as jwt from "jsonwebtoken";
 
 import * as data from "data";
@@ -318,7 +318,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         else if (this.load_sequence_to_board) {
             console.log("nothing to do in process placement");
         }
-        else  { // they must have clicked a stone onto the board
+        else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
             if (chosen_move !== undefined) {
@@ -334,7 +334,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         }
     }
 
-    componentDidUpdate (prevProps) {
+    componentDidUpdate(prevProps) {
         if (prevProps.location.key !== this.props.location.key) {
             this.componentDidMount();  // force reload of position if they click a new position link
         }
@@ -403,27 +403,27 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
                         {this.renderModeMainPane()}
                     </div>
-                    <div className="status-info">
-                        <div className="move-category">
-                            {this.state.current_move_category === "" ? "" :
-                                "Last move: " +
-                                (this.state.current_move_category === "new" ? (
-                                    this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
-                                    this.state.current_move_category)}
-                        </div>
+                    {this.state.move_string !== "" &&
+                        <div className="status-info">
+                            <div className="move-category">
+                                {this.state.current_move_category === "" ? "" :
+                                    "Last move: " +
+                                    (this.state.current_move_category === "new" ? (
+                                        this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
+                                        this.state.current_move_category)}
+                            </div>
 
-                        <div className={"contributor" +
-                            ((this.state.move_string === "" || this.state.current_move_category === "new") ? " hide" : "")}>
+                            <div className={"contributor" +
+                                ((this.state.move_string === "" || this.state.current_move_category === "new") ? " hide" : "")}>
 
-                            <span>Contributor:</span> <Player user={this.state.contributor_id}/>
-                        </div>
-                        <span>Moves made:</span>
-                        {this.state.move_string !== "" ?
-                            this.state.current_move_category !== "new" ?
+                                <span>Contributor:</span> <Player user={this.state.contributor_id} />
+                            </div>
+                            <span>Moves made:</span>
+                            {this.state.current_move_category !== "new" ?
                                 <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
-                                <span>{this.state.move_string}</span> :
-                            <span>(none)</span>}
-                    </div>
+                                <span>{this.state.move_string}</span>}
+                        </div>
+                    }
                 </div>
             </div>
         );
@@ -457,8 +457,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             return (
                 <EditPane
                     description={this.state.position_description}
-                    save_new_sequence={this.saveNewSequence}
-                    update_description={this.updateDescription} />
+                    save_new_info={this.saveNewPositionInfo}/>
             );
         }
         else {
@@ -468,41 +467,14 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         }
     }
 
-    updateDescription = (new_description, move_type) => {
-        // Send the new description to the sever.
-        // We can only do that if the move itself has already been saved
-        // ... in which case, we save it now, with the current move_type.
-        // move_type is only used if the move itself has _not_ been saved.
-        // This method is not for editing an existing move_type.
-        if (this.state.current_move_category === "new") {
-            this.saveNewSequence(move_type);
-            this.new_description_pending = new_description;
-            console.log("set pending description ", this.new_description_pending);
-        }
-        else {
-            fetch(this.current_position_url, {
-                method: 'put',
-                mode: 'cors',
-                headers: godojo_headers,
-                body: JSON.stringify({ description: new_description, category: "" })
-            }).then(res => res.json())
-                .then(body => {
-                    console.log("Server response to description PUT:", body);
-                    this.processNewJosekiPosition(body);
-                });
-            this.new_description_pending = "";
-            console.log("reset pending description");
-        }
-    }
-
-    saveNewSequence = (move_type) => {
+    saveNewPositionInfo = (move_type, description) => {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
             fetch(this.current_position_url, {
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: this.state.position_description, category: move_type.toUpperCase() })
+                body: JSON.stringify({ description: description, category: move_type.toUpperCase() })
             }).then(res => res.json())
                 .then(body => {
                     console.log("Server response to sequence PUT:", body);
@@ -510,7 +482,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 });
         }
         else {
-            // Here the person has added a bunch of moves then clicked "save"
+            // Here the person has added one or more moves then clicked "save"
+            // First we save the new position(s)
             fetch(server_url + "positions/", {
                 method: 'post',
                 mode: 'cors',
@@ -520,12 +493,19 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 .then(body => {
                     console.log("Server response to sequence POST:", body);
                     this.processNewJosekiPosition(body);
-                    this.setState({
-                        current_move_category: move_type
-                    });
-                    // Now that we have the new position in place, it is safe to save it's description
-                    if (this.new_description_pending !== "") {
-                        this.updateDescription(this.new_description_pending, move_type);
+
+                    // Now we can save the description on the final new position, if they supplied one
+                    if (description !== "") {
+                        fetch(this.current_position_url, {
+                            method: 'put',
+                            mode: 'cors',
+                            headers: godojo_headers,
+                            body: JSON.stringify({ description: description, category: "" })
+                        }).then(res => res.json())
+                            .then(body => {
+                                console.log("Server response to description PUT:", body);
+                                this.processNewJosekiPosition(body);
+                            });
                     }
                 });
         }
@@ -534,8 +514,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
 interface EditProps {
     description: string;
-    save_new_sequence: (move_type) => void;
-    update_description: (description, move_type) => void;
+    save_new_info: (move_type, description) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -566,16 +545,12 @@ class EditPane extends React.Component<EditProps, any> {
         this.setState({ move_type: e.target.value });
     }
 
-    saveNewSequence = (e) => {
-        this.props.save_new_sequence(this.state.move_type);
+    saveNewInfo= (e) => {
+        this.props.save_new_info(this.state.move_type, this.state.new_description);
     }
 
     handleEditInput = (e) => {
         this.setState({ new_description: e.target.value });
-    }
-
-    saveDescription = (e) => {
-        this.props.update_description(this.state.new_description, this.state.move_type);
     }
 
     render = () => {
@@ -586,9 +561,6 @@ class EditPane extends React.Component<EditProps, any> {
                     <select value={this.state.move_type} onChange={this.onTypeChange}>
                         {this.selections}
                     </select>
-                    <button className="btn xs primary" onClick={this.saveNewSequence}>
-                        {_("Save")}
-                    </button>
                 </div>
 
                 <div className="description-edit">
@@ -596,7 +568,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <div className="edit-label">Position description:</div>
                     <textarea onChange={this.handleEditInput} value={this.state.new_description} />
                     <div className="position-edit-button">
-                        <button className="btn xs primary" onClick={this.saveDescription}>
+                        <button className="btn xs primary" onClick={this.saveNewInfo}>
                             {_("Save")}
                         </button>
                     </div>
@@ -624,10 +596,10 @@ interface ExploreProps {
 class ExplorePane extends React.Component<ExploreProps> {
     render = () => (
         <React.Fragment>
-            {this.props.position_type !== "new"  ?
-            <div className="position-description">
-                <ReactMarkdown source={this.props.description} />
-            </div> : "" }
+            {this.props.position_type !== "new" ?
+                <div className="position-description">
+                    <ReactMarkdown source={this.props.description} />
+                </div> : ""}
         </React.Fragment>
     )
 }
