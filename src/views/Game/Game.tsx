@@ -1329,7 +1329,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     decide(winner): void {{{
         let moderation_note = null;
         do {
-            moderation_note = prompt("Moderator note:");
+            moderation_note = prompt("Deciding for " + winner.toUpperCase() + " - Moderator note:");
             if (moderation_note == null) {
                 return;
             }
@@ -1346,7 +1346,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     annul = () => {{{
         let moderation_note = null;
         do {
-            moderation_note = prompt("Moderator note:");
+            moderation_note = prompt("ANNULMENT - Moderator note:");
             if (moderation_note == null) {
                 return;
             }
