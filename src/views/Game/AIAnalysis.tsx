@@ -521,14 +521,16 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         }
 
         try {
-            let marks = {};
-            let variations = full.variations.slice(0, 6);
-            for (let i = 0 ; i < variations.length; ++i) {
-                let letter = alphabet[i];
-                marks[letter] = variations[i].move;
+            if (full) {
+                let marks = {};
+                let variations = full.variations.slice(0, 6);
+                for (let i = 0 ; i < variations.length; ++i) {
+                    let letter = alphabet[i];
+                    marks[letter] = variations[i].move;
+                }
+                this.props.game.goban.setMarks(marks, true);
+                this.props.game.goban.setHeatmap(this.normalizeHeatmap(full.heatmap));
             }
-            this.props.game.goban.setMarks(marks, true);
-            this.props.game.goban.setHeatmap(this.normalizeHeatmap(full.heatmap));
         } catch (e) {
             console.error(e);
         }

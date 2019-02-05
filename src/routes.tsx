@@ -55,7 +55,6 @@ import { Styling } from "Styling";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
 import { GobanTest } from "GobanTest";
-import { Analysis } from "Analysis";
 
 import * as docs from "docs";
 
@@ -99,10 +98,6 @@ export const routes = (
             <Route path="/review/:review_id" component={Game}/>
             <Route path="/demo/view/:review_id" component={Game}/>
             <Route path="/demo/:review_id" component={Game}/>
-            <Route path="/analysis/:game_id/:analysis_id" component={Analysis}/>
-            {/*
-            <Route path="/analysis/:game_id" component={AnalysisList}/>
-            */}
 
             <Route path="/player/settings" component={Settings}/>
             <Route path="/player/supporter" component={Supporter}/>
