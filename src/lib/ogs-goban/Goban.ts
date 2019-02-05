@@ -142,6 +142,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private drawing_enabled;
     private edit_color;
     private errorHandler;
+    private heatmap:Array<Array<number>>;
     private game_connection_data;
     private game_type;
     private getPuzzlePlacementSetting;
@@ -2138,6 +2139,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             have_text_to_draw = true;
         }
 
+
         /* clear and draw lines */
         {{{
             let l = i * s + ox;
@@ -2243,6 +2245,29 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.fill();
             }
         }}}
+
+        /* Heatmap */
+        /* {{{ */
+        if (this.heatmap) {
+            if (this.heatmap[j][i] > 0.001) {
+                let color = "#00ff00";
+                ctx.lineCap = "square";
+                ctx.save();
+                ctx.beginPath();
+                ctx.globalAlpha = this.heatmap[j][i] * 0.5;
+                let r = Math.floor(this.square_size * 0.5) - 0.5;
+                ctx.moveTo(cx - r, cy - r);
+                ctx.lineTo(cx + r, cy - r);
+                ctx.lineTo(cx + r, cy + r);
+                ctx.lineTo(cx - r, cy + r);
+                ctx.lineTo(cx - r, cy - r);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        /* }}} */
+
 
         /* Draw square highlights if any */
         {{{
@@ -2706,6 +2731,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
         ret += stone_color + ",";
+
+        /* Draw heatmap */
+        if (this.heatmap) {
+            if (this.heatmap[j][i] > 0.001) {
+                ret += "heat " + this.heatmap[j][i] + ",";
+            }
+        }
 
         /* Figure out marks for this spot */
         let pos = this.getMarks(i, j);
@@ -3436,10 +3468,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
     } /* }}} */
-    public showFirst() { /* {{{ */
+    public showFirst(dont_update_display?) { /* {{{ */
         this.engine.jumpTo(this.engine.move_tree);
-        this.updateTitleAndStonePlacement();
-        this.emit("update");
+        if (!dont_update_display) {
+            this.updateTitleAndStonePlacement();
+            this.emit("update");
+        }
     } /* }}} */
     public showPrevious(dont_update_display?) { /* {{{ */
         if (this.mode === "conditional") {
@@ -3908,6 +3942,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
     } /* }}} */
+    public setHeatmap(heatmap:Array<Array<number>>): Array<Array<number>> {
+        let ret = this.heatmap;
+        this.heatmap = heatmap;
+        this.redraw(true);
+        return ret;
+    }
 
     private setLetterMark(x, y, mark: string, drawSquare?) {
         this.engine.cur_move.getMarks(x, y).letter = mark;
@@ -4073,9 +4113,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    } /* }}} */
-    private heatmapUpdated() { /* {{{ */
-        this.redraw(true);
     } /* }}} */
     private updateScoreEstimation() { /* {{{ */
         if (this.score_estimate) {

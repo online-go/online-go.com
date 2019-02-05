@@ -17,7 +17,7 @@
 
 analysis-prediction-chart-height=180px;
 
-.AIAnalysis {
+.AIAnalysisChart {
     height: analysis-prediction-chart-height;
     margin-bottom: 1rem;
     max-width: calc(100vw - 2em);
@@ -64,6 +64,8 @@ analysis-prediction-chart-height=180px;
 
 
     .chart {
+        cursor: crosshair;
+
         text {
             fill: #7F8FAF
         }
@@ -137,4 +139,44 @@ analysis-prediction-chart-height=180px;
         themed fill colored-background-fg
     }
 
+}
+
+.AIAnalysis {
+    .variations {
+        display: block;
+        height: 4rem;
+        min-height: 4rem;
+        max-height: 4rem;
+        overflow-y: auto;
+    }
+
+    .variation {
+        white-space: nowrap;
+        overflow: hidden;
+
+        &:hover {
+            themed background-color shade5
+        }
+
+        .coordinate {
+            margin-right: 0.5rem;
+            margin-left: 0.5rem;
+            display: inline-block;
+            width: 2rem;
+            text-align: right;
+        }
+
+        .increased-win-rate, .decreased-win-rate {
+            margin-left: 0.1rem;
+            display: inline-block;
+            width: 2rem;
+            text-align: right;
+        }
+        .increased-win-rate {
+            color: green;
+        }
+        .decreased-win-rate {
+            color: red;
+        }
+    }
 }

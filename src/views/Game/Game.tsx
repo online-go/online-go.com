@@ -46,7 +46,7 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AIAnalysis} from "./AIAnalysis";
+import {AIAnalysis, AIAnalysisChart} from "./AIAnalysis";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
@@ -149,6 +149,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             annulled: false,
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
+            ai_analysis_chart_data: null,
         };
 
         (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
@@ -601,6 +602,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.startAutoplay();
         }
     }
+    nav_goto_move = (mv:number) => {
+        let last_estimate_move = this.stopEstimatingScore();
+        this.stopAutoplay();
+        this.checkAndEnterAnalysis(last_estimate_move);
+        this.goban.showFirst(true);
+        for (let i = 0; i < mv; ++i) {
+            this.goban.showNext(i !== mv - 1);
+        }
+        this.goban.syncReviewMove();
+    }
+
     stopAutoplay() {
         if (this.autoplay_timer) {
             clearTimeout(this.autoplay_timer);
@@ -1507,7 +1519,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         preferences.set("sound-enabled", enabled);
     }
 
-
     /* Review stuff */
     syncToCurrentReviewMove = () => {
         if (this.goban.engine.cur_review_move) {
@@ -1561,6 +1572,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
 
+                    {this.frag_ai_analysis_chart()}
                     {this.frag_below_board_controls()}
 
                     {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */}
@@ -1714,18 +1726,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
                     {(state.mode === "analyze" || null) &&
-                        <span>
-                            {state.show_undo_requested
-                                ?
-                                <span>
-                                    {_("Undo Requested")}
-                                </span>
-                                :
-                                <span>
-                            {_("Analyze Mode")}
-                                </span>
-                            }
-                        </span>
+                       (state.ai_analysis_chart_data
+                            ? <span>{_("AI Analysis")}</span>
+                            : <span>
+                                {state.show_undo_requested
+                                    ?
+                                    <span>
+                                        {_("Undo Requested")}
+                                    </span>
+                                    :
+                                    <span>
+                                        {_("Analyze Mode")}
+                                    </span>
+                                }
+                              </span>
+                       )
                     }
 
 
@@ -1764,7 +1779,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </span>
                     }
                 </div>
-                {/*}*/}
+                {/* } */}
                 {((state.phase === "play" && state.mode === "play" && this.state.paused && this.goban.engine.pause_control && this.goban.engine.pause_control.paused) || null) &&  /* { */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
@@ -1893,7 +1908,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       </div>
                     </div>
                 }{/* } */}
-                {(this.state.mode === "analyze" || null) &&  /* { */
+                {((this.state.mode === "analyze" && !this.state.ai_analysis_chart_data) || null) &&  /* { */
                     <div>
                         {this.frag_analyze_button_bar()}
 
@@ -2081,7 +2096,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_ai_analysis_chart() {
-        return null;
+        if (!this.state.ai_analysis_chart_data) {
+            return null;
+        }
+        return <AIAnalysisChart entries={this.state.ai_analysis_chart_data} setmove={this.nav_goto_move} />;
     }
     frag_ai_analysis_controls() {
         return <AIAnalysis game={this} move={this.state.cur_move_number} />;
