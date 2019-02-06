@@ -58,7 +58,10 @@
     }
     .right-col {
         display: flex;
-        width: goban-view-bar-width
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 50%;
+        //width: goban-view-bar-width;
         overflow-y: auto;
         overflow-x: hidden;
         min-height: auto;
@@ -78,24 +81,23 @@
 
     .right-col {
         padding-left: 2em;
+        padding-right: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
 
-        justify-content: space-between; // push the status info to the bottom of the screen
+        .top-bar {
+            display: flex;
+            justify-content: flex-start;
+             align-items: center;
 
-        .top-stuff {
-            padding-top: 1em;
-
-            .top-bar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-
-                .move-controls {
-                    i {
-                        cursor: pointer;
-                        padding-right: 1em;
-                    }
+            .move-controls {
+                i {
+                    cursor: pointer;
+                    padding-right: 1em;
                 }
             }
+
             .mode-control {
                 display: flex;
                 flex-direction: row;
@@ -108,38 +110,84 @@
                     themed-darken border-color success border-darken-amount
                 }
             }
+        }
 
-            .position-header {
+        .position-details {
+            flex-grow: 1;
+            flex-shrink:0;
+            flex-basis:auto;
+            display: flex;
+
+            .description-column {
+                display: flex;
+                flex-grow: 1;
+                flex-basis: 50%;
             }
 
-            .move-type-selection {
-                padding-top: 1em;
-                padding-bottom: 1em;
-
-                span {
-                    margin-right: 0.5em;
-                }
-                button {
-                    margin-left 1em;
-                }
+            .open {
+                themed background-color shade5;
             }
 
-            .description-edit {
-                .edit-label {
-                    font-style: italic;
-                    font-size: smaller;
-                }
+            .extra-info-column {
+                margin-top: 3em;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+                flex-basis: 50%;
 
-                textarea {
-                    width: 100%;
-                }
-                .position-edit-button {
-                    width: 100%
+                .discussion-header {
                     display: flex;
-                    justify-content: flex-end;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    padding-right: 0.5em;
+                    align-items: center;
+                    themed background-color shade4;
+                }
+
+                .discussion-lines {
+                    padding-left: 1em;
+                    overflow-y: auto;
+                }
+
+                .fa-comments-o, .fa-comment-o {
+                    align-self: flex-end;
+                    padding-right: 0.5em;
                 }
             }
         }
+
+        .hide {
+            visibility: hidden;
+        }
+
+        .move-type-selection {
+            padding-top: 1em;
+            padding-bottom: 1em;
+
+             span {
+                margin-right: 0.5em;
+            }
+            button {
+                margin-left 1em;
+            }
+        }
+
+        .description-edit {
+            .edit-label {
+                font-style: italic;
+                font-size: smaller;
+            }
+
+            textarea {
+                width: 100%;
+            }
+            .position-edit-button {
+                width: 100%
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+
         .status-info {
             display: flex;
             flex-direction: column;

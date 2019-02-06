@@ -33,6 +33,7 @@ import { getSectionPageCompleted } from "../LearningHub/util";
 import { PlayerIcon } from "PlayerIcon";
 import { Player } from "Player";
 import { moveCursor } from "readline";
+import { string } from "prop-types";
 
 //const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
 const server_url = "http://localhost:8081/";
@@ -69,7 +70,7 @@ interface JosekiProps {
     match: {
         params: any
     };
-    location: any
+    location: any;
 }
 
 export class Joseki extends React.Component<JosekiProps, any> {
@@ -243,7 +244,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             position_description: position.description,
             contributor_id: position.contributor,
             current_move_category: position.category,
-            current_node_id: position.nodeId
+            current_node_id: position.nodeId,
+            current_comment_count: position.commentCount
         });
         this.current_position_url = position._links.self.href;
         this.last_server_placement = position.placement;
@@ -392,38 +394,35 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     </div>
                 </div>
                 <div className="right-col">
-                    <div className="top-stuff">
-                        <div className="top-bar">
-                            <div className="move-controls">
-                                <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
-                                <i className="fa fa-step-backward" onClick={this.backOneMove}></i>
-                            </div>
-                            {this.renderModeControl()}
+                    <div className="top-bar">
+                        <div className="move-controls">
+                            <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
+                            <i className="fa fa-step-backward" onClick={this.backOneMove}></i>
                         </div>
-
-                        {this.renderModeMainPane()}
+                        {this.renderModeControl()}
                     </div>
-                    {this.state.move_string !== "" &&
-                        <div className="status-info">
-                            <div className="move-category">
-                                {this.state.current_move_category === "" ? "" :
-                                    "Last move: " +
-                                    (this.state.current_move_category === "new" ? (
-                                        this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
-                                        this.state.current_move_category)}
-                            </div>
 
-                            <div className={"contributor" +
-                                ((this.state.move_string === "" || this.state.current_move_category === "new") ? " hide" : "")}>
+                    {this.renderModeMainPane()}
 
-                                <span>Contributor:</span> <Player user={this.state.contributor_id} />
-                            </div>
-                            <span>Moves made:</span>
-                            {this.state.current_move_category !== "new" ?
-                                <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
-                                <span>{this.state.move_string}</span>}
+                    <div className={"status-info" + (this.state.move_string === "" ? " hide" : "")} >
+                        <div className="move-category">
+                            {this.state.current_move_category === "" ? "" :
+                                "Last move: " +
+                                (this.state.current_move_category === "new" ? (
+                                    this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
+                                    this.state.current_move_category)}
                         </div>
-                    }
+
+                        <div className={"contributor" +
+                            ((this.state.current_move_category === "new") ? " hide" : "")}>
+
+                            <span>Contributor:</span> <Player user={this.state.contributor_id} />
+                        </div>
+                        <span>Moves made:</span>
+                        {this.state.current_move_category !== "new" ?
+                            <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
+                            <span>{this.state.move_string}</span>}
+                    </div>
                 </div>
             </div>
         );
@@ -450,7 +449,9 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             return (
                 <ExplorePane
                     description={this.state.position_description}
-                    position_type={this.state.current_move_category} />
+                    position_type={this.state.current_move_category}
+                    comment_count={this.state.current_comment_count}
+                    position_id={this.state.current_node_id} />
             );
         }
         else if (this.state.mode === PageMode.Edit) {
@@ -462,7 +463,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         }
         else {
             return (
-                <div> (not implemented yet!)</div>
+                <div>(not implemented yet!)</div>
             );
         }
     }
@@ -545,7 +546,7 @@ class EditPane extends React.Component<EditProps, any> {
         this.setState({ move_type: e.target.value });
     }
 
-    saveNewInfo= (e) => {
+    saveNewInfo = (e) => {
         this.props.save_new_info(this.state.move_type, this.state.new_description);
     }
 
@@ -591,17 +592,107 @@ class EditPane extends React.Component<EditProps, any> {
 interface ExploreProps {
     description: string;
     position_type: string;
+    comment_count: number;
+    position_id: string;
 }
 
-class ExplorePane extends React.Component<ExploreProps> {
-    render = () => (
-        <React.Fragment>
+class ExplorePane extends React.Component<ExploreProps, any> {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            extra_info_selected: "none",
+            current_position: "",
+            commentary: []
+        };
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        // Detect position id changes, so we can close the extra_info pane
+        if (nextProps.position_id !== prevState.current_position) {
+          return { current_position: nextProps.position_id };
+       }
+       else {
+           return null;
+       }
+     }
+
+    componentDidUpdate = (prevProps, prevState) => {
+        if (prevProps.position_id !== this.props.position_id) {
+            this.setState({
+                extra_info_selected: "none",
+                commentary: []
+            });
+        }
+    }
+
+    showComments = () => {
+        const comments_url = server_url + "commentary?id=" + this.props.position_id;
+        console.log("Fetching comments ", comments_url);
+        console.log(godojo_headers);
+        fetch(comments_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                console.log("Server response:", body);
+                this.extractCommentary(body.commentary);
+            });
+        this.setState({extra_info_selected: "comments"});
+    }
+
+    extractCommentary = (commentary_dto) => {
+        let commentary = commentary_dto.map((comment) => (
+            {
+                user_id: comment.userId,
+                date: comment.date,
+                comment: comment.comment
+            }
+        ));
+        this.setState({commentary: commentary});
+    }
+
+    hideComments = () => {
+        this.setState({extra_info_selected: "none"});
+    }
+
+    render = () => {
+        return (
+
+        <div className="position-details">
+            <div className="description-column">
             {this.props.position_type !== "new" ?
                 <div className="position-description">
                     <ReactMarkdown source={this.props.description} />
                 </div> : ""}
-        </React.Fragment>
-    )
+            </div>
+            <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+            {this.state.extra_info_selected === "comments" &&
+                <React.Fragment>
+                    <div className="discussion-header">
+                        <div>Discussion:</div>
+                        <i className="fa fa-caret-right" onClick={this.hideComments}/>
+                    </div>
+                    <div className="discussion-lines">
+                        {this.state.commentary.map((comment, idx) =>
+                            <div className="comment" key={idx}>
+                                <div>{comment.user_id}</div>
+                                <div>{comment.date}</div>
+                                <div>{comment.comment}</div>
+                            </div>
+                        )}
+                    </div>
+                </React.Fragment>
+            }
+            {this.state.extra_info_selected !== "comments" &&
+                (this.props.comment_count !== 0 ?
+                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments}/> :
+                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments}/> )
+            }
+            </div>
+        </div>
+    )}
 }
-
 
