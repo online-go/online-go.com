@@ -1588,9 +1588,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         )
                     }
 
-                    {/* ((this.state.view_mode === 'portrait') || null) && CURSE_BTF_AD */}
-
-
                     {((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */) || null) &&
                         AI_ANALYSIS
                     }
@@ -2432,8 +2429,6 @@ export function goban_view_mode(bar_width?: number): ViewMode {
     let w = win.width() || 1;
     let aspect_ratio = w / h;
 
-    //swal('' + aspect_ratio + ` ${w}x${h}`);
-
     if (((aspect_ratio <= 0.8) || w < bar_width * 2) && w < 1280) {
         return "portrait";
     }
@@ -2442,13 +2437,9 @@ export function goban_view_mode(bar_width?: number): ViewMode {
         return "wide";
     }
 
-    //swal('' + aspect_ratio);
-
-    //return 'square';
     return "wide";
 }
 export function goban_view_squashed(): boolean {
-    //return win.height() < 680;
     /* This value needs to match the "dock-inline-height" found in Dock.styl */
     return win.height() <= 500;
 }
