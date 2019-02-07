@@ -2267,7 +2267,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
 
-        console.log("rendering ", annul, annulable);
 
         return (
             <Dock>
