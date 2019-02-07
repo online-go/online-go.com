@@ -604,7 +604,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.state = {
             extra_info_selected: "none",
             current_position: "",
-            commentary: []
+            commentary: [],
+            next_comment: ""
         };
     }
 
@@ -647,7 +648,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         let commentary = commentary_dto.map((comment) => (
             {
                 user_id: comment.userId,
-                date: comment.date,
+                date: new Date(comment.date),
                 comment: comment.comment
             }
         ));
@@ -656,6 +657,17 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     hideComments = () => {
         this.setState({extra_info_selected: "none"});
+    }
+
+    onCommentChange = (e) => {
+        console.log(e.target.value);
+        if (/\r|\n/.exec(e.target.value)) {
+            console.log("done");
+            this.setState({next_comment: ""});
+        }
+        else {
+            this.setState({next_comment: e.target.value});
+        }
     }
 
     render = () => {
@@ -669,8 +681,14 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 </div> : ""}
             </div>
             <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+            {this.state.extra_info_selected !== "comments" &&
+                (this.props.comment_count !== 0 ?
+                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments}/> :
+                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments}/> )
+            }
             {this.state.extra_info_selected === "comments" &&
                 <React.Fragment>
+                <div className="discussion-container">
                     <div className="discussion-header">
                         <div>Discussion:</div>
                         <i className="fa fa-caret-right" onClick={this.hideComments}/>
@@ -678,21 +696,21 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                     <div className="discussion-lines">
                         {this.state.commentary.map((comment, idx) =>
                             <div className="comment" key={idx}>
-                                <div>{comment.user_id}</div>
-                                <div>{comment.date}</div>
-                                <div>{comment.comment}</div>
+                                <div className="comment-header">
+                                    <Player user={comment.user_id}></Player>
+                                    <div className="comment-date">{comment.date.toDateString()}</div>
+                                </div>
+                                <div className="comment-text">{comment.comment}</div>
                             </div>
                         )}
                     </div>
+                </div>
+                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange}/>
                 </React.Fragment>
-            }
-            {this.state.extra_info_selected !== "comments" &&
-                (this.props.comment_count !== 0 ?
-                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments}/> :
-                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments}/> )
             }
             </div>
         </div>
-    )}
+        );
+    }
 }
 

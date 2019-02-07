@@ -134,6 +134,7 @@
                 flex-direction: column;
                 flex-grow: 1;
                 flex-basis: 50%;
+                justify-content: space-between; // put input at the bottom
 
                 .discussion-header {
                     display: flex;
@@ -145,8 +146,26 @@
                 }
 
                 .discussion-lines {
-                    padding-left: 1em;
                     overflow-y: auto;
+                }
+
+                .comment-header {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+
+                    .comment-date {
+                        font-size: smaller;
+                        padding-right: 0.5em;
+                    }
+                }
+
+                .comment-text {
+                    padding-left: 0.5em;
+                }
+
+                .comment-input {
+                    resize: none;
                 }
 
                 .fa-comments-o, .fa-comment-o {
