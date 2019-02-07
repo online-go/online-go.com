@@ -662,7 +662,17 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     onCommentChange = (e) => {
         console.log(e.target.value);
         if (/\r|\n/.exec(e.target.value)) {
-            console.log("done");
+            const comment_url = server_url + "comment?id=" + this.props.position_id;
+            fetch(comment_url, {
+                method: 'post',
+                mode: 'cors',
+                headers: godojo_headers,
+                body: this.state.next_comment
+            }).then(res => res.json())
+                .then(body => {
+                    console.log("Server response to sequence POST:", body);
+                    this.extractCommentary(body.commentary);
+                });
             this.setState({next_comment: ""});
         }
         else {
@@ -672,7 +682,6 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     render = () => {
         return (
-
         <div className="position-details">
             <div className="description-column">
             {this.props.position_type !== "new" ?
