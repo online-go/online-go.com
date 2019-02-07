@@ -2243,6 +2243,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let goban = this.goban;
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
+        let annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
+
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
         if (review) {
@@ -2264,6 +2266,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
+
 
         return (
             <Dock>
@@ -2324,7 +2327,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
-                {annul && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
+                {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
+                {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
             </Dock>
         );
     }}}
