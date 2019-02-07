@@ -42,23 +42,22 @@ class Page1 extends LearningPage {
     }
 
     text() {
-        return _("There are two ways to keep your group alive");
+        return _("Create two eyes to keep your group alive!");
     }
     config() {
         return {
             mode: "puzzle",
             initial_state: {
-                'black': 'a2b2c2d2e2e1',
-                'white': 'a3b3c3d3e3f3f2f1'
+                'black': 'a2b2c2d2d1',
+                'white': 'a3b3c3d3e3e2e1'
             },
             move_tree: this.makePuzzleMoveTree(
                 [
                     "b1",
-                    "c1"
                 ],
                 [
-                    "a1c1",
-                    "d1b1",
+                    "a1b1c1b1",
+                    "c1b1a1b1",
                 ]
             )
         };
