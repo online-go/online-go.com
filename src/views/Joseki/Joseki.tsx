@@ -221,12 +221,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             .then(body => {
                 console.log("Server response:", body);
 
-                this.processNewJosekiPosition(body);
-
                 if (this.load_sequence_to_board) {
                     this.loadSequenceToBoard(body.play);
                     this.load_sequence_to_board = false;
                 }
+                this.processNewJosekiPosition(body);
             });
     }
 
@@ -255,6 +254,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
     renderJosekiPosition = (next_moves: Array<any>) => {
+        console.log("rendering josekis ", next_moves);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
         next_moves.forEach((option, index) => {
