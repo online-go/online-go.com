@@ -243,11 +243,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             position_description: position.description,
             contributor_id: position.contributor,
             current_move_category: position.category,
-            current_node_id: position.nodeId,
-            current_comment_count: position.commentCount
+            current_node_id: position.node_id,
+            current_comment_count: position.comment_count
         });
         this.last_server_placement = position.placement;
-        this.next_moves = position.nextMoves;
+        this.next_moves = position.next_moves;
         this.previous_position = position.parent;
         this.renderJosekiPosition(this.next_moves);
     }
@@ -308,7 +308,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         if (this.backstepping) {
             this.backstepping = false;
             if (this.state.current_move_category !== "new") {
-                this.fetchNextMovesFor(this.previous_position.nodeId);
+                this.fetchNextMovesFor(this.previous_position.node_id);
                 this.setState({ current_move_category: this.previous_position.category });
             }
             else if (placement === this.last_server_placement) {
@@ -324,7 +324,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
             if (chosen_move !== undefined) {
                 /* The database already knows about this move, so we just get and display the new position information */
-                this.fetchNextMovesFor(chosen_move.nodeId);
+                this.fetchNextMovesFor(chosen_move.node_id);
             } else {
                 /* This isn't in the database */
                 this.setState({
