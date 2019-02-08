@@ -33,10 +33,14 @@ import { getSectionPageCompleted } from "../LearningHub/util";
 import { PlayerIcon } from "PlayerIcon";
 import { Player } from "Player";
 import { moveCursor } from "readline";
-import { string } from "prop-types";
+import { string, node } from "prop-types";
 
 //const server_url = "http://ec2-54-175-51-176.compute-1.amazonaws.com:80/";
 const server_url = "http://localhost:8081/";
+
+const position_url = (node_id) => {
+    return server_url + "position?id=" + node_id;
+}
 
 let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
@@ -82,13 +86,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban_div: any;
     goban_opts: any = {};
 
-    current_position_url = "";  // the self url for the position that the server returned for the current placement
     last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
-    load_sequence_to_board = false; // True if we need to load the stones from the sequence from the server onto the board
+    load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
 
-    new_description_pending = ""; // A description they've entered that we haven't sent to the server yet
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
 
@@ -97,8 +99,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         console.log(props);
         this.state = {
-            move_string: "",  // This is used for making sure we know what the current move is.
-            position_description: "",
+            move_string: "",         // This is used for making sure we know what the current move is.
+            current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it            position_description: "",
             current_move_category: "",
             mode: PageMode.Explore,
         };
@@ -198,10 +200,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     resetJosekiSequence = (pos: String) => {
-        // as the server for the moves from postion pos
-        const targetPositionUrl = server_url + "position?id=" + pos;
-        console.log(targetPositionUrl);
-        this.fetchNextMovesFor(targetPositionUrl);
+        // ask the server for the moves from postion pos
+        this.fetchNextMovesFor(pos);
     }
 
     onResize = () => {
@@ -210,10 +210,10 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         );
     }
 
-    fetchNextMovesFor = (placementUrl) => {
+    fetchNextMovesFor = (node_id) => {
         /* TBD: error handling, cancel on new route */
         console.log("fetch headers:", godojo_headers);
-        fetch(placementUrl, {
+        fetch(position_url(node_id), {
             mode: 'cors',
             headers: godojo_headers
         })
@@ -247,10 +247,9 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             current_node_id: position.nodeId,
             current_comment_count: position.commentCount
         });
-        this.current_position_url = position._links.self.href;
         this.last_server_placement = position.placement;
-        this.next_moves = position._embedded.moves;
-        this.previous_position = position._embedded.parent;
+        this.next_moves = position.nextMoves;
+        this.previous_position = position.parent;
         this.renderJosekiPosition(this.next_moves);
     }
 
@@ -309,12 +308,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         if (this.backstepping) {
             this.backstepping = false;
             if (this.state.current_move_category !== "new") {
-                this.fetchNextMovesFor(this.previous_position._links.self.href);
+                this.fetchNextMovesFor(this.previous_position.nodeId);
                 this.setState({ current_move_category: this.previous_position.category });
             }
             else if (placement === this.last_server_placement) {
                 // We have back stepped back to known moves
-                this.fetchNextMovesFor(this.current_position_url);
+                this.fetchNextMovesFor(this.state.current_node_id);
             }
         }
         else if (this.load_sequence_to_board) {
@@ -325,7 +324,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
             if (chosen_move !== undefined) {
                 /* The database already knows about this move, so we just get and display the new position information */
-                this.fetchNextMovesFor(chosen_move._links.self.href);
+                this.fetchNextMovesFor(chosen_move.nodeId);
             } else {
                 /* This isn't in the database */
                 this.setState({
@@ -471,7 +470,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     saveNewPositionInfo = (move_type, description) => {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
-            fetch(this.current_position_url, {
+
+            fetch(position_url(this.state.current_node_id), {
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
@@ -497,7 +497,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
                     // Now we can save the description on the final new position, if they supplied one
                     if (description !== "") {
-                        fetch(this.current_position_url, {
+                        fetch(position_url(this.state.current_node_id), {
                             method: 'put',
                             mode: 'cors',
                             headers: godojo_headers,
