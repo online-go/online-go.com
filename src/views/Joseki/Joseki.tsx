@@ -93,6 +93,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
+    played_mistake = false;
 
     constructor(props) {
         super(props);
@@ -103,7 +104,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it            position_description: "",
             current_move_category: "",
             mode: PageMode.Explore,
-            played_mistake: false
+            move_type_sequence: [] as string[]
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -213,7 +214,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     fetchNextMovesFor = (node_id) => {
         /* TBD: error handling, cancel on new route */
-        // console.log("fetch headers:", godojo_headers);
+        console.log("fetching for ", node_id);
         fetch(position_url(node_id), {
             mode: 'cors',
             headers: godojo_headers
@@ -325,37 +326,45 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
-            if (this.state.mode === PageMode.Play) {
-                if (chosen_move === undefined ||
-                    chosen_move.category !== "GOOD" && chosen_move.category !== "IDEAL") {
-                    this.setState({
-                        played_mistake: true
-                    });
-                }
+            if (this.state.mode === PageMode.Play &&
+                (chosen_move === undefined ||
+                 chosen_move.category !== "GOOD" && chosen_move.category !== "IDEAL")) {
+                console.log("mistake!");
+                this.played_mistake = true;
             }
 
-            if (chosen_move !== undefined) {
+            if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
                 this.fetchNextMovesFor(chosen_move.node_id);
             } else {
                 /* This isn't in the database */
+                console.log("exploratory");
                 this.setState({
                     position_description: "## Joseki",
                     current_move_category: "new"
                 });
             }
 
+            if (this.state.mode === PageMode.Play) {
+                const this_play_type = (chosen_move === undefined) ? "Not Joseki" : chosen_move.category;
+
+                console.log("Update move sequence");
+                this.setState({move_type_sequence: [...this.state.move_type_sequence, this_play_type]});
+            }
+
+            console.log("pp exit");
         }
     }
 
     componentDidUpdate(prevProps) {
+        console.log("did update...");
         if (prevProps.location.key !== this.props.location.key) {
             this.componentDidMount();  // force reload of position if they click a position link
         }
-        if (this.state.mode === PageMode.Play && this.state.played_mistake) {
+        if (this.state.mode === PageMode.Play && this.played_mistake) {
             // They clicked a non-Joseki move
             console.log("Ooops: ", this.state.current_move_category);
-            this.setState({played_mistake: false});
+            this.played_mistake = false;
             this.backOneMove();
         }
     }
@@ -372,7 +381,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     setPlayMode = () => {
         this.setState({
             mode: PageMode.Play,
-            played_mistake: false
+            played_mistake: false,
+            move_type_sequence: []
         });
     }
 
@@ -387,7 +397,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         this.next_moves = [];
         this.setState({
             move_string: "",
-            current_move_category: ""
+            current_move_category: "",
+            move_type_sequence: []
         });
         this.initializeGoban();
         this.onResize();
@@ -396,6 +407,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
+        console.log("backstepping...");
         this.backstepping = true;
         this.goban.showPrevious();
     }
@@ -460,7 +472,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     renderModeMainPane = () => {
         if (this.state.mode === PageMode.Explore ||
-            this.state.move_string === "" // you can't edit the empty board
+            (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
         ) {
             return (
                 <ExplorePane
@@ -483,6 +495,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         else {
             return (
                 <PlayPane
+                    move_type_sequence={this.state.move_type_sequence}
                 />
             );
         }
@@ -534,18 +547,26 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 }
 
+// We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
-
+    move_type_sequence: string[];
 }
 
 class PlayPane extends React.Component<PlayProps, any> {
     constructor(props) {
         super(props);
+
+        this.state = {
+        };
     }
 
     render = () => {
         return (
-            <div className="play-dashboard">Click away...</div>
+            <div className="play-dashboard">
+                {this.props.move_type_sequence.length === 0 &&
+                <div> Your move...</div>}
+                {this.props.move_type_sequence.map( (move_type, id) => (<div key={id}>{move_type}</div>))}
+            </div>
         );
     }
 }
