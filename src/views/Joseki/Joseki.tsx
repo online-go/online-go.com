@@ -618,7 +618,7 @@ class EditPane extends React.Component<EditProps, any> {
         }
 
         return (
-            <React.Fragment>
+            <div className="edit-container">
                 <div className="move-type-selection">
                     <span>{_("This sequence is: ")}</span>
                     <select value={this.state.move_type} onChange={this.onTypeChange}>
@@ -646,7 +646,7 @@ class EditPane extends React.Component<EditProps, any> {
                         <div className="edit-label">(position description)</div> : ""
                     }
                 </div>
-            </React.Fragment>
+            </div>
         );
     }
 }
