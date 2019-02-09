@@ -40,7 +40,7 @@ const server_url = "http://localhost:8081/";
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
-}
+};
 
 let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
@@ -103,6 +103,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it            position_description: "",
             current_move_category: "",
             mode: PageMode.Explore,
+            played_mistake: false
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -212,7 +213,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     fetchNextMovesFor = (node_id) => {
         /* TBD: error handling, cancel on new route */
-        console.log("fetch headers:", godojo_headers);
+        // console.log("fetch headers:", godojo_headers);
         fetch(position_url(node_id), {
             mode: 'cors',
             headers: godojo_headers
@@ -249,7 +250,9 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         this.last_server_placement = position.placement;
         this.next_moves = position.next_moves;
         this.previous_position = position.parent;
-        this.renderJosekiPosition(this.next_moves);
+        if (this.state.mode !== PageMode.Play || this.state.move_string === "") {
+            this.renderJosekiPosition(this.next_moves);
+        }
     }
 
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
@@ -322,6 +325,15 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
+            if (this.state.mode === PageMode.Play) {
+                if (chosen_move === undefined ||
+                    chosen_move.category !== "GOOD" && chosen_move.category !== "IDEAL") {
+                    this.setState({
+                        played_mistake: true
+                    });
+                }
+            }
+
             if (chosen_move !== undefined) {
                 /* The database already knows about this move, so we just get and display the new position information */
                 this.fetchNextMovesFor(chosen_move.node_id);
@@ -332,12 +344,19 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     current_move_category: "new"
                 });
             }
+
         }
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.location.key !== this.props.location.key) {
-            this.componentDidMount();  // force reload of position if they click a new position link
+            this.componentDidMount();  // force reload of position if they click a position link
+        }
+        if (this.state.mode === PageMode.Play && this.state.played_mistake) {
+            // They clicked a non-Joseki move
+            console.log("Ooops: ", this.state.current_move_category);
+            this.setState({played_mistake: false});
+            this.backOneMove();
         }
     }
 
@@ -353,16 +372,14 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     setPlayMode = () => {
         this.setState({
             mode: PageMode.Play,
+            played_mistake: false
         });
-        this.resetBoard();
-        // ... tbd - do playing with joseki :)
     }
 
     setEditMode = () => {
         this.setState({
             mode: PageMode.Edit,
         });
-        /* (We don't reset the board here, they want to edit from this position!) */
     }
 
     resetBoard = () => {
@@ -396,7 +413,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     <div className="top-bar">
                         <div className="move-controls">
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
-                            <i className="fa fa-step-backward" onClick={this.backOneMove}></i>
+                            <i className={"fa fa-step-backward" + (this.state.mode !== PageMode.Play ? "" : " hide")} onClick={this.backOneMove}></i>
                         </div>
                         {this.renderModeControl()}
                     </div>
@@ -450,7 +467,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     description={this.state.position_description}
                     position_type={this.state.current_move_category}
                     comment_count={this.state.current_comment_count}
-                    position_id={this.state.current_node_id} />
+                    position_id={this.state.current_node_id}
+                />
             );
         }
         else if (this.state.mode === PageMode.Edit) {
@@ -458,12 +476,14 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 <EditPane
                     description={this.state.position_description}
                     category={this.state.current_move_category}
-                    save_new_info={this.saveNewPositionInfo}/>
+                    save_new_info={this.saveNewPositionInfo}
+                />
             );
         }
         else {
             return (
-                <div>(not implemented yet!)</div>
+                <PlayPane
+                />
             );
         }
     }
@@ -514,6 +534,23 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 }
 
+interface PlayProps {
+
+}
+
+class PlayPane extends React.Component<PlayProps, any> {
+    constructor(props) {
+        super(props);
+    }
+
+    render = () => {
+        return (
+            <div className="play-dashboard">Click away...</div>
+        );
+    }
+}
+
+
 // This pane enables the user to edit the description and category of the current position
 // It doesn't care what node we are on.  If the description or category of the node changes due to a click,
 // this component just updates what it is showing so they can edit it
@@ -531,11 +568,11 @@ class EditPane extends React.Component<EditProps, any> {
         super(props);
 
         this.state = {
-            move_type: this.props.category,
+            move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
             new_description: this.props.description,
             prop_category: this.props.category,
             prop_description: this.props.description
-};
+        };
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
@@ -548,11 +585,11 @@ class EditPane extends React.Component<EditProps, any> {
                 new_description: nextProps.description,
                 prop_category: nextProps.category,
                 prop_description: nextProps.description
-            }
-         }
-         else {
-             return null;
-         }
+            };
+        }
+        else {
+            return null;
+        }
     }
 
     onTypeChange = (e) => {
@@ -569,14 +606,14 @@ class EditPane extends React.Component<EditProps, any> {
 
 
     render = () => {
-        // console.log("rendering with ", this.state.move_type, this.state.new_description);
+        console.log("rendering with ", this.state.move_type, this.state.new_description);
+
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         let selections = Object.keys(MoveCategory).map((selection, i) => (
             <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
         ));
 
-        if (this.state.move_type !== "new")
-        {
+        if (this.state.move_type !== "new") {
             selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
         }
 
@@ -638,12 +675,12 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     static getDerivedStateFromProps(nextProps, prevState) {
         // Detect position id changes, so we can close the extra_info pane
         if (nextProps.position_id !== prevState.current_position) {
-          return { current_position: nextProps.position_id };
-       }
-       else {
-           return null;
-       }
-     }
+            return { current_position: nextProps.position_id };
+        }
+        else {
+            return null;
+        }
+    }
 
     componentDidUpdate = (prevProps, prevState) => {
         if (prevProps.position_id !== this.props.position_id) {
@@ -668,7 +705,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 console.log("Server response:", body);
                 this.extractCommentary(body.commentary);
             });
-        this.setState({extra_info_selected: "comments"});
+        this.setState({ extra_info_selected: "comments" });
     }
 
     extractCommentary = (commentary_dto) => {
@@ -679,11 +716,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 comment: comment.comment
             }
         ));
-        this.setState({commentary: commentary});
+        this.setState({ commentary: commentary });
     }
 
     hideComments = () => {
-        this.setState({extra_info_selected: "none"});
+        this.setState({ extra_info_selected: "none" });
     }
 
     onCommentChange = (e) => {
@@ -700,52 +737,52 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                     console.log("Server response to sequence POST:", body);
                     this.extractCommentary(body.commentary);
                 });
-            this.setState({next_comment: ""});
+            this.setState({ next_comment: "" });
         }
         else {
-            this.setState({next_comment: e.target.value});
+            this.setState({ next_comment: e.target.value });
         }
     }
 
     render = () => {
         return (
-        <div className="position-details">
-            <div className="description-column">
-            {this.props.position_type !== "new" ?
-                <div className="position-description">
-                    <ReactMarkdown source={this.props.description} />
-                </div> : ""}
-            </div>
-            <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
-            {this.state.extra_info_selected !== "comments" &&
-                (this.props.comment_count !== 0 ?
-                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments}/> :
-                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments}/> )
-            }
-            {this.state.extra_info_selected === "comments" &&
-                <React.Fragment>
-                <div className="discussion-container">
-                    <div className="discussion-header">
-                        <div>Discussion:</div>
-                        <i className="fa fa-caret-right" onClick={this.hideComments}/>
-                    </div>
-                    <div className="discussion-lines">
-                        {this.state.commentary.map((comment, idx) =>
-                            <div className="comment" key={idx}>
-                                <div className="comment-header">
-                                    <Player user={comment.user_id}></Player>
-                                    <div className="comment-date">{comment.date.toDateString()}</div>
-                                </div>
-                                <div className="comment-text">{comment.comment}</div>
-                            </div>
-                        )}
-                    </div>
+            <div className="position-details">
+                <div className="description-column">
+                    {this.props.position_type !== "new" ?
+                        <div className="position-description">
+                            <ReactMarkdown source={this.props.description} />
+                        </div> : ""}
                 </div>
-                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange}/>
-                </React.Fragment>
-            }
+                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+                    {this.state.extra_info_selected !== "comments" &&
+                        (this.props.comment_count !== 0 ?
+                            <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
+                            <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)
+                    }
+                    {this.state.extra_info_selected === "comments" &&
+                        <React.Fragment>
+                            <div className="discussion-container">
+                                <div className="discussion-header">
+                                    <div>Discussion:</div>
+                                    <i className="fa fa-caret-right" onClick={this.hideComments} />
+                                </div>
+                                <div className="discussion-lines">
+                                    {this.state.commentary.map((comment, idx) =>
+                                        <div className="comment" key={idx}>
+                                            <div className="comment-header">
+                                                <Player user={comment.user_id}></Player>
+                                                <div className="comment-date">{comment.date.toDateString()}</div>
+                                            </div>
+                                            <div className="comment-text">{comment.comment}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                        </React.Fragment>
+                    }
+                </div>
             </div>
-        </div>
         );
     }
 }
