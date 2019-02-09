@@ -254,7 +254,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
     renderJosekiPosition = (next_moves: Array<any>) => {
-        console.log("rendering josekis ", next_moves);
+        //console.log("rendering josekis ", next_moves);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
         next_moves.forEach((option, index) => {
@@ -457,6 +457,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             return (
                 <EditPane
                     description={this.state.position_description}
+                    category={this.state.current_move_category}
                     save_new_info={this.saveNewPositionInfo}/>
             );
         }
@@ -513,8 +514,13 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 }
 
+// This pane enables the user to edit the description and category of the current position
+// It doesn't care what node we are on.  If the description or category of the node changes due to a click,
+// this component just updates what it is showing so they can edit it
+
 interface EditProps {
     description: string;
+    category: string;
     save_new_info: (move_type, description) => void;
 }
 
@@ -525,42 +531,61 @@ class EditPane extends React.Component<EditProps, any> {
         super(props);
 
         this.state = {
-            move_type: MoveCategory[Object.keys(MoveCategory)[0]],  // initialize with the first in the list
-            new_description: this.props.description,  // the description with edit-updates
-        };
-
-        // create the set of select option elements from the valid MoveCategory items
-        this.selections = Object.keys(MoveCategory).map((selection, i) => (
-            <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
-        ));
+            move_type: this.props.category,
+            new_description: this.props.description,
+            prop_category: this.props.category,
+            prop_description: this.props.description
+};
     }
 
-    componentDidUpdate = (prevProps, prevState) => {
-        /* The parent updates the description when the user clicks on existing positions in Edit mode */
-        if (prevProps.description !== this.props.description) {
-            this.setState({ new_description: this.props.description });
-        }
+    static getDerivedStateFromProps = (nextProps, prevState) => {
+        console.log("gdsfp: ", nextProps, prevState);
+        // Detect description/category changes, so we can update
+        if (nextProps.description !== prevState.prop_description ||
+            nextProps.category !== prevState.prop_category) {
+            return {
+                move_type: nextProps.category,
+                new_description: nextProps.description,
+                prop_category: nextProps.category,
+                prop_description: nextProps.description
+            }
+         }
+         else {
+             return null;
+         }
     }
 
     onTypeChange = (e) => {
         this.setState({ move_type: e.target.value });
     }
 
-    saveNewInfo = (e) => {
-        this.props.save_new_info(this.state.move_type, this.state.new_description);
-    }
-
     handleEditInput = (e) => {
         this.setState({ new_description: e.target.value });
     }
 
+    saveNewInfo = (e) => {
+        this.props.save_new_info(this.state.move_type, this.state.new_description);
+    }
+
+
     render = () => {
+        // console.log("rendering with ", this.state.move_type, this.state.new_description);
+        // create the set of select option elements from the valid MoveCategory items, with the current one at the top
+        let selections = Object.keys(MoveCategory).map((selection, i) => (
+            <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
+        ));
+
+        if (this.state.move_type !== "new")
+        {
+            selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
+        }
+
         return (
             <React.Fragment>
                 <div className="move-type-selection">
                     <span>{_("This sequence is: ")}</span>
                     <select value={this.state.move_type} onChange={this.onTypeChange}>
-                        {this.selections}
+                        {selections}
                     </select>
                 </div>
 
@@ -589,11 +614,12 @@ class EditPane extends React.Component<EditProps, any> {
     }
 }
 
+// This pane responds to changes in position ID by showing the new node information
 interface ExploreProps {
+    position_id: string;
     description: string;
     position_type: string;
     comment_count: number;
-    position_id: string;
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
