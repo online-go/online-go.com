@@ -629,6 +629,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     showComments = () => {
+        // TBD don't re-fetch if we already have them for this node
         const comments_url = server_url + "commentary?id=" + this.props.position_id;
         console.log("Fetching comments ", comments_url);
         console.log(godojo_headers);
@@ -660,7 +661,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     onCommentChange = (e) => {
-        console.log(e.target.value);
+        // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters
         if (/\r|\n/.exec(e.target.value)) {
             const comment_url = server_url + "comment?id=" + this.props.position_id;
             fetch(comment_url, {
