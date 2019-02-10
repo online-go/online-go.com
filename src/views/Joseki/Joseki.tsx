@@ -640,7 +640,7 @@ class EditPane extends React.Component<EditProps, any> {
         if (nextProps.description !== prevState.prop_description ||
             nextProps.category !== prevState.prop_category) {
             return {
-                move_type: nextProps.category,
+                move_type: nextProps.category === "new" ? Object.keys(MoveCategory)[0] : nextProps.category,
                 new_description: nextProps.description,
                 prop_category: nextProps.category,
                 prop_description: nextProps.description
