@@ -121,13 +121,13 @@ export class Play extends React.Component<PlayProperties, any> {
                 for (let i in list) {
                     let id = list[i].challenge_id;
                     if (!challenges[id]) {
-                        console.log("Challenge went away:", id);
+                        // console.log("Challenge went away:", id);
                         list[i].removed = true;
                         list[i].ineligible_reason = _("challenge no longer available"); /* translator: the person can't accept this challenge because it has been removed or accepted already */
                     }
                 }
             }
-            console.log("pending list store...");
+            //console.log("pending list store...");
             this.setState({
                 pending_challenges: challenges,
                 live_list: live,
@@ -136,7 +136,7 @@ export class Play extends React.Component<PlayProperties, any> {
             return;
         }
 
-        console.log("Updating challenges with:", challenges);
+        //console.log("Updating challenges with:", challenges);
         let live = [];
         let corr = [];
         for (let i in challenges) {
