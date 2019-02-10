@@ -58,6 +58,8 @@ enum MoveCategory {
     QUESTION = "Question"
 }
 
+const bad_moves = ["MISTAKE", "TRICK", "QUESTION"] as any;
+
 enum PageMode {
     Explore, Play, Edit
 }
@@ -94,6 +96,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
+    our_turn = false;  // in Play mode, when we are placing the computer's stone
 
     constructor(props) {
         super(props);
@@ -232,9 +235,25 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
                 this.processNewJosekiPosition(body);
 
-                if (this.state.mode === PageMode.Play &&
-                    (body.labels.includes("joseki") || body.next_moves.length === 0)) {
+                if (this.state.mode === PageMode.Play) {
+
+                    const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)) );
+
+                    if (body.labels.includes("joseki") || good_moves.length === 0) {
                         this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
+                    }
+
+                    if (this.our_turn) {
+                        this.our_turn = false;
+                    }
+                    else if (good_moves.length > 0) {
+                        const next_play = good_moves[Math.floor(Math.random() * good_moves.length)];
+                        const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                        console.log("Will play: ", next_play, location);
+                        this.our_turn = true;
+                        this.goban.engine.place(location.x, location.y);
+                        this.onBoardUpdate();
+                    }
                 }
             });
     }
@@ -372,8 +391,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         if (this.state.mode === PageMode.Play && this.played_mistake) {
             // They clicked a non-Joseki move
             console.log("Ooops: ", this.state.current_move_category);
-            this.played_mistake = false;
             this.backOneMove();
+            this.played_mistake = false;
         }
     }
 
