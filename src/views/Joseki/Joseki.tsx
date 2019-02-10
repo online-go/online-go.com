@@ -224,10 +224,18 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 console.log("Server response:", body);
 
                 if (this.load_sequence_to_board) {
+                    // when they clicked a position link, we have to load the whole sequence we recieved onto the board
+                    // to get to that position
                     this.loadSequenceToBoard(body.play);
                     this.load_sequence_to_board = false;
                 }
+
                 this.processNewJosekiPosition(body);
+
+                if (this.state.mode === PageMode.Play &&
+                    (body.labels.includes("joseki") || body.next_moves.length === 0)) {
+                        this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
+                }
             });
     }
 
@@ -565,7 +573,8 @@ class PlayPane extends React.Component<PlayProps, any> {
             <div className="play-dashboard">
                 {this.props.move_type_sequence.length === 0 &&
                 <div> Your move...</div>}
-                {this.props.move_type_sequence.map( (move_type, id) => (<div key={id}>{move_type}</div>))}
+                {this.props.move_type_sequence.map( (move_type, id) => (<div key={id}>{move_type}
+                </div>))}
             </div>
         );
     }
