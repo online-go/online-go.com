@@ -237,23 +237,34 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
                 if (this.state.mode === PageMode.Play) {
 
-                    const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)) );
+                    const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
 
-                    if (body.labels.includes("joseki") || good_moves.length === 0) {
+                    if ((body.labels.includes("joseki") || good_moves.length === 0) && !this.played_mistake) {
                         this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
                     }
 
-                    if (this.our_turn) {
+                    if (this.our_turn || this.played_mistake) {
+                        // obviously, don't place another stone if we just placed one
+                        // also, if they made a mistake, then they get another go.
                         this.our_turn = false;
+                        if (this.played_mistake) {
+                            console.log("finishing mistake processing");
+                            this.played_mistake = false;
+                        }
                     }
-                    else if (good_moves.length > 0) {
-                        const next_play = good_moves[Math.floor(Math.random() * good_moves.length)];
+                    else if (body.next_moves.length > 0 && this.state.move_string !== "") {
+                        // the computer plays both good and bad moves
+                        const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
                         const location = this.goban.engine.decodeMoves(next_play.placement)[0];
                         console.log("Will play: ", next_play, location);
                         this.our_turn = true;
                         this.goban.engine.place(location.x, location.y);
                         this.onBoardUpdate();
                     }
+                }
+                if (this.backstepping) {
+                    console.log("finishing backstep");
+                    this.backstepping = false;
                 }
             });
     }
@@ -337,7 +348,6 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         console.log("Processing placement at:", placement);
 
         if (this.backstepping) {
-            this.backstepping = false;
             if (this.state.current_move_category !== "new") {
                 this.fetchNextMovesFor(this.previous_position.node_id);
                 this.setState({ current_move_category: this.previous_position.category });
@@ -354,8 +364,9 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
             if (this.state.mode === PageMode.Play &&
-                (chosen_move === undefined ||
-                 chosen_move.category !== "GOOD" && chosen_move.category !== "IDEAL")) {
+                !this.our_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
+                (chosen_move === undefined ||  // not in valid list of next_moves
+                bad_moves.includes(chosen_move.category))) {
                 console.log("mistake!");
                 this.played_mistake = true;
             }
@@ -363,7 +374,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
                 this.fetchNextMovesFor(chosen_move.node_id);
-            } else {
+
+            } else if (chosen_move === undefined) {
                 /* This isn't in the database */
                 console.log("exploratory");
                 this.setState({
@@ -374,10 +386,14 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
             if (this.state.mode === PageMode.Play) {
                 const this_play_type = (chosen_move === undefined) ? "Not Joseki" : chosen_move.category;
-
-                console.log("Update move sequence");
                 this.setState({move_type_sequence: [...this.state.move_type_sequence, this_play_type]});
             }
+
+            if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.our_turn) {
+                // They clicked a non-Joseki move
+                console.log("Ooops: ", this.state.current_move_category);
+                this.backOneMove();
+             }
 
             console.log("pp exit");
         }
@@ -387,12 +403,6 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         console.log("did update...");
         if (prevProps.location.key !== this.props.location.key) {
             this.componentDidMount();  // force reload of position if they click a position link
-        }
-        if (this.state.mode === PageMode.Play && this.played_mistake) {
-            // They clicked a non-Joseki move
-            console.log("Ooops: ", this.state.current_move_category);
-            this.backOneMove();
-            this.played_mistake = false;
         }
     }
 
