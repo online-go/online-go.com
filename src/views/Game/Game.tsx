@@ -2865,7 +2865,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                             let goban = gameview.goban;
                             let orig_move = null;
                             let stashed_pen_marks = goban.pen_marks;
-                            let orig_marks = null;
+                            let stashed_marks = null;
 
                             let v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                             if (v) {
@@ -2876,8 +2876,8 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 if (this.props.gameview.in_pushed_analysis) {
                                     this.props.gameview.in_pushed_analysis = false;
                                     this.props.gameview.leave_pushed_analysis = null;
+                                    goban.engine.cur_move.setAllMarks(stashed_marks);
                                     goban.engine.jumpTo(orig_move);
-                                    orig_move.marks = orig_marks;
                                     goban.pen_marks = stashed_pen_marks;
                                     if (goban.pen_marks.length === 0) {
                                         goban.detachPenCanvas();
@@ -2893,13 +2893,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 let moves = body.moves;
 
                                 orig_move = goban.engine.cur_move;
-                                if (orig_move) {
-                                    orig_marks = orig_move.marks;
-                                    orig_move.clearMarks();
-                                } else {
-                                    orig_marks = null;
-                                }
                                 goban.engine.followPath(parseInt(turn), moves);
+
+                                if (goban.engine.cur_move.hasMarks()) {
+                                    stashed_marks = goban.engine.cur_move.getAllMarks();
+                                    goban.engine.cur_move.clearMarks();
+                                } else {
+                                    stashed_marks = null;
+                                }
 
                                 if (body.marks) {
                                     goban.setMarks(body.marks);
