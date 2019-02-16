@@ -32,6 +32,10 @@ import { Resizable } from "Resizable";
 import { getSectionPageCompleted } from "../LearningHub/util";
 import { PlayerIcon } from "PlayerIcon";
 import { Player } from "Player";
+
+import {openModal} from 'Modal';
+import {JosekiSourceModal} from "JosekiSourceModal";
+
 import { moveCursor } from "readline";
 import { string, node } from "prop-types";
 
@@ -41,6 +45,8 @@ const server_url = "http://localhost:8081/";
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
 };
+
+const joseki_sources_url = server_url + "josekisources";
 
 let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
@@ -196,6 +202,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         };
 
         const user_jwt = jwt.sign(payload, supposedly_private_key, signOptions);
+        console.log("Generated token:", user_jwt);
 
         const verifyOptions = signOptions;
         verifyOptions.algorithm = ["RS256"];
@@ -445,7 +452,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
         console.log("backstepping...");
-        this.backstepping = true;
+        this.backstepping = true;  // make sure we know the reason why the goban called us back
         this.goban.showPrevious();
     }
 
@@ -523,8 +530,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
-                    description={this.state.position_description}
                     category={this.state.current_move_category}
+                    description={this.state.position_description}
                     save_new_info={this.saveNewPositionInfo}
                 />
             );
@@ -626,17 +633,29 @@ class EditPane extends React.Component<EditProps, any> {
     constructor(props) {
         super(props);
 
+        // Get the list of joseki sources
+        fetch(joseki_sources_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        }).then(res => res.json())
+            .then(body => {
+                console.log("Server response to josekisources GET:", body);
+                this.setState({joseki_source_list: body.sources});
+            });
+
         this.state = {
             move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
             new_description: this.props.description,
             prop_category: this.props.category,
-            prop_description: this.props.description
+            prop_description: this.props.description,
+            joseki_source_list: [] as string[],
+            joseki_source: 0
         };
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
         console.log("gdsfp: ", nextProps, prevState);
-        // Detect description/category changes, so we can update
+        // Detect description/category changes (resulting from clicking on the board), so we can update
         if (nextProps.description !== prevState.prop_description ||
             nextProps.category !== prevState.prop_category) {
             return {
@@ -655,6 +674,10 @@ class EditPane extends React.Component<EditProps, any> {
         this.setState({ move_type: e.target.value });
     }
 
+    onSourceChange = (e) => {
+        this.setState({ joseki_source: e.target.value });
+    }
+
     handleEditInput = (e) => {
         this.setState({ new_description: e.target.value });
     }
@@ -663,6 +686,25 @@ class EditPane extends React.Component<EditProps, any> {
         this.props.save_new_info(this.state.move_type, this.state.new_description);
     }
 
+    promptForJosekiSource = (e) => {
+        openModal(<JosekiSourceModal add_joseki_source={this.addJosekiSource} fastDismiss />);
+    }
+
+    addJosekiSource = (description, url) => {
+        fetch(server_url + "josekisources/", {
+            method: 'post',
+            mode: 'cors',
+            headers: godojo_headers,
+            body: JSON.stringify({ description: description, url: url })
+        }).then(res => res.json())
+            .then(body => {
+                console.log("Server response to joseki POST:", body);
+                const new_source = {id: body.source.id, description: body.source.description};
+                console.log(new_source);
+                this.setState({
+                    joseki_source_list: [...this.state.joseki_source_list, new_source]});
+            });
+    }
 
     render = () => {
         console.log("rendering with ", this.state.move_type, this.state.new_description);
@@ -675,6 +717,12 @@ class EditPane extends React.Component<EditProps, any> {
         if (this.state.move_type !== "new") {
             selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
         }
+
+        let sources = this.state.joseki_source_list.map((selection, i) => (
+            <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
+        ));
+
+        sources.unshift(<option key={-1} value={0}>{_("(unknown)")}</option>);
 
         return (
             <div className="edit-container">
@@ -704,6 +752,15 @@ class EditPane extends React.Component<EditProps, any> {
                     {this.state.new_description.length === 0 ?
                         <div className="edit-label">(position description)</div> : ""
                     }
+                </div>
+                <div className="joseki-source-edit">
+                    <div>Source:</div>
+                    <div className="joseki-source-edit-controls">
+                        <select value={this.state.joseki_source} onChange={this.onSourceChange}>
+                            {sources}
+                        </select>
+                        <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
+                    </div>
                 </div>
             </div>
         );

@@ -79,6 +79,7 @@
     "react-virtualized": "^9.21.0",
     "redux": "^3.7.2",
     "sanitize-html": "^1.14.1",
+    "valid-url": "^1.0.9",
     "webpack-bundle-analyzer": "^3.0.3",
     "whatwg-fetch": "^3.0.0"
   }
