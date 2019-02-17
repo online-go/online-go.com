@@ -110,10 +110,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         console.log(props);
         this.state = {
             move_string: "",         // This is used for making sure we know what the current move is.
-            current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it            position_description: "",
+            current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
+            position_description: "",
             current_move_category: "",
             mode: PageMode.Explore,
-            move_type_sequence: [] as string[]
+            move_type_sequence: [] as string[],
+            joseki_source: null as {}
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -291,7 +293,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             contributor_id: position.contributor,
             current_move_category: position.category,
             current_node_id: position.node_id,
-            current_comment_count: position.comment_count
+            current_comment_count: position.comment_count,
+            joseki_source: position.joseki_source
         });
         this.last_server_placement = position.placement;
         this.next_moves = position.next_moves;
@@ -524,6 +527,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     position_type={this.state.current_move_category}
                     comment_count={this.state.current_comment_count}
                     position_id={this.state.current_node_id}
+                    joseki_source={this.state.joseki_source}
                 />
             );
         }
@@ -532,6 +536,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 <EditPane
                     category={this.state.current_move_category}
                     description={this.state.position_description}
+                    joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 0}
                     save_new_info={this.saveNewPositionInfo}
                 />
             );
@@ -545,7 +550,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         }
     }
 
-    saveNewPositionInfo = (move_type, description) => {
+    saveNewPositionInfo = (move_type, description, joseki_source_id) => {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
@@ -553,11 +558,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: description, category: move_type.toUpperCase() })
+                body: JSON.stringify({ description: description, category: move_type.toUpperCase(), joseki_source_id: joseki_source_id })
             }).then(res => res.json())
                 .then(body => {
                     console.log("Server response to sequence PUT:", body);
                     this.processNewJosekiPosition(body);
+                    this.setExploreMode();
                 });
         }
         else {
@@ -567,7 +573,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 method: 'post',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ sequence: this.state.move_string, category: move_type })
+                body: JSON.stringify({ sequence: this.state.move_string, category: move_type , joseki_source_id: joseki_source_id})
             }).then(res => res.json())
                 .then(body => {
                     console.log("Server response to sequence POST:", body);
@@ -584,6 +590,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                             .then(body => {
                                 console.log("Server response to description PUT:", body);
                                 this.processNewJosekiPosition(body);
+                                this.setExploreMode();
                             });
                     }
                 });
@@ -624,7 +631,8 @@ class PlayPane extends React.Component<PlayProps, any> {
 interface EditProps {
     description: string;
     category: string;
-    save_new_info: (move_type, description) => void;
+    joseki_source_id: number;
+    save_new_info: (move_type, description, joseki_source) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -649,7 +657,7 @@ class EditPane extends React.Component<EditProps, any> {
             prop_category: this.props.category,
             prop_description: this.props.description,
             joseki_source_list: [] as string[],
-            joseki_source: 0
+            joseki_source: this.props.joseki_source_id
         };
     }
 
@@ -683,7 +691,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     saveNewInfo = (e) => {
-        this.props.save_new_info(this.state.move_type, this.state.new_description);
+        this.props.save_new_info(this.state.move_type, this.state.new_description, this.state.joseki_source);
     }
 
     promptForJosekiSource = (e) => {
@@ -732,7 +740,15 @@ class EditPane extends React.Component<EditProps, any> {
                         {selections}
                     </select>
                 </div>
-
+                <div className="joseki-source-edit">
+                    <div>Source:</div>
+                    <div className="joseki-source-edit-controls">
+                        <select value={this.state.joseki_source} onChange={this.onSourceChange}>
+                            {sources}
+                        </select>
+                        <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
+                    </div>
+                </div>
                 <div className="description-edit">
 
                     <div className="edit-label">Position description:</div>
@@ -753,15 +769,6 @@ class EditPane extends React.Component<EditProps, any> {
                         <div className="edit-label">(position description)</div> : ""
                     }
                 </div>
-                <div className="joseki-source-edit">
-                    <div>Source:</div>
-                    <div className="joseki-source-edit-controls">
-                        <select value={this.state.joseki_source} onChange={this.onSourceChange}>
-                            {sources}
-                        </select>
-                        <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
-                    </div>
-                </div>
             </div>
         );
     }
@@ -773,6 +780,7 @@ interface ExploreProps {
     description: string;
     position_type: string;
     comment_count: number;
+    joseki_source: {url: string, description: string};
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
@@ -865,9 +873,20 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             <div className="position-details">
                 <div className="description-column">
                     {this.props.position_type !== "new" ?
-                        <div className="position-description">
-                            <ReactMarkdown source={this.props.description} />
-                        </div> : ""}
+                        <React.Fragment>
+                            <div className="position-description">
+                                <ReactMarkdown source={this.props.description} />
+                            </div>
+                            {this.props.joseki_source !== null && this.props.joseki_source.url.length > 0 &&
+                            <div className="position-joseki-source">
+                                <span>Source:</span><a href={this.props.joseki_source.url}>{this.props.joseki_source.description}</a>
+                            </div>}
+                            {this.props.joseki_source !== null && this.props.joseki_source.url.length === 0 &&
+                            <div className="position-joseki-source">
+                                <span>Source:</span><span>{this.props.joseki_source.description}</span>
+                            </div>}
+                        </React.Fragment>
+                    : ""}
                 </div>
                 <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
                     {this.state.extra_info_selected !== "comments" &&

@@ -137,8 +137,20 @@
 
             .description-column {
                 display: flex;
+                flex-direction: column;
                 flex-grow: 1;
                 flex-basis: 50%;
+
+                .position-description {
+                    flex-grow: 1;   // put source at the bottom
+                    flex-basis: 80%;
+                }
+                .position-joseki-source {
+                    padding-bottom: 1.5em;
+                    span {
+                         padding-right: 0.5em;
+                    }
+                }
             }
 
             .open {
@@ -151,7 +163,7 @@
                 flex-direction: column;
                 flex-grow: 1;
                 flex-basis: 50%;
-                justify-content: space-between; // put input at the bottom
+                justify-content: space-between; // put chat input at the bottom
 
                 .discussion-header {
                     display: flex;
@@ -208,6 +220,19 @@
             }
         }
 
+        .joseki-source-edit {
+            padding-bottom: 2em;
+
+            .joseki-source-edit-controls {
+                display: flex;
+                align-items: center;
+
+                .fa {
+                    padding-left: 0.5em;
+                }
+            }
+        }
+
         .description-edit {
             flex-grow: 2;
 
@@ -223,19 +248,6 @@
                 width: 100%
                 display: flex;
                 justify-content: flex-end;
-            }
-        }
-
-        .joseki-source-edit {
-            padding-bottom: 2em;
-
-            .joseki-source-edit-controls {
-                display: flex;
-                align-items: center;
-
-                .fa {
-                    padding-left: 0.5em;
-                }
             }
         }
 

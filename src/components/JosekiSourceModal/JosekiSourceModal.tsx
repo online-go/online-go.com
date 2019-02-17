@@ -41,7 +41,9 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
     }
 
     setDescription = (e) => {
-        this.setState({ description: e.target.value });
+        if (e.target.value.length < 45) {   // none longer than this at josekipedia
+            this.setState({ description: e.target.value });
+        }
     }
 
     setUrl = (e) => {
@@ -54,7 +56,7 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
     }
 
     render() {
-        const inputs_valid = ValidUrl.isWebUri(this.state.url) && this.state.description.length > 8;  // some basic sanity that they put something in
+        const inputs_valid = (this.state.url.length === 0 || ValidUrl.isWebUri(this.state.url)) && this.state.description.length > 8;  // some basic sanity that they put something in
 
         return (
             <div className="Modal JosekiSourceModal" ref="modal">
