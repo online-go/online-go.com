@@ -395,7 +395,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             }
 
             if (this.state.mode === PageMode.Play) {
-                const this_play_type = (chosen_move === undefined) ? "Not Joseki" : chosen_move.category;
+                const this_play_type = (chosen_move === undefined) ? "Not Joseki" : chosen_move.placement + ": " + MoveCategory[chosen_move.category];
                 this.setState({move_type_sequence: [...this.state.move_type_sequence, this_play_type]});
             }
 
