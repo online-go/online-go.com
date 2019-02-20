@@ -39,8 +39,8 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import { moveCursor } from "readline";
 import { string, node } from "prop-types";
 
-const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/";
-//const server_url = "http://localhost:8081/";
+//const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/";
+const server_url = "http://localhost:8081/";
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
@@ -537,6 +537,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 0}
+                    contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
                 />
             );
@@ -632,6 +633,7 @@ interface EditProps {
     description: string;
     category: string;
     joseki_source_id: number;
+    contributor: number;
     save_new_info: (move_type, description, joseki_source) => void;
 }
 
@@ -648,7 +650,7 @@ class EditPane extends React.Component<EditProps, any> {
         }).then(res => res.json())
             .then(body => {
                 console.log("Server response to josekisources GET:", body);
-                this.setState({joseki_source_list: body.sources});
+                this.setState({joseki_source_list: [{id: 0, description: "(unknown)"}, ...body.sources]});
             });
 
         this.state = {
@@ -656,7 +658,7 @@ class EditPane extends React.Component<EditProps, any> {
             new_description: this.props.description,
             prop_category: this.props.category,
             prop_description: this.props.description,
-            joseki_source_list: [] as string[],
+            joseki_source_list: [],
             joseki_source: this.props.joseki_source_id
         };
     }
@@ -699,18 +701,21 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     addJosekiSource = (description, url) => {
+        console.log("CONTRIBUTOR", this.props.contributor);
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
             headers: godojo_headers,
-            body: JSON.stringify({ description: description, url: url })
+            body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
         }).then(res => res.json())
             .then(body => {
                 console.log("Server response to joseki POST:", body);
                 const new_source = {id: body.source.id, description: body.source.description};
                 console.log(new_source);
                 this.setState({
-                    joseki_source_list: [...this.state.joseki_source_list, new_source]});
+                    joseki_source_list: [new_source, ...this.state.joseki_source_list],
+                    joseki_source: new_source.id
+                });
             });
     }
 
@@ -729,8 +734,6 @@ class EditPane extends React.Component<EditProps, any> {
         let sources = this.state.joseki_source_list.map((selection, i) => (
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
-
-        sources.unshift(<option key={-1} value={0}>{_("(unknown)")}</option>);
 
         return (
             <div className="edit-container">
