@@ -22,7 +22,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
-import {post, get, api1} from "requests";
+import {post, get, api1, del} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
@@ -1520,6 +1520,28 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     /* Review stuff */
+    clear_ai_analysis = () => {
+        swal({
+            "text": _("Really clear AI reviews?"),
+            showCancelButton: true
+        }).then(() => {
+            del("ai_reviews/%%", this.game_id, {})
+            .then((res) => swal("Analysis cleared"))
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+    force_ai_analysis(analysis_type:"fast" | "full") {
+        post("ai_reviews/", {
+            "game_id": this.game_id,
+            "engine": "leela_zero",
+            "fast": analysis_type === "fast",
+            "full": analysis_type === "full",
+        })
+        .then((res) => swal("Analysis started"))
+        .catch(errorAlerter);
+    }
+
     syncToCurrentReviewMove = () => {
         if (this.goban.engine.cur_review_move) {
             this.goban.engine.jumpTo(this.goban.engine.cur_review_move);
@@ -2252,6 +2274,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     frag_dock() {
         let goban = this.goban;
+        let superuser_ai_review_ready = (goban && data.get("user").is_superuser && goban.engine.phase === "finished" || null);
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
         let annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
@@ -2259,6 +2282,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
         if (review) {
+            superuser_ai_review_ready = null;
             mod = null;
             annul = null;
         }
@@ -2340,6 +2364,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
                 {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
                 {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
+
+                {(superuser_ai_review_ready) && <hr/>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_analysis("fast")}><i className="fa fa-line-chart"></i> {"Fast AI review"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_analysis("full")}><i className="fa fa-area-chart"></i> {"Full AI review"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={this.clear_ai_analysis}><i className="fa fa-trash"></i> {"Clear AI reviews"}</a>}
             </Dock>
         );
     }

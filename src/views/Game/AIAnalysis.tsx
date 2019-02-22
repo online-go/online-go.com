@@ -21,7 +21,7 @@ import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
 import {deepCompare} from 'misc';
-import {get} from 'requests';
+import {get, post} from 'requests';
 import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
@@ -418,8 +418,19 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 loading: false,
                 analyses: lst,
             });
+
             if (lst.length) {
                 this.setSelectedAnalysis(lst[0]);
+            } else {
+                post(`ai_reviews/`, {
+                    'game_id': game_id,
+                    'engine': 'leela_zero',
+                    'fast': true,
+                })
+                .then(res => {
+                    console.log(res);
+                })
+                .catch(err => console.error(err));
             }
         })
         .catch(err => console.error(err));
@@ -435,6 +446,8 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         .then(analysis => {
             let data:Array<AnalysisEntry> = [];
             this.analysis = analysis;
+
+            console.log(analysis);
 
             if ('full-network-fastmap' in analysis.data) {
                 let last_full_prediction = 0.5;
@@ -455,6 +468,29 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                         full_prediction: full_prediction
                     });
                 });
+            }
+            else if ('fast-network-fastmap' in analysis.data) {
+                let last_full_prediction = 0.5;
+
+                let mv = 0;
+                for (let p of analysis.data['fast-network-fastmap']) {
+                    ++mv;
+                    let full_prediction = last_full_prediction;
+
+                    if (`full-${mv}` in analysis.data) {
+                        if (analysis.data[`full-${mv}`].variations.length) {
+                            full_prediction = analysis.data[`full-${mv}`].prediction;
+                        }
+                    }
+
+                    last_full_prediction = full_prediction;
+
+                    data.push(new AnalysisEntry({
+                        move: mv,
+                        fast_prediction: p,
+                        full_prediction: full_prediction
+                    }));
+                }
             }
             else {
                 for (let i = 0; i < this.props.game.goban.engine.last_official_move.move_number; ++i) {
@@ -530,6 +566,13 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 }
                 this.props.game.goban.setMarks(marks, true);
                 this.props.game.goban.setHeatmap(this.normalizeHeatmap(full.heatmap));
+            } else {
+                try {
+                    this.props.game.goban.setMarks({}, true);
+                    this.props.game.goban.setHeatmap(null);
+                } catch (e) {
+                    // ignore
+                }
             }
         } catch (e) {
             console.error(e);
@@ -602,7 +645,6 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             }
             goban.setHeatmap(this.stashed_heatmap);
             this.stashed_heatmap = null;
-            //goban.redraw();
         }
     }
     enterVariation(move_number, v) {
@@ -625,23 +667,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         goban.pen_marks = [];
 
         this.stashed_heatmap = goban.setHeatmap(null);
-        //goban.redraw();
     }
-    /*
-    setVariation(move_number, v) {
-        let game = this.props.game;
-        let goban = this.props.game.goban;
-        this.leaveVariation();
-        goban.setMode("analyze");
-        this.enterVariation(move_number, v);
-        game.in_pushed_analysis = false;
-        goban.updateTitleAndStonePlacement();
-        goban.syncReviewMove();
-        goban.redraw();
-    }
-    */
-
-
 }
 
 function winRateDelta(start, end) {
