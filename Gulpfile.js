@@ -44,13 +44,16 @@ gulp.task('default',
 );
 
 
-
+function reload(done) {
+    livereload.reload();
+    done();
+}
 function watch_dist_js(done) { 
-    gulp.watch(['dist/*.js'], livereload.reload); 
+    gulp.watch(['dist/*.js'], reload);
     done(); 
 }
 function watch_html(done) { 
-    gulp.watch(['src/*.html'], livereload.reload); 
+    gulp.watch(['src/*.html'], reload);
     done(); 
 }
 function watch_styl(done) { 
