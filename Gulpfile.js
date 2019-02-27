@@ -6,7 +6,6 @@ const gulp         = require('gulp');
 const execSync     = require('child_process').execSync;
 const livereload   = require('gulp-livereload');
 const stylus       = require('gulp-stylus');
-const gutil        = require("gulp-util");
 const sourcemaps   = require('gulp-sourcemaps');
 const rename       = require('gulp-rename');
 const pump         = require('pump');
@@ -20,19 +19,52 @@ const html_minifier= require('html-minifier').minify;
 
 let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
 
-gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html", "watch_tslint"]);
-gulp.task('watch_dist_js', () => { gulp.watch(['dist/*.js'], livereload.reload); });
-gulp.task('watch_html', () => { gulp.watch(['src/*.html'], livereload.reload); });
-gulp.task('watch_styl', () => { gulp.watch(['src/**/*.styl', 'src/*.styl'], ['build_styl']); });
+gulp.task('watch_dist_js', watch_dist_js);
+gulp.task('watch_html', watch_html);
+gulp.task('watch_styl', watch_styl);
 gulp.task('build_styl', build_styl);
 gulp.task('min_styl', min_styl);
-gulp.task('livereload-server', () => { livereload.listen(35701); });
+gulp.task('livereload-server', livereload_server);
 gulp.task('background_webpack', background_webpack);
-gulp.task('watch_tslint', () => { gulp.watch([ts_sources], ['tslint']); });
+gulp.task('watch_tslint', watch_tslint);
 gulp.task('dev-server', dev_server);
 gulp.task('tslint', lint);
 gulp.task('minify-index', minify_index);
+gulp.task('default', 
+    gulp.parallel(
+        'dev-server', 
+        "livereload-server", 
+        "background_webpack", 
+        "build_styl", 
+        "watch_styl", 
+        "watch_dist_js", 
+        "watch_html", 
+        "watch_tslint"
+    )
+);
 
+
+
+function watch_dist_js(done) { 
+    gulp.watch(['dist/*.js'], livereload.reload); 
+    done(); 
+}
+function watch_html(done) { 
+    gulp.watch(['src/*.html'], livereload.reload); 
+    done(); 
+}
+function watch_styl(done) { 
+    gulp.watch(['src/**/*.styl', 'src/*.styl'], build_styl);
+    done(); 
+}
+function livereload_server(done) { 
+    livereload.listen(35701);
+    done(); 
+}
+function watch_tslint(done) { 
+    gulp.watch(ts_sources, lint);
+    done();
+};
 
 let lint_debounce = null;
 function lint(done) {
@@ -121,20 +153,15 @@ function min_styl(done) {
 
 
 function background_webpack(done) {
-    function launch() {
-        console.log('Launching webpack')
+    function spawn_webpack() {
         let env = process.env;
         let webpack = spawn('node', ['node_modules/webpack/bin/webpack.js', '--watch', '--progress', '--colors'])
 
-        webpack.stdout.on('data', o=>process.stdout.write(o))
-        webpack.stderr.on('data', o=>process.stderr.write(o))
-
-        webpack.on('exit', ()=>{
-            launch();
-        })
-
+        webpack.stdout.on('data', o => process.stdout.write(o))
+        webpack.stderr.on('data', o => process.stderr.write(o))
+        webpack.on('exit', spawn_webpack);
     }
-    launch();
+    spawn_webpack();
 
     done()
 }
@@ -249,6 +276,8 @@ function dev_server(done) {
         res.setHeader("Content-Length", index.length);
         res.status(200).send(index);
     });
+
+    done();
 }
 
 
