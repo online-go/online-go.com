@@ -20,6 +20,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
+import {UIPush} from "UIPush";
 import {deepCompare} from 'misc';
 import {get, post} from 'requests';
 import {Link} from "react-router-dom";
@@ -29,6 +30,8 @@ import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
 import {GoMath} from 'ogs-goban';
 import Select from 'react-select';
+
+declare var swal;
 
 export class AnalysisEntry {
     move: number;
@@ -44,13 +47,14 @@ export class AnalysisEntry {
 
 interface AIAnalysisChartProperties {
     entries: Array<AnalysisEntry>;
+    updatecount: number;
     setmove: (move_number:number) => void;
 }
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const bisector = d3.bisector((d:AnalysisEntry) => { return d.move; }).left;
 let svgWidth = 600;
-let svgHeight = 180;
+let svgHeight = 100;
 let margin = { top: 15, right: 20, bottom: 30, left: 50 };
 let width = svgWidth - margin.left - margin.right;
 let height = svgHeight - margin.top - margin.bottom;
@@ -95,12 +99,10 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
         this.initialize();
     }
     componentDidUpdate(prevProps, prevState) {
-        return !deepCompare(prevProps.entries, this.props.entries);
+        this.resize();
     }
     componentWillUnmount() {
         this.deinitialize();
-    }
-    componentWillReceiveProps(nextProps) {
     }
     shouldComponentUpdate(nextProps, nextState) {
         return !deepCompare(nextProps.entries, this.props.entries);
@@ -114,7 +116,7 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
             .append('svg')
             .attr('class', 'chart')
             .attr('width', this.width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom + 60);
+            .attr('height', height + margin.top + margin.bottom + 0);
 
         this.prediction_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -348,25 +350,16 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
     render() {
         return (
             <div ref={this.setContainer} className="AIAnalysisChart">
-                {this.state.loading
-                    ? <div className='loading'>{_("Loading")}</div>
-                    : this.state.nodata
-                        ? <div className='nodata'>{_("No rated games played yet")}</div>
-                        : <div className='ratings-graph'>
-                            <PersistentElement elt={this.chart_div}/>
-                        </div>
-                }
+                <PersistentElement elt={this.chart_div}/>
             </div>
         );
     }
 }
 
-
 interface AIAnalysisProperties {
     game: Game;
     move: number;
 }
-
 
 export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
     analysis;
@@ -377,6 +370,9 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             loading: true,
             analyses: [],
             selected_analysis: null,
+            full: null,
+            fast: null,
+            update_count: 0,
         };
     }
 
@@ -444,72 +440,69 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
 
         get(`/termination-api/analysis/${game_id}/${analysis_id}`)
         .then(analysis => {
-            let data:Array<AnalysisEntry> = [];
             this.analysis = analysis;
-
-            console.log(analysis);
-
-            if ('full-network-fastmap' in analysis.data) {
-                let last_full_prediction = 0.5;
-                data = analysis.data['full-network-fastmap'].map(d => {
-                    let full_prediction = last_full_prediction;
-
-                    if (`full-${d.move}` in analysis.data) {
-                        if (analysis.data[`full-${d.move}`].variations.length) {
-                            full_prediction = analysis.data[`full-${d.move}`].prediction;
-                        }
-                    }
-
-                    last_full_prediction = full_prediction;
-
-                    return new AnalysisEntry({
-                        move: d.move,
-                        fast_prediction: d.prediction,
-                        full_prediction: full_prediction
-                    });
-                });
-            }
-            else if ('fast-network-fastmap' in analysis.data) {
-                let last_full_prediction = 0.5;
-
-                let mv = 0;
-                for (let p of analysis.data['fast-network-fastmap']) {
-                    ++mv;
-                    let full_prediction = last_full_prediction;
-
-                    if (`full-${mv}` in analysis.data) {
-                        if (analysis.data[`full-${mv}`].variations.length) {
-                            full_prediction = analysis.data[`full-${mv}`].prediction;
-                        }
-                    }
-
-                    last_full_prediction = full_prediction;
-
-                    data.push(new AnalysisEntry({
-                        move: mv,
-                        fast_prediction: p,
-                        full_prediction: full_prediction
-                    }));
-                }
-            }
-            else {
-                for (let i = 0; i < this.props.game.goban.engine.last_official_move.move_number; ++i) {
-                    data.push(new AnalysisEntry({
-                        move_number: i,
-                        fast_prediction: 0.5,
-                        full_prediction: 0.5,
-                    }));
-                }
-            }
-
-            this.props.game.setState({ai_analysis_chart_data: data});
+            this.syncAnalysis();
         })
         .catch(err => console.error(err));
     }
 
+    syncAnalysis() {
+        let analysis = this.analysis;
+
+        if ('full-network-fastmap' in analysis.data) {
+            let data:Array<AnalysisEntry> = [];
+            let last_full_prediction = 0.5;
+            data = analysis.data['full-network-fastmap'].map(d => {
+                let full_prediction = last_full_prediction;
+
+                if (`full-${d.move}` in analysis.data) {
+                    if (analysis.data[`full-${d.move}`].variations.length) {
+                        full_prediction = analysis.data[`full-${d.move}`].prediction;
+                    }
+                }
+
+                last_full_prediction = full_prediction;
+
+                return new AnalysisEntry({
+                    move: d.move,
+                    fast_prediction: d.prediction,
+                    full_prediction: full_prediction
+                });
+            });
+
+            this.setState({
+                full: data,
+                fast: null,
+                updatecount: this.state.updatecount + 1,
+            });
+        }
+        else if ('key-moves' in analysis.data) {
+            for (let mv of analysis.data['key-moves']) {
+                analysis.data[`full-${mv.move}`] = mv;
+            }
+            this.setState({
+                full: null,
+                fast: analysis.data['key-moves'],
+                updatecount: this.state.updatecount + 1,
+            });
+        }
+        else {
+            this.setState({
+                full: null,
+                fast: null,
+                updatecount: this.state.updatecount + 1,
+            });
+        }
+    }
+
     clearAnalysis() {
         this.props.game.goban.setMode("play");
-        this.props.game.setState({ai_analysis_chart_data: null});
+        //this.props.game.setState({ai_analysis_chart_data: null});
+        this.setState({
+            full: null,
+            fast: null,
+            updatecount: this.state.updatecount + 1,
+        });
     }
 
     setSelectedAnalysis = (analysis) => {
@@ -542,30 +535,71 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         return ret;
     }
 
+    analysis_update = (data) => {
+        this.getAnalysis(data.analysis_id);
+    }
+    analysis_update_key = (data) => {
+        if (this.analysis) {
+            this.analysis.data[data.key] = data.body;
+            this.setState({
+                updatecount: this.state.updatecount + 1,
+            });
+            this.syncAnalysis();
+        }
+    }
+
     render() {
         if (this.state.loading) {
             return null;
         }
 
-        let full = null;
+        if (!this.props.game || !this.props.game.goban || !this.props.game.goban.engine) {
+            return null;
+        }
+
+        let move_analysis = null;
+        let win_rate = 0.0;
+        let next_prediction = -1.0;
+        let next_move = null;
+        let next_move_pretty_coords = "";
+        let move_relative_delta = null;
+
 
         if (this.analysis && this.analysis.data) {
             if ( `full-${this.props.move}` in this.analysis.data) {
-                full = this.analysis.data[`full-${this.props.move}`];
-                console.log(full);
+                move_analysis = this.analysis.data[`full-${this.props.move}`];
+                console.log("Rendering", move_analysis);
+            }
+        }
+
+        if (this.props.game.goban.engine.cur_move.trunk) {
+            next_move = this.props.game.goban.engine.cur_move.trunk_next;
+            if (next_move) {
+                next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
             }
         }
 
         try {
-            if (full) {
+            if (move_analysis) {
                 let marks = {};
-                let variations = full.variations.slice(0, 6);
+                let variations = move_analysis.variations.slice(0, 6);
                 for (let i = 0 ; i < variations.length; ++i) {
                     let letter = alphabet[i];
                     marks[letter] = variations[i].move;
                 }
+                if (next_move) {
+                    marks["triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
+                }
                 this.props.game.goban.setMarks(marks, true);
-                this.props.game.goban.setHeatmap(this.normalizeHeatmap(full.heatmap));
+                this.props.game.goban.setHeatmap(this.normalizeHeatmap(move_analysis.heatmap));
+                win_rate = move_analysis.win_rate * 100;
+                next_prediction = move_analysis.next_prediction;
+
+                if (`full-${this.props.move + 1}` in this.analysis.data) {
+                    next_prediction = this.analysis.data[`full-${this.props.move + 1}`].win_rate;
+                }
+
+                next_prediction *= 100.0;
             } else {
                 try {
                     this.props.game.goban.setMarks({}, true);
@@ -578,28 +612,77 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             console.error(e);
         }
 
-
+        if (next_prediction >= 0) {
+            move_relative_delta = next_prediction - win_rate;
+            if (this.props.game.goban.engine.colorToMove() === "white") {
+                move_relative_delta = -move_relative_delta;
+            }
+        }
 
         return (
             <div className='AIAnalysis'>
-                <Select
-                    value={this.state.selected_analysis}
-                    options={this.state.analyses}
-                    onChange={this.setSelectedAnalysis}
-                    clearable={true}
-                    autoBlur={true}
-                    placeholder={_("Select AI Analysis")}
-                    noResultsText={_("No results found")}
-                    optionRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
-                    valueRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
-                    />
+                <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
+                <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
 
-                {full &&
+                { (this.state.analyses.length > 1 || null) &&
+                    <Select
+                        value={this.state.selected_analysis}
+                        options={this.state.analyses}
+                        onChange={this.setSelectedAnalysis}
+                        clearable={true}
+                        autoBlur={true}
+                        placeholder={_("Select AI Analysis")}
+                        noResultsText={_("No results found")}
+                        optionRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
+                        valueRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
+                        />
+                }
+
+                <div className={'prediction ' + (!move_analysis ? "invisible" : "")}>
+                    <div className="progress">
+                        <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
+                        <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                    </div>
+                </div>
+
+                {((this.state.full && this.state.full.length > 0) || null) &&
+                    <AIAnalysisChart entries={this.state.full} updatecount={this.state.updatecount} setmove={this.props.game.nav_goto_move} />
+                }
+
+                {((this.state.fast && this.state.fast.length > 0) || null) &&
+                    <div className='key-moves'>
+                        <div>{_("Top game changing moves")}</div>
+
+                        {this.state.fast.map((move, idx) =>
+                            <span key={move.move} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move.move)}>
+                                {move.move + 1}
+                            </span>
+                        )}
+
+                        <span className='full-analysis clickable' onClick={this.performFullAnalysis}>
+                            {_("Full Analysis")}
+                        </span>
+                    </div>
+                }
+
+                {move_analysis && next_move && move_relative_delta !== null &&
+                    <div className='next-move-delta-container'>
+                        <span className={"next-move-coordinates " +
+                            (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
+                            <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
+                        </span>
+                        <span className="next-move-delta">
+                            {move_relative_delta.toFixed(1)}%
+                        </span>
+                    </div>
+                }
+
+                {false && move_analysis &&
                     <div className='variations'>
-                        {full.variations.length === 0
+                        {move_analysis.variations.length === 0
                             ? <div>{_("No variations")}</div>
                             : <div>
-                                {full.variations.map((v, idx) =>
+                                {move_analysis.variations.map((v, idx) =>
                                     <div key={idx} className='variation'
                                         onMouseEnter={(ev) => this.enterVariation(this.props.move, v)}
                                         onMouseLeave={(ev) => this.leaveVariation()}
@@ -607,7 +690,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                                         >
                                         {alphabet[idx] + " "}
 
-                                        {winRateDelta(full.win_rate, v.win_rate)}
+                                        {winRateDelta(move_analysis.win_rate, v.win_rate)}
 
                                         {GoMath.decodeMoves(v.moves, this.props.game.goban.width, this.props.game.goban.height).map((coord, idx) =>
                                             <span key={idx} className='coordinate'>
@@ -620,10 +703,10 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                         }
                     </div>
                 }
+
             </div>
         );
     }
-
 
     orig_move: any;
     orig_marks: any;
@@ -668,13 +751,17 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
 
         this.stashed_heatmap = goban.setHeatmap(null);
     }
+    performFullAnalysis = () => {
+        this.props.game.force_ai_analysis("full");
+    }
 }
 
-function winRateDelta(start, end) {
-    let delta = end - start;
+function winRateDelta(start_or_delta, end?) {
+    let delta = end ? end - start_or_delta : start_or_delta;
     if (delta > 0) {
         return <span className='increased-win-rate'>+{Math.round(delta * 100)}</span>;
     } else {
         return <span className='decreased-win-rate'>{Math.round(delta * 100)}</span>;
     }
 }
+

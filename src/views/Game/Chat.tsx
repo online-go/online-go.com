@@ -405,8 +405,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
         } else {
             try {
                 switch (body.type) {
-                    case "analysis":
-                        {
+                    case "analysis": {
                             let gameview = this.props.gameview;
                             let goban = gameview.goban;
                             let orig_move = null;

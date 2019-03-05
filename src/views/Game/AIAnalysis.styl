@@ -15,16 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-analysis-prediction-chart-height=180px;
+analysis-prediction-chart-height=100px;
 
 .AIAnalysisChart {
     height: analysis-prediction-chart-height;
     margin-bottom: 1rem;
     max-width: calc(100vw - 2em);
     user-select: none;
-
-    // Uncomment this to make charts resize.  But only when they support that.
-    // max-width: calc(100vw - 2em);
 
     svg {
         font-size: font-size-smaller;
@@ -166,17 +163,56 @@ analysis-prediction-chart-height=180px;
             text-align: right;
         }
 
-        .increased-win-rate, .decreased-win-rate {
-            margin-left: 0.1rem;
-            display: inline-block;
-            width: 2rem;
-            text-align: right;
+    }
+
+    .key-moves {
+        text-align: center;
+        font-size: font-size-mid;
+        margin: 0.5rem;
+
+        .btn {
+            float: right;
         }
-        .increased-win-rate {
-            color: green;
-        }
-        .decreased-win-rate {
-            color: red;
-        }
+    }
+    .full-analysis {
+        margin-left: 1rem;
+    }
+    .key-move {
+        margin-left: 0.5rem;
+    }
+
+    .increased-win-rate, .decreased-win-rate {
+        margin-left: 0.1rem;
+        display: inline-block;
+        width: 2rem;
+        text-align: right;
+    }
+    .increased-win-rate {
+        color: green;
+    }
+    .decreased-win-rate {
+        color: red;
+    }
+    .prediction {
+        text-align: center;
+    }
+    .next-move-delta-container {
+        text-align: center;
+    }
+    .next-move-coordinates {
+        border: 1px solid #000;
+        themed border-color shade3
+        border-radius: 0.1rem;
+        margin: 0.5rem;
+
+        display: inline-block;
+        width: 4rem;
+        text-align: center;
+        padding-right: 0.5rem;
+    }
+    .next-move-delta {
+        display: inline-block;
+        width: 5rem;
+        text-align: left;
     }
 }

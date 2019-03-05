@@ -46,7 +46,7 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AIAnalysis, AIAnalysisChart} from "./AIAnalysis";
+import {AIAnalysis} from "./AIAnalysis";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
@@ -128,7 +128,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
-            view_mode: false,
+            view_mode: "wide" as ViewMode,
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
@@ -149,7 +149,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             annulled: false,
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
-            ai_analysis_chart_data: null,
         };
 
         (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
@@ -1561,7 +1560,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     render() {
-        const AI_ANALYSIS = this.frag_ai_analysis_controls();
         const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
@@ -1594,12 +1592,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
 
-                    {this.frag_ai_analysis_chart()}
                     {this.frag_below_board_controls()}
 
                     {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */}
 
-                    {((this.state.view_mode === "square" && !this.state.squashed) || null) && AI_ANALYSIS}
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
 
@@ -1610,9 +1606,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         )
                     }
 
-                    {((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */) || null) &&
-                        AI_ANALYSIS
-                    }
                     {((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */) || null) &&
                         CHAT
                     }
@@ -1632,8 +1625,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(this.state.view_mode !== "portrait" || null) &&
                     <div className="right-col">
-                        {(this.state.view_mode === "square" || null) && this.frag_players()}
-                        {(this.state.view_mode === "wide" || null) && this.frag_players()}
+                        {(this.state.view_mode === "square" ||
+                            this.state.view_mode === "wide" || null) && this.frag_players()}
+
+                        {(this.state.view_mode === "square" ||
+                            this.state.view_mode === "wide" || null) && this.frag_ai_analysis()}
 
                         {review
                             ? this.frag_review_controls()
@@ -1643,7 +1639,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {/*
                         <div className='filler'/>
                         */}
-                        {(this.state.view_mode === "wide" || null) && AI_ANALYSIS}
                         {(this.state.view_mode === "wide" || null) && CHAT}
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
@@ -1745,21 +1740,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
                     {(state.mode === "analyze" || null) &&
-                       (state.ai_analysis_chart_data
-                            ? <span>{_("AI Analysis")}</span>
-                            : <span>
-                                {state.show_undo_requested
-                                    ?
-                                    <span>
-                                        {_("Undo Requested")}
-                                    </span>
-                                    :
-                                    <span>
-                                        {_("Analyze Mode")}
-                                    </span>
-                                }
-                              </span>
-                       )
+                        <span>
+                            {state.show_undo_requested
+                                ?
+                                <span>
+                                    {_("Undo Requested")}
+                                </span>
+                                :
+                                <span>
+                                    {_("Analyze Mode")}
+                                </span>
+                            }
+                        </span>
                     }
 
 
@@ -1927,7 +1919,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       </div>
                     </div>
                 }{/* } */}
-                {((this.state.mode === "analyze" && !this.state.ai_analysis_chart_data) || null) &&  /* { */
+                {((this.state.mode === "analyze") || null) &&  /* { */
                     <div>
                         {this.frag_analyze_button_bar()}
 
@@ -2114,14 +2106,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
         </div>
         );
     }
-    frag_ai_analysis_chart() {
-        if (!this.state.ai_analysis_chart_data) {
-            return null;
+    frag_ai_analysis() {
+        let move_number = -1;
+
+        if (this.goban && this.goban.engine) {
+            let cur_move = this.goban.engine.cur_move;
+            if (cur_move.trunk) {
+                move_number = cur_move.move_number;
+            }
         }
-        return <AIAnalysisChart entries={this.state.ai_analysis_chart_data} setmove={this.nav_goto_move} />;
-    }
-    frag_ai_analysis_controls() {
-        return <AIAnalysis game={this} move={this.state.cur_move_number} />;
+
+        return <AIAnalysis game={this} move={move_number} />;
     }
 
     frag_clock(color) {
