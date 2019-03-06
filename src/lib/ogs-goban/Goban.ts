@@ -36,6 +36,7 @@ const SCORE_ESTIMATION_TRIALS = 1000;
 const SCORE_ESTIMATION_TOLERANCE = 0.30;
 const AUTOSCORE_TRIALS = 1000;
 const AUTOSCORE_TOLERANCE = 0.30;
+const MARK_TYPES = ["letter", "circle", "square", "triangle", "cross", "black", "white"];
 
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
@@ -1525,11 +1526,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (mode === "put") {
                 ret = this.toggleMark(x, y, this.label_mark, this.label_mark.length <= 3, true);
             } else {
-                let marktypes = ["letter", "circle", "square", "triangle", "cross"];
                 let marks = this.getMarks(x, y);
 
-                for (let i = 0; i < marktypes.length; ++i) {
-                    delete marks[marktypes[i]];
+                for (let i = 0; i < MARK_TYPES.length; ++i) {
+                    delete marks[MARK_TYPES[i]];
                 }
                 this.drawSquare(x, y);
             }
@@ -2314,6 +2314,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     && this.engine.board[j][i]
                     && this.engine.removal[j][i]
                    )
+                || pos.black
+                || pos.white
             ) {
                 //let color = stone_color ? stone_color : (this.move_selected ? this.engine.otherPlayer() : this.engine.player);
                 let transparent = false;
@@ -2365,6 +2367,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         color = this.engine.player;
                     }
 
+                }
+                else if (pos.black || pos.white) {
+                    color = pos.black ? 1 : 2;
+                    transparent = true;
                 }
                 else {
                     color = this.engine.player;
@@ -2786,6 +2792,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     && this.engine.board[j][i]
                     && this.engine.removal[j][i]
                    )
+                || pos.black
+                || pos.white
             ) {
                 let transparent = false;
                 let color;
@@ -2817,6 +2825,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }   else {
                             color = this.engine.player;
                     }
+                }
+                else if (pos.black || pos.white) {
+                    color = pos.black ? 1 : 2;
+                    transparent = true;
                 }
                 else {
                     color = this.engine.player;
@@ -4015,15 +4027,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
     private toggleMark(x, y, mark, force_label?, force_put?) { /* {{{ */
         let ret = true;
-        let marktypes = ["letter", "circle", "square", "triangle", "cross"];
         if (typeof(mark) === "number") {
             mark = "" + mark;
         }
         let marks = this.getMarks(x, y);
 
         let clearMarks = () => {
-            for (let i = 0; i < marktypes.length; ++i) {
-                delete marks[marktypes[i]];
+            for (let i = 0; i < MARK_TYPES.length; ++i) {
+                delete marks[MARK_TYPES[i]];
             }
         };
 
@@ -4559,10 +4570,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 for (let y = 0; y < this.height; ++y) {
                     for (let x = 0; x < this.width; ++x) {
                         let pos = this.getMarks(x, y);
-                        let marktypes = ["letter", "triangle", "circle", "square", "cross"];
-                        for (let i = 0; i < marktypes.length; ++i) {
-                            if (marktypes[i] in pos && pos[marktypes[i]]) {
-                                let markkey = marktypes[i] === "letter" ? pos.letter : marktypes[i];
+                        for (let i = 0; i < MARK_TYPES.length; ++i) {
+                            if (MARK_TYPES[i] in pos && pos[MARK_TYPES[i]]) {
+                                let markkey = MARK_TYPES[i] === "letter" ? pos.letter : MARK_TYPES[i];
                                 if (!(markkey in marks)) {
                                     marks[markkey] = "";
                                 }

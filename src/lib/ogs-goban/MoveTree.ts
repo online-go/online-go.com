@@ -32,6 +32,8 @@ export interface MarkInterface {
     stone_removed?    : boolean;
     mark_x?           : boolean;
     hint?             : boolean;
+    black?            : boolean;
+    white?            : boolean;
 }
 
 export interface MoveTreeJson {
