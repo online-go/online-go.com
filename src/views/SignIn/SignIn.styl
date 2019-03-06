@@ -16,47 +16,53 @@
  */
 
 #SignIn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 1rem;
+
+  .Card {
+    padding: 1rem;
+    width: 15rem;
+    max-width: 100%;
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .form-actions {
+    margin-bottom: 1rem;
     display: flex;
-    flex-direction: column;
-    //justify-content: space-around;
-    justify-content: space-around;
-    align-items: center;
-    //min-height: 100vh;
+    justify-content: space-between;
+    align-items: baseline;
+  }
 
-    .Card {
-        padding: 1rem;
-        width: 15rem;
-        max-width: 100%;
+  .registration {
+    margin-top: 1rem;
+    text-align: center;
 
-        h2 {
-            margin-top: 0;
-        }
-
-        input {
-            width: 100%;
-            margin-bottom: 1rem;
-        }
+    .fa-sign-in {
+      margin-right: 0.5rem;
     }
+  }
 
-    .registration {
-        text-align: center;
+  .LineText {
+    themedcolorshade1margin-bottom: 1rem;
+  }
 
-        .fa-sign-in {
-            margin-right: 0.5rem;
-        }
-
+  .social-buttons {
+    text-align: center;
+    .zocial {
+      margin-top: 1rem;
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
     }
-
-    .LineText {
-        themed color shade1
-        margin-bottom: 1rem;
-    }
-
-    .social-buttons {
-        text-align: center;
-        .zocial {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
-        }
-    }
+  }
 }
