@@ -1599,6 +1599,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
 
+                    {(this.state.view_mode === "portrait" || null) && this.frag_ai_analysis()}
+
                     {((this.state.view_mode === "portrait") || null) &&
                         (review
                             ? this.frag_review_controls()
@@ -2107,16 +2109,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_ai_analysis() {
-        let move_number = -1;
-
         if (this.goban && this.goban.engine) {
-            let cur_move = this.goban.engine.cur_move;
-            if (cur_move.trunk) {
-                move_number = cur_move.move_number;
-            }
+            return <AIAnalysis game={this} move={this.goban.engine.cur_move} />;
         }
-
-        return <AIAnalysis game={this} move={move_number} />;
+        return null;
     }
 
     frag_clock(color) {

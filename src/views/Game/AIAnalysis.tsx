@@ -28,7 +28,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
-import {GoMath} from 'ogs-goban';
+import {GoMath, MoveTree} from 'ogs-goban';
 import Select from 'react-select';
 
 declare var swal;
@@ -358,7 +358,7 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
 
 interface AIAnalysisProperties {
     game: Game;
-    move: number;
+    move: MoveTree;
 }
 
 export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
@@ -557,59 +557,105 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             return null;
         }
 
+        if (!this.props.move) {
+            return null;
+        }
+
+        if (!this.analysis || !this.analysis.data) {
+            return null;
+        }
+
         let move_analysis = null;
         let win_rate = 0.0;
         let next_prediction = -1.0;
         let next_move = null;
         let next_move_pretty_coords = "";
         let move_relative_delta = null;
+        let cur_move = this.props.move;
+        let trunk_move = cur_move.getBranchPoint();
+        let move_number = trunk_move.move_number;
 
-
-        if (this.analysis && this.analysis.data) {
-            if ( `full-${this.props.move}` in this.analysis.data) {
-                move_analysis = this.analysis.data[`full-${this.props.move}`];
-                console.log("Rendering", move_analysis);
-            }
+        if ( `full-${move_number}` in this.analysis.data) {
+            move_analysis = this.analysis.data[`full-${move_number}`];
+            console.log("Rendering", move_analysis);
         }
 
-        if (this.props.game.goban.engine.cur_move.trunk) {
-            next_move = this.props.game.goban.engine.cur_move.trunk_next;
-            if (next_move) {
-                next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+        if (move_analysis) {
+            win_rate = move_analysis.win_rate * 100;
+            next_prediction = move_analysis.next_prediction;
+            if (`full-${move_number + 1}` in this.analysis.data) {
+                next_prediction = this.analysis.data[`full-${move_number + 1}`].win_rate;
             }
+            next_prediction *= 100.0;
         }
 
+        let marks = {};
+        let heatmap = null;
         try {
-            if (move_analysis) {
-                let marks = {};
-                let variations = move_analysis.variations.slice(0, 6);
-                for (let i = 0 ; i < variations.length; ++i) {
-                    let letter = alphabet[i];
-                    marks[letter] = variations[i].move;
-                }
+            if (cur_move.trunk) {
+                next_move = cur_move.trunk_next;
                 if (next_move) {
-                    marks["triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
-                }
-                this.props.game.goban.setMarks(marks, true);
-                this.props.game.goban.setHeatmap(this.normalizeHeatmap(move_analysis.heatmap));
-                win_rate = move_analysis.win_rate * 100;
-                next_prediction = move_analysis.next_prediction;
-
-                if (`full-${this.props.move + 1}` in this.analysis.data) {
-                    next_prediction = this.analysis.data[`full-${this.props.move + 1}`].win_rate;
+                    next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
                 }
 
-                next_prediction *= 100.0;
-            } else {
-                try {
-                    this.props.game.goban.setMarks({}, true);
-                    this.props.game.goban.setHeatmap(null);
-                } catch (e) {
-                    // ignore
+                if (move_analysis) {
+                    let variations = move_analysis.variations.slice(0, 6);
+                    for (let i = 0 ; i < variations.length; ++i) {
+                        let letter = alphabet[i];
+                        marks[letter] = variations[i].move;
+                    }
+                    if (next_move) {
+                        marks["triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
+                    }
+                    heatmap = this.normalizeHeatmap(move_analysis.heatmap);
+                }
+            }
+            else { // !cur_move.trunk
+                if (move_analysis) {
+                    let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+                    let cur_move_string = cur_move.getMoveStringToThisPoint();
+                    let next_moves = null;
+
+                    for (let v of move_analysis.variations) {
+                        if ((trunk_move_string + v.moves).startsWith(cur_move_string)) {
+                            next_moves = (trunk_move_string + v.moves).slice(cur_move_string.length, Infinity);
+                            break;
+                        }
+                    }
+
+                    if (next_moves) {
+                        let decoded_moves = this.props.game.goban.engine.decodeMoves(next_moves);
+                        let black = "";
+                        let white = "";
+
+                        for (let i = 0; i < decoded_moves.length; ++i) {
+                            let mv = decoded_moves[i];
+                            let encoded_mv = GoMath.encodeMove(mv.x, mv.y);
+                            marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
+                            if (((this.props.game.goban.engine.player - 1) + i) % 2 === 1) {
+                                white += encoded_mv;
+                            } else {
+                                black += encoded_mv;
+                            }
+                        }
+                        if (black) {
+                            marks["black"] = black;
+                        }
+                        if (white) {
+                            marks["white"] = white;
+                        }
+                    }
                 }
             }
         } catch (e) {
             console.error(e);
+        }
+
+        try {
+            this.props.game.goban.setMarks(marks, true);
+            this.props.game.goban.setHeatmap(heatmap);
+        } catch (e) {
+            // ignore
         }
 
         if (next_prediction >= 0) {
@@ -677,32 +723,6 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                     </div>
                 }
 
-                {false && move_analysis &&
-                    <div className='variations'>
-                        {move_analysis.variations.length === 0
-                            ? <div>{_("No variations")}</div>
-                            : <div>
-                                {move_analysis.variations.map((v, idx) =>
-                                    <div key={idx} className='variation'
-                                        onMouseEnter={(ev) => this.enterVariation(this.props.move, v)}
-                                        onMouseLeave={(ev) => this.leaveVariation()}
-                                        onClick={(ev) => /*this.setVariation(this.props.move, v)*/ null}
-                                        >
-                                        {alphabet[idx] + " "}
-
-                                        {winRateDelta(move_analysis.win_rate, v.win_rate)}
-
-                                        {GoMath.decodeMoves(v.moves, this.props.game.goban.width, this.props.game.goban.height).map((coord, idx) =>
-                                            <span key={idx} className='coordinate'>
-                                                {" " + GoMath.prettyCoords(coord.x, coord.y, this.props.game.goban.height)}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                              </div>
-                        }
-                    </div>
-                }
 
             </div>
         );
@@ -765,3 +785,34 @@ function winRateDelta(start_or_delta, end?) {
     }
 }
 
+
+/*
+
+                {false && move_analysis &&
+                    <div className='variations'>
+                        {move_analysis.variations.length === 0
+                            ? <div>{_("No variations")}</div>
+                            : <div>
+                                {move_analysis.variations.map((v, idx) =>
+                                    <div key={idx} className='variation'
+                                        onMouseEnter={(ev) => this.enterVariation(move_number, v)}
+                                        onMouseLeave={(ev) => this.leaveVariation()}
+                                        onClick={(ev) => null}
+                                        >
+                                        {alphabet[idx] + " "}
+
+                                        {winRateDelta(move_analysis.win_rate, v.win_rate)}
+
+                                        {GoMath.decodeMoves(v.moves, this.props.game.goban.width, this.props.game.goban.height).map((coord, idx) =>
+                                            <span key={idx} className='coordinate'>
+                                                {" " + GoMath.prettyCoords(coord.x, coord.y, this.props.game.goban.height)}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                              </div>
+                        }
+                    </div>
+                }
+
+*/
