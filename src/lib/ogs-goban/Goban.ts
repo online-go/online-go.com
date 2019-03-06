@@ -2296,11 +2296,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         {{{
             if (stone_color  /* if there is really a stone here */
                 || (this.stone_placement_enabled
-                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j) && (this.mode !== "analyze" || this.analyze_tool === "stone")
+                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
+                    && (this.mode !== "analyze" || this.analyze_tool === "stone")
                     && this.engine
                     && !this.scoring_mode
                     && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze"))
-                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square) || this.getPuzzlePlacementSetting().mode !== "play")
+                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square)
+                        || this.getPuzzlePlacementSetting().mode !== "play")
                    )
                 || (this.scoring_mode
                     && this.score_estimate
@@ -2764,11 +2766,16 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         /* Draw stones & hovers */
         {{{
-            if (stone_color ||  /* if there is really a stone here */
-                (this.stone_placement_enabled
-                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j) && (this.mode !== "analyze" || this.analyze_tool === "stone")
+            if (stone_color   /* if there is really a stone here */
+                || (this.stone_placement_enabled
+                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
+                    && (this.mode !== "analyze" || this.analyze_tool === "stone")
                     && this.engine
-                    && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze")))
+                    && !this.scoring_mode
+                    && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze"))
+                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square)
+                        || this.getPuzzlePlacementSetting().mode !== "play")
+                   )
                 || (this.scoring_mode
                     && this.score_estimate
                     && this.score_estimate.board[j][i]
