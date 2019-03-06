@@ -2109,7 +2109,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_ai_analysis() {
-        if (this.goban && this.goban.engine) {
+        if (this.goban
+            && this.goban.engine
+            && this.goban.engine.phase === "finished"
+            && this.goban.engine.width === 19
+            && this.goban.engine.height === 19
+        ) {
             return <AIAnalysis game={this} move={this.goban.engine.cur_move} />;
         }
         return null;

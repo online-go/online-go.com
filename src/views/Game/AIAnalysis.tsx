@@ -46,9 +46,10 @@ export class AnalysisEntry {
 }
 
 interface AIAnalysisChartProperties {
-    entries: Array<AnalysisEntry>;
-    updatecount: number;
-    setmove: (move_number:number) => void;
+    entries     : Array<AnalysisEntry>;
+    updatecount : number;
+    move        : number;
+    setmove     : (move_number:number) => void;
 }
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -78,6 +79,7 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
     mouse;
     mouse_rect;
     move_crosshair;
+    cursor_crosshair;
     full_crosshair;
     fast_crosshair;
     x;
@@ -99,13 +101,15 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
         this.initialize();
     }
     componentDidUpdate(prevProps, prevState) {
+        console.log("SHould be updating");
+        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
         this.resize();
     }
     componentWillUnmount() {
         this.deinitialize();
     }
     shouldComponentUpdate(nextProps, nextState) {
-        return !deepCompare(nextProps.entries, this.props.entries);
+        return !deepCompare(nextProps.entries, this.props.entries) || this.props.move !== nextProps.move;
     }
 
     initialize() {
@@ -169,6 +173,16 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
         this.move_crosshair = this.prediction_graph.append('g')
             .attr('class', 'move crosshairs')
             .append('line')
+            .attr('x0', 0)
+            .attr('y0', 0)
+            .attr('x1', 0)
+            .attr('y1', height);
+
+        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
+
+        this.cursor_crosshair = this.prediction_graph.append('g')
+            .attr('class', 'cursor crosshairs')
+            .append('line')
             .style('display', 'none')
             .attr('x0', 0)
             .attr('y0', 0)
@@ -202,13 +216,13 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
             .attr('width', width)
             .attr('height', height)
             .on('mouseover', () => {
-                this.move_crosshair.style('display', null);
+                this.cursor_crosshair.style('display', null);
                 this.full_crosshair.style('display', null);
                 this.fast_crosshair.style('display', null);
             })
             .on('mouseout', () => {
                 mouse_down = false;
-                this.move_crosshair.style('display', 'none');
+                this.cursor_crosshair.style('display', 'none');
                 this.full_crosshair.style('display', 'none');
                 this.fast_crosshair.style('display', 'none');
             })
@@ -226,7 +240,7 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
                 }
 
                 let d = x0 - d0.move > d1.move - x0 ? d1 : d0;
-                self.move_crosshair.attr('transform', 'translate(' + self.x(d.move) + ', 0)');
+                self.cursor_crosshair.attr('transform', 'translate(' + self.x(d.move) + ', 0)');
                 self.fast_crosshair.attr('transform', 'translate(0, ' + self.y(d.fast_prediction * 100.0) + ')');
                 self.full_crosshair.attr('transform', 'translate(0, ' + self.y(d.full_prediction * 100.0) + ')');
 
@@ -562,7 +576,12 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         }
 
         if (!this.analysis || !this.analysis.data) {
-            return null;
+            return (
+                <div className='AIAnalysis'>
+                    <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
+                    <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
+                </div>
+            );
         }
 
         let move_analysis = null;
@@ -670,7 +689,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
                 <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
 
-                { (this.state.analyses.length > 1 || null) &&
+                { false && (this.state.analyses.length > 1 || null) &&
                     <Select
                         value={this.state.selected_analysis}
                         options={this.state.analyses}
@@ -692,7 +711,11 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 </div>
 
                 {((this.state.full && this.state.full.length > 0) || null) &&
-                    <AIAnalysisChart entries={this.state.full} updatecount={this.state.updatecount} setmove={this.props.game.nav_goto_move} />
+                    <AIAnalysisChart
+                        entries={this.state.full}
+                        updatecount={this.state.updatecount}
+                        move={this.props.move.move_number}
+                        setmove={this.props.game.nav_goto_move} />
                 }
 
                 {((this.state.fast && this.state.fast.length > 0) || null) &&
