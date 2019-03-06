@@ -19,10 +19,10 @@
 //export * from "./GoStoneGroup";
 //export * from "./GoTheme";
 //export * from "./GoUtil";
-//export * from "./MoveTree";
 
 export * from "./GoThemes";
 export * from "./GoMath";
 export * from "./GoEngine";
 export * from "./SFXManager";
 export * from "./Goban";
+export * from "./MoveTree";
