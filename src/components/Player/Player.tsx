@@ -16,16 +16,19 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
-import {shouldOpenNewTab, errorLogger} from "misc";
-import {rankString} from "rank_utils";
+import {Link} from "react-router-dom";
+import { routes } from 'routes';
+import {browserHistory} from "ogsHistory";
+import {shouldOpenNewTab, errorLogger, unicodeFilter} from "misc";
+import {rankString, getUserRating, is_novice, PROVISIONAL_RATING_CUTOFF} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import online_status from "online_status";
+import {pgettext} from "translate";
 
 interface PlayerProperties {
     // id?: any,
@@ -39,7 +42,9 @@ interface PlayerProperties {
     flare?: boolean;
     online?: boolean;
     nolink?: boolean;
+    fakelink?: boolean;
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
+    nochallenge?: boolean; /* don't show the challenge button in the details box */
     noextracontrols?: boolean; /* Disable extra controls */
     disableCacheUpdate?: boolean;
 }
@@ -56,27 +61,25 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         super(props);
         this.state = {
             is_online: false,
-            user: null,
+            user: typeof(props.user) === "object" ? props.user : null,
         };
-        if (typeof(props.user) === "object") {
-            this.state.user = props.user;
-        }
     }
 
     componentDidMount() {{{
-        if (this.state.user) {
-            if (!this.props.disableCacheUpdate) {
-                player_cache.update(this.props.user);
+        if (!this.props.disableCacheUpdate) {
+            if (this.state.user && this.state.user.id > 0) {
+                player_cache.update(this.state.user);
             }
-        }
-        let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
+
+            let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+            if (player_id && player_id > 0) {
+                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
         }
 
         this.syncUpdateOnline(this.props.user);
@@ -102,23 +105,30 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     }}}
 
-
-
     componentWillReceiveProps(new_props) {{{
         if (typeof(new_props.user) === "object") {
-            player_cache.update(new_props.user);
             this.setState({user: new_props.user});
+        } else {
+            this.setState({user: null});
         }
 
-        let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-        if (player_id && player_id > 0) {
-            player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                if (player_id === user.id) {
-                    this.setState({user: user});
-                }
-            }).catch(errorLogger);
+        if (!new_props.disableCacheUpdate) {
+            let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+
+            if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
+                player_cache.update(new_props.user);
+            }
+
+            if (player_id && player_id > 0) {
+                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
         }
+
         this.syncUpdateOnline(new_props.user);
     }}}
     componentDidUpdate() {{{
@@ -127,7 +137,6 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     componentWillUnmount() {{{
         this.syncUpdateOnline(null);
     }}}
-
 
     render() {
         if (!this.state.user) {
@@ -173,20 +182,31 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += " noextracontrols";
         }
 
+
         if (this.props.rank !== false) {
-            if ("rank" in player && !("ranking" in player)) {
-                player.ranking = player.rank;
+            let rating = getUserRating(player, 'overall', 0);
+            let rank_text = 'E';
+
+            if (player.pro || player.professional) {
+                rank_text = rankString(player);
             }
-            if (player.ranking > 0) {
-                let suffix = "";
-                if (player.ui_class && player.ui_class.indexOf("provisional") >= 0) {
-                    suffix += "?";
-                }
-                if (player.ui_class && player.ui_class.indexOf("timeout") >= 0) {
-                    suffix += "T";
-                }
-                main_attrs["data-rank"] = " [" + rankString(player) + suffix + "]";
+            else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
+                /* This is to support displaying archived chat lines */
+                rank_text = rankString(player);
             }
+            else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+                rank_text = '?';
+            }
+            /*
+            else if (is_novice(rating.rank)) {
+                rank_text = pgettext("Novice rank text", 'N');
+            }
+            */
+            else {
+                rank_text = rating.bounded_rank_label;
+            }
+
+            main_attrs["data-rank"] = " [" + rank_text + "]";
         }
 
         if (props.flare) {
@@ -197,42 +217,76 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
+        let username = unicodeFilter(player.username || player.name);
 
-        return (
-            <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                {(props.flag || null) && <Flag country={player.country}/>}
-                {player.username || player.name}
-            </span>
-        );
+
+        if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return (
+                <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </span>
+            );
+        } else {
+            let player_id = this.state.user.id || this.state.user.player_id;
+            let uri = `/player/${player_id}/${encodeURIComponent(username)}`;
+
+            return (
+                <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
+                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                    {(props.flag || null) && <Flag country={player.country}/>}
+                    {username}
+                </a>
+            );
+        }
     }
 
     display_details = (event) => {
-        if (this.props.nolink || this.state.guest) {
+        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return;
         }
-        else {
-            event.stopPropagation();
+
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get popup warnings */
+            return;
         }
+
+        event.stopPropagation();
+        event.preventDefault();
 
         let player_id = this.state.user.id || this.state.user.player_id;
         if (shouldOpenNewTab(event)) {
             let uri = `/player/${player_id}`;
             let player = player_cache.lookup(player_id);
             if (player) {
-                uri += "/" + encodeURIComponent(player.username);
+                uri += "/" + encodeURIComponent(unicodeFilter(player.username));
             }
             window.open(uri, "_blank");
-        }
-        else if (this.props.nodetails) {
+        } else if (this.props.nodetails) {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
             return;
         }
         else {
+            let chat_id = null;
+            try {
+                let cur = $(this.refs.elt);
+
+                while (cur && cur[0].nodeName !== 'BODY') {
+                    chat_id = cur.attr('data-chat-id');
+                    if (chat_id) {
+                        break;
+                    }
+                    cur = cur.parent();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+
             popover({
-                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} />),
+                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} nochallenge={this.props.nochallenge} chatId={chat_id} />),
                 below: this.refs.elt,
                 minWidth: 240,
                 minHeight: 250,

@@ -72,7 +72,6 @@
                 "variable-declaration": "nospace"
             }
         ],
-        "typeof-compare": true,
         "use-isnan": true,
         "variable-name": [
             true,
@@ -83,7 +82,6 @@
             "check-branch",
             "check-decl",
             "check-operator",
-            "check-module",
             "check-separator"
         ]
     }

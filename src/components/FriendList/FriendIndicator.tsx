@@ -16,14 +16,15 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
 import {get} from "requests";
 import * as moment from "moment";
 import {FriendList} from "./FriendList";
 import {UIPush} from "UIPush";
 import {KBShortcut} from "KBShortcut";
+import cached from 'cached';
 
 
 let friend_indicator_singleton:FriendIndicator;
@@ -44,9 +45,8 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
     }
 
     componentWillMount() {
-        data.watch("friends", this.updateFriends);
+        data.watch(cached.friends, this.updateFriends);
         online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
-        this.refresh();
     }
 
     updateFriendCount = () => {
@@ -69,14 +69,6 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         });
     }
 
-    refresh() {
-        get("ui/friends").then((res) => {
-            data.set("friends", res.friends);
-        }).catch((err) => {
-            console.error("Error resolving friends list: ", err);
-        });
-    }
-
     updateFriends = (friends) => {
         this.friend_list = friends;
         this.updateFriendCount();
@@ -96,7 +88,6 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
 
         return (
             <span className={"FriendIndicator" + (this.state.online_ct ? " online" : "")} onClick={this.toggleFriendList}>
-                <UIPush event="update-friend-list" action={this.refresh} />
                 <i className="fa fa-users"/>
                 <span className="count">{this.state.online_ct}</span>
                 {(this.state.show_friend_list || null) &&

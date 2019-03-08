@@ -16,46 +16,87 @@
  */
 
 import {get} from "requests";
+import {Batcher} from "batcher";
+import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 
-const player_cache_debug_enabled = false;
-let cache: {[id: number]: any} = {};
-let cache_by_username: {[username: string]: any} = {};
-let active_fetches: {[id: number]: Promise<any>} = {};
-let nicknames: Array<string> = [];
+import Debug from "debug";
+const debug = new Debug("player_cache");
 
-let listeners = {};
-let last_id = 0;
+// The player cache's Subscriber is just like a vanilla Subscriber, but can
+// subscribe to and unsubscribe from numerical ids or whole Players. The
+// function to query which players we are watching is called "players", not
+// "channels".
+let publisher = new Publisher<{[id: string]: PlayerCacheEntry}>();
+export class Subscriber {
+    private subscriber: RealSubscriber<{[id: string]: PlayerCacheEntry}, string>;
 
-class Listener {
-    player_id: number;
-    id: number;
-    cb: (player: any, player_id?: number) => void;
-    remove_callbacks: Array<() => void>;
-
-    constructor(player_id: number, cb: (user: any, player_id?: number) => void) {
-        this.player_id = player_id;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
+    constructor(callback: (player: PlayerCacheEntry) => void) {
+        this.subscriber = new publisher.Subscriber((id, player) => callback(player));
     }
 
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
+    on(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
+        this.subscriber.on(this.to_strings(players));
+        return this;
     }
 
-    remove() {
-        delete listeners[this.player_id][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
+    off(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): this {
+        this.subscriber.off(this.to_strings(players));
+        return this;
+    }
+
+    players(): Array<number> {
+        return this.subscriber.channels().map(id => parseInt(id));
+    }
+
+    private to_strings(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): Array<string> {
+        let result: Array<string> = [];
+        if (!(players instanceof Array)) {
+            players = [players];
+        }
+        for (let player of players) {
+            if (typeof player === "number") {
+                result.push(player.toString());
+            }
+            else {
+                result.push(player.id.toString());
             }
         }
+        return result;
     }
 }
 
-function update(player: any, dont_overwrite?: boolean): any {
+export interface PlayerCacheEntry {
+    id      : number;
+    country?: string;
+    icon?   : string;
+    pro?    : boolean;
+    ranking?: number;
+    rating? : number;
+    ratings?: {
+                'overall': {
+                    rating: number;
+                    deviation: number;
+                    volatility: number;
+                    games_played: number;
+                }
+              };
+    ui_class?: string;
+    username?: string;
+}
+
+interface FetchEntry {
+    player_id: number;
+    resolve: (value?:any) => void;
+    reject: (reason?:any) => void;
+    required_fields: Array<string>;
+}
+
+let cache: {[id: number]: PlayerCacheEntry} = {};
+let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
+let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
+export let nicknames: Array<string> = [];
+
+export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     if (Array.isArray(player)) {
         for (let p of player) {
             update(p, dont_overwrite);
@@ -64,8 +105,13 @@ function update(player: any, dont_overwrite?: boolean): any {
     }
 
     let id = "user_id" in player ? player.user_id : player.id;
+    if (!id) {
+        console.error("Invalid player object", player);
+        return;
+    }
+
     if (!(id in cache)) {
-        cache[id] = {};
+        cache[id] = {id:id};
     }
     for (let k in player) {
         if (dont_overwrite && k in cache[id]) {
@@ -80,16 +126,19 @@ function update(player: any, dont_overwrite?: boolean): any {
         cache_by_username[cache[id].username] = cache[id];
     }
 
-    if (id in listeners) {
-        for (let l in listeners[id]) {
-            listeners[id][l].cb(cache[id], id);
-        }
+    /* these are synonymous but called different things throughout the back end, I am truly sorry. */
+    if ('professional' in player) {
+        cache[id]['pro'] = !!player.professional;
+    }
+    if ('pro' in player) {
+        cache[id]['professional'] = !!player.pro;
     }
 
+    publisher.publish(id.toString(), cache[id]);
     return cache[id];
 }
 
-function lookup(player_id: number): any {
+export function lookup(player_id: number): PlayerCacheEntry {
     if (player_id in cache) {
         return cache[player_id];
     }
@@ -97,7 +146,7 @@ function lookup(player_id: number): any {
     return null;
 }
 
-function lookup_by_username(username: string): any {
+export function lookup_by_username(username: string): PlayerCacheEntry {
     if (username in cache_by_username) {
         return cache_by_username[username];
     }
@@ -105,22 +154,7 @@ function lookup_by_username(username: string): any {
     return null;
 }
 
-function watch(player_id: number, cb: (player: any, player_id?: number) => void): Listener {
-    let listener = new Listener(player_id, cb);
-    if (!(player_id in listeners)) {
-        listeners[player_id] = {};
-    }
-    listeners[player_id][listener.id] = listener;
-
-    let val = lookup(player_id);
-    if (val) {
-        cb(val, player_id);
-    }
-
-    return listener;
-}
-
-function fetch(player_id: number, required_fields?: Array<string>): Promise<any> {
+export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);
         return Promise.reject("invalid player id");
@@ -145,13 +179,9 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
             return Promise.resolve(cache[player_id]);
         }
 
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " for fields ", missing_fields);
-        }
+        debug.log(`Fetching ${player_id} for fields ${missing_fields.join(", ")}.`, cache[player_id]);
     } else {
-        if (player_cache_debug_enabled) {
-            console.error("Fetching ", player_id, " because no user information was in our cache");
-        }
+        debug.log(`Fetching ${player_id} because no user information was in our cache.`);
     }
 
     if (player_id in active_fetches) {
@@ -159,42 +189,61 @@ function fetch(player_id: number, required_fields?: Array<string>): Promise<any>
     }
 
     return active_fetches[player_id] = new Promise((resolve, reject) => {
-        get(`/termination-api/player/${player_id}`)
-        .then((player) => {
-            if ('icon-url' in player) {
-                player.icon = player['icon-url']; /* handle stupid inconsistency in API */
-            }
-            delete active_fetches[player_id];
-            update(player);
-            if (required_fields) {
-                for (let field of required_fields) {
-                    if (!(field in cache[player.id])) {
-                        console.warn("Required field ", field, " was not resolved by fetch");
-                        cache[player.id][field] = "[ERROR]";
-                    }
-                }
-            }
-            resolve(cache[player.id]);
-        })
-        .catch((err) => {
-            delete active_fetches[player_id];
-            console.error(err);
-            reject(err);
+        fetch_player.soon({
+            player_id: player_id,
+            resolve: resolve,
+            reject: reject,
+            required_fields: required_fields,
         });
     });
 }
 
+let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
+    while (fetch_queue.length > 0) {
+        let queue = fetch_queue.slice(0, 100);
+        fetch_queue = fetch_queue.slice(100);
 
-export const player_cache = {
-    update: update,
-    lookup: lookup,
-    lookup_by_username: lookup_by_username,
-    nicknames: nicknames,
-    fetch: fetch,
-    watch: watch,
-    Listener: Listener,
-};
+        debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
 
-export default player_cache;
+        get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
+        .then((players) => {
+            for (let idx = 0; idx < queue.length; ++idx) {
+                let player = players[idx];
+                let resolve = queue[idx].resolve;
+                let reject = queue[idx].reject;
+                let required_fields = queue[idx].required_fields;
 
-window['player_cache'] = player_cache;
+                if ('icon-url' in player) {
+                    player.icon = player['icon-url']; /* handle stupid inconsistency in API */
+                }
+
+                delete active_fetches[player.id];
+                update(player);
+                if (required_fields) {
+                    for (let field of required_fields) {
+                        if (!(field in cache[player.id])) {
+                            debug.warn("Required field ", field, " was not resolved by fetch");
+                            cache[player.id][field] = "[ERROR]";
+                        }
+                    }
+                }
+                try {
+                    resolve(cache[player.id]);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        })
+        .catch((err) => {
+            debug.error(err);
+            for (let idx = 0; idx < queue.length; ++idx) {
+                delete active_fetches[queue[idx].player_id];
+                try {
+                    queue[idx].reject(err);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        });
+    }
+});

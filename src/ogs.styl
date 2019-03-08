@@ -16,6 +16,7 @@
  */
 
 font-size-big = 16pt
+font-size-mid = 14pt
 font-size-normal = 12pt
 font-size-small = 10pt
 font-size-smaller = 8pt
@@ -55,11 +56,11 @@ z = {
         backdrop       : 1000,
         menu           : 1010,
     },
+    player-autocomplete: 1900,
     modal: {
         backdrop       : 2000,
         container      : 2010,
     },
-    player-autocomplete: 3000,
     popover            : 5000,
     swal               : 10000,
     superchat-modal    : 50005,
@@ -109,6 +110,10 @@ light.malkovich-bg                      = #CCE3D5
 light.variation                         = #0088cc
 light.variation-hover                   = #005580
 light.email-banner                      = #CEDBCF
+light.chart-area                        = #E6F6FE
+light.chart-line                        = #2980B9
+light.error-boundary-bg                 = lighten(light.reject, 50%)
+light.error-boundary-fg                 = darken(light.reject, 50%)
 
 //light.supporter                         = #fdd017;
 light.user                              = #3070A7
@@ -118,14 +123,19 @@ light.moderator                         = #9733EE
 light.admin                             = light.moderator
 light.ambassador                        = #6FCDEA
 light.teacher                           = #27AD49
-light.chat-mentions                     = #C81E1E
-//light.chat-mentions                     = #107A00 // green
-//light.chat-mentions                     = #ff5200 // orange
 light.chat-mentions                     = #DB397A // pink
 light.chat-self-message                 = #0449C4
 light.chat-system                       = #1CA760
+light.private-chat-user                 = #111111
 
+light.win                               = #73D355
+light.loss                              = #BC4B9A
 
+light.weak-win                          = lighten(light.win, 25%)
+light.weak-loss                         = lighten(light.loss, 25%)
+
+light.strong-win                        = darken(light.win, 25%)
+light.strong-loss                       = darken(light.loss, 25%)
 
 light.shade0                            = lighten(light.fg, 20%)
 light.shade1                            = lighten(light.fg, 40%)
@@ -133,6 +143,8 @@ light.shade2                            = lighten(light.fg, 60%)
 light.shade3                            = lighten(light.fg, 80%)
 light.shade4                            = lighten(light.fg, 90%)
 light.shade5                            = lighten(light.fg, 95%)
+
+light.search-highlight                  = #FFEA00
 
 
 /** Navbar **/
@@ -201,6 +213,10 @@ dark.malkovich-bg                       = #597053
 dark.variation                          = #00aaff
 dark.variation-hover                    = #1A93D0
 dark.email-banner                       = #2A492B
+dark.chart-area                         = #092D3E
+dark.chart-line                         = #2980B9
+dark.error-boundary-bg                  = darken(light.reject, 50%)
+dark.error-boundary-fg                  = lighten(light.reject, 50%)
 
 dark.user                               = #9dc6ff
 dark.supporter                          = #FFCC00;
@@ -217,13 +233,23 @@ dark.shade3                             = lighten(dark.bg, 25%)
 dark.shade4                             = lighten(dark.bg, 20%)
 dark.shade5                             = lighten(dark.bg, 13%)
 
-//dark.chat-mentions                      = lighten(light.chat-mentions, 10%)
-dark.chat-mentions                      = #86D88D // green
-dark.chat-mentions                      = #ED7C1A // orange
-dark.chat-mentions                      = #E36497 // ping
-//dark.chat-mentions                      = #C56767  // red
+dark.search-highlight                  = #554E00
+
+dark.chat-mentions                      = #E36497 // pink
 dark.chat-self-message                  = #8AB1E6
 dark.chat-system                        = lighten(light.chat-system, 20%)
+dark.private-chat-user                  = #eeeeee
+
+
+dark.win                                = desaturate(darken(light.win, 30%), 20%)
+dark.loss                               = desaturate(darken(light.loss, 30%), 20%)
+
+dark.strong-win                         = lighten(dark.win, 25%)
+dark.strong-loss                        = lighten(dark.loss, 25%)
+
+dark.weak-win                           = darken(dark.win, 25%)
+dark.weak-loss                          = darken(dark.loss, 25%)
+
 
 /** Navbar **/
 
@@ -280,25 +306,27 @@ nowrap()
     white-space: nowrap;
 
 
+@require "global_styl/mixins.styl";
+@require "global_styl/global.styl";
+@require "global_styl/bootstrap-esq.styl";
+@require "global_styl/misc-ui.styl";
+@require "global_styl/ogs-font.styl";
+@require "lib/ogs-goban/Goban.styl";
+@require "global_styl/swal.styl";
+@require "global_styl/flags16.styl";
+@require "global_styl/flags32.styl";
+@require "global_styl/font-awesome-hacks.styl";
+@require "global_styl/react-datetime.styl";
+@require "global_styl/react-autosuggest.styl";
 
-@import "global_styl/mixins.styl";
-@import "global_styl/global.styl";
-@import "global_styl/bootstrap-esq.styl";
-@import "global_styl/misc-ui.styl";
-@import "global_styl/ogs-font.styl";
-@import "lib/ogs-goban/Goban.styl";
-@import "global_styl/swal.styl";
-@import "global_styl/flags16.styl";
-@import "global_styl/flags32.styl";
-@import "global_styl/font-awesome-hacks.styl";
-@import "global_styl/react-datetime.styl";
-@import "global_styl/react-autosuggest.styl";
+@require "lib/popover.styl";
+@require "lib/toast.styl";
 
-@import "lib/popover.styl";
-@import "lib/toast.styl";
+@require "./components/material/*.styl";
+@require "./components/[A-Z]*/*.styl";
+@require "./views/[A-Z]*/*.styl";
+@require "./views/docs/*.styl";
 
-@import "./components/material/*.styl";
-@import "./components/[A-Z]*/*.styl";
-@import "./views/[A-Z]*/*.styl";
-@import "./views/docs/*.styl";
+
+@require '../node_modules/react-select/dist/react-select.css';
 

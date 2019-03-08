@@ -18,14 +18,22 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
-import {browserHistory} from 'react-router';
-import data from "data";
+import {TypedEventEmitter} from "TypedEventEmitter";
+import {sfx} from "goban";
+import {browserHistory} from "ogsHistory";
+import * as data from "data";
+import * as preferences from "preferences";
 import {Toast, toast} from 'toast';
 
 export type Speed = 'blitz' | 'live' | 'correspondence';
 export type Size = '9x9' | '13x13' | '19x19';
 export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
+
+interface Events {
+    'start': any;
+    'entry': any;
+    'cancel': any;
+}
 
 export interface AutomatchPreferences {
     uuid: string;
@@ -92,7 +100,7 @@ class AutomatchToast extends React.PureComponent<{}, any> {
     }
 }
 
-class AutomatchManager extends EventEmitter {
+class AutomatchManager extends TypedEventEmitter<Events> {
     active_live_automatcher:AutomatchPreferences;
     active_correspondence_automatchers:{[id:string]: AutomatchPreferences} = {};
     last_find_match_uuid:string;
@@ -134,6 +142,11 @@ class AutomatchManager extends EventEmitter {
 
         if (entry.uuid === this.last_find_match_uuid) {
             browserHistory.push(`/game/view/${entry.game_id}`);
+
+            let t = sfx.volume_override;
+            sfx.volume_override = preferences.get("automatch-alert-volume");
+            sfx.play(preferences.get("automatch-alert-sound"));
+            sfx.volume_override = t;
         }
 
         this.emit('start', entry);

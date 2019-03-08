@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 
@@ -333,6 +333,9 @@ export function shortTimeControl(time_control) { /* {{{ */
         return "~" + durationString(time_control);
     }
 
+    if (time_control === null) {
+        return '';
+    }
 
     switch (time_control.system || time_control.time_control) {
         case "simple":
@@ -369,6 +372,10 @@ export function shortShortTimeControl(time_control) { /* {{{ */
         return "~" + shortDurationString(time_control);
     }
 
+    if (time_control === null) {
+        return '';
+    }
+
     switch (time_control.system || time_control.time_control) {
         case "simple":
             return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [shortDurationString(time_control.per_move).toLowerCase()]);
@@ -398,6 +405,49 @@ export function shortShortTimeControl(time_control) { /* {{{ */
             return "[error: " + (time_control.system || time_control.time_control) + "]";
     }
 }  /* }}} */
+
+const QUESTIONABLE_SECONDS_PER_MOVE = 4;  // less than this gets flagged as may be cheaty.
+const QUESTIONABLE_ABSOLUTE_TIME = 900; // Arguably absolute time cheaters don't use > 10 min.  I've seen reports complaining about abuse at 10min though, so set this a bit higher.
+
+export function usedForCheating(time_control) {
+    if (typeof(time_control) !== "object" || time_control === null) {
+        return false;
+    }
+
+    // either there has to be enough time for the whole game or
+    // a sensible ongoing per-move allocation
+    switch (time_control.system || time_control.time_control) {
+
+        case "simple":
+            return time_control.per_move < QUESTIONABLE_SECONDS_PER_MOVE;
+
+        case "absolute":
+            return time_control.total_time <= QUESTIONABLE_ABSOLUTE_TIME;
+
+        case "canadian":
+            return !(
+                time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
+                time_control.period_time / time_control.stones_per_period > QUESTIONABLE_SECONDS_PER_MOVE
+            );
+
+        case "byoyomi":
+            return !(
+                time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
+                time_control.period_time > QUESTIONABLE_SECONDS_PER_MOVE
+            );
+
+        case "fischer":
+            return !(
+                time_control.initial_time > QUESTIONABLE_ABSOLUTE_TIME ||
+                time_control.time_increment > QUESTIONABLE_SECONDS_PER_MOVE
+            );
+
+        case "none":
+        default:
+            return false;
+    }
+}
+
 export function timeControlSystemText(system) { /* {{{ */
     switch (system) {
         case "simple"   : return pgettext("time control system", "simple");

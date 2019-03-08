@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, cc_to_country_name} from "translate";
 import {post, put} from "requests";
 import {PaginatedTable} from "PaginatedTable";
@@ -57,18 +57,19 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
             <UIPush event="new-user" channel="moderators" action={this.refreshUserlog} />
 
             <Card>
-                <h2>{_("New Users")}</h2>
-               <SearchInput
-                    className="pull-right"
-                    placeholder={_("Search")}
-                    onChange={(event) => {
-                        this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
-                        this.refs.userlog.filter_updated();
-                    }}
-                />
+                <div className='hsearch'>
+                    <h2>{_("New Users")}</h2>
+                    <SearchInput
+                        placeholder={_("Search")}
+                        onChange={(event) => {
+                            this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
+                            this.refs.userlog.filter_updated();
+                        }}
+                    />
+                </div>
 
                 <PaginatedTable
-                    className=""
+                    className="userlog"
                     ref="userlog"
                     name="userlog"
                     source={`moderation/recent_users`}
@@ -88,34 +89,31 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
 
                         {header: _("User"),  className: () => "user",
                          render: (X) => (
-                             <div className="userlog-user">
                                  <Player user={X} />
-                                 <span><b>{_("Accounts")}:</b> {X.browser_id_count}</span>
-                                 <span><b>IP:</b> {X.last_ip}</span>
-                                 <span><b>{_("Country")}:</b> {cc_to_country_name(X.geoip.country)} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>
-                                 <span><b>{_("Timezone")}:</b> {X.last_timezone_offset / 60}</span>
-                                 <span className="monospace small clip"><b>BID:</b> {X.last_browser_id}</span>
-                                 <span className="monospace small clip"><b>Fingerprint:</b> {X.last_fingerprint}</span>
-                                 <span className="monospace small clip"><b>Plugins:</b> {X.last_plugin_hash}</span>
-                                 <span className="monospace small clip"><b>Screen:</b>
-                                    {`${X.last_screen_width}x${X.last_screen_height}+${X.last_screen_avail_left}x${X.last_screen_avail_top}`}
-                                 </span>
-                             </div>
                         )},
+
+                        {header: _("Accounts") , render: (X) => X.browser_id_count} ,
+                        {header: "IP"          , render: (X) => <span className='monospace small clip'>{X.last_ip}</span>} ,
+                        {header: _("Country")  , render: (X) => <span>{cc_to_country_name(X.geoip.country)} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
+                        {header: _("Timezone") , render: (X) => X.last_timezone_offset / 60} ,
+                        {header: "BID"         , render: (X) => <span className='monospace small clip'>{X.last_browser_id}</span>} ,
+                        {header: "Fingerprint" , render: (X) => <span className='monospace small clip'>{X.last_fingerprint}</span>} ,
                     ]}
                 />
             </Card>
 
             <Card>
-                <h2>{_("Moderator Log")}</h2>
-               <SearchInput
-                    className="pull-right"
-                    placeholder={_("Search")}
-                    onChange={(event) => {
-                        this.refs.modlog.filter.player__username__istartswith = (event.target as HTMLInputElement).value.trim();
-                        this.refs.modlog.filter_updated();
-                    }}
-                />
+                <div className='hsearch'>
+                    <h2>{_("Moderator Log")}</h2>
+                    <SearchInput
+                        className="pull-right"
+                        placeholder={_("Search")}
+                        onChange={(event) => {
+                            this.refs.modlog.filter.player__username__istartswith = (event.target as HTMLInputElement).value.trim();
+                            this.refs.modlog.filter_updated();
+                        }}
+                    />
+                </div>
 
                 <PaginatedTable
                     className=""

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {current_language} from "translate";
 
 let filters: any = {};

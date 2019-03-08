@@ -18,13 +18,12 @@
 import {Goban as OGSGoban} from 'ogs-goban';
 import {deepEqual, dup, getRandomInt, getRelativeEventPosition} from "misc";
 import {shortDurationString, isLiveGame} from "TimeControl";
-import {getLocation, setLocation} from "location";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
 import {getSelectedThemes, watchSelectedThemes} from "preferences";
-import {_, pgettext, interpolate} from "translate";
-import preferences from "preferences";
-import data from "data";
-import player_cache from "player_cache";
+import {_, pgettext, interpolate, current_language} from "translate";
+import * as preferences from "preferences";
+import * as data from "data";
+import * as player_cache from "player_cache";
 
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';
@@ -52,12 +51,30 @@ export class Goban extends OGSGoban {
     }
 
     getLocation():string {
-        return getLocation();
+        return window.location.pathname;
     }
 
     protected getShouldPlayVoiceCountdown():boolean {
         return preferences.get("sound-voice-countdown");
     }
+
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+        switch (preferences.get('board-labeling')) {
+            case 'A1':
+                return 'A1';
+            case '1-1':
+                return '1-1';
+            default: // auto
+                switch (current_language) {
+                    case 'ko':
+                    case 'ja':
+                    case 'zh-cn':
+                        return '1-1';
+                    default:
+                        return 'A1';
+                }
+        }
+    }}}
 
     getShowMoveNumbers():boolean {
         return preferences.get("show-move-numbers");
@@ -67,6 +84,23 @@ export class Goban extends OGSGoban {
         return preferences.get("show-variation-move-numbers");
     }
 
+    isAnalysisDisabled(perGameSettingAppliesToNonPlayers = false):boolean {
+        // The player's preference setting to always disable analysis overrides the per-game setting for
+        // their own games.
+        if (preferences.get("always-disable-analysis") && this.isParticipatingPlayer()) {
+            return true;
+        }
+
+        // If the user hasn't enabled the always-disable-analysis option (or they do not participate in this game),
+        // we check the per-game setting.
+        if (perGameSettingAppliesToNonPlayers) {
+            // This is used for the SGF download which is disabled even for users that are not
+            // participating in the game (or not signed in)
+            return this.engine.config.original_disable_analysis;
+        } else {
+            return this.engine.config.disable_analysis;
+        }
+    }
 
     watchSelectedThemes(cb) {
         return watchSelectedThemes(cb);

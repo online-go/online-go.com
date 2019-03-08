@@ -64,7 +64,8 @@ export function image_resizer(file: File, max_width: number, max_height?: number
         canvas.getContext("2d").drawImage(image, 0, 0, width, height);
         let dataUrl = canvas.toDataURL("image/png");
         let blob: any = dataURItoBlob(dataUrl);
-        blob.lastModifiedDate = file.lastModifiedDate;
+        //blob.lastModifiedDate = file.lastModifiedDate;
+        blob.lastModified = file.lastModified;
         blob.name = file.name;
         return blob as File;
     };

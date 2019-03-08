@@ -20,6 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {termination_socket} from "sockets";
 import {ignore, errorAlerter, getPrintableError} from "misc";
+import {SupporterGoals} from 'SupporterGoals';
 
 declare var swal;
 declare var ogs_release;
@@ -67,7 +68,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     }
 
 
-    updating= false;
+    updating = false;
     appendResult(text) {
         this.results.push(typeof(text) === "string" ? text : JSON.stringify(text, null, 4));
         if (this.updating) {
@@ -108,6 +109,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     render() {
         return (
         <div className="Admin container">
+            <SupporterGoals alwaysShow />
             <div className="row">
                 <div className="col-sm-6">
                     <h3>Pause Controls</h3>

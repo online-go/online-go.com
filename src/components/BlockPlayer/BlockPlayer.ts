@@ -16,10 +16,11 @@
  */
 
 import {get, put} from "requests";
-import data from "data";
+import * as data from "data";
 import {ignore, errorAlerter} from "misc";
 import ITC from "ITC";
-import player_cache from 'player_cache';
+import cached from 'cached';
+import * as player_cache from "player_cache";
 
 let ignores = {};
 let block_state = {};
@@ -36,7 +37,7 @@ export function setIgnore(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_chat = tf;
-        put("players/" + player_id + "/block", {block_chat: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })
@@ -49,7 +50,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
             block_state[player_id] = {};
         }
         block_state[player_id].block_games = tf;
-        put("players/" + player_id + "/block", {block_games: tf ? 1 : 0})
+        put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
         })
@@ -68,35 +69,6 @@ export function player_is_ignored(user_id) {
     return user_id in ignores;
 }
 
-function update_blocks() {
-    let user = data.get("user");
-
-    if (!user.anonymous) {
-        get("me/blocks")
-        .then((entries) => {
-            block_state = {};
-            let new_ignores = {};
-            for (let entry of entries) {
-                block_state[entry.blocked] = entry;
-                if (entry.block_chat) {
-                    new_ignores[entry.blocked] = true;
-                }
-            }
-
-            for (let uid in new_ignores) {
-                if (!(uid in ignores)) {
-                    ignoreUser(uid, true);
-                }
-            }
-            for (let uid in ignores) {
-                if (!(uid in new_ignores)) {
-                    unIgnoreUser(uid);
-                }
-            }
-        })
-        .catch(ignore);
-    }
-}
 
 
 function ignoreUser(uid, dont_fetch = false) {
@@ -120,5 +92,25 @@ function unIgnoreUser(uid) {
     $("<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>").appendTo("head");
 }
 
-data.watch("user", update_blocks);
-ITC.register("update-blocks", update_blocks);
+
+data.watch(cached.blocks, (blocks) => {
+    block_state = {};
+    let new_ignores = {};
+    for (let entry of blocks) {
+        block_state[entry.blocked] = entry;
+        if (entry.block_chat) {
+            new_ignores[entry.blocked] = true;
+        }
+    }
+
+    for (let uid in new_ignores) {
+        if (!(uid in ignores)) {
+            ignoreUser(uid, true);
+        }
+    }
+    for (let uid in ignores) {
+        if (!(uid in new_ignores)) {
+            unIgnoreUser(uid);
+        }
+    }
+});

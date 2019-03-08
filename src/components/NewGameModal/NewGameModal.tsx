@@ -16,23 +16,26 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {challenge, challengeComputer, createCorrespondence, createBlitz,
         createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore} from "misc";
-import preferences from "preferences";
-import data from "data";
+import * as preferences from "preferences";
+import * as data from "data";
 import {bot_count} from "bots";
 
 declare var swal;
 
+interface Events {
+}
+
 interface NewGameModalProperties {
 }
 
-export class NewGameModal extends Modal<NewGameModalProperties, any> {
+export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     size9;
     size13;
     size19;
@@ -45,13 +48,6 @@ export class NewGameModal extends Modal<NewGameModalProperties, any> {
         this.size9 = this.updateBoardSize.bind(this, 9);
         this.size13 = this.updateBoardSize.bind(this, 13);
         this.size19 = this.updateBoardSize.bind(this, 19);
-    }
-
-    componentDidMount() {
-        super.componentDidMount();
-    }
-    componentWillUnmount() {
-        super.componentWillMount();
     }
 
     updateBoardSize(num) {
@@ -144,10 +140,5 @@ export class NewGameModal extends Modal<NewGameModalProperties, any> {
 }
 
 export function openNewGameModal() {{{
-    if (!data.get("user").setup_rank_set) {
-        browserHistory.push("/");
-        return;
-    }
-
     return openModal(<NewGameModal fastDismiss={true} />);
 }}}

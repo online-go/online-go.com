@@ -17,12 +17,12 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
 import {MiniGoban} from "MiniGoban";
 import {GobanLineSummary} from "GobanLineSummary";
-import data from "data";
+import * as data from "data";
 
 interface GameListProps {
     list: Array<any>;
@@ -158,6 +158,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
             let opponent_sort         = sort_order === 'opponent'       ? 'sorted-desc' : sort_order === '-opponent'       ? 'sorted-asc' : '';
             let clock_sort            = sort_order === 'clock'          ? 'sorted-desc' : sort_order === '-clock'          ? 'sorted-asc' : '';
             let opponent_clock_sort   = sort_order === 'opponent-clock' ? 'sorted-desc' : sort_order === '-opponent-clock' ? 'sorted-asc' : '';
+            let size                  = sort_order === 'size'           ? 'sorted-desc' : sort_order === '-size'           ? 'sorted-asc' : '';
 
             return (
                 <div className="GameList GobanLineSummaryContainer">
@@ -168,6 +169,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                               <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
                               <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
                               <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
+                              <div onClick={this.sortBy("size")} className={sortable + size}>{_("Size")}</div>
                           </div>
                         : <div className="GobanLineSummaryContainerHeader">
                               <div >{pgettext("Game list move number", "Move")}</div>
@@ -176,6 +178,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                               <div></div>
                               <div className="text-align-left">{_("White")}</div>
                               <div></div>
+                              <div className="text-align-left">{_("Size")}</div>
                           </div>
                     }
                     {lst.map((game) =>
@@ -185,6 +188,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             white={game.white}
                             player={this.props.player}
                             gobanref={(goban) => game.goban = goban}
+                            width={game.width}
+                            height={game.height}
                             />)}
                 </div>
             );

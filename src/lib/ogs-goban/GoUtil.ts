@@ -53,7 +53,15 @@ export function resizeDeviceScaledCanvas(_canvas, width, height) { /* {{{ */
         // now scale the context to counter
         // the fact that we've manually scaled
         // our canvas element
-        context.scale(ratio, ratio);
+
+        try {
+            context.scale(ratio, ratio);
+        } catch (e) {
+            __deviceCanvasScalingRatio = 1.0;
+            canvas.width = width;
+            canvas.height = height;
+            console.warn(e);
+        }
     } else {
         canvas.width = width;
         canvas.height = height;
@@ -96,7 +104,8 @@ export function getRelativeEventPosition(event) { /* {{{ */
         y = event.pageY - offset.top;
     } else {
         console.log("Missing event tap/click location:", event);
-        return;
+        x = -1000;
+        y = -1000;
     }
 
     return {"x": x, "y": y};

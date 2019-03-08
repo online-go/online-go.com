@@ -21,9 +21,9 @@ import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {GoThemes} from "goban";
 import {getSelectedThemes} from "preferences";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {PersistentElement} from "PersistentElement";
-import data from "data";
+import * as data from "data";
 
 interface GobanThemePickerProperties {
     // id?: any,

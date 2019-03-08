@@ -18,15 +18,14 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, abort_requests_in_flight} from "requests";
-import player_cache from "player_cache";
-
-import _Autosuggest = require("react-autosuggest");
-let Autosuggest = _Autosuggest as any;
+import * as player_cache from "player_cache";
+import * as Autosuggest from 'react-autosuggest';
 
 interface PlayerAutocompleteProperties {
     onComplete: (user) => void;
     playerId?: number;
     placeholder?: string;
+    ladderId?: number;
 }
 
 const getSuggestionValue = (suggestion) => {
@@ -50,7 +49,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         if (this.props.playerId) {
             let user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {
-                this.state.value = user.username;
+                (this.state as any).value = user.username;
             }
         }
     }
@@ -93,16 +92,28 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         this.current_search = value;
 
         if (value.length > 1) {
-            get("players/", {username__istartswith: value, page_size: 10})
-            .then((res) => {
-                //console.log("RESULTS: ", res.results);
+            let q = null;
+
+            if (this.props.ladderId) {
+                q = get(`ladders/${this.props.ladderId}/players/`, {player__username__istartswith: value, page_size: 10, no_challenge_information: 1});
+            }
+            else {
+                q = get("players/", {username__istartswith: value, page_size: 10});
+            }
+
+            q.then((res) => {
+                let suggestions = [];
                 for (let user of res.results) {
+                    if (this.props.ladderId) {
+                        user.player.ladder_rank = user.rank;
+                        user = user.player;
+                    }
+
                     player_cache.update(user);
+                    suggestions.push(user);
                 }
 
-                this.setState({
-                    suggestions: res.results
-                });
+                this.setState({ suggestions });
 
                 if (player_cache.lookup_by_username(this.state.value)) {
                     this.complete(this.state.value);
@@ -122,11 +133,12 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
             suggestions: []
         });
     }}}
-    onBlur = (ev, {focusedSuggestion}) => {{{
+    //onBlur = (ev, {focusedSuggestion}) => {{{
+    onBlur = (ev, {highlightedSuggestion}) => {{{
         if (this.tabbed_out) {
-            if (focusedSuggestion) {
-                this.setState({value: getSuggestionValue(focusedSuggestion)});
-                this.complete(getSuggestionValue(focusedSuggestion));
+            if (highlightedSuggestion) {
+                this.setState({value: getSuggestionValue(highlightedSuggestion)});
+                this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
     }}}
@@ -157,7 +169,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
                     getSuggestionValue={getSuggestionValue}
                     renderSuggestion={renderSuggestion}
-                    focusFirstSuggestion={true}
+                    highlightFirstSuggestion={true}
                     inputProps={inputProps}
                     />
             </span>

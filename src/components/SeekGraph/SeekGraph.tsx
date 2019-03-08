@@ -17,20 +17,25 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del} from "requests";
 import {comm_socket} from "sockets";
-import {EventEmitter} from "eventemitter3";
-import data from "data";
+import {TypedEventEmitter} from "TypedEventEmitter";
+import * as data from "data";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {shortDurationString, shortShortTimeControl, timeControlSystemText, computeAverageMoveTime} from "TimeControl";
 import {getRelativeEventPosition, errorAlerter} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, bounded_rank} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
+import * as player_cache from "player_cache";
 
 declare let swal;
+
+interface Events {
+    "challenges": Array<any>;
+}
 
 let MAX_RATIO = 0.99;
 
@@ -71,7 +76,7 @@ function lists_are_equal(A, B) {
     return true;
 }
 
-export class SeekGraph extends EventEmitter {
+export class SeekGraph extends TypedEventEmitter<Events> {
     static blitz_line_ratio = 0.1;
     static live_line_ratio = 0.6;
     static time_columns = [ /* {{{ */
@@ -143,6 +148,13 @@ export class SeekGraph extends EventEmitter {
         $(document).on("touchstart touchmove", this.onTouchStartMove);
     } /* }}} */
 
+    userRank() {
+        let user = data.get('user');
+        if (!user || user.anonymous) {
+            return 18;
+        }
+        return bounded_rank(user);
+    }
     onDisconnect = () => {{{
     }}}
     onConnect = () => {{{
@@ -159,11 +171,13 @@ export class SeekGraph extends EventEmitter {
                 //console.log(e);
             }
             else if ("delete" in e) {
-                let uid = this.challenges[e.challenge_id].system_message_id;
-                delete this.challenges[e.challenge_id];
-                if (uid) {
-                    //console.log("#line-" + (uid.replace(".", "\\.")));
-                    $("#line-" + (uid.replace(".", "\\."))).find("button").remove();
+                if (e.challenge_id in this.challenges) {
+                    let uid = this.challenges[e.challenge_id].system_message_id;
+                    delete this.challenges[e.challenge_id];
+                    if (uid) {
+                        //console.log("#line-" + (uid.replace(".", "\\.")));
+                        $("#line-" + (uid.replace(".", "\\."))).find("button").remove();
+                    }
                 }
             } else {
                 e.user_challenge = false;
@@ -174,18 +188,18 @@ export class SeekGraph extends EventEmitter {
                     e.eligible = false;
                     e.user_challenge = true;
                     e.ineligible_reason = _("This is your challenge");
-                } else if (e.ranked && Math.abs(data.get("user").ranking - e.rank) > 9) {
+                } else if (e.ranked && Math.abs(this.userRank() - e.rank) > 9) {
                     e.eligible = false;
                     e.ineligible_reason = _("This is a ranked game and the rank difference is more than 9");
-                } else if (e.min_rank <= data.get("user").ranking && e.max_rank >= data.get("user").ranking) {
+                } else if (e.min_rank <= this.userRank() && e.max_rank >= this.userRank()) {
                     e.eligible = true;
                 } else {
                     e.eligible = false;
 
-                    if (e.min_rank > data.get("user").ranking) {
+                    if (e.min_rank > this.userRank()) {
                         e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
                     }
-                    else if (e.max_rank < data.get("user").ranking) {
+                    else if (e.max_rank < this.userRank()) {
                         e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
                     }
                 }
@@ -499,7 +513,7 @@ export class SeekGraph extends EventEmitter {
 
         /* player rank line */
         if (!data.get("user").anonymous) {
-            let rank_ratio = (Math.min(MAX_RATIO, (data.get("user").ranking + 1) / 40));
+            let rank_ratio = (Math.min(MAX_RATIO, (this.userRank() + 1) / 40));
             let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
@@ -657,7 +671,7 @@ export class SeekGraph extends EventEmitter {
             else if (C.user_challenge) {
                 e.append($("<i>").addClass("fa fa-trash-o").attr("title", _("Remove challenge")).click((ev) => {
                     //console.log("Remove");
-                    del("challenges/" + C.challenge_id)
+                    del("challenges/%%", C.challenge_id)
                     .then((ev) => e.html(_("Challenge removed")))
                     .catch((response) => swal(_("Error removing challenge")));
                 }));
@@ -677,7 +691,8 @@ export class SeekGraph extends EventEmitter {
             } else {
                 let f = $("<span>");
                 e.append(f);
-                ReactDOM.render((<Player user={{"user_id": C.user_id, "ranking": C.rank, "username": C.username}} rank />), f[0]);
+                let U = player_cache.lookup(C.user_id) || {"user_id": C.user_id, "ranking": C.rank, "username": C.username};
+                ReactDOM.render((<Player user={U} rank disableCacheUpdate />), f[0]);
 
                 let details_html = ", " +
                     (C.ranked ? _("Ranked") : _("Unranked"))
@@ -720,18 +735,18 @@ export class SeekGraph extends EventEmitter {
 
 
                 if (!data.get("user").anonymous) {
-                    if (C.min_rank > data.get("user").ranking) {
+                    if (C.min_rank > this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) + "</span>";
                     }
-                    else if (C.max_rank < data.get("user").ranking) {
+                    else if (C.max_rank < this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) + "</span>";
                     }
-                    else if (C.ranked && Math.abs(data.get("user").ranking - C.rank) > 9) {
+                    else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }
 
-                //console.log(C.ranked, Math.abs(data.get('user').ranking - C.rank));
+                //console.log(C.ranked, Math.abs(this.userRank() - C.rank));
                 e.append($("<span>").addClass("details").html(details_html));
             }
 

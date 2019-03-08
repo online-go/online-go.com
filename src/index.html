@@ -1,109 +1,115 @@
 <!doctype html>
 <html>
+  <head>
+      <meta charset="utf-8">
+      <title>OGS</title>
 
-<head>
-    <meta charset="utf-8">
-    <title>OGS</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="format-detection" content="telephone=no">
+      <meta name="application-name" content="Online-Go.com"/>
+      <meta name="Description" content="Online-Go.com is the best place to play the game of Go online.">
 
-    <meta name="viewport" content="width=device-width">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="application-name" content="Online-Go.com" />
+      <link rel="manifest" href="/manifest.json">
+      <link rel="shortcut icon" href="https://cdn.online-go.com/icons/favicon.ico" type="image/x-icon" />
+      <link rel="apple-touch-icon" sizes="57x57" href="https://cdn.online-go.com/icons/apple-touch-icon-57x57.png">
+      <link rel="apple-touch-icon" sizes="60x60" href="https://cdn.online-go.com/icons/apple-touch-icon-60x60.png">
+      <link rel="apple-touch-icon" sizes="72x72" href="https://cdn.online-go.com/icons/apple-touch-icon-72x72.png">
+      <link rel="apple-touch-icon" sizes="76x76" href="https://cdn.online-go.com/icons/apple-touch-icon-76x76.png">
+      <link rel="apple-touch-icon" sizes="114x114" href="https://cdn.online-go.com/icons/apple-touch-icon-114x114.png">
+      <link rel="apple-touch-icon" sizes="120x120" href="https://cdn.online-go.com/icons/apple-touch-icon-120x120.png">
+      <link rel="apple-touch-icon" sizes="144x144" href="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png">
+      <link rel="apple-touch-icon" sizes="152x152" href="https://cdn.online-go.com/icons/apple-touch-icon-152x152.png">
+      <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.online-go.com/icons/apple-touch-icon-180x180.png">
+      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-16x16.png" sizes="16x16">
+      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-32x32.png" sizes="32x32">
+      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-96x96.png" sizes="96x96">
+      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/android-chrome-192x192.png" sizes="192x192">
+      <meta name="apple-mobile-web-app-status-bar-style" content="black">
+      <meta name="msapplication-square70x70logo" content="https://cdn.online-go.com/icons/smalltile.png" />
+      <meta name="msapplication-square150x150logo" content="https://cdn.online-go.com/icons/mediumtile.png" />
+      <meta name="msapplication-wide310x150logo" content="https://cdn.online-go.com/icons/widetile.png" />
+      <meta name="msapplication-square310x310logo" content="https://cdn.online-go.com/icons/largetile.png" />
+      <meta name="msapplication-TileColor" content="#DDB06D" />
+      <meta name="msapplication-TileImage" content="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png" />
 
-    <link rel="shortcut icon" href="https://cdn.online-go.com/icons/favicon.ico" type="image/x-icon" />
-    <link rel="apple-touch-icon" sizes="57x57" href="https://cdn.online-go.com/icons/apple-touch-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="https://cdn.online-go.com/icons/apple-touch-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="https://cdn.online-go.com/icons/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="https://cdn.online-go.com/icons/apple-touch-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="https://cdn.online-go.com/icons/apple-touch-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="https://cdn.online-go.com/icons/apple-touch-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://cdn.online-go.com/icons/apple-touch-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.online-go.com/icons/apple-touch-icon-180x180.png">
-    <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-32x32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/android-chrome-192x192.png" sizes="192x192">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="msapplication-square70x70logo" content="https://cdn.online-go.com/icons/smalltile.png" />
-    <meta name="msapplication-square150x150logo" content="https://cdn.online-go.com/icons/mediumtile.png" />
-    <meta name="msapplication-wide310x150logo" content="https://cdn.online-go.com/icons/widetile.png" />
-    <meta name="msapplication-square310x310logo" content="https://cdn.online-go.com/icons/largetile.png" />
-    <meta name="msapplication-TileColor" content="#DDB06D" />
-    <meta name="msapplication-TileImage" content="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png" />
-
-    <meta property="og:site_name" content="online-go.com" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="{{OG_TITLE}}" />
-    <meta property="og:url" content="{{OG_URL}}" />
-    <meta property="og:image" content="{{OG_IMAGE}}" />
-    <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+      <meta property="og:site_name" content="online-go.com" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content="{{OG_TITLE}}" />
+      <meta property="og:url" content="{{OG_URL}}" />
+      <meta property="og:image" content="{{OG_IMAGE}}" />
+      <meta property="og:description" content="{{OG_DESCRIPTION}}" />
 
 
-    <style>
-        html {
-            touch-action: manipulation;
-        }
 
-        body,
-        input,
-        select,
-        button {
-            font-family: "Nunito", sans-serif;
-            font-size: 12pt;
-            font-weight: 400;
-        }
 
-        #em10 {
-            position: absolute;
-            top: -1px;
-            height: 1px;
-            width: 10em;
-            display: inline block;
-        }
 
-        #main-content {
-            display: none;
-        }
+      <style>
+          html {
+              touch-action: manipulation;
+          }
+          body, input, select, button, svg {
+              font-family: "Nunito", sans-serif;
+              font-size: 12pt;
+              font-weight: 400;
+          }
+          #em10 {
+              position: absolute;
+              top: -1px;
+              height: 1px;
+              width: 10em;
+              display: inline block;
+          }
+          #main-content {
+              display: none;
+          }
+          body.dark {
+              background-color: #1A1A1A;
+          }
+          body.light {
+              background-color: #ffffff;
+          }
+      </style>
+      {{EXTRA_CONFIG}}
+  </head>
+  <body>
+      <amex:init client_id="{{AMEX_CLIENT_ID}}" env="{{AMEX_ENV}}" callback="amexExpressCheckout"></amex:init>
+      <div id='amex-express-checkout'></div>
+      <script>
+          var amex_express_checkout_callback = null;
+          function amexExpressCheckout(response) {
+              if (amex_express_checkout_callback) {
+                  console.log("Amex express checkout completed, routing details to server.");
+                  amex_express_checkout_callback(response);
+              } else {
+                  console.error("No Amex express checkout callback registered, your card has not been charged.");
+              }
+          }
+      </script>
 
-        body.dark {
-            background-color: #1A1A1A;
-        }
 
-        body.light {
-            background-color: #ffffff;
-        }
-    </style>
-    {{EXTRA_CONFIG}}
-</head>
-
-<body>
-    <script>
+      <script>
         try {
             document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');
         } catch (e) {
             console.error(e);
             document.body.className = "light";
         }
-    </script>
-    <div id="em10"></div>
-    <div id="main-content"></div>
-    <div id="toast-container"></div>
+      </script>
+      <div id="em10"></div>
+      <div id="main-content"></div>
+      <div id="toast-container"></div>
 
+      <noscript id="deferred-styles">
+          <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext">
+          <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+          <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/fixed-data-table/0.6.3/fixed-data-table.min.css">
+          <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2.min.css">
+          <link rel="stylesheet" type="text/css" href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}">
+      </noscript>
 
-    <noscript id="deferred-styles">
-        <link rel="stylesheet" type="text/css"
-            href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700|Source+Code+Pro&amp;subset=latin-ext">
-        <link rel="stylesheet" type="text/css"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" type="text/css"
-            href="https://cdn.online-go.com/lib/fixed-data-table/0.6.3/fixed-data-table.min.css">
-        <link rel="stylesheet" type="text/css"
-            href="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2.min.css">
-        <link rel="stylesheet" type="text/css" href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}">
-    </noscript>
-    <script>
-        var loadDeferredStyles = function () {
+      <script>
+          var loadDeferredStyles = function() {
             var addStylesNode = document.getElementById("deferred-styles");
             var replacement = document.createElement("div");
             var inner = addStylesNode.textContent
@@ -118,48 +124,69 @@
             replacement.innerHTML = inner;
             document.body.appendChild(replacement)
             addStylesNode.parentElement.removeChild(addStylesNode);
-        };
-        var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-            webkitRequestAnimationFrame || msRequestAnimationFrame;
-        if (raf) raf(function () { window.setTimeout(loadDeferredStyles, 0); });
-        else window.addEventListener('load', loadDeferredStyles);
-    </script>
+          };
+          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+              webkitRequestAnimationFrame || msRequestAnimationFrame;
+          if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+          else window.addEventListener('load', loadDeferredStyles);
+      </script>
 
-    <script defer src="https://cdn.online-go.com/lib/es6-promise/4.0.5/es6-promise.auto{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/socket.io/2.0.3/socket.io{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/moment.js/2.18.1/moment-with-locales{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/redux/3.6.0/redux{{MIN}}.js"></script>
+      <script>
+          /* Raven is used to capture and report errors to sentry.io */
+          function configure_raven_language_version() {
+              if ('Raven' in window) {
+                  try {
+                      Raven.setExtraContext({
+                          language: ogs_current_language || 'unknown',
+                          version: ogs_version || 'dev'
+                      });
+                  } catch (e) {
+                      /* This code can be executed before the
+                       * ogs_current_language and ogs_version variables are
+                       * defined, in which case we'll try again when they are
+                       * definitely defined, so no biggie. */
+                  }
+              }
+          }
+          function configure_raven() {
+              if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
+                  Raven.config('https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',{
+                      release: '{{VERSION}}' || 'dev',
+                      whitelistUrls: [
+                          'online-go.com',
+                          'online-baduk.com',
+                          'online-weiqi.com',
+                          'online-covay.com',
+                          'online-igo.com',
+                          'cdn.online-go.com',
+                          'beta.online-go.com'
+                      ]
+                  }).install();
 
-    <script defer src="https://cdn.online-go.com/lib/react/15.4.1/react{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/react/15.4.1/react-dom{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/react-router/2.8.1/ReactRouter{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/react-redux/4.4.6/react-redux{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/react-datetime/2.8.10/react-datetime{{MIN}}.js"></script>
+                  Raven.setTagsContext({
+                      version: '{{VERSION}}' || 'dev'
+                  });
 
-    <script defer src="https://cdn.online-go.com/lib/blueimp-md5/2.5.0/js/md5{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/eventemitter3/2.0.2/index.min.js"></script>
-
-    <script defer src="https://cdn.online-go.com/lib/flot/0.8.3/jquery.flot{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/flot/0.8.3/jquery.flot.navigate{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/flot/0.8.3/jquery.flot.resize{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/flot/0.8.3/jquery.flot.time{{MIN}}.js"></script>
-
-    <script defer src="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2{{MIN}}.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/markdown-it/8.3.1/markdown-it.min.js"></script>
-    <script defer src="https://cdn.online-go.com/lib/d3/4.4.0/d3{{MIN}}.js"></script>
+                  configure_raven_language_version();
+              }
+          }
+      </script>
+      <script defer src="https://cdn.ravenjs.com/3.23.3/raven.min.js" crossorigin="anonymous" onLoad='configure_raven()'></script>
+      <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
+      <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
+      <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
+      <script defer src="https://cdn.online-go.com/lib/socket.io/2.0.3/socket.io{{MIN}}.js"></script>
+      <script defer src="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2{{MIN}}.js"></script>
 
 
-    <script defer src="https://cdn.online-go.com/score-estimator/OGSScoreEstimator-0.5.js"></script>
-    <script type="text/javascript">
-        var ogs_version = '{{VERSION}}';
-        var ogs_release = '{{RELEASE}}';
-        var ogs_language_version = '{{LANGUAGE_VERSION}}';
+      <script type="text/javascript">var supported_languages = {{SUPPORTED_LANGUAGES}};</script>
+      <script type="text/javascript">
+        var ogs_version='{{VERSION}}';
+        var ogs_release='{{RELEASE}}';
+        var ogs_language_version='{{LANGUAGE_VERSION}}';
         var cdn_service = '{{CDN_SERVICE}}';
 
-        /* Detect prefered language {{{ */
-        var supported_languages = {{ SUPPORTED_LANGUAGES }};
+        /* Detect preferred language {{{ */
 
         function isSupportedLanguage(lang) {
             if (!lang) {
@@ -181,7 +208,7 @@
             return null;
         }
 
-        function getPreferedLanguage() {
+        function getPreferredLanguage() {
             try {
                 var set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
                 var lang = isSupportedLanguage(set_lang);
@@ -215,12 +242,12 @@
 
         var ogs_current_language = 'en';
         try {
-            ogs_current_language = getPreferedLanguage();
+            ogs_current_language = getPreferredLanguage();
         } catch (e) {
             console.error(e);
         }
         window['ogs_current_language'] = ogs_current_language || 'en';
-        /* }}} */
+        configure_raven_language_version();
 
         /* Load our transations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
@@ -230,7 +257,7 @@
         /* Load OGS. We can override what script is loaded by setting the
          * 'ogs-script' entry in localStorage (useful for testing versions before they're
          * released to everyone) */
-        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTJS}}";
+        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{OGS_VERSION_HASH_DOTJS}}";
         try {
             if (localStorage.getItem('ogs-script')) {
                 ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
@@ -238,59 +265,82 @@
         } catch (e) {
             console.error(e);
         }
-        document.write('<script defer src="' + ogs_script_path + '"><' + '/script>');
-    </script>
+        document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
 
-    <script type="text/javascript">
-        /* Google analytics {{{ */
-        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host)/* && !(/beta/.test(document.location.host))*/) {
-            console.log("Welcome to OGS");
-            (function (i, s, o, g, r, a, m) {
-            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-                (i[r].q = i[r].q || []).push(arguments)
-            }, i[r].l = 1 * new Date(); a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-            ga('create', 'UA-37743954-2', 'online-go.com');
-            //ga('send', 'pageview');
-            window['ga'] = ga;
+      </script>
+
+      <script>
+        try {
+            var script = document.createElement('script');
+            script.id = "ogs_score_estimator_script";
+            if (typeof WebAssembly === "object")  {
+                console.log("WASM support detected, score estimator will be fast"); 
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
+            } else {
+                console.log("No WASM support detected, score estimator falling back to ASM.js mode"); 
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
+            }
+            document.head.appendChild(script);
+        } catch (e) {
+            console.error(e);
+        }
+      </script>
+
+
+      <script>
+        var MODE = 'dev';
+        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
+            if (/beta/.test(document.location.host)) {
+                MODE = 'beta';
+            } else {
+                MODE = 'production';
+            }
         } else {
-            window['ga'] = null;
+            MODE = 'dev';
+            window['ga-disable-UA-37743954-2'] = true;
             console.log("Dev system detected, disabling google analytics");
         }
-        /* }}} */
-    </script>
+      </script>
 
-    <!-- Begin comScore -->
-    <script type="text/javascript">
-        var _comscore = _comscore || [];
-        _comscore.push({ c1: "2", c2: "6035118" });
-        (function () {
-            var s = document.createElement("script"), el = document.getElementsByTagName("script")[0]; s.async = true;
-            s.src = (document.location.protocol == "https:" ? "https://sb" : "http://b") + ".scorecardresearch.com/beacon.js";
-            el.parentNode.insertBefore(s, el);
-        })();
-    </script>
-    <noscript>
-        <img src="http://b.scorecardresearch.com/p?c1=2&amp;c2=6035118&amp;cv=2.0&amp;cj=1" />
-    </noscript>
-    <!-- End comScore -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-37743954-2"></script>
+      <script type="text/javascript">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'UA-37743954-2');
+      </script>
 
-    <!-- Nielsen Online SiteCensus -->
-    <script type="text/javascript">
-        (function () {
-            var d = new Image(1, 1);
-            d.onerror = d.onload = function () {
-                d.onerror = d.onload = null;
-            };
-            d.src = ["//secure-us.imrworldwide.com/cgi-bin/m?ci=us-603339h&cg=0&cc=1&si=", escape(window.location.href), "&rp=", escape(document.referrer), "&ts=compact&rnd=", (new Date()).getTime()].join('');
-        })();
-    </script>
-    <noscript>
-        <div><img src="//secure-us.imrworldwide.com/cgi-bin/m?ci=us-603339h&amp;cg=0&amp;cc=1&amp;ts=noscript" width="1"
-                height="1" alt="" /></div>
-    </noscript>
-    <!-- End Nielsen Online SiteCensus -->
+      <script type="text/javascript">
+          function version_print_setters() {
+              var ret = "\n\n";
+
+              var scripts = $("script"); 
+              for (var idx = 0; idx < scripts.length; ++idx) {
+                  var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
+                  if (m) {
+                      var path = scripts[idx].src
+                      ret += "localStorage.setItem('ogs-script', '" + m[1] + "');\n";
+                  }
+              }
+
+              var stylesheets = $("link"); 
+              for (var idx = 0; idx < stylesheets.length; ++idx) {
+                  if (stylesheets[idx].rel === "stylesheet") {
+                      var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)
+                      if (m) {
+                          var path = stylesheets[idx].src
+                          ret += "localStorage.setItem('ogs-css', '" + m[1] + "');\n";
+                      }
+                  }
+              }
+
+              return ret + "\n\n";
+          }
+          function version_clear() {
+              localStorage.removeItem('ogs-css');
+              localStorage.removeItem('ogs-script');
+          }
+      </script>
 
     {{LIVE_RELOAD}}
 </body>

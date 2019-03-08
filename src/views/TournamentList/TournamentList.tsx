@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Card} from "material";
-import {AdUnit} from "AdUnit";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {shortTimeControl, shortShortTimeControl, computeAverageMoveTime} from "TimeControl";
 import {PaginatedTable} from "PaginatedTable";
@@ -57,12 +57,11 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
         let tab = this.state.tab;
 
         return (
-            <div className="TournamentList container">
-                <AdUnit unit="cdm-zone-01" nag/>
 
-                <Card>
+            <div className="page-width">
+                <div className="TournamentList container">
                     <div className="tabhead">
-                        <h2>{_("Tournaments")}</h2>
+                        <h2><i className="fa fa-trophy"></i> {_("Tournaments")}</h2>
                         <div>
                             <span className={"tab" + (tab === "schedule" ? " active" : "")} onClick={this.setTabSchedule}>
                                 <i className="fa fa-calendar"></i>
@@ -130,7 +129,7 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
                             }}/>
                         </div>
                     )}
-                </Card>
+                </div>
             </div>
         );
     }
@@ -248,11 +247,11 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                          )
                         },
 
-                        {header: _("When")        , className: "nobr center" , render: (tournament) => when(tournament.time_start)},
-                        {header: _("Time Control"), className: "nobr center" , render: (tournament) => shortShortTimeControl(tournament.time_control_parameters)},
-                        {header: _("Size")        , className: "nobr center" , render: (tournament) => (`${tournament.board_size}x${tournament.board_size}`)},
-                        {header: _("Players")     , className: "nobr center" , render: (tournament) => tournament.player_count},
-                        {header: _("Ranks")       , className: "nobr center" , render: (tournament) => shortRankRestrictionText(tournament.min_ranking, tournament.max_ranking)},
+                        {header: _("When")        , className: "nobr" , render: (tournament) => when(tournament.time_start)},
+                        {header: _("Time Control"), className: "nobr" , render: (tournament) => shortShortTimeControl(tournament.time_control_parameters)},
+                        {header: _("Size")        , className: "nobr" , render: (tournament) => (`${tournament.board_size}x${tournament.board_size}`)},
+                        {header: _("Players")     , className: "nobr" , render: (tournament) => tournament.player_count},
+                        {header: _("Ranks")       , className: "nobr" , render: (tournament) => shortRankRestrictionText(tournament.min_ranking, tournament.max_ranking)},
                     ]}
                 />
 

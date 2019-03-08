@@ -15,42 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-let defaults = {};
-let store = {};
-let listeners = {};
-let last_id = 0;
+import {TypedEventEmitter} from 'TypedEventEmitter';
 
-export class Listener {
-    key: string;
-    id: number;
-    cb: (data: any, key?: string) => void;
-    remove_callbacks: Array<() => void>;
-
-    constructor(key: string, cb: (data: any, key?: string) => void) {
-        this.key = key;
-        this.cb = cb;
-        this.id = ++last_id;
-        this.remove_callbacks = [];
-    }
-
-    onRemove(fn: () => void): void {
-        this.remove_callbacks.push(fn);
-    }
-
-    remove() {
-        delete listeners[this.key][this.id];
-        for (let cb of this.remove_callbacks) {
-            try {
-                cb();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
+interface Events {
+    [name:string]: any;
 }
 
-export function set(key: string, value: any, dontTriggerListeners?:boolean): any {
-    if (typeof(value) === "undefined") {
+let defaults = {};
+let store = {};
+let event_emitter = new TypedEventEmitter<Events>();
+let last_id = 0;
+
+export function set(key: string, value: any | undefined): any {
+    if (value === undefined) {
         remove(key);
         return value;
     }
@@ -59,45 +36,24 @@ export function set(key: string, value: any, dontTriggerListeners?:boolean): any
     try {
         localStorage.setItem(`ogs.${key}`, JSON.stringify(value));
     } catch (e) {
-        console.error(e);
+        console.warn(`Failed to save setting ogs.${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`);
     }
 
-    if (dontTriggerListeners) {
-        return value;
-    }
-
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            listeners[key][id].cb(value, key);
-        }
-    }
+    event_emitter.emit(key, value);
     return value;
 }
+
 export function setDefault(key: string, value: any): any {
     defaults[key] = value;
     if (!(key in store)) {
-        if (key in listeners) {
-            for (let id in listeners[key]) {
-                listeners[key][id].cb(value, key);
-            }
-        }
+        event_emitter.emit(key, value);
     }
     return value;
 }
+
 export function remove(key: string): any {
-    if (key in listeners) {
-        for (let id in listeners[key]) {
-            try {
-                if (key in defaults) {
-                    listeners[key][id].cb(defaults[key], key);
-                } else {
-                    listeners[key][id].cb(undefined, key);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    }
+    event_emitter.emit(key, defaults[key]);
+
     try {
         localStorage.removeItem(`ogs.${key}`);
     } catch (e) {
@@ -109,6 +65,23 @@ export function remove(key: string): any {
         return val;
     }
 }
+
+export function removePrefix(key_prefix: string): any {
+    let hits = {};
+
+    Object.keys(store).map((key) => {
+        if (key.indexOf(key_prefix) === 0) {
+            hits[key] = key;
+        }
+    });
+
+    for (let key in hits) {
+        localStorage.removeItem(`ogs.${key}`);
+        delete store[key];
+        event_emitter.emit(key, defaults[key]);
+    }
+}
+
 export function removeAll(): void {
     let keys = [];
     for (let key in store) {
@@ -122,52 +95,42 @@ export function removeAll(): void {
         }
     }
 }
-export function get(key: string, _default?: any): any {
+
+export function get(key: string, default_value?: any): any | undefined {
     if (key in store) {
         return store[key];
     }
     if (key in defaults) {
         return defaults[key];
     }
-    return _default;
+    return default_value;
 }
-export function ensureDefaultAndGet(key: string): any {
-    if (!(key in defaults)) {
-        throw new Error(`Undefined default: ${key}`);
-    }
-    return get(key);
-}
-export function watch(key: string, cb: (data: any, key?: string) => void, call_on_undefined?: boolean): Listener {
-    let listener = new Listener(key, cb);
-    if (!(key in listeners)) {
-        listeners[key] = {};
-    }
-    listeners[key][listener.id] = listener;
+
+export function watch(key: string, cb: (data: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+    event_emitter.on(key, cb);
 
     let val = get(key);
-    if (val != undefined || call_on_undefined) {
-        cb(val, key);
+    if (!dont_call_immediately && (val != undefined || call_on_undefined)) {
+        cb(val);
     }
-
-    return listener;
 }
-export function dump(key_prefix?: string, strip_prefix?: boolean) {
+
+export function unwatch(key: string, cb: (data: any) => void): void {
+    event_emitter.off(key, cb);
+}
+
+export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     if (!key_prefix) {
         key_prefix = "";
     }
     let ret = {};
+    let data = Object.assign({}, defaults, store);
+    let keys = Object.keys(data);
 
-    let keys = Object.keys(store).concat(Object.keys(defaults));
-
-    let last_key = null;
     keys.sort().map((key) => {
-        if (last_key === key) {
-            return;
-        }
-        last_key = key;
         if (key.indexOf(key_prefix) === 0) {
             let k = strip_prefix ? key.substr(key_prefix.length) : key;
-            ret[k] = {"union": get(key), value: store[key], "default": defaults[key]};
+            ret[k] = {"union": data[key], value: store[key], "default": defaults[key]};
         }
     });
     console.table(ret);
@@ -181,10 +144,6 @@ try {
             key = key.substr(4);
             try {
                 let item = localStorage.getItem(`ogs.${key}`);
-                if (typeof(item) === "undefined") {
-                    localStorage.removeItem(`ogs.${key}`);
-                    continue;
-                }
                 store[key] = JSON.parse(item);
             } catch (e) {
                 console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
@@ -196,15 +155,3 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-
-export default window["data"] = {
-    set                 : set,
-    get                 : get,
-    ensureDefaultAndGet : ensureDefaultAndGet,
-    setDefault          : setDefault,
-    remove              : remove,
-    removeAll           : removeAll,
-    watch               : watch,
-    dump                : dump,
-};

@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import data from "data";
-import {Link} from "react-router";
+import * as data from "data";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate, cc_to_country_name} from "translate";
 import {post, get, put, del} from "requests";
 import {PaginatedTable} from "PaginatedTable";
@@ -91,7 +91,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         .catch(errorAlerter);
     }}}
     deleteAnnouncement(announcement) {{{
-        del(`announcements/${announcement.id}`)
+        del("announcements/%%", announcement.id)
         .then(this.refresh)
         .catch(errorAlerter);
     }}}

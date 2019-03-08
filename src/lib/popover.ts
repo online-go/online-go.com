@@ -17,7 +17,11 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
+
+interface Events {
+    "close": never;
+}
 
 interface PopupCoordinates {
     x: number;
@@ -39,7 +43,7 @@ interface PopoverConfig {
 let last_id: number = 0;
 let open_popovers = {};
 
-export class PopOver extends EventEmitter {
+export class PopOver extends TypedEventEmitter<Events> {
     id: number;
     config: PopoverConfig;
     container: HTMLElement;
@@ -89,24 +93,34 @@ export function popover(config: PopoverConfig): PopOver {
     if (config.at) {
         x = config.at.x;
         y = config.at.y;
+
+        x = Math.min(x, bounds.x - minWidth);
+
+        if (y < bounds.y - minHeight) {
+            container.css({minWidth: minWidth, top: y, left: x});
+        } else {
+            container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+        }
     }
     else if (config.below) {
-        let rectangle = ReactDOM.findDOMNode(config.below).getBoundingClientRect();
+        let rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
         x = rectangle.left + window.scrollX;
+        x = Math.min(x, bounds.x - minWidth);
+
         y = rectangle.bottom + window.scrollY;
-    }
 
-    x = Math.min(x, bounds.x - minWidth);
-
-    if (y < bounds.y - minHeight) {
-        container.css({minWidth: minWidth, top: y, left: x});
-    } else {
-        container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+        if (y < bounds.y - minHeight) {
+            container.css({minWidth: minWidth, top: y, left: x});
+        } else {
+            // Don't overlap the element we were supposed to be below.
+            // If there is no space below, just go above it instead.
+            container.css({minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x});
+        }
     }
 
     $(document.body).append(backdrop);
     $(document.body).append(container);
 
     ReactDOM.render(config.elt, container[0]);
-    return new PopOver(config, backdrop[0], container[0]);
+    return new PopOver(config, backdrop[0] as HTMLElement, container[0] as HTMLElement);
 }

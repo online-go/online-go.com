@@ -17,12 +17,16 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 
+
+interface Events {
+    "close": never;
+}
 
 let toast_meta_container = null;
 
-export class Toast extends EventEmitter {
+export class Toast extends TypedEventEmitter<Events> {
     container: HTMLElement;
     timeout: any = null;
 
@@ -62,7 +66,7 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
     position_container.append(container);
 
     ReactDOM.render(element, container[0]);
-    let ret = new Toast(container[0], timeout);
+    let ret = new Toast(container[0] as HTMLElement, timeout);
     container.click((ev) => {
         if (
             ev.target.nodeName !== "BUTTON"

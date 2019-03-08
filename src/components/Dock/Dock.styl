@@ -33,15 +33,14 @@ dock-inline-height=500px
     padding-bottom: 1rem;
     z-index: z.dock;
 
-    -webkit-transition: all 0.1s ease-in;
-    -moz-transition: all 0.1s ease-in;
-    -o-transition: all 0.1s ease-in;
-    transition: all 0.1s ease-in;
+    // note that transition speed is controlled dynamically by javascript based on preferences
     box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.26);
 
     &:hover {
         right: 0;
         box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.26);
+
+        // note that transition speed is controlled dynamically by javascript based on preferences
     }
 
     div.line-item {
@@ -78,6 +77,11 @@ dock-inline-height=500px
     }
     li {
         list-style-type: none;
+    }
+
+    .greyed {
+        themed color shade3;
+        padding-left: 0.5rem;
     }
 }
 

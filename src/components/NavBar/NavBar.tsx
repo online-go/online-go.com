@@ -16,8 +16,9 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
-import data from "data";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
+import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -33,7 +34,9 @@ import {NotificationIndicator, TurnIndicator, NotificationList} from "Notificati
 import {TournamentIndicator} from "Announcements";
 import {FriendIndicator} from "FriendList";
 import {Player} from "Player";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
+import * as preferences from "preferences";
+import cached from 'cached';
 
 let body = $(document.body);
 
@@ -66,8 +69,8 @@ let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
 function logout() {
     get("/api/v0/logout").then((config) => {
-        data.set("config", config, true);
-        window.location.reload();
+        data.set(cached.config, config);
+        window.location.href = '/';
     });
 }
 
@@ -281,7 +284,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 <Link to="/ladders">{_("Ladders")}</Link>
                 <Link to="/groups">{_("Groups")}</Link>
                 <Link to="/leaderboards">{_("Leaderboards")}</Link>
-                <a target="_blank" href="https://forums.online-go.com/">{_("Forums")}</a>
+                <a target="_blank" href="https://forums.online-go.com/" rel="noopener">{_("Forums")}</a>
                 {user && <Link to={`/user/view/${user.id}`}>{_("Profile")}</Link>}
                 {/*
                 <a href='https://ogs.readme.io/'>{_("Help")}</a>
@@ -297,7 +300,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 :
                 <section className="right">
                     <IncidentReportTracker />
-                    <TournamentIndicator />
+                    { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
                     <FriendIndicator />
                     <TurnIndicator />
                     <span className="icon-container" onClick={this.toggleRightNav}>
@@ -355,11 +358,13 @@ export class NavBar extends React.PureComponent<{}, any> {
 
             {/* Left Nav */}
             <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
-                <input ref="omnisearch_input" type="text"
-                    className="OmniSearch-input"
-                    value={this.state.omnisearch_string}
-                    onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
-
+                <div className="search-row">
+                    <i className="fa fa-search"/>
+                    <input ref="omnisearch_input" type="text"
+                           className="OmniSearch-input"
+                           value={this.state.omnisearch_string}
+                           onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
+                </div>
                 {(!omnisearch_searching || null) && /* {{{ */
                     <ul id="items">
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
@@ -378,7 +383,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                         </Link></li>
                         */}
 
-                        <li><Link to='/learn-to-play-go'><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
+                        <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
                         <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</Link></li>
                         {/* <li><Link to='/library'><i className='fa fa-university'></i> {_("Server Library")}</Link></li> */}
                         {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i> {_("SGF Library")}</Link></li>}
@@ -389,8 +394,9 @@ export class NavBar extends React.PureComponent<{}, any> {
                         <li><Link to="/tournaments"><i className="fa fa-trophy"></i>{_("Tournaments")}</Link></li>
                         <li><Link to="/ladders"><i className="fa fa-list-ol"></i>{_("Ladders")}</Link></li>
                         <li><Link to="/groups"><i className="fa fa-users"></i>{_("Groups")}</Link></li>
-                        <li><Link to="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</Link></li>
-                        <li><Link to="/docs/about"><i className="fa fa-question-circle"></i>{_("About")}</Link></li>
+                        <li><a href="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</a></li>
+                        <li><Link to="/docs/about"><i className="fa fa-info-circle"></i>{_("About")}</Link></li>
+                        <li><a href="https://github.com/online-go/online-go.com/wiki"><i className="fa fa-question-circle"></i>{_("Documentation & FAQ")}</a></li>
                         <li><Link to="/docs/other-go-resources"><i className="fa fa-link"></i>{_("Other Go Resources")}</Link></li>
 
                         {user && <li className="divider"></li>}

@@ -16,11 +16,12 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del, put, get, abort_requests_in_flight} from "requests";
 import {errorAlerter, ignore} from "misc";
-import data from "data";
+import * as data from "data";
 import {Card} from "material";
 import {Player, setExtraActionCallback} from "Player";
 import {PaginatedTable} from "PaginatedTable";
@@ -29,7 +30,7 @@ import {LadderComponent} from "LadderComponent";
 import {UIPush} from "UIPush";
 import {TournamentList} from "TournamentList";
 import {close_all_popovers} from "popover";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
@@ -40,7 +41,9 @@ import {PlayerAutocomplete} from "PlayerAutocomplete";
 declare var swal;
 
 interface GroupProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 export class Group extends React.PureComponent<GroupProperties, any> {
@@ -55,7 +58,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         super(props);
         this.state = {
             group: {
-                id: parseInt(props.params.group_id),
+                id: parseInt(props.match.params.group_id),
                 admins: [],
                 ladder_ids: [],
                 name: "",
@@ -71,7 +74,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             invitation_request_pending: false,
             news: [],
             members: [],
-            group_id: parseInt(props.params.group_id),
+            group_id: parseInt(props.match.params.group_id),
             editing: false,
             show_new_news_post: false,
             new_icon: null,
@@ -79,6 +82,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             new_news_title: "",
             new_news_body: "",
             invite_result: null,
+            editing_news: null,
         };
     }
 
@@ -87,13 +91,13 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
-        this.resolve(parseInt(this.props.params.group_id));
+        this.resolve(parseInt(this.props.match.params.group_id));
     }}}
     componentWillUnmount() {{{
         setExtraActionCallback(null);
     }}}
     componentWillReceiveProps(next_props) {{{
-        let group_id = parseInt(next_props.params.group_id);
+        let group_id = parseInt(next_props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({group_id: group_id});
@@ -102,10 +106,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     resolve(group_id: number) {{{
         let user = data.get("user");
 
-        get(`groups/${group_id}`).then((group) => {
+        get("groups/%%", group_id).then((group) => {
             let is_admin = false;
 
             for (let admin of group.admins) {
+                player_cache.update(admin);
                 if (user.id === admin.id) {
                     is_admin = true;
                 }
@@ -117,7 +122,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 group_loaded: true,
             });
         }).catch(errorAlerter);
-        get(`groups/${group_id}/news/`).then((news) => {
+        get("groups/%%/news/", group_id).then((news) => {
             this.setState({news: news.results});
         }).catch(errorAlerter);
     }}}
@@ -136,12 +141,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
 
     leaveGroup = () => {{{
-        post("groups/" + this.state.group_id + "/members", {"delete": true})
+        post("groups/%%/members", this.state.group_id, {"delete": true})
         .then((res) => { this.resolve(this.state.group_id); })
         .catch(errorAlerter);
     }}}
     joinGroup = () => {{{
-        post("groups/" + this.state.group_id + "/members", {})
+        post("groups/%%/members", this.state.group_id, {})
         .then((res) => {
             if (res.success) {
                 this.resolve(this.state.group_id);
@@ -176,7 +181,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateIcon = (files) => {{{
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/icon`, file)
+            put("group/%%/icon", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -187,7 +192,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     updateBanner = (files) => {{{
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
-            put(`group/${this.state.group_id}/banner`, file)
+            put("group/%%/banner", this.state.group_id, file)
             .then((res) => {
                 console.log("Upload successful", res);
             })
@@ -248,7 +253,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return;
         }
         this.toggleNewNewsPost();
-        post(`group/${this.state.group_id}/news/`, {
+        post("group/%%/news/", this.state.group_id, {
             title: this.state.new_news_title,
             content: this.state.new_news_body,
         })
@@ -277,7 +282,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            post(`group/${this.state.group_id}/news/`, {
+            post("group/%%/news/", this.state.group_id, {
                 'id': entry.id,
                 'delete': true
             })
@@ -295,6 +300,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }}}
     editNewsPost(entry) {{{
         this.setState({editing_news: entry});
+        this.refs.news.forceUpdate();
     }}}
     updateNewsPost = () => {{{
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
@@ -317,6 +323,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 {content: ev.target.value}
             )
         });
+        this.refs.news.forceUpdate();
     }}}
     updateNewsTitle = (ev) => {{{
         this.setState({
@@ -326,10 +333,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 {title: ev.target.value}
             )
         });
+        this.refs.news.forceUpdate();
     }}}
 
     inviteUser = (ev) => {{{
-        post(`group/${this.state.group_id}/members`, {"username": this.state.user_to_invite.username })
+        post("group/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
             _("Player invited"); /* for translations */
@@ -350,7 +358,6 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     setUserToInvite = (user) => {{{
         this.setState({user_to_invite: user});
     }}}
-
 
 
     render() {{{
@@ -400,11 +407,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div className="col-sm-10">
                                 {!editing
                                     ? <h2>{group.name}</h2>
-                                    : <input type="text" placeholder={_("Group name")} value={group.name} onChange={this.setGroupName} />
+                                    : <input type="text" placeholder={_("Group name")} style={{width: 'calc(100% - 30px)'}} value={group.name} onChange={this.setGroupName} />
                                 }
 
                                 <div className="admins">
-                                    <b style={{marginRight: "1rem"}}>{_("Admins")}</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
+                                    <b style={{marginRight: "1rem"}}>{_("Admins")}:</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
                                 </div>
 
                                 {(this.state.group_loaded || null) &&
@@ -418,29 +425,29 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                         </div>
                                                   )
                                                 : <div>
-                                                     <button className="primary xs" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
+                                                     <button className="primary sm" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
                                                          {_("Create news post")}
                                                      </button>
-                                                     <button className="primary xs" onClick={this.createTournament}>
+                                                     <button className="primary sm" onClick={this.createTournament}>
                                                          {_("Create Tournament")}
                                                      </button>
                                                   </div>
                                               )
                                             : <div>
-                                                 <button className="xs" disabled={this.state.is_admin} onClick={this.leaveGroup}>
+                                                 <button className="sm" disabled={this.state.is_admin} onClick={this.leaveGroup}>
                                                     {_("Leave Group")}
                                                  </button>
-                                                 <button className="primary xs" onClick={this.createTournament}>
+                                                 <button className="primary sm" onClick={this.createTournament}>
                                                      {_("Create Tournament")}
                                                  </button>
                                               </div>
                                         : group.is_public
-                                            ? <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
+                                            ? <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
                                                 ? <i>{_("This is a private group, you must be invited to join")}</i>
                                                 : this.state.invitation_request_pending
                                                     ? <i>{_("A request to join this group has been sent to the group administrators")}</i>
-                                                    : <button className="primary xs" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
+                                                    : <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
                                     )
                                 }
 
@@ -516,43 +523,6 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
-                    {(this.state.news.length > 0 || null) &&
-                        <Card style={{minHeight: "12rem"}}>
-                            <PaginatedTable
-                                ref="news"
-                                className="news"
-                                name="news"
-                                source={`groups/${group.id}/news`}
-                                pageSize={1}
-                                columns={[
-                                    {header: _("News"), className: "none", render: (entry) => (
-                                        <div>
-                                            {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input value={this.state.editing_news.title}  onChange={this.updateNewsTitle}/></h2>
-                                                : <h2>{entry.title}</h2>
-                                            }
-
-                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
-                                            {this.state.is_admin &&
-                                                <div>
-                                                    {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                        ?  <button className='xs' onClick={this.updateNewsPost} >{_("Save")}</button>
-                                                        :  <button className='xs' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
-                                                    }
-                                                    <button className='xs reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
-                                                </div>
-                                            }
-                                            {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <textarea value={this.state.editing_news.content} onChange={this.updateNewsContent} />
-                                                : <Markdown source={entry.content} />
-                                            }
-                                        </div>
-                                    )},
-                                ]}
-                            />
-                        </Card>
-                    }
-
                     <div className="new-news">
                         {(this.state.show_new_news_post || null) &&
                             <div>
@@ -564,26 +534,62 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         }
                     </div>
 
+                    {(this.state.news.length > 0 || null) &&
+                        <Card style={{minHeight: "12rem"}}>
+                            <PaginatedTable
+                                ref="news"
+                                className="news"
+                                name="news"
+                                source={`groups/${group.id}/news`}
+                                pageSize={1}
+                                columns={[
+                                    {header: _("News"), className: "none", render: (entry) =>
+                                        <div>
+                                            {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
+                                                : <h2>{entry.title}</h2>
+                                            }
+                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
+                                            {this.state.is_admin &&
+                                                <div>
+                                                    {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                        ?  <button className='sm' onClick={this.updateNewsPost} >{_("Save")}</button>
+                                                        :  <button className='sm' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
+                                                    }
+                                                    <button className='sm reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
+                                                </div>
+                                            }
+                                            {this.state.editing_news && this.state.editing_news.id === entry.id
+                                                ? <textarea rows={7} ref='editing_news_body' value={this.state.editing_news.content} onChange={this.updateNewsContent} />
+                                                : <Markdown source={entry.content} />
+                                            }
+                                        </div>
+                                    },
+                                ]}
+                            />
+                        </Card>
+                    }
+
                     <Card>
                         <h3>{_("Open Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: true,
                             ended__isnull: true,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
 
                         <h3>{_("Active Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: false,
                             ended__isnull: true,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
 
                         <h3>{_("Finished Tournaments")}</h3>
                         <TournamentList filter={{
                             started__isnull: false,
                             ended__isnull: false,
-                            group: this.props.params.group_id,
+                            group: this.props.match.params.group_id,
                         }}/>
                     </Card>
 
@@ -594,7 +600,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
-                                    <button className="btn primary xs" type="button"
+                                    <button className="btn primary sm" type="button"
                                         disabled={this.state.user_to_invite == null} onClick={this.inviteUser}>{_("Invite")}</button>
                                 </div>
                                 <div className="bold">{this.state.invite_result}</div>
@@ -640,21 +646,17 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return null;
         }
 
-        if (data.get("user").id === player_id) {
-            return null;
-        }
-
         if (this.isAdmin(player_id)) {
             return (
                 <div className="actions">
-                    <button className="reject xs" onClick={() => this.unAdmin(player_id)}>{_("Un-Admin")}</button>
+                    <button className="reject sm" onClick={() => this.unAdmin(player_id)}>{_("Un-Admin")}</button>
                 </div>
             );
         } else {
             return (
                 <div className="actions">
-                    <button className="danger xs" onClick={() => this.kick(player_id)}>{_("Kick")}</button>
-                    <button className="reject xs" onClick={() => this.makeAdmin(player_id)}>{_("Make Admin")}</button>
+                    <button className="danger sm" onClick={() => this.kick(player_id)}>{_("Kick")}</button>
+                    <button className="reject sm" onClick={() => this.makeAdmin(player_id)}>{_("Make Admin")}</button>
                 </div>
             );
         }
@@ -667,7 +669,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             "focusCancel": true,
         })
         .then(() => {
-            del(`groups/${this.state.group.id}`)
+            del("groups/%%", this.state.group.id)
             .then(() => {
                 browserHistory.push("/groups/");
             })
@@ -679,7 +681,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     makeAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to make this user an administrator of the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: true
             })
@@ -692,7 +694,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     unAdmin(player_id: number) {{{
         swal({text: _("Are you sure you wish to remove administrator privileges from this user?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            put(`groups/${this.state.group_id}/members`, {
+            put("groups/%%/members", this.state.group_id, {
                 player_id: player_id,
                 is_admin: false
             })
@@ -705,7 +707,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     kick(player_id: number) {{{
         swal({text: _("Are you sure you wish to remove this user from the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
-            post("groups/" + this.state.group_id + "/members", {"delete": true, player_id: player_id})
+            post("groups/%%/members", this.state.group_id, {"delete": true, player_id: player_id})
             .then((res) => { this.resolve(this.state.group_id); })
             .catch(errorAlerter);
         })

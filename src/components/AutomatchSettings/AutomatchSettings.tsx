@@ -16,18 +16,21 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {challenge, challengeComputer, createCorrespondence, createBlitz,
         createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore, dup} from "misc";
-import preferences from "preferences";
-import data from "data";
+import * as preferences from "preferences";
+import * as data from "data";
 import {bot_count} from "bots";
 
 declare var swal;
+
+interface Events {
+}
 
 interface AutomatchSettingsProperties {
 }
@@ -112,7 +115,7 @@ export function getAutomatchSettings(speed:'blitz'|'live'|'correspondence') {
     }
 }
 
-export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
+export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -122,13 +125,6 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
             correspondence_settings: data.get("automatch.correspondence", default_correspondence),
         };
     }
-
-    componentDidMount() {{{
-        super.componentDidMount();
-    }}}
-    componentWillUnmount() {{{
-        super.componentWillMount();
-    }}}
 
     setTab = (tab) => {{{
         data.set('automatch.last-tab', tab);
@@ -321,10 +317,5 @@ export class AutomatchSettings extends Modal<AutomatchSettingsProperties, any> {
 
 
 export function openAutomatchSettings() {{{
-    if (!data.get("user").setup_rank_set) {
-        browserHistory.push("/");
-        return;
-    }
-
     return openModal(<AutomatchSettings fastDismiss={true} />);
 }}}

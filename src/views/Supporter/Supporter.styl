@@ -25,7 +25,7 @@
     padding: 1rem;
 
     .main-paragraph {
-        max-width: 30rem;
+        max-width: 1110px;
         text-align: justify;
 
         .p {
@@ -56,64 +56,122 @@
         text-align: center;
     }
 
-
     .paypal-button {
         cursor: pointer;
-    }
-
-    .cc-form {
-        display: inline-block;
-        max-width: 20rem;
-        input{
-            font-family: 'Source Code Pro', monospace;
-            border: 1px solid transparent;
-            themed border-color shade3
-            border-radius: 0.3rem;
-            padding: 0.3rem;
-            themed background-color shade4
-        }
-    }
-
-    .cc-number, .exp-cvc, .name, .email {
-        display: flex;
-    }
-    .cc-number {
-        input {
-            width: 100%;
-        }
-    }
-    .exp-cvc{
-        display: flex;
-        justify-content: space-between;
-
-        input.cc-exp {
-            text-align: center;
-            width: 6rem;
-        }
-        input.cc-cvc {
-            text-align: center;
-            width: 4rem;
-        }
-    }
-    .name{
-        display: flex;
-        justify-content: space-between;
-        input.fname {
-
-            width: 40%;
-        }
-        input.lname {
-            width: 55%;
-        }
-    }
-    .email{
-        input {
-            width: 100%;
-        }
     }
 
     .LineText {
         margin: 1rem;
     }
+
+    h3 {
+        font-size: font-size-big;
+        margin-bottom: 0;
+    }
+    h5 {
+        margin-top: 0;
+        text-align: center;
+    }
+
+    .donation-summary {
+        font-size: font-size-big;
+        font-weight: bold;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .powered-by-stripe {
+        display: inline-block;
+        width: 119px;
+        height: 26px;
+        background-image: svg-load("../assets/powered_by_stripe.svg");
+        background-repeat: no-repeat;
+    }
+
+    .currency-select {
+        display: inline-block;
+        font-size: 1.0rem;
+        width: 6rem;
+        margin-right: 0.5rem;
+        text-align: left;
+    }
+
+    .currency-option {
+        .iso {
+            display: inline-block;
+            width: 2.6rem;
+        }
+
+    }
+
+    .supporter-amount {
+        width: 9rem;
+        text-align: center;
+        font-weight: bold;
+        font-size: font-size-big;
+    }
+    
+    .interval-select {
+        width: 8rem;
+        text-align: left;
+        margin-left: 0.5rem;
+        font-weight: bold;
+        font-size: font-size-big;
+    }
+
+    #Supporter-custom-amount {
+        width: 6rem;
+        text-align: center;
+        font-weight: bold;
+        font-size: font-size-big;
+    }
+
+    .card-types {
+        flex: 1;
+        display: inline-flex;
+        width: 12rem;
+        flex-direction: column;
+        margin: 1rem;
+
+        img {
+            width: 64px;
+            margin: 8px;
+        }
+    }
+
+    .recurring-donation {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .payment-methods {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: stretch;
+    }
+
+    .other-payment-options {
+        flex: 1;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-content: center;
+    }
 }
 
+
+#amex-express-checkout {
+    display: none;
+}
+.Supporter {
+    #amex-express-checkout {
+        display: inline-block;
+    }
+}
+
+.grayed-out-image {
+    filter: grayscale(100%);
+    cursor: not-allowed !important;
+}

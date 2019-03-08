@@ -16,13 +16,16 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {toast} from "toast";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
-import {shouldOpenNewTab, errorAlerter, alertModerator} from "misc";
-import {rankString} from "rank_utils";
-import player_cache from "player_cache";
+import {post} from "requests";
+import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
+import {rankString, getUserRating, is_novice, humble_rating} from "rank_utils";
+import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
-import data from "data";
+import {termination_socket} from "sockets";
+import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
@@ -32,12 +35,24 @@ import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
 import {close_friend_list} from 'FriendList/FriendIndicator';
+import cached from 'cached';
 
+declare var swal;
 
 interface PlayerDetailsProperties {
     playerId: number;
+    chatId?: string;
     noextracontrols?: boolean;
+    nochallenge?: boolean;
 }
+
+let friends = {};
+data.watch(cached.friends, (friends_arr) => {
+    friends = {};
+    for (let friend of friends_arr) {
+        friends[friend.id] = true;
+    }
+});
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
@@ -79,15 +94,14 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             [
                 "username",
                 "icon",
-                "rating",
-                "ranking",
+                "ratings",
                 "pro",
                 "country",
                 "ui_class",
             ]
         )
         .then((player) => {
-            this.setState(Object.assign({resolved: true}, player));
+            this.setState(Object.assign({resolved: true}, player as any));
         })
         .catch((err) => {
             if (player_id === this.props.playerId) {
@@ -101,7 +115,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             let player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();
             if (player) {
-                new_state = Object.assign(this.state, player);
+                new_state = Object.assign(new_state, this.state, player);
             }
             this.setState(new_state);
             setTimeout(() => {
@@ -157,12 +171,41 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeBan = (_ev) => {{{
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     }}}
-    openSupporterAdmin = () => {
+    openSupporterAdmin = () => {{{
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
-    }
+    }}}
+    addFriend = () => {{{
+        toast(<div>{_("Sent friend request")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
+    removeFriend = () => {{{
+        toast(<div>{_("Removed friend")}</div>, 5000);
+        this.close_all_modals_and_popovers();
+        post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
+    }}}
+    removeSingleLine = () => {{{
+        termination_socket.send('chat/remove', {uuid: this.props.chatId});
+        this.close_all_modals_and_popovers();
+    }}}
+    removeAllChats = () => {{{
+        this.close_all_modals_and_popovers();
+
+        swal({
+            text: _(`Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversible.`),
+            confirmButtonText: _("Yes"),
+            cancelButtonText: _("No"),
+            showCancelButton: true,
+            focusCancel: true
+        })
+        .then(() => termination_socket.send('chat/remove_all', {player_id: this.props.playerId}))
+        .catch(() => 0);
+    }}}
     render() {
         let user = data.get("user");
+
+        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
 
         return (
             <div className="PlayerDetails">
@@ -174,23 +217,54 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         <div>
                             <Player user={this.state} nodetails rank={false} />
                         </div>
-                        <div>
-                            <span className="rating">{Math.round(this.state.rating) || "..."}</span>
-                        </div>
-                        <div>
-                            <span className="rank">{rankString(this.state) || "..."}</span>
-                        </div>
+                        {rating && !!rating.professional &&
+                            <div>
+                                <span className="rank">{rating.rank_label}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional &&
+                            <div>
+                                <span className="rating">{Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn; {Math.round(rating.deviation)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional && !rating.provisional &&
+                            <div>
+                                <span className="rank">{rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}</span>
+                            </div>
+                        }
+                        {rating && !rating.professional && rating.provisional &&
+                            <div>
+                                <span className="rank">{_("Provisional rank")}</span>
+                            </div>
+                        }
                     </div>
                 </div>
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
-                        <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        {!this.props.nochallenge &&
+                            <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                        }
+                        {!this.props.nochallenge &&
+                            <div style={{width: '48%'}}></div>
+                        }
                         <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        {friends[this.props.playerId]
+                            ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
+                            : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
+                        }
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
                         <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
                 {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
+                { ((user.is_moderator) || null) &&
+                    <div className="actions">
+                        {(this.props.chatId || null) &&
+                            <button className="xs noshadow reject" onClick={this.removeSingleLine}><i className="fa fa-times"/>{pgettext("Remove chat line", "Remove chat line")}</button>
+                        }
+                        <button className="xs noshadow reject" onClick={this.removeAllChats}><i className="fa fa-times-circle"/>{pgettext("Remove all chat lines from this user", "Remove all chats")}</button>
+                    </div>
+                }
                 { ((user.is_moderator && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow reject" onClick={this.ban}><i className="fa fa-gavel"/>{pgettext("Ban user from the server", "Ban")}</button>

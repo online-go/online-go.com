@@ -16,22 +16,26 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
-import data from "data";
-import preferences from "preferences";
+import * as data from "data";
+import * as preferences from "preferences";
 import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
+import {users_by_rank} from 'chat_manager';
+import * as moment from "moment";
+import cached from 'cached';
+
 
 declare let swal;
 
@@ -62,7 +66,7 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-japanese", "name": "日本語 ", "country": "jp"},
     {"id": "global-chinese" , "name": "中文"   , "country": "cn"},
     {"id": "global-korean"  , "name": "한국어" , "country": "kr"},
-    {"id": "global-russian"  , "name": "Русский" , "country": "r"},
+    {"id": "global-russian"  , "name": "Русский" , "country": "ru"},
     {"id": "global-polish"  , "name": "Polski" , "country": "pl"},
     {"id": "global-arabic", "name": "العَرَبِيَّةُ", "country": "_Arab_League", "rtl": true},
     {"id": "global-bulgarian"  , "name": "Български" , "country": "bg"},
@@ -79,7 +83,7 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-nepali" , "name": "नेपाली", "country": "np"},
     {"id": "global-bangla"  , "name": "বাংলা" , "country": "bd"},
     {"id": "global-lithuanian", "name": "Lietuvių", "country": "lt"},
-    {"id": "global-hungarian"  , "name": "Magyar" , "country": "h"},
+    {"id": "global-hungarian"  , "name": "Magyar" , "country": "hu"},
     {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl"},
     {"id": "global-norwegian"  , "name": "Norsk" , "country": "no"},
     {"id": "global-italian"  , "name": "Italiano" , "country": "it"},
@@ -169,33 +173,27 @@ export class Chat extends React.Component<ChatProperties, any> {
             show_say_hi_placeholder: true,
         };
 
-        this.resolve();
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    resolve() {{{
-        if (!data.get("config.user").anonymous) {
-            get("me/groups", {page_size: 30})
-            .then((groups) => {
-                this.setState({group_channels: groups.results.sort((a, b) => a.name.localeCompare(b.name))});
-                groups.results.map((g) => {
-                    getChannel("group-" + g.id).name = g.name;
-                });
-            })
-            .catch((err) => 0);
+    updateGroups = (groups) => {{{
+        this.setState({group_channels: groups});
+        groups.map((g) => {
+            getChannel("group-" + g.id).name = g.name;
+        });
+    }}}
 
-            get("me/tournaments", {ended__isnull:true, page_size: 30})
-            .then((tournaments) => {
-                this.setState({tournament_channels: tournaments.results.sort((a, b) => a.name.localeCompare(b.name))});
-                tournaments.results.map((t) => {
-                    getChannel("tournament-" + t.id).name = t.name;
-                });
-            })
-            .catch((err) => 0);
-        }
+    updateTournaments = (tournaments) => {{{
+        this.setState({tournament_channels: tournaments});
+        tournaments.map((t) => {
+            getChannel("tournament-" + t.id).name = t.name;
+        });
     }}}
 
     componentDidMount() {{{
+        data.watch(cached.groups, this.updateGroups);
+        data.watch(cached.active_tournaments, this.updateTournaments);
+
         comm_socket.on("connect", this.connect);
         comm_socket.on("disconnect", this.disconnect);
         if (comm_socket.connected) {
@@ -233,6 +231,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.autoscroll();
     }}}
     componentWillUnmount() {{{
+        data.unwatch(cached.groups, this.updateGroups);
+        data.unwatch(cached.active_tournaments, this.updateTournaments);
         this.disconnect();
         comm_socket.off("connect", this.connect);
         comm_socket.off("disconnect", this.disconnect);
@@ -249,6 +249,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
         this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).name = t.name);
         comm_socket.on("chat-message", this.onChatMessage);
+        comm_socket.on("chat-message-removed", this.onChatMessageRemoved);
         comm_socket.on("chat-join", this.onChatJoin);
         comm_socket.on("chat-part", this.onChatPart);
         this.online_count_interval = setInterval(() => {
@@ -282,6 +283,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
     }}}
 
+    onChatMessageRemoved = (obj) => {{{
+        console.log("Chat message removed: ", obj);
+        let c = getChannel(obj.channel);
+        c.chat_ids[obj.uuid] = true;
+        for (let idx = 0; idx < c.chat_log.length; ++idx) {
+            let entry = c.chat_log[idx];
+            if (entry.message.i === obj.uuid) {
+                c.chat_log.splice(idx, 1);
+            }
+        }
+        this.syncStateSoon();
+    }}}
     onChatMessage = (obj) => {{{
         let mentioned = false;
         try {
@@ -453,11 +466,18 @@ export class Chat extends React.Component<ChatProperties, any> {
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().attr("data-channel");
+            }
+            if (!channel) {
+                channel = $(channel_or_ev.target).parent().parent().attr("data-channel");
+            }
         }
 
         if (!channel) {
             throw new Error(`Invalid channel ID: ${channel}`);
         }
+
         let state_update: any = {};
         if (channel !== this.state.active_channel) {
             state_update.active_channel = channel;
@@ -502,22 +522,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         let sort_order = this.state.user_sort_order;
         if (sort_order === "rank") {
-            lst.sort((a, b) => {
-                if (!a.ranking && b.ranking) {
-                    return 1;
-                }
-                if (a.ranking && !b.ranking) {
-                    return -1;
-                }
-                if (!a.ranking && !b.ranking) {
-                    return a.username.localeCompare(b.username);
-                }
-
-                if (a.ranking - b.ranking === 0)  {
-                    return a.username.localeCompare(b.username);
-                }
-                return b.ranking - a.ranking;
-            });
+            lst.sort(users_by_rank);
         } else {
             lst.sort((a, b) => {
                 return a.username.localeCompare(b.username);
@@ -624,7 +629,12 @@ export class Chat extends React.Component<ChatProperties, any> {
     autoscroll() {{{
         if (this.scrolled_to_bottom) {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
-            setTimeout(() => this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight, 100);
+            setTimeout(() => {
+                try {
+                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+                } catch (e) {
+                }
+            } , 100);
         }
     }}}
 
@@ -649,6 +659,7 @@ export class Chat extends React.Component<ChatProperties, any> {
 
     render() {{{
         let sorted_user_list = this.sortedUserList();
+        let last_line = null;
 
         let chan_class = (chan: string): string => {
             return (chan in this.state.joined_channels ? " joined" : " unjoined") +
@@ -758,7 +769,11 @@ export class Chat extends React.Component<ChatProperties, any> {
                         onScroll={this.updateScrollPosition}
                         onClick={this.focusInput}
                         >
-                        {this.state.chat_log.map((line) => <ChatLine key={line.message.i} line={line}/>)}
+                        {this.state.chat_log.map((line, idx) => {
+                            let ll = last_line;
+                            last_line = line;
+                            return <ChatLine key={line.message.i} line={line} lastline={ll} />;
+                        })}
                     </div>
                     <div className="input-container ">
                         {showChannels &&
@@ -802,80 +817,80 @@ export class Chat extends React.Component<ChatProperties, any> {
 }
 
 
+function searchString(site, parameters) {
+    if (parameters.length === 1) {
+        return site + parameters[0];
+    }
+
+    return site + parameters[0] + '+' +
+        parameters.slice(1, parameters.length).join('+').slice(0);
+}
+
+function generateChatSearchLine(urlString, command, body) {
+    let target = '';
+    let bodyString = body.substr(command.length);
+    if (bodyString.split(' ')[0] === '-user') {
+        target = bodyString.split(' ')[1] + ' ';
+    }
+
+    let params = body.split(' ');
+    if (target.length > 0) {
+        return  target.slice(0, target.length - 1) + ": " +
+            searchString(urlString, params.slice(3, params.length));
+    } else {
+        return  searchString(urlString, params.slice(1, params.length));
+    }
+}
+
 function ChatLine(props) {{{
     let line = props.line;
+    let lastline = props.lastline;
     let user = line;
 
     if (line.system) {
         return ( <div className="chat-line system">{chat_markup(line.body)}</div>);
     }
 
-
     let message = line.message;
+    let ts_ll = lastline ? new Date(lastline.message.t * 1000) : null;
     let ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
+    let show_date: JSX.Element = null;
+
+    if (!lastline || (ts && ts_ll)) {
+        if (ts) {
+            if (!lastline || (moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD"))) {
+                show_date = <div className="date">{moment(ts).format("LL")}</div>;
+            }
+        }
+    }
 
     if (typeof(body) === 'string') {
-
-      let searchString = (site, parameters) => {
-
-        if (parameters.length === 1) {
-            return site + parameters[0];
+        if (body.substr(0, 4) === '/me ') {
+            third_person = (body.substr(0, 4) === "/me ");
+            body = body.substr(4);
         }
 
-        return site +
-               parameters[0] +
-               '+' +
-               parameters
-                 .slice(1, parameters.length)
-                 .join('+')
-                 .slice(0);
-      };
-
-      let targetUser = (bodyString) => {
-        if (bodyString.split(' ')[0] === '-user') {
-          return bodyString.split(' ')[1] + ' ';
-        } else {
-          return '';
+        if (/^\/senseis?\s/.test(body)) {
+            body = generateChatSearchLine(
+                'http://senseis.xmp.net/?search=',
+                /^\/senseis?\s/.exec(body)[0],
+                body
+            );
         }
-      };
 
-      let generateChatSearchLine = (urlString, command, body) => {
-        let target = targetUser(body.substr(command.length));
-        let params = body.split(' ');
-        if (target.length > 0) {
-          return  target.slice(0, target.length - 1) + ": " +
-                  searchString(urlString, params.slice(3, params.length));
-        } else {
-          return  searchString(urlString, params.slice(1, params.length));
+        if (body.substr(0, 8) === '/google ') {
+            body = generateChatSearchLine(
+                'https://www.google.com/#q=', '/google ', body
+            );
         }
-      };
 
-      if (body.substr(0, 4) === '/me ') {
-        third_person = (body.substr(0, 4) === "/me ");
-        body = body.substr(4);
-      }
-
-      if (/^\/senseis?\s/.test(body)) {
-        body = generateChatSearchLine(
-          'http://senseis.xmp.net/?search=',
-          /^\/senseis?\s/.exec(body)[0],
-          body
-        );
-      }
-
-      if (body.substr(0, 8) === '/google ') {
-          body = generateChatSearchLine(
-          'https://www.google.com/#q=', '/google ', body
-        );
-      }
-
-      if (body.substr(0, 8) === '/lmgtfy ') {
-          body = generateChatSearchLine(
-          'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
-        );
-      }
+        if (body.substr(0, 8) === '/lmgtfy ') {
+            body = generateChatSearchLine(
+                'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
+            );
+        }
     }
 
     let mentions = name_match_regex.test(body);
@@ -885,7 +900,10 @@ function ChatLine(props) {{{
              (third_person ? "chat-line third-person" : "chat-line")
              + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
-        }>
+        }
+            data-chat-id={message.i}
+        >
+        {show_date}
             {(ts) && <span className="timestamp">[{(ts.getHours() < 10 ? " " : "") + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}]</span>}
             {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
             <span className="body">{chat_markup(body)}</span>

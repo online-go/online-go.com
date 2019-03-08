@@ -17,21 +17,27 @@
 
 import * as React from "react";
 import {comm_socket} from "sockets";
-import data from "data";
-import preferences from "preferences";
+import * as data from "data";
+import * as preferences from "preferences";
 import {_, interpolate, pgettext} from "translate";
 import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
 import {isLiveGame} from "TimeControl";
 import {post, del} from "requests";
-import {browserHistory} from "react-router";
+import {browserHistory} from "ogsHistory";
 import {challenge_text_description} from "ChallengeModal";
 import {Player} from "Player";
 import {FabX, FabCheck} from "material";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {toast} from 'toast';
 
-
 declare let Notification: any;
+
+interface Events {
+    "turn-count": number;
+    "notification": any;
+    "notification-list-updated": never;
+    "notification-count": number;
+}
 
 // null or id of game that we're current viewing
 function getCurrentGameId() {
@@ -75,8 +81,6 @@ function formatTime(seconds) { /* {{{ */
     return _("no time left");
 } /* }}} */
 
-
-
 let boot_time = Date.now();
 let already_asked_for_permission = false;
 let notification_timeout = null;
@@ -106,9 +110,16 @@ export function emitNotification(title, body, cb?) {{{
                     {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
                     <div>
                         <FabCheck onClick={() => {
-                            Notification.requestPermission().then((perm) => {
-                                emitNotification(title, body, cb);
-                            }).catch((err) => console.error(err));
+                            try {
+                                Notification.requestPermission().then((perm) => {
+                                    emitNotification(title, body, cb);
+                                }).catch((err) => console.error(err));
+                            } catch (e) {
+                                /* deprecated usage, but only way supported on safari currently */
+                                Notification.requestPermission((perm) => {
+                                    emitNotification(title, body, cb);
+                                });
+                            }
                             t.close();
                         }}/>
                         <FabX onClick={() => t.close()}/>
@@ -153,22 +164,32 @@ export function emitNotification(title, body, cb?) {{{
                     console.error(e);
                 }
 
-                let notification = new Notification(title,
-                    {
-                        body: body,
-                        icon: "https://cdn.online-go.com/favicon.ico",
-                        dir: "auto",
-                        lang: "",
-                        tag: "ogs"
-                    }
-                );
-                if (cb) {
-                    notification.onclick = cb;
-                }
+                try {
+                    let notification = new Notification(title,
+                        {
+                            body: body,
+                            icon: "https://cdn.online-go.com/favicon.ico",
+                            dir: "auto",
+                            lang: "",
+                            tag: "ogs"
+                        }
+                    );
 
-                setTimeout(() => {
-                    notification.close();
-                }, preferences.get("notification-timeout") * 1000);
+                    if (cb) {
+                        notification.onclick = cb;
+                    }
+
+                    setTimeout(() => {
+                        try {
+                            /* this isn't supported on MS Edge yet */
+                            notification.close();
+                        } catch (e) {
+                            console.warn(e);
+                        }
+                    }, preferences.get("notification-timeout") * 1000);
+                } catch (e) {
+                    console.info(e);
+                }
             }, delay);
         } else {
             //console.log("Ignoring notificaiton sent within the first few seconds of page load", title, body);
@@ -190,11 +211,11 @@ class NotificationManager {
     boards_to_move_on;
     turn_offset;
     auth;
-    event_emitter: EventEmitter;
+    event_emitter: TypedEventEmitter<Events>;
 
     constructor() {{{
         window["notification_manager"] = this;
-        this.event_emitter = new EventEmitter();
+        this.event_emitter = new TypedEventEmitter<Events>();
 
         this.notifications = {};
         this.ordered_notifications = [];
@@ -439,8 +460,8 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
 
-        notification_manager.event_emitter.on("turn-count", (ct, next_board) => {
-            this.setState({count: ct, next_board: next_board});
+        notification_manager.event_emitter.on("turn-count", (ct) => {
+            this.setState({count: ct});
         });
     }
 
@@ -657,13 +678,13 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                         <div className="buttons">
                             <FabX onClick={() => {
                                 this.setState({message: _("Declining")});
-                                del("me/challenges/" + notification.challenge_id)
+                                del("me/challenges/%%", notification.challenge_id)
                                 .then(this.del)
                                 .catch(this.onError);
                             }}/>
                             <FabCheck onClick={() => {
                                 this.setState({message: _("Accepting")});
-                                post(`me/challenges/${notification.challenge_id}/accept`, {})
+                                post("me/challenges/%%/accept", notification.challenge_id, {})
                                 .then(() => {
                                     this.del();
                                     if (isLiveGame(notification.time_control)) {

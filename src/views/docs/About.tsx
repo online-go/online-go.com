@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import {_} from "translate";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {termination_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 
 declare var ogs_release;
 declare var ogs_version;
@@ -60,7 +60,7 @@ export class About extends React.Component<{}, any> {
                         </span>
                     </h2>
 
-                    {_("Online-go.com is made possible by the generous financial support from hundreds of indivdiual site supporters, the guidance and welcome friendly attitudes of the Go community at large, and by a large collection of volunteers that have helped translate Online-Go.com into a multitude of different languages from all over the world.")}
+                    {_("Online-go.com is made possible by the generous financial support from hundreds of individual site supporters, the guidance and welcome friendly attitudes of the Go community at large, and by a large collection of volunteers that have helped translate Online-Go.com into a multitude of different languages from all over the world.")}
 
                     <h4 className="about-links">
                         <a href="https://translate.online-go.com" target="_blank">{_("Help translate Online-Go.com")}</a>

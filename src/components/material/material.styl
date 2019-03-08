@@ -24,7 +24,34 @@
     themed background-color card-background-color
     themed border-color shade3
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+
+    &.next {
+        background-color: #3EA2FF !important;
+        &:hover {
+            background-color: #3893e8 !important;
+            transition: background-color 0.3s ease;
+        }
+    }
+
+    &.todo {
+        background-color: #F29E47 !important;
+        &:hover {
+            background-color: #f57c00 !important;
+            transition: background-color 0.3s ease;
+        }
+    }
+
+    &.done {
+        background-color: #56C75B !important;
+        &:hover {
+            background-color: #4CAF50 !important;
+            transition: background-color 0.3s ease;
+        }
+
+    }
 }
+
+
 
 
 .fab {

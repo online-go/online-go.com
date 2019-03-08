@@ -533,7 +533,7 @@ export let ContactInformation = (props) => ( /* {{{ */
 
     <h4><a href="mailto:contact@online-go.com">contact@online-go.com</a></h4>
 
-    (For support, please use the forums here: <a href="http://forums.online-go.com/">http://forums.online-go.com/</a>.)
+    <br/>For support, please use the forums: <a href="http://forums.online-go.com">http://forums.online-go.com</a>.
 </div>
 ); /* }}} */
 export let RefundPolicy = (props) => ( /* {{{ */

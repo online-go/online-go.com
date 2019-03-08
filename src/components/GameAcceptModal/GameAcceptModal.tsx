@@ -19,11 +19,14 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {openModal, Modal} from "Modal";
-import {timeControlDescription} from "TimeControl";
+import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
 import {errorAlerter} from "misc";
 
 declare var swal;
+
+interface Events {
+}
 
 interface GameAcceptModalProperties {
     challenge: any;
@@ -34,7 +37,7 @@ interface GameAcceptModalProperties {
 }
 
 
-export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
+export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}> {
     constructor(props) {
         super(props);
     }
@@ -48,7 +51,7 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
             allowEscapeKey: false,
         });
 
-        post(`challenges/${this.props.challenge.challenge_id}/accept`, {})
+        post("challenges/%%/accept", this.props.challenge.challenge_id, {})
         .then(() => {
             swal.close();
             this.close();
@@ -64,8 +67,6 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
         let challenge = this.props.challenge;
         let time_control_description = timeControlDescription(challenge.time_control_parameters);
         let player_color = _(challenge.challenger_color);
-
-        console.log(challenge);
 
         if (challenge.challenger_color === "black")          { player_color = _("White");     }
         else if (challenge.challenger_color === "white")     { player_color = _("Black");     }
@@ -86,12 +87,20 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
               </div>
               <div className="body">
                 <p>{time_control_description}</p>
+                {usedForCheating(challenge.time_control_parameters) ?
+                    <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}</p> :
+                    ""}
                 <hr/>
                 <dl className="horizontal">
                   <dt>{_("Your color")}</dt><dd>{player_color}</dd>
                   <dt>{_("Ranked")}</dt><dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
                   <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
-                  <dt>{_("Komi")}</dt><dd>{challenge.komi || _("Automatic")}</dd>
+                  <dt>{_("Komi")}</dt>
+                    <dd>
+                    {challenge.komi ?
+                    <span title={_("Custom komi setting")}>{challenge.komi}<i className="fa fa-exclamation-triangle cheat-alert"></i></span>
+                    : _("Automatic")}
+                    </dd>
                   <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
                   <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
                       {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
@@ -109,7 +118,6 @@ export class GameAcceptModal extends Modal<GameAcceptModalProperties, {}> {
 
 
 export function openGameAcceptModal(challenge): Promise<any> {
-    console.log(challenge);
 
     return new Promise((resolve, reject) => {
         openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);

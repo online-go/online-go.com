@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 
 interface DeveloperProperties {
@@ -33,6 +33,8 @@ export class Developer extends React.PureComponent<DeveloperProperties, any> {
         <div className="Developer container">
             <h1>{_("Source Code")}</h1>
             <h2><a href="https://github.com/online-go/online-go.com/">Source Code on GitHub</a></h2>
+            <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=star&count=true&size=large"></iframe>
+            <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=fork&count=true&size=large"></iframe>
 
             <h1>{_("Application management")}</h1>
             <h2><a href="/oauth2/applications/">OAuth2 Application Manager</a></h2>

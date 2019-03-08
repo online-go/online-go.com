@@ -16,5 +16,45 @@
  */
 
 import * as React from "react";
+import * as preferences from "preferences";
+import { MAX_DOCK_DELAY } from 'Settings';
 
-export const Dock = props => (<div {...props} className={"Dock" + (props.className || "")}>{props.children}</div>);
+export class Dock extends React.Component<any, any> {
+    constructor(props) {
+        super(props);
+        this.state = {
+            dock_delay: preferences.get("dock-delay")
+        };
+    }
+
+    mouseEntered = (ev) => {
+        let delay = this.state.dock_delay;
+        if (delay === MAX_DOCK_DELAY) {
+            console.log("NO slide out");
+            delay = 99999;
+        }
+        // open dock at speed set by preference 'dock-delay'
+        let modified_transition = `all 0.1s ease-in ${delay}s`;
+        let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
+        // tested on Opera, Chrome, Safari, Edge, Firefox
+        dock.style.transition = modified_transition;
+        dock.style.webkitTransition = modified_transition;
+    }
+
+    mouseExited = (ev) => {
+        // always close fast
+        let fast_transition = `all 0.1s ease-in 0s`;
+        let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
+        dock.style.transition = fast_transition;
+        dock.style.webkitTransition = fast_transition;
+    }
+
+    render() {
+        return (
+            <div onMouseEnter={this.mouseEntered} onMouseLeave={this.mouseExited} {...this.props} className={"Dock" + (this.props.className || "")}>
+                {this.props.children}
+            </div>
+        );
+    }
+}
+

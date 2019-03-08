@@ -16,11 +16,10 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
-import {_} from "translate";
+import {Link} from "react-router-dom";
+import {_, interpolate} from "translate";
 import {Card} from "material";
 import {GameList} from "GameList";
-import {AdUnit} from "AdUnit";
 import {createOpenChallenge} from "ChallengeModal";
 import {UIPush} from "UIPush";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -29,13 +28,18 @@ import {toast} from "toast";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import online_status from "online_status";
-import data from "data";
+import * as data from "data";
+import cached from "cached";
+import * as preferences from "preferences";
 import {errorAlerter} from "misc";
-import {longRankString} from "rank_utils";
-import {FirstTimeSetup} from "FirstTimeSetup";
+import {DismissableNotification} from "DismissableNotification";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
 import {EmailBanner} from "EmailBanner";
+import {SupporterGoals} from "SupporterGoals";
+import {ProfileCard} from "ProfileCard";
+import {notification_manager} from "Notifications";
+import {FabX, FabCheck} from "material";
 
 
 
@@ -45,20 +49,56 @@ let UserRating = (props: {rating: number}) => {
     return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
 };
 
-
+declare var ogs_missing_translation_count;
 
 export class Overview extends React.Component<{}, any> {
+    private static defaultTitle = "OGS";
+
     constructor(props) {
         super(props);
+
+        let show_translation_dialog = false;
+        try {
+            if (ogs_missing_translation_count > 0
+                && !preferences.get("translation-dialog-never-show")
+                && (Date.now() - preferences.get("translation-dialog-dismissed")) > 14 * 86400 * 1000) {
+                show_translation_dialog = true;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
         this.state = {
             overview: {
                 active_games: [],
             },
+            show_translation_dialog: show_translation_dialog,
             resolved: false,
+            boards_to_move_on: Object.keys(notification_manager.boards_to_move_on).length,
         };
     }
 
+    setTitle() {
+        let count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
+        window.document.title = `${count}${Overview.defaultTitle}`;
+    }
+
+    setBoardsToMoveOn = (boardsToMoveOn) => {
+        this.setState({boards_to_move_on: boardsToMoveOn});
+    }
+
     componentDidMount() {
+        this.setTitle();
+        notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
+        this.refresh();
+    }
+
+    componentDidUpdate() {
+        this.setTitle();
+    }
+
+    refresh() {
+        abort_requests_in_flight("ui/overview");
         return get("ui/overview").then((overview) => {
             this.setState({"overview": overview, resolved: true});
         }).catch((err) => {
@@ -66,24 +106,33 @@ export class Overview extends React.Component<{}, any> {
             errorAlerter(err);
         });
     }
+
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
+        notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
+        window.document.title = Overview.defaultTitle;
     }
 
     render() {
-        if (!data.get("user").setup_rank_set) {
-            return <FirstTimeSetup/>;
-        }
-
         let user = data.get("config.user");
 
         return (
         <div id="Overview-Container">
-            <AdUnit unit="cdm-zone-01" nag/>
+            <SupporterGoals />
             <div id="Overview">
                 <div className="left">
                     <EmailBanner />
-                    <ChallengesList />
+                    <ChallengesList onAccept={() => this.refresh()} />
+
+
+                    {((user && user.provisional) || null) &&
+                        <DismissableNotification
+                            className="learn-how-to-play"
+                            dismissedKey="learn-how-to-play"
+                            >
+                            <Link to="/learn-to-play-go">{_("New to Go? Click here to learn how to play!")}</Link>
+                        </DismissableNotification>
+                    }
 
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
@@ -96,59 +145,59 @@ export class Overview extends React.Component<{}, any> {
                     {((this.state.resolved && this.state.overview.active_games.length === 0) || null) &&
                         <div className="no-active-games">
                             <div style={{"marginBottom": "1rem"}}>{_("You're not currently playing any games.")}</div>
-                            <Link to="/play" className="btn primary">Find a game</Link>
+                            <Link to="/play" className="btn primary">{_("Find a game")}</Link>
                         </div>
                     }
                 </div>
                 <div className="right">
-                    <div className="profile">
-                        <PlayerIcon id={user.id} size={80} />
+                    <ProfileCard user={user} />
 
-                        <div className="profile-right">
-                            <span className="username">{user.username}</span>
+                    <div className="overview-categories">
+                        {this.state.show_translation_dialog &&
+                            <Card className="translation-dialog">
+                                <FabX onClick={this.dismissTranslationDialog} />
 
-                            <div className="rank-and-progress">
-                                <span className="rank">{longRankString(user)} &nbsp;</span>
-                                <div className="progress">
-                                    <div className="progress-bar primary" style={{width: ((1000 + user.rating) % 100.0) + "%"}}>&nbsp;</div>
-                                </div>
-                            </div>
+                                <div>{_("Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!")}</div>
 
-                            <Link className="view-and-edit-link" to={`/player/${user.id}`}>{_("View and edit profile") /* translators: View and edit profile */} &gt;</Link>
-                        </div>
+                                <a className='btn success' href='https://translate.online-go.com/'>{_("I'll help translate!")}</a>
+
+                                <button className='btn xs never-show-this-message-button' onClick={this.neverShowTranslationDialog}>{_("Never show this message")}</button>
+                            </Card>
+                        }
+
+                        <h3><Link to="/tournaments"><i className="fa fa-trophy"></i> {_("Tournaments")}</Link></h3>
+                        <TournamentList />
+
+                        <h3><Link to="/ladders"><i className="fa fa-list-ol"></i> {_("Ladders")}</Link></h3>
+                        <LadderList />
+
+                        <h3><Link to="/groups"><i className="fa fa-users"></i> {_("Groups")}</Link></h3>
+                        <GroupList />
+
+                        <h3><Link to="/chat"><i className="fa fa-comment-o"></i> {_("Chat with friends")}</Link></h3>
+                        <FriendList />
                     </div>
 
-                    <div className="right-header">
-                        <h3>{_("Tournaments")}</h3>
-                        <Link to="/tournaments">{_("All tournaments") /* translators: Link to view all tournaments */} &gt;</Link>
-                    </div>
-                    <TournamentList />
-
-                    <div className="right-header">
-                        <h3>{_("Ladders")}</h3>
-                        <Link to="/ladders">{_("All ladders") /* translators: Link to view all ladders */} &gt;</Link>
-                    </div>
-                    <LadderList />
-
-                    <div className="right-header">
-                        <h3>{_("Groups")}</h3>
-                        <Link to="/groups">{_("Find Groups") /* translators: Link to view all groups */} &gt;</Link>
-                    </div>
-                    <GroupList />
-
-                    <div className="right-header">
-                        <h3>{_("Friends")}</h3>
-                        <Link to="/chat">{_("Meet some in Chat!") /* translators: Meet some friends in chat */} &gt;</Link>
-                    </div>
-                    <FriendList />
                 </div>
             </div>
         </div>
         );
     }
+
+    dismissTranslationDialog = (ev) => {
+        preferences.set("translation-dialog-dismissed", Date.now());
+        this.setState({
+            show_translation_dialog: false
+        });
+    }
+
+    neverShowTranslationDialog = (ev) => {
+        preferences.set("translation-dialog-never-show", true);
+        this.setState({
+            show_translation_dialog: false
+        });
+    }
 }
-
-
 
 export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     constructor(props) {
@@ -161,39 +210,32 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        this.refresh();
+        data.watch(cached.groups, this.updateGroups);
+        data.watch(cached.group_invitations, this.updateGroupInvitations);
     }}}
-    refresh() {{{
-        get("me/groups", {}).then((res) => {
-            this.setState({"groups": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
-        get("me/groups/invitations", {page_size: 100}).then((res) => {
-            this.setState({"invitations": res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation)});
-        }).catch((err) => {
-            console.info("Caught", err);
-        });
+
+    updateGroups = (groups) => {{{
+        this.setState({"groups": groups});
     }}}
+    updateGroupInvitations = (invitations) => {{{
+        this.setState({"invitations": invitations});
+    }}}
+
     componentWillUnmount() {{{
-        abort_requests_in_flight("me/groups");
+        data.unwatch(cached.groups, this.updateGroups);
+        data.unwatch(cached.group_invitations, this.updateGroupInvitations);
     }}}
     acceptInvite(invite) {{{
         post("me/groups/invitations", {"request_id": invite.id})
-        .then(() => this.refresh())
-        .catch(() => this.refresh());
+        .then(() => 0)
+        .catch(() => 0);
     }}}
     rejectInvite(invite) {{{
         post("me/groups/invitations", {"request_id": invite.id, "delete": true})
-        .then(() => this.refresh())
-        .catch(() => this.refresh());
+        .then(() => 0)
+        .catch(() => 0);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-GroupList">
                 {this.state.invitations.map((invite) => (
@@ -219,36 +261,27 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/tournaments", {ended__isnull: true, ordering: "name"}).then((res) => {
-            this.setState({"my_tournaments": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
+        data.watch(cached.active_tournaments, this.update);
+        /*
         get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
             this.setState({"open_tournaments": res.results, resolved: true});
         }).catch((err) => {
             this.setState({resolved: true});
             console.info("Caught", err);
         });
+        */
     }}}
+    update = (tournaments) => {{{
+        this.setState({"my_tournaments": tournaments});
+    }}}
+
     componentWillUnmount() {{{
         abort_requests_in_flight("me/tournaments");
+        data.unwatch(cached.active_tournaments, this.update);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-TournamentList">
-                {this.state.open_tournaments.map((tournament) => (
-                    <Link key={tournament.id} to={`/tournament/${tournament.id}`}><img src={tournament.icon}/> {tournament.name}</Link>
-                ))}
-                {(this.state.open_tournaments.length === 0 || null) &&
-                    null
-                }
-
                 {this.state.my_tournaments.map((tournament) => (
                     <Link key={tournament.id} to={`/tournament/${tournament.id}`}><img src={tournament.icon}/> {tournament.name}</Link>
                 ))}
@@ -269,21 +302,18 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
     }
 
     componentDidMount() {{{
-        get("me/ladders", {}).then((res) => {
-            this.setState({"ladders": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
+        data.watch(cached.ladders, this.update);
     }}}
+
+    update = (ladders) => {{{
+        this.setState({"ladders": ladders});
+    }}}
+
     componentWillUnmount() {{{
         abort_requests_in_flight("me/ladders");
+        data.unwatch(cached.ladders, this.update);
     }}}
     render() {
-        if (!this.state.resolved) {
-            return null;
-        }
-
         return (
             <div className="Overview-LadderList">
                 {this.state.ladders.map((ladder) =>

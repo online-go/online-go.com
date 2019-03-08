@@ -22,6 +22,15 @@ import {ScoreEstimator} from "./ScoreEstimator";
 import {_} from "./translate";
 
 
+export interface GoEngineState {
+    player: number;
+    board_is_repeating: boolean;
+    white_prisoners: any;
+    black_prisoners: any;
+    udata_state: any;
+    board: Array<Array<number>>;
+}
+
 let __currentMarker = 0;
 
 export function encodeMove(x, y?) { /* {{{ */
@@ -103,6 +112,7 @@ export class GoEngine {
     private score;
     private score_prisoners;
     private score_stones;
+    private score_handicap;
     private score_territory;
     private score_territory_in_seki;
     private white_prisoners;
@@ -298,8 +308,8 @@ export class GoEngine {
     public decodeMoves(move_obj) { /* {{{ */
         return GoMath.decodeMoves(move_obj, this.width, this.height);
     } /* }}} */
-    private getState() { /* {{{ */
-        let state = {
+    private getState():GoEngineState { /* {{{ */
+        let state:GoEngineState = {
             "player": this.player,
             "board_is_repeating": this.board_is_repeating,
             "white_prisoners": this.white_prisoners,
@@ -455,6 +465,10 @@ export class GoEngine {
         }
     } /* }}} */
     public jumpTo(node) { /* {{{ */
+        if (!node) {
+            console.error('Attempted to jump to a null node');
+            return;
+        }
         this.move_before_jump = this.cur_move;
         this.cur_move = node;
         if (node.state) {
@@ -504,6 +518,28 @@ export class GoEngine {
         this.cur_move = t;
         this.jumpTo(t);
     } /* }}} */
+    public gameCanBeCanceled():boolean { /* {{{ */
+        if (this.phase !== 'play') {
+            return false;
+        }
+
+        if ('tournament_id' in this.config && this.config.tournament_id) {
+            return false;
+        }
+
+        if ('ladder_id' in this.config && this.config.ladder_id) {
+            return false;
+        }
+
+        let move_number = this.getMoveNumber();
+        let max_moves_played = 1 + (this.free_handicap_placement ? this.handicap : 1);
+
+        if (move_number < max_moves_played) {
+            return true;
+        }
+
+        return false;
+    } /* }}} */
 
     private isMoveLegal(x, y) { /* {{{ */
         return true;
@@ -514,7 +550,7 @@ export class GoEngine {
     private opponent() { /* {{{ */
         return this.player === 1 ? 2 : 1;
     } /* }}} */
-    public prettyCoords(x, y) { /* {{{ */
+    public prettyCoords(x:number, y:number):string { /* {{{ */
         return GoMath.prettyCoords(x, y, this.height);
     } /* }}} */
     private incrementCurrentMarker() { /* {{{ */
@@ -533,15 +569,14 @@ export class GoEngine {
         }
     } /* }}} */
 
-
-    private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) {
+    private foreachNeighbor_checkAndDo(x, y, done_array, fn_of_neighbor_pt) { /* {{{ */
         let idx = x + y * this.width;
         if (done_array[idx]) {
             return;
         }
         done_array[idx] = true;
         fn_of_neighbor_pt(x, y);
-    }
+    } /* }}} */
     private foreachNeighbor(pt_or_group, fn_of_neighbor_pt) { /* {{{ */
         if (pt_or_group.constructor === Array) {
             let group = pt_or_group;
@@ -680,7 +715,7 @@ export class GoEngine {
             return this.colorToMove();
         }
     } /* }}} */
-    private colorToMove() { /* {{{ */
+    public colorToMove() { /* {{{ */
         return this.player === 1 ? "black" : "white";
     } /* }}} */
     public playerByColor(color) { /* {{{ */
@@ -705,6 +740,15 @@ export class GoEngine {
                         return;
                     }
 
+                    try {
+                        console.warn("Stone already placed here stack trace: ");
+                        throw new Error("Stone already placed here stack trace: ");
+                    } catch (e) {
+                        try {
+                            console.warn(e.stack);
+                        } catch (__) {
+                        }
+                    }
                     throw new GoError(this, x, y, _("A stone has already been placed here"));
                 }
                 this.board[y][x] = this.player;
@@ -884,6 +928,24 @@ export class GoEngine {
         if ("initial_player" in this.config) {
             this.player = this.config["initial_player"] === "white" ? 2 : 1;
         }
+    } /* }}} */
+    public computeInitialStateForForkedGame():{black:string; white:string} { /* {{{ */
+        let black = "";
+        let white = "";
+        for (let y = 0; y < this.height; ++y) {
+            for (let x = 0; x < this.width; ++x) {
+                if (this.board[y][x] === 1) {
+                    black += encodeMove(x, y);
+                } else if (this.board[y][x] === 2) {
+                    white += encodeMove(x, y);
+                }
+            }
+        }
+
+        return {
+            black: black,
+            white: white,
+        };
     } /* }}} */
 
     public toggleMetaGroupRemoval(x, y): Array<any> { /* {{{ */
@@ -1149,7 +1211,7 @@ export class GoEngine {
 
         for (let color in {"black": "black", "white": "white"}) {
             ret[color].total = ret[color].stones + ret[color].territory + ret[color].prisoners + ret[color].komi;
-            if (this.score_stones) {
+            if (this.score_handicap) {
                 ret[color].total += ret[color].handicap;
             }
         }
@@ -1244,6 +1306,7 @@ export class GoEngine {
         defaults.score_territory = true;
         defaults.score_territory_in_seki = true;
         defaults.score_stones = true;
+        defaults.score_handicap = false;
         defaults.score_prisoners = true;
         defaults.score_passes = true;
         defaults.white_must_pass_last = false;
@@ -1257,6 +1320,7 @@ export class GoEngine {
                 defaults.score_prisoners = false;
                 defaults.allow_superko = false;
                 defaults.free_handicap_placement = true;
+                defaults.score_handicap = true;
                 if ("ogs_import" in game_obj) {
                     defaults.free_handicap_placement = false;
                 }
@@ -1268,6 +1332,7 @@ export class GoEngine {
                 defaults.allow_superko = false;
                 defaults.white_must_pass_last = true;
                 defaults.aga_handicap_scoring = true;
+                defaults.score_handicap = true;
                 break;
 
             case "japanese" :
@@ -1743,15 +1808,22 @@ export class GoEngine {
         return se.score();
     } /* }}} */
     public getMoveByLocation(x, y) { /* {{{ */
-        let m = this.cur_move;
-        while (m) {
-            if (m.x === x && m.y === y) {
-                return m;
-            } else {
-                m = m.parent;
+        let m = null;
+        let cur_move = this.cur_move;
+        while (!m && cur_move) {
+            if (cur_move.x === x && cur_move.y === y) {
+                m = cur_move;
             }
+            cur_move = cur_move.next();
         }
-        return null;
+        cur_move = this.cur_move.parent;
+        while (!m && cur_move) {
+            if (cur_move.x === x && cur_move.y === y) {
+                m = cur_move;
+            }
+            cur_move = cur_move.parent;
+        }
+        return m;
     } /* }}} */
 
     public exportAsPuzzle() { /* {{{ */

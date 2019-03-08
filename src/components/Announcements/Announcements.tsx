@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {UIPush} from "UIPush";
 import * as moment from "moment";
 import ITC from "ITC";
-import data from "data";
+import * as data from "data";
 
 interface AnnouncementsProperties {
 }
@@ -50,12 +50,15 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     }
 
     componentWillMount() {{{
-        get("announcements")
-        .then((announcements) => {
-            for (let announcement of announcements) {
-                this.announce(announcement);
-            }
-        });
+        setTimeout(() => {
+            /* Defer this get so we can load whatever page we're on first */
+            get("announcements")
+            .then((announcements) => {
+                for (let announcement of announcements) {
+                    this.announce(announcement);
+                }
+            });
+        }, 20);
     }}}
 
     retract = (announcement) => {{{

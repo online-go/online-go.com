@@ -24,6 +24,36 @@
     left: 0;
 }
 
+.outer-banner {
+    .Game, .Dock {
+        top: below-navbar + 5.4 !important;
+    }
+}
+
+.mobile-banner {
+    .Game, .Dock {
+        top: below-navbar + 2.9 !important;
+    }
+}
+
+/*
+@media (max-width: 728px) {
+    .outer-banner {
+        .Game, .Dock {
+            top: below-navbar + 2.9 !important;
+        }
+    }
+
+    .mobile-banner {
+        .Game, .Dock {
+            top: below-navbar + 2.9 !important;
+        }
+    }
+}
+*/
+
+
+
 
 .Game.portrait.squashed {
     overflow-y: scroll;
@@ -80,6 +110,19 @@ goban-view-bar-width=400px
             text-align: center;
         }
 
+        .analyze-mode-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 5px;
+            button {
+                themed background-color success
+                themed-darken border-color success border-darken-amount
+            }
+            button:hover {
+                themed-lighten background-color success button-highlight-brighten-amount
+                themed-darken border-color success button-border-highlight-darken-amount
+            }
+        }
         .pause-controls {
             text-align: center;
         }
@@ -133,12 +176,11 @@ goban-view-bar-width=400px
         flex-grow: 1;
         flex-basis: 95%;
     }
-    
+
     .center-col {
         .play-controls {
             flex-grow: 0;
             padding-top: 0;
-            //height: 100%;
         }
     }
 
@@ -345,7 +387,7 @@ goban-view-bar-width=400px
     }
 
     &.zen {
-        themed background-color bg 
+        themed background-color bg
         .left-col, .right-col {
             display: none;
         }
@@ -362,7 +404,7 @@ goban-view-bar-width=400px
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        //justify-content: stretch;
+        width: 100%;
 
         .goban-container {
         }
@@ -370,8 +412,10 @@ goban-view-bar-width=400px
     }
     &.portrait .center-col {
         .cancel-button {
-            position: relative;
+            align-self: center;
             flex-shrink: 0;
+            position: relative;
+            top: 25px;
         }
     }
 
@@ -389,29 +433,18 @@ goban-view-bar-width=400px
         justify-content: space-between;
     }
     .left-col {
-        flex-basis: 15%;
+        flex-basis: 0;
         flex-shrink: 1;
         align-content: center;
         justify-content: center;
         padding-right: 0.3rem;
-        min-width: 340px;
+        min-width: 0px;
     }
     .right-col {
         flex-basis: 25%;
         padding-left: 0.3rem;
         padding-right: dock-collapsed-width + 0.3rem;
         min-width: 340px;
-    }
-
-    .left-col.no-ads {
-        flex-basis: 0;
-        min-width: 0px;
-    }
-    .left-col.wide-skyscraper {
-        min-width: 170px;
-    }
-    .left-col.half-page {
-        min-width: 310px;
     }
 
     &.wide {
@@ -498,7 +531,12 @@ goban-view-bar-width=400px
 }
 
 
-
+.chat-container {
+    /* Prevent silly Firefox from collapsing empty editable lines */
+    .qc-option[contenteditable=true]{
+        min-height: 1 em;
+    }
+}
 
 .ad.large-rectangle,
 .ad.medium-rectangle,
@@ -572,7 +610,7 @@ goban-view-bar-width=400px
             padding: 0;
             margin-left: 10px;
         }
-        
+
         li {
             margin: 0;
             padding: 0 12px;
@@ -646,4 +684,3 @@ goban-view-bar-width=400px
 }
 
 /* }}} */
-

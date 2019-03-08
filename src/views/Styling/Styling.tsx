@@ -17,6 +17,8 @@
 
 import * as React from "react";
 import {Card, FabX, FabCheck, FabAdd } from "material";
+import {Link} from "react-router-dom";
+import {Ribbon} from "misc-ui";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import {toast} from "toast";
@@ -28,6 +30,8 @@ import {GroupAutocomplete} from "GroupAutocomplete";
 import {Markdown} from "Markdown";
 import {PersistentElement} from "PersistentElement";
 import {Steps} from "Steps";
+import {VerticalSlider} from "VerticalSlider";
+import * as moment from "moment";
 
 declare var swal;
 
@@ -42,6 +46,13 @@ export class Styling extends React.PureComponent<{}, any> {
             autocompleted_group: null,
             markdown_source: "## hello\n* world\n* from\n\nhere",
             selected_step: 0,
+
+            slider_num_value: 50,
+            slider_num_min: 0,
+            slider_num_max: 200,
+            slider_date_value: moment("20180601", "YYYYMMDD").toDate(),
+            slider_date_min: moment("20180101", "YYYYMMDD").toDate(),
+            slider_date_max: moment("20190101", "YYYYMMDD").toDate(),
         };
     }
 
@@ -65,7 +76,7 @@ export class Styling extends React.PureComponent<{}, any> {
     render() { return (
     <div className="Styling container">
         <div className="row">
-            <div className="col-xs-6">
+            <div className="col-xs-5">
                 <Steps completed={3} selected={2} total={6}/>
 
                 <Steps completed={1} selected={1} total={1}>
@@ -86,7 +97,7 @@ export class Styling extends React.PureComponent<{}, any> {
                         <button >Click this</button></div>
                 </Steps>
             </div>
-            <div className="col-xs-6">
+            <div className="col-xs-3">
                 <Card>
                     <PlayerAutocomplete onComplete={this.updateAutocompletedPlayer} />
                     <div>
@@ -98,6 +109,23 @@ export class Styling extends React.PureComponent<{}, any> {
                     {this.state.autocompleted_group && <div>{this.state.autocompleted_group.name}</div>}
                     </div>
                 </Card>
+            </div>
+            <div className="col-xs-2">
+                <VerticalSlider
+                    value={this.state.slider_num_value}
+                    min={this.state.slider_num_min}
+                    max={this.state.slider_num_max}
+                    onChange={(v) => this.setState({slider_num_value: v})}
+                    />
+            </div>
+            <div className="col-xs-2">
+                <VerticalSlider
+                    value={this.state.slider_date_value}
+                    min={this.state.slider_date_min}
+                    max={this.state.slider_date_max}
+                    onChange={(v) => this.setState({slider_date_value: v})}
+                    reverse={true}
+                    />
             </div>
         </div>
         <div className="row">
@@ -416,8 +444,35 @@ export class Styling extends React.PureComponent<{}, any> {
             <hr/>
             <p>Pargraph block</p>
             <div>Normal text</div>
+            <div><Link to='/styling'>Link text</Link></div>
             <code>Code block</code>
+            <div className='big'>Big text</div>
+            <div className='mid'>Mid text</div>
+            <div className='normal'>Normal text</div>
+            <div className='small'>Small text</div>
+            <div className='smaller'>Smaller text</div>
+            <div className='extra-small'>Extra small text</div>
         </Card>
+
+        <div className='row'>
+            <div className='col-xs-4'>
+                <Card className='next h4rem Ribboned'>
+                    <Ribbon>Next</Ribbon>
+
+                </Card>
+            </div>
+            <div className='col-xs-4'>
+                <Card className='todo h4rem Ribboned'>
+                    <Ribbon>Todo</Ribbon>
+                </Card>
+            </div>
+            <div className='col-xs-4'>
+                <Card className='done h4rem Ribboned'>
+                    <Ribbon>Done</Ribbon>
+                </Card>
+            </div>
+        </div>
+
 
     </div>
     ); }

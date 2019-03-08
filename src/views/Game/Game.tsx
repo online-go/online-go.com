@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import data from "data";
+import * as data from "data";
 import device from "device";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
 import {post, get, api1} from "requests";
 import {KBShortcut} from "KBShortcut";
@@ -33,8 +34,8 @@ import {termination_socket, get_network_latency, get_clock_drift} from "sockets"
 import {Dock} from "Dock";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
-import player_cache from "player_cache";
-import {getPlayerIconURL} from "PlayerIcon";
+import * as player_cache from "player_cache";
+import {icon_size_url} from "PlayerIcon";
 import {profanity_filter} from "profanity_filter";
 import {notification_manager} from "Notifications";
 import {PersistentElement} from "PersistentElement";
@@ -49,7 +50,6 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AdUnit} from "AdUnit";
 import * as moment from "moment";
 
 declare var swal;
@@ -61,9 +61,11 @@ let win = $(window);
 let active_game_view = null;
 
 interface GameProperties {
-    params: {
-        game_id?: string,
-        review_id?: string,
+    match: {
+        params: {
+            game_id?: string,
+            review_id?: string,
+        }
     };
 }
 
@@ -86,14 +88,16 @@ interface GameChatLineProperties {
 
 
 export type ViewMode = "portrait"|"wide"|"square"|"zen";
-type AdClass = "large-rectangle"|"medium-rectangle"|"leaderboard"|"mobile-banner"|"wide-skyscraper"|"half-page"|"no-ads";
+type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
-    refs: {
-        goban;
-        goban_container;
-        chat;
-    };
+    ref_goban;
+    ref_goban_container;
+    ref_players;
+    ref_action_bar;
+    ref_game_action_buttons;
+    ref_game_state_label;
+    ref_chat;
 
     game_id: number;
     creator_id: number;
@@ -108,7 +112,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     set_analyze_tool: any = {};
     score_popups: any = { };
     ad: HTMLElement;
-    ad_class: AdClass = null;
     autoplay_timer = null;
     stone_removal_accept_timeout: any = null;
     conditional_move_list = [];
@@ -126,7 +129,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
     conditional_move_tree;
     leave_pushed_analysis: () => void = null;
     stashed_conditional_moves = null;
+    volume_sound_debounce: any = null;
 
+    white_username: string = "White";
+    black_username: string = "Black";
 
     decide_white: () => void;
     decide_black: () => void;
@@ -136,17 +142,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
         super(props);
         window["Game"] = this;
 
-        this.game_id = this.props.params.game_id ? parseInt(this.props.params.game_id) : 0;
-        this.review_id = this.props.params.review_id ? parseInt(this.props.params.review_id) : 0;
+        this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
+        this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
             view_mode: false,
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
             analyze_pencil_color: "#8DDD3C",
-            //show_ads: data.get('user').id === 1,
             show_submit: false,
-            show_ads: false,
             user_is_player: false,
             zen_mode: false,
             autoplaying: false,
@@ -157,8 +161,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             strict_seki_mode: false,
             player_icons: {},
             volume: preferences.get("sound-volume"),
+            historical_black: null,
+            historical_white: null,
+            annulled: false,
+            black_auto_resign_expiration: null,
+            white_auto_resign_expiration: null,
         };
-        this.state.view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode */
+
+        (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = $("<div class='Goban'>");
@@ -247,8 +257,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentWillReceiveProps(nextProps) {{{
         if (
-            this.props.params.game_id !== nextProps.params.game_id ||
-            this.props.params.review_id !== nextProps.params.review_id
+            this.props.match.params.game_id !== nextProps.match.params.game_id ||
+            this.props.match.params.review_id !== nextProps.match.params.review_id
         ) {
             this.deinitialize();
             this.goban_div.empty();
@@ -260,10 +270,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 show_submit: false,
                 autoplaying: false,
                 review_list: [],
+                historical_black: null,
+                historical_white: null,
             });
 
-            this.game_id = nextProps.params.game_id ? parseInt(nextProps.params.game_id) : 0;
-            this.review_id = nextProps.params.review_id ? parseInt(nextProps.params.review_id) : 0;
+            this.game_id = nextProps.match.params.game_id ? parseInt(nextProps.match.params.game_id) : 0;
+            this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
             console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
@@ -271,20 +283,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     componentDidUpdate(prevProps, prevState) {{{
         if (
-            this.props.params.game_id !== prevProps.params.game_id ||
-            this.props.params.review_id !== prevProps.params.review_id
+            this.props.match.params.game_id !== prevProps.match.params.game_id ||
+            this.props.match.params.review_id !== prevProps.match.params.review_id
         ) {
             this.initialize();
             this.sync_state();
         }
-        this.onResize();
+        this.onResize(false, true);
     }}}
     componentDidMount() {{{
         this.initialize();
         if (this.computeViewMode() === "portrait") {
-            this.refs.goban_container.style.minHeight = `${screen.width}px`;
+            this.ref_goban_container.style.minHeight = `${screen.width}px`;
         } else {
-            this.refs.goban_container.style.minHeight = `initial`;
+            this.ref_goban_container.style.minHeight = `initial`;
         }
         this.onResize();
     }}}
@@ -319,6 +331,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         window["Game"] = null;
         window["global_goban"] = null;
+        this.setState({
+            black_auto_resign_expiration: null,
+            white_auto_resign_expiration: null,
+        });
     }}}
     onFocus = () => {{{
         if (this.goban && this.goban.engine) {
@@ -332,19 +348,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
         $(window).on("resize", this.onResize as () => void);
         $(document).on("keypress", this.setLabelHandler);
-        //chat_handlers = goban_chat_initialize($scope);
-        //let live_suffix = (game.time_per_move || 86400) < (30*60) ? "-live" : "";
-        //let label_position = $.jStorage.get("go.settings.label-position", "all");
+
         let label_position = preferences.get("label-positioning");
         let opts: any = {
             "board_div": this.goban_div,
-            //"title_div": $("#goban-primary-ctrl"),
             "black_clock": "#game-black-clock",
             "white_clock": "#game-white-clock",
             "stone_removal_clock": "#stone-removal-clock",
             "node_textarea": "#game-move-node-text",
-            //"game_type": $scope.game.type,
-            //"game_source": $scope.game.source,
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
@@ -354,26 +365,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
             },
 
-            /*
-            "onChat": function(m,t) { chat_handlers.handleChat(m,t); },
-            "onChatReset": function() { chat_handlers.handleChatReset(); },
-            "onPendingResignation": function(player_id, delay) {
-                if (global_user && player_id === global_user.id) {
-                    if (!leaving_page) {
-                        //console.log("I disconnected from another tab, but I guess I have multiple open, clearing resignation ");
-                        goban.clearPendingResignation();
-                    }
-                } else {
-                    //console.log("Player " + player_id + " disconnected, will be resigning in "+ delay + "ms");
-                }
-            },
-            "onPendingResignationCleared": function(player_id, delay) {
-                //console.log("Player " + player_id + " reconnected, resignation canceled");
-            },
-            "onClearChatLogs": function() {
-                chat_handlers.clearChatLogs();
-            },
-            */
             "game_id": null,
             "review_id": null,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
@@ -382,19 +373,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
             "move_tree_div": "#move-tree-container",
             "move_tree_canvas": "#move-tree-canvas",
-            "display_width": Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight),
-
-            //"square_size": 10,
-            //"wait_for_game_to_start": $scope.game.started == null,
-            //"width": $scope.game.width,
-            //"height": $scope.game.height,
+            "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
         };
 
         if (opts.display_width <= 0) {
             let I = setInterval(() => {
                 this.onResize(true);
                 setTimeout(() => {
-                    if (Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight) > 0) {
+                    if (!this.goban || (this.ref_goban_container && Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight) > 0)) {
                         clearInterval(I);
                     }
                 }, 1);
@@ -410,53 +396,42 @@ export class Game extends React.PureComponent<GameProperties, any> {
             opts.isPlayerController = () => this.goban.review_controller_id === data.get("user").id;
         }
 
-        console.log(opts);
-
-        /*
-        if (global_user) {
-            opts.username = global_user.username;
-            opts.chat_player_id = global_user.id;
-            opts.chat_auth = $scope.game_chat_auth;
-        }
-        if ($scope.auth) {
-            opts.auth = $scope.auth;
-        }
-        */
-
-        //goban = new Goban(opts, initial_gamedata);
         this.goban = new Goban(opts);
         this.onResize(true);
-        //global_goban = this.goban;
         window["global_goban"] = this.goban;
-        //window["this.goban"] = goban;
-        //$scope.goban = goban;
         if (this.review_id) {
             this.goban.setMode("analyze");
         }
 
-        /* Title Updates {{{ */
-        let last_title = window.document.title;
-        this.last_move_viewed = 0;
-        this.on_refocus_title = last_title;
-        this.goban.on("state_text", (title: string, show_moves_made_count?: boolean) => {
-            this.on_refocus_title = title;
-            if (show_moves_made_count) {
-                if (!this.goban) {
-                    window.document.title = title;
-                    return;
-                }
-                if (document.hasFocus()) {
-                    this.last_move_viewed = this.goban.engine.getMoveNumber();
-                    window.document.title = title;
+        // We need an initial score for the first display rendering (which is not set in the constructor).
+        // Best to get this from the engine, so we know we have the right structure...
+        this.setState({score: this.goban.engine.computeScore(true)});
+
+        if (preferences.get("dynamic-title")) {
+            /* Title Updates {{{ */
+            let last_title = window.document.title;
+            this.last_move_viewed = 0;
+            this.on_refocus_title = last_title;
+            this.goban.on("state_text", (state) => {
+                this.on_refocus_title = state.title;
+                if (state.show_moves_made_count) {
+                    if (!this.goban) {
+                        window.document.title = state.title;
+                        return;
+                    }
+                    if (document.hasFocus()) {
+                        this.last_move_viewed = this.goban.engine.getMoveNumber();
+                        window.document.title = state.title;
+                    } else {
+                        let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
+                        window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                    }
                 } else {
-                    let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
-                    window.document.title = interpolate(_("(%s) moves made"), [diff]);
+                    window.document.title = state.title;
                 }
-            } else {
-                window.document.title = title;
-            }
-        });
-        /* }}} */
+            });
+            /* }}} */
+        }
 
         this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
         this.goban.on("title", (title) => this.setState({title: title}));
@@ -471,21 +446,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
-            /*
-            if (!(chat_log in this.chats)) {
-                this.chats[chat_log] = [];
-            }
-            this.chats[chat_log].push(line);
-            */
-
             this.debouncedChatUpdate();
         });
         this.goban.on("chat-reset", () => {
-            /*
-            for (let k in this.chats) {
-                this.chats[k] = [];
-            }
-            */
             this.chat_log.length = 0;
             this.debouncedChatUpdate();
         });
@@ -503,48 +466,50 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
-            try {
-                let urls = {};
-
-                for (let color in this.goban.engine.players) {
-                    getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                        urls[this.goban.engine.players[color].id] = url;
-                        this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                    });
-                }
-            } catch (e) {
-            }
             this.sync_state();
         });
+
+        this.goban.on("auto-resign", (data) => {
+            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+                this.setState({ black_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift() ) });
+            }
+            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+                this.setState({ white_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift()) });
+            }
+        });
+        this.goban.on("clear-auto-resign", (data) => {
+            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+                this.setState({ black_auto_resign_expiration: null });
+            }
+            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+                this.setState({ white_auto_resign_expiration:null });
+            }
+        });
+
         if (this.review_id) {
-            this.goban.on("review.updated", (e) => {
+            this.goban.on("review.updated", () => {
                 this.sync_state();
-                if (this.goban.engine.players.white.id && !this.state.player_icons[this.goban.engine.players.white.id]) {
-                    for (let color in this.goban.engine.players) {
-                        getPlayerIconURL(this.goban.engine.players[color].id, 64).then((url) => {
-                            setTimeout(() => {
-                                let urls = {};
-                                urls[this.goban.engine.players[color].id] = url;
-                                this.setState({player_icons: Object.assign({}, this.state.player_icons, urls)});
-                            }, 1);
-                        });
-                    }
-                }
             });
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
             });
         }
 
-
         if (this.game_id) {
-            get(`games/${this.game_id}`)
+            get("games/%%", this.game_id)
             .then((game) => {
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
+                    this.white_username = game.players.white.username;
                 }
                 if (game.players.black.id) {
                     player_cache.update(game.players.black, true);
+                    this.black_username = game.players.black.username;
+                }
+                if (this.white_username && this.black_username && !preferences.get("dynamic-title")) {
+                    this.on_refocus_title = this.black_username + " vs " + this.white_username;
+                    window.document.title = this.on_refocus_title;
+
                 }
                 this.creator_id = game.creator;
                 this.ladder_id = game.ladder;
@@ -566,7 +531,22 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 this.setState({
                     review_list: review_list,
+                    annulled: game.annulled,
+                    historical_black: game.historical_ratings.black,
+                    historical_white: game.historical_ratings.white,
                 });
+            })
+            .catch(ignore);
+        }
+        if (this.review_id) {
+            get("reviews/%%", this.review_id)
+            .then((review) => {
+                if (review.game) {
+                    this.setState({
+                        historical_black: review.game.historical_ratings.black,
+                        historical_white: review.game.historical_ratings.white,
+                    });
+                }
             })
             .catch(ignore);
         }
@@ -671,7 +651,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
 
     checkAndEnterAnalysis(move?:MoveTree) {{{
-        if (this.goban.mode === "play" && this.goban.engine.phase !== "stone removal" && (!this.goban.engine.config.disable_analysis || this.goban.engine.phase === "finished")) {
+        if (this.goban.mode === "play" && this.goban.engine.phase !== "stone removal" && (!this.goban.isAnalysisDisabled() || this.goban.engine.phase === "finished")) {
             this.setState({variation_name: ""});
             this.goban.setMode("analyze");
             if (move) {
@@ -690,18 +670,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
     recenterGoban() {{{
         let m = this.goban.computeMetrics();
         $(this.goban_div).css({
-            top: Math.ceil(this.refs.goban_container.offsetHeight - m.height) / 2,
-            left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
+            top: Math.ceil(this.ref_goban_container.offsetHeight - m.height) / 2,
+            left: Math.ceil(this.ref_goban_container.offsetWidth - m.width) / 2,
         });
     }}}
-    onResize = (no_debounce?: boolean) => {{{
-        //Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
-        if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
-            this.setState({
-                squashed: goban_view_squashed(),
-                view_mode: this.computeViewMode(),
-            });
-
+    onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {{{
+        //Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight)
+        if (!skip_state_update) {
+            if (this.computeViewMode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
+                this.setState({
+                    squashed: goban_view_squashed(),
+                    view_mode: this.computeViewMode(),
+                });
+            }
         }
 
         if (this.resize_debounce) {
@@ -709,29 +690,28 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.resize_debounce = null;
         }
 
-        /*
         if (!this.goban) {
             return;
         }
-        */
 
         this.goban.setGameClock(this.goban.last_clock); /* this forces a clock refresh, important after a layout when the dom could have been replaced */
 
-        if (!this.refs.goban_container) {
+        if (!this.ref_goban_container) {
             return;
         }
 
         if (this.computeViewMode() === "portrait") {
-            if (this.refs.goban_container.style.minHeight !== `${win.width() + 10}px`) {
-                this.refs.goban_container.style.minHeight = `${win.width() + 10}px`;
+            let w = win.width() + 10;
+            if (this.ref_goban_container.style.minHeight !== `${w}px`) {
+                this.ref_goban_container.style.minHeight = `${w}px`;
             }
         } else {
-            if (this.refs.goban_container.style.minHeight !== `initial`) {
-                this.refs.goban_container.style.minHeight = `initial`;
+            if (this.ref_goban_container.style.minHeight !== `initial`) {
+                this.ref_goban_container.style.minHeight = `initial`;
             }
-            let w = this.refs.goban_container.offsetWidth;
-            if (this.refs.goban_container.style.flexBasis !== `${w}px`) {
-                this.refs.goban_container.style.flexBasis = `${w}px`;
+            let w = this.ref_goban_container.offsetWidth;
+            if (this.ref_goban_container.style.flexBasis !== `${w}px`) {
+                this.ref_goban_container.style.flexBasis = `${w}px`;
             }
         }
 
@@ -741,8 +721,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return;
         }
 
+
         this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
+            Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight)
         );
 
         this.recenterGoban();
@@ -775,11 +756,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }}}
     setLabelHandler = (event) => {{{
-        if (document.activeElement.tagName === "INPUT" ||
-            document.activeElement.tagName === "TEXTAREA" ||
-            document.activeElement.tagName === "SELECT"
-        ) {
-            return;
+        try {
+            if (document.activeElement.tagName === "INPUT" ||
+                document.activeElement.tagName === "TEXTAREA" ||
+                document.activeElement.tagName === "SELECT"
+            ) {
+                return;
+            }
+        } catch (e) {
         }
 
         if (this.goban && this.goban.mode === "analyze") {
@@ -800,54 +784,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     computeSquashed(): boolean {{{
         return win.height() < 680;
-    }}}
-    getAdClass(): AdClass {{{
-        if (!this.state.show_ads) {
-            return "no-ads";
-        }
-
-        if (this.ad_class) {
-            return this.ad_class;
-        }
-
-        let w = win.width() || 1;
-        let h = win.height() || 1;
-
-        switch (this.computeViewMode()) {
-            case "portrait":
-                {
-                    if (w >= 728) {
-                        return this.ad_class = "leaderboard";
-                    }
-                    return this.ad_class = "mobile-banner";
-                }
-
-            case "square":
-                {
-                    if (h < 700) {
-                        return this.ad_class = "mobile-banner";
-                    }
-                    if (w >= 1280) {
-                        return this.ad_class = "large-rectangle";
-                    }
-                    return this.ad_class = "medium-rectangle";
-                }
-
-            case "wide":
-                {
-                    if (w >= 1900) {
-                        return  this.ad_class = "half-page";
-                        //return this.ad_class = 'large-rectangle';
-                    }
-                    return  this.ad_class = "wide-skyscraper";
-                    //return this.ad_class = 'medium-rectangle';
-                }
-
-
-            case "zen":
-                return this.ad_class = null;
-
-        }
     }}}
     toggleCoordinates() {{{
         let goban = this.goban;
@@ -871,14 +807,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }}}
     showGameInfo() {{{
-        openGameInfoModal(this.goban.engine, this.creator_id || this.goban.review_owner_id);
+        openGameInfoModal(this.goban.engine,
+            this.state[`historical_black`] || this.goban.engine.players.black,
+            this.state[`historical_white`] || this.goban.engine.players.white,
+            this.state.annulled, this.creator_id || this.goban.review_owner_id);
     }}}
     showLinkModal() {{{
         openGameLinkModal(this.goban);
     }}}
     gameAnalyze() {{{
         let user = data.get("user");
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
         } else {
             let last_estimate_move = this.stopEstimatingScore();
@@ -890,7 +829,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }}}
     fork() {{{
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Game forking has been disabled for this game since analysis mode has been disabled"));
         } else {
             challengeFromBoardPosition(this.goban);
@@ -960,8 +899,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         this.chat_update_debounce = setTimeout(() => {
             this.chat_update_debounce = null;
-            if (this.refs.chat) {
-                this.refs.chat.forceUpdate();
+            if (this.ref_chat) {
+                this.ref_chat.forceUpdate();
             }
         }, 1);
     }}}
@@ -1027,10 +966,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (!data.get("user").anonymous) {
-            goban.sendChat(analysis, this.refs.chat.state.chat_log);
+            goban.sendChat(analysis, this.ref_chat.state.chat_log);
             this.last_analysis_sent = analysis;
         } else {
-            goban.message("Can't send to the " + this.refs.chat.state.chat_log  + " chat_log");
+            goban.message("Can't send to the " + this.ref_chat.state.chat_log  + " chat_log");
         }
     }}}
     openACL = () => {{{
@@ -1040,8 +979,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     popupScores(color) {{{
         let goban = this.goban;
 
-        this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
-        goban.engine.cur_move.clearMarks();
+        if (goban.engine.cur_move) {
+            this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
+            goban.engine.cur_move.clearMarks();
+        } else {
+            this.orig_marks = null;
+        }
 
         let only_prisoners = false;
         let scores = goban.engine.computeScore(only_prisoners);
@@ -1090,7 +1033,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (!this.showing_scores) {
             goban.hideScores();
         }
-        goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        if (goban.engine.cur_move) {
+            goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
+        }
         goban.redraw();
         $("#" + color + "-score-details").children().remove();
     }}}
@@ -1154,7 +1099,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.show_undo_requested = (engine.undo_requested === engine.last_official_move.move_number);
             new_state.show_accept_undo = (goban.engine.playerToMove() === data.get("user").id || (goban.submit_move != null && goban.engine.playerNotToMove() === data.get("user").id) || null);
             new_state.show_title = (!goban.submit_move || goban.engine.playerToMove() !== data.get("user").id || null);
-            new_state.show_submit = !!goban.submit_move;
+            new_state.show_submit = !!goban.submit_move && (goban.engine.cur_move && goban.engine.cur_move.parent && goban.engine.last_official_move && goban.engine.cur_move.parent.id === goban.engine.last_official_move.id);
             new_state.player_to_move = goban.engine.playerToMove();
             new_state.player_not_to_move = goban.engine.playerNotToMove();
             new_state.is_my_move = new_state.player_to_move === data.get("user").id;
@@ -1169,7 +1114,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.white_pause_text = goban.white_pause_text;
             new_state.black_pause_text = goban.black_pause_text;
 
-            if ((goban.engine.getMoveNumber() < Math.max(goban.engine.width, goban.engine.height)) && (!("tournament_id" in goban.engine.config))) {
+            if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
                 new_state.resign_mode = "cancel";
             } else {
@@ -1326,7 +1271,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }}}
     enterConditionalMovePlanner() {{{
             //if (!auth) { return; }
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished") {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Conditional moves have been disabled for this game."));
         } else {
             this.stashed_conditional_moves = this.goban.conditional_tree.duplicate();
@@ -1340,7 +1285,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let user = data.get("user");
         let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
 
-        if (this.goban.engine.disable_analysis && this.goban.engine.phase !== "finished" && is_player) {
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
             //swal(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
 
         } else {
@@ -1348,7 +1293,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 "text": _("Start a review of this game?"),
                 showCancelButton: true
             }).then(() => {
-                post(`games/${this.game_id}/reviews`, {})
+                post("games/%%/reviews", this.game_id, {})
                 .then((res) => browserHistory.push(`/review/${res.id}`))
                 .catch(errorAlerter);
             })
@@ -1384,19 +1329,39 @@ export class Game extends React.PureComponent<GameProperties, any> {
     decide(winner): void {{{
         let moderation_note = null;
         do {
-            moderation_note = prompt("Moderator note:");
+            moderation_note = prompt("Deciding for " + winner.toUpperCase() + " - Moderator note:");
             if (moderation_note == null) {
                 return;
             }
             moderation_note = moderation_note.trim();
         } while (moderation_note === "");
 
-        post(`games/${this.game_id}/moderate`,
+        post("games/%%/moderate", this.game_id,
              {
                  "decide": winner,
                  "moderation_note": moderation_note,
              }
         ).catch(errorAlerter);
+    }}}
+    annul = () => {{{
+        let moderation_note = null;
+        do {
+            moderation_note = prompt("ANNULMENT - Moderator note:");
+            if (moderation_note == null) {
+                return;
+            }
+            moderation_note = moderation_note.trim();
+        } while (moderation_note === "");
+
+        post("games/%%/annul", this.game_id,
+             {
+                 "moderation_note": moderation_note,
+             }
+        )
+        .then(() => {
+            swal({text: _(`Game has been annulled`)});
+        })
+        .catch(errorAlerter);
     }}}
 
     cancelOrResign() {{{
@@ -1525,9 +1490,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         })
         .catch(() => 0);
     }}}
-    handleMoveTreeResize(_w, _h) {{{
-        console.log("TODO: handleMoveTreeResize");
-    }}}
     setChatLog = (chat_log) => {{{
         this.setState({chat_log: chat_log});
     }}}
@@ -1548,8 +1510,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sound_enabled: enabled,
         });
         let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
-        sfx.play("stone-" + (idx + 1));
+
+        if (this.volume_sound_debounce) {
+            clearTimeout(this.volume_sound_debounce);
+        }
+
+        this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
     }}}
+
     saveVolume = () => {{{
         let enabled = this.state.volume > 0;
         preferences.set("sound-volume", this.state.volume);
@@ -1577,38 +1545,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     render() {{{
-        /*
-        if (!this.ad) {
-            this.ad = $(`<div class='ad ${this.getAdClass()}'>${Math.random()}</div>`)[0];
-        }
-        */
-        //const CHAT = <div className='chat'>chat</div>;
-        const CHAT = <GameChat ref="chat" chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
+        const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
-        //const FLEX_AD = this.state.show_ads ? <div className='ad-container'><PersistentElement elt={this.ad}/></div> : <div className='supporter'/> ;
-        const FLEX_AD = null;
-        //const CURSE_ATF_AD = <AdUnit unit='cdm-zone-01' nag/>;
-        //const CURSE_BTF_AD = <AdUnit unit='cdm-zone-04' nag/>;
         const review = !!this.review_id;
 
         return (
-            <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
+            <div>
+             <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
-                <div className={"left-col " + this.getAdClass()}>
-                    {(this.state.view_mode === "wide" || null) && FLEX_AD}
+                <div className="left-col">
                 </div>
 
-
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" || null) && FLEX_AD}
-
                     {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
-                        <div ref="goban_container" className="goban-container">
+                        <div ref={el => this.ref_goban_container = el} className="goban-container">
                             <PersistentElement className="Goban" elt={this.goban_div}/>
                         </div>
                     }
@@ -1669,18 +1624,23 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {/*
                         <div className='filler'/>
                         */}
-                        {(this.state.view_mode === "square" || null) && FLEX_AD}
                         {(this.state.view_mode === "wide" || null) && CHAT}
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
                         {this.frag_dock()}
                     </div>
                 }
+
+             </div>
             </div>
         );
     }}}
     frag_cancel_button() {{{
-        return <button className="xs bold cancel-button" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        if (this.state.view_mode === "portrait") {
+            return <button className="bold cancel-button reject" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        } else {
+            return <button className="xs bold cancel-button" onClick={this.cancelOrResign}>{this.state.resign_text}</button>;
+        }
     }}}
     frag_play_buttons(show_cancel_button) {{{
         let state = this.state;
@@ -1701,7 +1661,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                 </span>
                 <span>
-                    {((!state.show_submit && state.is_my_move) || null) &&
+                    {((!state.show_submit && state.is_my_move && this.goban.engine.handicapMovesLeft() === 0) || null) &&
                         <button className="sm primary bold pass-button" onClick={this.pass}>{_("Pass")}</button>
                     }
                     {((state.show_submit && this.goban.engine.undo_requested !== this.goban.engine.getMoveNumber()) || null) &&
@@ -1734,33 +1694,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div className="play-controls">
-                <div className="game-action-buttons">{/* {{{ */}
+                <div ref={el => this.ref_game_action_buttons = el} className="game-action-buttons">{/* {{{ */}
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
                         this.frag_play_buttons(show_cancel_button)
                     }
-                    {(state.mode === "play" && state.phase === "play" && this.goban.engine.disable_analysis && state.cur_move_number < state.official_move_number || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
-                            <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
-                        </span>
-                    }
-
-                    {(state.mode === "score estimation" || null) &&
-                        <span>
-                            <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
-                        </span>
-                    }
-
                     {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
                 {/* }}} */}
-               <div className="game-state">{/*{{{*/}
+               <div ref={el => this.ref_game_state_label = el} className="game-state">{/*{{{*/}
                     {(state.mode === "play" && state.phase === "play" || null) &&
                         <span>
                             {state.show_undo_requested
@@ -1823,12 +1764,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <span>
                             {state.winner
                                 ?
-                                (interpolate(pgettext("Game winner", "%s wins by %s"), [
-                                    (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
-                                    getOutcomeTranslation(this.goban.engine.outcome)
-                                ]))
+                                (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
+                                    "color": (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
+                                    "outcome": getOutcomeTranslation(this.goban.engine.outcome)
+                                }))
                                 :
-                                (interpolate(pgettext("Game winner", "Tie by %s"), [ pgettext("Game outcome", this.goban.engine.outcome)]))
+                                (interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {"outcome": pgettext("Game outcome", this.goban.engine.outcome)}))
                             }
                         </span>
                     }
@@ -1850,7 +1791,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     </div>
                 }{/* }}} */}
                 {(this.state.phase === "finished" || null) &&  /* {{{ */
-                    <div>
+                    <div className="analyze-mode-buttons">     {/* not really analyze mode, but equivalent button position and look*/}
                         {(this.state.user_is_player && this.state.mode !== "score estimation" || null) &&
                             <button
                                 onClick={this.rematch}
@@ -1947,7 +1888,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                        }
 
                     </div>
-                }{/* }}} */}
+                }
+                {/* }}} */}
                 {(this.state.mode === "conditional" || null) &&  /* {{{ */
                     <div className="conditional-move-planner">
                       <div className="buttons">
@@ -1965,7 +1907,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <div>
                         {this.frag_analyze_button_bar()}
 
-                        <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                        <Resizable id="move-tree-container" className="vertically-resizable">
                             <canvas id="move-tree-canvas"></canvas>
                         </Resizable>
 
@@ -1985,16 +1927,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     </div>
                 }{/* }}} */}
-
-                {/*
-                    (this.goban.engine.config.original_sgf || null) &&
-                    <div style={{paddingLeft: '0.5em', paddingRight: '0.5em'}}>
-                        <textarea id='game-move-node-text' placeholder={_("Move comments...")}
-                            rows={5}
-                            className='form-control'
-                            disabled={true}></textarea>
-                    </div>
-                */}
+                {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
+                   <div className="analyze-mode-buttons">
+                    <span>
+                        <button className="sm primary bold"
+                                onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                    </span>
+                   </div>
+                }
+                {(state.mode === "score estimation" || null) &&
+                <div className="analyze-mode-buttons">
+                    <span>
+                        <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
+                    </span>
+                </div>
+                }
             </div>
         );
     }}}
@@ -2007,7 +1954,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div className="play-controls">
-                <div className="game-state">
+                <div ref={el => this.ref_game_state_label = el} className="game-state">
                     {_("Review by")}: <Player user={this.state.review_owner_id} />
                     {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
                         <div>
@@ -2019,7 +1966,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {this.frag_analyze_button_bar()}
 
                     <div className="space-around">
-                        <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
                         {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
                             this.state.review_out_of_sync &&
                             <button className="sm" onClick={this.syncToCurrentReviewMove}>
@@ -2028,7 +1974,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         }
                     </div>
 
-                    <Resizable id="move-tree-container" className="vertically-resizable" onResize={this.handleMoveTreeResize}>
+                    <Resizable id="move-tree-container" className="vertically-resizable">
                         <canvas id="move-tree-canvas"></canvas>
                     </Resizable>
 
@@ -2062,10 +2008,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }}}
     frag_analyze_button_bar() {{{
+        let state = this.state;
+
         return (
         <div className="game-analyze-button-bar">
             {/*
-            {(this.review || null) &&
+            {(this.review_id || null) &&
                 <i id='review-sync' className='fa fa-refresh {{goban.engine.cur_move.id !== goban.engine.cur_review_move.id ? "need-sync" : ""}}'
                     onClick={this.syncToCurrentReviewMove()} title={_("Sync to where the reviewer is at")}></i>
             }
@@ -2129,7 +2077,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
-
+             <div className="analyze-mode-buttons">
+                 {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
+                 <span>
+                     {(!this.review_id || null) &&
+                        <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
+                     }
+                     <button className="sm primary bold pass-button" onClick={this.analysis_pass}>{_("Pass")}</button>
+                 </span>
+                 }
+             </div>
         </div>
         );
     }}}
@@ -2170,24 +2127,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         return (
-            <div className="players">
+            <div ref={el => this.ref_players = el} className="players">
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
-                  if (engine.players[color].id) {
-                      player_cache.fetch(engine.players[color].id, ["country", "ui_class"]).then((player) => {
-                          Object.assign(engine.players[color], player);
-                      }).catch(ignore);
-                  } else {
-                      Object.assign(engine.players[color], {"country": "un"});
-                  }
-                  if (engine.players[color] && this.state.player_icons[engine.players[color].id]) {
-                      player_bg.backgroundImage = `url("${this.state.player_icons[engine.players[color].id]}")`;
+                  if (this.state[`historical_${color}`]) {
+                      let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                      player_bg.backgroundImage = `url("${icon}")`;
                   }
 
                   return (
                   <div key={idx} className={`${color} player-container`}>
+                      {this.state[`${color}_auto_resign_expiration`] &&
+                          <div className={`auto-resign-overlay`}>
+                              <i className='fa fa-bolt' />
+                              <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
+                          </div>
+                      }
+
                       <div className="player-icon-clock-row">
-                          {(goban.engine.players[color] || null) &&
+                          {((engine.players[color] && engine.players[color].id) || null) &&
                               <div className="player-icon-container" style={player_bg}>
                                  <div className="player-flag"><Flag country={engine.players[color].country}/></div>
                                  <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
@@ -2201,7 +2159,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                       {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                           <div className={`${color} player-name-container`}>
-                             <Player user={goban.engine.players[color].id ? goban.engine.players[color].id : goban.engine.players[color]}/>
+                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
                           </div>
                       }
 
@@ -2241,7 +2199,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "dock") {
             return (
-                <div className="action-bar">
+                <div ref={el => this.ref_action_bar = el} className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={"tab-icon ogs-goban"} />
                     </span>
@@ -2251,7 +2209,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "chat") {
             return (
-                <div className="action-bar">
+                <div ref={el => this.ref_action_bar = el} className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={/*'tab-icon fa fa-list-ul'*/"tab-icon ogs-goban"} />
                     </span>
@@ -2260,7 +2218,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         return (
-            <div className="action-bar">
+            <div ref={el => this.ref_action_bar = el} className="action-bar">
                 <span className="icons" />{/* for flex centering */}
                 <span className="controls">
                     <span onClick={this.nav_first} className="move-control"><i className="fa fa-fast-backward"></i></span>
@@ -2284,15 +2242,22 @@ export class Game extends React.PureComponent<GameProperties, any> {
     frag_dock() {{{
         let goban = this.goban;
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
+        let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
+        let annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
+
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
         if (review) {
             mod = null;
+            annul = null;
         }
 
         let game_id = null;
+        let sgf_download_enabled = false;
         try {
+            sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.isAnalysisDisabled(true);
             game_id = this.goban.engine.config.game_id;
+
         } catch (e) {}
 
         let sgf_url = null;
@@ -2301,6 +2266,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
+
 
         return (
             <Dock>
@@ -2324,17 +2290,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         value={this.state.volume} min={0} max={1.0} step={0.01}
                     /> <i className="fa fa-save" onClick={this.saveVolume} style={{cursor: "pointer"}}/>
                 </a>
+
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>
                 <a onClick={this.toggleCoordinates}><i className="ogs-coordinates"></i> {_("Toggle coordinates")}</a>
                 <a onClick={this.showGameInfo}><i className="fa fa-info"></i> {_("Game information")}</a>
                 {game &&
-                    <a onClick={this.gameAnalyze} className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""} >
+                    <a onClick={this.gameAnalyze} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""} >
                         <i className="fa fa-sitemap"></i> {_("Analyze game")}
                     </a>
                 }
                 {(goban && this.state.user_is_player && goban.engine.phase !== "finished" || null) &&
                     <a style={{visibility: goban.mode === "play" && goban && goban.engine.playerToMove() !== data.get("user").id ? "visible" : "hidden"}}
-                       className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""}
+                       className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
                        onClick={this.enterConditionalMovePlanner}>
                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
@@ -2343,7 +2310,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <a onClick={this.pauseGame}><i className="fa fa-pause"></i> {_("Pause game")}</a>
                 }
                 {game &&
-                    <a onClick={this.startReview} className={goban && goban.engine.phase !== "finished" && goban.engine.disable_analysis ? "disabled" : ""}>
+                    <a onClick={this.startReview} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
@@ -2352,11 +2319,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
-                <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
-                {mod && <hr/>}
+                {sgf_download_enabled
+                    ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                    : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
+                {(mod || annul) && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
+                {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
+                {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
             </Dock>
         );
     }}}
@@ -2432,18 +2404,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     </div>
                 </div>
             );
-            //            <button className='xs' onClick={()=>{
-            //                this.goban.giveVoice(player_id);
-            //                close_all_popovers();
-            //            }}>{_("Give Voice") /* translators: Allow user to voice chat in a review or demo */}</button>
-            //            <button className='xs' onClick={()=>{
-            //                this.goban.removeVoice(player_id);
-            //                close_all_popovers();
-            //            }}>{_("Remove Voice") /* translators: Remove ability for a user to voice chat in a demo or review */}</button>
         }
         return null;
     }}}
 }
+
 
 export function goban_view_mode(bar_width?: number): ViewMode {{{
     if (!bar_width) {
@@ -2475,13 +2440,73 @@ export function goban_view_squashed(): boolean {{{
     return win.height() <= 500;
 }}}
 
+
+
+export class CountDown extends React.PureComponent<{to:Date}, any> { /* {{{ */
+    timeout: any;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            display: this.format(props.to.getTime() - Date.now())
+        };
+    }
+
+    update() {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
+
+        let left = this.props.to.getTime() - Date.now();
+
+        if (left > 0) {
+            //this.timeout = setTimeout(() => this.update(), left % 100 || 100);
+            this.timeout = setTimeout(() => this.update(), 100);
+        }
+
+        this.setState({display: this.format(left)});
+    }
+
+    format(ms) {
+        if (ms < 0) {
+            return '0:00.0';
+        }
+
+        let minutes = Math.floor(ms / 60000);
+        ms -= minutes * 60000;
+        let seconds = Math.floor(ms / 1000);
+        ms -= seconds * 1000;
+        let tenths = Math.floor(ms / 100);
+
+        if (seconds < 10) {
+            return `${minutes}:0${seconds}.${tenths}`;
+        }
+        return `${minutes}:${seconds}.${tenths}`;
+    }
+
+    componentDidMount() {
+        this.update();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.update();
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
+    }
+
+    render() {
+        return <div>{this.state.display}</div>;
+    }
+} /* }}} */
+
+
+
 /* Chat {{{ */
-
-
 export class GameChat extends React.PureComponent<GameChatProperties, any> {
-    refs: {
-        chat_log;
-    };
+    ref_chat_log;
+    qc_editableMsgs = null;
 
     scrolled_to_bottom: boolean = true;
 
@@ -2490,9 +2515,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.state = {
             chat_log: "main",
             show_player_list: false,
+            qc_visible: false,
+            qc_editing: false,
         };
         this.chat_log_filter = this.chat_log_filter.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
+        this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
     } /* }}} */
 
@@ -2501,11 +2529,21 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }}}
     onKeyPress(event) {{{
         if (event.charCode === 13) {
-            let input = event.target as HTMLInputElement;
-            this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
-            input.value = "";
-            return false;
+            if (event.target.className === "qc-option") {
+                this.saveEdit();
+                event.preventDefault();
+            }
+            else {
+                let input = event.target as HTMLInputElement;
+                this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
+                input.value = "";
+                return false;
+            }
         }
+    }}}
+
+    onFocus(event) {{{
+        this.hideQCOptions();
     }}}
 
     componentDidMount() {{{
@@ -2513,22 +2551,25 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }}}
     componentDidUpdate() {{{
         this.autoscroll();
+        if (this.qc_editableMsgs !== null && this.qc_editableMsgs[0] !== null) {
+            this.qc_editableMsgs[0].focus();
+        }
     }}}
 
     updateScrollPosition() {{{
-        let tf = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
+        let tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
-            this.refs.chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
+            this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-        this.scrolled_to_bottom = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
+        this.scrolled_to_bottom = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
     }}}
     autoscroll() {{{
         if (this.scrolled_to_bottom) {
-            this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+            this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
             setTimeout(() => {
-                if (this.refs && this.refs.chat_log) {
-                    this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
+                if (this.ref_chat_log) {
+                    this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
                 }
             }, 100);
         }
@@ -2536,7 +2577,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     toggleChatLog = () => {{{
         let new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
         this.setState({
-            chat_log: new_chat_log
+            chat_log: new_chat_log,
+            qc_visible: false,
+            qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
     }}}
@@ -2548,6 +2591,46 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     togglePlayerListSortOrder = () => {{{
     }}}
 
+    sendQuickChat = (msg: string) => {{{
+        this.props.gameview.goban.sendChat(msg, this.state.chat_log);
+        this.hideQCOptions();
+    }}}
+
+    showQCOptions = () => {{{
+        this.setState({
+            qc_visible: true
+        });
+    }}}
+
+    hideQCOptions = () => {{{
+        this.setState({
+            qc_visible: false,
+            qc_editing: false
+        });
+    }}}
+
+    startEdit = () => {{{
+        this.setState({
+            qc_editing: true
+        });
+    }}}
+
+    saveEdit = () => {{{
+        let user = data.get("user");
+        this.qc_editableMsgs.map((li, index) => {
+            user.qc_phrases[index] = li.innerText.trim();
+        });
+        localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
+        this.finishEdit();
+    }}}
+
+    finishEdit = () => {{{
+        this.qc_editableMsgs = null;
+        this.setState({
+            qc_editing: false
+        });
+    }}}
+
     render() {{{
         let last_line = null;
         let user = data.get("user");
@@ -2557,7 +2640,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             <div className="chat-container">
                 <div className={"log-player-container" + (this.state.show_player_list ? " show-player-list" : "")}>
                     <div className="chat-log-container">
-                        <div ref="chat_log" className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
+                        <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
                             {this.props.chatlog.filter(this.chat_log_filter).map((line, idx) => {
                                 //console.log(">>>" ,line.chat_id)
                                 let ll = last_line;
@@ -2571,6 +2654,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         <ChatUserList channel={channel} />
                     }
                 </div>
+                {this.renderQC(user)}
                 <div className="chat-input-container input-group">
                     {((this.props.userIsPlayer && data.get('user').email_validated) || null) &&
                         <button
@@ -2591,7 +2675,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                                   )
                         }
                         onKeyPress={this.onKeyPress}
+                        onFocus={this.onFocus}
                     />
+                    {this.props.userIsPlayer && user.email_validated && this.props.gameview.game_id && this.state.chat_log === "main"
+                        ? <i className={"qc-toggle fa " + (this.state.qc_visible ? "fa-caret-down" : "fa-caret-up")} onClick={this.state.qc_visible ? this.hideQCOptions : this.showQCOptions}/>
+                        : null
+                    }
                     <ChatUserCount
                         chat={this}
                         active={this.state.show_player_list}
@@ -2601,11 +2690,76 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             </div>
         );
     }}}
+
+    renderQC = (user) => {{{
+        let quick_chat: JSX.Element = null;
+
+        if (this.state.qc_visible) {
+            if (user.qc_phrases === undefined) {
+                let qc_local = localStorage.getItem("ogs.qc.messages");
+                if (qc_local === null) {
+                    user.qc_phrases = [
+                        _("Hi") + ".",
+                        _("Have fun") + ".",
+                        _("Sorry - misclick") + ".",
+                        _("Good game") + ".",
+                        _("Thanks for the game") + "."
+                    ];
+                    localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
+                }
+                else {
+                    user.qc_phrases = JSON.parse(qc_local);
+                }
+            }
+
+            let lis = user.qc_phrases.map((msg, index) =>
+                    <li
+                        className="qc-option"
+                        key={index}
+                        contentEditable={this.state.qc_editing}
+                        onKeyPress={this.onKeyPress}
+                        ref={this.state.qc_editing
+                            ? (input) => {
+                                this.qc_editableMsgs = (index === 0 ? [] : this.qc_editableMsgs);
+                                this.qc_editableMsgs.push(input);
+                                }
+                            : null
+                        }
+                    >
+                        {
+                        this.state.qc_editing
+                        ? msg
+                        : (<a onClick={() => {this.sendQuickChat(msg); }} >{msg}</a>)
+                        }
+                    </li>
+            );
+
+            quick_chat =
+            <div className="qc-option-list-container">
+                {this.state.qc_editing
+                    ? (<span className="qc-edit">
+                        <button onClick={() => {this.saveEdit(); }} className='xs edit-button'><i className={"fa fa-save"}/> {_("Save")}</button>
+                        <button onClick={this.finishEdit} className='xs edit-button'><i className={"fa fa-times-circle"}/> {_("Cancel")}</button>
+                        </span>)
+                    : (<span className="qc-edit">
+                        <button onClick={this.startEdit} className='xs edit-button'><i className={"fa fa-pencil"}/> {_("Edit")}</button>
+                        </span>)
+                }
+                <ul>{lis}</ul>
+            </div>;
+        }
+        return quick_chat;
+    }}}
 }
 
 
 function parsePosition(position: string) {{{
-    if (!active_game_view) { return; }
+    if (!active_game_view || !position) {
+        return {
+            i: -1,
+            j: -1
+        };
+    }
     let goban = active_game_view.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
@@ -2618,7 +2772,7 @@ function parsePosition(position: string) {{{
         i = -1;
         j = -1;
     }
-    return {"i": i, "j": j};
+    return {i: i, j: j};
 }}}
 function highlight_position(event) {{{
     if (!active_game_view) { return; }
@@ -2705,13 +2859,12 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
         } else {
             try {
                 switch (body.type) {
-                    case "analysis":
-                        {
+                    case "analysis": {
                             let gameview = this.props.gameview;
                             let goban = gameview.goban;
                             let orig_move = null;
                             let stashed_pen_marks = goban.pen_marks;
-                            let orig_marks = null;
+                            let stashed_marks = null;
 
                             let v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                             if (v) {
@@ -2722,8 +2875,8 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 if (this.props.gameview.in_pushed_analysis) {
                                     this.props.gameview.in_pushed_analysis = false;
                                     this.props.gameview.leave_pushed_analysis = null;
+                                    goban.engine.cur_move.setAllMarks(stashed_marks);
                                     goban.engine.jumpTo(orig_move);
-                                    orig_move.marks = orig_marks;
                                     goban.pen_marks = stashed_pen_marks;
                                     if (goban.pen_marks.length === 0) {
                                         goban.detachPenCanvas();
@@ -2739,9 +2892,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                 let moves = body.moves;
 
                                 orig_move = goban.engine.cur_move;
-                                orig_marks = orig_move.marks;
-                                orig_move.clearMarks();
                                 goban.engine.followPath(parseInt(turn), moves);
+
+                                if (goban.engine.cur_move.hasMarks()) {
+                                    stashed_marks = goban.engine.cur_move.getAllMarks();
+                                    goban.engine.cur_move.clearMarks();
+                                } else {
+                                    stashed_marks = null;
+                                }
 
                                 if (body.marks) {
                                     goban.setMarks(body.marks);
@@ -2797,14 +2955,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
        let goban = this.props.gameview.goban;
 
        if ("move_number" in line) {
-           if (!goban.engine.config.disable_analysis) {
+           if (!goban.isAnalysisDisabled()) {
                goban.setMode("analyze");
            }
 
             goban.engine.followPath(line.move_number, "");
             goban.redraw();
 
-            if (goban.engine.config.disable_analysis) {
+            if (goban.isAnalysisDisabled()) {
                 goban.updatePlayerToMoveTitle();
             }
 
@@ -2818,7 +2976,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 ct += mvs[i].edited ? 0 : 1;
             }
 
-            if (goban.engine.config.disable_analysis) {
+            if (goban.isAnalysisDisabled()) {
                 goban.setMode("analyze");
             }
 
@@ -2863,14 +3021,13 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }</LineText>;
         }
 
-
         return (
             <div className={`chat-line-container`}>
                 {move_number}
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
-                    {(line.player_id || null) && <Player user={line} />}
+                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>
                 </div>
             </div>

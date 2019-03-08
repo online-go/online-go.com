@@ -20,7 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {chat_manager, ChatChannelProxy} from "chat_manager";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {Player} from "Player";
 import {GameChat} from "Game";
 
@@ -69,7 +69,7 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
 export class ChatUserList extends ChatUsers<ChatUserListProperties> {
     constructor(props) {
         super(props);
-        this.state.user_sort_order = preferences.get("chat.user-sort-order");
+        (this.state as any).user_sort_order = preferences.get("chat.user-sort-order");
     }
 
     toggleSortOrder = () => {{{

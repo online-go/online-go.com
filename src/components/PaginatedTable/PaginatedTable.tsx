@@ -18,7 +18,8 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import data from "data";
+import {deepCompare} from "misc";
+import * as data from "data";
 
 interface PaginatedTableColumnProperties {
     cellProps?: any;
@@ -27,7 +28,8 @@ interface PaginatedTableColumnProperties {
     headerProps?: any;
     sortable?: boolean;
     striped?: boolean;
-    className: ((row) => string) | string;
+    className?: ((row) => string) | string;
+    orderBy?: Array<string>;
 }
 
 type SourceFunction = (filter: any, sorting: Array<string>) => Promise<any>;
@@ -55,7 +57,7 @@ interface PaginatedTableProperties {
     // callback?: ()=>any,
 }
 
-export class PaginatedTable extends React.PureComponent<PaginatedTableProperties, any> {
+export class PaginatedTable extends React.Component<PaginatedTableProperties, any> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
@@ -70,6 +72,7 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             page: this.props.startingPage || 1,
             num_pages: 0,
             page_size: 1,
+            orderBy: this.props.orderBy,
         };
     }
 
@@ -86,6 +89,10 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             this.source_function = this.props.source as SourceFunction;
         }
         setTimeout(() => this.update(), 1);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !deepCompare(this.props, nextProps) || !deepCompare(this.state, nextState);
     }
 
     setPageSize(n: number|string) {
@@ -119,15 +126,15 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
             query[k] = filter[k];
         }
         //console.log(query);
-        let order_by = this.props.orderBy ? this.props.orderBy.concat(sorting || []) : sorting || [];
+        let order_by = (this.state.orderBy ? this.state.orderBy : (sorting || []));
 
         if (order_by.length) {
             query["ordering"] = order_by.join(",");
         }
         if (this.source_method === "get") {
-            return get(this.source_url, query);
+            return get(this.source_url, query); // TODO: Check the URLs and typify the result
         }
-        return post(this.source_url, query);
+        return post(this.source_url, query); // TODO: Check the URLs and typify the result again
     }
 
 
@@ -204,6 +211,61 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
         $(ev.target).select();
     }
 
+    _sort = (order_by) => {
+        if (this.ordersMatch(order_by, this.state.orderBy)) {
+            order_by = this.reverseOrder(this.state.orderBy);
+        }
+        this.setState({
+            orderBy: order_by
+        });
+        setTimeout(() => this.update(), 1);
+    }
+
+    ordersMatch(order1, order2) {
+        let match = true;
+        if (order1.length === order2.length) {
+            for (let i in order1) {
+                if (order1[i].replace("-", "") !== order2[i].replace("-", "")) {
+                    match = false;
+                    break;
+                }
+            }
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
+    reverseOrder(order) {
+        let new_order_by = [];
+        for (let str of order) {
+            new_order_by.push(str.indexOf("-") === 0 ? str.substr(1) : "-" + str);
+        }
+        return new_order_by;
+    }
+
+    getHeader(order, header) {
+        let el;
+        if (order && order.length > 0) {
+            let clsName = "";
+            if (this.ordersMatch(this.state.orderBy, order)) {
+                let minus = false;
+                for (let o of this.state.orderBy) {
+                    if (o.indexOf("-") === 0) {
+                        minus = true;
+                        break;
+                    }
+                }
+                clsName = "fa fa-sort-" + (minus ? "down" : "up");
+            } else {
+                clsName = "fa fa-sort";
+            }
+            el = (<a className="sort-link">{header} <i className={clsName}/></a>);
+        } else {
+            el = header;
+        }
+        return el;
+    }
 
     render() {
         function cls(row, column): string {
@@ -251,7 +313,7 @@ export class PaginatedTable extends React.PureComponent<PaginatedTableProperties
                 <table className={extra_classes}>
                     <thead>
                         <tr>
-                            {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps}>{column.header}</th>)}
+                            {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps} onClick={column.orderBy ? () => {this._sort(column.orderBy); } : null}>{this.getHeader(column.orderBy, column.header)}</th>)}
                         </tr>
                     </thead>
                     <tbody>

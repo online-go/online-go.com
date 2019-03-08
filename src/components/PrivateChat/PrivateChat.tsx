@@ -18,13 +18,14 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {_} from 'translate';
-import data from "data";
+import * as data from "data";
 import ITC from "ITC";
-import {splitOnBytes} from "misc";
+import {splitOnBytes, unicodeFilter} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
-import player_cache from "player_cache";
+import {PlayerCacheEntry} from 'player_cache';
+import * as player_cache from "player_cache";
 import online_status from "online_status";
 
 let last_id: number = 0;
@@ -50,7 +51,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player = {"username": "...", "ui_class": ""};
+    player:PlayerCacheEntry;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -65,7 +66,7 @@ class PrivateChat {
 
         this.player_dom = $("<span class='user Player nolink'>...</span>");
         if (username) {
-            this.player_dom.text(username);
+            this.player_dom.text(unicodeFilter(username));
             this.player.username = username;
         }
 
@@ -77,11 +78,15 @@ class PrivateChat {
             }
         });
 
-
+        this.player = {
+            "id": user_id,
+            "username": "...",
+            "ui_class": ""
+        };
         player_cache.fetch(this.user_id, ["username", "ui_class"])
         .then((player) => {
             this.player = player;
-            this.player_dom.text(player.username);
+            this.player_dom.text(unicodeFilter(player.username));
             this.player_dom.addClass(player.ui_class);
             this.updateInputPlaceholder();
         })
@@ -138,7 +143,7 @@ class PrivateChat {
             challenge(this.user_id);
         }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
+            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)), "_blank");
         }));
         title.append($("<i>").addClass("fa fa-minus").click(() => { this.minimize(true); }));
         title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
@@ -330,6 +335,8 @@ class PrivateChat {
         }
     } /* }}} */
     addChat(from, txt, user_id, timestamp) { /* {{{ */
+        from = unicodeFilter(from);
+
         let line = $("<div>").addClass("chat-line");
         line.addClass("chat-user-" + user_id);
 

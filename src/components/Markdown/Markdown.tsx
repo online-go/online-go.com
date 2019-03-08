@@ -33,10 +33,36 @@ function sanitize(src) {
     return sanitizeHtml(src, {
         allowedTags: false, /* this means "all" */
         allowedAttributes: {
-            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height']
+            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'autoplay', 'width', 'height', 'class']
+        },
+        allowedStyles: {
+            '*': {
+                'background-color': [/.*/],
+                'border': [/.*/],
+                'border-radius': [/.*/],
+                'border-color': [/.*/],
+                'box-shadow': [/.*/],
+                'color': [/.*/],
+                'font': [/.*/],
+                'font-family': [/.*/],
+                'font-size': [/.*/],
+                'margin': [/.*/],
+                'margin-bottom': [/.*/],
+                'margin-left': [/.*/],
+                'margin-right': [/.*/],
+                'margin-top': [/.*/],
+                'padding': [/.*/],
+                'padding-bottom': [/.*/],
+                'padding-left': [/.*/],
+                'padding-right': [/.*/],
+                'padding-top': [/.*/],
+                'text-align': [/.*/],
+            }
         },
         transformTags: {
-            'script': 'error'
+            'script': 'error',
+            'iframe': 'error',
+            'style': 'error'
         }
     });
 }

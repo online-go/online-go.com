@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 import {time_options, computeAverageMoveTime, makeTimeControlParameters} from "./util";
@@ -39,7 +39,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
 
         this.state = Object.assign(recallTimeControlSettings(speed, system), this.props.value || {});
         if (this.state.time_control) {
-            this.state.system = this.state.time_control;
+            (this.state as any).system = this.state.time_control;
         }
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state));
         this.time_control = makeTimeControlParameters(this.state);
@@ -213,7 +213,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-initial-time-label" className=" control-label" htmlFor="challenge-initial-time">{_("Initial Time")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-initial-time" className="form-control time-spinner"
+                            <select id="challenge-initial-time" className="form-control time-spinner"
                                 value={this.state.initial_time} onChange={this.update_initial_time}>
 
                                 {time_options[speed]["fischer"]["initial_time"].map((it, idx) => (
@@ -229,7 +229,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-inc-time-label" className=" control-label" htmlFor="challenge-inc-time">{_("Time Increment")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-inc-time" className="form-control"
+                            <select id="challenge-inc-time" className="form-control"
                                 value={this.state.time_increment} onChange={this.update_time_increment}>
                                 {time_options[speed]["fischer"]["time_increment"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -244,7 +244,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label className=" control-label" htmlFor="challenge-max-time">{_("Max Time")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-max-time" className="form-control"
+                            <select id="challenge-max-time" className="form-control"
                                 value={this.state.max_time} onChange={this.update_max_time}>
                                 {time_options[speed]["fischer"]["max_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -260,7 +260,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-per-move-time-label" className=" control-label" htmlFor="challenge-per-move-time">{_("Time per Move")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-per-move-time" className="form-control"
+                            <select id="challenge-per-move-time" className="form-control"
                                 value={this.state.per_move} onChange={this.update_per_move}>
                                 {time_options[speed]["simple"]["per_move"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -276,7 +276,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">{_("Main Time")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-main-time" className="form-control"
+                            <select id="challenge-main-time" className="form-control"
                                 value={this.state.main_time} onChange={this.update_main_time}>
                                 {time_options[speed]["canadian"]["main_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -291,7 +291,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">{_("Main Time")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-main-time" className="form-control"
+                            <select id="challenge-main-time" className="form-control"
                                 value={this.state.main_time} onChange={this.update_main_time}>
                                 {time_options[speed]["byoyomi"]["main_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -306,7 +306,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-per-period-time-label" className=" control-label" htmlFor="challenge-per-period-time">{_("Time per Period")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-per-period-time" className="form-control"
+                            <select id="challenge-per-period-time" className="form-control"
                                 value={this.state.period_time} onChange={this.update_period_time}>
                                 {time_options[speed]["byoyomi"]["period_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -333,7 +333,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-per-canadian-period-time-label" className=" control-label" htmlFor="challenge-per-canadian-period-time">{_("Time per Period")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-per-canadian-period-time" className="form-control"
+                            <select id="challenge-per-canadian-period-time" className="form-control"
                                 value={this.state.period_time} onChange={this.update_period_time}>
                                 {time_options[speed]["canadian"]["period_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>
@@ -360,7 +360,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     <label id="challenge-total-time-label" className=" control-label" htmlFor="challenge-total-time">{_("Total Time")}</label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select type="text" id="challenge-total-time" className="form-control"
+                            <select id="challenge-total-time" className="form-control"
                                 value={this.state.total_time} onChange={this.update_total_time}>
                                 {time_options[speed]["absolute"]["total_time"].map((it, idx) => (
                                     <option key={idx} value={it.time}>{it.label}</option>

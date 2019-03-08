@@ -16,37 +16,41 @@
  */
 
 import * as React from "react";
-import {AdUnit} from "AdUnit";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
 import {post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
-import {shortShortTimeControl} from "TimeControl";
+import {shortShortTimeControl, usedForCheating} from "TimeControl";
 import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
-import data from "data";
-import {FirstTimeSetup} from "FirstTimeSetup";
+import * as data from "data";
+import * as preferences from "preferences";
 import {automatch_manager, AutomatchPreferences} from 'automatch_manager';
 import {bot_count} from "bots";
+import {SupporterGoals} from "SupporterGoals";
+import {boundedRankString} from "rank_utils";
+import * as player_cache from "player_cache";
 
+const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
 interface PlayProperties {
 }
 
 export class Play extends React.Component<PlayProperties, any> {
-    refs: {
-        container
-    };
+    ref_container: HTMLDivElement;
     canvas: any;
 
     seekgraph: SeekGraph;
     resize_check_interval;
+
+    list_freeze_timeout;
 
     constructor(props) {
         super(props);
@@ -54,9 +58,13 @@ export class Play extends React.Component<PlayProperties, any> {
             live_list: [],
             correspondence_list: [],
             disableCorrespondenceButton: false,
+            show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
+            freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
+            pending_challenges: [], // challenges received while frozen
         };
         this.canvas = $("<canvas>")[0];
+        this.list_freeze_timeout = null;
     }
 
     componentDidMount() {{{
@@ -70,16 +78,33 @@ export class Play extends React.Component<PlayProperties, any> {
         automatch_manager.on('cancel', this.onAutomatchCancel);
         $(window).on("resize", this.resize);
     }}}
+
     componentWillUnmount() {{{
         $(window).off("resize", this.resize);
         automatch_manager.off('entry', this.onAutomatchEntry);
         automatch_manager.off('start', this.onAutomatchStart);
         automatch_manager.off('cancel', this.onAutomatchCancel);
         this.seekgraph.destroy();
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+            this.list_freeze_timeout = null;
+        }
     }}}
+
+    componentDidUpdate(prevProps, prevState) {{{
+        if (prevState.freeze_challenge_list && !this.state.freeze_challenge_list &&
+            this.state.pending_challenges.length !== 0) {
+            this.updateChallenges(this.state.pending_challenges);
+        }
+    }}}
+
     resize = () => {{{
-        let w = this.refs.container.offsetWidth;
-        let h = this.refs.container.offsetHeight;
+        if (!this.ref_container) {
+            return;
+        }
+
+        let w = this.ref_container.offsetWidth;
+        let h = this.ref_container.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -87,11 +112,36 @@ export class Play extends React.Component<PlayProperties, any> {
             setTimeout(this.resize, 500);
         }
     }}}
+
     updateChallenges = (challenges) => {{{
+        if (this.state.freeze_challenge_list) {
+            let live = this.state.live_list;
+            let corr = this.state.correspondence_list;
+            for (let list of [live, corr]) {
+                for (let i in list) {
+                    let id = list[i].challenge_id;
+                    if (!challenges[id]) {
+                        // console.log("Challenge went away:", id);
+                        list[i].removed = true;
+                        list[i].ineligible_reason = _("challenge no longer available"); /* translator: the person can't accept this challenge because it has been removed or accepted already */
+                    }
+                }
+            }
+            //console.log("pending list store...");
+            this.setState({
+                pending_challenges: challenges,
+                live_list: live,
+                correspondence_list: corr
+            });
+            return;
+        }
+
+        //console.log("Updating challenges with:", challenges);
         let live = [];
         let corr = [];
         for (let i in challenges) {
             let C = challenges[i];
+            player_cache.fetch(C.user_id).then(() => 0); /* just get the user data ready ready if we don't already have it */
             C.ranked_text = C.ranked ? _("Yes") : _("No");
             if (C.handicap === -1) {
                 C.handicap_text = _("Auto");
@@ -112,20 +162,36 @@ export class Play extends React.Component<PlayProperties, any> {
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
 
+        //console.log("list update...");
         this.setState({
             live_list: live,
-            correspondence_list: corr
+            correspondence_list: corr,
+            pending_challenges: []
         });
     }}}
+
     acceptOpenChallenge(challenge) {{{
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
+            this.unfreezeChallenges();
         }).catch(errorAlerter);
     }}}
+
     cancelOpenChallenge(challenge) {{{
-        del(`challenges/${challenge.challenge_id}`).then(() => 0).catch(errorAlerter);
+        del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
+        this.unfreezeChallenges();
     }}}
+
+    cancelActiveLiveChallenges = () => {{{
+        // In theory there should only be one, but cancel them all anyhow...
+        this.state.live_list.forEach((c) => {
+           if (c.user_challenge) {
+               this.cancelOpenChallenge(c);
+           }
+        });
+    }}}
+
     extractUser(challenge) {{{
         return {
             id: challenge.user_id,
@@ -138,15 +204,18 @@ export class Play extends React.Component<PlayProperties, any> {
     onAutomatchEntry = (entry) => {{{
         this.forceUpdate();
     }}}
+
     onAutomatchStart = (entry) => {{{
         this.forceUpdate();
     }}}
+
     onAutomatchCancel = (entry) => {{{
         this.forceUpdate();
     }}}
-    findMatch = (speed:'blitz'|'live'|'correspondence') => {{{
+
+    findMatch = (speed: 'blitz' | 'live' | 'correspondence') => {{{
         let settings = getAutomatchSettings(speed);
-        let preferences:AutomatchPreferences = {
+        let preferences: AutomatchPreferences = {
             uuid: uuid(),
             size_speed_options: this.state.automatch_size_options.map((size) => {
                 return {
@@ -178,12 +247,14 @@ export class Play extends React.Component<PlayProperties, any> {
             setTimeout(() => this.setState({disableCorrespondenceButton: false}), 1000);
         }
     }}}
+
     cancelActiveAutomatch = () => {{{
         if (automatch_manager.active_live_automatcher) {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
     }}}
+
     newComputerGame = () => {{{
         if (bot_count() === 0) {
             swal(_("Sorry, all bots seem to be offline, please try again later."));
@@ -191,6 +262,7 @@ export class Play extends React.Component<PlayProperties, any> {
         }
         challengeComputer();
     }}}
+
     newCustomGame = () => {{{
         challenge(null);
     }}}
@@ -210,21 +282,52 @@ export class Play extends React.Component<PlayProperties, any> {
         this.setState({automatch_size_options: size_options});
     }}}
 
+    toggleShowAllChallenges = () => {{{
+        preferences.set("show-all-challenges", !this.state.show_all_challenges);
+        this.setState({show_all_challenges: !this.state.show_all_challenges});
+    }}}
+
+    anyChallengesToShow = (live) => {{{
+        let challengeList = live ? this.state.live_list : this.state.correspondence_list;
+
+        return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
+            return prev || current.eligible || current.user_challenge;
+        }, false );
+    }}}
+
+    liveOwnChallengePending = () => {{{
+        let locp = this.state.live_list.some((c) => (c.user_challenge));
+        return locp;
+    }}}
+
+    freezeChallenges = () => {{{
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+        }
+        if (!this.state.freeze_challenge_list) {
+            //console.log("Freeze challenges...");
+            this.setState({freeze_challenge_list: true});
+        }
+        this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
+    }}}
+
+    unfreezeChallenges = () => {{{
+        //console.log("Unfreeze challenges...");
+        this.setState({freeze_challenge_list: false});
+        if (this.list_freeze_timeout) {
+            clearTimeout(this.list_freeze_timeout);
+            this.list_freeze_timeout = null;
+        }
+    }}}
 
     render() {
-        if (!data.get("user").setup_rank_set) {
-            return <FirstTimeSetup/>;
-        }
-
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
         let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
 
-
         return (
             <div className="Play container">
-                <AdUnit unit="cdm-zone-01" nag/>
-
+                <SupporterGoals/>
                 <div className='row'>
                     <div className='col-sm-6'>
                         <Card>
@@ -233,25 +336,24 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='col-sm-6'>
                         <Card>
-                            <div ref="container" className="seek-graph-container">
-                                <PersistentElement elt={this.canvas} />
+                            <div ref={el => this.ref_container = el} className="seek-graph-container">
+                                <PersistentElement elt={this.canvas}/>
                             </div>
                         </Card>
                     </div>
                 </div>
 
-
                 <div id="challenge-list-container">
-                  <div id="challenge-list-inner-container">
-                    <div id="challenge-list">
+                    <div id="challenge-list-inner-container">
+                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
 
-                        {(corr_automatchers.length || null) &&
+                            {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
                                 <span className="cell break">{_("Automatch")}</span>
                                 {this.cellBreaks(7)}
                             </div>
-                        }
-                        {(corr_automatchers.length || null) &&
+                            }
+                            {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
                                 <span className="head"></span>
                                 <span className="head">{_("Rank")}</span>
@@ -260,67 +362,81 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <span className="head">{_("Handicap")}</span>
                                 <span className="head">{_("Rules")}</span>
                             </div>
-                        }
-                        {corr_automatchers.map((m) => (
-                            <div className='challenge-row automatch-challenge-row' key={m.uuid}>
+                            }
+                            {corr_automatchers.map((m) => (
+                                <div className='challenge-row automatch-challenge-row' key={m.uuid}>
                                 <span className='cell'>
-                                    <button className='reject xs' onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
+                                    <button className='reject xs'
+                                            onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
                                 </span>
 
-                                <span className='cell'>
-                                    {m.lower_rank_diff === m.upper_rank_diff ? <span>&plusmn; {m.lower_rank_diff}</span> : <span>-{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}</span>}
+                                    <span className='cell'>
+                                    {m.lower_rank_diff === m.upper_rank_diff ?
+                                        <span>&plusmn; {m.lower_rank_diff}</span> :
+                                        <span>-{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}</span>}
                                 </span>
 
-                                <span className='cell'>
+                                    <span className='cell'>
                                     {m.size_speed_options.filter((x) => x.speed === 'correspondence').map((x) => x.size).join(',')}
                                 </span>
 
-                                <span className={m.time_control.condition + ' cell'}>
+                                    <span className={m.time_control.condition + ' cell'}>
                                     {m.time_control.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : timeControlSystemText(m.time_control.value.system)
                                     }
                                 </span>
 
-                                <span className={m.handicap.condition + ' cell'}>
+                                    <span className={m.handicap.condition + ' cell'}>
                                     {m.handicap.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : (m.handicap.value === 'enabled' ? pgettext("Handicap dnabled", "Enabled") : pgettext("Handicap disabled", "Disabled"))
                                     }
                                 </span>
 
-                                <span className={m.rules.condition + ' cell'}>
+                                    <span className={m.rules.condition + ' cell'}>
                                     {m.rules.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : rulesText(m.rules.value)
                                     }
                                 </span>
+                                </div>
+                            ))}
+
+                            <div style={{marginTop: "2em"}}></div>
+
+                            <div className='custom-games-list-header-row'>
+                                {_("Custom Games")}
                             </div>
-                        ))}
 
-                        <div style={{marginTop: "2em"}}></div>
 
-                        <div className="challenge-row">
-                            <span className="cell break">{_("Short Games")}</span>
-                            {this.cellBreaks(7)}
+                            <div className="challenge-row">
+                                <span className="cell break">{_("Short Games")}</span>
+                                {this.cellBreaks(8)}
+                            </div>
+
+                            {this.anyChallengesToShow(true) ? this.challengeListHeaders() : null}
+
+                            {this.challengeList(true)}
+
+                            <div style={{marginTop: "2em"}}></div>
+
+                            <div className="challenge-row" style={{marginTop: "1em"}}>
+                                <span className="cell break">{_("Long Games")}</span>
+                                {this.cellBreaks(8)}
+                            </div>
+
+                            {this.anyChallengesToShow(false) ? this.challengeListHeaders() : null}
+
+                            {this.challengeList(false)}
+
                         </div>
-
-                        {this.gameListHeaders()}
-
-                        {this.gameList(true)}
-
-                        <div style={{marginTop: "2em"}}></div>
-
-                        <div className="challenge-row" style={{marginTop: "1em"}}>
-                            <span className="cell break">{_("Long Games")}</span>
-                            {this.cellBreaks(7)}
+                        <div className="showall-selector">
+                            <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
+                                   onChange={this.toggleShowAllChallenges}/>
+                            <label htmlFor="show-all-challenges">{_("Show all challenges")}</label>
                         </div>
-
-                        {this.gameListHeaders()}
-
-                        {this.gameList(false)}
                     </div>
-                  </div>
                 </div>
 
             </div>
@@ -350,6 +466,24 @@ export class Play extends React.Component<PlayProperties, any> {
                 </div>
             );
         }
+        else if (this.liveOwnChallengePending()) {
+            return(
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Waiting for opponent...")}
+                    </div>
+                    <div className='automatch-row-container'>
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className='automatch-settings'>
+                        <button className='danger sm' onClick={this.cancelActiveLiveChallenges}>{pgettext("Cancel challenge", "Cancel")}</button>
+                    </div>
+                </div>
+            );
+        }
         else {
             return (
                 <div className='automatch-container'>
@@ -360,82 +494,123 @@ export class Play extends React.Component<PlayProperties, any> {
                             <button className={size_enabled('13x13') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("13x13")}>13x13</button>
                             <button className={size_enabled('19x19') ? 'primary sm' : 'sm'} onClick={() => this.toggleSize("19x19")}>19x19</button>
                         </div>
+                        <div className='automatch-settings'>
+                            <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}><i className='fa fa-gear'/>{_("Settings ")}</span>
+                        </div>
                     </div>
                     <div className='automatch-row-container'>
                         <div className='automatch-row'>
                             <button className='primary' onClick={() => this.findMatch("blitz")}>
-                                <i className="fa fa-bolt" /> {_("Blitz")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-bolt" /> {_("Blitz")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~10s per move")}</span>
+                                </div>
                             </button>
                             <button className='primary' onClick={() => this.findMatch("live")}>
-                                <i className="fa fa-clock-o" /> {_("Normal")}
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-clock-o" /> {_("Normal")}
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~30s per move")}</span>
+                                </div>
                             </button>
                         </div>
                         <div className='automatch-row'>
                             <button className='primary' onClick={this.newComputerGame}>
-                                <i className="fa fa-desktop" /> {_("Computer")}
+                                <div className='play-button-text-root'>
+                                    <i className="fa fa-desktop" /> {_("Computer")}
+                                    <span className='time-per-move'></span>
+                                </div>
                             </button>
-                            <button className='primary' onClick={this.newCustomGame}>
-                                <i className="fa fa-cog" /> {_("Custom")}
-                            </button>
-                        </div>
-
-                        <div className='automatch-row'>
                             <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
-                                {this.state.disableCorrespondenceButton
-                                    ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                    : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                }
-                                <br/><span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                <div className='play-button-text-root'>
+                                    {this.state.disableCorrespondenceButton
+                                        ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
+                                        : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
+                                    }
+                                    <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div className='custom-game-header'>
+                            <div>{_("Custom Game")}</div>
+                        </div>
+                        <div className='custom-game-row'>
+                            <button className='primary' onClick={this.newCustomGame}>
+                                <i className="fa fa-cog" /> {_("Create")}
                             </button>
                         </div>
                     </div>
 
-                    <div className='automatch-settings'>
-                        <span className='automatch-settings-link fake-link' onClick={openAutomatchSettings}>{_("Settings")} <i className='fa fa-gear'/></span>
-                    </div>
                 </div>
             );
         }
     }}}
-    gameList(isLive: boolean) {{{
+
+    challengeList(isLive: boolean) {{{
+        let user = data.get("user");
+
         let timeControlClassName = (config) => {
             let isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
         };
 
-        let commonSpan = (text: string, align: string) => {
+        if (!this.anyChallengesToShow(isLive)) {
+            return (
+                <div className="ineligible">
+                    {this.state.show_all_challenges ?
+                        _("(none)") /* translators: No challenges available */ :
+                        _("(none available)") /* translators: No challenges available */}
+                </div>
+            );
+        }
+
+        let commonSpan = (text: string, align: "center"|"left") => {
             return <span className="cell" style={{textAlign: align}}>
                 {text}
             </span>;
         };
 
-        let gameList = isLive ? this.state.live_list : this.state.correspondence_list;
+        let challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
 
-        return gameList.map((C) => (
-            <div key={C.challenge_id} className="challenge-row">
-                <span className="cell" style={{textAlign: "center"}}>
-                    {(C.eligible || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
-                    {(!C.eligible && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
-                    {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
-                </span>
-                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                    <Player user={this.extractUser(C)}/>
-                </span>
-                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
-                    {C.width}x{C.height}
-                </span>
-                <span className={timeControlClassName(C)}>
-                    {shortShortTimeControl(C.time_control_parameters)}
-                </span>
-                {commonSpan(C.ranked_text, "center")}
-                {commonSpan(C.handicap_text, "center")}
-                {commonSpan(C.name, "left")}
-                {commonSpan(rulesText(C.rules), "left")}
-            </div>
-        ));
+        return challengeList.map((C) => (
+            (C.eligible || C.user_challenge || this.state.show_all_challenges ?
+                    <div key={C.challenge_id} className="challenge-row">
+                        <span className="cell" style={{textAlign: "center"}}>
+                            {user.is_moderator &&
+                                <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>
+                            }
+
+                            {(C.eligible && !C.removed || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
+                            {((!C.eligible || C.removed) && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
+                            {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
+                        </span>
+                        <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                            <Player user={this.extractUser(C)} rank={true} />
+                        </span>
+                        {/*commonSpan(boundedRankString(C.rank), "center")*/}
+                        <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                            {C.width}x{C.height}
+                        </span>
+                        <span className={timeControlClassName(C)}>
+                            {shortShortTimeControl(C.time_control_parameters)}
+                            {usedForCheating(C.time_control_parameters) ?
+                                <span title={_("Unusual time setting")}>
+                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                                </span>
+                            : C.komi ?
+                            <span title={_("Custom komi setting")}>
+                                <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                            </span>
+                            : ""}
+                        </span>
+                        {commonSpan(C.ranked_text, "center")}
+                        {commonSpan(C.handicap_text, "center")}
+                        {commonSpan(C.name, "left")}
+                        {commonSpan(rulesText(C.rules), "left")}
+                    </div> :
+                    null
+            )));
     }}}
+
     cellBreaks(amount) {{{
         let result = [];
         for (let i = 0; i < amount; ++i) {
@@ -443,12 +618,13 @@ export class Play extends React.Component<PlayProperties, any> {
         }
         return result;
     }}}
-    gameListHeaders() {{{
+    challengeListHeaders() {{{
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
+            {/* <span className="head">{_("Rank")}</span> */}
             <span className="head">{_("Size")}</span>
-            <span className="head">{_("Time")}</span>
+            <span className="head time-control-header">{_("Time")}</span>
             <span className="head">{_("Ranked")}</span>
             <span className="head">{_("Handicap")}</span>
             <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>

@@ -16,15 +16,15 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, interpolate} from "translate";
-import preferences from "preferences";
+import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
-import data from "data";
+import * as data from "data";
 import {PersistentElement} from "PersistentElement";
-import {navigateTo} from "misc";
-import {rankString} from "rank_utils";
+import {rankString, getUserRating} from "rank_utils";
 
 interface MiniGobanProps {
     id: number;
@@ -116,8 +116,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
             white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
 
-            black_name: (typeof(black) === "object" ? (black.username + " [" + rankString(black) + "]") : black),
-            white_name: (typeof(white) === "object" ? (white.username + " [" + rankString(white) + "]") : white),
+            black_name: (typeof(black) === "object" ? (black.username + " [" + getUserRating(black).bounded_rank_label + "]") : black),
+            white_name: (typeof(white) === "object" ? (white.username + " [" + getUserRating(white).bounded_rank_label + "]") : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,
@@ -129,41 +129,37 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         });
     }
 
-    gotoGame = (ev) => {
+    render() {
         if (this.props.noLink) {
-            return;
+            return <div className='MiniGoban nolink'>{this.inner()}</div>;
+        } else {
+            return <Link to={`/game/${this.props.id}`} className='MiniGoban link'>{this.inner()}</Link>;
         }
-        navigateTo(`/game/${this.props.id}`, ev);
     }
 
-    render() {
+    inner() {
         return (
-            <div className={
-                    `MiniGoban `
-                    + (this.props.noLink ? " nolink" : " link")
+            <div className="inner-container">
+                <PersistentElement className={
+                    "small board"
+                    + (this.state.current_users_move ? " current-users-move" : "")
+                    + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
+                    + (this.state.finished ? " finished" : "")
                 }
-                onMouseDown={this.gotoGame}
-                >
-                <div className="inner-container">
-                    <PersistentElement className={
-                        "small board"
-                        + (this.state.current_users_move ? " current-users-move" : "")
-                        + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
-                        + (this.state.finished ? " finished" : "")
-                    }
-                    elt={this.goban_div} />
-                    <div className={`title-black ${this.state.black_to_move_cls}`}>
-                        <span className={`player-name`}>{this.state.black_name}</span>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
-                        <span className="score">{this.state.black_score}</span>
-                    </div>
-                    <div className={`title-white ${this.state.white_to_move_cls}`}>
-                        <span className={`player-name`}>{this.state.white_name}</span>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
-                        <span className="score">{this.state.white_score}</span>
-                    </div>
+                elt={this.goban_div} />
+                <div className={`title-black ${this.state.black_to_move_cls}`}>
+                    <span className={`player-name`}>{this.state.black_name}</span>
+                    <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
+                    <span className="score">{this.state.black_score}</span>
+                </div>
+                <div className={`title-white ${this.state.white_to_move_cls}`}>
+                    <span className={`player-name`}>{this.state.white_name}</span>
+                    <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
+                    <span className="score">{this.state.white_score}</span>
                 </div>
             </div>
         );
     }
+
+
 }

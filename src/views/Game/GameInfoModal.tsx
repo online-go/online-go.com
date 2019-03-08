@@ -26,61 +26,67 @@ import {Player} from "Player";
 import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
 
+interface Events {
+}
+
 interface GameInfoModalProperties {
-    game: GoEngine;
+    engine: GoEngine;
+    black: any;
+    white: any;
+    annulled: boolean;
     creatorId: number;
 }
 
 
-export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
+export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     constructor(props) {
         super(props);
     }
 
     render() {
-        const game = this.props.game;
+        const engine:GoEngine = this.props.engine;
 
-        if (game.config && game.config.pause_on_weekends) {
+        if (engine.config && engine.config.pause_on_weekends) {
             /* There was a bug in our tournament creation code that didn't
              * stick this value in the time_control object, so this helps with
              * display on those games. */
-            game.time_control.pause_on_weekends = game.config.pause_on_weekends;
+            engine.time_control.pause_on_weekends = engine.config.pause_on_weekends;
         }
-        let time_control_description = timeControlDescription(game.time_control);
+        let time_control_description = timeControlDescription(engine.time_control);
 
         return (
           <div className="Modal GameInfoModal" ref="modal">
               <div className="header">
                   <div>
                       <h2>
-                          {game.config.game_name}
+                          {engine.config.game_name}
                       </h2>
                       <h3>
-                          <Player disableCacheUpdate icon rank user={game.config.players.black} /> {
+                          <Player disableCacheUpdate icon rank user={this.props.black} /> {
                               _("vs.")
-                          } <Player disableCacheUpdate icon rank user={game.config.players.white} />
+                          } <Player disableCacheUpdate icon rank user={this.props.white} />
                       </h3>
                   </div>
               </div>
               <div className="body">
                 <dl className="horizontal">
-                    <dt>{_("Game")}</dt><dd>{game.config.game_name}</dd>
+                    <dt>{_("Game")}</dt><dd>{engine.config.game_name}</dd>
                     {this.props.creatorId && <dt>{_("Creator")}</dt>}
                     {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
-                    <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.black} /></dd>
-                    <dt>{_("White")}</dt><dd><Player disableCacheUpdate icon rank user={game.config.players.white} /></dd>
+                    <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={this.props.black} /></dd>
+                    <dt>{_("White")}</dt><dd><Player disableCacheUpdate icon rank user={this.props.white} /></dd>
                     <dt>{_("Time")}</dt>
                         <dd>
-                            {game.config.start_time ? moment(new Date(game.config.start_time * 1000)).format("LLL") : ""}
-                            {game.config.end_time ? " - " + moment(new Date(game.config.end_time * 1000)).format("LLL") : ""}
+                            {engine.config.start_time ? moment(new Date(engine.config.start_time * 1000)).format("LLL") : ""}
+                            {engine.config.end_time ? " - " + moment(new Date(engine.config.end_time * 1000)).format("LLL") : ""}
                         </dd>
-                    <dt>{_("Rules")}</dt><dd>{rulesText(game.config.rules)}</dd>
-                    <dt>{_("Ranked")}</dt><dd>{yesno(game.config.ranked)}</dd>
-                    <dt>{_("Annulled")}</dt><dd>{yesno(game.config.annulled)}</dd>
-                    <dt>{_("Board Size")}</dt><dd>{game.config.width}x{game.config.height}</dd>
-                    <dt>{_("Handicap")}</dt><dd>{handicapText(game.config.handicap)}</dd>
-                    <dt>{_("Komi")}</dt><dd>{parseFloat(game.config.komi).toFixed(1)}</dd>
-                    <dt>{_("Analysis")}</dt><dd>{(game.config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
+                    <dt>{_("Rules")}</dt><dd>{rulesText(engine.config.rules)}</dd>
+                    <dt>{_("Ranked")}</dt><dd>{yesno(engine.config.ranked)}</dd>
+                    <dt>{_("Annulled")}</dt><dd>{yesno(this.props.annulled)}</dd>
+                    <dt>{_("Board Size")}</dt><dd>{engine.config.width}x{engine.config.height}</dd>
+                    <dt>{_("Handicap")}</dt><dd>{handicapText(engine.config.handicap)}</dd>
+                    <dt>{_("Komi")}</dt><dd>{parseFloat(engine.config.komi).toFixed(1)}</dd>
+                    <dt>{_("Analysis")}</dt><dd>{(engine.config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
                     <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
                 </dl>
               </div>
@@ -93,8 +99,8 @@ export class GameInfoModal extends Modal<GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(game:GoEngine, creator_id: number): void {
-    openModal(<GameInfoModal game={game} creatorId={creator_id} fastDismiss />);
+export function openGameInfoModal(engine:GoEngine, black: any, white:any, annulled:boolean, creator_id: number): void {
+    openModal(<GameInfoModal engine={engine} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
 }
 
 function yesno(tf: boolean) {{{

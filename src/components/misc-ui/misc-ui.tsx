@@ -25,3 +25,11 @@ export const SearchInput = props => (
         <input type="search" className={(props.className || "")} {...props}/>
     </div>
 );
+
+export const Ribbon = props => (
+    <div className="Ribbon-container">
+        <div {...props} className={"Ribbon " + (props.className || "")}>
+            {props.children}
+        </div>
+    </div>
+);

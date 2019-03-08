@@ -18,8 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import preferences from "preferences";
-import {AdUnit} from "AdUnit";
+import * as preferences from "preferences";
 import {GameList} from "GameList";
 import {comm_socket} from "sockets";
 
@@ -81,6 +80,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         let ct: number = parseInt(ev.target.value);
         preferences.set("observed-games-page-size", ct);
         this.setState({page_size: ct});
+        this.setPage(1);
         setTimeout(this.refresh, 1);
     }}}
     refresh = () => {{{
@@ -151,8 +151,6 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         return (
         <div className="ObserveGames">
             <div className="container">
-                <AdUnit unit="cdm-zone-01" nag/>
-
                 <div className="games">
                     <div className="header">
                         <div className="btn-group">

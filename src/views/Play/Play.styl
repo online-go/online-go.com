@@ -17,16 +17,17 @@
 
 .Play {
     // here
-    max-width: 60rem;
+    max-width: 1110px;
 
     .seek-graph-container {
         width: 100%;
-        height: 20em;
+        height: 22em;
         max-width: 100%;
         max-height: 100%;
     }
 
     .Card {
+        flex: 1;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -65,28 +66,54 @@
         justify-content: center;
     }
 
+
     .automatch-row {
         display: flex;
         justify-content: space-around;
         align-content: stretch
         width: 100%;
+        flex-wrap: wrap;
 
         button {
             font-size: 1.1rem;
             font-weight: bold;
             flex-grow: 1;
             flex-basis: 13rem;
+            max-width: 13rem;
             height: 4rem;
-            margin: 1rem;
+            margin: 0.5rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+
+            .play-button-text-root {
+                position: relative;
+                height: 1.5rem;
+
+
+                .time-per-move {
+                    position: absolute;
+                    bottom: -1.2rem;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                }
+            }
 
             .fa, .ogs-turtle {
-                //font-size: 1.2rem;
                 margin: 0.2rem;
             }
-            .ogs-turtle{
-                vertical-align: middle;
-                font-size: 1.3rem;
-                margin-bottom: 0;
+
+            .ogs-turtle {
+                position: relative;
+                width: 1.0rem;
+            }
+            .ogs-turtle::before {
+                position: absolute;
+                top: -0.5rem;
+                left: 0;
             }
 
             .time-per-move {
@@ -96,12 +123,58 @@
     }
 
     .automatch-settings {
+        font-size: 1rem;
         flex: 0;
-        text-align: right;
+        text-align: left;
+        white-space: nowrap;
+
         .automatch-settings-link {
             cursor: pointer;
             user-select: none;
         }
+
+        i {
+            padding-right: 0.25rem;
+        }
+    }
+
+    .custom-game-row {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 100%;
+
+        button {
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-grow: 1;
+            width: 100%;
+            max-width: 13rem;
+            margin: 0.5rem;
+            height: 4rem;
+
+            .fa {
+                margin: 0.2rem;
+            }
+        }
+    }
+
+    .custom-game-header {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 100%;
+        justify-content: space-between;
+        align-items: left;
+        font-size: 1.3rem;
+        margin-top: 1rem;
+    }
+
+    .showall-selector {
+        width: 100%;
+        text-align: left;
+        font-size: smaller;
+        padding-top: 1rem;
     }
 }
 
@@ -129,6 +202,20 @@
         cursor: help;
     }
 
+    .cheat-alert {
+        color: chocolate;
+        margin-left: 1em;
+        cursor: help;
+    }
+
+    // Flex to escape from the table
+    .custom-games-list-header-row {
+        display: flex;
+        font-weight: bold;
+        white-space: nowrap;
+        padding-bottom: 0.5 rem;
+    }
+
     .challenge-row {
         padding-top: 0.2em;
         padding-bottom: 0.2em;
@@ -143,6 +230,11 @@
             font-weight: bold;
             font-size: 0.8em;
         }
+        .head.time-control-header {
+            padding-left: 4em;
+            text-align: left;    
+        }
+        
         .cell {
             padding-left: 0.5em;
             display: table-cell;
@@ -170,6 +262,7 @@
 
         }
     }
+
 
     .automatch-challenge-row {
         .cell {

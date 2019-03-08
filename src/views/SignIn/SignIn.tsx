@@ -16,16 +16,22 @@
  */
 
 import * as React from "react";
-import { Link, browserHistory } from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
-import { _ } from "translate";
-import { Card } from "material";
-import { LineText } from "misc-ui";
-import { errorAlerter, ignore } from "misc";
-import { post, get } from "requests";
+import {_} from "translate";
+import {Card} from "material";
+import {LineText} from "misc-ui";
+import {errorAlerter, ignore} from "misc";
+import {post, get} from "requests";
+import cached from 'cached';
+//let md5 = require("blueimp-md5");
+import * as _md5 from 'blueimp-md5';
 
+let md5:(p:string) => string = _md5 as any;
+
+window['md5'] = md5;
 declare var swal;
-declare function md5(str: string): string;
 
 export function get_ebi() {
     let bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -80,34 +86,23 @@ export class SignIn extends React.PureComponent<{}, any> {
 
     login(event) {
         let actually_login = () => {
-            console.log("Should be logging in");
-
             post("/api/v0/login", {
-                username: this.refs.username.value.trim(),
-                password: this.refs.password.value,
-                ebi: get_ebi()
-            })
-                .then(config => {
-                    if ("redirect" in config) {
-                        window.location.pathname = config.redirect;
-                        return;
-                    }
+                "username": this.refs.username.value.trim(),
+                "password": this.refs.password.value,
+                "ebi": get_ebi()
+            }).then((config) => {
+                if ("redirect" in config) {
+                    window.location.pathname = config.redirect;
+                    return;
+                }
 
-                    data.set("config", config);
-                    console.log("Logged in!");
-                    console.info(config);
-                    if (
-                        window.location.hash &&
-                        window.location.hash[1] === "/"
-                    ) {
-                        window.location.pathname = window.location.hash.substr(
-                            1
-                        );
-                    } else {
-                        window.location.pathname = "/";
-                    }
-                })
-                .catch(errorAlerter);
+                data.set(cached.config, config);
+                if (window.location.hash && window.location.hash[1] === "/") {
+                    window.location.pathname = window.location.hash.substr(1);
+                } else {
+                    window.location.pathname = "/";
+                }
+            }).catch(errorAlerter);
         };
 
         let focus_empty = () => {

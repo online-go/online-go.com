@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {errorLogger} from "misc";
 
 
@@ -27,50 +27,48 @@ interface PlayerIconProps {
     className?: string;
 }
 
-export function icon_size_url(url, size) {
+export function icon_size_url(url: string, size: number): string {
     return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
 }
 
-export function getPlayerIconURL(id, size): Promise<string> {{{
-    return new Promise((resolve, reject) => {
-        player_cache.fetch(id, ["icon"]).then((user) => {
-            resolve(icon_size_url(user.icon, size));
-        })
-        .catch(reject);
-    });
-}}}
+export function getPlayerIconURL(id: number, size: number): Promise<string> {
+    return player_cache.fetch(id, ["icon"]).then(user => icon_size_url(user.icon, size));
+}
 
 
 export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     mounted: boolean = false;
-    listener;
+    subscriber = new player_cache.Subscriber(user => this.fetch(user.id, this.props));
 
-    constructor(props) {
+    constructor(props:PlayerIconProps) {
         super(props);
-        let id = parseInt(props.id || props.user.id || props.user.user_id);
-        if (isNaN(id)) {
-            console.log("bailing", props);
+        let id = this.getId(props);
+        if (!id) {
             this.state = { url: null };
             return;
         }
 
         let user = player_cache.lookup(id);
-        let size = props.size;
+        let size = typeof(props.size) === 'number' ? props.size : parseInt(props.size);
         this.state = {
             url: user && user.icon ? icon_size_url(user.icon, size) : null
         };
         if (!this.state.url) {
             this.fetch(id, props);
         }
-        if (id && id > 0) {
-            this.listener = player_cache.watch(id, (_user) => {
-                this.fetch(id, this.props);
-            });
-        }
     }
+
+    getId(props:PlayerIconProps):number {
+        let ret = parseInt(props.id || (props.user && (props.user.id || props.user.user_id)));
+        if (isNaN(ret)) {
+            ret = null;
+        }
+        return ret;
+    }
+
     fetch(id, props) {
         getPlayerIconURL(id, props.size).then((url) => {
-            if (id === parseInt(props.id || props.user.id || props.user.user_id)) {
+            if (id === this.getId(props)) {
                 if (this.mounted && this.state.url !== url) {
                     this.setState({url: url});
                 }
@@ -80,27 +78,28 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentDidMount() {
         this.mounted = true;
+        let id = this.getId(this.props);
+        if (!isNaN(id) && id > 0) {
+            this.subscriber.on(id);
+        }
     }
     componentWillUnmount() {
         this.mounted = false;
+        this.subscriber.off(this.subscriber.players());
     }
+
     componentWillReceiveProps(next_props) {
-        let current_id = parseInt(this.props.id || this.props.user.id || this.props.user.user_id);
-        let next_id = parseInt(next_props.id || next_props.user.id || next_props.user.user_id);
+        let current_id = this.getId(this.props);
+        let next_id = this.getId(next_props);
         if (current_id !== next_id) {
             this.setState({url: null});
-            this.listener.remove();
-            if (next_id && next_id > 0) {
-                this.listener = player_cache.watch(next_id, (_user) => {
-                    this.fetch(next_id, next_props);
-                });
+            this.subscriber.off(this.subscriber.players());
+            if (next_id > 0) {
+                this.subscriber.on(next_id);
             }
-
-
-            if (!next_id || isNaN(next_id)) {
+            else {
                 return;
             }
-
             this.fetch(next_id, next_props);
         }
     }

@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
+import {Link} from 'react-router-dom';
 import {_, interpolate} from "translate";
 import {Goban} from "goban";
-import data from "data";
+import * as data from "data";
 import {PersistentElement} from "PersistentElement";
-import {navigateTo} from "misc";
 import {rankString} from "rank_utils";
 import {Player} from "Player";
 
@@ -30,6 +30,8 @@ interface GobanLineSummaryProps {
     white: any;
     player?: any;
     gobanref?: (goban:Goban) => void;
+    width?: number;
+    height?: number;
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
@@ -122,39 +124,36 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
         });
     }
 
-    gotoGame = (ev) => {
-        navigateTo(`/game/${this.props.id}`, ev);
-    }
-
     render() {
         let player;
         let opponent;
         let player_clock;
         let opponent_clock;
+
         if (this.props.player && this.props.player.id === this.props.black.id) {
             player = this.props.black;
             opponent = this.props.white;
             player_clock = this.black_clock;
             opponent_clock = this.white_clock;
         }
+
         if (this.props.player && this.props.player.id === this.props.white.id) {
             player = this.props.white;
             opponent = this.props.black;
             player_clock = this.white_clock;
             opponent_clock = this.black_clock;
         }
+
         return (
-            <div className={ `GobanLineSummary `
+            <Link to={`/game/${this.props.id}`} className={ `GobanLineSummary `
                             + (this.state.current_users_move ? " current-users-move" : "")
                             + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                 }
-                 onClick={this.gotoGame}
-                 onMouseUp={this.gotoGame}
                 >
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && <div className="player"><Player user={opponent} rank /></div> }
+                {player && <div className="player"><Player user={opponent} fakelink rank /></div> }
                 {player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={player_clock} />
@@ -166,19 +165,20 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                     </div>
                 }
 
-                {!player && <div className="player"><Player user={this.props.black} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.black} fakelink rank/></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
                     </div>
                 }
-                {!player && <div className="player"><Player user={this.props.white} rank/></div> }
+                {!player && <div className="player"><Player user={this.props.white} fakelink /></div> }
                 {!player &&
                     <div>
                         <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
                     </div>
                 }
-            </div>
+                <div className="size">{this.props.width + "x" + this.props.height}</div>
+            </Link>
         );
     }
 }

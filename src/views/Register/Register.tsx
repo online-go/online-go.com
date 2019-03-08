@@ -16,14 +16,16 @@
  */
 
 import * as React from "react";
-import { Link, browserHistory } from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import * as data from "data";
-import { _ } from "translate";
-import { Card } from "material";
-import { errorAlerter } from "misc";
-import { LineText } from "misc-ui";
-import { post, get } from "requests";
-import { get_ebi } from "SignIn";
+import {_} from "translate";
+import {Card} from "material";
+import {errorAlerter} from "misc";
+import {LineText} from "misc-ui";
+import {post, get} from "requests";
+import {get_ebi} from "SignIn";
+import cached from 'cached';
 
 declare var swal;
 
@@ -44,18 +46,16 @@ export class Register extends React.PureComponent<{}, any> {
             console.log("Should be logging in");
 
             post("/api/v0/register", {
-                username: this.refs.username.value.trim(),
-                password: this.refs.password.value,
-                email: this.refs.email.value.trim(),
-                ebi: get_ebi()
-            })
-                .then(config => {
-                    data.set("config", config);
-                    console.log("Logged in!");
-                    console.info(config);
-                    browserHistory.replace("/");
-                })
-                .catch(errorAlerter);
+                "username": this.refs.username.value.trim(),
+                "password": this.refs.password.value,
+                "email": this.refs.email.value.trim(),
+                "ebi": get_ebi()
+            }).then((config) => {
+                data.set(cached.config, config);
+                console.log("Logged in!");
+                console.info(config);
+                browserHistory.replace("/");
+            }).catch(errorAlerter);
         };
 
         let focus_empty = (focus_email?: boolean) => {

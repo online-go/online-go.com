@@ -15,12 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #Overview {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+
+    h3 >i {
+        margin-right: 1rem;
+    }
 
     .actions {
         display: flex;
@@ -49,13 +54,17 @@
         justify-content: center;
     }
 
+    .learn-how-to-play {
+        flex-grow: 0;
+    }
+
     .left {
         flex: 1;
         min-width: 20rem;
         max-width: 100vw;
         display: flex;
         flex-direction: column;
-        overflow-x: auto;
+        //overflow-x: auto;
     }
     .right {
         flex: 0;
@@ -66,45 +75,27 @@
 
         a {
             display: block;
+
+            img {
+                height: 15px;
+                width: 15px;
+            }
         }
 
-        img {
-            height: 15px;
-            width: 15px;
+    }
+    .overview-categories {
+        padding-top: 1rem;
+
+        a > i {
+            margin-right: 0.5rem;
+        }
+        > div {
+            margin-left: 2rem;
         }
     }
 
-
-    .right-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: bottom;
-        margin-bottom: 1rem;
-        margin-top: 1rem;
-        h3 {
-            margin: 0;
-        }
-    }
-
-    .profile {
-        display: flex;
-        min-height: 80px;
-        align-items: bottom;
-
-        .view-and-edit-link {
-            text-align: right;
-        }
-        .profile-right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding-left: 10px;
-            justify-content: space-between;
-        }
-        .PlayerIcon{
-            width: 80px;
-            height: 80px;
-        }
+    .ProfileCard {
+        margin-top: 2rem;
     }
 
     .rank-and-progress {
@@ -114,8 +105,6 @@
             flex: 1;
         }
     }
-
-
 
 
     span.UserRating {
@@ -177,6 +166,17 @@
         }
         .fa-times {
             themed color reject;
+        }
+    }
+
+
+    .translation-dialog {
+        text-align: justify;
+        .fab.reject {
+            float: right;
+        }
+        .never-show-this-message-button {
+            margin-top: 2rem;
         }
     }
 }

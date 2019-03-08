@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
-import data from "data";
+import * as data from "data";
 import {Card} from 'material';
 
 interface EmailBannerProperties {

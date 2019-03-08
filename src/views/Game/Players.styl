@@ -30,6 +30,7 @@
     flex-direction: row;
     box-sizing: border-box;
     padding: 0.1rem;
+    justify-content: space-around;
 
     .player-container { /* {{{ */
         position: relative;
@@ -56,13 +57,25 @@
             font-size: 1.1rem;
         }
 
-
-
-        &:first-child {
-            margin-right: 0.1rem;
-        }
-        &:last-child {
-            margin-left: 0.1rem;
+        .auto-resign-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            opacity: 0.9;
+            z-index: z.goban.score-details;
+            background-color #555;
+            color #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            font-size: font-size-big;
+            .fa-bolt {
+                font-size: 200%;
+            }
         }
     }
 
@@ -149,10 +162,14 @@
         text-align: left;
     }
     .black.player-name-container{
+        .Player {
             themed color player-black-name;
+        }
     }
     .white.player-name-container{
+        .Player {
             themed color player-white-name;
+        }
     }
 
 

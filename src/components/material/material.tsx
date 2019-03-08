@@ -16,13 +16,19 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router";
+import {Link} from "react-router-dom";
 
 
 export const Card = props => (
     <div {...props} className={"Card " + (props.className || "")}>
         {props.children}
     </div>
+);
+
+export const CardLink = props => (
+    <Link {...props} className={"Card " + (props.className || "")}>
+        {props.children}
+    </Link>
 );
 
 export const FabCheck = props => (
@@ -46,6 +52,7 @@ export const FabAdd = props => (
 
 export default {
     Card: Card,
+    CardLink: CardLink,
     FabX: FabX,
     FabCheck: FabCheck,
     FabAdd: FabAdd,

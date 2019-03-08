@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import data from "data";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
-import {Link, browserHistory} from "react-router";
+import {Link} from "react-router-dom";
+import {browserHistory} from "ogsHistory";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {errorAlerter, ignore, getOutcomeTranslation} from "misc";
@@ -28,7 +29,9 @@ import * as Dropzone from "react-dropzone";
 import * as moment from "moment";
 
 interface LibraryPlayerProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 // TODO: Implement LibraryPlayer
@@ -42,8 +45,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         super(props);
 
         this.state = {
-            player_id: parseInt(this.props.params.player_id),
-            collection_id: this.props.params.collection_id || 0,
+            player_id: parseInt(this.props.match.params.player_id),
+            collection_id: this.props.match.params.collection_id || 0,
             collections: null,
             games_checked: {},
             new_collection_name: "",
@@ -57,15 +60,15 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     componentWillReceiveProps(next_props) {
         let update: any = {};
 
-        if (this.props.params.player_id !== next_props.params.player_id) {
-            this.refresh(parseInt(next_props.params.player_id));
-            update.player_id = parseInt(next_props.params.player_id);
+        if (this.props.match.params.player_id !== next_props.match.params.player_id) {
+            this.refresh(parseInt(next_props.match.params.player_id));
+            update.player_id = parseInt(next_props.match.params.player_id);
             update.games_checked = {};
         }
 
-        if (next_props.params.collection_id) {
-            if (this.props.params.collection_id !== next_props.params.collection_id) {
-                update.collection_id = parseInt(next_props.params.collection_id);
+        if (next_props.match.params.collection_id) {
+            if (this.props.match.params.collection_id !== next_props.match.params.collection_id) {
+                update.collection_id = parseInt(next_props.match.params.collection_id);
                 update.games_checked = {};
             }
         } else {
@@ -79,7 +82,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         abort_requests_in_flight("library/");
     }
     refresh(player_id: number) {
-        let promise = get(`library/${player_id}`);
+        let promise = get("library/%%", player_id);
 
         promise
         .then((library) => {
@@ -176,11 +179,11 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }
 
     uploadSGFs = (files) => {{{
-        if (parseInt(this.props.params.player_id) === data.get("user").id) {
+        if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
-            Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
+            Promise.all(files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)))
             .then(() => {
-                this.refresh(this.props.params.player_id);
+                this.refresh(this.props.match.params.player_id);
             })
             .catch(errorAlerter);
         } else {
@@ -211,7 +214,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }}}
     createCollection = () => {{{
 
-        post(`library/${this.state.player_id}/collections`, {
+        post("library/%%/collections", this.state.player_id, {
             "parent_id": this.state.collection_id,
             "name": this.state.new_collection_name,
             "private": this.state.new_collection_private ? 1 : 0,
@@ -225,7 +228,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }}}
     deleteCollection = () => {{{
         let parent = this.state.collections[this.state.collection_id].parent;
-        post(`library/${this.state.player_id}`, {
+        post("library/%%", this.state.player_id, {
             delete_collections: [this.state.collection_id]
         })
         .then(() => {
@@ -236,7 +239,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         .catch(errorAlerter);
     }}}
     deleteGames = () => {{{
-        post(`library/${this.state.player_id}`, {
+        post("library/%%", this.state.player_id, {
             delete_entries: Object.keys(this.state.games_checked)
         })
         .then(() => {
@@ -315,7 +318,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                                     <input type="text" value={this.state.new_collection_name} onChange={this.setNewCollectionName} placeholder={_("New collection name")} />
                                     <div className="row">
                                         <input type="checkbox" id="private" checked={this.state.new_collection_private} onChange={this.setNewCollectionPrivate} />
-                                        <label htmlFor="private">{_("Create as a private collection")}</label>
+                                        <label htmlFor="private"><i className="fa fa-lock"></i>{_("Private collection")}</label>
                                     </div>
                                 </div>
                             }
@@ -331,7 +334,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
 
 
 
-                <Dropzone ref="dropzone" className="Dropzone" onDrop={this.uploadSGFs} multiple={true} disableClick>
+                <Dropzone ref="dropzone" className="Dropzone" accept=".sgf" onDrop={this.uploadSGFs} multiple={true} disableClick>
                     <Card>
 
                         {owner &&

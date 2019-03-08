@@ -18,8 +18,9 @@ import {Goban} from './Goban';
 
 export class SFXManager {
     private enabled = false;
-    private loaded: any = {};
-    private sfx: any = {};
+    private loaded: {[id:string]: HTMLAudioElement} = {};
+    private sfx: {[id:string]: HTMLAudioElement} = {};
+    private play_state: {[id:string]: string} = {};
     public volume_override:number = null;
 
     constructor() {
@@ -47,37 +48,63 @@ export class SFXManager {
             this.addAudio("beep3", "beep");
             this.addAudio("beepbeep", "beepbeep");
             this.addAudio("pass", "pass");
+            this.addAudio("dingdingding", "dingdingding");
+            this.addAudio("tutorial-bling", "tutorial-bling");
+            this.addAudio("tutorial-pass", "tutorial-pass");
+            this.addAudio("tutorial-fail", "tutorial-fail");
+            this.addAudio("tutorial-ping", "tutorial-ping");
         }
     }
     public play(name, play_even_if_window_doesnt_have_focus?) {
         if (!this.enabled && (this.volume_override == null || this.volume_override === 0)) { return; }
         this.sync();
-        //console.log("Playing ", name, new Error().stack);
-        /*
-        if (!window.has_focus) {
-            if (!play_even_if_window_doesnt_have_focus) {
-                return;
-            }
-        }
-        */
 
         if (Goban.getSoundEnabled() || (this.volume_override != null && this.volume_override > 0)) {
             if (this.volume_override != null && this.volume_override === 0)  {
                 return;
             }
             try {
-                //console.log("Playing ", name);
                 let volume = Goban.getSoundVolume();
                 if (this.volume_override != null) {
                     volume = this.volume_override;
                 }
-                this.sfx[name][0].volume = volume;
-                this.sfx[name][0].play();
+                this.sfx[name].volume = volume;
+                this.pause(name);
+
+                try {
+                    this.sfx[name].currentTime = 0;
+                    this.sfx[name].play();
+                } catch (e) {
+                    console.warn(e);
+                }
             } catch (e) {
                 console.log("Error playing ", name);
                 console.log(e);
                 console.log(e.stack);
             }
+        }
+    }
+    public pause(name:string) {
+        try {
+            if (this.play_state[name] === 'playing') {
+                if ((this.sfx[name] as any).active) {
+                    this.sfx[name].pause();
+                }
+            }
+        } catch (e) {
+            try {
+                if (this.play_state[name] === 'playing') {
+                    this.sfx[name].pause();
+                }
+            } catch (e) {
+                /* ignore */
+            }
+        }
+    }
+
+    public stopAll() {
+        for (let n in this.sfx) {
+            this.pause(n);
         }
     }
     private addAudio(name, pathname) {
@@ -88,22 +115,36 @@ export class SFXManager {
             return;
         }
 
-        //console.log("Loading " + name + " -> " + cdn_release + '/sound/' + pathname + '.ogg');
-        let audio = $("<audio>");
-        audio
-            .attr("preload", "auto")
-            .append($("<source>").attr("type", "audio/ogg").attr("src", Goban.getCDNReleaseBase() + "/sound/" + pathname + ".ogg"))
-            .append($("<source>").attr("type", "audio/mpeg").attr("src", Goban.getCDNReleaseBase() + "/sound/" + pathname + ".mp3"))
-            .append($("<source>").attr("type", "audio/wav").attr("src", Goban.getCDNReleaseBase() + "/sound/" + pathname + ".wav"))
-            ;
-        $("body").append(audio);
+        let audio = document.createElement('audio');
+        audio.setAttribute('preload', 'auto');
+
+        for (let attrs of [
+            {'type': 'audio/ogg', 'src': Goban.getCDNReleaseBase() + "/sound/" + pathname + ".ogg"},
+            {'type': 'audio/mpeg', 'src': Goban.getCDNReleaseBase() + "/sound/" + pathname + ".mp3"},
+            {'type': 'audio/wav', 'src': Goban.getCDNReleaseBase() + "/sound/" + pathname + ".wav"}
+        ]) {
+            let source = document.createElement('source');
+            source.setAttribute('type', attrs['type']);
+            source.setAttribute('src', attrs['src']);
+            audio.appendChild(source);
+        }
+
+        document.getElementsByTagName('BODY')[0].appendChild(audio);
 
         this.sfx[name] = this.loaded[pathname] = audio;
+
+        let elt = $(this.sfx[name]);
+        this.play_state[name] = 'stopped';
+        elt.on("playing", _ => this.play_state[name] = 'playing');
+        elt.on("ended", _ => this.play_state[name] = 'stopped');
+        elt.on("pause", _ => this.play_state[name] = 'stopped');
     }
+
 }
 
 
 export const sfx = new SFXManager();
+window['sfx'] = sfx;
 
 let I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */

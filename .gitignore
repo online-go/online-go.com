@@ -4,14 +4,17 @@ typings
 *.swp
 *.swo
 webpack-stats.json
+analyze.json
 src/components/base
 .vscode
 todo
 yarn-error.log
 deployment-staging-area
 Makefile.production
+how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
+package-lock.json
 
 
 

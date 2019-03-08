@@ -29,9 +29,7 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<any, {}> {
-    refs: {
-        div
-    };
+    div:HTMLDivElement = null;
 
     last_width = 0;
     last_height = 0;
@@ -39,12 +37,40 @@ export class Resizable extends React.Component<any, {}> {
 
     constructor(props) {
         super(props);
-        this.checkForResize = this.checkForResize.bind(this);
     }
 
-    checkForResize() {
-        let width = this.refs.div.clientWidth;
-        let height = this.refs.div.clientHeight;
+    checkForResize = () => {
+        if (!this.div) {
+            return;
+        }
+
+        let div = this.div;
+        let width:number;
+        let height:number;
+
+        try {
+            height = div.clientHeight;
+            width = div.clientWidth;
+        } catch (e) {
+            /*
+            We're seeing an error
+
+               null is not an object (evaluating 'this.div.clientHeight')
+
+            on mobile safari 11.0
+
+            With the !this.div guard, it seems like this should not be
+            possible, but reality seems to be different.
+
+              - anoek 2017-11-28
+            */
+
+            console.warn('Resizable.checkForResize errored out');
+            console.warn(e);
+            console.warn('This was: ', this);
+            console.warn('Div was: ', div, this.div);
+            throw e;
+        }
 
         if (this.last_width !== width || this.last_height !== height) {
             this.last_width = width;
@@ -56,17 +82,21 @@ export class Resizable extends React.Component<any, {}> {
     }
 
     componentDidMount() {
-        this.last_width = this.refs.div.clientWidth;
-        this.last_height = this.refs.div.clientHeight;
+        let div = this.div;
+        this.last_width = div.clientWidth;
+        this.last_height = div.clientHeight;
         this.check_interval = setInterval(this.checkForResize, 50);
     }
+
     componentWillUnmount() {
         clearInterval(this.check_interval);
     }
 
+    setref_div = (el) => this.div = el;
+
     render() {
         return (
-            <div ref="div" id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
+            <div ref={this.setref_div} id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
         );
     }
 }

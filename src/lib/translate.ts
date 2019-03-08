@@ -44,6 +44,10 @@ export function gettext(msgid) {
 export function ngettext(singular, plural, count) {
     let key = singular + "" + plural;
     if (key in catalog) {
+        if (catalog[key].length === 1) {
+            count = 1;
+        }
+
         return catalog[key][count === 1 ? 0 : 1];
     }
     return debug_wrap(count === 1 ? singular : plural);
@@ -61,6 +65,9 @@ export function pgettext(context, msgid) {
 export function npgettext(context, singular, plural, count) {
     let key = context + "" + singular + "" + plural;
     if (key in catalog) {
+        if (catalog[key].length === 1) {
+            count = 1;
+        }
         return catalog[key][count === 1 ? 0 : 1];
     }
     return debug_wrap(count === 1 ? singular : plural);
@@ -106,6 +113,7 @@ extended_countries.push(["_Commonwealth",  gettext("Commonwealth")]);
 extended_countries.push(["_England",  gettext("England")]);
 extended_countries.push(["_Islamic_Conference", gettext("Islamic Conference")]);
 extended_countries.push(["_Kosovo", gettext("Kosovo")]);
+extended_countries.push(["_Lord_Howe_Island", gettext("Lord Howe Island")]);
 extended_countries.push(["_NATO", gettext("NATO")]);
 extended_countries.push(["_Northern_Cyprus", gettext("Northern Cyprus")]);
 extended_countries.push(["_Northern_Ireland", gettext("Northern Ireland")]);
@@ -118,8 +126,6 @@ extended_countries.push(["_Tibet", gettext("Tibet")]);
 extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
 
-
-
 let fantasy_countries = [];
 let fantasy_countries_cc = {};
 fantasy_countries.push(["_Klingon", gettext("Klingon")]);
@@ -127,6 +133,7 @@ fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federat
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
 fantasy_countries.push(["_Starfleet", gettext("Starfleet")]);
 fantasy_countries.push(["_DOOP", gettext("DOOP")]);
+fantasy_countries.push(["_Esperanto", gettext("Esperantujo")]);  // Esperanto speakers pretend they come from Esperantujo!  Who knew!
 fantasy_countries.push(["_GoT_Arryn", gettext("House Arryn")]);
 fantasy_countries.push(["_GoT_Baratheon", gettext("House Baratheon")]);
 fantasy_countries.push(["_GoT_Greyjoy", gettext("House Greyjoy")]);
@@ -136,7 +143,6 @@ fantasy_countries.push(["_GoT_Stark", gettext("House Stark")]);
 fantasy_countries.push(["_GoT_Targaryen", gettext("House Targaryen")]);
 fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
-
 
 try {
     for (let e of fantasy_countries) {
@@ -157,7 +163,8 @@ export function interpolate(str: string, params: any): string {
         let idx = 0;
         return str.replace(/%[sd]/g, (_, __, position) => {
             if (idx >= params.length) {
-                throw new Error(`Missing array index ${idx} for string: ${str}`);
+                //throw new Error(`Missing array index ${idx} for string: ${str}`);
+                console.warn(`Missing array index ${idx} for string: ${str}`);
             }
             return params[idx++];
         });
@@ -165,7 +172,8 @@ export function interpolate(str: string, params: any): string {
     if (typeof(params) === "object") {
         return str.replace(/{{([^}]+)}}/g,  (_, key, position) => {
             if (!(key in params)) {
-                throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
+                //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
+                console.warn(`Missing interpolation key: ${key} for string: ${str}`);
             }
             return params[key];
         });

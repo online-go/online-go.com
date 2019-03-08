@@ -19,7 +19,7 @@ navbar-width= 17rem;
 
 #NavBar {
     display: flex;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
     height: navbar-height;
     user-select: none;
     themed background-color navbar-background-color
@@ -149,13 +149,8 @@ navbar-width= 17rem;
     .rightnav, .leftnav {
         position: absolute;
         top: navbar-height;
-        //bottom: 0;
-        boder: 1px solid transparent;
-        themed boder-color shade2;
         themed background-color navbar-background-color;
         z-index: z.nav-menu.menu;
-        //min-height: 100%;
-        //overflow-y: scroll;
 
         user-select: none;
         width: navbar-width;
@@ -211,6 +206,7 @@ navbar-width= 17rem;
             list-style-type: none;
             list-style: none;
             padding: 0;
+            padding-left: 0.75em;
             vertical-align: top;
             width: 100%;
         }
@@ -226,6 +222,27 @@ navbar-width= 17rem;
             a {
                 width: auto;
             }
+        }
+
+
+        .search-row {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .OmniSearch-input {
+            width: (navbar-width - 3rem);
+            margin-right: 1.0rem;
+            margin-top: 1.0rem;
+        }
+
+        .fa-search {
+            themed color shade1;
+            margin-left: 0.8rem;
+            margin-top: 1rem;
+            margin-right: 0.2rem;
+            padding-bottom: 0.35rem;
+
         }
 
         .fa-check {
@@ -269,6 +286,10 @@ navbar-width= 17rem;
                 themed color fg
             }
         }
+
+        a:hover i {
+            themed color shade0
+        }
     }
 }
 
@@ -298,13 +319,6 @@ body.dark #NavBar button.theme-button.dark {
     i.fa.fa-moon-o {
         color: #fff;
     }
-}
-
-.OmniSearch-input {
-    width: (navbar-width - 2rem);
-    margin-left: 1.0rem;
-    margin-right: 1.0rem;
-    margin-top: 1.0rem;
 }
 
 .OmniSearch-results {

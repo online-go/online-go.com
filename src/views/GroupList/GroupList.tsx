@@ -18,8 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import {browserHistory} from "react-router";
-import {AdUnit} from "AdUnit";
+import {browserHistory} from "ogsHistory";
 import {PaginatedTable} from "PaginatedTable";
 import {SearchInput} from "misc-ui";
 import {navigateTo} from "misc";
@@ -41,18 +40,24 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
 
     render() {
         return (
-        <div>
-            <AdUnit unit="cdm-zone-01" nag/>
+        <div className="page-width">
             <div className="GroupList">
-                <div className='search-container'>
-                    <SearchInput
-                        placeholder={_("Search")}
-                        onChange={(event) => {
-                            this.refs.table.filter.name__istartswith = (event.target as HTMLInputElement).value.trim();
-                            this.refs.table.filter_updated();
-                        }}
-                    />
+
+                <div className="page-nav">
+                    <h2><i className="fa fa-users"></i> {_("Groups")}</h2>
+                    <div>
+                        <a className="primary" href="/group/create"><i className="fa fa-plus-square"></i> {_("New group")}</a>
+
+                        <SearchInput
+                            placeholder={_("Search")}
+                            onChange={(event) => {
+                                this.refs.table.filter.name__istartswith = (event.target as HTMLInputElement).value.trim();
+                                this.refs.table.filter_updated();
+                            }}
+                        />
+                    </div>
                 </div>
+
                 <div className="group-list-container">
                     <PaginatedTable
                         className=""
@@ -81,9 +86,6 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                         ]}
                     />
 
-                    <div className="start-a-new-group">
-                        {_("Want to start a new group?")} <a className="primary" href="/group/create">{_("Create a group here!")}</a>
-                    </div>
                 </div>
             </div>
         </div>

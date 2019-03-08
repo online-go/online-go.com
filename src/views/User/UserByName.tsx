@@ -18,21 +18,23 @@
 import * as React from "react";
 import {get} from 'requests';
 import {errorAlerter} from "misc";
-import player_cache from "player_cache";
+import * as player_cache from "player_cache";
 import {User} from './User';
 
 
 declare let swal;
 
 interface UserByNameProperties {
-    params: any;
+    match: {
+        params: any
+    };
 }
 
 export class UserByName extends React.PureComponent<UserByNameProperties, any> {
     constructor(props) {
         super(props);
 
-        let user = player_cache.lookup_by_username(props.params.username);
+        let user = player_cache.lookup_by_username(props.match.params.username);
 
         this.state = {
             user_id: user ? user.id : null
@@ -41,24 +43,24 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
 
     componentDidMount() {
         if (!this.state.user_id) {
-            this.doFetch(this.props.params.username);
+            this.doFetch(this.props.match.params.username);
         }
     }
 
     componentWillReceiveProps(next_props) {
-        if (next_props.params.username !== this.props.params.username) {
-            let user = player_cache.lookup_by_username(next_props.params.username);
+        if (next_props.match.params.username !== this.props.match.params.username) {
+            let user = player_cache.lookup_by_username(next_props.match.params.username);
 
             this.setState({user_id: user ? user.id : null});
 
             if (!user || !user.id) {
-                this.doFetch(next_props.params.username);
+                this.doFetch(next_props.match.params.username);
             }
         }
     }
 
     doFetch(username:string) {
-        get('players', {username: username})
+        get("players", {username: username})
         .then((res) => {
             if (res.results.length) {
                 this.setState({
@@ -73,7 +75,7 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
 
     render() {
         if (this.state.user_id) {
-            return <User params={{user_id: this.state.user_id}}/>;
+            return <User match={{params: {user_id: this.state.user_id}}}/>;
         }
         return null;
     }

@@ -6,7 +6,6 @@ const gulp         = require('gulp');
 const execSync     = require('child_process').execSync;
 const livereload   = require('gulp-livereload');
 const stylus       = require('gulp-stylus');
-const gutil        = require("gulp-util");
 const sourcemaps   = require('gulp-sourcemaps');
 const rename       = require('gulp-rename');
 const pump         = require('pump');
@@ -16,21 +15,59 @@ const cssnano      = require('cssnano');
 const inline_svg   = require('postcss-inline-svg');
 const gulpTsLint   = require('gulp-tslint');
 const tslint       = require('tslint');
+const html_minifier= require('html-minifier').minify;
 
 let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
 
-gulp.task('default', ['dev-server', "livereload-server", "background_webpack", "build_styl", "watch_styl", "watch_dist_js", "watch_html", "watch_tslint"]);
-gulp.task('watch_dist_js', () => { gulp.watch(['dist/*.js'], livereload.reload); });
-gulp.task('watch_html', () => { gulp.watch(['src/*.html'], livereload.reload); });
-gulp.task('watch_styl', () => { gulp.watch(['src/**/*.styl', 'src/*.styl'], ['build_styl']); }); 
+gulp.task('watch_dist_js', watch_dist_js);
+gulp.task('watch_html', watch_html);
+gulp.task('watch_styl', watch_styl);
 gulp.task('build_styl', build_styl);
 gulp.task('min_styl', min_styl);
-gulp.task('livereload-server', () => { livereload.listen(35701); });
+gulp.task('livereload-server', livereload_server);
 gulp.task('background_webpack', background_webpack);
-gulp.task('watch_tslint', () => { gulp.watch([ts_sources], ['tslint']); }); 
+gulp.task('watch_tslint', watch_tslint);
 gulp.task('dev-server', dev_server);
 gulp.task('tslint', lint);
+gulp.task('minify-index', minify_index);
+gulp.task('default', 
+    gulp.parallel(
+        'dev-server', 
+        "livereload-server", 
+        "background_webpack", 
+        "build_styl", 
+        "watch_styl", 
+        "watch_dist_js", 
+        "watch_html", 
+        "watch_tslint"
+    )
+);
 
+
+function reload(done) {
+    livereload.reload();
+    done();
+}
+function watch_dist_js(done) { 
+    gulp.watch(['dist/*.js'], reload);
+    done(); 
+}
+function watch_html(done) { 
+    gulp.watch(['src/*.html'], reload);
+    done(); 
+}
+function watch_styl(done) { 
+    gulp.watch(['src/**/*.styl', 'src/*.styl'], build_styl);
+    done(); 
+}
+function livereload_server(done) { 
+    livereload.listen(35701);
+    done(); 
+}
+function watch_tslint(done) { 
+    gulp.watch(ts_sources, lint);
+    done();
+};
 
 let lint_debounce = null;
 function lint(done) {
@@ -59,6 +96,7 @@ function build_styl(done) {
           sourcemaps.init(),
           stylus({
               compress: false,
+              'include css': true,
           }),
           postcss([
               autoprefixer({
@@ -91,6 +129,7 @@ function min_styl(done) {
           sourcemaps.init(),
           stylus({
               compress: false,
+              'include css': true,
           }),
           postcss([
               autoprefixer({
@@ -117,20 +156,15 @@ function min_styl(done) {
 
 
 function background_webpack(done) {
-    function launch() {
-        console.log('Launching webpack')
+    function spawn_webpack() {
         let env = process.env;
         let webpack = spawn('node', ['node_modules/webpack/bin/webpack.js', '--watch', '--progress', '--colors'])
 
-        webpack.stdout.on('data', o=>process.stdout.write(o))
-        webpack.stderr.on('data', o=>process.stderr.write(o))
-
-        webpack.on('exit', ()=>{
-            launch();
-        })
-
+        webpack.stdout.on('data', o => process.stdout.write(o))
+        webpack.stderr.on('data', o => process.stderr.write(o))
+        webpack.on('exit', spawn_webpack);
     }
-    launch();
+    spawn_webpack();
 
     done()
 }
@@ -172,6 +206,7 @@ function dev_server(done) {
     devserver.use('/oauth2', beta_proxy('/oauth2'));
     devserver.use('/complete', beta_proxy('/complete'));
     devserver.use('/disconnect', beta_proxy('/disconnect'));
+    devserver.use('/OGSScoreEstimator', beta_proxy('/OGSScoreEstimator'));
 
     devserver.get('/locale/*', (req, res) => {
         let options = {
@@ -190,12 +225,12 @@ function dev_server(done) {
             res2.on('end', () => {
                 res.setHeader('content-type', 'application/javascript');
                 res.setHeader("Content-Length", data.length);
-                res.send(200, data);
+                res.status(200).send(data);
             });
         });
 
         req2.on('error', (e) => {
-            res.send(500, e.message);
+            res.status(500).send(e.message);
         });
 
         req2.end();
@@ -219,13 +254,18 @@ function dev_server(done) {
                 case 'OG_DESCRIPTION': return '';
                 case 'SUPPORTED_LANGUAGES': return JSON.stringify(supported_langages);
 
+                case 'AMEX_CLIENT_ID': return "kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg";
+                case 'AMEX_ENV': return "qa";
+
                 case 'RELEASE': return '';
                 case 'VERSION': return '';
                 case 'LANGUAGE_VERSION': return '';
+                case 'VENDOR_HASH_DOTJS': return 'js';
                 case 'VERSION_DOTJS': return 'js';
+                case 'OGS_VERSION_HASH_DOTJS': return 'js';
                 case 'VERSION_DOTCSS': return 'css';
                 case 'LANGUAGE_VERSION_DOTJS': return 'js';
-                case 'EXTRA_CONFIG': 
+                case 'EXTRA_CONFIG':
                     return `<script>window['websocket_host'] = "https://beta.online-go.com";</script>`
                 ;
             }
@@ -240,4 +280,31 @@ function dev_server(done) {
         res.status(200).send(index);
     });
 
+    done();
 }
+
+
+function minify_index(done) {
+    let _index = fs.readFileSync('src/index.html', {encoding: 'utf-8'});
+    let supported_langages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
+
+    let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
+        switch (parameter) {
+            case 'VENDOR_HASH_DOTJS': return process.env['VENDOR_HASH'] + '.js';
+            case 'OGS_VERSION_HASH_DOTJS': return process.env['OGS_VERSION_HASH'] + '.js';
+        }
+        return '{{' + parameter + '}}';
+    });
+
+    let res = html_minifier(index, {
+        minifyJS: true,
+        minifyCSS: true,
+        collapseWhitespace:true,
+        collapseInlineTagWhitespace:true,
+        removeComments: true,
+    });
+
+    console.log(res);
+    done();
+}
+

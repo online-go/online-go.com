@@ -267,7 +267,8 @@ channel-width=12rem;
             font-size: 0.85rem;
         }
         input {
-            flex-grow: 1;
+            flex: 1;
+            overflow: hidden;
         }
         .channel-toggle {
             border-top-right-radius: 0;
@@ -317,5 +318,11 @@ channel-width=12rem;
         text-overflow: ellipsis;
 
         white-space: normal;
+
+        .date {
+            font-size: 8pt; 
+            font-family: 'Source Code Pro', monospace;
+            color: #666;
+        }
     }
 }

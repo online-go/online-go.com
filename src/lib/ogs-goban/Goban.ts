@@ -20,11 +20,11 @@ import {GoStoneGroup} from "./GoStoneGroup";
 import {GoConditionalMove} from "./GoConditionalMove";
 import {GoThemes} from "./GoThemes";
 import {MoveTree} from "./MoveTree";
-import {ScoreEstimator} from "./ScoreEstimator";
+import {init_score_estimator, ScoreEstimator} from "./ScoreEstimator";
 import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingRatio,
     deepEqual, getRelativeEventPosition, getRandomInt, shortDurationString, dup
 } from "./GoUtil";
-import {EventEmitter} from "eventemitter3";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
 
@@ -40,7 +40,45 @@ const AUTOSCORE_TOLERANCE = 0.30;
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
 
-export abstract class Goban extends EventEmitter {
+interface Events {
+    "destroy": never;
+    "update": never;
+    "chat-reset": never;
+    "reset": any;
+    "error": any;
+    "gamedata": any;
+    "chat": any;
+    "move-made": never;
+    "review.sync-to-current-move": never;
+    "review.updated": never;
+    "title": string;
+    "puzzle-wrong-answer": never;
+    "puzzle-correct-answer": never;
+    "show-submit": boolean;
+    "state_text": {
+        title: string;
+        show_moves_made_count?: boolean;
+    };
+    "advance-to-next-board": never;
+    "pause-text": {
+        white_pause_text: string;
+        black_pause_text: string;
+    };
+    "auto-resign": {
+        game_id: number;
+        player_id: number;
+        expiration: number;
+    };
+    "clear-auto-resign": {
+        game_id: number;
+        player_id: number;
+    };
+    "set-for-removal": {x:number, y:number, removed:boolean};
+    "puzzle-place": {x:number, y:number};
+}
+
+
+export abstract class Goban extends TypedEventEmitter<Events> {
     public conditional_starting_color:'black'|'white'|'invalid';
     public analyze_subtool:string;
     public analyze_tool:string;
@@ -170,21 +208,21 @@ export abstract class Goban extends EventEmitter {
     private stone_removal_clock;
     private submitBlinkTimer;
     private syncToCurrentReviewMove;
-    private theme_black;
+    public  theme_black;            /* public for access by our MoveTree render methods */
     private theme_black_stones;
-    private theme_black_text_color;
+    public  theme_black_text_color; /* public for access by our MoveTree render methods */
     private theme_blank_text_color;
-    private theme_board;
+    public  theme_board;            /* public for access by our MoveTree render methods */
     private theme_faded_line_color;
     private theme_faded_star_color;
     private theme_faded_text_color;
     private theme_line_color;
     private theme_star_color;
     private theme_stone_radius;
-    private theme_white;
+    public  theme_white;            /* public for access by our MoveTree render methods */
     private theme_white_stones;
-    private theme_white_text_color;
-    private themes;
+    public  theme_white_text_color; /* public for access by our MoveTree render methods */
+    public  themes;                 /* public for access by our MoveTree render methods */
     private title_div;
     private waiting_for_game_to_begin;
     private white_clock;
@@ -313,6 +351,10 @@ export abstract class Goban extends EventEmitter {
 
         if (typeof(config["square_size"]) === "function") {
             this.square_size = config["square_size"](this);
+            if (isNaN(this.square_size)) {
+                console.error("Invalid square size set: (NaN)");
+                this.square_size = 12;
+            }
         }
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
@@ -320,6 +362,23 @@ export abstract class Goban extends EventEmitter {
                 this.bounded_width  + +this.draw_left_labels + +this.draw_right_labels,
                 this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
             );
+
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
+
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -400,6 +459,9 @@ export abstract class Goban extends EventEmitter {
     protected getNetworkLatency():number {{{
         console.warn("getNetworkLatency not provided for Goban instance");
         return 0;
+    }}}
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+        return 'A1';
     }}}
     protected getShowMoveNumbers():boolean {{{
         return false;
@@ -740,31 +802,19 @@ export abstract class Goban extends EventEmitter {
                 this.emit("update");
             }); /* }}} */
 
-            this._socket_on(prefix + "pending_resignation", (obj) => { /* {{{ */
-                if (this.disconnectedFromGame) { return; }
-
-                let game_id = obj.game_id;
-                let player_id = obj.player_id;
-                let delay = obj.delay;
-                console.info("Pending resignation");
-                if (game_id !== this.game_id) { return; }
-                if (this.onPendingResignation) {
-                    this.onPendingResignation(player_id, delay);
-                }
+            this._socket_on(prefix + "auto_resign", (obj) => { /* {{{ */
+                this.emit('auto-resign', {
+                    game_id: obj.game_id,
+                    player_id: obj.player_id,
+                    expiration: obj.expiration,
+                });
             }); /* }}} */
-            this._socket_on(prefix + "pending_resignation_cleared", (obj) => { /* {{{ */
-                if (this.disconnectedFromGame) { return; }
-
-                let game_id = obj.game_id;
-                let player_id = obj.player_id;
-                let delay = obj.delay;
-                console.info("Pending resignation cleared");
-                if (game_id !== this.game_id) { return; }
-                if (this.onPendingResignationCleared) {
-                    this.onPendingResignationCleared(player_id, delay);
-                }
+            this._socket_on(prefix + "clear_auto_resign", (obj) => { /* {{{ */
+                this.emit('clear-auto-resign', {
+                    game_id: obj.game_id,
+                    player_id: obj.player_id,
+                });
             }); /* }}} */
-
         }
 
 
@@ -932,7 +982,7 @@ export abstract class Goban extends EventEmitter {
                 }
             }
             if (!bulk_processing) {
-                this.emit("review updated", true);
+                this.emit("review.updated");
             }
         }}};
 
@@ -953,7 +1003,7 @@ export abstract class Goban extends EventEmitter {
                         process_r(entries[i]);
                     }
                     bulk_processing = false;
-                    this.emit("review.updated", true);
+                    this.emit("review.updated");
 
                     this.enableDrawing();
                     if (this.isPlayerController()) {
@@ -1059,7 +1109,6 @@ export abstract class Goban extends EventEmitter {
             msg["moves"] =  diff.moves;
         }
 
-        console.log(where, msg);
         this.socket.send(where, msg);
     } /* }}} */
     public message(msg, timeout?) { /* {{{ */
@@ -1210,7 +1259,9 @@ export abstract class Goban extends EventEmitter {
                 let pos = getRelativeEventPosition(ev);
                 let pt = this.xy2ij(pos.x, pos.y);
                 if (pt.i >= 0 && pt.i < this.width && pt.j >= 0 && pt.j < this.height) {
-                    this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    if (this.score_estimate) {
+                        this.score_estimate.handleClick(pt.i, pt.j, ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey);
+                    }
                     this.emit("update");
                 }
                 return;
@@ -1384,7 +1435,7 @@ export abstract class Goban extends EventEmitter {
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
 
-        return [((x / 64) - lx) * this.square_size, ((y / 64) - lx) * this.square_size];
+        return [((x / 64) - lx) * this.square_size, ((y / 64) - ly) * this.square_size];
     } /* }}} */
     private setPenStyle(color) { /* {{{ */
         this.pen_ctx.strokeStyle = color;
@@ -1540,6 +1591,23 @@ export abstract class Goban extends EventEmitter {
             this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
         );
         this.display_width = display_width;
+
+        if (isNaN(this.display_width)) {
+            console.error("Invalid display width. (NaN)");
+            this.display_width = 320;
+        }
+
+        if (isNaN(n_squares)) {
+            console.error("Invalid n_squares: ", n_squares);
+            console.error("bounded_width: ", this.bounded_width);
+            console.error("this.draw_left_labels: ", this.draw_left_labels);
+            console.error("this.draw_right_labels: ", this.draw_right_labels);
+            console.error("bounded_height: ", this.bounded_height);
+            console.error("this.draw_top_labels: ", this.draw_top_labels);
+            console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+            n_squares = 19;
+        }
+
         this.setSquareSize(Math.floor(this.display_width / n_squares));
     }}}
 
@@ -1619,7 +1687,7 @@ export abstract class Goban extends EventEmitter {
             if (this.mode === "play") {
                 $("#pass-resign-buttons").removeClass("hidden");
             }
-            if (this.engine.phase === "stone removal" || this.scoring_mode) { /* {{{ */
+            if ((this.engine.phase === "stone removal" || this.scoring_mode) && this.isParticipatingPlayer()) { /* {{{ */
                 let arrs;
                 if (event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) {
                     let removed = !this.engine.removal[y][x];
@@ -1683,6 +1751,7 @@ export abstract class Goban extends EventEmitter {
                 if (puzzle_mode === "place") {
                     if (!double_tap) { /* we get called for each tap, then once for the final double tap so we only want to process this x2 */
                         this.engine.place(x, y, true, false, true, false, false);
+                        this.emit("puzzle-place", {x, y});
                     }
                 }
                 if (puzzle_mode === "play") {
@@ -1699,6 +1768,7 @@ export abstract class Goban extends EventEmitter {
                                 ++calls;
 
                                 this.engine.place(mv_x, mv_y, true, false, true, false, false);
+                                this.emit("puzzle-place", {x : mv_x, y : mv_y});
                                 if (this.engine.cur_move.wrong_answer) {
                                     this.emit("puzzle-wrong-answer");
                                 }
@@ -1895,7 +1965,7 @@ export abstract class Goban extends EventEmitter {
 
         } catch (e) {
             this.move_selected = false;
-            console.error(e);
+            console.info(e);
             this.errorHandler(e);
             this.emit("error");
             this.emit("update");
@@ -1933,7 +2003,9 @@ export abstract class Goban extends EventEmitter {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
 
         this.__last_pt = pt;
@@ -1947,7 +2019,9 @@ export abstract class Goban extends EventEmitter {
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
-            this.drawSquare(last_hover.x, last_hover.y);
+            if (last_hover) {
+                this.drawSquare(last_hover.x, last_hover.y);
+            }
         }
         this.__last_pt = this.xy2ij(-1, -1);
     } /* }}} */
@@ -1960,7 +2034,7 @@ export abstract class Goban extends EventEmitter {
         if (this.square_size <= 0) {
             //console.error("Non positive square size set", this.square_size);
             //console.error(new Error().stack);
-            this.square_size = 1;
+            this.square_size = 12;
         }
 
         let ret = {
@@ -2172,8 +2246,9 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (this.highlight_movetree_moves && movetree_contains_this_square) {
-                let color = "#FF8E0A";
+            if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+
+                let color = pos.hint ? "#8EFF0A" : "#FF8E0A";
 
                 ctx.lineCap = "square";
                 ctx.save();
@@ -2242,7 +2317,11 @@ export abstract class Goban extends EventEmitter {
                     }
                 }
                 else if (this.move_selected) {
-                    color = this.engine.otherPlayer();
+                    if (this.engine.handicapMovesLeft() <= 0) {
+                        color = this.engine.otherPlayer();
+                    }   else {
+                            color = this.engine.player;
+                    }
                 }
                 else if (this.mode === "puzzle") {
                     if (this.getPuzzlePlacementSetting) {
@@ -2271,6 +2350,17 @@ export abstract class Goban extends EventEmitter {
 
                 if (!(this.autoplaying_puzzle_move && !stone_color)) {
                     text_color = color === 1 ? this.theme_black_text_color : this.theme_white_text_color;
+
+                    if (!this.theme_black_stones) {
+                        let err = new Error(`Goban.theme_black_stones not set. Current themes is ${JSON.stringify(this.themes)}`);
+                        setTimeout(() => { throw err; }, 1);
+                        return;
+                    }
+                    if (!this.theme_white_stones) {
+                        let err = new Error(`Goban.theme_white_stones not set. Current themes is ${JSON.stringify(this.themes)}`);
+                        setTimeout(() => { throw err; }, 1);
+                        return;
+                    }
 
                     ctx.save();
                     let shadow_ctx = this.shadow_ctx;
@@ -2683,7 +2773,11 @@ export abstract class Goban extends EventEmitter {
                     color = this.edit_color === "black" ? 1 : 2;
                 }
                 else if (this.move_selected) {
-                    color = this.engine.otherPlayer();
+                    if (this.engine.handicapMovesLeft() <= 0) {
+                        color = this.engine.otherPlayer();
+                    }   else {
+                            color = this.engine.player;
+                    }
                 }
                 else {
                     color = this.engine.player;
@@ -2695,8 +2789,12 @@ export abstract class Goban extends EventEmitter {
 
         /* Draw square highlights if any */
         {{{
-            if (this.highlight_movetree_moves && movetree_contains_this_square) {
-                ret += "highlight,";
+            if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+                if (pos.hint) {
+                    ret += "hint,";
+                } else {
+                    ret += "highlight,";
+                }
             }
         }}}
 
@@ -2892,20 +2990,66 @@ export abstract class Goban extends EventEmitter {
             let yy = y;
             ctx.fillText(ch, xx, yy);
         };
+        let vplace = (ch, x, y) => { /* places centered (horizontally & veritcally) text at x,y, with text going down vertically. */
+            for (let i = 0; i < ch.length; ++i) {
+                let metrics = ctx.measureText(ch[i]);
+                let xx = x - metrics.width / 2;
+                let yy = y;
+                let H = metrics.width; /* should be height in an ideal world, measureText doesn't seem to return it though. For our purposes this works well enough though. */
+
+                if (ch.length === 2) {
+                    yy = yy - H + (i * H);
+                }
+                if (ch.length === 3) {
+                    yy = yy - (H * 1.5) + (i * H);
+                }
+
+                ctx.fillText(ch[i], xx, yy);
+            }
+        };
 
         let drawHorizontal = (i, j) => {
-            for (let c = 0; c < this.width; ++i, ++c) {
-                let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
-                let y = j * this.square_size + this.square_size / 2;
-                place("ABCDEFGHJKLMNOPQRSTUVWXYZ"[c], x, y);
+            switch (this.getCoordinateDisplaySystem()) {
+                case 'A1':
+                    for (let c = 0; c < this.width; ++i, ++c) {
+                        let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
+                        let y = j * this.square_size + this.square_size / 2;
+                        place("ABCDEFGHJKLMNOPQRSTUVWXYZ"[c], x, y);
+                    }
+                    break;
+                case '1-1':
+                    for (let c = 0; c < this.width; ++i, ++c) {
+                        let x = (i - this.bounds.left - (this.bounds.left > 0 ? +this.draw_left_labels : 0)) * this.square_size + this.square_size / 2;
+                        let y = j * this.square_size + this.square_size / 2;
+                        place('' + (c + 1), x, y);
+                    }
+                    break;
             }
         };
 
         let drawVertical = (i, j) => {
-            for (let c = 0; c < this.height; ++j, ++c) {
-                let x = i * this.square_size + this.square_size / 2;
-                let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
-                place("" + (this.height - c), x, y);
+            switch (this.getCoordinateDisplaySystem()) {
+                case 'A1':
+                    for (let c = 0; c < this.height; ++j, ++c) {
+                        let x = i * this.square_size + this.square_size / 2;
+                        let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
+                        place("" + (this.height - c), x, y);
+                    }
+                    break;
+                case '1-1':
+                    let chinese_japanese_numbers = [
+                        "一", "二", "三", "四", "五",
+                        "六", "七", "八", "九", "十",
+                        "十一", "十二", "十三", "十四", "十五",
+                        "十六", "十七", "十八", "十九", "二十",
+                        "二十一", "二十二", "二十三", "二十四", "二十五",
+                    ];
+                    for (let c = 0; c < this.height; ++j, ++c) {
+                        let x = i * this.square_size + this.square_size / 2;
+                        let y = (j - this.bounds.top - (this.bounds.top > 0 ? +this.draw_top_labels : 0)) * this.square_size + this.square_size / 2;
+                        vplace(chinese_japanese_numbers[c], x, y);
+                    }
+                    break;
             }
         };
 
@@ -2918,8 +3062,17 @@ export abstract class Goban extends EventEmitter {
 
             /* Draw labels */
             let text_size = Math.round(this.square_size * 0.5);
+            let bold = 'bold';
+            if (this.getCoordinateDisplaySystem() === '1-1') {
+                text_size *= 0.7;
+                bold = '';
 
-            ctx.font = "bold " + text_size + "px " + GOBAN_FONT;
+                if (this.height > 20) {
+                    text_size *= 0.7;
+                }
+            }
+
+            ctx.font = `${bold} ${text_size}px ${GOBAN_FONT}`;
             ctx.textBaseline = "middle";
             ctx.fillStyle = this.theme_board.getLabelTextColor();
             ctx.save();
@@ -2994,7 +3147,7 @@ export abstract class Goban extends EventEmitter {
         }
         this.theme_stone_radius = this.computeThemeStoneRadius(this.metrics);
         if (isNaN(this.theme_stone_radius)) {
-            console.error("setThemes was not able to find the board size, metrics were: ", this.metrics);
+            console.error("setThemes was not able to find the board size, metrics were: ", JSON.stringify(this.metrics));
             throw new Error("invalid stone radius computed");
         }
 
@@ -3085,7 +3238,22 @@ export abstract class Goban extends EventEmitter {
 
         if ("display_width" in config && this.original_square_size === "auto") {
             this.display_width = config["display_width"];
+            if (isNaN(this.display_width)) {
+                console.error("Invalid display width. (NaN)");
+                this.display_width = 320;
+            }
             let n_squares = Math.max(this.bounded_width + +this.draw_left_labels + +this.draw_right_labels, this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels);
+            if (isNaN(n_squares)) {
+                console.error("Invalid n_squares: ", n_squares);
+                console.error("bounded_width: ", this.bounded_width);
+                console.error("this.draw_left_labels: ", this.draw_left_labels);
+                console.error("this.draw_right_labels: ", this.draw_right_labels);
+                console.error("bounded_height: ", this.bounded_height);
+                console.error("this.draw_top_labels: ", this.draw_top_labels);
+                console.error("this.draw_bottom_labels: ", this.draw_bottom_labels);
+                n_squares = 19;
+            }
+
             this.square_size = Math.floor(this.display_width / n_squares);
         }
 
@@ -3147,8 +3315,8 @@ export abstract class Goban extends EventEmitter {
         this.setLastOfficialMove();
         this.emit("update");
 
-        if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in this.engine)) {
-            this.autoScore();
+        if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in (this as any).engine)) {
+            (this as any).autoScore();
         }
     } /* }}} */
     private set(x, y, player) { /* {{{ */
@@ -3163,6 +3331,7 @@ export abstract class Goban extends EventEmitter {
             this.getMarks(x, y).remove = false;
         }
         this.drawSquare(x, y);
+        this.emit("set-for-removal", {x, y, removed});
     } /* }}} */
     public showScores(score) { /* {{{ */
         this.hideScores();
@@ -3208,7 +3377,7 @@ export abstract class Goban extends EventEmitter {
                         this.setTitle(_("Your move"));
                     }
                     if (this.engine.cur_move.id === this.engine.last_official_move.id && this.mode === "play") {
-                        this.emit("state_text", _("Your Move"));
+                        this.emit("state_text", {title: _("Your Move")});
                     }
                 } else {
                     let color = this.engine.playerColor(this.engine.playerToMove());
@@ -3224,19 +3393,19 @@ export abstract class Goban extends EventEmitter {
                     }
                     this.setTitle(title);
                     if (this.engine.cur_move.id === this.engine.last_official_move.id && this.mode === "play") {
-                        this.emit("state_text", title, true);
+                        this.emit("state_text", {title: title, show_moves_made_count: true});
                     }
                 }
                 break;
 
             case "stone removal":
                 this.setTitle(_("Stone Removal"));
-                this.emit("state_text", _("Stone Removal Phase"));
+                this.emit("state_text", {title: _("Stone Removal Phase")});
                 break;
 
             case "finished":
                 this.setTitle(_("Game Finished"));
-                this.emit("state_text", _("Game Finished"));
+                this.emit("state_text", {title: _("Game Finished")});
                 break;
 
             default:
@@ -3293,7 +3462,7 @@ export abstract class Goban extends EventEmitter {
             this.emit("update");
         }
     } /* }}} */
-    public showNext() { /* {{{ */
+    public showNext(dont_update_display?) { /* {{{ */
         if (this.mode === "conditional") {
             if (this.currently_my_cmove) {
                 if (this.current_cmove.move != null) {
@@ -3311,8 +3480,11 @@ export abstract class Goban extends EventEmitter {
             }
             this.engine.showNext();
         }
-        this.updateTitleAndStonePlacement();
-        this.emit("update");
+
+        if (!dont_update_display) {
+            this.updateTitleAndStonePlacement();
+            this.emit("update");
+        }
     } /* }}} */
     public prevSibling() { /* {{{ */
         let sibling = this.engine.cur_move.prevSibling();
@@ -3736,6 +3908,20 @@ export abstract class Goban extends EventEmitter {
             }
         }
     } /* }}} */
+
+    private setLetterMark(x, y, mark: string, drawSquare?) {
+        this.engine.cur_move.getMarks(x, y).letter = mark;
+        if (drawSquare) { this.drawSquare(x, y);  }
+    }
+    public setCustomMark(x, y, mark: string, drawSquare?) {
+        this.engine.cur_move.getMarks(x, y)[mark] = true;
+        if (drawSquare) { this.drawSquare(x, y); }
+    }
+    public deleteCustomMark(x, y, mark: string, drawSquare?) {
+        delete this.engine.cur_move.getMarks(x, y)[mark];
+        if (drawSquare) { this.drawSquare(x, y); }
+    }
+
     private setMark(x, y, mark, dont_draw) { /* {{{ */
         try {
             if (x >= 0 && y >= 0) {
@@ -3744,13 +3930,9 @@ export abstract class Goban extends EventEmitter {
                 }
 
                 if (mark.length <= 3) {
-                    this.engine.cur_move.getMarks(x, y).letter = mark;
+                    this.setLetterMark(x, y, mark, !dont_draw);
                 } else {
-                    this.engine.cur_move.getMarks(x, y)[mark] = true;
-                }
-
-                if (!dont_draw) {
-                    this.drawSquare(x, y);
+                    this.setCustomMark(x, y, mark, !dont_draw);
                 }
             }
         } catch (e) {
@@ -3917,7 +4099,7 @@ export abstract class Goban extends EventEmitter {
         this.auto_scoring_done = true;
 
         this.message(_("Processing..."), -1);
-        setTimeout(() => {
+        let do_score_estimation = () => {
             let se = new ScoreEstimator(null);
             se.init(this.engine, AUTOSCORE_TRIALS, AUTOSCORE_TOLERANCE);
             //console.error(se.area);
@@ -3950,6 +4132,11 @@ export abstract class Goban extends EventEmitter {
             });
 
             this.clearMessage();
+        };
+
+
+        setTimeout(() => {
+            init_score_estimator().then(do_score_estimation);
         }, 10);
     } /* }}} */
     private sendMove(mv) { /* {{{ */
@@ -4413,9 +4600,15 @@ export abstract class Goban extends EventEmitter {
     protected getShouldPlayVoiceCountdown():boolean {{{
         return false;
     }}}
+    /**
+     * Returns true if the user has signed in and if the signed in user is a participating player in this game
+     * (and not only spectating), that is, if they are either white or black.
+     */
+    public isParticipatingPlayer():boolean { /* {{{ */
+        return this.engine.black_player_id === this.player_id ||
+               this.engine.white_player_id === this.player_id;
+    } /* }}} */
 }
-
-
 function plurality(num, single, plural) {{{
     if (num > 0) {
         if (num === 1) {
