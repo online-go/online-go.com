@@ -382,6 +382,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         super(props);
         this.state = {
             loading: true,
+            analyzing: false,
             analyses: [],
             selected_analysis: null,
             full: null,
@@ -438,6 +439,9 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                     'fast': true,
                 })
                 .then(res => {
+                    if (res.success) {
+                        this.setState({analyzing: true});
+                    }
                     console.log(res);
                 })
                 .catch(err => console.error(err));
@@ -580,6 +584,12 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 <div className='AIAnalysis'>
                     <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
                     <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
+                    { ((this.state.analyses.length === 0 && this.state.analyzing) || null) &&
+                        <div className='analyzing'>
+                            {_("Game is being analyzed by our AI")}
+                            <i className='fa fa-desktop slowstrobe'></i>
+                        </div>
+                    }
                 </div>
             );
         }
@@ -683,6 +693,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 move_relative_delta = -move_relative_delta;
             }
         }
+
 
         return (
             <div className='AIAnalysis'>
@@ -809,33 +820,3 @@ function winRateDelta(start_or_delta, end?) {
 }
 
 
-/*
-
-                {false && move_analysis &&
-                    <div className='variations'>
-                        {move_analysis.variations.length === 0
-                            ? <div>{_("No variations")}</div>
-                            : <div>
-                                {move_analysis.variations.map((v, idx) =>
-                                    <div key={idx} className='variation'
-                                        onMouseEnter={(ev) => this.enterVariation(move_number, v)}
-                                        onMouseLeave={(ev) => this.leaveVariation()}
-                                        onClick={(ev) => null}
-                                        >
-                                        {alphabet[idx] + " "}
-
-                                        {winRateDelta(move_analysis.win_rate, v.win_rate)}
-
-                                        {GoMath.decodeMoves(v.moves, this.props.game.goban.width, this.props.game.goban.height).map((coord, idx) =>
-                                            <span key={idx} className='coordinate'>
-                                                {" " + GoMath.prettyCoords(coord.x, coord.y, this.props.game.goban.height)}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                              </div>
-                        }
-                    </div>
-                }
-
-*/

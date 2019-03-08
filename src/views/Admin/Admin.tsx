@@ -52,6 +52,14 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
             this.pollStats();
         }
         termination_socket.on("connect", this.pollStats);
+
+        get("admin/aiReviewStatus")
+        .then((res) => {
+            this.appendResult("\n----------------\n");
+            this.appendResult("\nAI Review Status\n");
+            this.appendResult(res);
+            this.appendResult("\n----------------\n");
+        }).catch(ignore);
     }
 
     componentWillUnmount() {
