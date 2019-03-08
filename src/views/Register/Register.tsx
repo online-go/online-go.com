@@ -59,10 +59,7 @@ export class Register extends React.PureComponent<{}, any> {
         };
 
         let focus_empty = (focus_email?: boolean) => {
-            if (
-                this.refs.username.value.trim() === "" ||
-                !this.validateUsername()
-            ) {
+            if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
                 this.refs.username.focus();
                 return true;
             }
@@ -113,17 +110,13 @@ export class Register extends React.PureComponent<{}, any> {
     validateUsername = (ev?) => {
         if (/@/.test(this.refs.username.value)) {
             $(this.refs.username).addClass("validation-error");
-            this.setState({
-                error: _(
-                    "Your username will be publically visible, please do not use your email address here."
-                )
-            });
+            this.setState({ "error": _("Your username will be publically visible, please do not use your email address here.") });
             this.refs.username.focus();
             return false;
         } else {
             if ($(this.refs.username).hasClass("validation-error")) {
                 $(this.refs.username).removeClass("validation-error");
-                this.setState({ error: null });
+                this.setState({ "error": null });
             }
         }
         return true;
@@ -135,60 +128,14 @@ export class Register extends React.PureComponent<{}, any> {
                 <Card>
                     <h2>{_("Welcome new player!")}</h2>
                     <form name="login" autoComplete="on">
-                        <label htmlFor="username">Username</label>
-                        <input
-                            id="username"
-                            className="boxed"
-                            autoFocus
-                            ref="username"
-                            name="username"
-                            onKeyPress={this.register}
-                            onChange={this.validateUsername}
-                            placeholder={
-                                _(
-                                    "jack.smith"
-                                ) /* translators: New account registration */
-                            }
-                        />
-                        {this.state.error && (
-                            <div className="error-message">
-                                {this.state.error}
-                            </div>
-                        )}
-                        <label htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            className="boxed"
-                            ref="password"
-                            type="password"
-                            name="password"
-                            onKeyPress={this.register}
-                            placeholder={
-                                _(
-                                    "your unique password"
-                                ) /* translators: New account registration */
-                            }
-                        />
-                        <label htmlFor="email">Email (optional)</label>
-                        <input
-                            id="email"
-                            className="boxed"
-                            ref="email"
-                            type="email"
-                            name="email"
-                            onKeyPress={this.register}
-                            placeholder={
-                                _(
-                                    "jack@jacksmith.com"
-                                ) /* translators: New account registration */
-                            }
-                        />
-                        <div
-                            style={{
-                                textAlign: "right",
-                                marginBottom: "1.0rem"
-                            }}
-                        >
+                        <label htmlFor="username">{_("Username") /* translators: New account registration */}</label>
+                        <input className="boxed" id="username" autoFocus ref="username" name="username" onKeyPress={this.register} onChange={this.validateUsername} />
+                        {this.state.error && <div className="error-message">{this.state.error}</div>}
+                        <label htmlFor="password">{_("Password") /* translators: New account registration */}</label>
+                        <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.register} />
+                        <label htmlFor="email">{_("Email (optional)") /* translators: New account registration */}</label>
+                        <input className="boxed" id="email" ref="email" type="email" name="email" onKeyPress={this.register} />
+                        <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
                             <button className="primary" onClick={this.register}>
                                 <i className="fa fa-sign-in" /> {_("Sign up")}
                             </button>
@@ -196,39 +143,15 @@ export class Register extends React.PureComponent<{}, any> {
                     </form>
 
                     <div className="social-buttons">
-                        <LineText>
-                            {_(
-                                "or sign in with"
-                            ) /* translators: username or password, or sign in with social authentication */}
-                        </LineText>
-                        <a
-                            className="zocial email icon"
-                            href="/sign-in/"
-                            target="_self"
-                        >
-                            Google
-                        </a>
-                        <a
-                            className="zocial google icon"
-                            href="/login/google-oauth2/"
-                            target="_self"
-                        >
-                            Google
-                        </a>
-                        <a
-                            className="zocial facebook icon"
-                            href="/login/facebook/"
-                            target="_self"
-                        >
-                            Facebook
-                        </a>
-                        <a
-                            className="zocial twitter icon"
-                            href="/login/twitter/"
-                            target="_self"
-                        >
-                            Twitter
-                        </a>
+                        <LineText>{
+                            _("or sign in with") /* translators: username or password, or sign in with social authentication */
+                        }</LineText>
+                        <div className="icons">
+                            <Link to="/sign-in" className="mdi-icon email"><img src="/mdi-email-outline.svg" alt="Email" /></Link>
+                            <a href="/login/google-oauth2/" className="mdi-icon google"><img src="/mdi-google.svg" alt="Google" /></a>
+                            <a href="/login/facebook/" className="mdi-icon facebook"><img src="/mdi-facebook.svg" alt="Facebook" /></a>
+                            <a href="/login/twitter" className="mdi-icon twitter"><img src="/mdi-twitter.svg" alt="Twitter" /></a>
+                        </div>
                     </div>
                 </Card>
             </div>

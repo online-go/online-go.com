@@ -16,20 +16,45 @@
  */
 
 #SignIn {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
 
-  .Card {
-    padding: 1rem;
-    width: 15rem;
-    max-width: 100%;
+    .Card {
+        padding: 1rem;
+        width: 15rem;
+        max-width: 100%;
 
-    h2 {
-      margin-top: 0;
+        h2 {
+            margin-top: 0;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .form-actions {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
     }
+
+    .registration {
+        margin-top: 2rem;
+        text-align: center;
+
+        h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .fa-sign-in {
+            margin-right: 0.5rem;
+        }
 
     input {
       width: 100%;
@@ -57,12 +82,19 @@
     themedcolorshade1margin-bottom: 1rem;
   }
 
-  .social-buttons {
-    text-align: center;
-    .zocial {
-      margin-top: 1rem;
-      margin-left: 0.5rem;
-      margin-right: 0.5rem;
+    .social-buttons {
+        text-align: center;
+        .mdi-icon {
+            padding: 0.5rem;
+            img {
+                width: 40px;
+                height: 40px;
+            }
+            &.google { filter: invert(26%) sepia(27%) saturate(5667%) hue-rotate(343deg) brightness(108%) contrast(107%); }
+            &.facebook { filter: invert(26%) sepia(84%) saturate(686%) hue-rotate(192deg) brightness(93%) contrast(85%); }
+            &.twitter { filter: invert(77%) sepia(45%) saturate(4872%) hue-rotate(178deg) brightness(95%) contrast(90%); }
+        }
+
     }
   }
 }

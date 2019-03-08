@@ -63,17 +63,7 @@ export function get_ebi() {
     } catch (e) {
         console.error(e);
     }
-    return (
-        bid +
-        "." +
-        screen_dims +
-        "." +
-        plugin_hash +
-        "." +
-        user_agent_hash +
-        "." +
-        tzoffset
-    );
+    return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." + tzoffset;
 }
 
 export class SignIn extends React.PureComponent<{}, any> {
@@ -161,15 +151,11 @@ export class SignIn extends React.PureComponent<{}, any> {
             input: "text",
             showCancelButton: true
         })
-            .then(username => {
+            .then((username) => {
                 post("/api/v0/reset", { username: username })
-                    .then(res => {
+                    .then((res) => {
                         if (res.success) {
-                            swal(
-                                _(
-                                    "An email with your new password has been emailed to you."
-                                )
-                            );
+                            swal(_("An email with your new password has been emailed to you."));
                         } else {
                             console.error(res);
                             errorAlerter(res);
@@ -178,7 +164,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                     .catch(errorAlerter);
             })
             .catch(ignore);
-    };
+    }
 
     render() {
         return (
@@ -187,75 +173,27 @@ export class SignIn extends React.PureComponent<{}, any> {
                     <Card>
                         <h2>{_("Sign in")}</h2>
                         <form name="login" autoComplete="on">
-                            <label htmlFor="username">Username</label>
-                            <input
-                                id="username"
-                                className="boxed"
-                                autoFocus
-                                ref="username"
-                                name="username"
-                                onKeyPress={this.login}
-                                placeholder={
-                                    _(
-                                        "jill.smith"
-                                    ) /* translators: Provide username to sign in with */
-                                }
-                            />
-                            <label htmlFor="password">Password</label>
-                            <input
-                                id="password"
-                                className="boxed"
-                                ref="password"
-                                type="password"
-                                name="password"
-                                onKeyPress={this.login}
-                                placeholder={
-                                    _(
-                                        "your unique password"
-                                    ) /* translators: Provide password to sign in with */
-                                }
-                            />
+                            <label htmlFor="username">{_("Username") /* translators: Provide username to sign in with */}</label>
+                            <input className="boxed" id="username" autoFocus ref="username" name="username" onKeyPress={this.login} />
+                            <label htmlFor="password">{_("Password") /* translators: Provide password to sign in with */}</label>
+                            <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.login} />
                             <div className="form-actions">
-                                <a onClick={this.resetPassword}>
-                                    Forgot password?
-                                </a>
-                                <button
-                                    className="primary"
-                                    onClick={this.login}
-                                >
-                                    <i className="fa fa-sign-in" />{" "}
-                                    {_("Sign in")}
+                                <a onClick={this.resetPassword}>{_("Forgot password?")}</a>
+                                <button className="primary" onClick={this.login}>
+                                    <i className="fa fa-sign-in" /> {_("Sign in")}
                                 </button>
                             </div>
                         </form>
 
                         <div className="social-buttons">
-                            <LineText>
-                                {_(
-                                    "or sign in with"
-                                ) /* translators: username or password, or sign in with social authentication */}
-                            </LineText>
-                            <a
-                                className="zocial google icon"
-                                href="/login/google-oauth2/"
-                                target="_self"
-                            >
-                                Google
-                            </a>
-                            <a
-                                className="zocial facebook icon"
-                                href="/login/facebook/"
-                                target="_self"
-                            >
-                                Facebook
-                            </a>
-                            <a
-                                className="zocial twitter icon"
-                                href="/login/twitter/"
-                                target="_self"
-                            >
-                                Twitter
-                            </a>
+                            <LineText>{
+                                _("or sign in with") /* translators: username or password, or sign in with social authentication */
+                            }</LineText>
+                            <div className="icons">
+                                <a href="/login/google-oauth2/" className="mdi-icon google"><img src="/mdi-google.svg" alt="Google" /></a>
+                                <a href="/login/facebook/" className="mdi-icon facebook"><img src="/mdi-facebook.svg" alt="Facebook" /></a>
+                                <a href="/login/twitter" className="mdi-icon twitter"><img src="/mdi-twitter.svg" alt="Twitter" /></a>
+                            </div>
                         </div>
                     </Card>
 
@@ -263,12 +201,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                         <h3>{_("New to Online-Go?")} </h3>
                         <div>
                             <Link to="/register" className="btn primary">
-                                <b>
-                                    {_(
-                                        "Register here!"
-                                    ) /* translators: register for an account */}
-                                </b>
-                            </Link>
+                                <b>{_("Register here!")/* translators: register for an account */}</b></Link>
                         </div>
                     </div>
                 </div>
