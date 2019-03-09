@@ -105,7 +105,7 @@ export class Register extends React.PureComponent<{}, any> {
         if (event.type === "click" || event.charCode === 13) {
             return false;
         }
-    };
+    }
 
     validateUsername = (ev?) => {
         if (/@/.test(this.refs.username.value)) {
@@ -120,7 +120,7 @@ export class Register extends React.PureComponent<{}, any> {
             }
         }
         return true;
-    };
+    }
 
     render() {
         return (
