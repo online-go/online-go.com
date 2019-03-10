@@ -90,6 +90,9 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                 {usedForCheating(challenge.time_control_parameters) ?
                     <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}</p> :
                     ""}
+                {challenge.komi ?
+                    <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: Custom komi.  Accept at your own risk.")}</p> :
+                    ""}
                 <hr/>
                 <dl className="horizontal">
                   <dt>{_("Your color")}</dt><dd>{player_color}</dd>
