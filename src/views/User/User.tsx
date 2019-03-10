@@ -853,9 +853,9 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <h5>{_("API Key")}
                             <button className="btn btn-xs btn-default" onClick={() => this.generateAPIKey()}>{_("Generate API Key")}</button>
                             </h5>
-                            <input type="text" className="form-control" value={this.state.bot_apikey} />
+                            <input type="text" className="form-control" value={this.state.bot_apikey} readOnly />
                             <h5>{_("Bot Engine")}</h5>
-                            <input type="text" className="form-control" placeholder={_("Engine Name")} value={this.state.bot_ai}
+                            <input type="text" className="form-control" placeholder={_("Engine Name")} value={this.state.bot_ai || ""}
                                    onChange={(event) => this.setState({"bot_ai": (event.target as HTMLInputElement).value})}/>
                             <div style={{textAlign: "right"}}>
                                 <button className="btn btn-xs btn-default" onClick={() => this.saveBot()}>{_("Save")}</button>
