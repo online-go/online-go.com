@@ -36,9 +36,6 @@ import { Player } from "Player";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 
-import { moveCursor } from "readline";
-import { string, node } from "prop-types";
-
 //const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/";
 const server_url = "http://localhost:8081/godojo/";
 
@@ -795,6 +792,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             extra_info_selected: "none",
             current_position: "",
             commentary: [],
+            audit_log: [],
             next_comment: ""
         };
     }
@@ -827,11 +825,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             mode: 'cors',
             headers: godojo_headers
         })
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                console.log("Server response:", body);
-                this.extractCommentary(body.commentary);
-            });
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            console.log("Server response:", body);
+            this.extractCommentary(body.commentary);
+        });
         this.setState({ extra_info_selected: "comments" });
     }
 
@@ -847,6 +845,30 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     hideComments = () => {
+        this.setState({ extra_info_selected: "none" });
+    }
+
+    showAuditLog = () => {
+        const audits_url = server_url + "audits?id=" + this.props.position_id;
+        console.log("Fetching audit logs ", audits_url);
+        fetch(audits_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            console.log("Server response: ", body);
+            this.extractAuditLog(body.audits);
+        });
+        this.setState({ extra_info_selected: "audit-log" });
+    }
+
+    extractAuditLog = (audit_log_dto) => {
+        // the format is basically what we need.  Just capture it!
+        this.setState({ audit_log: audit_log_dto});
+    }
+
+    hideAudit = () => {
         this.setState({ extra_info_selected: "none" });
     }
 
@@ -892,11 +914,16 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                     : ""}
                 </div>
                 <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
-                    {this.state.extra_info_selected !== "comments" &&
-                        (this.props.comment_count !== 0 ?
-                            <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
-                            <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)
+                    {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
+                        <React.Fragment>
+                            {(this.props.comment_count !== 0 ?
+                                <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
+                                <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)}
+
+                            <i className="fa fa-history" onClick={this.showAuditLog}></i>
+                        </React.Fragment>
                     }
+
                     {this.state.extra_info_selected === "comments" &&
                         <React.Fragment>
                             <div className="discussion-container">
@@ -917,6 +944,28 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                 </div>
                             </div>
                             <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                        </React.Fragment>
+                    }
+
+                    {this.state.extra_info_selected === "audit-log" &&
+                        <React.Fragment>
+                            <div className="audit-container">
+                                <div className="audit-header">
+                                        <div>Audit Log:</div>
+                                        <i className="fa fa-caret-right" onClick={this.hideAudit} />
+                                </div>
+                                <div className="audit-entries">
+                                    {this.state.audit_log.map((audit, idx) =>
+                                        <div className="audit-entry" key={idx}>
+                                            <div className="audit-header">
+                                                <Player user={audit.userId}></Player>
+                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
+                                            </div>
+                                            {audit.comment}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </React.Fragment>
                     }
                 </div>
