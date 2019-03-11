@@ -21,7 +21,7 @@ import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
 import {UIPush} from "UIPush";
-import {deepCompare} from 'misc';
+import {deepCompare, dup} from 'misc';
 import {get, post} from 'requests';
 import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
@@ -101,7 +101,6 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
         this.initialize();
     }
     componentDidUpdate(prevProps, prevState) {
-        console.log("SHould be updating");
         this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
         this.resize();
     }
@@ -464,6 +463,18 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         .catch(err => console.error(err));
     }
 
+    handicapOffset():number {
+        if (this.props.game
+            && this.props.game.goban
+            && this.props.game.goban.engine
+            && this.props.game.goban.engine.free_handicap_placement
+            && this.props.game.goban.engine.handicap > 0
+        ) {
+            return this.props.game.goban.engine.handicap;
+        }
+        return 0;
+    }
+
     syncAnalysis() {
         let analysis = this.analysis;
 
@@ -482,7 +493,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 last_full_prediction = full_prediction;
 
                 return new AnalysisEntry({
-                    move: d.move,
+                    move: d.move + this.handicapOffset(),
                     fast_prediction: d.prediction,
                     full_prediction: full_prediction
                 });
@@ -604,16 +615,15 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
 
-        if ( `full-${move_number}` in this.analysis.data) {
-            move_analysis = this.analysis.data[`full-${move_number}`];
-            console.log("Rendering", move_analysis);
+        if ( `full-${move_number - this.handicapOffset()}` in this.analysis.data) {
+            move_analysis = this.analysis.data[`full-${move_number - this.handicapOffset()}`];
         }
 
         if (move_analysis) {
             win_rate = move_analysis.win_rate * 100;
             next_prediction = move_analysis.next_prediction;
-            if (`full-${move_number + 1}` in this.analysis.data) {
-                next_prediction = this.analysis.data[`full-${move_number + 1}`].win_rate;
+            if (`full-${move_number + 1 - this.handicapOffset()}` in this.analysis.data) {
+                next_prediction = this.analysis.data[`full-${move_number + 1 - this.handicapOffset()}`].win_rate;
             }
             next_prediction *= 100.0;
         }
@@ -734,8 +744,8 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                         <div>{_("Top game changing moves")}</div>
 
                         {this.state.fast.map((move, idx) =>
-                            <span key={move.move} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move.move)}>
-                                {move.move + 1}
+                            <span key={move.move} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move.move + this.handicapOffset())}>
+                                {move.move + 1 + this.handicapOffset()}
                             </span>
                         )}
 

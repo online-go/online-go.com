@@ -104,7 +104,7 @@ export class GoEngine {
     private board_is_repeating;
     private cb;
     private dontStoreBoardHistory;
-    private free_handicap_placement;
+    public free_handicap_placement;
     private loading_sgf;
     private marks;
     private move_before_jump;
