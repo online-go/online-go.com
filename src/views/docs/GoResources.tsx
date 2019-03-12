@@ -364,7 +364,7 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://smartgo.com/index.html">SmartGo</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a rel="noopener" href="https://gobooks.com/platforms.html">Go Books</a></span>,
 
-                <span><i className="fa fa-windows"/> <a rel="noopener" href="https://www.bestopenbook.com">LZ Opening Book</a></span>,
+                <span><i className="fa fa-windows"/> <a rel="noopener" href="http://openbook.qi-you.com/">LZ Opening Book</a></span>,
                 <span>
                     <i className="fa fa-linux" /> <i className="fa fa-apple" /> <i className="fa fa-windows" /> <a rel="noopener" href="https://www.sjeng.org/leela.html">Leela</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a rel="noopener" href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">EasyGo</a></span>
