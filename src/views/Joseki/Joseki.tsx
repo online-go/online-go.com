@@ -36,8 +36,9 @@ import { Player } from "Player";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 
-//const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/";
-const server_url = "http://localhost:8081/godojo/";
+const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/godojo/";
+
+//const server_url = "http://localhost:8081/godojo/";
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
