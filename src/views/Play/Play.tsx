@@ -596,14 +596,14 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <span title={_("Unusual time setting")}>
                                     <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
                                 </span>
-                            : C.komi ?
-                            <span title={_("Custom komi setting")}>
-                                <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
-                            </span>
                             : ""}
                         </span>
                         {commonSpan(C.ranked_text, "center")}
-                        {commonSpan(C.handicap_text, "center")}
+                        {C.komi ?
+                            <span className="cell" style={{textAlign: "center"}} title={_("Custom komi setting")}>
+                                {C.handicap_text} <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                            </span>
+                            : commonSpan(C.handicap_text, "center")}
                         {commonSpan(C.name, "left")}
                         {commonSpan(rulesText(C.rules), "left")}
                     </div> :

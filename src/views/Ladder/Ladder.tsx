@@ -155,6 +155,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                                 rowCount={this.state.ladder_size}
                                 rowRenderer={this.renderRow}
                                 scrollToIndex={this.state.scrollToIndex}
+                                scrollToAlignment="center"
                                 />
                         )}
                     </AutoSizer>
