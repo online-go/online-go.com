@@ -16,18 +16,15 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {_} from "translate";
 import {Card} from "material";
 import {errorAlerter} from "misc";
 import {LineText} from "misc-ui";
-import {post, get} from "requests";
+import {post} from "requests";
 import {get_ebi} from "SignIn";
 import cached from 'cached';
-
-declare var swal;
 
 export class Register extends React.PureComponent<{}, any> {
     refs: {
@@ -110,13 +107,13 @@ export class Register extends React.PureComponent<{}, any> {
     validateUsername = (ev?) => {
         if (/@/.test(this.refs.username.value)) {
             $(this.refs.username).addClass("validation-error");
-            this.setState({ "error": _("Your username will be publically visible, please do not use your email address here.") });
+            this.setState({"error": _("Your username will be publically visible, please do not use your email address here.")});
             this.refs.username.focus();
             return false;
         } else {
             if ($(this.refs.username).hasClass("validation-error")) {
                 $(this.refs.username).removeClass("validation-error");
-                this.setState({ "error": null });
+                this.setState({"error": null});
             }
         }
         return true;
@@ -135,7 +132,7 @@ export class Register extends React.PureComponent<{}, any> {
                         <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.register} />
                         <label htmlFor="email">{_("Email (optional)") /* translators: New account registration */}</label>
                         <input className="boxed" id="email" ref="email" type="email" name="email" onKeyPress={this.register} />
-                        <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
+                        <div style={{textAlign: "right", marginBottom: "1.0rem"}}>
                             <button className="primary" onClick={this.register}>
                                 <i className="fa fa-sign-in" /> {_("Sign up")}
                             </button>
@@ -144,14 +141,12 @@ export class Register extends React.PureComponent<{}, any> {
 
                     <div className="social-buttons">
                         <LineText>{
-                            _("or sign in with") /* translators: username or password, or sign in with social authentication */
+                            _("or log in to your account:") /* translators: username or password, or sign in to your account */
                         }</LineText>
-                        <div className="icons">
-                            <Link to="/sign-in" className="mdi-icon email"><img src="/mdi-email-outline.svg" alt="Email" /></Link>
-                            <a href="/login/google-oauth2/" className="mdi-icon google"><img src="/mdi-google.svg" alt="Google" /></a>
-                            <a href="/login/facebook/" className="mdi-icon facebook"><img src="/mdi-facebook.svg" alt="Facebook" /></a>
-                            <a href="/login/twitter" className="mdi-icon twitter"><img src="/mdi-twitter.svg" alt="Twitter" /></a>
-                        </div>
+                        <button onClick={() => {browserHistory.push(`/sign-in`);}} className="md-icon"><img src="/md-email-outline.svg" alt="Email" /> Login with Email</button>
+                        <button onClick={() => {browserHistory.push(`/login/google/`);}} className="md-icon"><img src="/google-icon.svg" className="google" alt="Google" /> Login with Google</button>
+                        <button onClick={() => {browserHistory.push(`/login/facebook/`);}} className="md-icon"><img src="/facebook-icon.svg" className="facebook" alt="Facebook" /> Login with Facebook</button>
+                        <button onClick={() => {browserHistory.push(`/login/twitter/`);}} className="md-icon"><img src="/md-twitter.svg" className="twitter" alt="Twitter" />Login with Twitter</button>
                     </div>
                 </Card>
             </div>

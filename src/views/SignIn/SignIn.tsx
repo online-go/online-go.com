@@ -23,12 +23,12 @@ import {_} from "translate";
 import {Card} from "material";
 import {LineText} from "misc-ui";
 import {errorAlerter, ignore} from "misc";
-import {post, get} from "requests";
+import {post} from "requests";
 import cached from 'cached';
 //let md5 = require("blueimp-md5");
 import * as _md5 from 'blueimp-md5';
 
-let md5:(p:string) => string = _md5 as any;
+let md5: (p: string) => string = _md5 as any;
 
 window['md5'] = md5;
 declare var swal;
@@ -147,7 +147,7 @@ export class SignIn extends React.PureComponent<{}, any> {
             showCancelButton: true
         })
             .then((username) => {
-                post("/api/v0/reset", { username: username })
+                post("/api/v0/reset", {username: username})
                     .then((res) => {
                         if (res.success) {
                             swal(_("An email with your new password has been emailed to you."));
@@ -182,13 +182,11 @@ export class SignIn extends React.PureComponent<{}, any> {
 
                         <div className="social-buttons">
                             <LineText>{
-                                _("or sign in with") /* translators: username or password, or sign in with social authentication */
+                                _("or log in using another account:") /* translators: username or password, or sign in with social authentication */
                             }</LineText>
-                            <div className="icons">
-                                <a href="/login/google-oauth2/" className="mdi-icon google"><img src="/mdi-google.svg" alt="Google" /></a>
-                                <a href="/login/facebook/" className="mdi-icon facebook"><img src="/mdi-facebook.svg" alt="Facebook" /></a>
-                                <a href="/login/twitter" className="mdi-icon twitter"><img src="/mdi-twitter.svg" alt="Twitter" /></a>
-                            </div>
+                            <button onClick={() => {browserHistory.push(`/login/google-oauth2/`);}} className="md-icon"><img src="/google-icon.svg" className="google" alt="Google" /> Login with Google</button>
+                            <button onClick={() => {browserHistory.push(`/login/facebook/`);}} className="md-icon"><img src="/facebook-icon.svg" className="facebook" alt="Facebook" /> Login with Facebook</button>
+                            <button onClick={() => {browserHistory.push(`/login/twitter/`);}} className="md-icon"><img src="/md-twitter.svg" className="twitter" alt="Twitter" />Login with Twitter</button>
                         </div>
                     </Card>
 

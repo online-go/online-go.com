@@ -84,16 +84,30 @@
   }
 
   .social-buttons {
-    text-align: center;
-    .mdi-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    button.md-icon {
+      display: flex;
+      align-items: center;
       padding: 0.5rem;
-      img {
-          width: 40px;
-          height: 40px;
+      background-color: #ffffff;
+      width: 100%;
+      height: 2.4rem;
+      cursor: pointer;
+
+      &+ button.md-icon {
+        margin-top: .5rem;
       }
-      &.google { filter: invert(26%) sepia(27%) saturate(5667%) hue-rotate(343deg) brightness(108%) contrast(107%); }
-      &.facebook { filter: invert(26%) sepia(84%) saturate(686%) hue-rotate(192deg) brightness(93%) contrast(85%); }
-      &.twitter { filter: invert(77%) sepia(45%) saturate(4872%) hue-rotate(178deg) brightness(95%) contrast(90%); }
+
+      img {
+          width: 1.4rem;
+          height: 1.4rem;
+          margin-right: .5rem;
+      }
+
+      img.twitter { filter: invert(77%) sepia(45%) saturate(4872%) hue-rotate(178deg) brightness(95%) contrast(90%); }
     }
 
   }
