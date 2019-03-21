@@ -143,10 +143,10 @@ export class Register extends React.PureComponent<{}, any> {
                         <LineText>{
                             _("or log in to your account:") /* translators: username or password, or sign in to your account */
                         }</LineText>
-                        <button onClick={() => {browserHistory.push(`/sign-in`);}} className="md-icon"><img src="/md-email-outline.svg" alt="Email" /> Login with Email</button>
-                        <button onClick={() => {browserHistory.push(`/login/google/`);}} className="md-icon"><img src="/google-icon.svg" className="google" alt="Google" /> Login with Google</button>
-                        <button onClick={() => {browserHistory.push(`/login/facebook/`);}} className="md-icon"><img src="/facebook-icon.svg" className="facebook" alt="Facebook" /> Login with Facebook</button>
-                        <button onClick={() => {browserHistory.push(`/login/twitter/`);}} className="md-icon"><img src="/md-twitter.svg" className="twitter" alt="Twitter" />Login with Twitter</button>
+                        <button onClick={() => {browserHistory.push(`/sign-in`); }} className="md-icon"><img src="/md-email-outline.svg" alt="Email" /> Login with Email</button>
+                        <button onClick={() => {browserHistory.push(`/login/google/`); }} className="md-icon"><img src="/google-icon.svg" className="google" alt="Google" /> Login with Google</button>
+                        <button onClick={() => {browserHistory.push(`/login/facebook/`); }} className="md-icon"><img src="/facebook-icon.svg" className="facebook" alt="Facebook" /> Login with Facebook</button>
+                        <button onClick={() => {browserHistory.push(`/login/twitter/`); }} className="md-icon"><img src="/md-twitter.svg" className="twitter" alt="Twitter" />Login with Twitter</button>
                     </div>
                 </Card>
             </div>
