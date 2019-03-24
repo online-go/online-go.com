@@ -224,7 +224,8 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     fetchNextMovesFor = (node_id) => {
         /* TBD: error handling, cancel on new route */
-        console.log("fetching for ", node_id);
+        this.setState({position_description: ""})
+        console.log("fetching for ", node_id); // visual indication that we are processing their click
         fetch(position_url(node_id), {
             mode: 'cors',
             headers: godojo_headers
