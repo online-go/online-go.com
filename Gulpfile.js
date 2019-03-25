@@ -245,7 +245,7 @@ function dev_server(done) {
         let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
             switch (parameter) {
                 case 'CDN_SERVICE': return `//${req.hostname}:${port}/`;
-                case 'LIVE_RELOAD': return `<script src="//${req.hostname}:35701/livereload.js"></script>`;
+                case 'LIVE_RELOAD': return `<script async src="//${req.hostname}:35701/livereload.js"></script>`;
                 case 'MIN': return '';
 
                 case 'OG_TITLE': return '';
