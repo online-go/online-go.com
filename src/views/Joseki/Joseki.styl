@@ -164,6 +164,7 @@
                 flex-grow: 1;
                 flex-basis: 50%;
                 justify-content: space-between; // put chat input at the bottom
+                overflow: auto;
 
                 .discussion-header {
                     display: flex;
@@ -191,6 +192,7 @@
 
                 .comment-text {
                     padding-left: 0.5em;
+                    overflow-wrap: break-word;
                 }
 
                 .comment-input {
@@ -258,6 +260,14 @@
 
             .hide {
                 display: none;
+            }
+
+            // would be nicer to ellipsis the beginning of the sequence
+            // instead of the end, but that's a lot harder.
+            .moves-made {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     }

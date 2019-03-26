@@ -492,10 +492,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
                             <span>Contributor:</span> <Player user={this.state.contributor_id} />
                         </div>
-                        <span>Moves made:</span>
-                        {this.state.current_move_category !== "new" ?
+                            <div>Moves made:</div>
+                            <div className="moves-made">
+                            {this.state.current_move_category !== "new" ?
                             <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
                             <span>{this.state.move_string}</span>}
+                            </div>
                     </div>
                 </div>
             </div>
@@ -875,7 +877,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     onCommentChange = (e) => {
-        // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters
+        // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
         if (/\r|\n/.exec(e.target.value)) {
             const comment_url = server_url + "comment?id=" + this.props.position_id;
             fetch(comment_url, {
@@ -890,7 +892,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 });
             this.setState({ next_comment: "" });
         }
-        else {
+        else if (e.target.value.length < 100) {
             this.setState({ next_comment: e.target.value });
         }
     }
