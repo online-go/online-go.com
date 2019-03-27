@@ -224,7 +224,9 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     fetchNextMovesFor = (node_id) => {
         /* TBD: error handling, cancel on new route */
-        this.setState({position_description: ""})
+        /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
+
+        this.setState({position_description: ""});
         console.log("fetching for ", node_id); // visual indication that we are processing their click
         fetch(position_url(node_id), {
             mode: 'cors',
@@ -274,6 +276,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                     console.log("finishing backstep");
                     this.backstepping = false;
                 }
+                this.goban.enableStonePlacement();
             });
     }
 
@@ -339,17 +342,24 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             the_move = null;
         }
         if (move_string !== this.state.move_string) {
+            this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
             console.log("Move placed: ", the_move);
             this.setState({ move_string });
-            this.processPlacement(the_move);
+            this.processPlacement(the_move);   // this is responsible for making sure stone placement is turned back on
         }
+
     }
 
     processPlacement(move: any) {
         /* They've either
             clicked a stone onto the board in a new position,
             or hit "back" to arrive at an old position,
-            or we got here during "loading a new sequence" */
+            or we got here during "loading a new sequence"
+
+            Note that this routine must either call this.fetchNextMovesFor() or this.goban.enableStonePlacement()
+            ... otherwise stone placement will be left turned off.
+            */
+
         const placement = move !== null ?
             GoMath.prettyCoords(move.x, move.y, this.goban.height) :
             "root";
@@ -365,9 +375,15 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
             }
+            else {
+                this.backstepping = false; // nothing else to do
+                this.goban.enableStonePlacement();
+                console.log("backstepped exploratory");
+            }
         }
         else if (this.load_sequence_to_board) {
             console.log("nothing to do in process placement");
+            this.goban.enableStonePlacement();
         }
         else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
@@ -387,10 +403,12 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             } else if (chosen_move === undefined) {
                 /* This isn't in the database */
                 console.log("exploratory");
+                this.next_moves = [];
                 this.setState({
                     position_description: "## Joseki",
                     current_move_category: "new"
                 });
+                this.goban.enableStonePlacement();
             }
 
             if (this.state.mode === PageMode.Play) {
@@ -453,9 +471,15 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
-        console.log("backstepping...");
-        this.backstepping = true;  // make sure we know the reason why the goban called us back
-        this.goban.showPrevious();
+        if (!this.backstepping) {
+            console.log("backstepping...");
+            this.backstepping = true;  // make sure we know the reason why the goban called us back
+            this.goban.showPrevious();
+            this.goban.disableStonePlacement()
+        }
+        else {
+            console.log("(ignoring back button click, still processing prior one)");
+        }
     }
 
     render() {
@@ -624,7 +648,6 @@ class PlayPane extends React.Component<PlayProps, any> {
         );
     }
 }
-
 
 // This pane enables the user to edit the description and category of the current position
 // It doesn't care what node we are on.  If the description or category of the node changes due to a click,

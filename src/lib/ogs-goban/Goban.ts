@@ -3413,13 +3413,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 break;
         }
     } /* }}} */
-    private disableStonePlacement() { /* {{{ */
+    public disableStonePlacement() { /* {{{ */
         this.stone_placement_enabled = false;
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
     } /* }}} */
-    private enableStonePlacement() { /* {{{ */
+    public enableStonePlacement() { /* {{{ */
         if (this.stone_placement_enabled) {
             this.disableStonePlacement();
         }
