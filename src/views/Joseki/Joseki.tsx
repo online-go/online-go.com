@@ -475,7 +475,6 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             console.log("backstepping...");
             this.backstepping = true;  // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
-            this.goban.disableStonePlacement()
         }
         else {
             console.log("(ignoring back button click, still processing prior one)");

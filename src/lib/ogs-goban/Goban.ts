@@ -3415,6 +3415,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
     public disableStonePlacement() { /* {{{ */
         this.stone_placement_enabled = false;
+        console.log("disabled stone placement");
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
@@ -3432,6 +3433,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.stone_placement_enabled = true;
+        console.log("enabled stone placement");
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
