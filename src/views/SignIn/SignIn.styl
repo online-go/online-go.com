@@ -100,16 +100,31 @@
       &+ a.md-icon {
         margin-top: .5rem;
       }
-
-      img {
-          width: 1.4rem;
-          height: 1.4rem;
-          margin-right: .5rem;
-      }
-
-      img.twitter { filter: invert(77%) sepia(45%) saturate(4872%) hue-rotate(178deg) brightness(95%) contrast(90%); }
     }
-
   }
 }
 
+
+.email-icon, .google-icon, .twitter-icon, .facebook-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    background-size: cover;
+    margin-right: 0.5rem;
+}
+
+.google-icon {
+    background-image: svg-load("../assets/google-icon.svg");
+}
+.facebook-icon {
+    background-image: svg-load("../assets/facebook-icon.svg");
+}
+.twitter-icon.fa-twitter {
+    color: #1DA1F2;
+    margin-right: 0.5rem;
+}
+.email-icon.fa-envelope-o {
+    color: #888;
+    margin-right: 0.5rem;
+}
