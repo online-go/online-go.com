@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import * as data from "data";
 import {_} from "translate";
@@ -143,10 +144,10 @@ export class Register extends React.PureComponent<{}, any> {
                         <LineText>{
                             _("or log in to your account:") /* translators: username or password, or sign in to your account */
                         }</LineText>
-                        <a href="/sign-in" className="s btn md-icon"><img src="/md-email-outline.svg" alt="Email" /> Login with Email</a>
-                        <a href="/login/google/" className="s btn md-icon"><img src="/google-icon.svg" className="google" alt="Google" /> Login with Google</a>
-                        <a href="/login/facebook/" className="s btn md-icon"><img src="/facebook-icon.svg" className="facebook" alt="Facebook" /> Login with Facebook</a>
-                        <a href="/login/twitter/" className="s btn md-icon"><img src="/md-twitter.svg" className="twitter" alt="Twitter" />Login with Twitter</a>
+                        <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Login with Email")}</Link>
+                        <a href="/login/google/" className="s btn md-icon"><span  className="google google-icon" /> {_("Login with Google")}</a>
+                        <a href="/login/facebook/" className="s btn md-icon"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
+                        <a href="/login/twitter/" className="s btn md-icon"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
                     </div>
                 </Card>
             </div>
