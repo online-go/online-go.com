@@ -44,12 +44,33 @@
     }
 
     .social-buttons {
-        text-align: center;
-        .zocial {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    
+        a.md-icon {
+          display: flex;
+          align-items: center;
+          padding: 0.5rem;
+          background-color: #ffffff;
+          width: 100%;
+          height: 2.4rem;
+          cursor: pointer;
+          &+ a.md-icon {
+              margin-top: .5rem;
+          }
+    
+          img {
+              width: 1.4rem;
+              height: 1.4rem;
+              margin-right: .5rem;
+          }
+    
+          img.email { filter: invert(52%) sepia(15%) saturate(7%) hue-rotate(35deg) brightness(87%) contrast(94%); }
+          img.twitter { filter: invert(77%) sepia(45%) saturate(4872%) hue-rotate(178deg) brightness(95%) contrast(90%); }
         }
-    }
+    
+      }
 
     .error-message {
         margin-top: -0.5rem;
