@@ -44,12 +44,31 @@
     }
 
     .social-buttons {
-        text-align: center;
-        .zocial {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    
+        a.md-icon {
+          display: flex;
+          align-items: center;
+          padding: 0.5rem;
+          background-color: #ffffff;
+          width: 100%;
+          height: 2.4rem;
+          cursor: pointer;
+          &+ a.md-icon {
+              margin-top: .5rem;
+          }
+    
+          img {
+              width: 1.4rem;
+              height: 1.4rem;
+              margin-right: .5rem;
+          }
+    
         }
-    }
+    
+      }
 
     .error-message {
         margin-top: -0.5rem;

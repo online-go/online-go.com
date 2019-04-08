@@ -102,7 +102,6 @@
 
       <noscript id="deferred-styles">
           <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext">
-          <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/css-social-buttons/1.2.0/css/zocial.min.css">
           <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
           <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/fixed-data-table/0.6.3/fixed-data-table.min.css">
           <link rel="stylesheet" type="text/css" href="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2.min.css">
@@ -223,7 +222,7 @@
             }
 
             try {
-                for (var i=0; i < navigator.languages.length; ++i) {
+                for (var i = 0; i < navigator.languages.length; ++i) {
                     var lang = isSupportedLanguage(navigator.languages[i]);
                     if (lang) {
                         return lang;
@@ -253,7 +252,7 @@
         /* Load our transations */
         var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
         language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
-        document.write('<script defer src="' + language_path + '"><'+'/script>');
+        document.write('<script defer src="' + language_path + '"><' + '/script>');
 
         /* Load OGS. We can override what script is loaded by setting the
          * 'ogs-script' entry in localStorage (useful for testing versions before they're
@@ -344,5 +343,6 @@
       </script>
 
     {{LIVE_RELOAD}}
-  </body>
+</body>
+
 </html>

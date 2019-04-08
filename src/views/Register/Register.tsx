@@ -23,11 +23,9 @@ import {_} from "translate";
 import {Card} from "material";
 import {errorAlerter} from "misc";
 import {LineText} from "misc-ui";
-import {post, get} from "requests";
+import {post} from "requests";
 import {get_ebi} from "SignIn";
 import cached from 'cached';
-
-declare var swal;
 
 export class Register extends React.PureComponent<{}, any> {
     refs: {
@@ -38,10 +36,10 @@ export class Register extends React.PureComponent<{}, any> {
 
     constructor(props) {
         super(props);
-        this.state = { };
+        this.state = {};
     }
 
-    register = (event) => {
+    register = event => {
         let actually_register = () => {
             console.log("Should be logging in");
 
@@ -58,7 +56,7 @@ export class Register extends React.PureComponent<{}, any> {
             }).catch(errorAlerter);
         };
 
-        let focus_empty = (focus_email?:boolean) => {
+        let focus_empty = (focus_email?: boolean) => {
             if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
                 this.refs.username.focus();
                 return true;
@@ -69,12 +67,15 @@ export class Register extends React.PureComponent<{}, any> {
                 return true;
             }
 
-
             if (this.refs.password.value.trim() === "") {
                 this.refs.password.focus();
                 return true;
             }
-            if (focus_email && this.refs.email.value.trim() === "" && this.refs.email !== document.activeElement) {
+            if (
+                focus_email &&
+                this.refs.email.value.trim() === "" &&
+                this.refs.email !== document.activeElement
+            ) {
                 this.refs.email.focus();
                 return true;
             }
@@ -99,7 +100,6 @@ export class Register extends React.PureComponent<{}, any> {
             }
         }
 
-
         if (event.type === "click" || event.charCode === 13) {
             return false;
         }
@@ -120,37 +120,37 @@ export class Register extends React.PureComponent<{}, any> {
         return true;
     }
 
-
     render() {
         return (
-        <div id="Register">
-            <Card>
-            <h2>{_("Welcome new player!")}</h2>
-                <form name="login" autoComplete="on">
-                    <input className="boxed" autoFocus ref="username" name="username" onKeyPress={this.register} onChange={this.validateUsername} placeholder={_("Username") /* translators: New account registration */} />
-                    {this.state.error && <div className="error-message">{this.state.error}</div>}
-                    <input className="boxed" ref="password" type="password" name="password" onKeyPress={this.register} placeholder={_("Password") /* translators: New account registration */} />
-                    <input className="boxed" ref="email" type="email" name="email" onKeyPress={this.register} placeholder={_("Email (optional)") /* translators: New account registration */} />
-                    <div style={{textAlign: "right", marginBottom: "1.0rem"}}>
-                        <button className="primary" onClick={this.register}>
-                            <i className="fa fa-sign-in"/> {_("Sign up")}
-                        </button>
-                    </div>
-                </form>
+            <div id="Register">
+                <Card>
+                    <h2>{_("Welcome new player!")}</h2>
+                    <form name="login" autoComplete="on">
+                        <label htmlFor="username">{_("Username") /* translators: New account registration */}</label>
+                        <input className="boxed" id="username" autoFocus ref="username" name="username" onKeyPress={this.register} onChange={this.validateUsername} />
+                        {this.state.error && <div className="error-message">{this.state.error}</div>}
+                        <label htmlFor="password">{_("Password") /* translators: New account registration */}</label>
+                        <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.register} />
+                        <label htmlFor="email">{_("Email (optional)") /* translators: New account registration */}</label>
+                        <input className="boxed" id="email" ref="email" type="email" name="email" onKeyPress={this.register} />
+                        <div style={{textAlign: "right", marginBottom: "1.0rem"}}>
+                            <button className="primary" onClick={this.register}>
+                                <i className="fa fa-sign-in" /> {_("Sign up")}
+                            </button>
+                        </div>
+                    </form>
 
-                <div className="social-buttons">
-                    <LineText>{
-                        _("or sign in with") /* translators: username or password, or sign in with social authentication */
-                    }</LineText>
-                    <a className="zocial google icon"
-                        href="/login/google-oauth2/" target="_self">Google</a>
-                    <a className="zocial facebook icon"
-                        href="/login/facebook/" target="_self">Facebook</a>
-                    <a className="zocial twitter icon"
-                        href="/login/twitter/" target="_self">Twitter</a>
-                </div>
-            </Card>
-        </div>
+                    <div className="social-buttons">
+                        <LineText>{
+                            _("or log in to your account:") /* translators: username or password, or sign in to your account */
+                        }</LineText>
+                        <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Login with Email")}</Link>
+                        <a href="/login/google/" className="s btn md-icon"><span  className="google google-icon" /> {_("Login with Google")}</a>
+                        <a href="/login/facebook/" className="s btn md-icon"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
+                        <a href="/login/twitter/" className="s btn md-icon"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
+                    </div>
+                </Card>
+            </div>
         );
     }
 }
