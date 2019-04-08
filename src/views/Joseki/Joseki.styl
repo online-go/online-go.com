@@ -262,12 +262,11 @@
                 display: none;
             }
 
-            // would be nicer to ellipsis the beginning of the sequence
-            // instead of the end, but that's a lot harder.
             .moves-made {
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                direction: rtl;  // ellipsis on left
             }
         }
     }
