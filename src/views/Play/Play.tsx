@@ -58,6 +58,7 @@ export class Play extends React.Component<PlayProperties, any> {
             live_list: [],
             correspondence_list: [],
             disableCorrespondenceButton: false,
+            showLoadingSpinnerForCorrespondence: false,
             show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
@@ -243,8 +244,9 @@ export class Play extends React.Component<PlayProperties, any> {
         this.onAutomatchEntry(preferences);
 
         if (speed === 'correspondence') {
-            this.setState({disableCorrespondenceButton: true});
+            this.setState({disableCorrespondenceButton: true, showLoadingSpinnerForCorrespondence: true});
             setTimeout(() => this.setState({disableCorrespondenceButton: false}), 1000);
+            setTimeout(() => this.setState({showLoadingSpinnerForCorrespondence: false}), 5000);
         }
     }}}
 
@@ -349,7 +351,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                             {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
-                                <span className="cell break">{_("Automatch")}</span>
+                                <span className="cell break">{_("Your Automatch Requests")}</span>
                                 {this.cellBreaks(7)}
                             </div>
                             }
@@ -367,7 +369,11 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <div className='challenge-row automatch-challenge-row' key={m.uuid}>
                                 <span className='cell'>
                                     <button className='reject xs'
-                                            onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
+                                            onClick={() => { automatch_manager.cancel(m.uuid);
+                                            if (corr_automatchers.length === 1)  {
+                                                this.setState({showLoadingSpinnerForCorrespondence: false});
+                                            }
+                                            }}>{pgettext("Cancel automatch", "Cancel")}</button>
                                 </span>
 
                                     <span className='cell'>
@@ -480,6 +486,24 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelActiveLiveChallenges}>{pgettext("Cancel challenge", "Cancel")}</button>
+                    </div>
+                </div>
+            );
+        }
+        else if (this.state.showLoadingSpinnerForCorrespondence) {
+            return (
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Finding you a game...")}
+                    </div>
+                    <div className='automatch-row-container'>
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className='info automatch-settings-corr'>
+                        {_("To cancel or view your automatch request(s), check below.")}
                     </div>
                 </div>
             );
