@@ -46,7 +46,7 @@ import {openGameLinkModal} from "./GameLinkModal";
 import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
-import {AIAnalysis} from "./AIAnalysis";
+import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
@@ -1519,23 +1519,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     /* Review stuff */
-    clear_ai_analysis = () => {
+    clear_ai_review = () => {
         swal({
-            "text": _("Really clear AI reviews?"),
+            "text": _("Really clear ALL AI reviews for this game?"),
             showCancelButton: true
         }).then(() => {
-            del("ai_reviews/%%", this.game_id, {})
-            .then((res) => swal("Analysis cleared"))
+            del(`games/${this.game_id}/ai_reviews`, {})
+            .then((res) => swal("AI Reviews cleared"))
             .catch(errorAlerter);
         })
         .catch(ignore);
     }
-    force_ai_analysis(analysis_type:"fast" | "full") {
-        post("ai_reviews/", {
-            "game_id": this.game_id,
+    force_ai_review(analysis_type:"fast" | "full") {
+        post(`games/${this.game_id}/ai_reviews`, {
             "engine": "leela_zero",
-            "fast": analysis_type === "fast",
-            "full": analysis_type === "full",
+            "type": analysis_type,
         })
         .then((res) => swal("Analysis started"))
         .catch(errorAlerter);
@@ -1599,7 +1597,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
 
-                    {(this.state.view_mode === "portrait" || null) && this.frag_ai_analysis()}
+                    {(this.state.view_mode === "portrait" || null) && this.frag_ai_review()}
 
                     {((this.state.view_mode === "portrait") || null) &&
                         (review
@@ -1631,7 +1629,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             this.state.view_mode === "wide" || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && this.frag_ai_analysis()}
+                            this.state.view_mode === "wide" || null) && this.frag_ai_review()}
 
                         {review
                             ? this.frag_review_controls()
@@ -2108,14 +2106,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         </div>
         );
     }
-    frag_ai_analysis() {
+    frag_ai_review() {
         if (this.goban
             && this.goban.engine
             && this.goban.engine.phase === "finished"
             && this.goban.engine.width === 19
             && this.goban.engine.height === 19
         ) {
-            return <AIAnalysis game={this} move={this.goban.engine.cur_move} />;
+            return <AIReview game={this} move={this.goban.engine.cur_move} />;
         }
         return null;
     }
@@ -2362,9 +2360,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
 
                 {(superuser_ai_review_ready) && <hr/>}
-                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_analysis("fast")}><i className="fa fa-line-chart"></i> {"Fast AI review"}</a>}
-                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_analysis("full")}><i className="fa fa-area-chart"></i> {"Full AI review"}</a>}
-                {(superuser_ai_review_ready) && <a onClick={this.clear_ai_analysis}><i className="fa fa-trash"></i> {"Clear AI reviews"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI review"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {"Full AI review"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={this.clear_ai_review}><i className="fa fa-trash"></i> {"Clear AI reviews"}</a>}
             </Dock>
         );
     }

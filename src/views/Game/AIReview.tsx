@@ -33,7 +33,7 @@ import Select from 'react-select';
 
 declare var swal;
 
-export class AnalysisEntry {
+export class AIReviewEntry {
     move: number;
     fast_prediction: number;
     full_prediction: number;
@@ -45,22 +45,22 @@ export class AnalysisEntry {
     }
 }
 
-interface AIAnalysisChartProperties {
-    entries     : Array<AnalysisEntry>;
+interface AIReviewChartProperties {
+    entries     : Array<AIReviewEntry>;
     updatecount : number;
     move        : number;
     setmove     : (move_number:number) => void;
 }
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const bisector = d3.bisector((d:AnalysisEntry) => { return d.move; }).left;
+const bisector = d3.bisector((d:AIReviewEntry) => { return d.move; }).left;
 let svgWidth = 600;
 let svgHeight = 100;
 let margin = { top: 15, right: 20, bottom: 30, left: 50 };
 let width = svgWidth - margin.left - margin.right;
 let height = svgHeight - margin.top - margin.bottom;
 
-export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, any> {
+export class AIReviewChart extends React.Component<AIReviewChartProperties, any> {
     container = null;
     chart_div;
     svg;
@@ -362,28 +362,28 @@ export class AIAnalysisChart extends React.Component<AIAnalysisChartProperties, 
     }
     render() {
         return (
-            <div ref={this.setContainer} className="AIAnalysisChart">
+            <div ref={this.setContainer} className="AIReviewChart">
                 <PersistentElement elt={this.chart_div}/>
             </div>
         );
     }
 }
 
-interface AIAnalysisProperties {
+interface AIReviewProperties {
     game: Game;
     move: MoveTree;
 }
 
-export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
-    analysis;
+export class AIReview extends React.Component<AIReviewProperties, any> {
+    ai_review;
 
     constructor(props) {
         super(props);
         this.state = {
             loading: true,
-            analyzing: false,
-            analyses: [],
-            selected_analysis: null,
+            reviewing: false,
+            ai_reviews: [],
+            selected_ai_review: null,
             full: null,
             fast: null,
             update_count: 0,
@@ -391,12 +391,12 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
     }
 
     componentDidMount() {
-        this.getAnalysisList();
+        this.getAIReviewList();
     }
 
     componentDidUpdate(prevProps, prevState) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
-            this.getAnalysisList();
+            this.getAIReviewList();
         }
     }
 
@@ -416,30 +416,31 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         return null;
     }
 
-    getAnalysisList() {
+    getAIReviewList() {
         let game_id = this.getGameId();
         if (!game_id) {
             return;
         }
 
-        get(`/termination-api/analysis/${game_id}`)
+        //get(`/termination-api/ai_review/${game_id}`)
+        get(`games/${game_id}/ai_reviews`)
         .then(lst => {
             this.setState({
                 loading: false,
-                analyses: lst,
+                ai_reviews: lst,
             });
 
             if (lst.length) {
-                this.setSelectedAnalysis(lst[0]);
+                this.setSelectedAIReview(lst[0]);
             } else {
-                post(`ai_reviews/`, {
-                    'game_id': game_id,
+                post(`games/${game_id}/ai_reviews`, {
                     'engine': 'leela_zero',
-                    'fast': true,
+                    'type': 'fast',
                 })
                 .then(res => {
-                    if (res.success) {
-                        this.setState({analyzing: true});
+                    console.log(res);
+                    if (res.id) {
+                        this.setState({reviewing: true});
                     }
                     console.log(res);
                 })
@@ -449,16 +450,16 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         .catch(err => console.error(err));
     }
 
-    getAnalysis(analysis_id:string) {
+    getAIReview(ai_review_id:string) {
         let game_id = this.getGameId();
         if (!game_id) {
             return;
         }
 
-        get(`/termination-api/analysis/${game_id}/${analysis_id}`)
-        .then(analysis => {
-            this.analysis = analysis;
-            this.syncAnalysis();
+        get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
+        .then(ai_review => {
+            this.ai_review = ai_review;
+            this.syncAIReview();
         })
         .catch(err => console.error(err));
     }
@@ -475,24 +476,24 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         return 0;
     }
 
-    syncAnalysis() {
-        let analysis = this.analysis;
+    syncAIReview() {
+        let ai_review = this.ai_review;
 
-        if ('full-network-fastmap' in analysis.data) {
-            let data:Array<AnalysisEntry> = [];
+        if ('full-network-fastmap' in ai_review) {
+            let data:Array<AIReviewEntry> = [];
             let last_full_prediction = 0.5;
-            data = analysis.data['full-network-fastmap'].map(d => {
+            data = ai_review['full-network-fastmap'].map(d => {
                 let full_prediction = last_full_prediction;
 
-                if (`full-${d.move}` in analysis.data) {
-                    if (analysis.data[`full-${d.move}`].variations.length) {
-                        full_prediction = analysis.data[`full-${d.move}`].prediction;
+                if (`full-${d.move}` in ai_review) {
+                    if (ai_review[`full-${d.move}`].variations.length) {
+                        full_prediction = ai_review[`full-${d.move}`].prediction;
                     }
                 }
 
                 last_full_prediction = full_prediction;
 
-                return new AnalysisEntry({
+                return new AIReviewEntry({
                     move: d.move + this.handicapOffset(),
                     fast_prediction: d.prediction,
                     full_prediction: full_prediction
@@ -505,13 +506,13 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 updatecount: this.state.updatecount + 1,
             });
         }
-        else if ('key-moves' in analysis.data) {
-            for (let mv of analysis.data['key-moves']) {
-                analysis.data[`full-${mv.move}`] = mv;
+        else if ('key-moves' in ai_review) {
+            for (let mv of ai_review['key-moves']) {
+                ai_review[`full-${mv.move}`] = mv;
             }
             this.setState({
                 full: null,
-                fast: analysis.data['key-moves'],
+                fast: ai_review['key-moves'],
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -524,9 +525,8 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         }
     }
 
-    clearAnalysis() {
+    clearAIReview() {
         this.props.game.goban.setMode("play");
-        //this.props.game.setState({ai_analysis_chart_data: null});
         this.setState({
             full: null,
             fast: null,
@@ -534,12 +534,12 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         });
     }
 
-    setSelectedAnalysis = (analysis) => {
-        this.setState({selected_analysis: analysis});
-        if (analysis) {
-            this.getAnalysis(analysis.analysis_id);
+    setSelectedAIReview = (ai_review) => {
+        this.setState({selected_ai_review: ai_review});
+        if (ai_review) {
+            this.getAIReview(ai_review.id);
         } else {
-            this.clearAnalysis();
+            this.clearAIReview();
         }
     }
 
@@ -564,16 +564,16 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         return ret;
     }
 
-    analysis_update = (data) => {
-        this.getAnalysis(data.analysis_id);
+    ai_review_update = (data) => {
+        this.getAIReview(data.ai_review_id);
     }
-    analysis_update_key = (data) => {
-        if (this.analysis) {
-            this.analysis.data[data.key] = data.body;
+    ai_review_update_key = (data) => {
+        if (this.ai_review) {
+            this.ai_review[data.key] = data.body;
             this.setState({
                 updatecount: this.state.updatecount + 1,
             });
-            this.syncAnalysis();
+            this.syncAIReview();
         }
     }
 
@@ -590,13 +590,13 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             return null;
         }
 
-        if (!this.analysis || !this.analysis.data) {
+        if (!this.ai_review) {
             return (
-                <div className='AIAnalysis'>
-                    <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
-                    <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
-                    { ((this.state.analyses.length === 0 && this.state.analyzing) || null) &&
-                        <div className='analyzing'>
+                <div className='AIReview'>
+                    <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+                    <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
+                    { ((this.state.ai_reviews.length === 0 && this.state.reviewing) || null) &&
+                        <div className='reviewing'>
                             {_("Game is being analyzed by our AI")}
                             <i className='fa fa-desktop slowstrobe'></i>
                         </div>
@@ -605,7 +605,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             );
         }
 
-        let move_analysis = null;
+        let move_ai_review = null;
         let win_rate = 0.0;
         let next_prediction = -1.0;
         let next_move = null;
@@ -615,15 +615,15 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
 
-        if ( `full-${move_number - this.handicapOffset()}` in this.analysis.data) {
-            move_analysis = this.analysis.data[`full-${move_number - this.handicapOffset()}`];
+        if ( `full-${move_number - this.handicapOffset()}` in this.ai_review) {
+            move_ai_review = this.ai_review[`full-${move_number - this.handicapOffset()}`];
         }
 
-        if (move_analysis) {
-            win_rate = move_analysis.win_rate * 100;
-            next_prediction = move_analysis.next_prediction;
-            if (`full-${move_number + 1 - this.handicapOffset()}` in this.analysis.data) {
-                next_prediction = this.analysis.data[`full-${move_number + 1 - this.handicapOffset()}`].win_rate;
+        if (move_ai_review) {
+            win_rate = move_ai_review.win_rate * 100;
+            next_prediction = move_ai_review.next_prediction;
+            if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
+                next_prediction = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`].win_rate;
             }
             next_prediction *= 100.0;
         }
@@ -637,8 +637,8 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                     next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
                 }
 
-                if (move_analysis) {
-                    let variations = move_analysis.variations.slice(0, 6);
+                if (move_ai_review) {
+                    let variations = move_ai_review.variations.slice(0, 6);
                     for (let i = 0 ; i < variations.length; ++i) {
                         let letter = alphabet[i];
                         marks[letter] = variations[i].move;
@@ -646,16 +646,16 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                     if (next_move) {
                         marks["triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
                     }
-                    heatmap = this.normalizeHeatmap(move_analysis.heatmap);
+                    heatmap = this.normalizeHeatmap(move_ai_review.heatmap);
                 }
             }
             else { // !cur_move.trunk
-                if (move_analysis) {
+                if (move_ai_review) {
                     let trunk_move_string = trunk_move.getMoveStringToThisPoint();
                     let cur_move_string = cur_move.getMoveStringToThisPoint();
                     let next_moves = null;
 
-                    for (let v of move_analysis.variations) {
+                    for (let v of move_ai_review.variations) {
                         if ((trunk_move_string + v.moves).startsWith(cur_move_string)) {
                             next_moves = (trunk_move_string + v.moves).slice(cur_move_string.length, Infinity);
                             break;
@@ -704,27 +704,26 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
             }
         }
 
-
         return (
-            <div className='AIAnalysis'>
-                <UIPush event="analysis" channel={`game-${this.props.game.game_id}`} action={this.analysis_update} />
-                <UIPush event="analysis-key" channel={`game-${this.props.game.game_id}`} action={this.analysis_update_key} />
+            <div className='AIReview'>
+                <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+                <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
 
-                { false && (this.state.analyses.length > 1 || null) &&
+                { false && (this.state.ai_reviews.length > 1 || null) &&
                     <Select
-                        value={this.state.selected_analysis}
-                        options={this.state.analyses}
-                        onChange={this.setSelectedAnalysis}
+                        value={this.state.selected_ai_review}
+                        options={this.state.ai_reviews}
+                        onChange={this.setSelectedAIReview}
                         clearable={true}
                         autoBlur={true}
-                        placeholder={_("Select AI Analysis")}
+                        placeholder={_("Select AI AIReview")}
                         noResultsText={_("No results found")}
-                        optionRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
-                        valueRenderer={(A) => <span className='analysis-option'>{A.engine} {A.engine_version}</span>}
+                        optionRenderer={(A) => <span className='ai_review-option'>{A.engine} {A.engine_version}</span>}
+                        valueRenderer={(A) => <span className='ai_review-option'>{A.engine} {A.engine_version}</span>}
                         />
                 }
 
-                <div className={'prediction ' + (!move_analysis ? "invisible" : "")}>
+                <div className={'prediction ' + (!move_ai_review ? "invisible" : "")}>
                     <div className="progress">
                         <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
                         <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
@@ -732,7 +731,7 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                 </div>
 
                 {((this.state.full && this.state.full.length > 0) || null) &&
-                    <AIAnalysisChart
+                    <AIReviewChart
                         entries={this.state.full}
                         updatecount={this.state.updatecount}
                         move={this.props.move.move_number}
@@ -749,13 +748,13 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
                             </span>
                         )}
 
-                        <span className='full-analysis clickable' onClick={this.performFullAnalysis}>
-                            {_("Full Analysis")}
+                        <span className='full-ai-review clickable' onClick={this.performFullAIReview}>
+                            {_("Full AI Review")}
                         </span>
                     </div>
                 }
 
-                {move_analysis && next_move && move_relative_delta !== null &&
+                {move_ai_review && next_move && move_relative_delta !== null &&
                     <div className='next-move-delta-container'>
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
@@ -815,8 +814,8 @@ export class AIAnalysis extends React.Component<AIAnalysisProperties, any> {
 
         this.stashed_heatmap = goban.setHeatmap(null);
     }
-    performFullAnalysis = () => {
-        this.props.game.force_ai_analysis("full");
+    performFullAIReview = () => {
+        this.props.game.force_ai_review("full");
     }
 }
 
