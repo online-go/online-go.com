@@ -50,14 +50,13 @@ export class Play extends React.Component<PlayProperties, any> {
     seekgraph: SeekGraph;
     resize_check_interval;
 
-    list_freeze_timeout;
+    private list_freeze_timeout;
 
     constructor(props) {
         super(props);
         this.state = {
             live_list: [],
             correspondence_list: [],
-            disableCorrespondenceButton: false,
             showLoadingSpinnerForCorrespondence: false,
             show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
@@ -244,11 +243,14 @@ export class Play extends React.Component<PlayProperties, any> {
         this.onAutomatchEntry(preferences);
 
         if (speed === 'correspondence') {
-            this.setState({disableCorrespondenceButton: true, showLoadingSpinnerForCorrespondence: true});
-            setTimeout(() => this.setState({disableCorrespondenceButton: false}), 1000);
-            setTimeout(() => this.setState({showLoadingSpinnerForCorrespondence: false}), 5000);
+            this.setState({showLoadingSpinnerForCorrespondence: true});
         }
     }}}
+
+
+    dismissCorrespondenceSpinner = () => {
+        this.setState({showLoadingSpinnerForCorrespondence: false});
+    }
 
     cancelActiveAutomatch = () => {{{
         if (automatch_manager.active_live_automatcher) {
@@ -496,14 +498,11 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='automatch-header'>
                         {_("Finding you a game...")}
                     </div>
-                    <div className='automatch-row-container'>
-                        <div className="spinner">
-                            <div className="double-bounce1"></div>
-                            <div className="double-bounce2"></div>
-                        </div>
+                    <div className='automatch-settings-corr'>
+                        {_('This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".')}
                     </div>
-                    <div className='info automatch-settings-corr'>
-                        {_("To cancel or view your automatch request(s), check below.")}
+                    <div className='automatch-row-container'>
+                        <button className='primary' onClick={this.dismissCorrespondenceSpinner}>{_(pgettext("Dismiss the 'finding correspondence automatch' message", "Got it"))}</button>
                     </div>
                 </div>
             );
@@ -544,12 +543,9 @@ export class Play extends React.Component<PlayProperties, any> {
                                     <span className='time-per-move'></span>
                                 </div>
                             </button>
-                            <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
+                            <button className='primary' onClick={() => this.findMatch("correspondence")}>
                                 <div className='play-button-text-root'>
-                                    {this.state.disableCorrespondenceButton
-                                        ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                        : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                    }
+                                    <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
                                     <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
                                 </div>
                             </button>
