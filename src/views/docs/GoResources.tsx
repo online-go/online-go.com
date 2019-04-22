@@ -55,7 +55,7 @@ export let GoResources = (props) => {
     let us = getLanguageFlag("us", country, "us");
     let eu = getLanguageFlag("eu", country, "eu");
     let nl = getLanguageFlag("dutch", country, "nl");
-    let uk = getLanguageFlag("uk", country, "uk");
+    let gb = getLanguageFlag("gb", country, "gb");
     let au = getLanguageFlag("au", country, "au");
     let ca = getLanguageFlag("ca", country, "ca");
     let ru = getLanguageFlag("ru", country, "ru");
@@ -311,6 +311,7 @@ export let GoResources = (props) => {
                 <dt>{_("Equipment")}</dt>
                 {scramble(
                 <span><Flag country={us}/> <a rel="noopener" href="http://www.ymimports.com/">Yellow Mountain Imports</a></span>,
+                <span><Flag country={gb}/> <a rel="noopener" href="https://www.mastersofgames.com/cat/board/go.htm">Masters of Games</a></span>,
                 <span><Flag country={de}/> <a rel="noopener" href="http://www.hebsacker-verlag.de/index.php">Hebsacker Verlag</a></span>,
                 <span><Flag country={nl}/> <a rel="noopener" href="http://www.goshop-keima.com/">Goshop Keima</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="http://agfgo.org/pages/store-playing.php">AGF Store</a></span>,
