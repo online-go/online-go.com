@@ -431,6 +431,37 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             });
 
             if (lst.length) {
+                /* Select the best AI review */
+                lst = lst.sort((a, b) => {
+                    if (a.full && !b.full) {
+                        return -1;
+                    }
+                    if (b.full && !a.full) {
+                        return 1;
+                    }
+
+                    if (a.playouts - b.playouts !== 0) {
+                        return a.playouts - b.playouts;
+                    }
+
+                    if (a.visits - b.visits !== 0) {
+                        return a.visits - b.visits;
+                    }
+
+                    if (a.finished && !b.finished) {
+                        return -1;
+                    }
+                    if (b.finished && !a.finished) {
+                        return 1;
+                    }
+
+                    if (a.finished && b.finished) {
+                        return (new Date(a.finished)).getTime() - (new Date(b.finished)).getTime();
+                    }
+
+                    return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+                });
+                console.log("List: ", lst);
                 this.setSelectedAIReview(lst[0]);
             } else {
                 post(`games/${game_id}/ai_reviews`, {
@@ -438,11 +469,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     'type': 'fast',
                 })
                 .then(res => {
-                    console.log(res);
                     if (res.id) {
                         this.setState({reviewing: true});
                     }
-                    console.log(res);
                 })
                 .catch(err => console.error(err));
             }
@@ -455,6 +484,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         if (!game_id) {
             return;
         }
+
+        this.ai_review = null;
+        this.syncAIReview();
 
         get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
         .then(ai_review => {
@@ -477,7 +509,19 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     }
 
     syncAIReview() {
+        if (!this.ai_review) {
+            this.setState({
+                loading: true,
+                full: null,
+                fast: null,
+                updatecount: this.state.updatecount + 1,
+            });
+            return;
+        }
+
         let ai_review = this.ai_review;
+
+        console.log(ai_review);
 
         if ('full-network-fastmap' in ai_review) {
             let data:Array<AIReviewEntry> = [];
@@ -501,6 +545,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             });
 
             this.setState({
+                loading: false,
                 full: data,
                 fast: null,
                 updatecount: this.state.updatecount + 1,
@@ -511,6 +556,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 ai_review[`full-${mv.move}`] = mv;
             }
             this.setState({
+                loading: false,
                 full: null,
                 fast: ai_review['key-moves'],
                 updatecount: this.state.updatecount + 1,
@@ -518,8 +564,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
         else {
             this.setState({
+                loading: false,
                 full: null,
                 fast: null,
+                queue_position: this.state.selected_ai_review.queue.position,
+                queue_pending: this.state.selected_ai_review.queue.pending,
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -565,7 +614,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     }
 
     ai_review_update = (data) => {
-        this.getAIReview(data.ai_review_id);
+        if ('ai_review_id' in data) {
+            this.getAIReview(data.ai_review_id);
+        }
+        if ('refresh' in data) {
+            this.getAIReviewList();
+        }
     }
     ai_review_update_key = (data) => {
         if (this.ai_review) {
@@ -597,7 +651,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
                     { ((this.state.ai_reviews.length === 0 && this.state.reviewing) || null) &&
                         <div className='reviewing'>
-                            {_("Game is being analyzed by our AI")}
+                            {_("Queing AI review")}
                             <i className='fa fa-desktop slowstrobe'></i>
                         </div>
                     }
@@ -753,6 +807,15 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         </span>
                     </div>
                 }
+
+                {((!this.state.full && !this.state.fast) || null) &&
+                    <div className='pending'>
+                        {interpolate(_("AI review has been queued for processing. Current queue position: {{queue_position}} out of {{queue_pending}}"),
+                            {queue_position: this.state.queue_position + 1, queue_pending: this.state.queue_pending})}
+                        <i className='fa fa-desktop slowstrobe'></i>
+                    </div>
+                }
+
 
                 {move_ai_review && next_move && move_relative_delta !== null &&
                     <div className='next-move-delta-container'>

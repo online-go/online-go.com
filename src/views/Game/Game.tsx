@@ -1524,8 +1524,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "text": _("Really clear ALL AI reviews for this game?"),
             showCancelButton: true
         }).then(() => {
+            console.info(`Clearing AI reviews for ${this.game_id}`);
             del(`games/${this.game_id}/ai_reviews`, {})
-            .then((res) => swal("AI Reviews cleared"))
+            .then((res) => console.info("AI Reviews cleared"))
             .catch(errorAlerter);
         })
         .catch(ignore);
