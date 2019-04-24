@@ -184,9 +184,9 @@ export class SignIn extends React.PureComponent<{}, any> {
                             <LineText>{
                                 _("or log in using another account:") /* translators: username or password, or sign in with social authentication */
                             }</LineText>
-                            <a href="/login/google/" className="s btn md-icon"><span className="google google-icon" /> {_("Login with Google")}</a>
-                            <a href="/login/facebook/" className="s btn md-icon"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
-                            <a href="/login/twitter/" className="s btn md-icon"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
+                            <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-icon" /> {_("Login with Google")}</a>
+                            <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
+                            <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
                         </div>
                     </Card>
 
