@@ -30,6 +30,7 @@ import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
 import {GoMath, MoveTree} from 'ogs-goban';
 import Select from 'react-select';
+import {close_all_popovers, popover} from "popover";
 
 declare var swal;
 
@@ -509,7 +510,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     }
 
     syncAIReview() {
-        if (!this.ai_review) {
+        if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
                 loading: true,
                 full: null,
@@ -584,7 +585,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     }
 
     setSelectedAIReview = (ai_review) => {
-        this.setState({selected_ai_review: ai_review});
+        close_all_popovers();
+        this.setState({
+            selected_ai_review: ai_review,
+        });
         if (ai_review) {
             this.getAIReview(ai_review.id);
         } else {
@@ -630,6 +634,79 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.syncAIReview();
         }
     }
+
+
+    openAIReviewList = (ev) => {
+        close_all_popovers();
+        popover({
+            elt: (<div className='ai-review-list' >
+                    {this.state.ai_reviews.map((ai_review, idx) => {
+                        let params = {
+                            strength: ai_review.playouts,
+                        };
+                        return (
+                            <div className={'ai-review-item ' +
+                                    (ai_review.id === this.state.selected_ai_review.id ? 'selected' : '')}
+                                key={idx}
+                                title={moment(ai_review.created).format('LL')}
+                                onClick={() => this.setSelectedAIReview(ai_review)}>
+                                { ai_review.full
+                                    ? interpolate(_("Full review by Leela Zero strength {{strength}}"), params)
+                                    : interpolate(_("Fast review by Leela Zero strength {{strength}}"), params)
+                                }
+                            </div>
+                       );
+                    })}
+                  </div>
+                 ),
+            below: ev.target,
+            minWidth: 240,
+            minHeight: 250,
+        });
+    }
+
+    showMoreInfo = (ev) => {
+        close_all_popovers();
+        popover({
+            elt: (
+                <div className='ai-review-more-info' >
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>{_("Date")}</th>
+                                <td>{moment(this.state.selected_ai_review.modified).format('LL')}</td>
+                            </tr>
+                            <tr>
+                                <th>{pgettext("AI Review Engine", "Engine")}</th>
+                                <td>{"Leela Zero"}</td>
+                            </tr>
+                            <tr>
+                                <th>{pgettext("AI Review engine version", "Version")}</th>
+                                <td>{this.state.selected_ai_review.version}</td>
+                            </tr>
+                            <tr>
+                                <th>{pgettext("AI Review engine network used", "Network")}</th>
+                                <td title={this.state.selected_ai_review.network}>{this.state.selected_ai_review.network.substr(0, 8)}</td>
+                            </tr>
+                            <tr>
+                                <th>{pgettext("AI review engine playouts (strength)", "Playouts")}</th>
+                                <td>{this.state.selected_ai_review.playouts}</td>
+                            </tr>
+                            <tr>
+                                <th>{pgettext("AI review engine node visits (strength)", "Visits")}</th>
+                                <td>{this.state.selected_ai_review.visits}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            ),
+            below: ev.target,
+            minWidth: 300,
+            minHeight: 250,
+        });
+    }
+
+
 
     render() {
         if (this.state.loading) {
@@ -777,8 +854,20 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         />
                 }
 
-                <div className={'prediction ' + (!move_ai_review ? "invisible" : "")}>
-                    <div className="progress">
+                <div className='prediction'>
+                    <div className='ai-review-list-container'>
+                        <span className='btn xs' onClick={this.openAIReviewList}>
+                            <i className='fa fa-list-ul' />
+                        </span>
+                    </div>
+                    {(this.state.selected_ai_review || null) &&
+                        <div className='ai-review-more-info-container'>
+                            <span className='btn xs' onClick={this.showMoreInfo}>
+                                <i className='fa fa-info' />
+                            </span>
+                        </div>
+                    }
+                    <div className={"progress " + (!move_ai_review ? "invisible" : "")}>
                         <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
                         <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
                     </div>
