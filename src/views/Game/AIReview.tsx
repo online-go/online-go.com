@@ -20,6 +20,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
+import {Player} from "Player";
 import {UIPush} from "UIPush";
 import {deepCompare, dup} from 'misc';
 import {get, post} from 'requests';
@@ -522,8 +523,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         let ai_review = this.ai_review;
 
-        console.log(ai_review);
-
         if ('full-network-fastmap' in ai_review) {
             let data:Array<AIReviewEntry> = [];
             let last_full_prediction = 0.5;
@@ -635,7 +634,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
     }
 
-
     openAIReviewList = (ev) => {
         close_all_popovers();
         popover({
@@ -668,6 +666,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
     showMoreInfo = (ev) => {
         close_all_popovers();
+        console.log(this.state.selected_ai_review);
         popover({
             elt: (
                 <div className='ai-review-more-info' >
@@ -697,6 +696,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 <th>{pgettext("AI review engine node visits (strength)", "Visits")}</th>
                                 <td>{this.state.selected_ai_review.visits}</td>
                             </tr>
+                            <tr>
+                                <th>{_("Creator")}</th>
+                                <td><Player user={this.state.selected_ai_review.player_id}/></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -706,8 +709,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             minHeight: 250,
         });
     }
-
-
 
     render() {
         if (this.state.loading) {
