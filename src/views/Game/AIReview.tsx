@@ -643,6 +643,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     {this.state.ai_reviews.map((ai_review, idx) => {
                         let params = {
                             strength: ai_review.playouts,
+                            num_moves: ai_review.total_moves_to_analyze,
                         };
                         return (
                             <div className={'ai-review-item ' +
@@ -651,8 +652,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 title={moment(ai_review.created).format('LL')}
                                 onClick={() => this.setSelectedAIReview(ai_review)}>
                                 { ai_review.full
-                                    ? interpolate(_("Full review by Leela Zero strength {{strength}}"), params)
-                                    : interpolate(_("Fast review by Leela Zero strength {{strength}}"), params)
+                                    ? interpolate(_("Full review by Leela Zero: strength {{strength}}"), params)
+                                    : interpolate(_("Top {{num_moves}} moves according to Leela Zero"), params)
                                 }
                             </div>
                        );
