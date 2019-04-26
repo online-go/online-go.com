@@ -968,7 +968,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         this.stashed_heatmap = goban.setHeatmap(null);
     }
     performFullAIReview = () => {
-        this.props.game.force_ai_review("full");
+        if (data.get('user').anonymous) {
+            swal(_("Please login first"));
+        } else {
+            this.props.game.force_ai_review("full");
+        }
     }
 }
 
