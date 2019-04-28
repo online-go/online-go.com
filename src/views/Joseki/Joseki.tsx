@@ -33,12 +33,14 @@ import { getSectionPageCompleted } from "../LearningHub/util";
 import { PlayerIcon } from "PlayerIcon";
 import { Player } from "Player";
 
+import { JosekiAdmin } from "JosekiAdmin";
+
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 
-const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/godojo/";
+//const server_url = "http://ec2-3-82-225-94.compute-1.amazonaws.com:80/godojo/";
 
-//const server_url = "http://localhost:8081/godojo/";
+const server_url = "http://localhost:8081/godojo/";
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
@@ -65,7 +67,7 @@ enum MoveCategory {
 const bad_moves = ["MISTAKE", "TRICK", "QUESTION"] as any;
 
 enum PageMode {
-    Explore, Play, Edit
+    Explore, Play, Edit, Admin
 }
 
 const ColorMap = {
@@ -111,7 +113,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
             position_description: "",
             current_move_category: "",
-            mode: PageMode.Explore,
+            contributor_id: -1,      // the person who created the node that we are displaying
+            mode: props.location.pathname === "/joseki/admin" ? PageMode.Admin : PageMode.Explore,
             move_type_sequence: [] as string[],
             joseki_source: null as {}
         };
@@ -152,13 +155,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         godojo_headers["X-User-Info"] = this.fakeUpUserinfo();
 
-        const target_position = this.props.match.params.pos || "root";
+        if (this.state.mode !== PageMode.Admin) {
+            const target_position = this.props.match.params.pos || "root";
 
-        if (target_position !== "root") {
-            this.load_sequence_to_board = true;
+            if (target_position !== "root") {
+                this.load_sequence_to_board = true;
+            }
+
+            this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
         }
-
-        this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
     }
 
     fakeUpUserinfo = () => {
@@ -220,6 +225,11 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         this.goban.setSquareSizeBasedOnDisplayWidth(
             Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
         );
+    }
+
+    loadPosition = (node_id) => {
+        this.load_sequence_to_board = true;
+        this.fetchNextMovesFor(node_id);
     }
 
     fetchNextMovesFor = (node_id) => {
@@ -538,11 +548,23 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             <button className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
             </button>
+            <button className={"btn s primary " + (this.state.mode === PageMode.Admin ? "selected" : "")} onClick={this.setAdminMode}>
+                {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
+            </button>
         </div>
     )
 
     renderModeMainPane = () => {
-        if (this.state.mode === PageMode.Explore ||
+        if (this.state.mode === PageMode.Admin) {
+            return (
+                <JosekiAdmin
+                    godojo_headers={godojo_headers}
+                    server_url={server_url}
+                    loadPositionToBoard = {this.loadPosition}
+                />
+            );
+        }
+        else if (this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
         ) {
             return (

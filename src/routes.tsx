@@ -100,8 +100,9 @@ export const routes = (
             <Route path="/demo/view/:review_id" component={Game}/>
             <Route path="/demo/:review_id" component={Game}/>
 
-            <Route path="/joseki/" exact component={Joseki}/>
-            <Route path="/joseki/:pos" exact component={Joseki}/>
+            <Route path="/joseki/" exact component={Joseki}/> {/* this is equivalent to specifying pos = "root" */}
+            <Route path="/joseki/admin" component={Joseki}/>
+            <Route path="/joseki/:pos" component={Joseki}/>
 
             <Route path="/player/settings" component={Settings}/>
             <Route path="/player/supporter" component={Supporter}/>
