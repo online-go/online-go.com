@@ -463,12 +463,10 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
     }
 
     setAdminMode = () => {
-        if (this.user_can_administer) {
-            this.resetBoard();
-            this.setState({
-                mode: PageMode.Admin
-            });
-        }
+        this.resetBoard();
+        this.setState({
+            mode: PageMode.Admin
+        });
     }
 
     setExploreMode = () => {
@@ -580,7 +578,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             </button>
             }
             <button className={"btn s primary " + (this.state.mode === PageMode.Admin ? "selected" : "")} onClick={this.setAdminMode}>
-                {this.user_can_administer ? _("Admin") : _("History")}
+                {this.user_can_administer ? _("Admin") : _("Updates")}
             </button>
         </div>
     )
@@ -591,6 +589,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
                 <JosekiAdmin
                     godojo_headers={godojo_headers}
                     server_url={server_url}
+                    user_can_administer={this.user_can_administer}
                     loadPositionToBoard = {this.loadPosition}
                 />
             );

@@ -22,15 +22,16 @@ import ReactTable from 'react-table';
 
 import selectTableHOC from "react-table/lib/hoc/selectTable";
 
-const SelectTable = selectTableHOC(ReactTable);
-
 import { Player } from "Player";
 
 interface JosekiAdminProps {
     godojo_headers: any;
     server_url: string;
+    user_can_administer: boolean;
     loadPositionToBoard(pos: string);
 }
+
+const SelectTable = selectTableHOC(ReactTable) ;
 
 export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     constructor(props) {
@@ -40,15 +41,32 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             pages: -1,
             loading: false,
             all_selected: false,
+            any_selected: false,
             selections: new Map()
         };
     }
 
+    revertSelectedChanges = () => {
+
+    }
+
     render = () => {
         console.log("Joseki Admin render: selections:", this.state.selections);
+
+        // Don't let the user select rows if they can't actually do anything with them.
+        const AuditTable = this.props.user_can_administer ?
+            SelectTable : ReactTable;
+
         return (
             <div className="audit-container">
-                <SelectTable
+                {this.props.user_can_administer &&
+                 <div className="audit-actions">
+                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertSelectedChanges}>
+                        {_("Revert")}
+                    </button>
+                </div>
+                }
+                <AuditTable
                     showPaginationBottom
                     pageSizeOptions={[5, 10, 15, 30, 50, 100]}
                     data={this.state.data}
@@ -67,17 +85,20 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     toggleSelection={(key) => {
                         let selections = new Map(this.state.selections);
                         selections.set(key, selections.has(key) ? !selections.get(key) : true);
-                        this.setState({selections});
+                        this.setState({
+                            any_selected: Array.from(selections.values()).includes(true),
+                            selections
+                        });
                     }}
                     selectAll={this.state.all_selected}
                     toggleAll={() => {
-                        console.log("toggle all");
-                        let selections = new Map(this.state.selections);
                         const all_selected = !this.state.all_selected;
+                        let selections = new Map(this.state.selections);
                         selections.forEach((value, key) => {
                             selections.set(key, all_selected);
                         });
                         this.setState({
+                            any_selected: Array.from(selections.values()).includes(true),
                             selections,
                             all_selected
                         });
@@ -105,32 +126,38 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                                 });
                             });
                     }}
-                    columns={[
-                        {
-                            Header: "Pos", accessor: "placement",
-                            maxWidth: 60,
-                            // Click the placement to see the position on the board
-                            getProps: (state, rowInfo, column) => (
-                                {
-                                    onClick: (e, handleOriginal) => {
-                                        this.props.loadPositionToBoard(rowInfo.original.node_id);
+                    columns={
+                        [
+                            {
+                                Header: "At", accessor: "placement",
+                                maxWidth: 60,
+                                // Click the placement to see the position on the board
+                                getProps: (state, rowInfo, column) => (
+                                    {
+                                        onClick: (e, handleOriginal) => {
+                                            this.props.loadPositionToBoard(rowInfo.original.node_id);
+                                        },
+                                        className: "position-link"
                                     }
-                                }
-                            )
-                        },
-                        {
-                            Header: "User", accessor: "user_id",
-                            Cell: props => <Player user={props.value}></Player>
-                        },
-                        {
-                            Header: "Action", accessor: "comment",
-                            minWidth: 150
-                        },
-                        {
-                            Header: "Result", accessor: "new_value",
-                            minWidth: 300
-                        }
-                    ]}
+                                )
+                            },
+                            {
+                                Header: "User", accessor: "user_id",
+                                Cell: props => <Player user={props.value}></Player>
+                            },
+                            {
+                                Header: "Date", accessor: "date",
+                            },
+                            {
+                                Header: "Action", accessor: "comment",
+                                minWidth: 150
+                            },
+                            {
+                                Header: "Result", accessor: "new_value",
+                                minWidth: 300
+                            }
+                        ]
+                    }
                 />
             </div>
                 );

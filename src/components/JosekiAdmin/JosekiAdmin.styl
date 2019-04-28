@@ -20,4 +20,20 @@
     flex-shrink:0;
     flex-basis:auto;
     display: flex;
+    flex-direction: column;
+
+    .audit-actions {
+        flex-grow: 1;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .position-link {
+        themed color link-color;
+    }
+
+    .position-link:hover {
+        cursor:pointer;
+        text-decoration:underline;
+    }
 }
