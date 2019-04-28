@@ -94,6 +94,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban_div: any;
     goban_opts: any = {};
 
+    user_can_edit = false;       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
+    user_can_administer = false;
+
     last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
@@ -114,7 +117,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             position_description: "",
             current_move_category: "",
             contributor_id: -1,      // the person who created the node that we are displaying
-            mode: props.location.pathname === "/joseki/admin" ? PageMode.Admin : PageMode.Explore,
+            mode: PageMode.Explore,
             move_type_sequence: [] as string[],
             joseki_source: null as {}
         };
@@ -153,17 +156,28 @@ export class Joseki extends React.Component<JosekiProps, any> {
         $(window).on("resize", this.onResize as () => void);
         this.onResize();  // make Goban size itself properly after the DOM is rendered
 
-        godojo_headers["X-User-Info"] = this.fakeUpUserinfo();
+        godojo_headers["X-User-Info"] = this.getOGSJWT();
 
-        if (this.state.mode !== PageMode.Admin) {
-            const target_position = this.props.match.params.pos || "root";
+        this.getUserJosekiPermissions();
 
-            if (target_position !== "root") {
-                this.load_sequence_to_board = true;
-            }
+        const target_position = this.props.match.params.pos || "root";
 
-            this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
+        if (target_position !== "root") {
+            this.load_sequence_to_board = true;
         }
+
+        this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
+    }
+
+    getUserJosekiPermissions = () => {
+        // ask Joseki Server what this user is allowed to do.  TBD
+        this.user_can_edit = true;
+        this.user_can_administer = true;
+    }
+
+    getOGSJWT = () => {
+        // OGS is supposed to supply us the JWT for the current user.   Fake it up till then
+        return this.fakeUpUserinfo();
     }
 
     fakeUpUserinfo = () => {
@@ -441,6 +455,20 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         if (prevProps.location.key !== this.props.location.key) {
             this.componentDidMount();  // force reload of position if they click a position link
         }
+
+        // try to persuade goban to render at the correct size all the time
+        this.goban.setSquareSizeBasedOnDisplayWidth(
+            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
+        );
+    }
+
+    setAdminMode = () => {
+        if (this.user_can_administer) {
+            this.resetBoard();
+            this.setState({
+                mode: PageMode.Admin
+            });
+        }
     }
 
     setExploreMode = () => {
@@ -495,7 +523,7 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
         console.log("rendering ", this.state.move_string);
         return (
             <div className={"Joseki"}>
-                <div className={"left-col"}>
+                <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div} />
                     </div>
@@ -545,11 +573,14 @@ vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
             <button className={"btn s primary " + (this.state.mode === PageMode.Play ? "selected" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            <button className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
+            {this.user_can_edit &&
+            <button
+                className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
             </button>
+            }
             <button className={"btn s primary " + (this.state.mode === PageMode.Admin ? "selected" : "")} onClick={this.setAdminMode}>
-                {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
+                {this.user_can_administer ? _("Admin") : _("History")}
             </button>
         </div>
     )

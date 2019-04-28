@@ -29,22 +29,6 @@
     flex-direction: row;
     align-items: stretch;
 
-
-    .goban-container {
-        flex-grow: 1;
-        //flex-shrink: 1;
-        flex-basis: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        .Goban {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-    }
-
     .left-col {
         flex-grow: 1;
         flex-shrink: 1;
@@ -53,9 +37,26 @@
         flex-direction: column;
         align-items: stretch;
         width: 100%;
+
         .goban-container {
-        }
+            flex-grow: 1;
+            //flex-shrink: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            .Goban {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+         }
     }
+
+    .admin-mode {
+        flex-basis: 15%;
+    }
+
     .right-col {
         display: flex;
         flex-grow: 1;

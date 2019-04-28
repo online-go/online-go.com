@@ -85,7 +85,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     onFetchData={(state, instance) => {
                         this.setState({ loading: true });
                         fetch(this.props.server_url +
-                            `changes?page=${state.page}&size=${state.pageSize}&sort=a.seq`, {
+                            `changes?page=${state.page}&size=${state.pageSize}`, {
                             mode: 'cors',
                             headers: this.props.godojo_headers
                         })
