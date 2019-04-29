@@ -42,16 +42,62 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             loading: false,
             all_selected: false,
             any_selected: false,
-            selections: new Map()
+            server_status: "",
+            selections: new Map(),
+            reversions: new Map()
         };
     }
 
-    revertSelectedChanges = () => {
+    revertAllSelectedChanges = () => {
+        let reversions = new Map();
+        this.state.selections.forEach((selected, selection) => {
+            console.log("checking selection", selection, selected);
+            if (selected) {
+                const target_id = selection.substring(7);
+                reversions.set(selection, `Reversion of audit ${target_id} pending`);
+            }
+        });
+        console.log("reversions:", reversions);
+        this.setState({reversions: reversions});
+        this.revertSelectedChanges(this.state.selections);
+    }
 
+    //  Call the server to revert each selected item in turn (one at a time, for ease of understanding what happened)
+    revertSelectedChanges = (current_selections) => {
+        let selections = current_selections.keys();
+        let {value: next_selection, done: done} = selections.next();
+
+        // Find next actually selected item.
+        while (!current_selections.get(next_selection) && !done) {
+            ({value: next_selection, done: done} = selections.next());
+        }
+        // And if there was one, revert it then move on to the next after the previous is done.
+        if (current_selections.get(next_selection)) {
+            const target_id = next_selection.substring(7);  //  get rid of the wierd "select-" from SelectTable
+            console.log("Revert requested for ", target_id);
+            fetch(this.props.server_url + "revert/", {
+                method: 'post',
+                mode: 'cors',
+                headers: this.props.godojo_headers,
+                body: JSON.stringify({ audit_id: target_id})
+            }).then (res => res.json())
+            .then (body => {
+                console.log("reversion result", body);
+                let next_selections = new Map(current_selections);
+                next_selections.set(next_selection, false);
+                let next_reversions = new Map(this.state.reversions);
+                next_reversions.set(next_selection, `Reversion of audit ${target_id} was ${body.result}`);
+                this.setState({
+                    selections: next_selections,
+                    reversions: next_reversions
+                });
+                this.revertSelectedChanges(next_selections);
+            });
+        }
     }
 
     render = () => {
-        console.log("Joseki Admin render: selections:", this.state.selections);
+        console.log("Joseki Admin render");
 
         // Don't let the user select rows if they can't actually do anything with them.
         const AuditTable = this.props.user_can_administer ?
@@ -61,10 +107,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             <div className="audit-container">
                 {this.props.user_can_administer &&
                  <div className="audit-actions">
-                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertSelectedChanges}>
+                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertAllSelectedChanges}>
                         {_("Revert")}
                     </button>
                 </div>
+                }
+                {this.state.reversions.size > 0 &&
+                    [...this.state.reversions.values()].map((reversion, idx) => (<div key={idx}>{reversion}</div>))
                 }
                 <AuditTable
                     showPaginationBottom
@@ -126,40 +175,39 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                                 });
                             });
                     }}
-                    columns={
-                        [
-                            {
-                                Header: "At", accessor: "placement",
-                                maxWidth: 60,
-                                // Click the placement to see the position on the board
-                                getProps: (state, rowInfo, column) => (
-                                    {
-                                        onClick: (e, handleOriginal) => {
-                                            this.props.loadPositionToBoard(rowInfo.original.node_id);
-                                        },
-                                        className: "position-link"
-                                    }
-                                )
-                            },
-                            {
-                                Header: "User", accessor: "user_id",
-                                Cell: props => <Player user={props.value}></Player>
-                            },
-                            {
-                                Header: "Date", accessor: "date",
-                            },
-                            {
-                                Header: "Action", accessor: "comment",
-                                minWidth: 150
-                            },
-                            {
-                                Header: "Result", accessor: "new_value",
-                                minWidth: 300
-                            }
-                        ]
-                    }
+                    columns={[
+                        {
+                            Header: "At", accessor: "placement",
+                            maxWidth: 60,
+                            // Click the placement to see the position on the board
+                            getProps: (state, rowInfo, column) => (
+                                {
+                                    onClick: (e, handleOriginal) => {
+                                        this.props.loadPositionToBoard(rowInfo.original.node_id);
+                                    },
+                                    className: "position-link"
+                                }
+                            )
+                        },
+                        {
+                            Header: "User", accessor: "user_id",
+                            Cell: props => <Player user={props.value}></Player>
+                        },
+                        {
+                            Header: "Date", accessor: "date",
+                        },
+                        {
+                            Header: "Action", accessor: "comment",
+                            minWidth: 150
+                        },
+                        {
+                            Header: "Result", accessor: "new_value",
+                            minWidth: 300
+                        }
+                    ]}
                 />
             </div>
                 );
-            }
-        }
+    }
+}
+

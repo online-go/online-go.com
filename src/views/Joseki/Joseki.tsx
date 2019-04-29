@@ -936,7 +936,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
             console.log("Server response: ", body);
-            this.extractAuditLog(body.audits);
+            this.extractAuditLog(body);
         });
         this.setState({ extra_info_selected: "audit-log" });
     }
