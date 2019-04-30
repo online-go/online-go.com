@@ -83,7 +83,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     move_crosshair;
     cursor_crosshair;
     full_crosshair;
-    fast_crosshair;
+    //fast_crosshair;
     x;
     y;
 
@@ -192,6 +192,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x1', 0)
             .attr('y1', height);
 
+        /*
         this.fast_crosshair = this.prediction_graph.append('g')
             .attr('class', 'fast crosshairs')
             .append('line')
@@ -200,6 +201,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('y0', 0)
             .attr('y1', 0)
             .attr('x1', width);
+        */
 
         this.full_crosshair = this.prediction_graph.append('g')
             .attr('class', 'full crosshairs')
@@ -221,13 +223,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .on('mouseover', () => {
                 this.cursor_crosshair.style('display', null);
                 this.full_crosshair.style('display', null);
-                this.fast_crosshair.style('display', null);
+                //this.fast_crosshair.style('display', null);
             })
             .on('mouseout', () => {
                 mouse_down = false;
                 this.cursor_crosshair.style('display', 'none');
                 this.full_crosshair.style('display', 'none');
-                this.fast_crosshair.style('display', 'none');
+                //this.fast_crosshair.style('display', 'none');
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -244,7 +246,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
                 let d = x0 - d0.move > d1.move - x0 ? d1 : d0;
                 self.cursor_crosshair.attr('transform', 'translate(' + self.x(d.move) + ', 0)');
-                self.fast_crosshair.attr('transform', 'translate(0, ' + self.y(d.fast_prediction * 100.0) + ')');
+                //self.fast_crosshair.attr('transform', 'translate(0, ' + self.y(d.fast_prediction * 100.0) + ')');
                 self.full_crosshair.attr('transform', 'translate(0, ' + self.y(d.full_prediction * 100.0) + ')');
 
                 if (mouse_down) {
@@ -357,7 +359,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
             .attr('width', this.width);
 
-        this.fast_crosshair.attr('x1', this.width);
+        //this.fast_crosshair.attr('x1', this.width);
         this.full_crosshair.attr('x1', this.width);
 
     }
