@@ -28,13 +28,6 @@ analysis-prediction-chart-height=100px;
 
     }
 
-    .area {
-        fill: rgba(255,100,100,0.5)
-        clip-path: url("#clip")
-        themed fill chart-area
-        stroke: #3587BC
-    }
-
     .axis path, .axis line {
         fill: none
         themed stroke shade3
@@ -71,13 +64,16 @@ analysis-prediction-chart-height=100px;
             stroke-width: 1.2px
             clip-path: url("#clip")
         }
+        /*
         .fast-prediction.line {
             stroke-width: 2px
             themed stroke chart-line
         }
+        */
         .full-prediction.line {
             stroke-width: 2px
-            stroke: #C442EB;
+            //stroke: #C442EB;
+            themed stroke chart-line
         }
         .overlay {
             opacity: 0
@@ -229,7 +225,7 @@ analysis-prediction-chart-height=100px;
             themed color reject
         }
         &.positive {
-            themed color success
+            //themed color success
         }
     }
 
