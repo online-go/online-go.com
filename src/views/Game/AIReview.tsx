@@ -914,8 +914,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
                             <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
                         </span>
-                        <span className="next-move-delta">
-                            {move_relative_delta.toFixed(1)}%
+                        <span className={"next-move-delta " +
+                            (move_relative_delta <= -0.1 ? 'negative' : (move_relative_delta >= 0.1 ? 'positive' : ''))}>
+                            {move_relative_delta <= -0.1 ? <span>&minus;</span> :
+                                (move_relative_delta >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
+                            } {Math.abs(move_relative_delta).toFixed(1)}pp
                         </span>
                     </div>
                 }
