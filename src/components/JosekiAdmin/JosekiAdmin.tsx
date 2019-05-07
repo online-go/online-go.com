@@ -39,6 +39,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         this.state = {
             data: [],
             pages: -1,
+            current_page: 0,
+            current_pageSize: 15,
             loading: false,
             all_selected: false,
             any_selected: false,
@@ -49,15 +51,14 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     }
 
     revertAllSelectedChanges = () => {
+        // set up to revert each selected change one at a time...
         let reversions = new Map();
         this.state.selections.forEach((selected, selection) => {
-            console.log("checking selection", selection, selected);
             if (selected) {
                 const target_id = selection.substring(7);
                 reversions.set(selection, `Reversion of audit ${target_id} pending`);
             }
         });
-        console.log("reversions:", reversions);
         this.setState({reversions: reversions});
         this.revertSelectedChanges(this.state.selections);
     }
@@ -82,18 +83,60 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                 body: JSON.stringify({ audit_id: target_id})
             }).then (res => res.json())
             .then (body => {
+                // Display the result of what happened
                 console.log("reversion result", body);
                 let next_selections = new Map(current_selections);
                 next_selections.set(next_selection, false);
                 let next_reversions = new Map(this.state.reversions);
-                next_reversions.set(next_selection, `Reversion of audit ${target_id} was ${body.result}`);
+                next_reversions.set(next_selection, `Reversion of audit ${target_id} status: ${body.result}`);
                 this.setState({
                     selections: next_selections,
                     reversions: next_reversions
                 });
+
+                // get on with the next one, if there are more
                 this.revertSelectedChanges(next_selections);
             });
         }
+        else {
+            // There are no more reversions to be done, so reload the audit log to show the ones that were done
+            this.reloadData();
+            this.props.loadPositionToBoard("root"); // and reset the board, incase the status of what is displayed changed
+        }
+    }
+
+    reloadData = () => {
+        fetch(this.props.server_url +
+            `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`, {
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            // initialise selections, so we have the full list of them for select-all operations
+            let selections = new Map();
+            for (const a of body.content) {
+                const key = `select-${a._id}`;
+                selections.set(key, false);
+            }
+            this.setState({
+                selections,
+                data: body.content,
+                pages: body.totalPages,
+                all_selected: false,
+                loading: false
+            });
+        });
+    }
+
+    fetchDataForTable = (table_state, instance) => {
+        // this shinanigans is so that we save the table state passed in the argument to this callback
+        // into our component state, enabling us to reload the data again when we need to (after reverting an audit)
+        this.setState({
+            loading: true,
+            current_page: table_state.page,
+            current_pageSize: table_state.pageSize
+        }, this.reloadData);
     }
 
     render = () => {
@@ -152,29 +195,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             all_selected
                         });
                     }}
-                    onFetchData={(state, instance) => {
-                        this.setState({ loading: true });
-                        fetch(this.props.server_url +
-                            `changes?page=${state.page}&size=${state.pageSize}`, {
-                            mode: 'cors',
-                            headers: this.props.godojo_headers
-                        })
-                            .then(res => res.json())
-                            .then(body => {
-                                // initialise selections, so we have the full list of them for select-all operations
-                                let selections = new Map();
-                                for (const a of body.content) {
-                                    selections.set(`select-${a._id}`, false);
-                                }
-                                this.setState({
-                                    selections,
-                                    data: body.content,
-                                    pages: body.totalPages,
-                                    all_selected: false,
-                                    loading: false
-                                });
-                            });
-                    }}
+                    onFetchData={this.fetchDataForTable}
                     columns={[
                         {
                             Header: "At", accessor: "placement",
@@ -198,11 +219,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                         },
                         {
                             Header: "Action", accessor: "comment",
-                            minWidth: 150
+                            minWidth: 200
                         },
                         {
                             Header: "Result", accessor: "new_value",
-                            minWidth: 300
+                            minWidth: 250
                         }
                     ]}
                 />
