@@ -16,24 +16,90 @@
  */
 
 
-.Supporter {
-    // here
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+supporter-page-width=60rem;
+
+#Supporter {
+    align-items: center; 
     max-width: 100vw;
     padding: 1rem;
 
-    .main-paragraph {
-        max-width: 1110px;
+    > h2 {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: supporter-page-width;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-between;
+    }
+
+    .fa-star {
+        themed color supporter
+    }
+
+    #supporter-payment-block-container {
+        max-width: 100vw;
         text-align: justify;
+        margin-top: 3rem;
+
+        .p {
+            margin-top: 1rem;
+        }
+
+        .supporter-payment-buttons {
+            margin: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            align-content: center;
+
+            > button {
+                margin-right: 1rem;
+
+            }
+
+            > .paypal {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                align-content: center;
+            }
+        }
+
+    }
+
+    #supporter-text-container {
+        margin: auto;
+        max-width: supporter-page-width;
+    }
+
+    #supporter-text {
+        text-align: justify;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+
+        .left {
+            flex: 30;
+            min-width: 20rem;
+            max-width: 100vw;
+            margin-right: 1rem;
+        }
+        .right {
+            flex: 30;
+            min-width: 20rem;
+            max-width: 100vw;
+            margin-left: 1rem;
+        }
 
         .p {
             margin-top: 1rem;
         }
 
         .perk {
-            padding: 1rem 1rem 0 1rem;
+            padding: 0;
+            padding-top: 1rem;
             display: flex;
             align-items: top;
             .fa-circle {
@@ -50,10 +116,6 @@
 
     input[type="range"] {
         border: none;
-    }
-
-    .details {
-        text-align: center;
     }
 
     .paypal-button {
@@ -128,28 +190,34 @@
         font-size: font-size-big;
     }
 
-    .card-types {
-        flex: 1;
-        display: inline-flex;
-        width: 12rem;
-        flex-direction: column;
-        margin: 1rem;
-
-        img {
-            width: 64px;
-            margin: 8px;
-        }
-    }
 
     .recurring-donation {
         text-align: center;
         padding: 1rem;
     }
 
-    .payment-methods {
+    #supporter-payment-block {
+    }
+    #supporter-input-amount {
+        text-align: center;
+    }
+    #supporter-payment-methods {
         display: flex;
         flex-wrap: wrap;
         align-content: stretch;
+
+        .card-types { 
+            flex: 1;
+            display: inline-flex;
+            width: 12rem;
+            flex-direction: column;
+            margin: 1rem;
+
+            img {
+                width: 64px;
+                margin: 8px;
+            }
+        }
     }
 
     .other-payment-options {
@@ -159,13 +227,100 @@
         justify-content: center;
         align-content: center;
     }
+
+    #supporter-current-methods {
+        margin: auto;
+        max-width: supporter-page-width;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+
+
+        .recurring-donation {
+            flex: 1;
+            display: inline-block;
+            max-width: 14rem;
+            min-height: 14rem;
+            border: 1px solid #888;
+            themed border-color shade3
+            border-radius: 0.5rem;
+            margin: 1rem;
+            display: flex;
+            text-align: justify;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    }
+
+    #supporter-ai-perks {
+        margin-top: 3rem;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+
+
+
+        .supporter-perk-box {
+            width: 15rem;
+            max-width: 100vw;
+            display: inline-flex;
+            height: 10rem;
+            margin: 0.5rem;
+            border: 1px solid #888;
+            border-radius: 0.5rem;
+            themed border-color shade3
+            padding: 0.5rem;
+            flex-direction: column;
+            themed background inactive-support-gradient
+            themed color fg-increased-contrast
+            text-decoration: none;
+            opacity: 0.8;
+
+            &:hover {
+                opacity: 1.0;
+            }
+
+            &.active {
+                themed background active-support-gradient
+                themed border-color supporter
+            }
+
+            .title {
+                flex: 0;
+                font-weight: bold;
+                font-size: font-size-mid;
+                display: flex;
+                margin-bottom: 0.5rem;
+                flex-flow: row wrap;
+                justify-content: space-between;
+            }
+            .text {
+                flex: 1;
+                display: flex;
+                justify-content: space-between;
+                flex-direction: column;
+
+                .learn-more {
+                    margin-top: 1rem;
+                    text-align: right;
+                }
+            }
+        }
+
+    }
+
+    #supporter-perks-star {
+        text-align: right;
+        themed color shade0
+    }
 }
+
 
 
 #amex-express-checkout {
     display: none;
 }
-.Supporter {
+#Supporter {
     #amex-express-checkout {
         display: inline-block;
     }
@@ -174,4 +329,10 @@
 .grayed-out-image {
     filter: grayscale(100%);
     cursor: not-allowed !important;
+}
+
+.supporter-learn-more-swal {
+    .swal2-content {
+        text-align: justify;
+    }
 }
