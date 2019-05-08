@@ -697,6 +697,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 <td title={this.state.selected_ai_review.network}>{this.state.selected_ai_review.network.substr(0, 8)}</td>
                             </tr>
                             <tr>
+                                <th>{pgettext("Size of neural network", "Network Size")}</th>
+                                <td>{this.state.selected_ai_review.network_size}</td>
+                            </tr>
+                            <tr>
                                 <th>{pgettext("AI review engine playouts (strength)", "Playouts")}</th>
                                 <td>{this.state.selected_ai_review.playouts}</td>
                             </tr>
