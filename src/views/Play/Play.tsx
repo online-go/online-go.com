@@ -50,14 +50,14 @@ export class Play extends React.Component<PlayProperties, any> {
     seekgraph: SeekGraph;
     resize_check_interval;
 
-    list_freeze_timeout;
+    private list_freeze_timeout;
 
     constructor(props) {
         super(props);
         this.state = {
             live_list: [],
             correspondence_list: [],
-            disableCorrespondenceButton: false,
+            showLoadingSpinnerForCorrespondence: false,
             show_all_challenges: preferences.get("show-all-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
@@ -243,10 +243,14 @@ export class Play extends React.Component<PlayProperties, any> {
         this.onAutomatchEntry(preferences);
 
         if (speed === 'correspondence') {
-            this.setState({disableCorrespondenceButton: true});
-            setTimeout(() => this.setState({disableCorrespondenceButton: false}), 1000);
+            this.setState({showLoadingSpinnerForCorrespondence: true});
         }
     }}}
+
+
+    dismissCorrespondenceSpinner = () => {
+        this.setState({showLoadingSpinnerForCorrespondence: false});
+    }
 
     cancelActiveAutomatch = () => {{{
         if (automatch_manager.active_live_automatcher) {
@@ -349,7 +353,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
                             {(corr_automatchers.length || null) &&
                             <div className='challenge-row'>
-                                <span className="cell break">{_("Automatch")}</span>
+                                <span className="cell break">{_("Your Automatch Requests")}</span>
                                 {this.cellBreaks(7)}
                             </div>
                             }
@@ -367,7 +371,11 @@ export class Play extends React.Component<PlayProperties, any> {
                                 <div className='challenge-row automatch-challenge-row' key={m.uuid}>
                                 <span className='cell'>
                                     <button className='reject xs'
-                                            onClick={() => automatch_manager.cancel(m.uuid)}>{pgettext("Cancel automatch", "Cancel")}</button>
+                                            onClick={() => { automatch_manager.cancel(m.uuid);
+                                            if (corr_automatchers.length === 1)  {
+                                                this.setState({showLoadingSpinnerForCorrespondence: false});
+                                            }
+                                            }}>{pgettext("Cancel automatch", "Cancel")}</button>
                                 </span>
 
                                     <span className='cell'>
@@ -484,6 +492,21 @@ export class Play extends React.Component<PlayProperties, any> {
                 </div>
             );
         }
+        else if (this.state.showLoadingSpinnerForCorrespondence) {
+            return (
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Finding you a game...")}
+                    </div>
+                    <div className='automatch-settings-corr'>
+                        {_('This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please see the list below labeled "Your Automatch Requests".')}
+                    </div>
+                    <div className='automatch-row-container'>
+                        <button className='primary' onClick={this.dismissCorrespondenceSpinner}>{_(pgettext("Dismiss the 'finding correspondence automatch' message", "Got it"))}</button>
+                    </div>
+                </div>
+            );
+        }
         else {
             return (
                 <div className='automatch-container'>
@@ -520,12 +543,9 @@ export class Play extends React.Component<PlayProperties, any> {
                                     <span className='time-per-move'></span>
                                 </div>
                             </button>
-                            <button className='primary' disabled={this.state.disableCorrespondenceButton} onClick={() => this.findMatch("correspondence")}>
+                            <button className='primary' onClick={() => this.findMatch("correspondence")}>
                                 <div className='play-button-text-root'>
-                                    {this.state.disableCorrespondenceButton
-                                        ? <span><i className="fa fa-check" /> {_("Correspondence")}</span>
-                                        : <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
-                                    }
+                                    <span><i className="ogs-turtle" /> {_("Correspondence")}</span>
                                     <span className='time-per-move'>{pgettext("Automatch average time per move", "~1 day per move")}</span>
                                 </div>
                             </button>
