@@ -38,9 +38,9 @@ import { JosekiAdmin } from "JosekiAdmin";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 
-const server_url = "http://ec2-3-85-103-221.compute-1.amazonaws.com:8081/godojo/";
-
-//const server_url = "http://localhost:8081/godojo/";
+const server_url = document.location.host === "localhost:8080" ?
+    "http://localhost:8081/godojo/" :
+    "http://ec2-3-85-103-221.compute-1.amazonaws.com:8081/godojo/";
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
@@ -176,58 +176,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     getOGSJWT = () => {
-        // OGS is supposed to supply us the JWT for the current user.   Fake it up till then
-        return this.fakeUpUserinfo();
-    }
-
-    fakeUpUserinfo = () => {
-        /* Fake up user details JWT - OGS server will provide this */
-        const supposedly_private_key = "\
------BEGIN RSA PRIVATE KEY-----\n\
-MIIBOgIBAAJBAIwcsDli8iZtiIV9VjKXBxsmiSGkRCf3vi6y3wIaG7XDLEaXOzME\
-HsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQJBAIBCbstJmXO2Byhz0Olk\
-uZuQDi5eqgmQT2d+VIkfD0i15pPykN7VH7fiWBfVB/a5HYoyjse83Go6dm5TfjVM\
-FOECIQD5lx/q1bPYfESipVHz8C6Icm309cTQ2JQ/Z8YiyU+r8QIhAI+10tL0gf0r\
-CX7ncB7qj8A4YqLc9/VBuE6Wjxfh43+DAiBA6fpGJICa/G8Jcj/nVv9zQ3evr0Aa\
-JUohV4cjwwHysQIgPQajLj3ybUW3VJKHRDmrLZ9EE5DuItHzqDu7LBMafm0CIGij\
-DC+PapafkYFst0MSOS3wj3fvip7rs+moEF4D1ZQG\n\
------END RSA PRIVATE KEY-----";
-
-        const totally_public_key = "\
------BEGIN PUBLIC KEY-----\n\
-MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIwcsDli8iZtiIV9VjKXBxsmiSGkRCf3\
-vi6y3wIaG7XDLEaXOzMEHsV8s+oRl2VUDc2UbzoFyApX9Zc/FtHEi1MCAwEAAQ==\n\
------END PUBLIC KEY-----";
-
-        const user_info = data.get("user");
-
-        // console.log("Loaded user info: ", user_info);
-
-        const payload = {
-            username: user_info.username,
-            user_id: user_info.id
-        };
-
-        const i = 'OGS';     // Issuer
-        const s = 'Josekis'; // Subject
-        const a = 'godojo';  // Audience
-
-        const signOptions = {
-            issuer: i,
-            subject: s,
-            audience: a,
-            expiresIn: "12h",
-            algorithm: "RS256" as any
-        };
-
-        const user_jwt = jwt.sign(payload, supposedly_private_key, signOptions);
-        console.log("Generated token:", user_jwt);
-
-        const verifyOptions = signOptions;
-        verifyOptions.algorithm = ["RS256"];
-        let legit = jwt.verify(user_jwt, totally_public_key, verifyOptions);
-        console.log(legit);
-        return user_jwt;
+        return data.get('config').user_jwt;
     }
 
     resetJosekiSequence = (pos: String) => {
