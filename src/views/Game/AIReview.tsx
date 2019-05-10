@@ -389,6 +389,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
     constructor(props) {
         super(props);
+        console.info("Constructing AIReview");
         this.state = {
             loading: true,
             reviewing: false,
@@ -476,7 +477,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             } else {
                 post(`games/${game_id}/ai_reviews`, {
                     'engine': 'leela_zero',
-                    'type': 'fast',
+                    'type': 'auto',
                 })
                 .then(res => {
                     if (res.id) {
@@ -521,7 +522,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     syncAIReview() {
         if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
-                loading: true,
+                //loading: true,
                 full: null,
                 fast: null,
                 updatecount: this.state.updatecount + 1,
@@ -897,7 +898,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {((this.state.fast && this.state.fast.length > 0) || null) &&
                     <div className='key-moves'>
-                        <div>{_("Top game changing moves")}</div>
+                        <div>
+                            <b>{_("Top game changing moves")}</b>
+                        </div>
 
                         {this.state.fast.map((move, idx) =>
                             <span key={move.move} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move.move + this.handicapOffset())}>
@@ -905,9 +908,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </span>
                         )}
 
-                        <span className='full-ai-review clickable' onClick={this.performFullAIReview}>
-                            {_("Full AI Review")}
-                        </span>
+                        <div>
+                            <button className='primary' onClick={this.performFullAIReview}>
+                                {_("Full AI Review")}
+                            </button>
+                        </div>
                     </div>
                 }
 

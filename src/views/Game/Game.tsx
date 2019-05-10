@@ -1519,7 +1519,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     /* Review stuff */
-    clear_ai_review = () => {
+    delete_ai_reviews = () => {
         swal({
             "text": _("Really clear ALL AI reviews for this game?"),
             showCancelButton: true
@@ -2363,7 +2363,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {(superuser_ai_review_ready) && <hr/>}
                 {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI review"}</a>}
                 {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {"Full AI review"}</a>}
-                {(superuser_ai_review_ready) && <a onClick={this.clear_ai_review}><i className="fa fa-trash"></i> {"Clear AI reviews"}</a>}
+                {(superuser_ai_review_ready) && <a onClick={this.delete_ai_reviews}><i className="fa fa-trash"></i> {"Delete AI reviews"}</a>}
             </Dock>
         );
     }
