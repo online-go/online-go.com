@@ -43,6 +43,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             username: "...",
             supporter: false,
             supporter_expiration: null,
+            rough_monthly_support: null,
             payment_accounts: [],
         };
     }
@@ -69,6 +70,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             this.setState({
                 supporter: res.supporter,
                 supporter_expiration: res.supporter_expiration,
+                rough_monthly_support: res.rough_monthly_support,
                 payment_accounts: res.payment_accounts,
                 last_transaction: transactions.length > 0 ? transactions[0] : null,
                 loading: false,
@@ -91,6 +93,8 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                             : <span >
                                 {this.state.supporter ? 'Supporter' : 'Non-Supporter'}
                                 {this.state.supporter_expiration ? ' until ' + moment(this.state.supporter_expiration).format('YYYY-MM-DD') : ''}
+
+                                : ~${this.state.rough_monthly_support.toFixed(2)}/mo
                               </span>
                         }
                     </h3>
