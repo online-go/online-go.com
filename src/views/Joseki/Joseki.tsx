@@ -28,9 +28,7 @@ import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { errorAlerter, dup, ignore } from "misc";
 import { Goban, GoMath } from "goban";
-import { Resizable } from "Resizable";
-import { getSectionPageCompleted } from "../LearningHub/util";
-import { PlayerIcon } from "PlayerIcon";
+
 import { Player } from "Player";
 
 import { JosekiAdmin } from "JosekiAdmin";
@@ -117,6 +115,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             mode: PageMode.Explore,
             user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
             user_can_administer: false,
+            user_can_comment: false,
 
             move_type_sequence: [] as string[],
             joseki_source: null as {}
@@ -180,7 +179,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             this.setState({
                 user_can_edit: body.can_edit,
-                user_can_administer: body.is_admin
+                user_can_administer: body.is_admin,
+                user_can_comment: body.can_comment
             });
         });
     }
@@ -562,6 +562,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     position_type={this.state.current_move_category}
                     comment_count={this.state.current_comment_count}
                     position_id={this.state.current_node_id}
+                    can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
                 />
             );
@@ -817,6 +818,7 @@ interface ExploreProps {
     description: string;
     position_type: string;
     comment_count: number;
+    can_comment: boolean;
     joseki_source: {url: string, description: string};
 }
 
@@ -911,6 +913,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     onCommentChange = (e) => {
         // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
+        // (if they are allowed, of course)
         if (/\r|\n/.exec(e.target.value)) {
             const comment_url = server_url + "comment?id=" + this.props.position_id;
             fetch(comment_url, {
@@ -925,7 +928,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 });
             this.setState({ next_comment: "" });
         }
-        else if (e.target.value.length < 100) {
+        else if (e.target.value.length < 100 && this.props.can_comment) {
             this.setState({ next_comment: e.target.value });
         }
     }
