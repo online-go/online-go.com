@@ -94,9 +94,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban_div: any;
     goban_opts: any = {};
 
-    user_can_edit = false;       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
-    user_can_administer = false;
-
     last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
 
@@ -118,6 +115,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_move_category: "",
             contributor_id: -1,      // the person who created the node that we are displaying
             mode: PageMode.Explore,
+            user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
+            user_can_administer: false,
+
             move_type_sequence: [] as string[],
             joseki_source: null as {}
         };
@@ -170,9 +170,19 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     getUserJosekiPermissions = () => {
-        // ask Joseki Server what this user is allowed to do.  TBD
-        this.user_can_edit = true;
-        this.user_can_administer = true;
+        fetch(server_url + "permissions", {
+            mode: 'cors',
+            headers: godojo_headers   // server gets user id from here
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            console.log("Server response:", body);
+
+            this.setState({
+                user_can_edit: body.can_edit,
+                user_can_administer: body.is_admin
+            });
+        });
     }
 
     getOGSJWT = () => {
@@ -520,14 +530,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
             <button className={"btn s primary " + (this.state.mode === PageMode.Play ? "selected" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            {this.user_can_edit &&
+            {this.state.user_can_edit &&
             <button
                 className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
             </button>
             }
             <button className={"btn s primary " + (this.state.mode === PageMode.Admin ? "selected" : "")} onClick={this.setAdminMode}>
-                {this.user_can_administer ? _("Admin") : _("Updates")}
+                {this.state.user_can_administer ? _("Admin") : _("Updates")}
             </button>
         </div>
     )
@@ -538,7 +548,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <JosekiAdmin
                     godojo_headers={godojo_headers}
                     server_url={server_url}
-                    user_can_administer={this.user_can_administer}
+                    user_can_administer={this.state.user_can_administer}
                     loadPositionToBoard = {this.loadPosition}
                 />
             );
