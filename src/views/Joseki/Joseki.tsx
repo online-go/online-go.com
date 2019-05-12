@@ -20,7 +20,6 @@
 import * as React from "react";
 import * as ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
-import * as jwt from "jsonwebtoken";
 
 import * as data from "data";
 import { _, pgettext, interpolate } from "translate";
@@ -117,7 +116,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             user_can_administer: false,
             user_can_comment: false,
 
-            move_type_sequence: [] as string[],
+            move_type_sequence: [],
             joseki_source: null as {}
         };
 
@@ -233,7 +232,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
 
                 if ((body.labels.includes("joseki") || good_moves.length === 0) && !this.played_mistake) {
-                    this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
+                    this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: "** Joseki!"}]});
                 }
 
                 if (this.our_turn || this.played_mistake) {
@@ -395,8 +394,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
 
             if (this.state.mode === PageMode.Play) {
-                const this_play_type = (chosen_move === undefined) ? "Not Joseki" : chosen_move.placement + ": " + MoveCategory[chosen_move.category];
-                this.setState({move_type_sequence: [...this.state.move_type_sequence, this_play_type]});
+                const move_type = this.our_turn ? 'computer' :
+                    (chosen_move === undefined || bad_moves.includes(chosen_move.category)) ? 'bad' : 'good';
+
+                const comment = placement + ": " +
+                    ((chosen_move === undefined) ? "You made that up!" :  MoveCategory[chosen_move.category]);
+
+                this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: move_type, comment: comment}]});
             }
 
             if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.our_turn) {
@@ -638,7 +642,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
-    move_type_sequence: string[];
+    move_type_sequence: [];
 }
 
 class PlayPane extends React.Component<PlayProps, any> {
@@ -649,13 +653,25 @@ class PlayPane extends React.Component<PlayProps, any> {
         };
     }
 
+    iconFor = (move_type) => {
+        switch (move_type) {
+            case "good": return (<i className="fa fa-check"/>); break;
+            case "bad": return (<i className="fa fa-times"/>); break;
+            case "computer": return (<i className="fa fa-check hide"/>); break;
+            default: return "";
+        }
+    }
+
     render = () => {
         return (
             <div className="play-dashboard">
                 {this.props.move_type_sequence.length === 0 &&
                 <div> Your move...</div>}
-                {this.props.move_type_sequence.map( (move_type, id) =>
-                    (<div key={id}>{move_type} </div>))}
+                {this.props.move_type_sequence.map( (move_type, id) => (
+                    <div key={id}>
+                        {this.iconFor(move_type['type'])}
+                        {move_type['comment']}
+                    </div>))}
             </div>
         );
     }
