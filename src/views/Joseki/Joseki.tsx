@@ -215,53 +215,53 @@ export class Joseki extends React.Component<JosekiProps, any> {
             mode: 'cors',
             headers: godojo_headers
         })
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                console.log("Server response:", body);
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            console.log("Server response:", body);
 
-                if (this.load_sequence_to_board) {
-                    // when they clicked a position link, we have to load the whole sequence we recieved onto the board
-                    // to get to that position
-                    this.loadSequenceToBoard(body.play);
-                    this.load_sequence_to_board = false;
+            if (this.load_sequence_to_board) {
+                // when they clicked a position link, we have to load the whole sequence we recieved onto the board
+                // to get to that position
+                this.loadSequenceToBoard(body.play);
+                this.load_sequence_to_board = false;
+            }
+
+            this.processNewJosekiPosition(body);
+
+            if (this.state.mode === PageMode.Play) {
+
+                const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
+
+                if ((body.labels.includes("joseki") || good_moves.length === 0) && !this.played_mistake) {
+                    this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
                 }
 
-                this.processNewJosekiPosition(body);
-
-                if (this.state.mode === PageMode.Play) {
-
-                    const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
-
-                    if ((body.labels.includes("joseki") || good_moves.length === 0) && !this.played_mistake) {
-                        this.setState({move_type_sequence: [...this.state.move_type_sequence, "** Joseki!"]});
-                    }
-
-                    if (this.our_turn || this.played_mistake) {
-                        // obviously, don't place another stone if we just placed one
-                        // also, if they made a mistake, then they get another go.
-                        this.our_turn = false;
-                        if (this.played_mistake) {
-                            console.log("finishing mistake processing");
-                            this.played_mistake = false;
-                        }
-                    }
-                    else if (body.next_moves.length > 0 && this.state.move_string !== "") {
-                        // the computer plays both good and bad moves
-                        const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
-                        const location = this.goban.engine.decodeMoves(next_play.placement)[0];
-                        console.log("Will play: ", next_play, location);
-                        this.our_turn = true;
-                        this.goban.engine.place(location.x, location.y);
-                        this.onBoardUpdate();
+                if (this.our_turn || this.played_mistake) {
+                    // obviously, don't place another stone if we just placed one
+                    // also, if they made a mistake, then they get another go.
+                    this.our_turn = false;
+                    if (this.played_mistake) {
+                        console.log("finishing mistake processing");
+                        this.played_mistake = false;
                     }
                 }
-                if (this.backstepping) {
-                    console.log("finishing backstep");
-                    this.backstepping = false;
+                else if (body.next_moves.length > 0 && this.state.move_string !== "") {
+                    // the computer plays both good and bad moves
+                    const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
+                    const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                    console.log("Will play: ", next_play, location);
+                    this.our_turn = true;
+                    this.goban.engine.place(location.x, location.y);
+                    this.onBoardUpdate();
                 }
-                this.goban.enableStonePlacement();
-            });
-    }
+            }
+            if (this.backstepping) {
+                console.log("finishing backstep");
+                this.backstepping = false;
+            }
+            this.goban.enableStonePlacement();
+        });
+}
 
     loadSequenceToBoard = (sequence: string) => {
         // We expect sequence to come from the server in the form ".root.K10.L11"
@@ -611,26 +611,27 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 mode: 'cors',
                 headers: godojo_headers,
                 body: JSON.stringify({ sequence: this.state.move_string, category: move_type , joseki_source_id: joseki_source_id})
-            }).then(res => res.json())
-                .then(body => {
-                    console.log("Server response to sequence POST:", body);
-                    this.processNewJosekiPosition(body);
+            })
+            .then(res => res.json())
+            .then(body => {
+                console.log("Server response to sequence POST:", body);
+                this.processNewJosekiPosition(body);
 
-                    // Now we can save the description on the final new position, if they supplied one
-                    if (description !== "") {
-                        fetch(position_url(this.state.current_node_id), {
-                            method: 'put',
-                            mode: 'cors',
-                            headers: godojo_headers,
-                            body: JSON.stringify({ description: description, category: "" })
-                        }).then(res => res.json())
-                            .then(body => {
-                                console.log("Server response to description PUT:", body);
-                                this.processNewJosekiPosition(body);
-                                this.setExploreMode();
-                            });
-                    }
-                });
+                // Now we can save the description on the final new position, if they supplied one
+                if (description !== "") {
+                    fetch(position_url(this.state.current_node_id), {
+                        method: 'put',
+                        mode: 'cors',
+                        headers: godojo_headers,
+                        body: JSON.stringify({ description: description, category: "" })
+                    }).then(res => res.json())
+                        .then(body => {
+                            console.log("Server response to description PUT:", body);
+                            this.processNewJosekiPosition(body);
+                            this.setExploreMode();
+                        });
+                }
+            });
         }
     }
 }
@@ -653,8 +654,8 @@ class PlayPane extends React.Component<PlayProps, any> {
             <div className="play-dashboard">
                 {this.props.move_type_sequence.length === 0 &&
                 <div> Your move...</div>}
-                {this.props.move_type_sequence.map( (move_type, id) => (<div key={id}>{move_type}
-                </div>))}
+                {this.props.move_type_sequence.map( (move_type, id) =>
+                    (<div key={id}>{move_type} </div>))}
             </div>
         );
     }
@@ -682,11 +683,12 @@ class EditPane extends React.Component<EditProps, any> {
         fetch(joseki_sources_url, {
             mode: 'cors',
             headers: godojo_headers
-        }).then(res => res.json())
-            .then(body => {
-                console.log("Server response to josekisources GET:", body);
-                this.setState({joseki_source_list: [{id: 0, description: "(unknown)"}, ...body.sources]});
-            });
+        })
+        .then(res => res.json())
+        .then(body => {
+            console.log("Server response to josekisources GET:", body);
+            this.setState({joseki_source_list: [{id: 0, description: "(unknown)"}, ...body.sources]});
+        });
 
         this.state = {
             move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
@@ -742,16 +744,17 @@ class EditPane extends React.Component<EditProps, any> {
             mode: 'cors',
             headers: godojo_headers,
             body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
-        }).then(res => res.json())
-            .then(body => {
-                console.log("Server response to joseki POST:", body);
-                const new_source = {id: body.source.id, description: body.source.description};
-                console.log(new_source);
-                this.setState({
-                    joseki_source_list: [new_source, ...this.state.joseki_source_list],
-                    joseki_source: new_source.id
-                });
+        })
+        .then(res => res.json())
+        .then(body => {
+            console.log("Server response to joseki POST:", body);
+            const new_source = {id: body.source.id, description: body.source.description};
+            console.log(new_source);
+            this.setState({
+                joseki_source_list: [new_source, ...this.state.joseki_source_list],
+                joseki_source: new_source.id
             });
+        });
     }
 
     render = () => {
@@ -921,11 +924,13 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 mode: 'cors',
                 headers: godojo_headers,
                 body: this.state.next_comment
-            }).then(res => res.json())
-                .then(body => {
-                    console.log("Server response to sequence POST:", body);
-                    this.extractCommentary(body.commentary);
-                });
+            })
+            .then(res => res.json())
+            .then(body => {
+                console.log("Server response to sequence POST:", body);
+                this.extractCommentary(body.commentary);
+            });
+
             this.setState({ next_comment: "" });
         }
         else if (e.target.value.length < 100 && this.props.can_comment) {
