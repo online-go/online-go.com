@@ -96,7 +96,6 @@ function unIgnoreUser(uid) {
 data.watch(cached.blocks, (blocks) => {
     block_state = {};
     let new_ignores = {};
-    try {
     for (let entry of blocks) {
         block_state[entry.blocked] = entry;
         if (entry.block_chat) {
@@ -113,8 +112,5 @@ data.watch(cached.blocks, (blocks) => {
         if (!(uid in new_ignores)) {
             unIgnoreUser(uid);
         }
-    }
-    } catch (e) {
-        console.log("Warning - something bad happeed in data.watch! But life goes on...");
     }
 });
