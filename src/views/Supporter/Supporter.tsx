@@ -22,6 +22,7 @@ import {del, put, post, get} from "requests";
 import {errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
+import {openBecomeASiteSupporterModal} from "./BecomeASiteSupporter";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
 //import { default as ReactNumberFormat } from 'react-number-format';
@@ -607,11 +608,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     learnMore = (ev) => {
         ev.stopPropagation();
-        swal({
-            type: 'info',
-            customClass: "supporter-learn-more-swal",
-            text: _("As a site supporter all of your 19x19 games will be reviewed by an advanced artifical intelligence automatically by our high power servers. In short, the way the artificial intelligence works is by using a neural network trained by analyzing millions of self-play games. The larger the network used, the deeper the understanding of the game the artificial intelligence has, which means better reviews, but it also means it takes more computational time to perform. Because our resources are limited, all site supporters will have access to a reasonably sized 10x128 network for reviews. This network is stronger than most players, but not as strong as the 15x192 network available to Kyu level supporters. Dan level supporters have access to an even stronger 20x256 network, and Pro level supporters have access to the cutting edge strongest available network, 40x256. All reviews are peformed at full strength for the network size."),
-        });
+        openBecomeASiteSupporterModal();
     }
 
 
