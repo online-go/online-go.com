@@ -57,6 +57,7 @@ export class Settings extends React.PureComponent<{}, any> {
             volume: preferences.get("sound-volume"),
             automatch_alert_volume: preferences.get("automatch-alert-volume"),
             voice_countdown: preferences.get("sound-voice-countdown"),
+            voice_countdown_main: preferences.get("sound-voice-countdown-main"),
             sound_enabled: preferences.get("sound-enabled"),
             live_submit_mode: this.getSubmitMode("live"),
             corr_submit_mode: this.getSubmitMode("correspondence"),
@@ -172,6 +173,12 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("sound-voice-countdown", ev.target.checked);
         this.setState({"voice_countdown": ev.target.checked});
     }}}
+
+    setVoiceCountdownMain = (ev) => {{{
+        preferences.set("sound-voice-countdown-main", ev.target.checked);
+        this.setState({"voice_countdown_main": ev.target.checked});
+    }}}
+
     toggleVolume = (ev) => {{{
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
     }}}
@@ -601,8 +608,12 @@ export class Settings extends React.PureComponent<{}, any> {
                                         : interpolate(_("{{number_of}} seconds"), { number_of:  this.state.dock_delay}) /* translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page */
                                 }</span>
                             </dd>
+
                             <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
                             <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
+                            <dt><label htmlFor="voice-countdown-main">{_("Voice countdown on main time")}</label></dt>
+                            <dd><input type="checkbox" id="voice-countdown-main" checked={this.state.voice_countdown_main} onChange={this.setVoiceCountdownMain}/></dd>
+
                             <dt>{_("Board labeling")}</dt>
                             <dd>
                                 <select value={this.state.board_labeling} onChange={this.setBoardLabeling}>
