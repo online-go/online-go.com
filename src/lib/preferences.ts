@@ -59,6 +59,7 @@ let defaults = {
     "show-variation-move-numbers": false,
     "sound-enabled": true,
     "sound-voice-countdown": true,
+    "sound-voice-countdown-main" : false,
     "sound-volume": 0.5,
     "supporter.currency": "auto",
     "supporter.interval": "month",

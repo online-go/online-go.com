@@ -4292,10 +4292,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 clock_div = clock_div.children(".full-time");
             }
 
+            // Prepare to be able to not-play the voice countdown in main time of byo-yomi
+            let timing_type = null;
+            let in_overtime = false;
 
             if (typeof(time) === "object") {
                 ms = (base_time + (time.thinking_time) * 1000) - now;
                 if ("moves_left" in time) { /* canadian */
+                    timing_type = "canadian";
                     if ("block_time" in time) {
                         if (time.moves_left) {
                             time_suffix = "<span class='time_suffix'> + " + shortDurationString(time.block_time) + "/" + time.moves_left + "</span>";
@@ -4324,9 +4328,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
                 if ("periods" in time) { /* byo yomi */
+                    timing_type = 'byo-yomi';
                     let period_offset = 0;
                     if (ms < 0 || time.thinking_time === 0) {
                         if (overtime_parent_div) {
+                            in_overtime = true;
                             overtime_parent_div.addClass("in-overtime");
                         }
 
@@ -4427,7 +4433,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                             if (this.last_sound_played !== sound_to_play) {
                                 this.last_sound_played = sound_to_play;
 
-                                if (this.getShouldPlayVoiceCountdown()) {
+                                if (this.getShouldPlayVoiceCountdown(timing_type, in_overtime)) {
+                                    //console.log("Playing sound", sound_to_play);
                                     sfx.play(sound_to_play);
                                 }
                             }
@@ -4651,7 +4658,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         return ret;
     } /* }}} */
-    protected getShouldPlayVoiceCountdown():boolean {{{
+    protected getShouldPlayVoiceCountdown(timing_type: string, in_overtime: boolean):boolean {{{
         return false;
     }}}
     /**
