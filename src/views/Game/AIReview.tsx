@@ -22,6 +22,7 @@ import * as React from "react";
 import * as data from "data";
 import {Player} from "Player";
 import {UIPush} from "UIPush";
+import {openBecomeASiteSupporterModal} from "Supporter";
 import {deepCompare, dup} from 'misc';
 import {get, post} from 'requests';
 import {Link} from "react-router-dom";
@@ -451,6 +452,13 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         return 1;
                     }
 
+                    if (a.network_size < b.network_size) {
+                        return 1;
+                    }
+                    if (b.network_size < a.network_size) {
+                        return -1;
+                    }
+
                     if (a.playouts - b.playouts !== 0) {
                         return a.playouts - b.playouts;
                     }
@@ -650,6 +658,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     {this.state.ai_reviews.map((ai_review, idx) => {
                         let params = {
                             strength: ai_review.playouts,
+                            network_size: ai_review.network_size,
                             num_moves: ai_review.total_moves_to_analyze,
                         };
                         return (
@@ -659,7 +668,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 title={moment(ai_review.created).format('LL')}
                                 onClick={() => this.setSelectedAIReview(ai_review)}>
                                 { ai_review.full
-                                    ? interpolate(_("Full review by Leela Zero: strength {{strength}}"), params)
+                                    ? interpolate(_("Full {{network_size}} review by Leela Zero"), params)
                                     : interpolate(_("Top {{num_moves}} moves according to Leela Zero"), params)
                                 }
                             </div>
@@ -760,6 +769,18 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
+        let show_full_ai_review_button = false;
+        let user = data.get('user');
+        try {
+            if (user.is_moderator) {
+                show_full_ai_review_button = true;
+            }
+            if (user.id === this.props.game.goban.engine.players.black.id || user.id === this.props.game.goban.engine.players.white.id) {
+                show_full_ai_review_button = true;
+            }
+        } catch {
+            // no problem, just a loaded sgf or something
+        }
 
         if ( `full-${move_number - this.handicapOffset()}` in this.ai_review) {
             move_ai_review = this.ai_review[`full-${move_number - this.handicapOffset()}`];
@@ -886,6 +907,13 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
                         <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
                     </div>
+                    {((this.state.selected_ai_review && this.state.full) || null) &&
+                        <div className='ai-review-network-size-container'>
+                            <span >
+                                {this.state.selected_ai_review.network_size}
+                            </span>
+                        </div>
+                    }
                 </div>
 
                 {((this.state.full && this.state.full.length > 0) || null) &&
@@ -909,7 +937,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         )}
 
                         <div>
-                            <button className='primary' onClick={this.performFullAIReview}>
+                            <button
+                                className='primary'
+                                disabled={!show_full_ai_review_button}
+                                onClick={this.performFullAIReview}>
                                 {_("Full AI Review")}
                             </button>
                         </div>
@@ -989,10 +1020,16 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         this.stashed_heatmap = goban.setHeatmap(null);
     }
     performFullAIReview = () => {
-        if (data.get('user').anonymous) {
+        let user = data.get('user');
+
+        if (user.anonymous) {
             swal(_("Please login first"));
         } else {
-            this.props.game.force_ai_review("full");
+            if (user.supporter) {
+                this.props.game.force_ai_review("full");
+            } else {
+                openBecomeASiteSupporterModal();
+            }
         }
     }
 }
@@ -1005,5 +1042,3 @@ function winRateDelta(start_or_delta, end?) {
         return <span className='decreased-win-rate'>{Math.round(delta * 100)}</span>;
     }
 }
-
-
