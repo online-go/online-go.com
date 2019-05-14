@@ -769,7 +769,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
-        let show_full_ai_review_button = false;
+        let show_full_ai_review_button = null;
         let user = data.get('user');
         try {
             if (user.is_moderator) {
@@ -936,14 +936,15 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </span>
                         )}
 
-                        <div>
-                            <button
-                                className='primary'
-                                disabled={!show_full_ai_review_button}
-                                onClick={this.performFullAIReview}>
-                                {_("Full AI Review")}
-                            </button>
-                        </div>
+                        {show_full_ai_review_button &&
+                            <div>
+                                <button
+                                    className='primary'
+                                    onClick={this.performFullAIReview}>
+                                    {_("Full AI Review")}
+                                </button>
+                            </div>
+                        }
                     </div>
                 }
 
