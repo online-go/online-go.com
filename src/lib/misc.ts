@@ -17,6 +17,7 @@
 
 import {_, interpolate, pgettext} from "translate";
 import {post} from "requests";
+import {errcodeAlerter} from 'ErrcodeModal';
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
 
@@ -307,6 +308,9 @@ export function getPrintableError(err) {{{
                     obj = obj.responseText;
                 }
             }
+            else if ("errcode" in obj) {
+                obj = "errcode";
+            }
             else if ("error" in obj) {
                 obj = obj.error;
             }
@@ -344,10 +348,14 @@ export function errorAlerter(...args) {{{
     if (!err) {
         return;
     }
-    swal({
-        title: _(err.substring(0, 128)),
-        type: "error"
-    });
+    if (err === "errcode") {
+        errcodeAlerter(args[0]);
+    } else {
+        swal({
+            title: _(err.substring(0, 128)),
+            type: "error"
+        });
+    }
     console.error(err);
 }}}
 export function errorLogger(...args) {{{
