@@ -72,40 +72,17 @@ supporter-page-width=60rem;
     #supporter-text-container {
         margin: auto;
         max-width: supporter-page-width;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     #supporter-text {
         text-align: justify;
-        display: flex;
-        flex-wrap: wrap;
-        flex-direction: row;
 
-        .left {
-            flex: 30;
-            min-width: 20rem;
-            max-width: 100vw;
-            margin-right: 1rem;
-        }
-        .right {
-            flex: 30;
-            min-width: 20rem;
-            max-width: 100vw;
-            margin-left: 1rem;
-        }
-
-        .p {
-            margin-top: 1rem;
-        }
-
-        .perk {
-            padding: 0;
-            padding-top: 1rem;
-            display: flex;
-            align-items: top;
-            .fa-circle {
-                font-size: 0.5rem;
-                padding: 0.4rem;
-            }
+        .SiteSupporterText {
+            margin: auto;
+            max-width: 40rem;
         }
     }
 

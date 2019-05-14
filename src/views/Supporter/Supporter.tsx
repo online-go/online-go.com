@@ -29,6 +29,7 @@ import {PersistentElement} from 'PersistentElement';
 //import NumberFormat from 'react-number-format';
 import * as NumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
+import { SiteSupporterText } from './SiteSupporterText';
 import {Flag} from "Flag";
 import Select from 'react-select';
 import * as preferences from "preferences";
@@ -631,7 +632,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         </span></div>
                         <div className='text'>
                             <div>{_("Strong Dan level AI reviews for all of your games")}<sup>*</sup></div>
-                            <div className='learn-more'><span className='fakelink' onClick={this.learnMore}>{_("Learn more")}</span></div>
                         </div>
                     </div>
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 5 ? 'active' : '')} onClick={() => this.setSupportLevel(5)}>
@@ -641,7 +641,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         </span></div>
                         <div className='text'>
                             <div>{_("Strong professional level AI reviews for all of your games")}<sup>*</sup></div>
-                            <div className='learn-more'><span className='fakelink' onClick={this.learnMore}>{_("Learn more")}</span></div>
                         </div>
                     </div>
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 10 ? 'active' : '')} onClick={() => this.setSupportLevel(10)}>
@@ -651,46 +650,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         </span></div>
                         <div className='text'>
                             <div>{_("Even stronger cutting edge AI reviews for all of your games")}<sup>*</sup></div>
-                            <div className='learn-more'><span className='fakelink' onClick={this.learnMore}>{_("Learn more")}</span></div>
                         </div>
                     </div>
                 </div>
-                <div id='supporter-perks-star'>
-                    <sup>*</sup>{_("Only 19x19 games are supported currently. Support for 9x9 and 13x13 games is planned.")}
-                </div>
+
                 <div id='supporter-text'>
-
-                    <div className='left'>
-                        <div className='p'>
-                            {interpolate(_("Hello! As you may or may not know, Online-Go.com is an ever evolving community project driven by countless Go enthusiasts. First established in 2005, Online-Go.com has grown to be the first place almost all beginners find themselves at when they're first learning about the game, and is home to an ever growing community of veteran players as well. Bringing in on average {{number_of_new_players}} new players to the game per week, Online-Go.com is the fastest growing western Go server and is one of the most important facets, if not the most important facet, to the now-revitalizing western Go community."), {'number_of_new_players': 1200})}
-                        </div>
-
-                        <div className='p'>
-                        {_("This project is entirely supported by donations from players like you. By choosing to help support OGS financially, you are directly helping us keep this service online as well as enabling us to continually improve the service.")}
-                        </div>
-                    </div>
-
-                    <div className='right'>
-                        <div className='p'>
-                            <div><b>{_("Additionally, all site supporters get several perks")}:</b></div>
-                            {/*
-                            {_("When you become a supporter you also get a few perks!")}
-                            */}
-
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("Full AI reviews of your games! Site supporters benefit from having our high power servers analyze their games to help explore and learn from them. This benefit is shared with both you and your opponent, whether they are site supporters or not!")}</span></div>
-
-                            {/*
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! By supporting OGS, we are able to operate this site without ads.")}</span></div>
-                            */}
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("More vacation time! If you play a lot of correspondence games this is a great benefit, your vacation time limit will be raised to 60 days (up from 30)")}</span></div>
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("Faster vacation recharge time! Vacation will accrue at 1 day per 5 days, up from 1 day per 8 days.")}</span></div>
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("Golden name! Your username will show up in gold (You can turn this off in settings if you want.)")}</span></div>
-                            {/*
-                            <div className='perk'><i className='fa fa-circle'/><span>{_("Golden orb next to your name in chat! (You can turn this off in settings if you want.)")}</span></div>
-                            */}
-                            <div className='perk'><i className='fa fa-circle'/><span>{_('Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!')}</span></div>
-                        </div>
-                    </div>
+                    <SiteSupporterText />
                 </div>
             </div>
         );
