@@ -16,6 +16,4 @@
  */
 
 
-export * from "./Supporter";
-export * from "./PrettyTransactionInfo";
-export * from "./BecomeASiteSupporter";
+export * from "./ErrcodeModal";

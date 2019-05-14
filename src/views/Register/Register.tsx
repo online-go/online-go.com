@@ -50,9 +50,12 @@ export class Register extends React.PureComponent<{}, any> {
                 "ebi": get_ebi()
             }).then((config) => {
                 data.set(cached.config, config);
-                console.log("Logged in!");
-                console.info(config);
-                browserHistory.replace("/");
+
+                if (window.location.hash && window.location.hash[1] === "/") {
+                    window.location.pathname = window.location.hash.substr(1);
+                } else {
+                    window.location.pathname = "/";
+                }
             }).catch(errorAlerter);
         };
 

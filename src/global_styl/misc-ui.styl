@@ -209,3 +209,17 @@
         themed(color, colored-background-fg);
     }
 }
+
+
+@keyframes slowstrobe-keyframes {
+    0%   { opacity: 0.5; }
+    50%  { opacity: 1.0; }
+    100% { opacity: 0.5; }
+}
+
+.slowstrobe {
+    animation-name: slowstrobe-keyframes;
+    animation-duration: 3s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite
+}

@@ -31,6 +31,7 @@ import {Markdown} from "Markdown";
 import {PersistentElement} from "PersistentElement";
 import {Steps} from "Steps";
 import {VerticalSlider} from "VerticalSlider";
+import {errcodeAlerter} from "ErrcodeModal";
 import * as moment from "moment";
 
 declare var swal;
@@ -94,7 +95,8 @@ export class Styling extends React.PureComponent<{}, any> {
                     <span title="second">World</span>
                     <div title="third">
                         <div>And the world was bright and shiny</div>
-                        <button >Click this</button></div>
+                        <button onClick={() => errcodeAlerter({"errcode": "test"})}>Errcode test</button>
+                    </div>
                 </Steps>
             </div>
             <div className="col-xs-3">
