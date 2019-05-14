@@ -631,7 +631,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
                         </span></div>
                         <div className='text'>
-                            <div>{_("Strong Dan level AI reviews for all of your games")}<sup>*</sup></div>
+                            <div>{_("Professional level AI reviews for all of your games")}<sup>*</sup></div>
                         </div>
                     </div>
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 5 ? 'active' : '')} onClick={() => this.setSupportLevel(5)}>
