@@ -47,6 +47,9 @@ export function SiteSupporterText(props) {
                                 {pgettext("Size of our artificial intelligence neural network", "19x19 network size")}
                             </th>
                             <th>
+                                {pgettext("Number of playouts our neural network does to review a game", "Playouts")}
+                            </th>
+                            <th>
                                 {pgettext("Strength of our artificial intelligence review engine", "Approximate strength")}
                             </th>
                         </tr>
@@ -54,22 +57,26 @@ export function SiteSupporterText(props) {
                     <tbody>
                         <tr>
                             <th>{_("Supporter")}</th>
-                            <td>10x128</td>
-                            <td>{pgettext("How strong an AI engine is", "Dan level player")}</td>
+                            <td>15x192</td>
+                            <td>200</td>
+                            <td>{pgettext("How strong an AI engine is", "Strong Dan level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Kyu Supporter")}</th>
                             <td>15x192</td>
-                            <td>{pgettext("How strong an AI engine is", "Strong dan level player")}</td>
+                            <td>800</td>
+                            <td>{pgettext("How strong an AI engine is", "Professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Dan Supporter")}</th>
-                            <td>20x256</td>
+                            <td>15x192</td>
+                            <td>1600</td>
                             <td>{pgettext("How strong an AI engine is", "Strong professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Pro Supporter")}</th>
                             <td>40x256</td>
+                            <td>1600</td>
                             <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td>
                         </tr>
                     </tbody>
