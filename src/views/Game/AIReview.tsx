@@ -718,10 +718,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 <th>{pgettext("AI review engine node visits (strength)", "Visits")}</th>
                                 <td>{this.state.selected_ai_review.visits}</td>
                             </tr>
-                            <tr>
-                                <th>{_("Creator")}</th>
-                                <td><Player user={this.state.selected_ai_review.player_id}/></td>
-                            </tr>
+                            {(data.get('user').is_superuser || null) &&
+                                <tr>
+                                    <th>{_("Creator")}</th>
+                                    <td><Player user={this.state.selected_ai_review.player_id}/></td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
