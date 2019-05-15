@@ -1808,6 +1808,9 @@ export class GoEngine {
 
         return () => {
             cb();
+
+            this.move_tree.hoistFirstBranchToTrunk();
+
             /* jump to farthest loaded move so we don't begin at the first branch point */
             if (farthest_move) {
                 self.jumpTo(farthest_move);
