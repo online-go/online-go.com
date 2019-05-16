@@ -349,7 +349,6 @@ export class NavBar extends React.PureComponent<{}, any> {
                 {(show_debug || null) &&
                     <div style={{textAlign: "center"}}>
                         <button className={debug ? "sm info" : "sm"} onClick={this.toggleDebug}>{debug ? "Turn debugging off" : "Turn debugging on"}</button>
-                        <button className={debug ? "sm info" : "sm"} onClick={this.toggleAdOverride}>{data.get("ad-override", false) ? "Turn ads off" : "Turn ads on"}</button>
                     </div>
                 }
             </div>
