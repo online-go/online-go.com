@@ -258,7 +258,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         super(props);
         if (data.get('user').anonymous) {
             this.state = {
-                loading: false
+                loading: false,
+                currency: guessCurrency(),
+                amount: 0,
+                custom_amount: 50.0,
+                interval: preferences.get('supporter.interval'),
             };
         } else {
             this.state = {
@@ -590,6 +594,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     /* Sets support level based on scaled support amount */
     setSupportLevel(amount:number) {
+        if (data.get('user').anonymous) {
+            return;
+        }
+
         amount *= getIntervalScale(this.state.interval);
         let step = 0;
         for (; step < amount_steps[this.state.interval].length; ++step) {
