@@ -16,17 +16,20 @@
  */
 
 import * as React from "react";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {del, put, post, get} from "requests";
 import {errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
+import {openBecomeASiteSupporterModal} from "./BecomeASiteSupporter";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
 //import { default as ReactNumberFormat } from 'react-number-format';
 //import NumberFormat from 'react-number-format';
 import * as NumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
+import { SiteSupporterText } from './SiteSupporterText';
 import {Flag} from "Flag";
 import Select from 'react-select';
 import * as preferences from "preferences";
@@ -58,35 +61,18 @@ let amount_steps = {
         50.0,
         0,
     ],
-    'year': [
-        5.0,
-        10.0,
-        15.0,
-        20.0,
-        25.0,
-        30.0,
-        50.0,
-        75.0,
-        100.00,
-        150.00,
-        200.00,
-        0,
-    ],
-    'one time': [
-        5.0,
-        10.0,
-        15.0,
-        20.0,
-        25.0,
-        30.0,
-        50.0,
-        75.0,
-        100.00,
-        150.00,
-        200.00,
-        0,
-    ],
+    'year': [ ],
+    'one time': [ ],
 };
+
+function getIntervalScale(interval:string):number {
+    return interval === 'month' ? 1 : 10;
+}
+
+for (let i = 0; i < amount_steps.month.length; ++i) {
+    amount_steps['year'][i] = getIntervalScale('year') * amount_steps.month[i];
+    amount_steps['one time'][i] = getIntervalScale('one time') * amount_steps.month[i];
+}
 
 
 // alipay list
@@ -126,6 +112,17 @@ let currency_list = [
     {'name': 'United Arab Emirates Dirham' , 'iso': 'AED' ,  'flag': 'ae', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['AE']} ,
 ];
 
+data.watch('config.supporter_currency_scale', (scales) => {
+    for (let i = 0; i < currency_list.length; ++i) {
+        let iso = currency_list[i].iso;
+        if (iso in scales) {
+            currency_list[i].scale = scales[iso];
+        } else {
+            console.error("Missing currency scale: ", iso);
+        }
+    }
+});
+
 
 let interval_list = [
     {'name': _('month'),    'interval': 'month'},
@@ -140,6 +137,7 @@ let interval_description = {
 };
 
 
+
 function getDecimalSeparator() {
     return (1.1).toLocaleString().substring(1, 2);
 }
@@ -152,8 +150,13 @@ function toFixedWithLocale(n:number, decimals:number = 2) {
     return n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-function formatMoney(currency: string, n:number) {
-    return Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency }).format(n);
+function formatMoney(currency: string, n:number, no_fraction_digits:boolean = false):string {
+    let ret = Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency}).format(n);
+
+    if (no_fraction_digits) {
+        return ret.replace(/[.,].*/, "");
+    }
+    return ret;
 }
 
 function filterCurrencyOption(currency:any, text:string):boolean {
@@ -274,7 +277,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
     }
 
-
     componentWillUnmount() {{{
         $("body").append(amex_express_checkout_button);
     }}}
@@ -352,7 +354,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     }}}
 
-    setAmount = (ev) => {{{
+    setAmountByStep = (ev) => {{{
         let step = parseInt(ev.target.value);
         let amount = amount_steps[this.state.interval][parseInt(ev.target.value)];
 
@@ -581,6 +583,35 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return promise;
     }}}
 
+    /* Returns the aggregate descaled support amount per month */
+    getSupportLevel():number {
+        return Math.round(this.getAmount() / (getIntervalScale(this.state.interval) * getCurrencyScale(this.state.currency))) ;
+    }
+
+    /* Sets support level based on scaled support amount */
+    setSupportLevel(amount:number) {
+        amount *= getIntervalScale(this.state.interval);
+        let step = 0;
+        for (; step < amount_steps[this.state.interval].length; ++step) {
+            let e = 0.0001;
+            if (amount > amount_steps[this.state.interval][step] - e && amount < amount_steps[this.state.interval][step] + e) {
+                break;
+            }
+        }
+        let amt = amount_steps[this.state.interval][step];
+
+        this.setState({
+            amount_step: step,
+            amount: amt,
+            custom_amount: amt ? amount : amt
+        });
+    }
+
+    learnMore = (ev) => {
+        ev.stopPropagation();
+        openBecomeASiteSupporterModal();
+    }
+
 
     render() {
         if (this.state.loading) {
@@ -592,54 +623,151 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let cdn_release = data.get("config.cdn_release");
 
         let supporter_text = (
-            <div className='main-paragraph'>
-
-                <div className='p'>
-                    {interpolate(_("Hello! As you may or may not know, Online-Go.com is an ever evolving community project driven by countless Go enthusiasts. First established in 2005, Online-Go.com has grown to be the first place almost all beginners find themselves at when they're first learning about the game, and is home to an ever growing community of veteran players as well. Bringing in on average {{number_of_new_players}} new players to the game per week, Online-Go.com is the fastest growing western Go server and is one of the most important facets, if not the most important facet, to the now-revitalizing western Go community."), {'number_of_new_players': 1200})}
+            <div id='supporter-text-container'>
+                <div id='supporter-ai-perks' >
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 3 ? 'active' : '')} onClick={() => this.setSupportLevel(3)}>
+                        <div className='title'><span>{_("Kyu Supporter")}</span><span>
+                            {formatMoney(this.state.currency, 3 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
+                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                        </span></div>
+                        <div className='text'>
+                            <div>{_("Strong Dan level AI reviews for all of your games")}<sup>*</sup></div>
+                        </div>
+                    </div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 5 ? 'active' : '')} onClick={() => this.setSupportLevel(5)}>
+                        <div className='title'><span>{_("Dan Supporter")}</span><span>
+                            {formatMoney(this.state.currency, 5 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
+                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                        </span></div>
+                        <div className='text'>
+                            <div>{_("Strong professional level AI reviews for all of your games")}<sup>*</sup></div>
+                        </div>
+                    </div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 10 ? 'active' : '')} onClick={() => this.setSupportLevel(10)}>
+                        <div className='title'><span>{_("Pro Supporter")}</span><span>
+                            {formatMoney(this.state.currency, 10 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
+                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                        </span></div>
+                        <div className='text'>
+                            <div>{_("Even stronger cutting edge AI reviews for all of your games")}<sup>*</sup></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className='p'>
-                {_("This project is entirely supported by donations from players like you. By choosing to help support OGS financially, you are directly helping us keep this service online as well as enabling us to continually improve the service.")}
-                </div>
-
-                <div className='p'>
-                    {_("When you become a supporter you also get a few perks!")}
-
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("No more ads! By supporting OGS, we are able to operate this site without ads. Furthermore, if we have to turn them back on in the future, you won't see them!")}</span></div>
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("Golden name! Your username will show up in gold (You can turn this off in settings if you want.)")}</span></div>
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("Golden orb next to your name in chat! (You can turn this off in settings if you want.)")}</span></div>
-                    <div className='perk'><i className='fa fa-circle'/><span>{_('Access to the special "Site Supporters" chat channel where you can hang out with other site supporters along with the developers of the site!')}</span></div>
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("More vacation time! If you play a lot of correspondence games this is a great benefit, your vacation time limit will be raised to 60 days (up from 30)")}</span></div>
-                    <div className='perk'><i className='fa fa-circle'/><span>{_("Faster vacation recharge time! Vacation will accrue at 1 day per 5 days, up from 1 day per 8 days.")}</span></div>
+                <div id='supporter-text'>
+                    <SiteSupporterText />
                 </div>
             </div>
         );
 
         if (user.anonymous) {
             return (
-                <div className="Supporter">
-                    <SupporterGoals alwaysShow />
+                <div id="Supporter">
+                    <h2><span><i className="fa fa-star"></i> {_("Support OGS")}</span></h2>
+
+                    <h1 style={{"textAlign": "center"}}>
+                        <i>Please <Link to='/sign-in#/user/supporter' className='btn primary'>{_("Sign In")}</Link> to donate</i>
+                    </h1>
 
                     {supporter_text}
-                    <p>
-                        <i>To donate, you'll first need to log in.</i>
-                    </p>
                 </div>
             );
         }
 
         return (
-        <div className="Supporter">
-          <SupporterGoals alwaysShow />
-          <div className="row">
-            <div className="col-sm-7">
-            <h2><i className="fa fa-star"></i> {_("Support OGS")}</h2>
-            {supporter_text}
+        <div id="Supporter">
+            <h2><span><i className="fa fa-star"></i> {_("Support OGS")}</span>
+                {this.state.recurring_donations.length > 0 && <span> {_("Thank you for your support!")}</span>}
+            </h2>
+
+
+
+            <div id="supporter-payment-block-container">
+                {this.state.recurring_donations.length > 0
+                  ? <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
+                        {_("Make an additional donation")}
+                    </p>
+                  : <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
+                        {_("How much would you like to donate?")}
+                    </p>
+                }
+                <div id="supporter-payment-block">
+                    <div id='supporter-input-amount'>
+                        <div>
+                            <input type="range" value={this.state.amount_step} onChange={this.setAmountByStep} min={0} max={amount_steps[this.state.interval].length - 1} step={1}/>
+                        </div>
+                        <div>
+                            {this.state.amount === 0
+                                ? <div className='donation-summary'>
+                                    {this.renderCurrencySelect()}
+                                    <ReactNumberFormat
+                                            type='text'
+                                            className='supporter-amount'
+                                            decimalSeparator={getDecimalSeparator()}
+                                            thousandSeparator={getThousandSeparator()}
+                                            value={this.state.custom_amount}
+                                            decimalScale={2}
+                                            onValueChange={this.updateCustomAmount}
+                                            isAllowed={this.isValueAllowed}
+                                            allowNegative={false}
+                                          />
+                                          / {this.renderIntervalSelect()}
+                                  </div>
+                                : <div className='donation-summary'>
+                                    {this.renderCurrencySelect()}
+                                    <span className='supporter-amount'>{formatMoney(this.state.currency, this.getAmount())}
+                                    </span>
+                                    / {this.renderIntervalSelect()}
+                                  </div>
+                            }
+                        </div>
+                        <div className='supporter-payment-buttons'>
+                            <button className="primary" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
+                                {_("Donate with Card")}
+                            </button>
+
+                            <div className="paypal">
+                                <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                                    <input type="hidden" name="cmd" value={this.state.interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
+                                    <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                                    <input type="hidden" name="item_name" value="Supporter Account" />
+                                    {this.state.interval !== "one time" && <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />}
+                                    {this.state.interval !== "one time" && <input type="hidden" name="p3" value="1" />}
+                                    {this.state.interval !== "one time" && <input type="hidden" name="t3" value={this.state.interval === "month" ? "M" : "Y"} />}
+
+                                    {this.state.interval === "one time" && <input type="hidden" name="amount" value={this.getAmount().toFixed(2)} />}
+                                    <input type="hidden" name="src" value="1" />
+                                    <input type="hidden" name="no_note" value="1" />
+                                    <input type="hidden" name="currency_code" value={this.state.currency} />
+                                    <input type="hidden" name="custom" value={data.get("user").id} />
+                                    <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
+                                    <input type="hidden" name="modify" value="1" />
+                                    <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
+                                </form>
+                                <img className={"paypal-button " + (isPaypalEnabled(this.state.currency) ? "" : "grayed-out-image")} src={`${cdn_release}/img/paypal.png`}
+                                  onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} />
+                            </div>
+                        </div>
+
+                        {false && data.get('user').id === 1 &&
+                            <button className="danger" onClick={this.DEPRECATEDprocessCC}>
+                              {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
+                            </button>
+                        }
+                        {/*
+                        <div className='other-payment-options'>
+                            <PersistentElement elt={amex_express_checkout_button} />
+                        </div>
+                        */}
+                    </div>
+                </div>
             </div>
 
-            <div className="col-sm-5">
-                {this.state.recurring_donations.length > 0 && <h3 style={{textAlign: 'center'}} >{_("Thank you for your support!")}</h3>}
-                {this.state.recurring_donations.length > 0 && <h5 style={{textAlign: 'center'}} >{_("(Note: The supporter goal progress bar can take up to 5 minutes to update)")}</h5>}
+            <div id='supporter-text'>
+                {supporter_text}
+            </div>
+
+            <div id="supporter-current-methods">
 
                 {this.state.recurring_donations.map((recurring_donation, idx) => {
                     let price = recurring_donation.price;
@@ -728,102 +856,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         </div>
                     );
                 })}
-
-
-                {this.state.recurring_donations.length > 0 && <hr/>}
-
-                <div className="main-paragraph">
-                  {this.state.recurring_donations.length > 0
-                    ? <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                          {_("Make an additional donation")}
-                      </p>
-                    : <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                          {_("How much would you like to donate?")}
-                      </p>
-                  }
-                  <div className="details">
-                      <div>
-                          <input type="range" value={this.state.amount_step} onChange={this.setAmount} min={0} max={amount_steps[this.state.interval].length - 1} step={1}/>
-                      </div>
-                      <div>
-                          {this.state.amount === 0
-                              ? <div className='donation-summary'>
-                                  {this.renderCurrencySelect()}
-                                  <ReactNumberFormat
-                                          type='text'
-                                          className='supporter-amount'
-                                          decimalSeparator={getDecimalSeparator()}
-                                          thousandSeparator={getThousandSeparator()}
-                                          value={this.state.custom_amount}
-                                          decimalScale={2}
-                                          onValueChange={this.updateCustomAmount}
-                                          isAllowed={this.isValueAllowed}
-                                          allowNegative={false}
-                                        />
-                                        / {this.renderIntervalSelect()}
-                                </div>
-                              : <div className='donation-summary'>
-                                  {this.renderCurrencySelect()}
-                                  <span className='supporter-amount'>{formatMoney(this.state.currency, this.getAmount())}
-                                  </span>
-                                  / {this.renderIntervalSelect()}
-                                </div>
-                          }
-                      </div>
-                      <hr/>
-                      <div className='payment-methods'>
-                          <div className='card-types'>
-                              <div>
-                                  <img src='https://cdn.online-go.com/payment_assets/visa.png' />
-                                  <img src='https://cdn.online-go.com/payment_assets/mastercard.png' />
-                              </div>
-                              <div>
-                                  <img src='https://cdn.online-go.com/payment_assets/amex.png' />
-                                  <img src='https://cdn.online-go.com/payment_assets/discover.png' />
-                              </div>
-                              <button className="primary" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
-                                  {_("Donate with Card")}
-                              </button>
-                              <div style={{'textAlign': 'right', 'marginTop': '1rem'}}>
-                                  <span className='powered-by-stripe' />
-                              </div>
-
-                              {data.get('user').id === 1 &&
-                                  <button className="danger" onClick={this.DEPRECATEDprocessCC}>
-                                    {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
-                                  </button>
-                              }
-                          </div>
-                          <div className='other-payment-options'>
-                              <PersistentElement elt={amex_express_checkout_button} />
-                              <div className="paypal">
-                                  <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                                      <input type="hidden" name="cmd" value={this.state.interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
-                                      <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                                      <input type="hidden" name="item_name" value="Supporter Account" />
-                                      {this.state.interval !== "one time" && <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />}
-                                      {this.state.interval !== "one time" && <input type="hidden" name="p3" value="1" />}
-                                      {this.state.interval !== "one time" && <input type="hidden" name="t3" value={this.state.interval === "month" ? "M" : "Y"} />}
-
-                                      {this.state.interval === "one time" && <input type="hidden" name="amount" value={this.getAmount().toFixed(2)} />}
-                                      <input type="hidden" name="src" value="1" />
-                                      <input type="hidden" name="no_note" value="1" />
-                                      <input type="hidden" name="currency_code" value={this.state.currency} />
-                                      <input type="hidden" name="custom" value={data.get("user").id} />
-                                      <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                                      <input type="hidden" name="modify" value="1" />
-                                      <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
-                                  </form>
-                                  <img className={"paypal-button " + (isPaypalEnabled(this.state.currency) ? "" : "grayed-out-image")} src={`${cdn_release}/img/paypal.png`}
-                                    onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} />
-                              </div>
-                          </div>
-                      </div>
-
-                  </div>
-                </div>
             </div>
-          </div>
         </div>
         );
     }

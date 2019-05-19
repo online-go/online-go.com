@@ -109,7 +109,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         className="pull-right"
                         placeholder={_("Search")}
                         onChange={(event) => {
-                            this.refs.modlog.filter.player__username__istartswith = (event.target as HTMLInputElement).value.trim();
+                            this.refs.modlog.filter.playerusernameistartswith = (event.target as HTMLInputElement).value.trim();
                             this.refs.modlog.filter_updated();
                         }}
                     />
@@ -121,7 +121,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                     name="modlog"
                     source={`moderation/`}
                     orderBy={["-timestamp"]}
-                    filter={{ "player__username__istartswith": "" }}
+                    filter={{ "playerusernameistartswith": "" }}
                     columns={[
                         {header: _("Time"),  className: () => "timestamp ",
                          render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },

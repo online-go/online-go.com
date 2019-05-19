@@ -279,7 +279,6 @@ class NotificationManager {
         }
     }}}
     clearAllNonActionableNotifications() {{{
-        console.log("Should be clearing notifs");
         for (let id in this.notifications) {
             let notification = this.notifications[id];
             switch (notification.type) {
@@ -536,7 +535,6 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
     }
 
     clearNotifications() {
-        console.log("Clear notifications");
         notification_manager.clearAllNonActionableNotifications();
     }
 
@@ -637,6 +635,9 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
             case "tournamentStarted":
             case "tournamentEnded":
                 return `/tournament/${notification.tournamentid}`;
+
+            case "aiReviewDone":
+                return `/game/${notification.game_id}`;
         }
 
         return null;
@@ -867,6 +868,9 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
 
             case "gameOfferRejected":
                 return null;
+
+            case "aiReviewDone":
+                return <div>{interpolate(_("The computer has finished analzying your game: {{game_name}}"), {game_name: notification.game_name})}</div>;
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);

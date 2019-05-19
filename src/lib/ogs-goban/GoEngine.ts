@@ -104,7 +104,7 @@ export class GoEngine {
     private board_is_repeating;
     private cb;
     private dontStoreBoardHistory;
-    private free_handicap_placement;
+    public free_handicap_placement;
     private loading_sgf;
     private marks;
     private move_before_jump;
@@ -540,6 +540,18 @@ export class GoEngine {
 
         return false;
     } /* }}} */
+    public jumpToOfficialMoveNumber(move_number:number) {
+        if (this.dontStoreBoardHistory) { return; }
+
+        while (this.showPrevious()) {
+            // spin
+        }
+        for (let i = 0; i < move_number; ++i) {
+            if (this.cur_move.next(true)) {
+                this.jumpTo(this.cur_move.next(true));
+            }
+        }
+    }
 
     private isMoveLegal(x, y) { /* {{{ */
         return true;

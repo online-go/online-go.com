@@ -36,6 +36,7 @@ const SCORE_ESTIMATION_TRIALS = 1000;
 const SCORE_ESTIMATION_TOLERANCE = 0.30;
 const AUTOSCORE_TRIALS = 1000;
 const AUTOSCORE_TOLERANCE = 0.30;
+const MARK_TYPES = ["letter", "circle", "square", "triangle", "cross", "black", "white"];
 
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
@@ -142,6 +143,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private drawing_enabled;
     private edit_color;
     private errorHandler;
+    private heatmap:Array<Array<number>>;
     private game_connection_data;
     private game_type;
     private getPuzzlePlacementSetting;
@@ -1524,11 +1526,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (mode === "put") {
                 ret = this.toggleMark(x, y, this.label_mark, this.label_mark.length <= 3, true);
             } else {
-                let marktypes = ["letter", "circle", "square", "triangle", "cross"];
                 let marks = this.getMarks(x, y);
 
-                for (let i = 0; i < marktypes.length; ++i) {
-                    delete marks[marktypes[i]];
+                for (let i = 0; i < MARK_TYPES.length; ++i) {
+                    delete marks[MARK_TYPES[i]];
                 }
                 this.drawSquare(x, y);
             }
@@ -2068,7 +2069,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
     }  /* }}} */
 
-    private drawSquare(i, j) { /* {{{ */
+    public drawSquare(i, j) { /* {{{ */
         if (i < 0 || j < 0) { return; }
         if (this.__draw_state[j][i] !== this.drawingHash(i, j)) {
             this.__drawSquare(i, j);
@@ -2135,6 +2136,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (pos.letter && pos.letter.length > 0) {
             have_text_to_draw = true;
         }
+
 
         /* clear and draw lines */
         {{{
@@ -2242,6 +2244,29 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }}}
 
+        /* Heatmap */
+        /* {{{ */
+        if (this.heatmap) {
+            if (this.heatmap[j][i] > 0.001) {
+                let color = "#00ff00";
+                ctx.lineCap = "square";
+                ctx.save();
+                ctx.beginPath();
+                ctx.globalAlpha = this.heatmap[j][i] * 0.5;
+                let r = Math.floor(this.square_size * 0.5) - 0.5;
+                ctx.moveTo(cx - r, cy - r);
+                ctx.lineTo(cx + r, cy - r);
+                ctx.lineTo(cx + r, cy + r);
+                ctx.lineTo(cx - r, cy + r);
+                ctx.lineTo(cx - r, cy - r);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        /* }}} */
+
+
         /* Draw square highlights if any */
         {{{
             if (pos.hint || (
@@ -2271,11 +2296,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         {{{
             if (stone_color  /* if there is really a stone here */
                 || (this.stone_placement_enabled
-                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j) && (this.mode !== "analyze" || this.analyze_tool === "stone")
+                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
+                    && (this.mode !== "analyze" || this.analyze_tool === "stone")
                     && this.engine
                     && !this.scoring_mode
                     && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze"))
-                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square) || this.getPuzzlePlacementSetting().mode !== "play")
+                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square)
+                        || this.getPuzzlePlacementSetting().mode !== "play")
                    )
                 || (this.scoring_mode
                     && this.score_estimate
@@ -2287,6 +2314,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     && this.engine.board[j][i]
                     && this.engine.removal[j][i]
                    )
+                || pos.black
+                || pos.white
             ) {
                 //let color = stone_color ? stone_color : (this.move_selected ? this.engine.otherPlayer() : this.engine.player);
                 let transparent = false;
@@ -2338,6 +2367,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         color = this.engine.player;
                     }
 
+                }
+                else if (pos.black || pos.white) {
+                    color = pos.black ? 1 : 2;
+                    transparent = true;
                 }
                 else {
                     color = this.engine.player;
@@ -2707,6 +2740,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         ret += stone_color + ",";
 
+        /* Draw heatmap */
+        if (this.heatmap) {
+            if (this.heatmap[j][i] > 0.001) {
+                ret += "heat " + this.heatmap[j][i] + ",";
+            }
+        }
+
         /* Figure out marks for this spot */
         let pos = this.getMarks(i, j);
         if (!pos) {
@@ -2732,11 +2772,16 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         /* Draw stones & hovers */
         {{{
-            if (stone_color ||  /* if there is really a stone here */
-                (this.stone_placement_enabled
-                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j) && (this.mode !== "analyze" || this.analyze_tool === "stone")
+            if (stone_color   /* if there is really a stone here */
+                || (this.stone_placement_enabled
+                    && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
+                    && (this.mode !== "analyze" || this.analyze_tool === "stone")
                     && this.engine
-                    && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze")))
+                    && !this.scoring_mode
+                    && (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze"))
+                    && ((this.engine.puzzle_player_move_mode !== "fixed" || movetree_contains_this_square)
+                        || this.getPuzzlePlacementSetting().mode !== "play")
+                   )
                 || (this.scoring_mode
                     && this.score_estimate
                     && this.score_estimate.board[j][i]
@@ -2747,6 +2792,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     && this.engine.board[j][i]
                     && this.engine.removal[j][i]
                    )
+                || pos.black
+                || pos.white
             ) {
                 let transparent = false;
                 let color;
@@ -2778,6 +2825,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }   else {
                             color = this.engine.player;
                     }
+                }
+                else if (pos.black || pos.white) {
+                    color = pos.black ? 1 : 2;
+                    transparent = true;
                 }
                 else {
                     color = this.engine.player;
@@ -3438,10 +3489,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
     } /* }}} */
-    public showFirst() { /* {{{ */
+    public showFirst(dont_update_display?) { /* {{{ */
         this.engine.jumpTo(this.engine.move_tree);
-        this.updateTitleAndStonePlacement();
-        this.emit("update");
+        if (!dont_update_display) {
+            this.updateTitleAndStonePlacement();
+            this.emit("update");
+        }
     } /* }}} */
     public showPrevious(dont_update_display?) { /* {{{ */
         if (this.mode === "conditional") {
@@ -3910,6 +3963,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
     } /* }}} */
+    public setHeatmap(heatmap:Array<Array<number>>): Array<Array<number>> {
+        let ret = this.heatmap;
+        this.heatmap = heatmap;
+        this.redraw(true);
+        return ret;
+    }
 
     public setColoredMarks(colored_marks) {
         for (let key in colored_marks) {
@@ -3985,15 +4044,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
     private toggleMark(x, y, mark, force_label?, force_put?) { /* {{{ */
         let ret = true;
-        let marktypes = ["letter", "circle", "square", "triangle", "cross"];
         if (typeof(mark) === "number") {
             mark = "" + mark;
         }
         let marks = this.getMarks(x, y);
 
         let clearMarks = () => {
-            for (let i = 0; i < marktypes.length; ++i) {
-                delete marks[marktypes[i]];
+            for (let i = 0; i < MARK_TYPES.length; ++i) {
+                delete marks[MARK_TYPES[i]];
             }
         };
 
@@ -4090,9 +4148,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    } /* }}} */
-    private heatmapUpdated() { /* {{{ */
-        this.redraw(true);
     } /* }}} */
     private updateScoreEstimation() { /* {{{ */
         if (this.score_estimate) {
@@ -4539,10 +4594,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 for (let y = 0; y < this.height; ++y) {
                     for (let x = 0; x < this.width; ++x) {
                         let pos = this.getMarks(x, y);
-                        let marktypes = ["letter", "triangle", "circle", "square", "cross"];
-                        for (let i = 0; i < marktypes.length; ++i) {
-                            if (marktypes[i] in pos && pos[marktypes[i]]) {
-                                let markkey = marktypes[i] === "letter" ? pos.letter : marktypes[i];
+                        for (let i = 0; i < MARK_TYPES.length; ++i) {
+                            if (MARK_TYPES[i] in pos && pos[MARK_TYPES[i]]) {
+                                let markkey = MARK_TYPES[i] === "letter" ? pos.letter : MARK_TYPES[i];
                                 if (!(markkey in marks)) {
                                     marks[markkey] = "";
                                 }

@@ -15,7 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.ErrcodeModal {
+    width: 40rem;
+    max-width: 100vw;
+    min-height: 20rem;
+    max-width: 100vh;
 
-export * from "./Supporter";
-export * from "./PrettyTransactionInfo";
-export * from "./BecomeASiteSupporter";
+    .header {
+        text-align: center;
+        display: flex;
+        padding-left: 1rem !important;
+        align-items: center;
+        align-content: center;
+        justify-content: space-around;
+        themed color shade2
+        .fa {
+            font-size: 3rem;
+        }
+    }
+
+    .body {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+        align-content: center;
+        font-size: font-size-big;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: space-around !important;
+    }
+}

@@ -22,7 +22,7 @@ import {errorAlerter} from "misc";
 import {chat_manager, ChatChannelProxy} from "chat_manager";
 import * as preferences from "preferences";
 import {Player} from "Player";
-import {GameChat} from "Game";
+import {GameChat} from "Game/Chat";
 
 interface ChatUserListProperties {
     channel: string;
