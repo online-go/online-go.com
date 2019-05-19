@@ -28,7 +28,7 @@ import { Announcements } from "Announcements";
 import { SignIn } from "SignIn";
 import { Register } from "Register";
 import { Overview } from "Overview";
-import { Admin } from "Admin";
+import { Admin, MerchantLog } from "Admin";
 import { ChatView } from "ChatView";
 import { Developer } from "Developer";
 import { Game } from "Game";
@@ -145,6 +145,7 @@ export const routes = (
             <Route path="/leaderboards" component={LeaderBoard}/>
             <Route path="/leaderboard" component={LeaderBoard}/>
             <Route path="/developer" component={Developer}/>
+            <Route path="/admin/merchant_log" component={MerchantLog}/>
             <Route path="/admin" component={Admin}/>
             <Route path="/announcement-center" component={AnnouncementCenter}/>
             {/*

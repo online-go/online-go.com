@@ -691,6 +691,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             <KBShortcut shortcut="home" action={this.navigation.nav_first}/>
             <KBShortcut shortcut="end" action={this.navigation.nav_last}/>
 
+            {/*
             <KBShortcut shortcut="f1" action={this.set_analyze_tool.stone_null}/>
             <KBShortcut shortcut="f2" action={this.set_analyze_tool.stone_black}/>
             <KBShortcut shortcut="f4" action={this.set_analyze_tool.label_triangle}/>
@@ -698,6 +699,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             <KBShortcut shortcut="f6" action={this.set_analyze_tool.label_circle}/>
             <KBShortcut shortcut="f7" action={this.set_analyze_tool.label_letters}/>
             <KBShortcut shortcut="f8" action={this.set_analyze_tool.label_numbers}/>
+            */}
             <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch}/>
 
 

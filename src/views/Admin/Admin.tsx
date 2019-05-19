@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
+import {Link} from "react-router-dom";
 import {post, get} from "requests";
 import {termination_socket} from "sockets";
 import {ignore, errorAlerter, getPrintableError} from "misc";
@@ -117,9 +118,13 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     render() {
         return (
         <div className="Admin container">
-            <SupporterGoals alwaysShow />
             <div className="row">
                 <div className="col-sm-6">
+                    <h3>Stuff</h3>
+                    <div>
+                        <Link to='/admin/merchant_log'>Merchant account request/response postback log</Link>
+                    </div>
+
                     <h3>Pause Controls</h3>
                     <div>
                         <div className="action-buttons">

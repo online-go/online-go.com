@@ -154,6 +154,7 @@ export class MoveTree {
         this.wrong_answer = null;
     }
 
+
     toJson():MoveTreeJson { /* {{{ */
         let ret: MoveTreeJson = {
             x: this.x,
@@ -1135,6 +1136,19 @@ export class MoveTree {
         }
 
         return branch.branches.some( item => this.isBranchWithCorrectAnswer(item));
+    }
+
+    public hoistFirstBranchToTrunk():void {
+        if (this.trunk_next) {
+            this.trunk_next.hoistFirstBranchToTrunk();
+            return;
+        }
+
+        this.trunk = true;
+        if (this.branches.length > 0) {
+            this.trunk_next = this.branches.shift();
+            this.trunk_next.hoistFirstBranchToTrunk();
+        }
     }
 
     /**

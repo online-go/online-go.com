@@ -870,7 +870,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                 return null;
 
             case "aiReviewDone":
-                return <div>{interpolate(_("The computer has finished analzying your game: {{game_name}}"), {game_name: notification.game_name})}</div>;
+                return <div>{interpolate(_("The computer has finished analyzing your game: {{game_name}}"), {game_name: notification.game_name})}</div>;
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);

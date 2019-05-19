@@ -17,3 +17,4 @@
 
 
 export * from "./Admin";
+export * from "./MerchantLog";
