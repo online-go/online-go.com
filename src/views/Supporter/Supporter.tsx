@@ -749,7 +749,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <input type="hidden" name="currency_code" value={this.state.currency} />
                                     <input type="hidden" name="custom" value={data.get("user").id} />
                                     <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                                    <input type="hidden" name="modify" value="1" />
+                                    <input type="hidden" name="modify" value="0" />
                                     <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
                                 </form>
                                 <img className={"paypal-button " + (isPaypalEnabled(this.state.currency) ? "" : "grayed-out-image")} src={`${cdn_release}/img/paypal.png`}
