@@ -2403,7 +2403,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
 
-    renderExtraPlayerActions = (player_id: number, _: any) => {
+    renderExtraPlayerActions = (player_id: number, unused: any) => {
         let user = data.get("user");
         if (this.review_id && this.goban && (this.goban.review_controller_id === user.id || this.goban.review_owner_id === user.id)) {
             let is_owner = null;
