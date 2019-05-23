@@ -52,6 +52,9 @@ export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties
     }
 
     render() {
+        // Since the advent of the AI review service, lets not show these banners anymore.
+        return null;
+
         if (data.get('user').supporter && !this.props.alwaysShow) {
             return null;
         }
