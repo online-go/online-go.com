@@ -1029,7 +1029,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         if (user.anonymous) {
             swal(_("Please login first"));
         } else {
-            if (user.supporter) {
+            if (user.supporter || user.professional || user.is_moderator) {
                 this.props.game.force_ai_review("full");
             } else {
                 openBecomeASiteSupporterModal();
