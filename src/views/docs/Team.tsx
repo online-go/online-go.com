@@ -128,7 +128,7 @@ export class Team extends React.PureComponent<{}, any> {
                         ))}
                         <h3>{_("Github Contributors")}</h3>
                         {this.state.contributors.map((u, idx) => (
-                            <div key={u.id}>
+                            <div key={idx}>
                                 <span style={{display: "inline-block", width: "3em"}}>
                                     <img src={u.avatar_url} width={15} height={15}/>
                                 </span>
