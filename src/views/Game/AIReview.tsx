@@ -141,6 +141,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
              .y(d => this.y((d as any) .fast_prediction * 100.0));
              */
         this.full_line = d3.line()
+            .curve(d3.curveMonotoneX)
              .x(d => this.x((d as any) .move))
              .y(d => this.y((d as any) .full_prediction * 100.0));
         this.y.domain(d3.extent([0.0, 100.0]));
