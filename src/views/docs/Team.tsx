@@ -41,7 +41,7 @@ export class Team extends React.PureComponent<{}, any> {
     }
 
     componentWillMount() {
-        get('https://api.github.com/repos/online-go/online-go.com/contributors')
+        get('https://api.github.com/repos/online-go/online-go.com/contributors?anon=1')
         .then((list) => {
             this.setState({contributors: list});
         })
@@ -133,7 +133,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     <img src={u.avatar_url} width={15} height={15}/>
                                 </span>
                                 <span style={{display: "inline-block", width: "8em"}}>
-                                    <a href={u.html_url}>{u.login}</a>
+                                    <a href={u.html_url || ('https://github.com/' + u.name)}>{u.login || u.name}</a>
                                 </span>
                             </div>
                         ))}
