@@ -81,6 +81,7 @@ export class Settings extends React.PureComponent<{}, any> {
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
             dock_delay: preferences.get("dock-delay"),
             show_tournament_indicator: preferences.get("show-tournament-indicator"),
+            disable_ai_review: !preferences.get("ai-review-enabled"),
         };
     }
 
@@ -182,6 +183,10 @@ export class Settings extends React.PureComponent<{}, any> {
     toggleVolume = (ev) => {{{
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
     }}}
+    toggleAIReview = (ev) => {
+        preferences.set("ai-review-enabled", this.state.disable_ai_review);
+        this.setState({"disable_ai_review": !this.state.disable_ai_review});
+    }
     toggleAutomatchAlertVolume = (ev) => {{{
         this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
     }}}
@@ -646,6 +651,13 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dt>{_("Autoplay delay (in seconds)")}</dt>
                             <dd>
                                 <input type="number" step="0.1" min="0.1" onChange={this.updateAutoplayDelay} value={this.state.autoplay_delay} />
+                            </dd>
+                            <dt><label htmlFor="disable-ai-review">{_("Disable AI review")}</label></dt>
+                            <dd>
+                                <input type="checkbox" id="disable-ai-review" checked={this.state.disable_ai_review} onChange={this.toggleAIReview}/>
+                                <div><i>
+                                {_("This will enable or disable the artificial intelligence reviews at the end of a game.")}
+                                </i></div>
                             </dd>
                             <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
                             <dd>

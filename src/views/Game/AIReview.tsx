@@ -384,6 +384,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 interface AIReviewProperties {
     game: Game;
     move: MoveTree;
+    hidden: boolean;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, any> {
@@ -748,12 +749,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             return null;
         }
 
-        if (!this.ai_review) {
+        if (!this.ai_review || this.props.hidden) {
             return (
                 <div className='AIReview'>
                     <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
                     <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
-                    { ((this.state.ai_reviews.length === 0 && this.state.reviewing) || null) &&
+                    { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
                         <div className='reviewing'>
                             {_("Queing AI review")}
                             <i className='fa fa-desktop slowstrobe'></i>
