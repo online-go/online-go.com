@@ -128,7 +128,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private bounds;
     private byoyomi_label;
     private conditional_path;
-    private readonly config;
+    public config;
     private connectToReviewSent;
     private ctx;
     private current_cmove;
@@ -3271,7 +3271,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
 
     public load(config) { /* {{{ */
-
+        for (let k in config) {
+            this.config[k] = config[k];
+        }
         this.clearMessage();
         this.width = config.width || 19;
         this.height = config.height || 19;

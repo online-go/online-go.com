@@ -50,7 +50,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
     save = () => {
         swal({
-            text: "Moderator note",
+            text: _("Moderator note"),
             input: "text",
             showCancelButton: true,
         })

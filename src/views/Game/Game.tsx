@@ -43,7 +43,7 @@ import {ChatPresenceIndicator} from "ChatPresenceIndicator";
 import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
-import {VoiceChat} from "VoiceChat";
+//import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
 import {AIReview} from "./AIReview";
@@ -802,7 +802,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
-        openGameInfoModal(this.goban.engine,
+        openGameInfoModal(
+            this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled, this.creator_id || this.goban.review_owner_id);
@@ -2029,9 +2030,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     </div>
 
+                    {/*
                     <div style={{padding: "0.5em", textAlign: "center"}}>
                         {_("Voice Chat: ")} <VoiceChat channel={"review-" + this.review_id} hasVoice={ this.hasVoice(user.id) } />
                     </div>
+                    */}
                 </div>
             </div>
         );
@@ -2364,7 +2367,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
-                {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
+                {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
