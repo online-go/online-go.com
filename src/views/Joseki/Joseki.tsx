@@ -43,9 +43,9 @@ const server_url = document.location.host === "localhost:8080" ?
 
 /* Just talk to the remote dev server for now */
 
-const server_url = "http://ec2-3-85-103-221.compute-1.amazonaws.com:8081/godojo/";
+const server_url = "http://ec2-52-201-231-150.compute-1.amazonaws.com:8081/godojo/";
 
-    const position_url = (node_id) => {
+const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
 };
 
