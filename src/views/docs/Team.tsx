@@ -41,7 +41,7 @@ export class Team extends React.PureComponent<{}, any> {
     }
 
     componentWillMount() {
-        get('https://api.github.com/repos/online-go/online-go.com/contributors?anon=1')
+        get('https://api.github.com/repos/online-go/online-go.com/contributors?per_page=100')
         .then((list) => {
             this.setState({contributors: list});
         })
