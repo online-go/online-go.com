@@ -20,6 +20,7 @@ import {GoThemes} from "goban";
 import {current_language} from "translate";
 
 let defaults = {
+    "ai-review-enabled": true,
     "automatch-alert-sound": "tutorial-bling",
     "automatch-alert-volume": 0.3, // Control this important alert separately from "goban sounds"
     "always-disable-analysis": false,

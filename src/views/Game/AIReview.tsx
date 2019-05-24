@@ -141,6 +141,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
              .y(d => this.y((d as any) .fast_prediction * 100.0));
              */
         this.full_line = d3.line()
+            .curve(d3.curveMonotoneX)
              .x(d => this.x((d as any) .move))
              .y(d => this.y((d as any) .full_prediction * 100.0));
         this.y.domain(d3.extent([0.0, 100.0]));
@@ -383,6 +384,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 interface AIReviewProperties {
     game: Game;
     move: MoveTree;
+    hidden: boolean;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, any> {
@@ -747,12 +749,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             return null;
         }
 
-        if (!this.ai_review) {
+        if (!this.ai_review || this.props.hidden) {
             return (
                 <div className='AIReview'>
                     <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
                     <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
-                    { ((this.state.ai_reviews.length === 0 && this.state.reviewing) || null) &&
+                    { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
                         <div className='reviewing'>
                             {_("Queing AI review")}
                             <i className='fa fa-desktop slowstrobe'></i>
@@ -1028,7 +1030,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         if (user.anonymous) {
             swal(_("Please login first"));
         } else {
-            if (user.supporter) {
+            if (user.supporter || user.professional || user.is_moderator) {
                 this.props.game.force_ai_review("full");
             } else {
                 openBecomeASiteSupporterModal();

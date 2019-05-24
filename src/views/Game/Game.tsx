@@ -149,6 +149,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             annulled: false,
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
+            ai_review_enabled: preferences.get('ai-review-enabled'),
         };
 
         (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
@@ -842,6 +843,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
             });
         }
         this.onResize();
+    }
+    toggleAIReview = () => {
+        preferences.set('ai-review-enabled', !this.state.ai_review_enabled);
+        if (this.state.ai_review_enabled) {
+            this.goban.setHeatmap(null);
+            this.goban.setMode("play");
+        }
+        this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
+
+
+
     }
     togglePortraitTab() {
         if (Perf) {
@@ -2114,7 +2126,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             && this.goban.engine.width === 19
             && this.goban.engine.height === 19
         ) {
-            return <AIReview game={this} move={this.goban.engine.cur_move} />;
+            return <AIReview game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
         }
         return null;
     }
@@ -2267,6 +2279,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
 
+
     frag_dock() {
         let goban = this.goban;
         let superuser_ai_review_ready = (goban && data.get("user").is_superuser && goban.engine.phase === "finished" || null);
@@ -2297,7 +2310,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sgf_url = api1(`reviews/${this.review_id}/sgf`);
         }
 
-
         return (
             <Dock>
                 {(this.tournament_id || null) &&
@@ -2323,6 +2335,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>
                 <a onClick={this.toggleCoordinates}><i className="ogs-coordinates"></i> {_("Toggle coordinates")}</a>
+                {game &&
+                    <a onClick={this.toggleAIReview}>
+                        <i className="fa fa-desktop"></i> {this.state.ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+                    </a>
+                }
                 <a onClick={this.showGameInfo}><i className="fa fa-info"></i> {_("Game information")}</a>
                 {game &&
                     <a onClick={this.gameAnalyze} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""} >
@@ -2403,7 +2420,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
 
-    renderExtraPlayerActions = (player_id: number, _: any) => {
+    renderExtraPlayerActions = (player_id: number, unused: any) => {
         let user = data.get("user");
         if (this.review_id && this.goban && (this.goban.review_controller_id === user.id || this.goban.review_owner_id === user.id)) {
             let is_owner = null;
