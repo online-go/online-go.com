@@ -94,23 +94,28 @@ function unIgnoreUser(uid) {
 
 
 data.watch(cached.blocks, (blocks) => {
-    block_state = {};
-    let new_ignores = {};
-    for (let entry of blocks) {
-        block_state[entry.blocked] = entry;
-        if (entry.block_chat) {
-            new_ignores[entry.blocked] = true;
+    try {
+        block_state = {};
+        let new_ignores = {};
+        for (let entry of blocks) {
+            block_state[entry.blocked] = entry;
+            if (entry.block_chat) {
+                new_ignores[entry.blocked] = true;
+            }
         }
-    }
 
-    for (let uid in new_ignores) {
-        if (!(uid in ignores)) {
-            ignoreUser(uid, true);
+        for (let uid in new_ignores) {
+            if (!(uid in ignores)) {
+                ignoreUser(uid, true);
+            }
         }
-    }
-    for (let uid in ignores) {
-        if (!(uid in new_ignores)) {
-            unIgnoreUser(uid);
+        for (let uid in ignores) {
+            if (!(uid in new_ignores)) {
+                unIgnoreUser(uid);
+            }
         }
+    } catch (e) {
+        console.error("Failed to set blocks. Blocks was ", blocks);
+        console.error(e);
     }
 });
