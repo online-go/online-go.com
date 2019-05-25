@@ -37,6 +37,7 @@ let defaults = {
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "dynamic-title": true,
+    "function-keys-enabled": false,
     "game-list-threshold": 10,
     "goban-theme-black": null,
     "goban-theme-board": null,

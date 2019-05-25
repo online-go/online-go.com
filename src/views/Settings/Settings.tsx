@@ -71,6 +71,7 @@ export class Settings extends React.PureComponent<{}, any> {
             autoplay_delay: preferences.get("autoplay-delay") / 1000,
             always_disable_analysis: preferences.get("always-disable-analysis"),
             dynamic_title: preferences.get("dynamic-title"),
+            function_keys_enabled: preferences.get("function-keys-enabled"),
             show_offline_friends: preferences.get("show-offline-friends"),
             unicode_filter_usernames: preferences.get("unicode-filter"),
             desktop_notifications_enabled: desktop_notifications_enabled,
@@ -278,6 +279,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setDynamicTitle = (ev) => {{{
         preferences.set("dynamic-title", ev.target.checked),
         this.setState({dynamic_title: preferences.get("dynamic-title")});
+    }}}
+    setFunctionKeysEnabled = (ev) => {{{
+        preferences.set("function-keys-enabled", ev.target.checked),
+        this.setState({function_keys_enabled: preferences.get("function-keys-enabled")});
     }}}
     setShowOfflineFriends = (ev) => {{{
         preferences.set("show-offline-friends", ev.target.checked),
@@ -672,6 +677,10 @@ export class Settings extends React.PureComponent<{}, any> {
                                 <div><i>
                                 {_("Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)")}
                                 </i></div>
+                            </dd>
+                            <dt><label htmlFor="function-keys-enabled">{_("Enable function keys for game analysis shortcuts")}</label></dt>
+                            <dd>
+                                <input id="function-keys-enabled" type="checkbox" checked={this.state.function_keys_enabled} onChange={this.setFunctionKeysEnabled} />
                             </dd>
                         </dl>
                     </Card>

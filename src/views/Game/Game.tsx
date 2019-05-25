@@ -2404,19 +2404,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <KBShortcut shortcut="end" action={this.nav_last}/>
                 <KBShortcut shortcut="escape" action={this.handleEscapeKey}/>
 
-                {/*
                 <KBShortcut shortcut="f1" action={this.set_analyze_tool.stone_null}/>
                 <KBShortcut shortcut="f2" action={this.set_analyze_tool.stone_black}/>
-                */}
                 {/* <KBShortcut shortcut='f3' action='console.log("Should be entering scoring mode");'></KBShortcut> */}
-                {/*
                 <KBShortcut shortcut="f4" action={this.set_analyze_tool.label_triangle}/>
                 <KBShortcut shortcut="f5" action={this.set_analyze_tool.label_square}/>
                 <KBShortcut shortcut="f6" action={this.set_analyze_tool.label_circle}/>
                 <KBShortcut shortcut="f7" action={this.set_analyze_tool.label_letters}/>
                 <KBShortcut shortcut="f8" action={this.set_analyze_tool.label_numbers}/>
                 <KBShortcut shortcut="f9" action={this.set_analyze_tool.draw}/>
-                */}
                 {((goban && goban.mode === "analyze") || null) && <KBShortcut shortcut="f10" action={this.set_analyze_tool.clear_and_sync}/>}
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch}/>
             </div>
