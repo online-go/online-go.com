@@ -496,6 +496,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
     }}}
 
     jumpToMove = () => {{{
+       this.props.gameview.stopEstimatingScore();
        let line = this.props.line;
        let goban = this.props.gameview.goban;
 
