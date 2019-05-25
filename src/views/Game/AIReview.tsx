@@ -779,7 +779,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             if (user.is_moderator) {
                 show_full_ai_review_button = true;
             }
-            if (user.id === this.props.game.goban.engine.players.black.id || user.id === this.props.game.goban.engine.players.white.id) {
+            if (
+                user.id === this.props.game.goban.engine.players.black.id ||
+                user.id === this.props.game.goban.engine.players.white.id ||
+                user.id === this.props.game.creator_id
+            ) {
                 show_full_ai_review_button = true;
             }
         } catch {
