@@ -190,6 +190,29 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                     ))}
                 </div>
             </Card>
+
+            {(user.is_superuser || null) &&
+                <Card>
+                    <h3>Announcement History</h3>
+
+                    <PaginatedTable
+                        className="announcement-history"
+                        source={`announcements/history`}
+                        orderBy={["-timestamp"]}
+                        columns={[
+                            {header: "Time"      , className: "", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
+                            {header: "Duration"  , className: "", render: (a) =>
+                                moment.utc(
+                                    moment(a.expiration).diff(moment(a.timestamp))
+                                ).format('HH:mm')
+                            },
+                            {header: "Player"    , className: "", render: (a) => <Player user={a.creator} />},
+                            {header: "Message"   , className: "", render: (a) => a.text},
+                            {header: "Link"      , className: "", render: (a) => <a href={a.link}>{a.link}</a>},
+                        ]}
+                    />
+                </Card>
+            }
         </div>
         );
     }
