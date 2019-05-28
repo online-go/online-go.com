@@ -406,9 +406,9 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
 
-                        {user && user.is_moderator && <li className="divider"></li>}
+                        {user && (user.is_moderator || user.is_announcer) && <li className="divider"></li>}
                         {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
+                        {user && (user.is_moderator || user.is_announcer) && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
                         {user && user.is_superuser && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
 
                         {(tournament_invites.length || tournaments.length || false) && <li className="divider"></li>}
