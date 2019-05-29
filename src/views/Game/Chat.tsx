@@ -129,6 +129,15 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         });
         this.props.onChatLogChanged(new_chat_log);
     }}}
+    toggleModeratorChatLog = () => {{{
+        let new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
+        this.setState({
+            chat_log: new_chat_log,
+            qc_visible: false,
+            qc_editing: false
+        });
+        this.props.onChatLogChanged(new_chat_log);
+    }}}
     togglePlayerList = () => {{{
         this.setState({
             show_player_list: !this.state.show_player_list
@@ -208,6 +217,14 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             onClick={this.toggleChatLog}
                             >
                             {this.state.chat_log === "malkovich" ? _("Malkovich") : _("Chat")} <i className={"fa " + (this.state.chat_log === "malkovich" ? "fa-caret-up" : "fa-caret-down")}/>
+                        </button>
+                    }
+                    {((!this.props.userIsPlayer && data.get('user').is_moderator) || null) &&
+                        <button
+                            className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
+                            onClick={this.toggleModeratorChatLog}
+                            >
+                            {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")} <i className={"fa " + (this.state.chat_log === "moderator" ? "fa-caret-up" : "fa-caret-down")}/>
                         </button>
                     }
                     <TabCompleteInput className={`chat-input  ${this.state.chat_log}`}
