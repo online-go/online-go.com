@@ -1811,10 +1811,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                 </div>
                 {/* } */}
-                {((state.phase === "play" && state.mode === "play" && this.state.paused && this.goban.engine.pause_control && this.goban.engine.pause_control.paused) || null) &&  /* { */
+                {( state.phase === "play"
+                    && state.mode === "play"
+                    && this.state.paused
+                    && this.goban.engine.pause_control
+                    && this.goban.engine.pause_control.paused
+                    || null) &&  /* { */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
-                        {(this.state.user_is_player || null) &&
+                        {(this.state.user_is_player || user.is_moderator || null) &&
                             <button className="info" onClick={this.goban_resumeGame}>
                                {_("Resume")}
                             </button>
@@ -1825,7 +1830,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
                         }</div>
                     </div>
-                }{/* } */}
+                }
+
+                {(( this.goban.engine.pause_control
+                    && this.goban.engine.pause_control.moderator_paused
+                    && user.is_moderator
+                    ) || null) &&  /* { */
+                    <div className="pause-controls">
+                        <h3>{_("Paused by Moderator")}</h3>
+                        <button className="info" onClick={this.goban_resumeGame}>
+                           {_("Resume")}
+                        </button>
+                    </div>
+                }
                 {(this.state.phase === "finished" || null) &&  /* { */
                     <div className="analyze-mode-buttons">     {/* not really analyze mode, but equivalent button position and look*/}
                         {(this.state.user_is_player && this.state.mode !== "score estimation" || null) &&
@@ -2362,7 +2379,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
                 }
-                {(goban && this.state.user_is_player && goban.engine.phase !== "finished" || null) &&
+                {(goban && (this.state.user_is_player || mod) && goban.engine.phase !== "finished" || null) &&
                     <a onClick={this.pauseGame}><i className="fa fa-pause"></i> {_("Pause game")}</a>
                 }
                 {game &&
