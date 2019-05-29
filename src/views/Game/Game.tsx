@@ -1149,8 +1149,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 new_state.white_accepted = engine.players["white"].accepted_stones === stone_removals;
             }
 
-            if ((engine.phase === "stone removal" || engine.phase === "finished") &&
-              engine.outcome !== "Timeout" && engine.outcome !== "Resignation" && engine.outcome !== "Cancellation" && goban.mode === "play") {
+            if ((engine.phase === "stone removal" || engine.phase === "finished")
+                && engine.outcome !== "Timeout"
+                && engine.outcome !== "Disconnection"
+                && engine.outcome !== "Resignation"
+                && engine.outcome !== "Abandonment"
+                && engine.outcome !== "Cancellation"
+                && goban.mode === "play"
+            ) {
                 new_state.score = engine.computeScore(false);
                 goban.showScores(new_state.score);
             } else {

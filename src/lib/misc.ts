@@ -161,7 +161,8 @@ export function getOutcomeTranslation(outcome:string) { /* {{{ */
         case 'r':
         case 'Resignation':
             return pgettext("Game outcome", 'Resignation');
-
+        case 'Disconnection':
+            return pgettext("Game outcome", 'Disconnection');
         case 'Stone Removal Timeout':
             return pgettext("Game outcome", 'Stone Removal Timeout');
         case 'Timeout':
