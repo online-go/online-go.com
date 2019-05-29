@@ -702,7 +702,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             columns={[
                                 {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
                                 {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
-                                {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
+                                {header: "Browser ID",   sortable:true, className: "browser_id", render: (X) => X.last_browser_id},
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
                                         <Player user={X}/>
@@ -726,11 +726,21 @@ export class User extends React.PureComponent<UserProperties, any> {
                             ref={(x) => this.moderator_log = x}
                             source={`moderation?player_id=${this.user_id}`}
                             columns={[
-                                {header: "Time",      className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
-                                {header: "Moderator", className: "",     render: (X) => <Player user={X.moderator} />},
-                                {header: "",          className: "",     render: (X) =>
+                                {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
+                                {header: "", className: "",     render: (X) => <Player user={X.moderator} />},
+                                {header: "", className: "",     render: (X) =>
                                     <div>
                                         <div className='action'>{X.game ? <Link to={`/game/${X.game.id}`}>{X.game.id}</Link> : null}{X.action}</div>
+                                        {X.incident_report &&
+                                            <div>
+                                                {X.incident_report.cleared_by_user ? <div><b>Cleared by user</b></div> : null}
+                                                <div>{X.incident_report.url}</div>
+                                                <div>{X.incident_report.system_note}</div>
+                                                <div>{X.incident_report.reporter_note}</div>
+                                                {X.incident_report.moderator ? <Player user={X.incident_report.moderator} /> : null}
+                                                <i> {X.incident_report.moderator_note}</i>
+                                            </div>
+                                        }
                                         <pre>{X.note}</pre>
                                     </div>
                                 },

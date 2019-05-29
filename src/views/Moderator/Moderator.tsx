@@ -132,8 +132,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: "",  className: () => "object",
                          render: (X) => (
                              <span>
-                                 {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>}
-                                 {X.player && <Player user={X.player}/> }
+                                 {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>} {X.player && <Player user={X.player}/> }
                              </span>
                         )},
 
