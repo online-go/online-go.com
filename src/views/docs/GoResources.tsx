@@ -362,6 +362,8 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=nl.tengen.gridmaster">Go GridMaster</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=org.ligi.gobandroid_hd">Gobandroid HD</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/developer?id=Lauri+Paatero">Hactar Go</a></span>,
+                <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=cn.ezandroid.aq">Ah Q Go</a></span>,
+                <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=com.psocha.goclock">Go game clock</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=lrstudios.games.ego&hl=en">Ely Go</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://smartgo.com/index.html">SmartGo</a></span>,
                 <span><i className="fa fa-dollar"/> <i className="fa fa-apple"/> <a rel="noopener" href="https://gobooks.com/platforms.html">Go Books</a></span>,
