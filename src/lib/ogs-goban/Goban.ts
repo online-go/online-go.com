@@ -49,7 +49,7 @@ interface Events {
     "error": any;
     "gamedata": any;
     "chat": any;
-    "chat/remove": {game_id: number, chat_ids: Array<string>};
+    "chat-remove": {chat_ids: Array<string>};
     "move-made": never;
     "review.sync-to-current-move": never;
     "review.updated": never;
@@ -613,7 +613,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }); /* }}} */
             this._socket_on(prefix + "chat/remove", (obj) => { /* {{{ */
                 if (this.disconnectedFromGame) { return; }
-                this.emit("chat/remove", obj);
+                this.emit("chat-remove", obj);
             }); /* }}} */
             this._socket_on(prefix + "message", (msg) => { /* {{{ */
                 if (this.disconnectedFromGame) { return; }
@@ -838,6 +838,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     obj.chat.chat_id = obj.chat.player_id + "." + obj.chat.date;
                 }
                 this.emit("chat", obj["chat"]);
+            }
+
+            if ("remove-chat" in obj) {
+                this.emit("chat-remove", { chat_ids: [obj['remove-chat']] });
             }
 
             if ("gamedata" in obj) {
