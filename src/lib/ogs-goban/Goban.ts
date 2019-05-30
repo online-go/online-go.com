@@ -49,6 +49,7 @@ interface Events {
     "error": any;
     "gamedata": any;
     "chat": any;
+    "chat/remove": {game_id: number, chat_ids: Array<string>};
     "move-made": never;
     "review.sync-to-current-move": never;
     "review.updated": never;
@@ -609,6 +610,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this._socket_on(prefix + "reset-chats", (obj) => { /* {{{ */
                 if (this.disconnectedFromGame) { return; }
                 this.emit("chat-reset");
+            }); /* }}} */
+            this._socket_on(prefix + "chat/remove", (obj) => { /* {{{ */
+                if (this.disconnectedFromGame) { return; }
+                this.emit("chat/remove", obj);
             }); /* }}} */
             this._socket_on(prefix + "message", (msg) => { /* {{{ */
                 if (this.disconnectedFromGame) { return; }

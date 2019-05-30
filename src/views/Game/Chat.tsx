@@ -197,7 +197,6 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                     <div className="chat-log-container">
                         <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
                             {this.props.chatlog.filter(this.chat_log_filter).map((line, idx) => {
-                                //console.log(">>>" ,line.chat_id)
                                 let ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
@@ -574,7 +573,6 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }
         }
 
-
         if (!lastline || (line.move_number !== lastline.move_number) || (line.from !== lastline.from) || (line.moves !== lastline.moves)) {
             move_number = <LineText className="move-number" onClick={this.jumpToMove}>Move {
                 ("move_number" in line
@@ -584,8 +582,11 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }</LineText>;
         }
 
+        let chat_id = this.props.gameview.review_id ? ('r.' + this.props.gameview.review_id) : ('g.' + this.props.gameview.game_id);
+        chat_id += '.' + line.channel + '.' + line.chat_id;
+
         return (
-            <div className={`chat-line-container`}>
+            <div className={`chat-line-container`} data-chat-id={chat_id}>
                 {move_number}
                 {show_date}
                 <div className={`chat-line ${line.channel} ${third_person}`}>

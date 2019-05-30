@@ -432,6 +432,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.chat_log.push(line);
             this.debouncedChatUpdate();
         });
+        this.goban.on("chat/remove", (obj) => {
+            for (let chat_id of obj.chat_ids) {
+                for (let i = 0; i < this.chat_log.length; ++i) {
+                    if (this.chat_log[i].chat_id === chat_id) {
+                        this.chat_log.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            this.debouncedChatUpdate();
+        });
         this.goban.on("chat-reset", () => {
             this.chat_log.length = 0;
             this.debouncedChatUpdate();
