@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2012-2019  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -211,6 +211,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://senseis.xmp.net/">Sensei's Library</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.shawnsgogroup.com/">Shawn Ray's Go Group</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://gogameguru.com/">GoGameGuru</a></span>,
+		<span><Flag country={en}/> <a rel="noopener" href="https://avavt.github.io/gotstats/">Got Stats - OGS Statistics</a></span>,
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
