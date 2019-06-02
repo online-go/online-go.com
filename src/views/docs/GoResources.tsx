@@ -211,7 +211,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://senseis.xmp.net/">Sensei's Library</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.shawnsgogroup.com/">Shawn Ray's Go Group</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://gogameguru.com/">GoGameGuru</a></span>,
-		<span><Flag country={en}/> <a rel="noopener" href="https://avavt.github.io/gotstats/">Got Stats - OGS Statistics</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://avavt.github.io/gotstats/">Got Stats - OGS Statistics</a></span>,
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
