@@ -167,7 +167,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private last_phase;
     private last_review_message;
     private last_sent_move;
-    private last_sound_played;
+    private last_voice_sound_played;
     private last_sound_played_for_a_stone_placement;
     private last_stone_sound;
     private layer_offset_left;
@@ -3911,7 +3911,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.last_sound_played_for_a_stone_placement === this.engine.cur_move.x + "," + this.engine.cur_move.y) {
             return;
         }
-        this.last_sound_played_for_a_stone_placement = this.last_sound_played = this.engine.cur_move.x + "," + this.engine.cur_move.y;
+        this.last_sound_played_for_a_stone_placement  = this.engine.cur_move.x + "," + this.engine.cur_move.y;
 
         let idx;
         do {
@@ -4274,7 +4274,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
-        this.last_sound_played = null;
+        this.last_voice_sound_played = null;
 
         let formatTime = (clock_div, time, base_time: number, player_id?: number):number => { /* {{{ */
             let next_clock_update = 60000;
@@ -4288,6 +4288,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             let period_time_div     = null;
             let overtime_div        = null;
             let overtime_parent_div = null;
+            let byo_yomi_periods    = null;
 
             if (clock_div.hasClass("in-game-clock")) {
                 main_time_div = clock_div.find(".main-time");
@@ -4300,6 +4301,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 period_time_div = clock_div.find(".period-time");
                 overtime_div = clock_div.find(".overtime");
                 overtime_parent_div = overtime_div.parent();
+                byo_yomi_periods = clock_div.children(".byo-yomi-periods");
                 clock_div = clock_div.children(".full-time");
             }
 
@@ -4341,6 +4343,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if ("periods" in time) { /* byo yomi */
                     timing_type = 'byo-yomi';
                     let period_offset = 0;
+                    let period_text = "ERR";
                     if (ms < 0 || time.thinking_time === 0) {
                         if (overtime_parent_div) {
                             in_overtime = true;
@@ -4359,27 +4362,44 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         if (player_id !== clock.current_player) {
                             ms = time.period_time * 1000;
                         }
-                        periods_left = ((time.periods - period_offset));
-                        if (((time.periods - period_offset) - 1) > 0) {
-                            time_suffix = "<span class='time_suffix'>+" + periods_left + "x" + (shortDurationString(time.period_time)).trim() + "</span>";
-                            if (period_time_div) {
-                                period_time_div.text(shortDurationString(time.period_time));
+                        periods_left = time.periods - period_offset;
+                        if (periods_left >= 1) {
+                            if (periods_left === 1) {
+                                period_text = " " + pgettext("Final byo-yomi period (Sudden Death)", "SD");
+                            } else {
+                                period_text = ` (${periods_left})`;
                             }
-                        }
-                        if (((time.periods - period_offset) - 1) < 0) {
+
+                            if (period_time_div) {
+                                //period_time_div.text(shortDurationString(time.period_time));
+                                //period_time_div.text(shortDurationString(time.period_time));
+                                period_time_div.text("");
+                            }
+                        } else {
                             ms = 0;
+                            period_text = "";
                         }
                     } else {
                         periods_left = time.periods;
-                        time_suffix = "<span class='time_suffix'>+" + (time.periods) + "x" + (shortDurationString(time.period_time)).trim() + "</span>";
+                        //time_suffix = "<span class='time_suffix'>+" + (time.periods) + "x" + (shortDurationString(time.period_time)).trim() + "</span>";
+                        period_text = ` + ${time.periods}x${shortDurationString(time.period_time).trim()}`;
+                        /*
                         if (period_time_div) {
                             period_time_div.text(shortDurationString(time.period_time));
                         }
+                        */
                     }
 
+                    time_suffix = `<span class='time_suffix'> ${period_text}</span>`;
+                    if (byo_yomi_periods) {
+                        byo_yomi_periods.text(period_text);
+                    }
+
+                    /*
                     if (periods_div) {
                         periods_div.text(periods_left);
                     }
+                    */
                 }
             } else {
                 /* time is just a raw number */
@@ -4440,12 +4460,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                             }, 1100);
                         }
 
-                        if (sound_to_play && window["user"].id === clock.current_player && player_id === window["user"].id) {
-                            if (this.last_sound_played !== sound_to_play) {
-                                this.last_sound_played = sound_to_play;
-
+                        if (sound_to_play
+                            && this.mode === "play"
+                            && window["user"].id === clock.current_player && player_id === window["user"].id) {
+                            if (this.last_voice_sound_played !== sound_to_play) {
+                                this.last_voice_sound_played = sound_to_play;
                                 if (this.getShouldPlayVoiceCountdown(timing_type, in_overtime)) {
-                                    //console.log("Playing sound", sound_to_play);
                                     sfx.play(sound_to_play);
                                 }
                             }

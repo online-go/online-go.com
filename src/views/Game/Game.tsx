@@ -2172,11 +2172,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_clock(color) {
+                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
         return (
           <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
               <div className="main-time boxed"></div>
               {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-                  <span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
+                  <span className="byo-yomi-periods" />
               }
               {(this.goban.engine.time_control.time_control === "canadian" || null) &&
                   <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
