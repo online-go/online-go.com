@@ -4344,6 +4344,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     timing_type = 'byo-yomi';
                     let period_offset = 0;
                     let period_text = "ERR";
+                    let period_class = "";
                     if (ms < 0 || time.thinking_time === 0) {
                         if (overtime_parent_div) {
                             in_overtime = true;
@@ -4366,6 +4367,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         if (periods_left >= 1) {
                             if (periods_left === 1) {
                                 period_text = " " + pgettext("Final byo-yomi period (Sudden Death)", "SD");
+                                period_class = "sudden-death";
                             } else {
                                 period_text = ` (${periods_left})`;
                             }
@@ -4393,7 +4395,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     time_suffix = `<span class='time_suffix'> ${period_text}</span>`;
                     if (byo_yomi_periods) {
                         byo_yomi_periods.text(period_text);
+                        if (period_class !== "") {
+                            byo_yomi_periods.addClass(period_class);
+                        } else {
+                            byo_yomi_periods.removeClass("sudden-death");
+                        }
                     }
+
 
                     /*
                     if (periods_div) {
