@@ -414,6 +414,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     <b style={{marginRight: "1rem"}}>{_("Admins")}:</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
                                 </div>
 
+                                {((this.state.group_loaded && editing && user.is_moderator) || null) &&
+                                    <div>
+                                        <button className="reject" onClick={this.deleteGroup}>{_("Delete Group")}</button>
+                                    </div>
+                                }
+
                                 {(this.state.group_loaded || null) &&
                                     (group.is_member
                                         ? this.state.is_admin

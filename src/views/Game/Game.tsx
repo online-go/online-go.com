@@ -417,6 +417,49 @@ export class Game extends React.PureComponent<GameProperties, any> {
             /* } */
         }
 
+        this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
+        this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
+        this.goban.on('audio-pass', () => sfx.play("beepbeep"));
+        this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
+        let last_clock_played = null;
+        this.goban.on('audio-clock', (clock) => {
+            let user = data.get('user');
+            if (user.anonymous) {
+                return;
+            }
+
+            let audio_enabled = false;
+
+            if (preferences.get("sound-voice-countdown")) {
+                if (clock.time_control_system === "byoyomi" || clock.time_control_system === "canadian") {
+                    if (preferences.get("sound-voice-countdown-main") || clock.in_overtime) {
+                        audio_enabled = true;
+                    }
+                } else {
+                    audio_enabled = true;
+                }
+            }
+
+            if (!audio_enabled) {
+                return;
+            }
+
+            if (this.state.paused) {
+                return;
+            }
+
+            if (!(user.id === clock.clock_player && user.id === clock.player_to_move)) {
+                return;
+            }
+
+            if (last_clock_played === clock.seconds_left) {
+                // debounce
+            } else {
+                last_clock_played = clock.seconds_left;
+                sfx.play(clock.seconds_left);
+            }
+        });
+
         this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
@@ -2172,11 +2215,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_clock(color) {
+                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
         return (
           <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
               <div className="main-time boxed"></div>
               {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-                  <span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
+                  <span className="byo-yomi-periods" />
               }
               {(this.goban.engine.time_control.time_control === "canadian" || null) &&
                   <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
