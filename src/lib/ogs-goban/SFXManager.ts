@@ -79,7 +79,7 @@ export class SFXManager {
                     this.play_promise_future_state[name] = 'play';
                     this.play_promises[name] = this.sfx[name].play();
                     if (this.play_promises[name] !== undefined) {
-                        this.play_promises[name].then(_ => {
+                        this.play_promises[name].then(x => {
                             delete this.play_promises[name];
 
                             if (this.play_promise_future_state[name] === 'pause') {
@@ -159,9 +159,9 @@ export class SFXManager {
 
         let elt = $(this.sfx[name]);
         this.play_state[name] = 'stopped';
-        elt.on("playing", _ => this.play_state[name] = 'playing');
-        elt.on("ended", _ => this.play_state[name] = 'stopped');
-        elt.on("pause", _ => this.play_state[name] = 'stopped');
+        elt.on("playing", x => this.play_state[name] = 'playing');
+        elt.on("ended", x => this.play_state[name] = 'stopped');
+        elt.on("pause", x => this.play_state[name] = 'stopped');
     }
 
 }

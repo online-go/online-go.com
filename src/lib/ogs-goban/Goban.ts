@@ -25,7 +25,6 @@ import {createDeviceScaledCanvas, resizeDeviceScaledCanvas, deviceCanvasScalingR
     deepEqual, getRelativeEventPosition, getRandomInt, shortDurationString, dup
 } from "./GoUtil";
 import {TypedEventEmitter} from "TypedEventEmitter";
-import {sfx} from "./SFXManager";
 import {_, pgettext, interpolate} from "./translate";
 
 
@@ -40,6 +39,8 @@ const MARK_TYPES = ["letter", "circle", "square", "triangle", "cross", "black", 
 
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
+
+type time_control_system_value = "fischer" | "byoyomi" | "canadian" | "simple" | "absolute" | "none";
 
 interface Events {
     "destroy": never;
@@ -77,6 +78,17 @@ interface Events {
     };
     "set-for-removal": {x:number, y:number, removed:boolean};
     "puzzle-place": {x:number, y:number};
+    "audio-game-start": never;
+    "audio-game-end": never;
+    "audio-pass": never;
+    "audio-stone": number;
+    "audio-clock": {
+        seconds_left: number;
+        player_to_move: number;
+        clock_player: number;
+        time_control_system: time_control_system_value;
+        in_overtime: boolean;
+    };
 }
 
 
@@ -167,7 +179,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private last_phase;
     private last_review_message;
     private last_sent_move;
-    private last_voice_sound_played;
     private last_sound_played_for_a_stone_placement;
     private last_stone_sound;
     private layer_offset_left;
@@ -551,7 +562,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.emit("reset", msg);
 
             if (msg.gamestart_beep) {
-                sfx.play("beepbeep", true);
+                this.emit('audio-game-start');
             }
             if (msg.message) {
                 if (!window["has_focus"] && !window["user"].anonymous && /^\/game\//.test(this.getLocation())) {
@@ -587,7 +598,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.emit("chat-reset");
 
                 if (this.on_game_screen && this.last_phase && this.last_phase !== "finished" && obj.phase === "finished") {
-                    sfx.play("beepbeep");
+                    this.emit('audio-game-end');
                 }
                 this.last_phase = obj.phase;
                 this.load(obj);
@@ -3921,9 +3932,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         if (this.on_game_screen) {
             if (this.last_sound_played_for_a_stone_placement === "-1,-1") {
-                sfx.play("pass");
+                this.emit('audio-pass');
             } else {
-                sfx.play("stone-" + (idx + 1));
+                this.emit('audio-stone', idx);
             }
         }
     } /* }}} */
@@ -4274,9 +4285,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
-        this.last_voice_sound_played = null;
-
-        let formatTime = (clock_div, time, base_time: number, player_id?: number):number => { /* {{{ */
+        let updateClockDisplay = (clock_div, time, base_time: number, player_id?: number):number => { /* {{{ */
             let next_clock_update = 60000;
             let ms;
             let time_suffix = "";
@@ -4322,6 +4331,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         periods_left = 1;
                     }
                     if (ms < 0 || (time.thinking_time === 0 && "block_time" in time)) {
+                        in_overtime = true;
                         if (overtime_parent_div) {
                             overtime_parent_div.addClass("in-overtime");
                         }
@@ -4341,7 +4351,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
                 if ("periods" in time) { /* byo yomi */
-                    timing_type = 'byo-yomi';
+                    timing_type = 'byoyomi';
                     let period_offset = 0;
                     let period_text = "ERR";
                     let period_class = "";
@@ -4448,10 +4458,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         cls += " low_time";
                     }
 
-                    let sound_to_play = null;
-
                     if (this.on_game_screen && player_id) {
-                        sound_to_play = seconds;
                         if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
                             this.byoyomi_label = "" + seconds;
                             let last_byoyomi_label = this.byoyomi_label;
@@ -4468,15 +4475,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                             }, 1100);
                         }
 
-                        if (sound_to_play
-                            && this.mode === "play"
-                            && window["user"].id === clock.current_player && player_id === window["user"].id) {
-                            if (this.last_voice_sound_played !== sound_to_play) {
-                                this.last_voice_sound_played = sound_to_play;
-                                if (this.getShouldPlayVoiceCountdown(timing_type, in_overtime)) {
-                                    sfx.play(sound_to_play);
-                                }
-                            }
+                        if (this.mode === "play") {
+                            this.emit('audio-clock', {
+                                seconds_left: seconds,
+                                player_to_move: this.engine.playerToMove(),
+                                clock_player: player_id,
+                                time_control_system: timing_type,
+                                in_overtime: in_overtime,
+                            });
                         }
                     }
                 }
@@ -4518,11 +4524,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             let next_clock_update = 1000;
 
             if (clock.start_mode) {
-                next_clock_update = formatTime(clock.black_player_id === clock.current_player ? _black_clock : _white_clock, clock.expiration + now_delta, clock.last_move);
+                next_clock_update = updateClockDisplay(clock.black_player_id === clock.current_player ? _black_clock : _white_clock, clock.expiration + now_delta, clock.last_move);
             } else if (clock.stone_removal_mode) {
                 if (this.stone_removal_clock) {
                     let sr_clock = $(this.stone_removal_clock);
-                    formatTime(sr_clock, clock.stone_removal_expiration + now_delta, clock.now);
+                    updateClockDisplay(sr_clock, clock.stone_removal_expiration + now_delta, clock.now);
                 }
             } else {
                 let white_pause_text = null;
@@ -4567,13 +4573,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
 
                 if (clock.white_time) {
-                    let white_next_update = formatTime(_white_clock, clock.white_time, white_base_time, clock.white_player_id);
+                    let white_next_update = updateClockDisplay(_white_clock, clock.white_time, white_base_time, clock.white_player_id);
                     if (clock.current_player === clock.white_player_id) {
                         next_clock_update = white_next_update;
                     }
                 }
                 if (clock.black_time) {
-                    let black_next_update = formatTime(_black_clock, clock.black_time, black_base_time, clock.black_player_id);
+                    let black_next_update = updateClockDisplay(_black_clock, clock.black_time, black_base_time, clock.black_player_id);
                     if (clock.current_player === clock.black_player_id) {
                         next_clock_update = black_next_update;
                     }
@@ -4697,9 +4703,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         return ret;
     } /* }}} */
-    protected getShouldPlayVoiceCountdown(timing_type: string, in_overtime: boolean):boolean {{{
-        return false;
-    }}}
     /**
      * Returns true if the user has signed in and if the signed in user is a participating player in this game
      * (and not only spectating), that is, if they are either white or black.
