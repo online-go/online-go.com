@@ -350,7 +350,18 @@ export function errorAlerter(...args) {{{
         return;
     }
     if (err === "errcode") {
-        errcodeAlerter(args[0]);
+        let errobj = args[0];
+        try {
+            if ("responseText" in errobj) {
+                try {
+                    errobj = JSON.parse(errobj.responseText);
+                } catch (e) {
+                    errobj = errobj.responseText;
+                }
+            }
+        } catch (e) {
+        }
+        errcodeAlerter(errobj);
     } else {
         swal({
             title: _(err.substring(0, 128)),

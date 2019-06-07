@@ -39,6 +39,14 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
         let body = null;
 
         switch (this.props.errcode) {
+            case 'username_invalid':
+                body = <div>{_("Sorry that username is not allowed, please use normal letters")}</div>;
+                break;
+
+            case 'username_offensive':
+                body = <div>{_("Sorry that username might be offensive to some players, please pick a different one")}</div>;
+                break;
+
             case 'ai_review_must_be_site_supporter':
                 body = <div>{_("To begin an AI review, you must be a site supporter.")}</div>;
                 break;
@@ -55,6 +63,10 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
 
             case 'test':
                 body = <div>This is a test</div>;
+                break;
+
+            default:
+                body = <div>{this.props.errcode}</div>;
                 break;
         }
 
