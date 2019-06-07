@@ -134,7 +134,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.y = d3.scaleLinear().rangeRound([height, 0]);
 
         this.full_line = d3.line()
-            .curve(d3.curveLinear)
+            .curve(d3.curveMonotoneX)
              .x(d => this.x((d as any) .move))
              .y(d => this.y((d as any) .full_prediction * 100.0));
         this.y.domain(d3.extent([0.0, 100.0]));
@@ -296,11 +296,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.x.domain(d3.extent([1, this.props.entries[this.props.entries.length - 1].move]));
         this.y.domain(d3.extent([0.0, 100.0]));
 
-        /*
-        this.fast_chart
-            .datum(this.props.entries)
-            .attr('d', this.fast_line as any);
-            */
         this.full_chart
             .datum(this.props.entries)
             .attr('d', this.full_line as any);
@@ -335,11 +330,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.svg.attr('width', this.width + margin.left + margin.right);
 
         this.x.range([0, this.width]);
-        /*
-        this.fast_chart
-            .datum(this.props.entries)
-            .attr('d', this.fast_line as any);
-            */
         this.full_chart
             .datum(this.props.entries)
             .attr('d', this.full_line as any);
@@ -354,7 +344,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
             .attr('width', this.width);
 
-        //this.fast_crosshair.attr('x1', this.width);
         this.full_crosshair.attr('x1', this.width);
 
     }
@@ -543,7 +532,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 if (`full-${d.move}` in ai_review) {
                     if (ai_review[`full-${d.move}`].variations.length) {
-                        full_prediction = ai_review[`full-${d.move}`].prediction;
+                        full_prediction = ai_review[`full-${d.move}`].win_rate;
                     }
                 }
 
