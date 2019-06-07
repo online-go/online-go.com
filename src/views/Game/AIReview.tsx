@@ -127,21 +127,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.prediction_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        //this.fast_chart = this.prediction_graph.append('path')
-        //    .attr('class', 'fast-prediction line');
         this.full_chart = this.prediction_graph.append('path')
             .attr('class', 'full-prediction line');
 
         this.x = d3.scaleLinear().rangeRound([0, width]);
         this.y = d3.scaleLinear().rangeRound([height, 0]);
 
-        /*
-        this.fast_line = d3.line()
-             .x(d => this.x((d as any) .move))
-             .y(d => this.y((d as any) .fast_prediction * 100.0));
-             */
         this.full_line = d3.line()
-            .curve(d3.curveMonotoneX)
+            .curve(d3.curveLinear)
              .x(d => this.x((d as any) .move))
              .y(d => this.y((d as any) .full_prediction * 100.0));
         this.y.domain(d3.extent([0.0, 100.0]));
