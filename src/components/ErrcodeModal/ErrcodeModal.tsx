@@ -44,7 +44,12 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
                 break;
 
             case 'username_offensive':
-                body = <div>{_("Sorry that username might be offensive to some players, please pick a different one")}</div>;
+            case 'gamename_offensive':
+            case 'groupname_offensive':
+            case 'tournamentname_offensive':
+            case 'puzzlename_offensive':
+            case 'puzzlecollectionname_offensive':
+                body = <div>{_("Sorry that name might be offensive to some players, please pick a different one")}</div>;
                 break;
 
             case 'ai_review_must_be_site_supporter':

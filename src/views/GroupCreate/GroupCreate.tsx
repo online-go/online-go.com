@@ -18,6 +18,7 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
+import {errorAlerter} from "misc";
 import {browserHistory} from "ogsHistory";
 
 declare var swal;
@@ -52,9 +53,7 @@ export class GroupCreate extends React.PureComponent<GroupCreateProperties, any>
             .then((group) => {
                 browserHistory.push(`/group/${group.id}`);
             })
-            .catch((err) => {
-                swal(_("Error creating group"), JSON.parse(err.responseText).error);
-            });
+            .catch(errorAlerter);
         } else {
             this.refs.name.focus();
         }
