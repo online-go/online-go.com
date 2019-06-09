@@ -37,7 +37,6 @@ import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
-import { join } from "path";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -605,7 +604,7 @@ export class Play extends React.Component<PlayProperties, any> {
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
 
                             { /* Mark eligible suspect games with a warning icon and warning explanation popup.
-                                 We do let user's see the warning for their own challenges. */
+                                 We do let users see the warning for their own challenges. */
                                 (((C.eligible || C.user_challenge) && !C.removed) &&
                                  (C.komi ||
                                   usedForCheating(C.time_control_parameters) ||
