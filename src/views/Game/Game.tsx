@@ -419,7 +419,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
         this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
-        this.goban.on('audio-pass', () => sfx.play("beepbeep"));
+        this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
         let last_clock_played = null;
         this.goban.on('audio-clock', (clock) => {
