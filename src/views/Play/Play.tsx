@@ -37,6 +37,7 @@ import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
+import { join } from "path";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -596,12 +597,33 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div key={C.challenge_id} className="challenge-row">
                         <span className="cell" style={{textAlign: "center"}}>
                             {user.is_moderator &&
-                                <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>
+                                <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
+
+                            {(C.eligible && !C.removed || null) &&
+                                <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
+
+                            {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
+
+                            { /* Mark eligible suspect games with a warning icon and warning explanation popup.
+                                 We do let user's see the warning for their own challenges. */
+                                (((C.eligible || C.user_challenge) && !C.removed) &&
+                                 (C.komi ||
+                                  usedForCheating(C.time_control_parameters) ||
+                                  (C.handicap_text !== "Auto" && C.handicap_text !== "No"))
+                                   || null) &&
+                                <React.Fragment>
+                                 <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                                 <p className="cheat-alert-tooltiptext">
+                                    {
+                                        (C.komi ? "Custom komi: " + C.komi + ". " : "") +
+                                        (usedForCheating(C.time_control_parameters) ? "Unusual time setting. " : "" ) +
+                                        ((C.handicap_text !== "Auto" && C.handicap_text !== "No") ? "Custom handicap: " + C.handicap_text : "")
+                                    }
+                                </p>
+                                </React.Fragment>
                             }
 
-                            {(C.eligible && !C.removed || null) && <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
                             {((!C.eligible || C.removed) && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
-                            {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
                         </span>
                         <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
                             <Player user={this.extractUser(C)} rank={true} />
@@ -612,18 +634,9 @@ export class Play extends React.Component<PlayProperties, any> {
                         </span>
                         <span className={timeControlClassName(C)}>
                             {shortShortTimeControl(C.time_control_parameters)}
-                            {usedForCheating(C.time_control_parameters) ?
-                                <span title={_("Unusual time setting")}>
-                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
-                                </span>
-                            : ""}
                         </span>
                         {commonSpan(C.ranked_text, "center")}
-                        {C.komi ?
-                            <span className="cell" style={{textAlign: "center"}} title={_("Custom komi setting")}>
-                                {C.handicap_text} <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
-                            </span>
-                            : commonSpan(C.handicap_text, "center")}
+                        {commonSpan(C.handicap_text, "center")}
                         {commonSpan(C.name, "left")}
                         {commonSpan(rulesText(C.rules), "left")}
                     </div> :
