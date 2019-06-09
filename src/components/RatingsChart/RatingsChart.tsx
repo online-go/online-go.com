@@ -754,6 +754,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         /* Plot graph */
         let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
+        date_range[0] = new Date(date_range[0].getUTCFullYear(), date_range[0].getUTCMonth());
+        date_range[1] = new Date(date_range[1].getUTCFullYear(), date_range[1].getUTCMonth());
+        date_range[1].setMonth(date_range[1].getMonth() + 1);
 
         this.ratings_x.domain(date_range);
         let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
@@ -876,6 +879,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     getUTCMonthWidth(d:Date):number {{{
         let days_in_month;
 
+        /*
         let today = new Date();
         today.setHours(23, 59, 59);
         if (is_same_month(d, today)) {
@@ -883,14 +887,18 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         } else {
             days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
         }
+        */
+        days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
 
         let s = this.date_extents[0];
         let e = this.date_extents[1];
         s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
         e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
+        /*
         if (e.getTime() > Date.now()) {
             e = new Date();
         }
+        */
         //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
         let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
@@ -922,11 +930,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
+
+            /*
             let today = new Date();
             if (is_same_month(d.ended, today)) {
                 end = today;
                 end.setHours(23, 59, 59);
             }
+            */
 
             let s = start.getTime();
             let e = end.getTime();
