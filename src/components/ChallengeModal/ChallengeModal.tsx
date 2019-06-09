@@ -144,6 +144,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             },
         });
 
+        /* fix dirty data */
+        if (isNaN(challenge.min_ranking) || challenge.min_ranking < 0 || challenge.min_ranking > 36) {
+            challenge.min_ranking = 5;
+        }
+        if (isNaN(challenge.max_ranking) || challenge.max_ranking < 0 || challenge.max_ranking > 36) {
+            challenge.max_ranking = 36;
+        }
+
         challenge.game.initial_state = null;
         if (challenge.game.komi == null) {
             challenge.game.komi = 5.5;
@@ -248,17 +256,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         next.challenge.game.ranked = tf;
         if (tf && this.state.challenge && data.get("user")) {
-            next.challenge.game.handicap = Math.min(9, this.state.challenge.game.handicap);
+
+            next.challenge.game.handicap = Math.min(9, next.challenge.game.handicap);
             next.challenge.game.komi_auto = "automatic";
-            next.challenge.min_ranking = Math.max(this.state.challenge.min_ranking, data.get("user").ranking - 9);
-            next.challenge.min_ranking = Math.min(this.state.challenge.min_ranking, data.get("user").ranking + 9);
-            next.challenge.max_ranking = Math.max(this.state.challenge.max_ranking, data.get("user").ranking - 9);
-            next.challenge.max_ranking = Math.min(this.state.challenge.max_ranking, data.get("user").ranking + 9);
+            next.challenge.min_ranking = Math.max(next.challenge.min_ranking, data.get("user").ranking - 9);
+            next.challenge.min_ranking = Math.min(next.challenge.min_ranking, data.get("user").ranking + 9);
+            next.challenge.max_ranking = Math.max(next.challenge.max_ranking, data.get("user").ranking - 9);
+            next.challenge.max_ranking = Math.min(next.challenge.max_ranking, data.get("user").ranking + 9);
 
             if (
-                this.state.conf.selected_board_size !== "19x19" &&
-                this.state.conf.selected_board_size !== "13x13" &&
-                this.state.conf.selected_board_size !== "9x9"
+                next.conf.selected_board_size !== "19x19" &&
+                next.conf.selected_board_size !== "13x13" &&
+                next.conf.selected_board_size !== "9x9"
             ) {
                 next.conf.selected_board_size = "19x19";
             }

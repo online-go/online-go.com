@@ -17,20 +17,23 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import {post, get, patch} from "requests";
 import {openModal, Modal} from "Modal";
 import {timeControlDescription} from "TimeControl";
-import {GoEngine} from "goban";
 import {Player} from "Player";
-import {errorAlerter, rulesText} from "misc";
 import {handicapText} from "GameAcceptModal";
+import {errorAlerter, ignore, rulesText} from "misc";
+import {rankString} from 'rank_utils';
+
+declare var swal;
 
 interface Events {
 }
 
 interface GameInfoModalProperties {
-    engine: GoEngine;
+    config: any;
     black: any;
     white: any;
     annulled: boolean;
@@ -43,23 +46,111 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         super(props);
     }
 
-    render() {
-        const engine:GoEngine = this.props.engine;
 
-        if (engine.config && engine.config.pause_on_weekends) {
+
+    save = () => {
+        let config = this.props.config;
+        let review_id = config.review_id;
+        let game_id = config.game_id;
+
+        if (game_id) {
+            let settings = {
+                moderation_note: "Update game name",
+                name: config.game_name
+            };
+
+            post(`games/${this.props.config.game_id}/moderate`, settings)
+            .then(() => {
+                this.close();
+            })
+            .catch(errorAlerter);
+        }
+
+        if (review_id) {
+            let settings = {
+                'name': config.game_name
+            };
+            if (config.black_player_id === 0) {
+                settings['black_player_name'] = config.players.black.name;
+                settings['black_player_rank'] = config.players.black.rank;
+                settings['black_player_pro'] = !!config.players.black.pro;
+            }
+            if (config.white_player_id === 0) {
+                settings['white_player_name'] = config.players.white.name;
+                settings['white_player_rank'] = config.players.white.rank;
+                settings['white_player_pro'] = !!config.players.white.pro;
+            }
+            patch(`reviews/${review_id}`, settings)
+            .then(() => {
+                this.close();
+            })
+            .catch(errorAlerter);
+        }
+    }
+
+    updateName = (ev) => {
+        this.props.config.game_name = ev.target.value;
+        this.forceUpdate();
+    }
+    updateBlackName = (ev) => {
+        this.props.config.players.black.name = ev.target.value;
+        this.forceUpdate();
+    }
+    updateBlackRank = (ev) => {
+        console.log(ev.target.value);
+        let rank = parseInt(ev.target.value);
+        let pro = ev.target.value.indexOf(".1") > 0;
+        console.log(rank, pro);
+        this.props.config.players.black.rank = rank;
+        this.props.config.players.black.pro = pro;
+        this.props.black.rank = rank;
+        this.props.black.pro = pro;
+        this.forceUpdate();
+    }
+    updateWhiteName = (ev) => {
+        this.props.config.players.white.name = ev.target.value;
+        this.forceUpdate();
+    }
+    updateWhiteRank = (ev) => {
+        console.log(ev.target.value);
+        let rank = parseInt(ev.target.value);
+        let pro = ev.target.value.indexOf(".1") > 0;
+        this.props.config.players.white.rank = rank;
+        this.props.config.players.white.pro = pro;
+        this.props.white.rank = rank;
+        this.props.white.pro = pro;
+        this.forceUpdate();
+    }
+
+    render() {
+        let config = this.props.config;
+        let user = data.get('user');
+        let review_id = config.review_id;
+        let game_id = config.game_id;
+        let editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
+
+        if (config && config.pause_on_weekends) {
             /* There was a bug in our tournament creation code that didn't
              * stick this value in the time_control object, so this helps with
              * display on those games. */
-            engine.time_control.pause_on_weekends = engine.config.pause_on_weekends;
+            config.time_control.pause_on_weekends = config.pause_on_weekends;
         }
-        let time_control_description = timeControlDescription(engine.time_control);
+        let time_control_description = timeControlDescription(config.time_control);
+
+        let ranks = [];
+        for (let i = 0; i < 39; ++i) {
+            ranks.push({value: i + ".0", label: rankString({ranking: i, professional: false})});
+        }
+        for (let i = 37; i < 46; ++i) {
+            ranks.push({value: i + ".1", label: rankString({ranking: i, professional: true})});
+        }
 
         return (
           <div className="Modal GameInfoModal" ref="modal">
               <div className="header">
                   <div>
                       <h2>
-                          {engine.config.game_name}
+                          {config.game_name}
                       </h2>
                       <h3>
                           <Player disableCacheUpdate icon rank user={this.props.black} /> {
@@ -70,28 +161,61 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
               </div>
               <div className="body">
                 <dl className="horizontal">
-                    <dt>{_("Game")}</dt><dd>{engine.config.game_name}</dd>
+                    <dt>{_("Game")}</dt><dd>
+                          {editable
+                              ? <input value={config.game_name} onChange={this.updateName} />
+                              : <span>{config.game_name}</span>
+                          }
+                    </dd>
                     {this.props.creatorId && <dt>{_("Creator")}</dt>}
                     {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
-                    <dt>{_("Black")}</dt><dd><Player disableCacheUpdate icon rank user={this.props.black} /></dd>
-                    <dt>{_("White")}</dt><dd><Player disableCacheUpdate icon rank user={this.props.white} /></dd>
+                    <dt>{_("Black")}</dt><dd>
+                        { editable && this.props.config.black_player_id === 0
+                            ? <span>
+                                <input value={config.players.black.name} onChange={this.updateBlackName} />
+                                <select value={config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)} onChange={this.updateBlackRank} >
+                                    {ranks.map((rank, idx) =>
+                                        <option key={rank.value} value={rank.value}>{rank.label}</option>
+                                    )}
+                                </select>
+                              </span>
+                            : <Player disableCacheUpdate icon rank user={this.props.black} />
+                        }
+                    </dd>
+                    <dt>{_("White")}</dt><dd>
+                        { editable && this.props.config.white_player_id === 0
+                            ? <span>
+                                <input value={config.players.white.name} onChange={this.updateWhiteName} />
+                                <select value={config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)} onChange={this.updateWhiteRank} >
+                                    {ranks.map((rank, idx) =>
+                                        <option key={rank.value} value={rank.value}>{rank.label}</option>
+                                    )}
+                                </select>
+                              </span>
+                            : <Player disableCacheUpdate icon rank user={this.props.white} />
+                        }
+                    </dd>
                     <dt>{_("Time")}</dt>
                         <dd>
-                            {engine.config.start_time ? moment(new Date(engine.config.start_time * 1000)).format("LLL") : ""}
-                            {engine.config.end_time ? " - " + moment(new Date(engine.config.end_time * 1000)).format("LLL") : ""}
+                            {config.start_time ? moment(new Date(config.start_time * 1000)).format("LLL") : ""}
+                            {config.end_time ? " - " + moment(new Date(config.end_time * 1000)).format("LLL") : ""}
                         </dd>
-                    <dt>{_("Rules")}</dt><dd>{rulesText(engine.config.rules)}</dd>
-                    <dt>{_("Ranked")}</dt><dd>{yesno(engine.config.ranked)}</dd>
+                    <dt>{_("Rules")}</dt><dd>{rulesText(config.rules)}</dd>
+                    <dt>{_("Ranked")}</dt><dd>{yesno(config.ranked)}</dd>
                     <dt>{_("Annulled")}</dt><dd>{yesno(this.props.annulled)}</dd>
-                    <dt>{_("Board Size")}</dt><dd>{engine.config.width}x{engine.config.height}</dd>
-                    <dt>{_("Handicap")}</dt><dd>{handicapText(engine.config.handicap)}</dd>
-                    <dt>{_("Komi")}</dt><dd>{parseFloat(engine.config.komi).toFixed(1)}</dd>
-                    <dt>{_("Analysis")}</dt><dd>{(engine.config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
+                    <dt>{_("Board Size")}</dt><dd>{config.width}x{config.height}</dd>
+                    <dt>{_("Handicap")}</dt><dd>{handicapText(config.handicap)}</dd>
+                    <dt>{_("Komi")}</dt><dd>{parseFloat(config.komi).toFixed(1)}</dd>
+                    <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
                     <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
                 </dl>
               </div>
               <div className="buttons">
                   <button onClick={this.close}>{_("Close")}</button>
+                  {editable &&
+                      <button onClick={this.save}>{_("Save")}</button>
+                  }
+
               </div>
           </div>
         );
@@ -99,8 +223,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(engine:GoEngine, black: any, white:any, annulled:boolean, creator_id: number): void {
-    openModal(<GameInfoModal engine={engine} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
+export function openGameInfoModal(config:any, black: any, white:any, annulled:boolean, creator_id: number): void {
+    openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
 }
 
 function yesno(tf: boolean) {{{

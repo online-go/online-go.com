@@ -42,6 +42,8 @@ declare var swal;
 interface PlayerDetailsProperties {
     playerId: number;
     chatId?: string;
+    gameChatId?: string;
+    reviewChatId?: string;
     noextracontrols?: boolean;
     nochallenge?: boolean;
 }
@@ -57,9 +59,6 @@ data.watch(cached.friends, (friends_arr) => {
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
 export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, any> {
-    refs: {
-    };
-
     constructor(props) {
         super(props);
         this.state = this.blankState();
@@ -186,7 +185,31 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
     }}}
     removeSingleLine = () => {{{
-        termination_socket.send('chat/remove', {uuid: this.props.chatId});
+        let m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
+        if (m) {
+            let game    = m[1] === 'g';
+            let id      = parseInt(m[2]);
+            let channel = m[3];
+            let chat_id = m[4];
+
+            console.log(game ? 'game' : 'review', id, channel, chat_id);
+            if (game) {
+                termination_socket.send('game/chat/remove', {
+                    game_id: id,
+                    channel: channel,
+                    chat_id: chat_id,
+                });
+            } else {  // review
+                termination_socket.send('review/chat/remove', {
+                    review_id: id,
+                    channel: channel,
+                    chat_id: chat_id,
+                });
+            }
+        } else {
+            termination_socket.send('chat/remove', {uuid: this.props.chatId});
+        }
+
         this.close_all_modals_and_popovers();
     }}}
     removeAllChats = () => {{{

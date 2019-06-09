@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as preferences from "preferences";
 
 let binding_id = 0;
 
@@ -179,6 +180,12 @@ $(() => {
             shortcut += String.fromCharCode(e.keyCode);
         }
         shortcut = sanitize_shortcut(shortcut);
+
+        if (!preferences.get('function-keys-enabled')) {
+            if (/f[0-9]/.test(shortcut)) {
+                return true;
+            }
+        }
 
         if (shortcut in bound_shortcuts && bound_shortcuts[shortcut].length > 0) {
             let binding = bound_shortcuts[shortcut][bound_shortcuts[shortcut].length - 1];

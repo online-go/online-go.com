@@ -79,6 +79,11 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         if (announcement.type !== "tournament") {
             this.state.announcements.push(announcement);
             this.forceUpdate();
+
+            setTimeout(
+                () => this.clearAnnouncement(announcement.id, true),
+                moment(announcement.expiration).toDate().getTime() - Date.now()
+            );
         } else {
             let t = moment(announcement.expiration).toDate().getTime() - Date.now();
             if (t > 0 && t < 30 * 60 * 1000) {

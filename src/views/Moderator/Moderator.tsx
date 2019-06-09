@@ -62,7 +62,8 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                     <SearchInput
                         placeholder={_("Search")}
                         onChange={(event) => {
-                            this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
+                            //this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
+                            this.refs.userlog.filter.newuserany = (event.target as HTMLInputElement).value.trim();
                             this.refs.userlog.filter_updated();
                         }}
                     />
@@ -74,7 +75,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                     name="userlog"
                     source={`moderation/recent_users`}
                     orderBy={["-timestamp"]}
-                    filter={{ "username__istartswith": "" }}
+                    filter={{ "newuserany": "" }}
                     columns={[
                         {header: _("Time"),  className: () => "timestamp",
                          render: (X) => (moment(new Date(X.registration_date)).format("YYYY-MM-DD HH:mm")) },
@@ -92,12 +93,11 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                                  <Player user={X} />
                         )},
 
-                        {header: _("Accounts") , render: (X) => X.browser_id_count} ,
-                        {header: "IP"          , render: (X) => <span className='monospace small clip'>{X.last_ip}</span>} ,
-                        {header: _("Country")  , render: (X) => <span>{cc_to_country_name(X.geoip.country)} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
-                        {header: _("Timezone") , render: (X) => X.last_timezone_offset / 60} ,
-                        {header: "BID"         , render: (X) => <span className='monospace small clip'>{X.last_browser_id}</span>} ,
-                        {header: "Fingerprint" , render: (X) => <span className='monospace small clip'>{X.last_fingerprint}</span>} ,
+                        {header: _("Accounts") , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.browser_id_count} </span>},
+                        {header: "IP"          , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.last_ip}</span>} ,
+                        {header: _("Country")  , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.geoip.country} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
+                        {header: _("Timezone") , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.last_timezone_offset / 60}</span>} ,
+                        {header: "BID"         , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.last_browser_id}</span>} ,
                     ]}
                 />
             </Card>
@@ -110,6 +110,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         placeholder={_("Search")}
                         onChange={(event) => {
                             this.refs.modlog.filter.playerusernameistartswith = (event.target as HTMLInputElement).value.trim();
+                            //this.refs.modlog.filter.useruserany = (event.target as HTMLInputElement).value.trim();
                             this.refs.modlog.filter_updated();
                         }}
                     />
@@ -132,8 +133,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: "",  className: () => "object",
                          render: (X) => (
                              <span>
-                                 {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>}
-                                 {X.player && <Player user={X.player}/> }
+                                 {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>} {X.player && <Player user={X.player}/> }
                              </span>
                         )},
 

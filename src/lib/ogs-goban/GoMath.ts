@@ -299,7 +299,6 @@ export class GoMath {
         } else {
             arr.pop();
         }
-        console.log(arr);
         return arr;
     } /* }}} */
     public static encodeMovesToArray(moves):Array<MoveArray> { /* {{{ */

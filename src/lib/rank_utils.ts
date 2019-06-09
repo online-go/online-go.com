@@ -247,11 +247,11 @@ export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlus
     return result;
 }
 
-export function proRankList(): Array<IRankInfo> {
+export function proRankList(bigranknums:boolean = true): Array<IRankInfo> {
     let result = [];
     for (let i = 37; i <= 45; ++i) {
         result.push ({
-            rank: i + 1000,
+            rank: i + (bigranknums ? 1000 : 0),
             label: longRankString(i + 1000)
         });
     }

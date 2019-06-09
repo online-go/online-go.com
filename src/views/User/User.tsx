@@ -43,6 +43,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
+import {UIPush} from "UIPush";
 
 declare let swal;
 
@@ -75,7 +76,6 @@ let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
 
 export class User extends React.PureComponent<UserProperties, any> {
     refs: {
-        moderator_notes;
         vacation_left;
         bot_ai;
         game_table;
@@ -85,6 +85,8 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
+    moderator_note:any = null;
+    moderator_log:any = null;
 
     constructor(props) {
         super(props);
@@ -152,7 +154,6 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     update(state) {
-        state.moderator_notes = state.user.moderator_notes;
         state.bot_apikey = state.user.bot_apikey;
 
         state.user.ratings = state.user.ratings;
@@ -247,20 +248,6 @@ export class User extends React.PureComponent<UserProperties, any> {
                 this.updateHostIpSettings();
             });
         }
-    }
-
-    moderatorNotesSetTimeout: any;
-    updateModeratorNotes(event) {
-        let notes = event.target.value;
-        this.setState({moderator_notes: notes});
-
-        if (this.moderatorNotesSetTimeout) {
-            clearTimeout(this.moderatorNotesSetTimeout);
-        }
-        this.moderatorNotesSetTimeout = setTimeout(() => {
-            this.moderatorNotesSetTimeout = null;
-            put("players/%%/moderate/notes", this.user_id, { "moderator_notes": notes.trim() });
-        }, 500);
     }
 
     addFriend(id) { /* {{{ */
@@ -467,6 +454,23 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.refs.review_table.filter_updated();
     }}}
 
+
+    addModeratorNote = () => {
+        let txt = this.moderator_note.value.trim();
+
+        if (txt.length < 2) {
+            this.moderator_note.focus();
+            return;
+        }
+
+        put(`players/${this.user_id}/moderate`, {
+            moderation_note: txt
+        })
+        .then(() => { })
+        .catch(errorAlerter);
+
+        this.moderator_note.value = "";
+    }
 
     render() {
         let user = this.state.user;
@@ -698,7 +702,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             columns={[
                                 {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
                                 {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
-                                {header: "Browser ID",   className: "browser_id", render: (X) => X.last_browser_id},
+                                {header: "Browser ID",   sortable:true, className: "browser_id", render: (X) => X.last_browser_id},
                                 {header: "User",         className: "",           render: (X) => (
                                     <span>
                                         <Player user={X}/>
@@ -709,7 +713,39 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {header: "Shadowbanned", className: "banned",     render: (X) => X.is_shadowbanned ? _("Yes") : _("No")},
                             ]}
                         />
-                        <textarea className="moderator-notes" ref="moderator_notes" onChange={this.updateModeratorNotes.bind(this)} placeholder="Moderator notes" value={this.state.moderator_notes}/>
+
+                        <b>Mod log</b>
+                        <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
+                        <div id='leave-moderator-note'>
+                            <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
+                            <button onClick={this.addModeratorNote}>Add note</button>
+                        </div>
+                        <PaginatedTable
+                            className="moderator-log"
+                            name="moderator-log"
+                            ref={(x) => this.moderator_log = x}
+                            source={`moderation?player_id=${this.user_id}`}
+                            columns={[
+                                {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
+                                {header: "", className: "",     render: (X) => <Player user={X.moderator} />},
+                                {header: "", className: "",     render: (X) =>
+                                    <div>
+                                        <div className='action'>{X.game ? <Link to={`/game/${X.game.id}`}>{X.game.id}</Link> : null}{X.action}</div>
+                                        {X.incident_report &&
+                                            <div>
+                                                {X.incident_report.cleared_by_user ? <div><b>Cleared by user</b></div> : null}
+                                                <div>{X.incident_report.url}</div>
+                                                <div>{X.incident_report.system_note}</div>
+                                                <div>{X.incident_report.reporter_note}</div>
+                                                {X.incident_report.moderator ? <Player user={X.incident_report.moderator} /> : null}
+                                                <i> {X.incident_report.moderator_note}</i>
+                                            </div>
+                                        }
+                                        <pre>{X.note}</pre>
+                                    </div>
+                                },
+                            ]}
+                        />
                     </Card>
                     /* }}} */}
 

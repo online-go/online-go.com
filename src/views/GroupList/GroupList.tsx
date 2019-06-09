@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {browserHistory} from "ogsHistory";
@@ -46,7 +47,7 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                 <div className="page-nav">
                     <h2><i className="fa fa-users"></i> {_("Groups")}</h2>
                     <div>
-                        <a className="primary" href="/group/create"><i className="fa fa-plus-square"></i> {_("New group")}</a>
+                        <Link className="primary" to="/group/create"><i className="fa fa-plus-square"></i> {_("New group")}</Link>
 
                         <SearchInput
                             placeholder={_("Search")}

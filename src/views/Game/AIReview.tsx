@@ -127,19 +127,12 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.prediction_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-        //this.fast_chart = this.prediction_graph.append('path')
-        //    .attr('class', 'fast-prediction line');
         this.full_chart = this.prediction_graph.append('path')
             .attr('class', 'full-prediction line');
 
         this.x = d3.scaleLinear().rangeRound([0, width]);
         this.y = d3.scaleLinear().rangeRound([height, 0]);
 
-        /*
-        this.fast_line = d3.line()
-             .x(d => this.x((d as any) .move))
-             .y(d => this.y((d as any) .fast_prediction * 100.0));
-             */
         this.full_line = d3.line()
             .curve(d3.curveMonotoneX)
              .x(d => this.x((d as any) .move))
@@ -303,11 +296,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.x.domain(d3.extent([1, this.props.entries[this.props.entries.length - 1].move]));
         this.y.domain(d3.extent([0.0, 100.0]));
 
-        /*
-        this.fast_chart
-            .datum(this.props.entries)
-            .attr('d', this.fast_line as any);
-            */
         this.full_chart
             .datum(this.props.entries)
             .attr('d', this.full_line as any);
@@ -342,11 +330,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.svg.attr('width', this.width + margin.left + margin.right);
 
         this.x.range([0, this.width]);
-        /*
-        this.fast_chart
-            .datum(this.props.entries)
-            .attr('d', this.fast_line as any);
-            */
         this.full_chart
             .datum(this.props.entries)
             .attr('d', this.full_line as any);
@@ -361,7 +344,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
             .attr('width', this.width);
 
-        //this.fast_crosshair.attr('x1', this.width);
         this.full_crosshair.attr('x1', this.width);
 
     }
@@ -550,7 +532,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 if (`full-${d.move}` in ai_review) {
                     if (ai_review[`full-${d.move}`].variations.length) {
-                        full_prediction = ai_review[`full-${d.move}`].prediction;
+                        full_prediction = ai_review[`full-${d.move}`].win_rate;
                     }
                 }
 
@@ -779,7 +761,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             if (user.is_moderator) {
                 show_full_ai_review_button = true;
             }
-            if (user.id === this.props.game.goban.engine.players.black.id || user.id === this.props.game.goban.engine.players.white.id) {
+            if (
+                user.id === this.props.game.goban.engine.players.black.id ||
+                user.id === this.props.game.goban.engine.players.white.id ||
+                user.id === this.props.game.creator_id
+            ) {
                 show_full_ai_review_button = true;
             }
         } catch {

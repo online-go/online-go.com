@@ -420,4 +420,28 @@
         }
     }
 
+
+    .moderator-log {
+        td {
+            vertical-align: top;
+        }
+
+
+        .date {
+            @extend .monospace
+            width: 7em;
+            text-align: left;
+            padding-right: 1em;
+            font-size: 0.7rem;
+        }
+
+        .action {
+            @extend .monospace
+            font-size: 0.8rem;
+
+            a {
+                padding-right: 1rem;
+            }
+        }
+    }
 }

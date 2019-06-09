@@ -128,6 +128,7 @@ data.watch("config.user", (user) => {
                 auth: data.get("config.chat_auth"),
                 player_id: user.id,
                 username: user.username,
+                jwt: data.get('config.user_jwt'),
             });
             sockets.comm_socket.send("chat/connect", {
                 auth: data.get("config.chat_auth"),

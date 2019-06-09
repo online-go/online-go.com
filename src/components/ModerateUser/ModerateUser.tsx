@@ -19,6 +19,7 @@ import * as React from "react";
 import {_} from "translate";
 import {put, get} from "requests";
 import {errorAlerter, ignore} from "misc";
+import {proRankList} from "rank_utils";
 import {Modal, openModal} from "Modal";
 
 interface Events {
@@ -29,6 +30,8 @@ interface ModerateUserProperties {
 }
 
 declare var swal;
+
+let pro_ranks = proRankList(false);
 
 export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     constructor(props) {
@@ -41,16 +44,16 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
     componentWillMount() {
         get("players/%%/full", this.props.playerId)
-        .then((dets) => {
-            console.log(dets);
-            this.setState(Object.assign({loading: false}, dets.user, {bot_owner: dets.user.bot_owner ? dets.user.bot_owner.id : null}));
+        .then((result) => {
+            console.log(result);
+            this.setState(Object.assign({loading: false}, result.user, {bot_owner: result.user.bot_owner ? result.user.bot_owner.id : null}));
         })
         .catch(errorAlerter);
     }
 
     save = () => {
         swal({
-            text: "Moderator note",
+            text: _("Moderator note"),
             input: "text",
             showCancelButton: true,
         })
@@ -65,6 +68,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 "is_bot", "is_banned", "is_shadowbanned",
                 "bot_owner", "bot_ai", "username",
                 "supporter", "username", "password", "email",
+                "is_announcer", "ranking", "professional"
             ];
 
             let settings: any = {};
@@ -84,6 +88,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     }
     setLockedUsername = (ev) => this.setState({locked_username: ev.target.checked});
     setSupporter = (ev) => this.setState({supporter: ev.target.checked});
+    setAnnouncer = (ev) => this.setState({is_announcer: ev.target.checked});
     setProfessional = (ev) => this.setState({professional: ev.target.checked});
     setBanned = (ev) => this.setState({is_banned: ev.target.checked});
     setShadowbanned = (ev) => this.setState({is_shadowbanned: ev.target.checked});
@@ -93,6 +98,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setUsername = (ev) => this.setState({username: ev.target.value});
     setEmail = (ev) => this.setState({email: ev.target.value});
     setPassword = (ev) => this.setState({password: ev.target.value});
+    setRanking = (ev) => this.setState({ranking: ev.target.value});
 
     render() {
         let user = this.state;
@@ -108,14 +114,25 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                             <div className="col-sm-4">
                                 <h3>Special Attributes</h3>
                                 <dl className="horizontal left">
+                                    {/*
                                     <dt><label htmlFor="supporter">Supporter</label></dt>
                                     <dd><input id="supporter" type="checkbox" checked={user.supporter} onChange={this.setSupporter} /></dd>
+                                    */}
 
-                                    <dt><label htmlFor="banned">Banned</label></dt>
-                                    <dd><input id="banned" type="checkbox" checked={user.is_banned} onChange={this.setBanned} /></dd>
+                                    <dt><label htmlFor="announcer">Announcer</label></dt>
+                                    <dd><input id="announcer" type="checkbox" checked={user.is_announcer} onChange={this.setAnnouncer} /></dd>
 
-                                    <dt><label htmlFor="shadowbanned">Shadowbanned</label></dt>
-                                    <dd><input id="shadowbanned" type="checkbox" checked={user.is_shadowbanned} onChange={this.setShadowbanned} /></dd>
+                                    <dt><label htmlFor="professional">Professional</label></dt>
+                                    <dd>
+                                        <input id="professional" type="checkbox" checked={user.professional} onChange={this.setProfessional} />
+                                        {(user.professional || null) &&
+                                            <select value={user.ranking} onChange={this.setRanking}>
+                                                {pro_ranks.map((r, idx) => (
+                                                    <option key={idx} value={r.rank}>{r.label}</option>
+                                                ))}
+                                            </select>
+                                        }
+                                    </dd>
 
                                     <dt><label htmlFor="bot">Bot</label></dt>
                                     <dd>
@@ -142,6 +159,11 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                     <dd>
                                         <input type="text" id="password" value={user.password} onChange={this.setPassword} autoComplete="off"/>
                                     </dd>
+                                    <dt><label htmlFor="banned">Banned</label></dt>
+                                    <dd><input id="banned" type="checkbox" checked={user.is_banned} onChange={this.setBanned} /></dd>
+
+                                    <dt><label htmlFor="shadowbanned">Shadowbanned</label></dt>
+                                    <dd><input id="shadowbanned" type="checkbox" checked={user.is_shadowbanned} onChange={this.setShadowbanned} /></dd>
                                 </dl>
                             </div>
                         </div>

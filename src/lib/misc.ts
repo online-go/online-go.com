@@ -161,7 +161,8 @@ export function getOutcomeTranslation(outcome:string) { /* {{{ */
         case 'r':
         case 'Resignation':
             return pgettext("Game outcome", 'Resignation');
-
+        case 'Disconnection':
+            return pgettext("Game outcome", 'Disconnection');
         case 'Stone Removal Timeout':
             return pgettext("Game outcome", 'Stone Removal Timeout');
         case 'Timeout':
@@ -349,7 +350,18 @@ export function errorAlerter(...args) {{{
         return;
     }
     if (err === "errcode") {
-        errcodeAlerter(args[0]);
+        let errobj = args[0];
+        try {
+            if ("responseText" in errobj) {
+                try {
+                    errobj = JSON.parse(errobj.responseText);
+                } catch (e) {
+                    errobj = errobj.responseText;
+                }
+            }
+        } catch (e) {
+        }
+        errcodeAlerter(errobj);
     } else {
         swal({
             title: _(err.substring(0, 128)),

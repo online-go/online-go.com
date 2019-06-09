@@ -54,22 +54,6 @@ export class Goban extends OGSGoban {
         return window.location.pathname;
     }
 
-    protected getShouldPlayVoiceCountdown(timing_type: string, in_overtime: boolean):boolean {
-        // Don't play voice countdown in byo-yomi or canadian main time unless they really asked for it.
-
-        if (preferences.get("sound-voice-countdown")) {
-            if (timing_type === "byo-yomi" || timing_type === "canadian") {
-                if (preferences.get("sound-voice-countdown-main") || in_overtime) {
-                    return true;
-                }
-            } else {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
     protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
         switch (preferences.get('board-labeling')) {
             case 'A1':

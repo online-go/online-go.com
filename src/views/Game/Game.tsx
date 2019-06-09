@@ -43,7 +43,7 @@ import {ChatPresenceIndicator} from "ChatPresenceIndicator";
 import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
-import {VoiceChat} from "VoiceChat";
+//import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
 import {sfx} from "ogs-goban/SFXManager";
 import {AIReview} from "./AIReview";
@@ -417,6 +417,49 @@ export class Game extends React.PureComponent<GameProperties, any> {
             /* } */
         }
 
+        this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
+        this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
+        this.goban.on('audio-pass', () => sfx.play("pass"));
+        this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
+        let last_clock_played = null;
+        this.goban.on('audio-clock', (clock) => {
+            let user = data.get('user');
+            if (user.anonymous) {
+                return;
+            }
+
+            let audio_enabled = false;
+
+            if (preferences.get("sound-voice-countdown")) {
+                if (clock.time_control_system === "byoyomi" || clock.time_control_system === "canadian") {
+                    if (preferences.get("sound-voice-countdown-main") || clock.in_overtime) {
+                        audio_enabled = true;
+                    }
+                } else {
+                    audio_enabled = true;
+                }
+            }
+
+            if (!audio_enabled) {
+                return;
+            }
+
+            if (this.state.paused) {
+                return;
+            }
+
+            if (!(user.id === clock.clock_player && user.id === clock.player_to_move)) {
+                return;
+            }
+
+            if (last_clock_played === clock.seconds_left) {
+                // debounce
+            } else {
+                last_clock_played = clock.seconds_left;
+                sfx.play(clock.seconds_left);
+            }
+        });
+
         this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
@@ -430,6 +473,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
+            this.debouncedChatUpdate();
+        });
+        this.goban.on("chat-remove", (obj) => {
+            for (let chat_id of obj.chat_ids) {
+                for (let i = 0; i < this.chat_log.length; ++i) {
+                    if (this.chat_log[i].chat_id === chat_id) {
+                        this.chat_log.splice(i, 1);
+                        break;
+                    }
+                    else {
+                        console.log(chat_id, this.chat_log[i]);
+                    }
+                }
+            }
             this.debouncedChatUpdate();
         });
         this.goban.on("chat-reset", () => {
@@ -802,7 +859,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
-        openGameInfoModal(this.goban.engine,
+        openGameInfoModal(
+            this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled, this.creator_id || this.goban.review_owner_id);
@@ -1148,8 +1206,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 new_state.white_accepted = engine.players["white"].accepted_stones === stone_removals;
             }
 
-            if ((engine.phase === "stone removal" || engine.phase === "finished") &&
-              engine.outcome !== "Timeout" && engine.outcome !== "Resignation" && engine.outcome !== "Cancellation" && goban.mode === "play") {
+            if ((engine.phase === "stone removal" || engine.phase === "finished")
+                && engine.outcome !== "Timeout"
+                && engine.outcome !== "Disconnection"
+                && engine.outcome !== "Resignation"
+                && engine.outcome !== "Abandonment"
+                && engine.outcome !== "Cancellation"
+                && goban.mode === "play"
+            ) {
                 new_state.score = engine.computeScore(false);
                 goban.showScores(new_state.score);
             } else {
@@ -1804,10 +1868,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                 </div>
                 {/* } */}
-                {((state.phase === "play" && state.mode === "play" && this.state.paused && this.goban.engine.pause_control && this.goban.engine.pause_control.paused) || null) &&  /* { */
+                {( state.phase === "play"
+                    && state.mode === "play"
+                    && this.state.paused
+                    && this.goban.engine.pause_control
+                    && this.goban.engine.pause_control.paused
+                    || null) &&  /* { */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
-                        {(this.state.user_is_player || null) &&
+                        {(this.state.user_is_player || user.is_moderator || null) &&
                             <button className="info" onClick={this.goban_resumeGame}>
                                {_("Resume")}
                             </button>
@@ -1818,7 +1887,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
                         }</div>
                     </div>
-                }{/* } */}
+                }
+
+                {(( this.goban.engine.pause_control
+                    && this.goban.engine.pause_control.moderator_paused
+                    && user.is_moderator
+                    ) || null) &&  /* { */
+                    <div className="pause-controls">
+                        <h3>{_("Paused by Moderator")}</h3>
+                        <button className="info" onClick={this.goban_resumeGame}>
+                           {_("Resume")}
+                        </button>
+                    </div>
+                }
                 {(this.state.phase === "finished" || null) &&  /* { */
                     <div className="analyze-mode-buttons">     {/* not really analyze mode, but equivalent button position and look*/}
                         {(this.state.user_is_player && this.state.mode !== "score estimation" || null) &&
@@ -2029,9 +2110,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     </div>
 
+                    {/*
                     <div style={{padding: "0.5em", textAlign: "center"}}>
                         {_("Voice Chat: ")} <VoiceChat channel={"review-" + this.review_id} hasVoice={ this.hasVoice(user.id) } />
                     </div>
+                    */}
                 </div>
             </div>
         );
@@ -2132,11 +2215,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_clock(color) {
+                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
         return (
           <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
               <div className="main-time boxed"></div>
               {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-                  <span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
+                  <span className="byo-yomi-periods" />
               }
               {(this.goban.engine.time_control.time_control === "canadian" || null) &&
                   <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
@@ -2353,7 +2437,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
                 }
-                {(goban && this.state.user_is_player && goban.engine.phase !== "finished" || null) &&
+                {(goban && (this.state.user_is_player || mod) && goban.engine.phase !== "finished" || null) &&
                     <a onClick={this.pauseGame}><i className="fa fa-pause"></i> {_("Pause game")}</a>
                 }
                 {game &&
@@ -2364,7 +2448,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
-                {review && game_id && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
+                {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
                 <a onClick={this.showLinkModal}><i className="fa fa-share-alt"></i> {review ? _("Link to review") : _("Link to game")}</a>
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
@@ -2401,19 +2485,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <KBShortcut shortcut="end" action={this.nav_last}/>
                 <KBShortcut shortcut="escape" action={this.handleEscapeKey}/>
 
-                {/*
                 <KBShortcut shortcut="f1" action={this.set_analyze_tool.stone_null}/>
                 <KBShortcut shortcut="f2" action={this.set_analyze_tool.stone_black}/>
-                */}
                 {/* <KBShortcut shortcut='f3' action='console.log("Should be entering scoring mode");'></KBShortcut> */}
-                {/*
                 <KBShortcut shortcut="f4" action={this.set_analyze_tool.label_triangle}/>
                 <KBShortcut shortcut="f5" action={this.set_analyze_tool.label_square}/>
                 <KBShortcut shortcut="f6" action={this.set_analyze_tool.label_circle}/>
                 <KBShortcut shortcut="f7" action={this.set_analyze_tool.label_letters}/>
                 <KBShortcut shortcut="f8" action={this.set_analyze_tool.label_numbers}/>
                 <KBShortcut shortcut="f9" action={this.set_analyze_tool.draw}/>
-                */}
                 {((goban && goban.mode === "analyze") || null) && <KBShortcut shortcut="f10" action={this.set_analyze_tool.clear_and_sync}/>}
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch}/>
             </div>
