@@ -1569,6 +1569,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     setVolume = (ev) => {
         this._setVolume(parseFloat(ev.target.value));
+        this.saveVolume();
     }
     _setVolume(volume) {
         let enabled = volume > 0;
@@ -2414,7 +2415,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     /> <input type="range"
                         onChange={this.setVolume}
                         value={this.state.volume} min={0} max={1.0} step={0.01}
-                    /> <i className="fa fa-save" onClick={this.saveVolume} style={{cursor: "pointer"}}/>
+                    />
                 </a>
 
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>
