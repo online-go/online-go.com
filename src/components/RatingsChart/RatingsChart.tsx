@@ -945,18 +945,19 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return isFinite(x) ? x : 0;
         };
 
+
         this.win_loss_bars[0]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[2]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
         this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);
