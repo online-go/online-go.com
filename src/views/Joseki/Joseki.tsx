@@ -35,15 +35,7 @@ import { JosekiAdmin } from "JosekiAdmin";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 
-/*  This for managing both a local and remote dev server
-const server_url = document.location.host === "localhost:8080" ?
-    "http://localhost:8081/godojo/" :
-    "http://ec2-3-85-103-221.compute-1.amazonaws.com:8081/godojo/";
-*/
-
-/* Just talk to the remote dev server for now */
-
-const server_url = "http://ec2-52-201-231-150.compute-1.amazonaws.com:8081/godojo/";
+const server_url = data.get("joseki-url", "/godojo/");
 
 const position_url = (node_id) => {
     return server_url + "position?id=" + node_id;
