@@ -591,6 +591,9 @@ export class Play extends React.Component<PlayProperties, any> {
 
         let challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
 
+        challengeList.forEach(element => {
+            console.log("komi: " + element.komi);
+        });
         return challengeList.map((C) => (
             (C.eligible || C.user_challenge || this.state.show_all_challenges ?
                     <div key={C.challenge_id} className="challenge-row">
@@ -606,7 +609,7 @@ export class Play extends React.Component<PlayProperties, any> {
                             { /* Mark eligible suspect games with a warning icon and warning explanation popup.
                                  We do let users see the warning for their own challenges. */
                                 (((C.eligible || C.user_challenge) && !C.removed) &&
-                                 (C.komi ||
+                                 (C.komi !== null ||
                                   usedForCheating(C.time_control_parameters) ||
                                   (C.handicap_text !== "Auto" && C.handicap_text !== "No"))
                                    || null) &&
@@ -614,7 +617,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                  <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
                                  <p className="cheat-alert-tooltiptext">
                                     {
-                                        (C.komi ? "Custom komi: " + C.komi + ". " : "") +
+                                        (C.komi !== null ? "Custom komi: " + C.komi + ". " : "") +
                                         (usedForCheating(C.time_control_parameters) ? "Unusual time setting. " : "" ) +
                                         ((C.handicap_text !== "Auto" && C.handicap_text !== "No") ? "Custom handicap: " + C.handicap_text : "")
                                     }
