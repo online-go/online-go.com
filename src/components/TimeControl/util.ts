@@ -433,8 +433,8 @@ export function usedForCheating(time_control) {
         case "byoyomi":
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
-                time_control.period_time * time_control.periods > QUESTIONABLE_ABSOLUTE_TIME
-            );
+                time_control.period_time > QUESTIONABLE_SECONDS_PER_MOVE
+                );
 
         case "fischer":
             return !(

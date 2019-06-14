@@ -591,9 +591,6 @@ export class Play extends React.Component<PlayProperties, any> {
 
         let challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
 
-        challengeList.forEach(element => {
-            console.log("komi: " + element.komi);
-        });
         return challengeList.map((C) => (
             (C.eligible || C.user_challenge || this.state.show_all_challenges ?
                     <div key={C.challenge_id} className="challenge-row">
