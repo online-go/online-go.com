@@ -516,8 +516,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <div>Moves made:</div>
                             <div className="moves-made">
                             {this.state.current_move_category !== "new" ?
-                            <Link to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
-                            <span>{this.state.move_string}</span>}
+                            <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
+                            <span className="moves-made-string">{this.state.move_string}</span>}
                             </div>
                     </div>
                 </div>
