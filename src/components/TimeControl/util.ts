@@ -434,7 +434,7 @@ export function usedForCheating(time_control) {
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
                 time_control.period_time > QUESTIONABLE_SECONDS_PER_MOVE
-            );
+                );
 
         case "fischer":
             return !(

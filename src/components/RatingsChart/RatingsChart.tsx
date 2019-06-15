@@ -247,7 +247,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([60, 0]);
+        this.outcomes_y.range([win_loss_bars_height, 0]);
     }}}
 
     initialize() {{{
@@ -274,14 +274,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .append('svg')
             .attr('class', 'chart')
             .attr('width', this.width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom + 60);
+            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
 
         this.clip = this.svg.append('defs')
             .append('clipPath')
             .attr('id', 'clip')
             .append('rect')
             .attr('width', width)
-            .attr('height', height);
+            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
 
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -298,7 +298,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
-                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
+                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + win_loss_bars_height + 20) + ')')
                 .on('mouseover', () => {
                     this.helper.style('display', null);
                     this.dateLegend.style('display', null);
@@ -347,7 +347,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.timeline_graph = this.svg.append('g')
             .attr('class', 'timeline')
-            .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + 60) + ')');
+            .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + win_loss_bars_height) + ')');
 
         this.legend = this.svg.append('g')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
@@ -561,7 +561,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let width = this.graph_width;
 
         this.svg.attr('width', this.width + margin.left + margin.right);
-        this.svg.attr('height', height + margin.top + margin.bottom + 60);
+        this.svg.attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
         this.clip.attr('width', width);
         //this.clip.attr('height', height);
 
@@ -871,7 +871,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('class', 'win-loss-bar transparent')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
-                .attr('width', (d:RatingEntry) => W(d, 1))
+                .attr('width', (d:RatingEntry) => W(d, 0.999))
                 .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
         );
     }}}
@@ -945,18 +945,19 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return isFinite(x) ? x : 0;
         };
 
+
         this.win_loss_bars[0]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[2]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
         this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);
