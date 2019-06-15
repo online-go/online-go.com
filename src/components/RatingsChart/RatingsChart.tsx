@@ -916,12 +916,33 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
         let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
 
-        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
-        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+        //let max_game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
+
+        const is_selected_games = (d: RatingEntry) => {
+            let start = this.date_extents[0];
+            let end = this.date_extents[1];
+            start = new Date(start.getUTCFullYear(), start.getUTCMonth());
+            end = new Date(end.getUTCFullYear(), end.getUTCMonth());
+            end.setMonth(end.getMonth() + 1);
+
+            return (d.ended.getTime() >= start.getTime() && d.ended.getTime() <= end.getTime());
+        };
+
+        let max_count = Math.max.apply(null, this.games_by_month.map((d:RatingEntry) => is_selected_games(d) ? Math.max(d.count) : 0));
+        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => is_selected_games(d) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
+        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => is_selected_games(d) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+
         this.ratings_y.domain([l * 0.95, u * 1.05]);
+        this.outcomes_y.domain([0, max_count]);
 
         this.range_label.text(format_date(new Date(this.date_extents[0])) + ' - ' + format_date(new Date(this.date_extents[1])));
 
+        const H = (count:number) => {
+            return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+        };
+        const Y = (count:number) => {
+            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+        };
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
@@ -931,33 +952,37 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
 
-            /*
-            let today = new Date();
-            if (is_same_month(d.ended, today)) {
-                end = today;
-                end.setHours(23, 59, 59);
-            }
-            */
-
             let s = start.getTime();
             let e = end.getTime();
             let x = this.ratings_x(s * (1 - alpha) + e * alpha);
             return isFinite(x) ? x : 0;
         };
 
-
         this.win_loss_bars[0]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
+            .attr('x', (d:RatingEntry) => X(d, 0))
+            .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+            .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+            .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins));
         this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
+            .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+            .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+            .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)))
+            .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins));
         this.win_loss_bars[2]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
+            .attr('x', (d:RatingEntry) => X(d, 0))
+            .attr('y', (d:RatingEntry) => Y(d.count))
+            .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+            .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins));
         this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
+            .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+            .attr('y', (d:RatingEntry) => Y(d.count))
+            .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)))
+            .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins));
+        this.win_loss_bars[4]
+            .attr('x', (d:RatingEntry) => X(d, 0))
+            .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
+            .attr('width', (d:RatingEntry) => W(d, 0.999))
+            .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count));
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);
