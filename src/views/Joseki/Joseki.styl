@@ -264,10 +264,15 @@
             }
 
             .moves-made {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                direction: rtl;  // ellipsis on left
+                display: flex;
+                justify-content: flex-start;
+
+                span,a {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    direction: rtl;  // ellipsis on left
+                }
             }
         }
     }

@@ -43,6 +43,7 @@ const position_url = (node_id) => {
 
 const joseki_sources_url = server_url + "josekisources";
 
+// Headers needed to talk to the godojo server.
 let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
     'Content-Type': 'application/json',
