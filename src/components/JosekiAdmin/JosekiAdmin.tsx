@@ -24,6 +24,8 @@ import selectTableHOC from "react-table/lib/hoc/selectTable";
 
 import { Player } from "Player";
 
+import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
+
 interface JosekiAdminProps {
     godojo_headers: any;
     server_url: string;
@@ -227,8 +229,16 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                         }
                     ]}
                 />
+                {this.props.user_can_administer &&
+                    <React.Fragment>
+                        <div>Permissions Admin</div>
+                        <JosekiPermissionsPanel
+                        godojo_headers={this.props.godojo_headers}
+                        server_url={this.props.server_url}
+                        />
+                    </React.Fragment>
+                }
             </div>
-                );
+        );
     }
 }
-

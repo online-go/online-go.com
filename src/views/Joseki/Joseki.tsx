@@ -167,7 +167,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     getUserJosekiPermissions = () => {
-        fetch(server_url + "permissions", {
+        fetch(server_url + "user-permissions", {
             mode: 'cors',
             headers: godojo_headers   // server gets user id from here
         })
