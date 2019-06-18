@@ -861,6 +861,18 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             }
         }
 
+        let have_prediction = false;
+        if (move_ai_review) {
+            have_prediction = true;
+        } else if (
+            'final-move-analysis' in this.ai_review &&
+            this.props.move.move_number === this.ai_review['final-move-analysis']['move']
+        ) {
+            have_prediction = true;
+            console.log(this.ai_review['final-move-analysis']);
+            win_rate = this.ai_review['final-move-analysis'].prediction * 100.0;
+        }
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -893,7 +905,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </span>
                         </div>
                     }
-                    <div className={"progress " + (!move_ai_review ? "invisible" : "")}>
+                    <div className={"progress " + (!have_prediction ? "invisible" : "")}>
                         <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
                         <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
                     </div>
