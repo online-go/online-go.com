@@ -2814,6 +2814,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
 
+        /* Colored stones */
+        if (this.colored_circles) {
+            if (this.colored_circles[j][i]) {
+                let circle = this.colored_circles[j][i];
+                ret += "circle " + circle.color;
+            }
+        }
+
         /* Figure out marks for this spot */
         let pos = this.getMarks(i, j);
         if (!pos) {
