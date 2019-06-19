@@ -374,7 +374,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
     constructor(props) {
         super(props);
-        console.info("Constructing AIReview");
         this.state = {
             loading: true,
             reviewing: false,
@@ -464,7 +463,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                     return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
                 });
-                console.log("List: ", lst);
+                //console.log("List: ", lst);
                 this.setSelectedAIReview(lst[0]);
             } else {
                 post(`games/${game_id}/ai_reviews`, {
@@ -952,10 +951,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.props.move.move_number === this.ai_review['final-move-analysis']['move']
         ) {
             have_prediction = true;
-            win_rate = this.ai_review['final-move-analysis'].prediction * 1.0;
+            win_rate = this.ai_review['final-move-analysis'].prediction;
         }
-
-        console.log(move_ai_review);
 
         return (
             <div className='AIReview'>
