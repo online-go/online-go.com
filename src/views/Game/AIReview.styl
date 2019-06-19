@@ -186,7 +186,6 @@ analysis-prediction-chart-height=100px;
     }
     .prediction {
         text-align: center;
-        overflow: hidden;
 
         display: flex;
         align-items: center;
@@ -199,6 +198,7 @@ analysis-prediction-chart-height=100px;
         .progress {
             flex-grow: 1;
             flex-shrink: 1;
+            overflow: hidden;
         }
         .ai-review-more-info-container {
             flex-grow: 0;
@@ -223,15 +223,27 @@ analysis-prediction-chart-height=100px;
         text-align: center;
     }
     .next-move-coordinates {
-        border: 1px solid #000;
-        themed border-color shade3
+        //border: 1px solid #000;
+        border: 2px solid #000;
+        &.positive {
+            border-color: #00bd0c;
+        }
+        &.negative {
+            border-color: #ff7697;
+        }
+        &.neutral {
+            border-color: #bda100;
+        }
+
+        background-color: #00b0dd;
         border-radius: 0.3rem;
         margin: 0.5rem;
+        color: #000;
 
         display: inline-block;
-        width: 4rem;
+        width: 3rem;
         text-align: center;
-        padding-right: 0.5rem;
+        //padding-right: 0.5rem;
     }
     .next-move-delta {
         display: inline-block;
@@ -239,7 +251,7 @@ analysis-prediction-chart-height=100px;
         text-align: left;
 
         &.negative {
-            themed color reject
+            //themed color reject
         }
         &.positive {
             //themed color success

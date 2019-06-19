@@ -30,7 +30,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
-import {GoMath, MoveTree} from 'ogs-goban';
+import {GoMath, MoveTree, ColoredCircle} from 'ogs-goban';
 import Select from 'react-select';
 import {close_all_popovers, popover} from "popover";
 
@@ -747,8 +747,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
 
         let move_ai_review = null;
+        let next_move_ai_review = null;
         let win_rate = 0.0;
-        let next_prediction = -1.0;
+        let next_win_rate = -1.0;
         let next_move = null;
         let next_move_pretty_coords = "";
         let move_relative_delta = null;
@@ -777,15 +778,18 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
 
         if (move_ai_review) {
-            win_rate = move_ai_review.win_rate * 100;
-            next_prediction = move_ai_review.next_prediction;
+            win_rate = move_ai_review.win_rate;
+            next_win_rate = move_ai_review.win_rate;
             if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
-                next_prediction = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`].win_rate;
+                next_move_ai_review = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`];
+                next_win_rate = next_move_ai_review.win_rate;
             }
-            next_prediction *= 100.0;
+            //next_win_rate *= 100.0;
         }
 
+
         let marks = {};
+        let colored_circles = [];
         let heatmap = null;
         try {
             if (cur_move.trunk) {
@@ -795,14 +799,90 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 }
 
                 if (move_ai_review) {
-                    let variations = move_ai_review.variations.slice(0, 6);
+                    //let variations = move_ai_review.variations.slice(0, 6);
+                    let variations = move_ai_review.variations;
+
+                    let found_next_move = false;
+                    for (let v of variations) {
+                        if (v.move === next_move_pretty_coords) {
+                            found_next_move = true;
+                            break;
+                        }
+                    }
+                    if (!found_next_move && next_move_ai_review) {
+                        variations.push({
+                            move: next_move_pretty_coords,
+                            win_rate: next_win_rate,
+                            moves: "",
+                        });
+                    }
+
                     for (let i = 0 ; i < variations.length; ++i) {
-                        let letter = alphabet[i];
-                        marks[letter] = variations[i].move;
+                        if (variations[i].moves.length > 2 || variations[i].move === next_move_pretty_coords) {
+                            let delta = 0;
+
+                            /*
+                            if (move_ai_review.player_to_move === 'white') {
+                                delta = -1.0 * ((1.0 - variations[i].win_rate) - (move_ai_review.win_rate));
+                            } else {
+                                delta = (variations[i].win_rate) - (move_ai_review.win_rate);
+                            }
+                            */
+
+
+                            if (move_ai_review.player_to_move === 'white') {
+                                delta = -1 * ((1.0 - (variations[i].win_rate)) - (move_ai_review.win_rate));
+                            } else {
+                                delta = (variations[i].win_rate) - (move_ai_review.win_rate);
+                            }
+
+                            if (variations[i].move === next_move_pretty_coords && next_win_rate >= 0) {
+                                delta = ((move_ai_review.win_rate) - next_win_rate);
+                                if (move_ai_review.player_to_move === 'black') {
+                                    delta *= -1.0;
+                                }
+                            }
+
+                            delta *= 100.0;
+
+                            let key = delta.toFixed(1);
+                            if (key === "0.0" || key === "-0.0") {
+                                key = "0";
+                            }
+                            let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
+                            this.props.game.goban.setMark(mv.x, mv.y, key, true);
+
+                            let color:string;
+                            if (delta <= -2) {         // big loss
+                                color = '#ff7697';
+                            } else if (delta < 0) {    // probably negative, but within margin of error
+                                color = '#bda100';
+                            } else {                   // probably positive
+                                color = '#00bd0c';
+                            }
+
+                            let circle:ColoredCircle = {
+                                move: variations[i].move,
+                                color: color,
+                            };
+
+                            if (variations[i].move === next_move_pretty_coords) {
+                                circle.border_width = 0.3;
+                                //circle.border_color = 'rgb(255, 0, 198)';
+                                //circle.border_color = '#ffffff';
+                                circle.border_color = color;
+                                circle.color = '#00b0dd';
+                            }
+
+                            colored_circles.push(circle);
+                        }
+
                     }
+                    /*
                     if (next_move) {
-                        marks["triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
+                        marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
                     }
+                    */
                     heatmap = this.normalizeHeatmap(move_ai_review.heatmap);
                 }
             }
@@ -849,16 +929,19 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         try {
             this.props.game.goban.setMarks(marks, true);
-            this.props.game.goban.setHeatmap(heatmap);
+            this.props.game.goban.setHeatmap(heatmap, true);
+            this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             // ignore
         }
 
-        if (next_prediction >= 0) {
-            move_relative_delta = next_prediction - win_rate;
+        if (next_win_rate >= 0) {
+            move_relative_delta = next_win_rate - win_rate;
+            //console.log(move_ai_review.move, this.props.game.goban.engine.colorToMove(), move_ai_review.player_to_move, win_rate, next_win_rate);
             if (this.props.game.goban.engine.colorToMove() === "white") {
                 move_relative_delta = -move_relative_delta;
             }
+            move_relative_delta *= 100.0;
         }
 
         let have_prediction = false;
@@ -869,9 +952,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.props.move.move_number === this.ai_review['final-move-analysis']['move']
         ) {
             have_prediction = true;
-            console.log(this.ai_review['final-move-analysis']);
-            win_rate = this.ai_review['final-move-analysis'].prediction * 100.0;
+            win_rate = this.ai_review['final-move-analysis'].prediction * 1.0;
         }
+
+        console.log(move_ai_review);
 
         return (
             <div className='AIReview'>
@@ -961,9 +1045,15 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {move_ai_review && next_move && move_relative_delta !== null &&
                     <div className='next-move-delta-container'>
+                        {/*
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
                             <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
+                        </span>
+                        */}
+                        <span className={"next-move-coordinates "
+                            + (move_relative_delta <= -2 ? 'negative' : (move_relative_delta < 0 ? 'neutral' : 'positive')) }>
+                            {next_move_pretty_coords}
                         </span>
                         <span className={"next-move-delta " +
                             (move_relative_delta <= -0.1 ? 'negative' : (move_relative_delta >= 0.1 ? 'positive' : ''))}>
