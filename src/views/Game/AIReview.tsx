@@ -943,6 +943,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             move_relative_delta *= 100.0;
         }
 
+
         let have_prediction = false;
         if (move_ai_review) {
             have_prediction = true;
@@ -953,6 +954,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             have_prediction = true;
             win_rate = this.ai_review['final-move-analysis'].prediction;
         }
+
+        win_rate *= 100.0;
 
         return (
             <div className='AIReview'>
