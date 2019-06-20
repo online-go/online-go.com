@@ -443,11 +443,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     }
 
                     if (a.playouts - b.playouts !== 0) {
-                        return a.playouts - b.playouts;
+                        return b.playouts - a.playouts;
                     }
 
                     if (a.visits - b.visits !== 0) {
-                        return a.visits - b.visits;
+                        return b.visits - a.visits;
                     }
 
                     if (a.finished && !b.finished) {
@@ -1036,8 +1036,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {((!this.state.full && !this.state.fast) || null) &&
                     <div className='pending'>
-                        {interpolate(_("AI review has been queued for processing. Current queue position: {{queue_position}} out of {{queue_pending}}"),
-                            {queue_position: this.state.queue_position + 1, queue_pending: this.state.queue_pending})}
+                        {_("AI review has been queued for processing.")}
                         <i className='fa fa-desktop slowstrobe'></i>
                     </div>
                 }
