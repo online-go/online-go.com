@@ -211,15 +211,26 @@
             visibility: hidden;
         }
 
-        .move-type-selection {
+        .move-attributes {
+            display: flex;
+            justify-content: space-between;
+
             padding-top: 1em;
             padding-bottom: 1em;
+            padding-right: 1em;
 
-             span {
-                margin-right: 0.5em;
+            .move-type-selection {
+                span {
+                    margin-right: 0.5em;
+                }
+                button {
+                    margin-left 1em;
+                }
             }
-            button {
-                margin-left 1em;
+            .variation-order-select {
+                span {
+                    margin-right: 0.5em;
+                }
             }
         }
 

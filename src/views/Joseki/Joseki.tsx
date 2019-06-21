@@ -287,18 +287,19 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    // Draw all the positions that are joseki moves that we know about from the server (array of moves from the server)
+    // Draw all the variations that we know about from the server (array of moves from the server)
     renderJosekiPosition = (next_moves: Array<any>) => {
-        //console.log("rendering josekis ", next_moves);
+        console.log("rendering josekis ", next_moves);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
-        next_moves.forEach((option, index) => {
-            const id = GoMath.num2char(index).toUpperCase();
-            new_options[id] = {};
-            new_options[id].move = GoMath.encodePrettyCoord(option["placement"], this.goban.height);
-            new_options[id].color = ColorMap[option["category"]];
+        next_moves.forEach((option) => {
+            const label = option['variation_label'];
+            new_options[label] = {
+                move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
+                color: ColorMap[option["category"]]
+            };
+            this.goban.setColoredMarks(new_options);
         });
-        this.goban.setColoredMarks(new_options);
     }
 
     /* This is called every time a move is played on the Goban
@@ -590,7 +591,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    saveNewPositionInfo = (move_type, description, joseki_source_id) => {
+    saveNewPositionInfo = (move_type, variation_label, description, joseki_source_id) => {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
@@ -598,13 +599,18 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ description: description, category: move_type.toUpperCase(), joseki_source_id: joseki_source_id })
-            }).then(res => res.json())
-                .then(body => {
-                    console.log("Server response to sequence PUT:", body);
-                    this.processNewJosekiPosition(body);
-                    this.setExploreMode();
-                });
+                body: JSON.stringify({
+                    description: description,
+                    variation_label: variation_label,
+                    category: move_type.toUpperCase(),
+                    joseki_source_id: joseki_source_id })
+            })
+            .then(res => res.json())
+            .then(body => {
+                console.log("Server response to sequence PUT:", body);
+                this.processNewJosekiPosition(body);
+                this.setExploreMode();
+            });
         }
         else {
             // Here the person has added one or more moves then clicked "save"
@@ -613,27 +619,32 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 method: 'post',
                 mode: 'cors',
                 headers: godojo_headers,
-                body: JSON.stringify({ sequence: this.state.move_string, category: move_type , joseki_source_id: joseki_source_id})
+                body: JSON.stringify({
+                    sequence: this.state.move_string,
+                    category: move_type })
             })
             .then(res => res.json())
             .then(body => {
                 console.log("Server response to sequence POST:", body);
                 this.processNewJosekiPosition(body);
 
-                // Now we can save the description on the final new position, if they supplied one
-                if (description !== "") {
-                    fetch(position_url(this.state.current_node_id), {
-                        method: 'put',
-                        mode: 'cors',
-                        headers: godojo_headers,
-                        body: JSON.stringify({ description: description, category: "" })
-                    }).then(res => res.json())
-                        .then(body => {
-                            console.log("Server response to description PUT:", body);
-                            this.processNewJosekiPosition(body);
-                            this.setExploreMode();
-                        });
-                }
+                // Now we can save the fields that apply only to the final position
+
+                fetch(position_url(this.state.current_node_id), {
+                    method: 'put',
+                    mode: 'cors',
+                    headers: godojo_headers,
+                    body: JSON.stringify({
+                        description: description,
+                        variation_label: variation_label,
+                        joseki_source_id: joseki_source_id })
+                })
+                .then(res => res.json())
+                .then(body => {
+                    console.log("Server response to description PUT:", body);
+                    this.processNewJosekiPosition(body);
+                    this.setExploreMode();
+                });
             });
         }
     }
@@ -647,9 +658,7 @@ interface PlayProps {
 class PlayPane extends React.Component<PlayProps, any> {
     constructor(props) {
         super(props);
-
-        this.state = {
-        };
+        this.state = {};
     }
 
     iconFor = (move_type) => {
@@ -685,7 +694,7 @@ interface EditProps {
     category: string;
     joseki_source_id: number;
     contributor: number;
-    save_new_info: (move_type, description, joseki_source) => void;
+    save_new_info: (move_type, variation_label, description, joseki_source) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -711,13 +720,14 @@ class EditPane extends React.Component<EditProps, any> {
             prop_category: this.props.category,
             prop_description: this.props.description,
             joseki_source_list: [],
-            joseki_source: this.props.joseki_source_id
+            joseki_source: this.props.joseki_source_id,
+            variation_label: ' '
         };
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
-        console.log("gdsfp: ", nextProps, prevState);
         // Detect description/category changes (resulting from clicking on the board), so we can update
+        // console.log("gdsfp: ", nextProps, prevState);
         if (nextProps.description !== prevState.prop_description ||
             nextProps.category !== prevState.prop_category) {
             return {
@@ -745,7 +755,11 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     saveNewInfo = (e) => {
-        this.props.save_new_info(this.state.move_type, this.state.new_description, this.state.joseki_source);
+        this.props.save_new_info(
+            this.state.move_type,
+            this.state.variation_label,
+            this.state.new_description,
+            this.state.joseki_source);
     }
 
     promptForJosekiSource = (e) => {
@@ -753,7 +767,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     addJosekiSource = (description, url) => {
-        console.log("CONTRIBUTOR", this.props.contributor);
+        //console.log("CONTRIBUTOR:", this.props.contributor);
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
@@ -772,6 +786,10 @@ class EditPane extends React.Component<EditProps, any> {
         });
     }
 
+    onLabelChange = (e) => {
+        this.setState({ variation_label: e.target.value});
+    }
+
     render = () => {
         console.log("rendering with ", this.state.move_type, this.state.new_description);
 
@@ -788,13 +806,25 @@ class EditPane extends React.Component<EditProps, any> {
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
 
+        let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', '_'].map((label, i) => (
+            <option key={i} value={label}>{label}</option>
+        ));
+
         return (
             <div className="edit-container">
-                <div className="move-type-selection">
-                    <span>{_("This sequence is: ")}</span>
-                    <select value={this.state.move_type} onChange={this.onTypeChange}>
-                        {selections}
-                    </select>
+                <div className="move-attributes">
+                    <div className="move-type-selection">
+                        <span>{_("This sequence is: ")}</span>
+                        <select value={this.state.move_type} onChange={this.onTypeChange}>
+                            {selections}
+                        </select>
+                    </div>
+                    <div className="variation-order-select">
+                        <span>{_("Variation label:")}</span>
+                        <select value={this.state.variation_label} onChange={this.onLabelChange}>
+                            {labels}
+                        </select>
+                    </div>
                 </div>
                 <div className="joseki-source-edit">
                     <div>Source:</div>
@@ -807,8 +837,11 @@ class EditPane extends React.Component<EditProps, any> {
                 </div>
                 <div className="description-edit">
 
-                    <div className="edit-label">Position description:</div>
+                    <div className="edit-label">{_("Position description")}:</div>
+
+                    {/* Here is the edit box for the markdown source of the description */}
                     <textarea onChange={this.handleEditInput} value={this.state.new_description} />
+
                     <div className="position-edit-button">
                         <button className="btn xs primary" onClick={this.saveNewInfo}>
                             {_("Save")}
@@ -816,13 +849,12 @@ class EditPane extends React.Component<EditProps, any> {
                     </div>
                     <div className="edit-label">Preview:</div>
 
-
                     {/* The actual description always rendered here */}
                     <ReactMarkdown source={this.state.new_description} />
 
-                    {/* Here is the edit box for the markdown source of the description */}
+                    {/* and a placeholder for the description when the markdown is empty*/}
                     {this.state.new_description.length === 0 ?
-                        <div className="edit-label">(position description)</div> : ""
+                        <div className="edit-label">({_("position description")})</div> : ""
                     }
                 </div>
             </div>

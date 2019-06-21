@@ -52,10 +52,18 @@
         }
     }
 
-    .user-admin {
+    .bottom-admin-stuff {
         display: flex;
-        input {
-            width: 6em;
+        justify-content: space-between;
+
+        .user-admin {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-info {
+            flex-grow: 1;
+            text-align: right;
         }
     }
 }

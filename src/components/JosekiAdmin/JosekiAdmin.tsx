@@ -48,11 +48,23 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             any_selected: false,
             server_status: "",
             selections: new Map(),
-            reversions: new Map()
+            reversions: new Map(),
+            schema_version: ''
         };
     }
 
-    revertAllSelectedChanges = () => {
+    componentDidMount = () => {
+        fetch(this.props.server_url + "appinfo/", {
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            this.setState({schema_version: body.schema_version});
+        });
+    }
+
+    SelectedChanges = () => {
         // set up to revert each selected change one at a time...
         let reversions = new Map();
         this.state.selections.forEach((selected, selection) => {
@@ -152,7 +164,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             <div className="audit-container">
                 {this.props.user_can_administer &&
                  <div className="audit-actions">
-                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertAllSelectedChanges}>
+                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertSelectedChanges}>
                         {_("Revert")}
                     </button>
                 </div>
@@ -230,13 +242,18 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     ]}
                 />
                 {this.props.user_can_administer &&
-                    <React.Fragment>
+                <div className="bottom-admin-stuff">
+                    <div className="user-admin">
                         <div>Permissions Admin</div>
                         <JosekiPermissionsPanel
-                        godojo_headers={this.props.godojo_headers}
-                        server_url={this.props.server_url}
+                            godojo_headers={this.props.godojo_headers}
+                            server_url={this.props.server_url}
                         />
-                    </React.Fragment>
+                    </div>
+                    <div className="admin-info">
+                        Schema version: {this.state.schema_version}
+                    </div>
+                </div>
                 }
             </div>
         );
