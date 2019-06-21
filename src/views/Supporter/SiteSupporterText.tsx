@@ -58,25 +58,25 @@ export function SiteSupporterText(props) {
                         <tr>
                             <th>{_("Supporter")}</th>
                             <td>15x192</td>
-                            <td>200</td>
+                            <td>250</td>
                             <td>{pgettext("How strong an AI engine is", "Strong Dan level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Kyu Supporter")}</th>
                             <td>15x192</td>
-                            <td>800</td>
+                            <td>1000</td>
                             <td>{pgettext("How strong an AI engine is", "Professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Dan Supporter")}</th>
-                            <td>15x192</td>
-                            <td>1600</td>
+                            <td>40x256</td>
+                            <td>800</td>
                             <td>{pgettext("How strong an AI engine is", "Strong professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Pro Supporter")}</th>
                             <td>40x256</td>
-                            <td>1600</td>
+                            <td>2000</td>
                             <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td>
                         </tr>
                     </tbody>
