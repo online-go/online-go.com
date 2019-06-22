@@ -42,6 +42,7 @@ const position_url = (node_id) => {
 };
 
 const joseki_sources_url = server_url + "josekisources";
+const tags_url = server_url + "tags";
 
 // Headers needed to talk to the godojo server.
 let godojo_headers = {        // note: user JWT is added to this later
@@ -115,8 +116,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
             user_can_administer: false,
             user_can_comment: false,
 
+            variation_label: '_',
             move_type_sequence: [],
-            joseki_source: null as {}
+            joseki_source: null as {},
+            tag: null as {}
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -274,10 +277,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             position_description: position.description,
             contributor_id: position.contributor,
+            variation_label: position.variation_label, // needed for when we edit this position
             current_move_category: position.category,
             current_node_id: position.node_id,
             current_comment_count: position.comment_count,
-            joseki_source: position.joseki_source
+            joseki_source: position.joseki_source,
+            tag: position.tags !== null ? position.tags[0] : null // the back end supports multiple, but we only support one
         });
         this.last_server_placement = position.placement;
         this.next_moves = position.next_moves;
@@ -568,6 +573,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     position_id={this.state.current_node_id}
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
+                    tag={this.state.tag}
                 />
             );
         }
@@ -576,7 +582,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <EditPane
                     category={this.state.current_move_category}
                     description={this.state.position_description}
+                    variation_label={this.state.variation_label}
                     joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 0}
+                    tag_id={this.state.tag ? this.state.tag.id : 0}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
                 />
@@ -591,7 +599,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    saveNewPositionInfo = (move_type, variation_label, description, joseki_source_id) => {
+    saveNewPositionInfo = (move_type, variation_label, tag_id, description, joseki_source_id) => {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
@@ -602,6 +610,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 body: JSON.stringify({
                     description: description,
                     variation_label: variation_label,
+                    tags: tag_id === null ? null : [tag_id],
                     category: move_type.toUpperCase(),
                     joseki_source_id: joseki_source_id })
             })
@@ -637,6 +646,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
+                        tags: tag_id === null ? null : [tag_id],
                         joseki_source_id: joseki_source_id })
                 })
                 .then(res => res.json())
@@ -685,16 +695,18 @@ class PlayPane extends React.Component<PlayProps, any> {
     }
 }
 
-// This pane enables the user to edit the description and category of the current position
+// This pane enables the user to edit the description and move attributes of the current position
 // It doesn't care what node we are on.  If the description or category of the node changes due to a click,
 // this component just updates what it is showing so they can edit it
 
 interface EditProps {
     description: string;
     category: string;
+    variation_label: string;
     joseki_source_id: number;
+    tag_id: number;
     contributor: number;
-    save_new_info: (move_type, variation_label, description, joseki_source) => void;
+    save_new_info: (move_type, variation_label, tag_id, description, joseki_source) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -702,6 +714,18 @@ class EditPane extends React.Component<EditProps, any> {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
+            new_description: this.props.description,
+            prop_category: this.props.category,
+            prop_description: this.props.description,
+            joseki_source_list: [],
+            joseki_source: this.props.joseki_source_id,
+            tag_list: [],
+            tag_id: this.props.tag_id,
+            variation_label: this.props.variation_label || 'A'
+        };
 
         // Get the list of joseki sources
         fetch(joseki_sources_url, {
@@ -714,15 +738,21 @@ class EditPane extends React.Component<EditProps, any> {
             this.setState({joseki_source_list: [{id: 0, description: "(unknown)"}, ...body.sources]});
         });
 
-        this.state = {
-            move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
-            new_description: this.props.description,
-            prop_category: this.props.category,
-            prop_description: this.props.description,
-            joseki_source_list: [],
-            joseki_source: this.props.joseki_source_id,
-            variation_label: ' '
-        };
+        // Get the list of position tags
+        // Get the list of joseki sources
+        fetch(tags_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            console.log("Server response to tags GET:", body);
+            this.setState({tag_list: [{id: 0, description: ""}, ...body.tags]});
+            // Propose the most preferred (typically "position is settled") tag for a new position.
+            if (this.props.category === "new") {
+                this.setState({tag_id: body.tags[0].id});
+            }
+        });
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
@@ -750,6 +780,10 @@ class EditPane extends React.Component<EditProps, any> {
         this.setState({ joseki_source: e.target.value });
     }
 
+    onTagChange = (e) => {
+        this.setState({ tag_id: e.target.value });
+    }
+
     handleEditInput = (e) => {
         this.setState({ new_description: e.target.value });
     }
@@ -758,6 +792,7 @@ class EditPane extends React.Component<EditProps, any> {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
+            this.state.tag_id,
             this.state.new_description,
             this.state.joseki_source);
     }
@@ -791,7 +826,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     render = () => {
-        console.log("rendering with ", this.state.move_type, this.state.new_description);
+        console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         let selections = Object.keys(MoveCategory).map((selection, i) => (
@@ -802,12 +837,16 @@ class EditPane extends React.Component<EditProps, any> {
             selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
         }
 
+        let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', '_'].map((label, i) => (
+            <option key={i} value={label}>{label}</option>
+        ));
+
         let sources = this.state.joseki_source_list.map((selection, i) => (
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
 
-        let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', '_'].map((label, i) => (
-            <option key={i} value={label}>{label}</option>
+        let tags = this.state.tag_list.map((tag, i) => (
+            <option key={i} value={tag["id"]}>{_(tag["description"])}</option>
         ));
 
         return (
@@ -825,14 +864,23 @@ class EditPane extends React.Component<EditProps, any> {
                             {labels}
                         </select>
                     </div>
-                </div>
-                <div className="joseki-source-edit">
-                    <div>Source:</div>
-                    <div className="joseki-source-edit-controls">
-                        <select value={this.state.joseki_source} onChange={this.onSourceChange}>
-                            {sources}
-                        </select>
-                        <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
+
+                    <div className="joseki-source-edit">
+                        <div>Source:</div>
+                        <div className="joseki-source-edit-controls">
+                            <select value={this.state.joseki_source} onChange={this.onSourceChange}>
+                                {sources}
+                            </select>
+                            <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
+                        </div>
+                    </div>
+                    <div className="tag-edit">
+                        <div>Tag:</div>
+                        <div className="tag-edit-controls">
+                            <select value={this.state.tag_id} onChange={this.onTagChange}>
+                                {tags}
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div className="description-edit">
@@ -870,6 +918,7 @@ interface ExploreProps {
     comment_count: number;
     can_comment: boolean;
     joseki_source: {url: string, description: string};
+    tag: {};
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
@@ -994,6 +1043,10 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                             <div className="position-description">
                                 <ReactMarkdown source={this.props.description} />
                             </div>
+                            {this.props.tag &&
+                            <div className="position-tag">
+                                <span>{this.props.tag['description']}</span>
+                            </div>}
                             {this.props.joseki_source !== null && this.props.joseki_source.url.length > 0 &&
                             <div className="position-joseki-source">
                                 <span>Source:</span><a href={this.props.joseki_source.url}>{this.props.joseki_source.description}</a>
