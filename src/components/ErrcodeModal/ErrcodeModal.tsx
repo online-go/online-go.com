@@ -52,6 +52,10 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
                 body = <div>{_("Sorry that name might be offensive to some players, please pick a different one")}</div>;
                 break;
 
+            case 'username_reserved':
+                body = <div>{_("Sorry that name has been reserved, please pick a different one")}</div>;
+                break;
+
             case 'ai_review_must_be_site_supporter':
                 body = <div>{_("To begin an AI review, you must be a site supporter.")}</div>;
                 break;
