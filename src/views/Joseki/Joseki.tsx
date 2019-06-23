@@ -34,11 +34,17 @@ import { JosekiAdmin } from "JosekiAdmin";
 
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
+import {JosekiVariationFilter} from "JosekiVariationFilter";
+import { tickStep } from "d3";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
-const position_url = (node_id) => {
-    return server_url + "position?id=" + node_id;
+const position_url = (node_id, variation_filter) => {
+    let position_url = server_url + "position?id=" + node_id;
+    if (variation_filter !== null && variation_filter.contributor !== 0) {
+        position_url += "&cfilterid=" + variation_filter.contributor;
+    }
+    return position_url;
 };
 
 const joseki_sources_url = server_url + "josekisources";
@@ -119,7 +125,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             variation_label: '_',
             move_type_sequence: [],
             joseki_source: null as {},
-            tag: null as {}
+            tag: null as {},
+            variation_filter: {contributor: 0, tag: 0}
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -207,12 +214,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     fetchNextMovesFor = (node_id) => {
+        this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
+    }
+
+    fetchNextFilteredMovesFor = (node_id, variation_filter) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
         this.setState({position_description: ""});
-        console.log("fetching for ", node_id); // visual indication that we are processing their click
-        fetch(position_url(node_id), {
+        console.log("fetching position for node", node_id); // visual indication that we are processing their click
+        fetch(position_url(node_id, variation_filter), {
             mode: 'cors',
             headers: godojo_headers
         })
@@ -262,7 +273,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
             this.goban.enableStonePlacement();
         });
-}
+    }
 
     loadSequenceToBoard = (sequence: string) => {
         // We expect sequence to come from the server in the form ".root.K10.L11"
@@ -305,6 +316,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             };
             this.goban.setColoredMarks(new_options);
         });
+        this.goban.redraw();
     }
 
     /* This is called every time a move is played on the Goban
@@ -485,8 +497,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
+    updateContributorFilter = (cid) => {
+        const new_filter = {contributor: cid, tag: this.state.variation_filter.tag};
+        this.setState({variation_filter: new_filter});
+        this.fetchNextFilteredMovesFor(this.state.current_node_id, new_filter);
+    }
+
     render() {
-        console.log("rendering ", this.state.move_string);
+        console.log("Joseki app rendering ", this.state.move_string);
         return (
             <div className={"Joseki"}>
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
@@ -552,6 +570,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     )
 
     renderModeMainPane = () => {
+        console.log("Mode pane render ", this.state.variation_filter);
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
@@ -574,6 +593,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
                     tag={this.state.tag}
+                    set_contributor_filter = {this.updateContributorFilter}
+                    filter_active = {this.state.variation_filter.contributor !== 0 || this.state.variation_filter.tag !== 0}
+                    current_filter = {this.state.variation_filter}
                 />
             );
         }
@@ -603,7 +625,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
-            fetch(position_url(this.state.current_node_id), {
+            fetch(position_url(this.state.current_node_id, null), {
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers,
@@ -639,7 +661,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                 // Now we can save the fields that apply only to the final position
 
-                fetch(position_url(this.state.current_node_id), {
+                fetch(position_url(this.state.current_node_id, null), {
                     method: 'put',
                     mode: 'cors',
                     headers: godojo_headers,
@@ -919,6 +941,9 @@ interface ExploreProps {
     can_comment: boolean;
     joseki_source: {url: string, description: string};
     tag: {};
+    set_contributor_filter: any;
+    filter_active: boolean;
+    current_filter: {}
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
@@ -982,7 +1007,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.setState({ commentary: commentary });
     }
 
-    hideComments = () => {
+    hideExtraInfo = () => {
         this.setState({ extra_info_selected: "none" });
     }
 
@@ -1006,8 +1031,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.setState({ audit_log: audit_log_dto});
     }
 
-    hideAudit = () => {
-        this.setState({ extra_info_selected: "none" });
+    showFilterSelector = () => {
+        this.setState({ extra_info_selected: "variation-filter" });
     }
 
     onCommentChange = (e) => {
@@ -1061,6 +1086,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
                     {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
                         <React.Fragment>
+                            <i className={"fa fa-filter" + (this.props.filter_active ? " filter-active" : "")}
+                                    onClick={this.showFilterSelector} />
                             {(this.props.comment_count !== 0 ?
                                 <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
                                 <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)}
@@ -1072,9 +1099,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                     {this.state.extra_info_selected === "comments" &&
                         <React.Fragment>
                             <div className="discussion-container">
-                                <div className="discussion-header">
+                                <div className="extra-info-header">
                                     <div>Discussion:</div>
-                                    <i className="fa fa-caret-right" onClick={this.hideComments} />
+                                    <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                 </div>
                                 <div className="discussion-lines">
                                     {this.state.commentary.map((comment, idx) =>
@@ -1095,9 +1122,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                     {this.state.extra_info_selected === "audit-log" &&
                         <React.Fragment>
                             <div className="audit-container">
-                                <div className="audit-header">
+                                <div className="extra-info-header">
                                         <div>Audit Log:</div>
-                                        <i className="fa fa-caret-right" onClick={this.hideAudit} />
+                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                 </div>
                                 <div className="audit-entries">
                                     {this.state.audit_log.map((audit, idx) =>
@@ -1110,6 +1137,23 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        </React.Fragment>
+                    }
+
+                    {this.state.extra_info_selected === "variation-filter" &&
+                        <React.Fragment>
+                            <div className="filter-container">
+                                <div className="extra-info-header">
+                                        <div>Variation filter:</div>
+                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
+                                </div>
+                                <JosekiVariationFilter
+                                    contributor_list_url={server_url + "contributors"}
+                                    current_filter = {this.props.current_filter}
+                                    godojo_headers={godojo_headers}
+                                    set_contributor_filter={this.props.set_contributor_filter}
+                                />
                             </div>
                         </React.Fragment>
                     }

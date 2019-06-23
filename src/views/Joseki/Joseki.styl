@@ -148,7 +148,8 @@
                 }
                 .position-tag span {
                     margin: auto;
-                    padding: 2px
+                    padding-left: 3px;
+                    padding-right: 3px;
                     border-radius: 3px;
                     themed background-color shade4;
                 }
@@ -166,6 +167,7 @@
 
             .extra-info-column {
                 margin-top: 3em;
+
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
@@ -173,8 +175,10 @@
                 justify-content: space-between; // put chat input at the bottom
                 overflow: auto;
 
-                .discussion-header {
+                .extra-info-header {
                     display: flex;
+                    padding-left: 3px;
+
                     flex-direction: row;
                     justify-content: space-between;
                     padding-right: 0.5em;
@@ -182,19 +186,20 @@
                     themed background-color shade4;
                 }
 
+                .comment-header, .audit-header {
+                    display: flex;
+                    padding-left: 3px;
+                    flex-direction: row;
+                    justify-content: space-between;
+                }
+
                 .discussion-lines {
                     overflow-y: auto;
                 }
 
-                .comment-header, .audit-header {
-                    display: flex;
-                    flex-direction: row;
-                    justify-content: space-between;
-
-                    .comment-date, .audit-date {
-                        font-size: smaller;
-                        padding-right: 0.5em;
-                    }
+                .comment-date, .audit-date {
+                    font-size: smaller;
+                    padding-right: 0.5em;
                 }
 
                 .comment-text {
@@ -206,9 +211,15 @@
                     resize: none;
                 }
 
-                .fa-comments-o, .fa-comment-o, .fa-history {
+                .fa {
                     align-self: flex-end;
-                    padding-right: 0.5em;
+                    margin-right: 0.5em;
+                    padding: 3px;
+                }
+
+                .filter-active {
+                    background: #0062e9;
+                    border-radius: 4px;
                 }
             }
         }
