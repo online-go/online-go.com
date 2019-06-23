@@ -244,7 +244,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                 const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
 
-                if ((body.labels.includes("joseki") || good_moves.length === 0) && !this.played_mistake) {
+                if ((good_moves.length === 0) && !this.played_mistake) {
                     this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: "** Joseki!"}]});
                 }
 
@@ -943,7 +943,7 @@ interface ExploreProps {
     tag: {};
     set_contributor_filter: any;
     filter_active: boolean;
-    current_filter: {}
+    current_filter: {};
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
