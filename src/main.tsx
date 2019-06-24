@@ -53,7 +53,7 @@ if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) 
         Sentry.setExtra("language", ogs_current_language || 'unknown');
         Sentry.setExtra("version", ogs_version || 'dev');
     } catch (e) {
-        console.error(e)
+        console.error(e);
     }
 //}
 
