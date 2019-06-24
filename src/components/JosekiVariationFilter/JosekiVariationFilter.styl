@@ -17,11 +17,17 @@
 
 .joseki-variation-filter {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
 
     padding: 3px;
 
-    .contributor-label {
+    .filter-set {
+        margin-bottom: 0.5em;
+        select {
+            margin-left: 0.5em;
+        }
+    }
+    .filter-label {
         margin-right: 0.5em;
     }
 }

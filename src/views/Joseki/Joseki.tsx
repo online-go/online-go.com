@@ -41,8 +41,11 @@ const server_url = data.get("joseki-url", "/godojo/");
 
 const position_url = (node_id, variation_filter) => {
     let position_url = server_url + "position?id=" + node_id;
-    if (variation_filter !== null && variation_filter.contributor !== 0) {
-        position_url += "&cfilterid=" + variation_filter.contributor;
+    if (variation_filter !== null) {
+        position_url +=
+            "&cfilterid=" + variation_filter.contributor +
+            "&tfilterid=" + variation_filter.tag +
+            "&sfilterid=" + variation_filter.source;
     }
     return position_url;
 };
@@ -126,7 +129,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_type_sequence: [],
             joseki_source: null as {},
             tag: null as {},
-            variation_filter: {contributor: 0, tag: 0}
+            variation_filter: {contributor: 0, tag: 0, source: 0}
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -206,6 +209,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.goban.setSquareSizeBasedOnDisplayWidth(
             Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
         );
+        this.goban.redraw();
     }
 
     loadPosition = (node_id) => {
@@ -497,10 +501,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    updateContributorFilter = (cid) => {
-        const new_filter = {contributor: cid, tag: this.state.variation_filter.tag};
-        this.setState({variation_filter: new_filter});
-        this.fetchNextFilteredMovesFor(this.state.current_node_id, new_filter);
+    updateVariationFilter = (filter) => {
+        console.log("update filter:", filter);
+        this.setState({variation_filter: filter});
+        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     }
 
     render() {
@@ -593,8 +597,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
                     tag={this.state.tag}
-                    set_contributor_filter = {this.updateContributorFilter}
-                    filter_active = {this.state.variation_filter.contributor !== 0 || this.state.variation_filter.tag !== 0}
+                    set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
                 />
             );
@@ -941,9 +944,8 @@ interface ExploreProps {
     can_comment: boolean;
     joseki_source: {url: string, description: string};
     tag: {};
-    set_contributor_filter: any;
-    filter_active: boolean;
-    current_filter: {};
+    set_variation_filter: any;
+    current_filter: {contributor: number, tag: number, source: number};
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
@@ -1060,6 +1062,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     render = () => {
+        const filter_active =
+            this.props.current_filter.contributor !== 0 || this.props.current_filter.tag !== 0 || this.props.current_filter.source !== 0;
         return (
             <div className="position-details">
                 <div className="description-column">
@@ -1086,7 +1090,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
                     {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
                         <React.Fragment>
-                            <i className={"fa fa-filter" + (this.props.filter_active ? " filter-active" : "")}
+                            <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
                                     onClick={this.showFilterSelector} />
                             {(this.props.comment_count !== 0 ?
                                 <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
@@ -1150,9 +1154,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                 </div>
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
+                                    tag_list_url = {server_url + "tags"}
+                                    source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
                                     godojo_headers={godojo_headers}
-                                    set_contributor_filter={this.props.set_contributor_filter}
+                                    set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
                         </React.Fragment>

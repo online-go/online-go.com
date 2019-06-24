@@ -19,12 +19,16 @@ import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 
 import * as player_cache from "player_cache";
+import { tickStep } from "d3";
+import { triggerAsyncId } from "async_hooks";
 
 interface JosekiVariationFilterProps {
     godojo_headers: any;
     contributor_list_url: string;
-    set_contributor_filter: any;
-    current_filter: {};
+    tag_list_url: string;
+    source_list_url: string;
+    set_variation_filter: any;
+    current_filter: {contributor: number, tag: number, source: number};
 }
 
 export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, any> {
@@ -32,7 +36,11 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         super(props);
         this.state = {
             contributor_list: [],
-            selected_contributor: this.props.current_filter['contributor']
+            tag_list: [],
+            source_list: [],
+            selected_contributor: this.props.current_filter['contributor'],
+            selected_tag: this.props.current_filter['tag'],
+            selected_source: this.props.current_filter['source']
         };
     }
 
@@ -44,35 +52,67 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to contributors GET:", body);
+            //console.log("Server response to contributors GET:", body);
             let contributor_list = [];
             body.forEach((id, idx) => {
-                console.log("Looking up", id, idx);
+                //console.log("Looking up player", id, idx);
                 const player = player_cache.lookup(id);
                 contributor_list[idx] = {resolved: player !== null, player: player === null ? id : player};
 
                 if (player === null) {
-                    console.log("fetching", id, idx);
+                    //console.log("fetching player", id, idx);
                     player_cache.fetch(id).then((p) => {
-                        console.log("fetched", p, id, idx); // by some javascript miracle this is the correct value of idx
+                        //console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
                         let contributor_list = [...this.state.contributor_list];
                         contributor_list[idx] = {resolved: true, player: p};
-                        console.log("setting ", contributor_list);
                         this.setState({contributor_list});
                     });
                 }
             });
             this.setState({contributor_list});
         });
+
+        fetch(this.props.tag_list_url, {
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            // console.log("Server response to tag GET:", body);
+            this.setState({tag_list: body.tags});
+        });
+
+        fetch(this.props.source_list_url, {
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            //console.log("Server response to source GET:", body);
+            this.setState({source_list: body.sources});
+        });
     }
 
     onContributorChange = (e) => {
         this.setState({selected_contributor: e.target.value});
-        this.props.set_contributor_filter(parseInt(e.target.value));
+        this.props.set_variation_filter({...this.props.current_filter, contributor: parseInt(e.target.value)});
+    }
+
+    onTagChange = (e) => {
+        this.setState({selected_tag: e.target.value});
+        this.props.set_variation_filter({...this.props.current_filter, tag: parseInt(e.target.value)});
+    }
+
+    onSourceChange = (e) => {
+        this.setState({selected_source: e.target.value});
+        this.props.set_variation_filter({...this.props.current_filter, source: parseInt(e.target.value)});
     }
 
     render() {
-        console.log("Variation filter...", this.state.contributor_list);
+        console.log("Variation filter render");
+        // console.log("contributors", this.state.contributor_list);
+        // console.log("tags", this.state.tag_list);
+        // console.log("sources", this.state.source_list);
 
         let contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved) {
@@ -85,12 +125,34 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
         contributors.unshift(<option key={-1} value={0}>({_("none")})</option>);
 
+        let tags = this.state.tag_list.map((t, i) => (<option key={i} value={t.id}>{t.description}</option>));
+        tags.unshift(<option key={-1} value={0}>({_("none")})</option>);
+
+        let sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
+        sources.unshift(<option key={-1} value={0}>({_("none")})</option>);
+
         return (
             <div className="joseki-variation-filter">
-                <div className="contributor-label">Filter by Contributor</div>
-                <select value={this.state.selected_contributor} onChange={this.onContributorChange}>
-                            {contributors}
-                </select>
+                <div className="filter-set">
+                    <div className="filter-label">Filter by Contributor</div>
+                    <select value={this.state.selected_contributor} onChange={this.onContributorChange}>
+                                {contributors}
+                    </select>
+                </div>
+
+                <div className="filter-set">
+                    <div className="filter-label">Filter by Tag</div>
+                    <select value={this.state.selected_tag} onChange={this.onTagChange}>
+                                {tags}
+                    </select>
+                </div>
+
+                <div className="filter-set">
+                    <div className="filter-label">Filter by Source</div>
+                    <select value={this.state.selected_source} onChange={this.onSourceChange}>
+                                {sources}
+                    </select>
+                </div>
             </div>
         );
     }
