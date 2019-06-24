@@ -40,6 +40,7 @@
     "yarn": "^1.13.0"
   },
   "dependencies": {
+    "@sentry/browser": "^5.4.3",
     "@types/blueimp-md5": "^1.1.30",
     "@types/d3": "^5.0.0",
     "@types/fixed-data-table": "^0.6.30",
