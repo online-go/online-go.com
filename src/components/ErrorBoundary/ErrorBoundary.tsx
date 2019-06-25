@@ -18,8 +18,9 @@
 import * as React from "react";
 import * as data from 'data';
 import { _ } from 'translate';
+import * as Sentry from '@sentry/browser';
 
-declare var Raven;
+
 declare var ogs_current_language;
 declare var ogs_version;
 
@@ -29,7 +30,8 @@ export class ErrorBoundary extends React.Component<{}, any> {
         this.state = {
             hasError: false,
             error: null,
-            info: null
+            info: null,
+            eventId: null
         };
     }
 
@@ -48,47 +50,28 @@ export class ErrorBoundary extends React.Component<{}, any> {
         }
 
         try {
-            if (!Raven.isSetup()) {
-                console.info("Dev system detected, not reporting error to sentry.io");
-            } else {
-                let user = data.get('user') || {id:0, username: 'guest'};
+            let user = data.get('user') || {id:0, username: 'guest'};
+
+            Sentry.withScope(scope => {
                 try {
-                    Raven.setTagsContext({
-                        'version': ogs_version || 'dev'
-                    });
-                } catch (e) {
-                    console.error(e);
-                }
-                try {
-                    Raven.setUserContext({
+                    scope.setUser({
                         'id': data.get('user').id,
                         'username': data.get('user').username,
                     });
                 } catch (e) {
                     console.error(e);
                     try {
-                        Raven.setUserContext();
+                        scope.setUser({});
                     } catch (e) {
                         console.error(e);
                     }
                 }
-                try {
-                    Raven.setExtraContext(Object.assign({
-                        'language': ogs_current_language || 'unknown',
-                        'version': ogs_version || 'dev'
-                    }, info));
-                } catch (e) {
-                    console.error(e);
-                }
 
-                Raven.captureException(error);
 
-                /* clear out the info stuff */
-                Raven.setExtraContext({
-                    'language': ogs_current_language || 'unknown',
-                    'version': ogs_version || 'dev'
-                });
-            }
+                scope.setExtras(info);
+                const eventId = Sentry.captureException(error);
+                this.setState({eventId});
+            });
         } catch (e) {
             console.error(e);
         }
@@ -97,7 +80,7 @@ export class ErrorBoundary extends React.Component<{}, any> {
     render() {
         if (this.state.hasError) {
             return (
-                <div className='ErrorBoundary'  onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>
+                <div className='ErrorBoundary'  onClick={() => Sentry.showReportDialog({eventId: this.state.eventId})}>
                     <h3>{_("Congratulations, you found a bug!")}</h3>
                     <div>
                         {_("Our team has been notified of the bug, however if you have more details you'd like to provide, please click here to fill out a report.")}
@@ -112,10 +95,10 @@ export class ErrorBoundary extends React.Component<{}, any> {
     }
 }
 
-window['test_raven'] = () => {
+window['test_sentry'] = () => {
     try {
-        throw new Error('RAVEN TEST');
+        throw new Error('SENTRY TEST');
     } catch (e) {
-        console.log(Raven.captureException(e));
+        console.log(Sentry.captureException(e));
     }
 };

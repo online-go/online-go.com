@@ -17,6 +17,46 @@
 
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
+import * as Sentry from '@sentry/browser';
+
+declare var ogs_current_language;
+declare var ogs_version;
+
+let sentry_env = "production";
+
+if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
+    sentry_env = "production";
+    if (/beta/.test(document.location.host)) {
+        sentry_env = "beta";
+    }
+}  else {
+    sentry_env = "development";
+}
+    try {
+        Sentry.init({
+            dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
+            release: ogs_version || 'dev',
+            whitelistUrls: [
+                'online-go.com',
+                'online-baduk.com',
+                'online-weiqi.com',
+                'online-covay.com',
+                'online-igo.com',
+                'cdn.online-go.com',
+                'beta.online-go.com',
+                'dev.beta.online-go.com'
+            ],
+            environment: sentry_env,
+        });
+
+        Sentry.setTag("version", ogs_version || 'dev');
+        Sentry.setExtra("language", ogs_current_language || 'unknown');
+        Sentry.setExtra("version", ogs_version || 'dev');
+    } catch (e) {
+        console.error(e);
+    }
+//}
+
 
 import * as data from "data";
 
@@ -60,7 +100,7 @@ import * as moment from 'moment';
 import "debug";
 
 declare const swal;
-declare const Raven;
+
 
 /*** Initialize moment in our current language ***/
 declare function getPreferredLanguage();
@@ -76,7 +116,7 @@ data.watch(cached.config, (config) => {
 
 data.watch("config.user", (user) => {
     try {
-        Raven.setUserContext({
+        Sentry.setUser({
             'id': user.id,
             'username': user.username,
         });
