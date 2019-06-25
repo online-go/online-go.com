@@ -42,10 +42,15 @@ const server_url = data.get("joseki-url", "/godojo/");
 const position_url = (node_id, variation_filter) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter !== null) {
-        position_url +=
-            "&cfilterid=" + variation_filter.contributor +
-            "&tfilterid=" + variation_filter.tag +
-            "&sfilterid=" + variation_filter.source;
+        if (variation_filter.contributor !== null) {
+            position_url += "&cfilterid=" + variation_filter.contributor;
+        }
+        if (variation_filter.tag !== null) {
+            position_url += "&tfilterid=" + variation_filter.tag;
+        }
+        if (variation_filter.source !== null) {
+            position_url += "&sfilterid=" + variation_filter.source;
+        }
     }
     return position_url;
 };
@@ -129,7 +134,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_type_sequence: [],
             joseki_source: null as {},
             tag: null as {},
-            variation_filter: {contributor: 0, tag: 0, source: 0}
+            variation_filter: {contributor: null, tag: null, source: null}
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -827,7 +832,6 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     addJosekiSource = (description, url) => {
-        //console.log("CONTRIBUTOR:", this.props.contributor);
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
@@ -1063,7 +1067,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     render = () => {
         const filter_active =
-            this.props.current_filter.contributor !== 0 || this.props.current_filter.tag !== 0 || this.props.current_filter.source !== 0;
+            this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
         return (
             <div className="position-details">
                 <div className="description-column">
