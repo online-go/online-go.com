@@ -606,6 +606,7 @@ export function shortDurationString(seconds) { /* {{{ */
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    seconds = Math.round(seconds * 10) / 10.0;
     return "" +
         (weeks ? " " + interpolate(pgettext("Short time (weeks)", "%swk"), [weeks]) : "") +
         (days ? " " + interpolate(pgettext("Short time (days)", "%sd"), [days]) : "") +
