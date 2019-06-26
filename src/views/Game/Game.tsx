@@ -906,12 +906,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         preferences.set('ai-review-enabled', !this.state.ai_review_enabled);
         if (this.state.ai_review_enabled) {
             this.goban.setHeatmap(null);
+            this.goban.setColoredCircles(null);
+            this.goban.engine.cur_move.clearMarks();
             this.goban.setMode("play");
         }
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
-
-
-
     }
     togglePortraitTab() {
         if (Perf) {

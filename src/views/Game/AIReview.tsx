@@ -539,9 +539,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             console.warn(e);
         }
 
-
-
-
         if ('full-network-fastmap' in ai_review) {
             let data:Array<AIReviewEntry> = [];
             let last_full_prediction = 0.5;
@@ -873,32 +870,35 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             }
                             let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
                             if (mv) {
+                                if (parseFloat(key).toPrecision(2).length < key.length) {
+                                    key = parseFloat(key).toPrecision(2);
+                                }
                                 this.props.game.goban.setMark(mv.x, mv.y, key, true);
-                            }
-
-                            let color:string;
-                            if (delta <= -2) {         // big loss
-                                color = '#ff7697';
-                            } else if (delta < 0) {    // probably negative, but within margin of error
-                                color = '#bda100';
-                            } else {                   // probably positive
-                                color = '#00bd0c';
                             }
 
                             let circle:ColoredCircle = {
                                 move: variations[i].move,
-                                color: color,
+                                color: 'rgba(0,0,0,0)',
                             };
 
                             if (variations[i].move === next_move_pretty_coords) {
-                                circle.border_width = 0.3;
-                                //circle.border_color = 'rgb(255, 0, 198)';
-                                //circle.border_color = '#ffffff';
-                                circle.border_color = color;
-                                circle.color = '#00b0dd';
-                            }
+                                this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
 
-                            colored_circles.push(circle);
+                                circle.border_width = 0.1;
+                                circle.border_color = 'rgb(0, 0, 0)';
+                                if (i === 0) {
+                                    circle.color = 'rgba(0, 130, 255, 0.7)';
+                                } else {
+                                    circle.color = 'rgba(255, 255, 255, 0.3)';
+                                }
+                                colored_circles.push(circle);
+                            }
+                            else if (i === 0) { /* top move == blue move */
+                                circle.border_width = 0.2;
+                                circle.border_color = 'rgb(0, 130, 255)';
+                                circle.color = 'rgba(0, 130, 255, 0.7)';
+                                colored_circles.push(circle);
+                            }
                         }
 
                     }
@@ -1069,16 +1069,17 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {move_ai_review && next_move && move_relative_delta !== null &&
                     <div className='next-move-delta-container'>
-                        {/*
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
                             <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
                         </span>
-                        */}
+
+                        {/*
                         <span className={"next-move-coordinates "
                             + (move_relative_delta <= -2 ? 'negative' : (move_relative_delta < 0 ? 'neutral' : 'positive')) }>
                             {next_move_pretty_coords}
                         </span>
+                        */}
                         <span className={"next-move-delta " +
                             (move_relative_delta <= -0.1 ? 'negative' : (move_relative_delta >= 0.1 ? 'positive' : ''))}>
                             {move_relative_delta <= -0.1 ? <span>&minus;</span> :

@@ -2278,7 +2278,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         /* {{{ */
         if (this.heatmap) {
             if (this.heatmap[j][i] > 0.001) {
-                let color = "#FFFFFF";
+                let color = "#00FF00";
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
