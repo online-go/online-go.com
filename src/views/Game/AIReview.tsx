@@ -523,6 +523,25 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         let ai_review = this.ai_review;
 
+        try {
+            let last_move = this.props.game.goban.engine.last_official_move;
+            if (last_move.x === -1 && last_move.parent.x === -1) {
+                // leela doesn't give an analysis for the last move if
+                // the game was over from passing, so just use the same
+                // results it got from the move before the final two passes.
+                if (`full-${last_move.move_number - 2}` in ai_review) {
+                    ai_review[`full-${last_move.move_number}`] = dup(ai_review[`full-${last_move.move_number - 2}`]);
+                    ai_review[`full-${last_move.move_number}`].move_number = last_move.move_number;
+                }
+
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+
+
+
+
         if ('full-network-fastmap' in ai_review) {
             let data:Array<AIReviewEntry> = [];
             let last_full_prediction = 0.5;
@@ -777,8 +796,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
 
         if (move_ai_review) {
+            //win_rate = move_ai_review.win_rate;
             win_rate = move_ai_review.win_rate;
-            next_win_rate = move_ai_review.win_rate;
+            //next_win_rate = move_ai_review.win_rate;
             if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
                 next_move_ai_review = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`];
                 next_win_rate = next_move_ai_review.win_rate;
@@ -795,6 +815,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 next_move = cur_move.trunk_next;
                 if (next_move) {
                     next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+                    if (next_move.x === -1) {
+                        next_move_pretty_coords = _("Pass");
+                    }
                 }
 
                 if (move_ai_review) {
@@ -849,7 +872,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 key = "0";
                             }
                             let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
-                            this.props.game.goban.setMark(mv.x, mv.y, key, true);
+                            if (mv) {
+                                this.props.game.goban.setMark(mv.x, mv.y, key, true);
+                            }
 
                             let color:string;
                             if (delta <= -2) {         // big loss
@@ -945,7 +970,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
 
         let have_prediction = false;
-        if (move_ai_review) {
+        if (move_ai_review && move_ai_review.variations.length > 0) {
             have_prediction = true;
         } else if (
             'final-move-analysis' in this.ai_review &&
