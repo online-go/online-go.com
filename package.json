@@ -10,7 +10,7 @@
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
   "devDependencies": {
-    "autoprefixer": "^9.1.5",
+    "autoprefixer": "^9.6.0",
     "body-parser": "^1.16.1",
     "cssnano": "^4.1.4",
     "express": "^4.14.1",
@@ -30,12 +30,12 @@
     "source-map-loader": "^0.2.4",
     "stylus": "^0.54.5",
     "supervisor": "^0.12.0",
-    "ts-loader": "^5.2.1",
-    "tslint": "^5.13.0",
-    "typescript": "^3.2.4",
-    "webpack": "^4.29.5",
+    "ts-loader": "^6.0.4",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.2",
+    "webpack": "^4.35.0",
     "webpack-bundle-analyzer": "",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.5",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.16.0"
   },
