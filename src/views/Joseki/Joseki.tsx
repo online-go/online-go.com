@@ -676,7 +676,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
-                        tags: tag_id === null ? null : [tag_id],
+                        tags: tag_id === null ? null : [tag_id], // back end wants a list
                         joseki_source_id: joseki_source_id })
                 })
                 .then(res => res.json())
@@ -765,11 +765,10 @@ class EditPane extends React.Component<EditProps, any> {
         .then(res => res.json())
         .then(body => {
             console.log("Server response to josekisources GET:", body);
-            this.setState({joseki_source_list: [{id: 0, description: "(unknown)"}, ...body.sources]});
+            this.setState({joseki_source_list: [{id: 'none', description: "(unknown)"}, ...body.sources]});
         });
 
         // Get the list of position tags
-        // Get the list of joseki sources
         fetch(tags_url, {
             mode: 'cors',
             headers: godojo_headers
@@ -777,7 +776,7 @@ class EditPane extends React.Component<EditProps, any> {
         .then(res => res.json())
         .then(body => {
             console.log("Server response to tags GET:", body);
-            this.setState({tag_list: [{id: 0, description: ""}, ...body.tags]});
+            this.setState({tag_list: [{id: 'none', description: ""}, ...body.tags]});
             // Propose the most preferred (typically "position is settled") tag for a new position.
             if (this.props.category === "new") {
                 this.setState({tag_id: body.tags[0].id});
@@ -822,9 +821,9 @@ class EditPane extends React.Component<EditProps, any> {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
-            this.state.tag_id,
+            this.state.tag_id !== 'none' ? this.state.tag_id : null,
             this.state.new_description,
-            this.state.joseki_source);
+            this.state.joseki_source  !== 'none' ? this.state.joseki_source : null);
     }
 
     promptForJosekiSource = (e) => {
@@ -855,7 +854,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     render = () => {
-        console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
+        //console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         let selections = Object.keys(MoveCategory).map((selection, i) => (
