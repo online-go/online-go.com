@@ -100,7 +100,6 @@ function build_styl(done) {
           }),
           postcss([
               autoprefixer({
-                  browsers: ["> 1%", "last 2 versions", "Firefox ESR"],
                   cascade: false
               }),
               inline_svg(),
@@ -133,7 +132,6 @@ function min_styl(done) {
           }),
           postcss([
               autoprefixer({
-                  browsers: ["> 1%", "last 2 versions", "Firefox ESR"],
                   cascade: false
               }),
               inline_svg(),

@@ -9,6 +9,9 @@
     "webpack": "webpack",
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
+  "browserslist": [
+      "defaults"
+  ],
   "devDependencies": {
     "autoprefixer": "^9.6.0",
     "body-parser": "^1.16.1",
