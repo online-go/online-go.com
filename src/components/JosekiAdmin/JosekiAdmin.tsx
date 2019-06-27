@@ -64,7 +64,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         });
     }
 
-    SelectedChanges = () => {
+    revertAllSelectedChanges = () => {
         // set up to revert each selected change one at a time...
         let reversions = new Map();
         this.state.selections.forEach((selected, selection) => {
@@ -164,7 +164,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             <div className="audit-container">
                 {this.props.user_can_administer &&
                  <div className="audit-actions">
-                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertSelectedChanges}>
+                    <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertAllSelectedChanges}>
                         {_("Revert")}
                     </button>
                 </div>
