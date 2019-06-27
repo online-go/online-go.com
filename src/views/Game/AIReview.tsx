@@ -560,10 +560,33 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 });
             });
 
+            let top3:Array<number> = [];
+
+            try {
+                let last_move = this.props.game.goban.engine.last_official_move;
+                //let last_win_rate = `full-${1 - this.handicapOffset()}` in ai_review
+                let last_win_rate = null;
+                let deltas:Array<number> = [];
+                for (let i = 1; i < last_move.move_number; ++i) {
+                    let entry = ai_review[`full-${i - this.handicapOffset()}`];
+                    if (entry) {
+                        if (last_win_rate !== null) {
+                            deltas.push(Math.abs(entry.win_rate - last_win_rate));
+                        }
+                        last_win_rate = entry.win_rate;
+                    }
+                }
+                let top3_win_rates = dup(deltas).sort((a, b) => b - a).slice(0, 3);
+                top3 = top3_win_rates.map(p => deltas.indexOf(p));
+            } catch (e) {
+                console.error(e);
+            }
+
             this.setState({
                 loading: false,
                 full: data,
                 fast: null,
+                top3: top3,
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -575,6 +598,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 loading: false,
                 full: null,
                 fast: ai_review['key-moves'],
+                top3: null,
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -583,6 +607,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 loading: false,
                 full: null,
                 fast: null,
+                top3: null,
                 queue_position: this.state.selected_ai_review.queue.position,
                 queue_pending: this.state.selected_ai_review.queue.pending,
                 updatecount: this.state.updatecount + 1,
@@ -800,6 +825,17 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 next_move_ai_review = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`];
                 next_win_rate = next_move_ai_review.win_rate;
             }
+            else {
+                next_move = cur_move.trunk_next;
+                if (next_move) {
+                    next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+                    for (let v of move_ai_review.variations) {
+                        if (v.move === next_move_pretty_coords) {
+                            next_win_rate = v['win_rate'];
+                        }
+                    }
+                }
+            }
             //next_win_rate *= 100.0;
         }
 
@@ -974,7 +1010,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             have_prediction = true;
         } else if (
             'final-move-analysis' in this.ai_review &&
-            this.props.move.move_number === this.ai_review['final-move-analysis']['move']
+            (this.props.move.move_number - this.handicapOffset()) === this.ai_review['final-move-analysis']['move']
         ) {
             have_prediction = true;
             win_rate = this.ai_review['final-move-analysis'].prediction;
@@ -1056,6 +1092,20 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 </button>
                             </div>
                         }
+                    </div>
+                }
+
+                {((this.state.top3 && this.state.top3.length > 0) || null) &&
+                    <div className='key-moves'>
+                        <div>
+                            <b>{_("Top game changing moves")}</b>
+                        </div>
+
+                        {this.state.top3.map((move, idx) =>
+                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset())}>
+                                {move}
+                            </span>
+                        )}
                     </div>
                 }
 
