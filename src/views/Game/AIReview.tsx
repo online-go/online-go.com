@@ -577,7 +577,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     }
                 }
                 let top3_win_rates = dup(deltas).sort((a, b) => b - a).slice(0, 3);
-                top3 = top3_win_rates.map(p => deltas.indexOf(p)+1);
+                top3 = top3_win_rates.map(p => deltas.indexOf(p) + 1);
             } catch (e) {
                 console.error(e);
             }
@@ -1018,6 +1018,13 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         win_rate *= 100.0;
 
+        let blunders = null;
+
+        if ('blunders' in this.ai_review) {
+            blunders = this.ai_review['blunders'];
+        }
+
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -1073,6 +1080,13 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {((this.state.fast && this.state.fast.length > 0) || null) &&
                     <div className='key-moves'>
+                        {blunders &&
+                            <div>
+                                {interpolate(_("{{black_blunders}} blunders by black, {{white_blunders}} by white"),
+                                    { black_blunders: blunders.black, white_blunders: blunders.white, })}
+                            </div>
+                        }
+
                         <div>
                             <b>{_("Top game changing moves")}</b>
                         </div>
@@ -1103,7 +1117,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                         {this.state.top3.map((move, idx) =>
                             <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset())}>
-                                {move+1}
+                                {move + 1}
                             </span>
                         )}
                     </div>
