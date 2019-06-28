@@ -577,7 +577,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     }
                 }
                 let top3_win_rates = dup(deltas).sort((a, b) => b - a).slice(0, 3);
-                top3 = top3_win_rates.map(p => deltas.indexOf(p));
+                top3 = top3_win_rates.map(p => deltas.indexOf(p)+1);
             } catch (e) {
                 console.error(e);
             }
@@ -1103,7 +1103,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                         {this.state.top3.map((move, idx) =>
                             <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset())}>
-                                {move}
+                                {move+1}
                             </span>
                         )}
                     </div>
