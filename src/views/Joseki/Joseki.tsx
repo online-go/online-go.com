@@ -125,6 +125,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             position_description: "",
             current_move_category: "",
             contributor_id: -1,      // the person who created the node that we are displaying
+            child_count: null,
+
             mode: PageMode.Explore,
             user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
             user_can_administer: false,
@@ -302,7 +304,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: position.node_id,
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
-            tag: position.tags !== null ? position.tags[0] : null // the back end supports multiple, but we only support one
+            tag: position.tags !== null ? position.tags[0] : null, // the back end supports multiple, but we only support one
+            child_count: position.child_count
         });
         this.last_server_placement = position.placement;
         this.next_moves = position.next_moves;
@@ -565,8 +568,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             {this.state.current_move_category !== "new" ?
                             <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
                             <span className="moves-made-string">{this.state.move_string}</span>}
-                            </div>
+                        </div>
                     </div>
+                    {this.state.child_count !== null && this.state.child_count !== 0 &&
+                         <div className="position-child-count">
+                                <span>This position leads to {this.state.child_count} others.</span>
+                        </div>
+                    }
                 </div>
             </div>
         );
@@ -618,6 +626,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     tag={this.state.tag}
                     set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
+                    child_count = {this.state.child_count}
                 />
             );
         }
@@ -1036,6 +1045,7 @@ interface ExploreProps {
     tag: {};
     set_variation_filter: any;
     current_filter: {contributor: number, tag: number, source: number};
+    child_count: number;
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
