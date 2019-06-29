@@ -624,6 +624,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
+                    node_id={this.state.current_node_id}
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
@@ -646,7 +647,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     saveNewPositionInfo = (move_type, variation_label, tag_id, description, joseki_source_id, marks) => {
 
-        const mark_string = JSON.stringify(marks); // back end just stores and provides this back to us.
+        const mark_string = JSON.stringify(marks); // 'marks' is just a string as far as back end is concerned
 
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
@@ -752,6 +753,7 @@ class PlayPane extends React.Component<PlayProps, any> {
 // this component just updates what it is showing so they can edit it
 
 interface EditProps {
+    node_id: number;
     description: string;
     category: string;
     variation_label: string;
@@ -772,8 +774,7 @@ class EditPane extends React.Component<EditProps, any> {
             move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
             new_description: this.props.description,
             preview: this.props.description,
-            prop_category: this.props.category,
-            prop_description: this.props.description,
+            node_id: this.props.node_id,
             joseki_source_list: [],
             joseki_source: this.props.joseki_source_id,
             tag_list: [],
@@ -809,15 +810,17 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
-        // Detect description/category changes (resulting from clicking on the board), so we can update
-        // console.log("gdsfp: ", nextProps, prevState);
-        if (nextProps.description !== prevState.prop_description ||
-            nextProps.category !== prevState.prop_category) {
+        // Detect node changes (resulting from clicking on the board), so we can update
+        console.log("gdsfp: ", nextProps, prevState);
+        if (nextProps.node_id !== prevState.node_id) {
+            console.log("Updating from props...");
             return {
+                node_id: nextProps.node_id,
                 move_type: nextProps.category === "new" ? Object.keys(MoveCategory)[0] : nextProps.category,
                 new_description: nextProps.description,
-                prop_category: nextProps.category,
-                prop_description: nextProps.description
+                joseki_source: nextProps.joseki_source_id,
+                tag_id: nextProps.tag_id,
+                variation_label: nextProps.variation_label || '1'
             };
         }
         else {
