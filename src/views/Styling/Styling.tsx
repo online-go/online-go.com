@@ -30,7 +30,6 @@ import {GroupAutocomplete} from "GroupAutocomplete";
 import {Markdown} from "Markdown";
 import {PersistentElement} from "PersistentElement";
 import {Steps} from "Steps";
-import {VerticalSlider} from "VerticalSlider";
 import {errcodeAlerter} from "ErrcodeModal";
 import * as moment from "moment";
 
@@ -111,23 +110,6 @@ export class Styling extends React.PureComponent<{}, any> {
                     {this.state.autocompleted_group && <div>{this.state.autocompleted_group.name}</div>}
                     </div>
                 </Card>
-            </div>
-            <div className="col-xs-2">
-                <VerticalSlider
-                    value={this.state.slider_num_value}
-                    min={this.state.slider_num_min}
-                    max={this.state.slider_num_max}
-                    onChange={(v) => this.setState({slider_num_value: v})}
-                    />
-            </div>
-            <div className="col-xs-2">
-                <VerticalSlider
-                    value={this.state.slider_date_value}
-                    min={this.state.slider_date_min}
-                    max={this.state.slider_date_max}
-                    onChange={(v) => this.setState({slider_date_value: v})}
-                    reverse={true}
-                    />
             </div>
         </div>
         <div className="row">

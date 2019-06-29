@@ -23,7 +23,6 @@ import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import * as data from "data";
 import {List, AutoSizer, WindowScroller} from 'react-virtualized';
-import {VerticalSlider} from "VerticalSlider";
 import {Player} from "Player";
 import {UIPush} from "UIPush";
 import tooltip from "tooltip";
