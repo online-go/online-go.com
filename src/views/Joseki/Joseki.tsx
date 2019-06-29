@@ -18,7 +18,6 @@
 /* A page for looking up and playing against josekis */
 
 import * as React from "react";
-import * as ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 
 import * as data from "data";
@@ -27,6 +26,7 @@ import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { errorAlerter, dup, ignore } from "misc";
 import { Goban, GoMath } from "goban";
+import { Markdown } from "Markdown";
 
 import { Player } from "Player";
 
@@ -107,7 +107,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     last_server_placement = ""; // the most recent placement that the server returned to us
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
-
+    current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
 
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
@@ -306,15 +306,18 @@ export class Joseki extends React.Component<JosekiProps, any> {
         });
         this.last_server_placement = position.placement;
         this.next_moves = position.next_moves;
+        this.current_marks = JSON.parse(position.marks) || [];
         this.previous_position = position.parent;
         if (this.state.mode !== PageMode.Play || this.state.move_string === "") {
-            this.renderJosekiPosition(this.next_moves);
+            this.renderCurrentJosekiPosition();
         }
     }
 
     // Draw all the variations that we know about from the server (array of moves from the server)
-    renderJosekiPosition = (next_moves: Array<any>) => {
-        console.log("rendering josekis ", next_moves);
+    renderCurrentJosekiPosition = () => {
+        let next_moves = this.next_moves;
+        let current_marks = this.current_marks;
+        console.log("rendering josekis ", next_moves, current_marks);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
         next_moves.forEach((option) => {
@@ -324,6 +327,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 color: ColorMap[option["category"]]
             };
             this.goban.setColoredMarks(new_options);
+        });
+        let new_marks = {};
+        current_marks.forEach((mark:{}) => {
+            const label = mark['label'];
+            new_marks[label] = GoMath.encodePrettyCoord(mark['position'], this.goban.height);
+            this.goban.setMarks(new_marks);
         });
         this.goban.redraw();
     }
@@ -512,6 +521,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     }
 
+    updateMarks = (marks) => {
+        this.current_marks = marks;
+        this.renderCurrentJosekiPosition();
+    }
+
     render() {
         console.log("Joseki app rendering ", this.state.move_string);
         return (
@@ -617,6 +631,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     tag_id={this.state.tag ? this.state.tag.id : 0}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
+                    update_marks={this.updateMarks}
                 />
             );
         }
@@ -629,7 +644,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    saveNewPositionInfo = (move_type, variation_label, tag_id, description, joseki_source_id) => {
+    saveNewPositionInfo = (move_type, variation_label, tag_id, description, joseki_source_id, marks) => {
+
+        const mark_string = JSON.stringify(marks); // back end just stores and provides this back to us.
+
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
@@ -642,7 +660,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     variation_label: variation_label,
                     tags: tag_id === null ? null : [tag_id],
                     category: move_type.toUpperCase(),
-                    joseki_source_id: joseki_source_id })
+                    joseki_source_id: joseki_source_id,
+                    marks: mark_string
+                 })
             })
             .then(res => res.json())
             .then(body => {
@@ -677,7 +697,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         description: description,
                         variation_label: variation_label,
                         tags: tag_id === null ? null : [tag_id], // back end wants a list
-                        joseki_source_id: joseki_source_id })
+                        joseki_source_id: joseki_source_id,
+                        marks: mark_string
+                     })
                 })
                 .then(res => res.json())
                 .then(body => {
@@ -736,7 +758,8 @@ interface EditProps {
     joseki_source_id: number;
     tag_id: number;
     contributor: number;
-    save_new_info: (move_type, variation_label, tag_id, description, joseki_source) => void;
+    save_new_info: (move_type, variation_label, tag_id, description, joseki_source, marks) => void;
+    update_marks: ({}) => void;
 }
 
 class EditPane extends React.Component<EditProps, any> {
@@ -748,13 +771,14 @@ class EditPane extends React.Component<EditProps, any> {
         this.state = {
             move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
             new_description: this.props.description,
+            preview: this.props.description,
             prop_category: this.props.category,
             prop_description: this.props.description,
             joseki_source_list: [],
             joseki_source: this.props.joseki_source_id,
             tag_list: [],
             tag_id: this.props.tag_id,
-            variation_label: this.props.variation_label || 'A'
+            variation_label: this.props.variation_label || '1'
         };
 
         // Get the list of joseki sources
@@ -814,7 +838,11 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     handleEditInput = (e) => {
-        this.setState({ new_description: e.target.value });
+        const new_description = e.target.value;
+
+        this.props.update_marks(this.currentMarksInDescription(new_description));
+
+        this.setState({ new_description });
     }
 
     saveNewInfo = (e) => {
@@ -823,7 +851,17 @@ class EditPane extends React.Component<EditProps, any> {
             this.state.variation_label,
             this.state.tag_id !== 'none' ? this.state.tag_id : null,
             this.state.new_description,
-            this.state.joseki_source  !== 'none' ? this.state.joseki_source : null);
+            this.state.joseki_source  !== 'none' ? this.state.joseki_source : null,
+            this.currentMarksInDescription(this.state.new_description));
+    }
+
+    currentMarksInDescription = (description) => {
+        // Extract markup for "board marks"
+        // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
+
+        const mark_matches = [...description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg)];
+
+        return mark_matches.map((mark_match) => ({label:mark_match[1], position: mark_match[2]}));
     }
 
     promptForJosekiSource = (e) => {
@@ -865,7 +903,7 @@ class EditPane extends React.Component<EditProps, any> {
             selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
         }
 
-        let labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', '_'].map((label, i) => (
+        let labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '_'].map((label, i) => (
             <option key={i} value={label}>{label}</option>
         ));
 
@@ -876,6 +914,9 @@ class EditPane extends React.Component<EditProps, any> {
         let tags = this.state.tag_list.map((tag, i) => (
             <option key={i} value={tag["id"]}>{_(tag["description"])}</option>
         ));
+
+        // give feedback that we recognised their marks
+        let preview = this.state.new_description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
 
         return (
             <div className="edit-container">
@@ -926,7 +967,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <div className="edit-label">Preview:</div>
 
                     {/* The actual description always rendered here */}
-                    <ReactMarkdown source={this.state.new_description} />
+                    <Markdown source={preview} />
 
                     {/* and a placeholder for the description when the markdown is empty*/}
                     {this.state.new_description.length === 0 ?
@@ -1067,13 +1108,17 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     render = () => {
         const filter_active =
             this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
+
+        // Highlight marks
+        let description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
         return (
             <div className="position-details">
                 <div className="description-column">
                     {this.props.position_type !== "new" ?
                         <React.Fragment>
                             <div className="position-description">
-                                <ReactMarkdown source={this.props.description} />
+                                <Markdown source={description} />
                             </div>
                             {this.props.tag &&
                             <div className="position-tag">

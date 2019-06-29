@@ -68,7 +68,6 @@
     "react-datetime": "^2.10.3",
     "react-dom": "^16.8.3",
     "react-dropzone": "^3.7.3",
-    "react-markdown": "^4.0.6",
     "react-number-format": "^3.0.2",
     "react-rangeslider": "^2.2.0",
     "react-redux": "^4.4.6",
