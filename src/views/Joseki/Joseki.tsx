@@ -640,6 +640,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             return (
                 <PlayPane
                     move_type_sequence={this.state.move_type_sequence}
+                    set_variation_filter = {this.updateVariationFilter}
+                    current_filter = {this.state.variation_filter}
                 />
             );
         }
@@ -716,12 +718,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
     move_type_sequence: [];
+    set_variation_filter: any;
+    current_filter: {contributor: number, tag: number, source: number};
 }
 
 class PlayPane extends React.Component<PlayProps, any> {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            extra_info_selected: "none"
+        };
     }
 
     iconFor = (move_type) => {
@@ -733,16 +739,53 @@ class PlayPane extends React.Component<PlayProps, any> {
         }
     }
 
+    showFilterSelector = () => {
+        this.setState({ extra_info_selected: "variation-filter" });
+    }
+
+    hideExtraInfo = () => {
+        this.setState({ extra_info_selected: "none" });
+    }
+
     render = () => {
+        const filter_active =
+            this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
+
         return (
-            <div className="play-dashboard">
-                {this.props.move_type_sequence.length === 0 &&
-                <div> Your move...</div>}
-                {this.props.move_type_sequence.map( (move_type, id) => (
-                    <div key={id}>
-                        {this.iconFor(move_type['type'])}
-                        {move_type['comment']}
-                    </div>))}
+            <div className="play-columns">
+                <div className="play-dashboard">
+                    {this.props.move_type_sequence.length === 0 &&
+                    <div> Your move...</div>}
+                    {this.props.move_type_sequence.map( (move_type, id) => (
+                        <div key={id}>
+                            {this.iconFor(move_type['type'])}
+                            {move_type['comment']}
+                        </div>))}
+                </div>
+                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+                    {this.state.extra_info_selected === "none" &&
+                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
+                        onClick={this.showFilterSelector} />
+                    }
+                    {this.state.extra_info_selected === "variation-filter" &&
+                        <React.Fragment>
+                            <div className="filter-container">
+                                <div className="extra-info-header">
+                                        <div>Variation filter:</div>
+                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
+                                </div>
+                                <JosekiVariationFilter
+                                    contributor_list_url={server_url + "contributors"}
+                                    tag_list_url = {server_url + "tags"}
+                                    source_list_url = {server_url + "josekisources"}
+                                    current_filter = {this.props.current_filter}
+                                    godojo_headers={godojo_headers}
+                                    set_variation_filter={this.props.set_variation_filter}
+                                />
+                            </div>
+                        </React.Fragment>
+                    }
+                </div>
             </div>
         );
     }
