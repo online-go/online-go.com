@@ -75,7 +75,7 @@ enum MoveCategory {
     QUESTION = "Question"
 }
 
-const bad_moves = ["MISTAKE", "TRICK", "QUESTION"] as any;
+const bad_moves = ["MISTAKE", "TRICK", "QUESTION"] as any;  // moves the computer doesn't play
 
 enum PageMode {
     Explore, Play, Edit, Admin
@@ -124,7 +124,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
             position_description: "",
             current_move_category: "",
-            contributor_id: -1,      // the person who created the node that we are displaying
+            pass_available: false,   // Whether pass is one of the joseki moves or not
+            contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
 
             mode: PageMode.Explore,
@@ -287,9 +288,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     loadSequenceToBoard = (sequence: string) => {
-        // We expect sequence to come from the server in the form ".root.K10.L11"
+        // We expect sequence to come from the server in the form ".root.K10.L11.pass.Q12"
+        // Goban wants "K10L11..Q12"
         console.log("Loading server supplied position", sequence);
-        const ogs_move_string = sequence.substr(6).replace(/\./g, '');
+        const ogs_move_string = sequence.substr(6).replace(/\./g, '').replace(/pass/g, '..');
         this.initializeGoban(ogs_move_string);
         this.onBoardUpdate();
     }
@@ -323,14 +325,21 @@ export class Joseki extends React.Component<JosekiProps, any> {
         console.log("rendering josekis ", next_moves, current_marks);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
+        let pass_available = false;
         next_moves.forEach((option) => {
-            const label = option['variation_label'];
-            new_options[label] = {
-                move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
-                color: ColorMap[option["category"]]
-            };
-            this.goban.setColoredMarks(new_options);
+            if (option['placement'] === 'pass') {
+                pass_available = true;
+            }
+            else {
+                const label = option['variation_label'];
+                new_options[label] = {
+                    move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
+                    color: ColorMap[option["category"]]
+                };
+                this.goban.setColoredMarks(new_options);
+            }
         });
+        this.setState({pass_available});
         let new_marks = {};
         current_marks.forEach((mark:{}) => {
             const label = mark['label'];
@@ -353,8 +362,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
         let move_string;
         let the_move;
 
+        //console.log("onBoardUpdate mvs", mvs);
         if (mvs.length > 0) {
-            move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
+            let move_string_array = mvs.map((p) => {
+                let coord = GoMath.prettyCoords(p.x, p.y, this.goban.height);
+                coord = coord === '' ? 'pass' : coord;  // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
+                return coord;
+            });
+            //console.log("MSA", move_string_array);
+
+            move_string = move_string_array.join(",");
+
             the_move = mvs[mvs.length - 1];
         }
         else { // empty board
@@ -363,7 +381,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         if (move_string !== this.state.move_string) {
             this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
-            console.log("Move placed: ", the_move);
+            console.log("Move placed: ", move_string, the_move);
             this.setState({ move_string });
             this.processPlacement(the_move);   // this is responsible for making sure stone placement is turned back on
         }
@@ -381,10 +399,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
             */
 
         const placement = move !== null ?
-            GoMath.prettyCoords(move.x, move.y, this.goban.height) :
+            move.x !== -1 ?
+                GoMath.prettyCoords(move.x, move.y, this.goban.height) :
+                'pass' :
             "root";
 
-        console.log("Processing placement at:", placement);
+        console.log("Processing placement at:", placement, move);
 
         if (this.backstepping) {
             if (this.state.current_move_category !== "new") {
@@ -518,6 +538,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
+    doPass = () => {
+        this.goban.pass();
+        this.goban.engine.cur_move.clearMarks();
+        this.goban.redraw();
+        this.onBoardUpdate();  // seems like pass does not trigger this!
+    }
+
     updateVariationFilter = (filter) => {
         console.log("update filter:", filter);
         this.setState({variation_filter: filter});
@@ -531,6 +558,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     render() {
         console.log("Joseki app rendering ", this.state.move_string);
+
+        const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
         return (
             <div className={"Joseki"}>
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
@@ -543,6 +572,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         <div className="move-controls">
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + (this.state.mode !== PageMode.Play ? "" : " hide")} onClick={this.backOneMove}></i>
+                            <div
+                                className={"pass-button" + (show_pass_available ? " pass-available" : "")}
+                                onClick={this.doPass}>
+                                Pass
+                            </div>
                         </div>
                         {this.renderModeControl()}
                     </div>
