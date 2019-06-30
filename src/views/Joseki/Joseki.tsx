@@ -65,6 +65,8 @@ let godojo_headers = {        // note: user JWT is added to this later
     'X-Godojo-Auth-Token': 'foofer'
 };
 
+let throb_delay_timer;
+
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
     // conceivably, should fetch these from the back end?
@@ -127,6 +129,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             pass_available: false,   // Whether pass is one of the joseki moves or not
             contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
+
+            throb: false,
 
             mode: PageMode.Explore,
             user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
@@ -225,6 +229,19 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.fetchNextMovesFor(node_id);
     }
 
+    startThrob = () => {
+        throb_delay_timer = setTimeout(this.turnOnThrob, 150); // a delay so it doesn't start distractingly early
+    }
+
+    turnOnThrob = () => {
+        this.setState({throb: true});
+    }
+
+    turnOffThrob = () => {
+        clearTimeout(throb_delay_timer);
+        this.setState({throb: false});
+    }
+
     fetchNextMovesFor = (node_id) => {
         this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
     }
@@ -233,7 +250,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
-        this.setState({position_description: ""});
+        this.startThrob();
+
+        this.setState({
+            position_description: "",
+        });
+
         console.log("fetching position for node", node_id); // visual indication that we are processing their click
         fetch(position_url(node_id, variation_filter), {
             mode: 'cors',
@@ -242,6 +264,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
             console.log("Server response:", body);
+
+            this.turnOffThrob();
 
             if (this.load_sequence_to_board) {
                 // when they clicked a position link, we have to load the whole sequence we recieved onto the board
@@ -562,6 +586,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
         const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
         return (
             <div className={"Joseki"}>
+                    <div className={"joseki-throbber" + (this.state.throb ? "" :" joseki-throbber-off")}>
+                        <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                    </div>
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div} />
