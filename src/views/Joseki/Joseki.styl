@@ -26,7 +26,15 @@
     left: 0;
 
     display: flex;
-    flex-direction: row;
+
+    @media screen and (max-width: 600px) {
+        flex-direction: column;
+    }
+    @media screen and (min-width: 600px) {
+        flex-direction: row;
+    }
+
+
     align-items: stretch;
 
     .left-col {
@@ -58,7 +66,6 @@
     }
 
     .right-col {
-        display: flex;
         flex-grow: 1;
         flex-shrink: 1;
         flex-basis: 50%;
@@ -68,8 +75,7 @@
         min-height: auto;
         flex-direction: column;
         flex-basis: 50%;
-        padding-left: 0.3rem;
-        padding-right: dock-collapsed-width + 0.3rem;
+        padding-left: 0.5rem;
         min-width: 340px;
     }
 
@@ -81,16 +87,18 @@
     }
 
     .right-col {
-        padding-left: 2em;
+        @media screen and (min-height: 680px) {
+            padding-left: 2em;
+        }
         padding-right: 0;
         height: 100%;
         display: flex;
-        flex-direction: column;
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
 
             .move-controls {
                 display: flex;
@@ -251,6 +259,7 @@
                 align-self: flex-end;
                 margin-right: 0.5em;
                 padding: 3px;
+                margin-bottom: 1em; // needed in mobile view
             }
 
             .filter-active {
