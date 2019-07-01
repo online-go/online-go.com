@@ -35,7 +35,7 @@ import { JosekiAdmin } from "JosekiAdmin";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
-import { tickStep } from "d3";
+import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -64,8 +64,6 @@ let godojo_headers = {        // note: user JWT is added to this later
     'Content-Type': 'application/json',
     'X-Godojo-Auth-Token': 'foofer'
 };
-
-let throb_delay_timer;
 
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
@@ -130,7 +128,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
 
-            throb: false,
+            throb: false,   // whether to show board loading throbber
 
             mode: PageMode.Explore,
             user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
@@ -229,19 +227,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.fetchNextMovesFor(node_id);
     }
 
-    startThrob = () => {
-        throb_delay_timer = setTimeout(this.turnOnThrob, 150); // a delay so it doesn't start distractingly early
-    }
-
-    turnOnThrob = () => {
-        this.setState({throb: true});
-    }
-
-    turnOffThrob = () => {
-        clearTimeout(throb_delay_timer);
-        this.setState({throb: false});
-    }
-
     fetchNextMovesFor = (node_id) => {
         this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
     }
@@ -250,10 +235,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
-        this.startThrob();
-
         this.setState({
             position_description: "",
+            throb: true
         });
 
         console.log("fetching position for node", node_id); // visual indication that we are processing their click
@@ -265,7 +249,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(body => {
             console.log("Server response:", body);
 
-            this.turnOffThrob();
+            this.setState({throb: false});
 
             if (this.load_sequence_to_board) {
                 // when they clicked a position link, we have to load the whole sequence we recieved onto the board
@@ -586,9 +570,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
         const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
         return (
             <div className={"Joseki"}>
-                    <div className={"joseki-throbber" + (this.state.throb ? "" :" joseki-throbber-off")}>
-                        <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                    </div>
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div} />
@@ -603,6 +584,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                                 className={"pass-button" + (show_pass_available ? " pass-available" : "")}
                                 onClick={this.doPass}>
                                 Pass
+                            </div>
+                            <div className="throbber-spacer">
+                                <Throbber throb={this.state.throb}/>
                             </div>
                         </div>
                         {this.renderModeControl()}
@@ -832,7 +816,7 @@ class PlayPane extends React.Component<PlayProps, any> {
                             {move_type['comment']}
                         </div>))}
                 </div>
-                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
                     {this.state.extra_info_selected === "none" &&
                     <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
                         onClick={this.showFilterSelector} />
@@ -1119,7 +1103,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             current_position: "",
             commentary: [],
             audit_log: [],
-            next_comment: ""
+            next_comment: "",
+            extra_throb: false
         };
     }
 
@@ -1147,6 +1132,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         const comments_url = server_url + "commentary?id=" + this.props.position_id;
         console.log("Fetching comments ", comments_url);
         console.log(godojo_headers);
+        this.setState({extra_throb: true});
+
         fetch(comments_url, {
             mode: 'cors',
             headers: godojo_headers
@@ -1154,6 +1141,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
             console.log("Server response:", body);
+            this.setState({extra_throb: false});
             this.extractCommentary(body.commentary);
         });
         this.setState({ extra_info_selected: "comments" });
@@ -1177,12 +1165,14 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     showAuditLog = () => {
         const audits_url = server_url + "audits?id=" + this.props.position_id;
         console.log("Fetching audit logs ", audits_url);
+        this.setState({extra_throb: true});
         fetch(audits_url, {
             mode: 'cors',
             headers: godojo_headers
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
+            this.setState({extra_throb: false});
             console.log("Server response: ", body);
             this.extractAuditLog(body);
         });
@@ -1252,7 +1242,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                         </React.Fragment>
                     : ""}
                 </div>
-                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " open" : "")}>
+                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
                     {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
                         <React.Fragment>
                             <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
@@ -1273,6 +1263,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                 </div>
                                 <div className="discussion-lines">
+                                <Throbber throb={this.state.extra_throb}/>
                                     {this.state.commentary.map((comment, idx) =>
                                         <div className="comment" key={idx}>
                                             <div className="comment-header">
@@ -1296,6 +1287,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                 </div>
                                 <div className="audit-entries">
+                                <Throbber throb={this.state.extra_throb}/>
                                     {this.state.audit_log.map((audit, idx) =>
                                         <div className="audit-entry" key={idx}>
                                             <div className="audit-header">
@@ -1317,6 +1309,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         <div>Variation filter:</div>
                                         <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                 </div>
+                                <Throbber throb={this.state.extra_throb}/>
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
                                     tag_list_url = {server_url + "tags"}
