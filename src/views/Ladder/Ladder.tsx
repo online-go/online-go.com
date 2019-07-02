@@ -17,13 +17,12 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {del, get, post, abort_requests_in_flight} from "requests";
+import {del, get, put, post, abort_requests_in_flight} from "requests";
 import {errorAlerter} from "misc";
 import {_, pgettext, interpolate} from "translate";
 import {LadderComponent} from "LadderComponent";
 import * as data from "data";
 import {List, AutoSizer, WindowScroller} from 'react-virtualized';
-import {VerticalSlider} from "VerticalSlider";
 import {Player} from "Player";
 import {UIPush} from "UIPush";
 import tooltip from "tooltip";
@@ -388,6 +387,29 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
         );
     }
 
+    adjustLadderPosition(player) {
+        console.log(player);
+
+        swal({
+            "text": "New ladder position for player " + player.username,
+            "input": "number",
+            "showCancelButton": true,
+        })
+        .then((new_rank) => {
+            put("ladders/%%/players/moderate", this.props.ladder.props.match.params.ladder_id, {
+                "moderation_note": "Adjusting ladder position",
+                "player_id": player.id,
+                "rank": new_rank,
+            })
+            .then((res) => {
+                close_all_popovers();
+                this.props.ladder.invalidate();
+            })
+            .catch(errorAlerter);
+        })
+        .catch(() => 0);
+
+    }
 
     challengeDetails = (event) => {
         if (!this.state.row) {
@@ -395,6 +417,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
         }
 
         let row = this.state.row;
+        let user = data.get('user');
         let challenged_by = row && row.incoming_challenges;
         let challenging = row && row.outgoing_challenges;
 
@@ -448,6 +471,12 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                                 </span>
                             ))}
                         </span>
+                    </div>
+                }
+
+                {(user.is_moderator || null) &&
+                    <div>
+                        <button className='xs danger' onClick={() => this.adjustLadderPosition(row.player)}>Adjust ladder position</button>
                     </div>
                 }
 

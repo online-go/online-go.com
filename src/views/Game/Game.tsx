@@ -419,7 +419,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
         this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
-        this.goban.on('audio-pass', () => sfx.play("beepbeep"));
+        this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
         let last_clock_played = null;
         this.goban.on('audio-clock', (clock) => {
@@ -906,12 +906,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         preferences.set('ai-review-enabled', !this.state.ai_review_enabled);
         if (this.state.ai_review_enabled) {
             this.goban.setHeatmap(null);
+            this.goban.setColoredCircles(null);
+            this.goban.engine.cur_move.clearMarks();
             this.goban.setMode("play");
         }
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
-
-
-
     }
     togglePortraitTab() {
         if (Perf) {
@@ -1568,7 +1567,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
     }
     setVolume = (ev) => {
-        this._setVolume(parseFloat(ev.target.value));
+        const new_volume = parseFloat(ev.target.value);
+        this._setVolume(new_volume);
+        this.saveVolume(new_volume);
     }
     _setVolume(volume) {
         let enabled = volume > 0;
@@ -1588,9 +1589,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
     }
 
-    saveVolume = () => {
-        let enabled = this.state.volume > 0;
-        preferences.set("sound-volume", this.state.volume);
+    saveVolume = (volume) => {
+        let enabled = volume > 0;
+        preferences.set("sound-volume", volume);
         preferences.set("sound-enabled", enabled);
     }
 
@@ -2414,7 +2415,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     /> <input type="range"
                         onChange={this.setVolume}
                         value={this.state.volume} min={0} max={1.0} step={0.01}
-                    /> <i className="fa fa-save" onClick={this.saveVolume} style={{cursor: "pointer"}}/>
+                    />
                 </a>
 
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>

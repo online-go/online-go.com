@@ -35,12 +35,19 @@ const SCORE_ESTIMATION_TRIALS = 1000;
 const SCORE_ESTIMATION_TOLERANCE = 0.30;
 const AUTOSCORE_TRIALS = 1000;
 const AUTOSCORE_TOLERANCE = 0.30;
-const MARK_TYPES = ["letter", "circle", "square", "triangle", "cross", "black", "white"];
+const MARK_TYPES = ["letter", "circle", "square", "triangle", "sub_triangle", "cross", "black", "white"];
 
 let __theme_cache = {"black": {}, "white": {}};
 let last_goban_id = 0;
 
 type time_control_system_value = "fischer" | "byoyomi" | "canadian" | "simple" | "absolute" | "none";
+export interface ColoredCircle {
+    move          : string;
+    color         : string;
+    border_width? : number;
+    border_color? : string;
+}
+
 
 interface Events {
     "destroy": never;
@@ -157,6 +164,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private edit_color;
     private errorHandler;
     private heatmap:Array<Array<number>>;
+    private colored_circles:Array<Array<ColoredCircle>>;
     private game_connection_data;
     private game_type;
     private getPuzzlePlacementSetting;
@@ -2152,7 +2160,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 have_text_to_draw = true;
             }
         }
-        if (pos.circle || pos.triangle || pos.chat_triangle || pos.cross || pos.square) {
+        if (pos.circle || pos.triangle || pos.chat_triangle || pos.sub_triangle || pos.cross || pos.square) {
             have_text_to_draw = true;
         }
         if (pos.letter && pos.letter.length > 0) {
@@ -2270,7 +2278,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         /* {{{ */
         if (this.heatmap) {
             if (this.heatmap[j][i] > 0.001) {
-                let color = "#00ff00";
+                let color = "#00FF00";
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
@@ -2310,6 +2318,38 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.restore();
             }
         }}}
+
+        /* Colored stones */
+        /* {{{ */
+        if (this.colored_circles) {
+            if (this.colored_circles[j][i]) {
+                let circle = this.colored_circles[j][i];
+                let color = circle.color;
+
+                ctx.save();
+                ctx.globalAlpha = 1.0;
+                let radius = Math.floor(this.square_size * 0.5) - 0.5;
+                let lineWidth = radius * (circle.border_width || 0.10);
+
+                if (lineWidth < 0.3) {
+                    lineWidth = 0;
+                }
+                ctx.fillStyle = color;
+                ctx.strokeStyle = circle.border_color || "#000000";
+                if (lineWidth > 0) {
+                    ctx.lineWidth = lineWidth;
+                }
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius - lineWidth / 2, 0.001, 2 * Math.PI, false); /* 0.001 to workaround fucked up chrome bug */
+                if (lineWidth > 0) {
+                    ctx.stroke();
+                }
+                ctx.fill();
+                ctx.restore();
+
+            }
+        }
+        /* }}} */
 
 
         /* Draw stones & hovers */
@@ -2550,7 +2590,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
             if (this.show_variation_move_numbers
                 && !letter
-                && !(pos.circle || pos.triangle || pos.chat_triangle || pos.cross || pos.square)
+                && !(pos.circle || pos.triangle || pos.chat_triangle || pos.sub_triangle || pos.cross || pos.square)
             ) {
                 let m = this.engine.getMoveByLocation(i, j);
                 if (m && !m.trunk) {
@@ -2622,7 +2662,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.restore();
                 draw_last_move = false;
             }
-            if (pos.triangle || pos.chat_triangle || altmarking === "triangle" || hovermark === "triangle") {
+            if (pos.triangle || pos.chat_triangle || pos.sub_triangle || altmarking === "triangle" || hovermark === "triangle") {
+                let scale = 1.0;
+                let oy = 0.0;
+                if (pos.sub_triangle) {
+                    scale = 0.5;
+                    oy = this.square_size * 0.30;
+                    transparent = false;
+                }
                 ctx.lineCap = "round";
                 ctx.save();
                 ctx.beginPath();
@@ -2633,13 +2680,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (pos.chat_triangle) {
                     ctx.strokeStyle = "#00aaFF";
                 }
-                ctx.lineWidth = this.square_size * 0.075;
+                ctx.lineWidth = this.square_size * 0.075 * scale;
                 let theta = -(Math.PI * 2) / 4;
-                let r = this.square_size * 0.30;
-                ctx.moveTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
-                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + r * Math.sin(theta));
+                let r = this.square_size * 0.30 * scale;
+                ctx.moveTo(cx + r * Math.cos(theta), cy + oy + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + oy + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + oy + r * Math.sin(theta));
+                theta += (Math.PI * 2) / 3; ctx.lineTo(cx + r * Math.cos(theta), cy + oy + r * Math.sin(theta));
                 ctx.stroke();
                 ctx.restore();
                 draw_last_move = false;
@@ -2764,6 +2811,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.heatmap) {
             if (this.heatmap[j][i] > 0.001) {
                 ret += "heat " + this.heatmap[j][i] + ",";
+            }
+        }
+
+        /* Colored stones */
+        if (this.colored_circles) {
+            if (this.colored_circles[j][i]) {
+                let circle = this.colored_circles[j][i];
+                ret += "circle " + circle.color;
             }
         }
 
@@ -3983,11 +4038,28 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
     } /* }}} */
-    public setHeatmap(heatmap:Array<Array<number>>): Array<Array<number>> {
+    public setHeatmap(heatmap:Array<Array<number>>, dont_draw?:boolean): Array<Array<number>> {
         let ret = this.heatmap;
         this.heatmap = heatmap;
-        this.redraw(true);
+        if (!dont_draw) {
+            this.redraw(true);
+        }
         return ret;
+    }
+    public setColoredCircles(circles:Array<ColoredCircle>, dont_draw?:boolean):void {
+        if (!circles || circles.length === 0) {
+            this.colored_circles = null;
+            return;
+        }
+
+        this.colored_circles = GoMath.makeEmptyObjectMatrix<ColoredCircle>(this.width, this.height);
+        for (let circle of circles) {
+            let xy = GoMath.decodeMoves(circle.move, this.width, this.height)[0];
+            this.colored_circles[xy.y][xy.x] = circle;
+        }
+        if (!dont_draw) {
+            this.redraw(true);
+        }
     }
 
     private setLetterMark(x, y, mark: string, drawSquare?) {
@@ -4003,14 +4075,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (drawSquare) { this.drawSquare(x, y); }
     }
 
-    private setMark(x, y, mark, dont_draw) { /* {{{ */
+    public setMark(x, y, mark, dont_draw) { /* {{{ */
         try {
             if (x >= 0 && y >= 0) {
                 if (typeof(mark) === "number") {
                     mark = "" + mark;
                 }
 
-                if (mark.length <= 3) {
+                if (mark.length <= 3 || parseFloat(mark)) {
                     this.setLetterMark(x, y, mark, !dont_draw);
                 } else {
                     this.setCustomMark(x, y, mark, !dont_draw);

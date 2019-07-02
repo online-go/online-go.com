@@ -150,6 +150,14 @@ export class GoMath {
         }
         return ret;
     } /* }}} */
+    public static makeEmptyObjectMatrix<T>(width:number, height:number):Array<Array<T>> { /* {{{ */
+        let ret = new Array<Array<T>>(height);
+        for (let y = 0; y < height; ++y) {
+            let row = new Array<T>(width);
+            ret[y] = row;
+        }
+        return ret;
+    } /* }}} */
     public static prettyCoords(x:number, y:number, board_height:number):string { /* {{{ */
         if (x >= 0) {
             return ("ABCDEFGHJKLMNOPQRSTUVWXYZ"[x]) + ("" + (board_height - y));
@@ -294,7 +302,6 @@ export class GoMath {
         } else {
             arr.pop();
         }
-        console.log(arr);
         return arr;
     } /* }}} */
     public static encodeMovesToArray(moves):Array<MoveArray> { /* {{{ */

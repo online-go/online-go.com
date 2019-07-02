@@ -247,7 +247,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([60, 0]);
+        this.outcomes_y.range([win_loss_bars_height, 0]);
     }}}
 
     initialize() {{{
@@ -274,14 +274,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .append('svg')
             .attr('class', 'chart')
             .attr('width', this.width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom + 60);
+            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
 
         this.clip = this.svg.append('defs')
             .append('clipPath')
             .attr('id', 'clip')
             .append('rect')
             .attr('width', width)
-            .attr('height', height);
+            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
 
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -298,7 +298,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         for (let i = 0; i < 5; ++i) {
             this.win_loss_graphs.push(this.svg.append('g')
                 .attr('clip-path', 'url(#clip)')
-                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + 60 + 20) + ')')
+                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + win_loss_bars_height + 20) + ')')
                 .on('mouseover', () => {
                     this.helper.style('display', null);
                     this.dateLegend.style('display', null);
@@ -347,7 +347,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.timeline_graph = this.svg.append('g')
             .attr('class', 'timeline')
-            .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + 60) + ')');
+            .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + win_loss_bars_height) + ')');
 
         this.legend = this.svg.append('g')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
@@ -561,7 +561,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let width = this.graph_width;
 
         this.svg.attr('width', this.width + margin.left + margin.right);
-        this.svg.attr('height', height + margin.top + margin.bottom + 60);
+        this.svg.attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
         this.clip.attr('width', width);
         //this.clip.attr('height', height);
 
@@ -754,6 +754,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         /* Plot graph */
         let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
+        date_range[0] = new Date(date_range[0].getUTCFullYear(), date_range[0].getUTCMonth());
+        date_range[1] = new Date(date_range[1].getUTCFullYear(), date_range[1].getUTCMonth());
+        date_range[1].setMonth(date_range[1].getMonth() + 1);
 
         this.ratings_x.domain(date_range);
         let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
@@ -827,39 +830,39 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar weak-wins')
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.wins))
+                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[1].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'win-loss-bar strong-wins')
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.wins))
+                .attr('class', 'win-loss-bar weak-losses')
+                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)))
+                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[2].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'win-loss-bar weak-losses')
+                .attr('class', 'win-loss-bar strong-losses')
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)))
-                .attr('height', (d:RatingEntry) => H(d.losses))
+                .attr('y', (d:RatingEntry) => Y(d.count))
+                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[3].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
-                .attr('class', 'win-loss-bar strong-losses')
-                .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.wins))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)))
-                .attr('height', (d:RatingEntry) => H(d.losses))
+                .attr('class', 'win-loss-bar strong-wins')
+                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('y', (d:RatingEntry) => Y(d.count))
+                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)))
+                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[4].selectAll('rect')
@@ -868,7 +871,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('class', 'win-loss-bar transparent')
                 .attr('x', (d:RatingEntry) => X(d, 0))
                 .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
-                .attr('width', (d:RatingEntry) => W(d, 1))
+                .attr('width', (d:RatingEntry) => W(d, 0.999))
                 .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
         );
     }}}
@@ -876,6 +879,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     getUTCMonthWidth(d:Date):number {{{
         let days_in_month;
 
+        /*
         let today = new Date();
         today.setHours(23, 59, 59);
         if (is_same_month(d, today)) {
@@ -883,14 +887,18 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         } else {
             days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
         }
+        */
+        days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
 
         let s = this.date_extents[0];
         let e = this.date_extents[1];
         s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
         e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
+        /*
         if (e.getTime() > Date.now()) {
             e = new Date();
         }
+        */
         //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
         let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
@@ -922,11 +930,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
+
+            /*
             let today = new Date();
             if (is_same_month(d.ended, today)) {
                 end = today;
                 end.setHours(23, 59, 59);
             }
+            */
 
             let s = start.getTime();
             let e = end.getTime();
@@ -934,18 +945,19 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return isFinite(x) ? x : 0;
         };
 
+
         this.win_loss_bars[0]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.wins || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.wins || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[2]
                 .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.losses || 1)));
+                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
         this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_losses / (d.losses || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.losses || 1)));
+                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);

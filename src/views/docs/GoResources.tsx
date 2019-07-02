@@ -54,6 +54,7 @@ export let GoResources = (props) => {
     let un = getLanguageFlag("un", country, "un");
     let us = getLanguageFlag("us", country, "us");
     let eu = getLanguageFlag("eu", country, "eu");
+    let it = getLanguageFlag("italian", country, "it");
     let nl = getLanguageFlag("dutch", country, "nl");
     let gb = getLanguageFlag("gb", country, "gb");
     let au = getLanguageFlag("au", country, "au");
@@ -188,6 +189,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">In Sente</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>,
                 <span><Flag country={ar}/> <a rel="noopener" href="https://www.youtube.com/user/lucho4668 ">Luciano Zinni</a></span>,
+                <span><Flag country={it}/> <a rel="noopener" href="https://www.youtube.com/user/jejosamurai ">Diego Laurenti</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a> </span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a> </span>,

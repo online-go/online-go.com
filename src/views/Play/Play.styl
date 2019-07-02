@@ -136,9 +136,9 @@
         i {
             padding-right: 0.25rem;
         }
-    } 
+    }
 
-    .automatch-settings-corr { 
+    .automatch-settings-corr {
         flex: 0;
         text-align: justify;
         font-size: 1rem;
@@ -210,12 +210,6 @@
         cursor: help;
     }
 
-    .cheat-alert {
-        color: chocolate;
-        margin-left: 1em;
-        cursor: help;
-    }
-
     // Flex to escape from the table
     .custom-games-list-header-row {
         display: flex;
@@ -240,14 +234,44 @@
         }
         .head.time-control-header {
             padding-left: 4em;
-            text-align: left;    
+            text-align: left;
         }
-        
+
         .cell {
             padding-left: 0.5em;
             display: table-cell;
             text-align: left;
+            position: relative;
         }
+
+        .cheat-alert {
+            color: chocolate;
+            margin-left: 1em;
+            cursor: help;
+        }
+
+        .cell .cheat-alert-tooltiptext {
+            visibility: hidden;
+            background-color: chocolate;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+            bottom: 1em;
+            left: 75%;
+
+            width: 10em;
+            white-space: normal;
+        }
+
+        .cell:hover .cheat-alert-tooltiptext {
+            visibility: visible;
+        }
+
         .break {
             border-top: 1px solid #888;
             border-bottom: 1px solid #888;
