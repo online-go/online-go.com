@@ -106,7 +106,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 <span style={{display: "inline-block", width: "3em"}}>
                                     {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                                 </span>
-                                <span style={{display: "inline-block", width: "8em"}}>
+                                <span style={{display: "inline-block", width: "10em"}}>
                                     <Player user={u} />
                                 </span>
                                 {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
