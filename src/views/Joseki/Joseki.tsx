@@ -20,6 +20,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
+import Select from 'react-select';
+
 import * as data from "data";
 import { _, pgettext, interpolate } from "translate";
 import { KBShortcut } from "KBShortcut";
@@ -138,7 +140,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             variation_label: '_',
             move_type_sequence: [],
             joseki_source: null as {},
-            tag: null as {},
+            tags: [],
             variation_filter: {contributor: null, tag: null, source: null}
         };
 
@@ -314,7 +316,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_node_id: position.node_id,
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
-            tag: position.tags !== null ? position.tags[0] : null, // the back end supports multiple, but we only support one
+            tags: position.tags,
             child_count: position.child_count
         });
         this.last_server_placement = position.placement;
@@ -668,7 +670,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     position_id={this.state.current_node_id}
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
-                    tag={this.state.tag}
+                    tags={this.state.tags}
                     set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
                     child_count = {this.state.child_count}
@@ -682,8 +684,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
-                    joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 0}
-                    tag_id={this.state.tag ? this.state.tag.id : 0}
+                    joseki_source_id={this.state.joseki_source !== null ? this.state.joseki_source.id : 'none'}
+                    tags={this.state.tags}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
                     update_marks={this.updateMarks}
@@ -701,7 +703,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    saveNewPositionInfo = (move_type, variation_label, tag_id, description, joseki_source_id, marks) => {
+    saveNewPositionInfo = (move_type, variation_label, tags, description, joseki_source_id, marks) => {
 
         const mark_string = JSON.stringify(marks); // 'marks' is just a string as far as back end is concerned
 
@@ -715,7 +717,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 body: JSON.stringify({
                     description: description,
                     variation_label: variation_label,
-                    tags: tag_id === null ? null : [tag_id],
+                    tags: tags,
                     category: move_type.toUpperCase(),
                     joseki_source_id: joseki_source_id,
                     marks: mark_string
@@ -753,7 +755,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
-                        tags: tag_id === null ? null : [tag_id], // back end wants a list
+                        tags: tags,
                         joseki_source_id: joseki_source_id,
                         marks: mark_string
                      })
@@ -855,9 +857,9 @@ interface EditProps {
     category: string;
     variation_label: string;
     joseki_source_id: number;
-    tag_id: number;
+    tags: Array<any>;
     contributor: number;
-    save_new_info: (move_type, variation_label, tag_id, description, joseki_source, marks) => void;
+    save_new_info: (move_type, variation_label, tags, description, joseki_source, marks) => void;
     update_marks: ({}) => void;
 }
 
@@ -874,8 +876,10 @@ class EditPane extends React.Component<EditProps, any> {
             node_id: this.props.node_id,
             joseki_source_list: [],
             joseki_source: this.props.joseki_source_id,
-            tag_list: [],
-            tag_id: this.props.tag_id,
+            available_tag_list: [],
+            // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
+            // ('valueKey' and 'labelKey' aren't working for me)
+            tags: this.props.tags === null ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
             variation_label: this.props.variation_label || '1'
         };
 
@@ -898,25 +902,25 @@ class EditPane extends React.Component<EditProps, any> {
         .then(res => res.json())
         .then(body => {
             console.log("Server response to tags GET:", body);
-            this.setState({tag_list: [{id: 'none', description: ""}, ...body.tags]});
-            // Propose the most preferred (typically "position is settled") tag for a new position.
+            this.setState({available_tag_list: [{id: 'none', description: ""}, ...body.tags]});
+            // Default the tag (expecting "Joseki:position is settled") for a new position.
             if (this.props.category === "new") {
-                this.setState({tag_id: body.tags[0].id});
+                this.setState({tags: [body.tags[0]]});
             }
         });
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
         // Detect node changes (resulting from clicking on the board), so we can update
-        console.log("gdsfp: ", nextProps, prevState);
         if (nextProps.node_id !== prevState.node_id) {
             console.log("Updating from props...");
+            console.log("gdsfp: ", nextProps, prevState);
             return {
                 node_id: nextProps.node_id,
                 move_type: nextProps.category === "new" ? Object.keys(MoveCategory)[0] : nextProps.category,
                 new_description: nextProps.description,
                 joseki_source: nextProps.joseki_source_id,
-                tag_id: nextProps.tag_id,
+                tags: nextProps.tags === null ? [] : nextProps.tags.map((t) => ({label: t.description, value: t.id})),
                 variation_label: nextProps.variation_label || '1'
             };
         }
@@ -934,7 +938,8 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     onTagChange = (e) => {
-        this.setState({ tag_id: e.target.value });
+        console.log("changing tags", e);
+        this.setState({ tags: e });
     }
 
     handleEditInput = (e) => {
@@ -949,7 +954,7 @@ class EditPane extends React.Component<EditProps, any> {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
-            this.state.tag_id !== 'none' ? this.state.tag_id : null,
+            this.state.tags.map((t) => (t.value)),
             this.state.new_description,
             this.state.joseki_source  !== 'none' ? this.state.joseki_source : null,
             this.currentMarksInDescription(this.state.new_description));
@@ -1011,8 +1016,8 @@ class EditPane extends React.Component<EditProps, any> {
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
 
-        let tags = this.state.tag_list.map((tag, i) => (
-            <option key={i} value={tag["id"]}>{_(tag["description"])}</option>
+        let available_tags = this.state.available_tag_list.map((tag, i) => (
+            { label: tag.description, value: tag.id }
         ));
 
         // give feedback that we recognised their marks
@@ -1044,12 +1049,16 @@ class EditPane extends React.Component<EditProps, any> {
                         </div>
                     </div>
                     <div className="tag-edit">
-                        <div>Tag:</div>
-                        <div className="tag-edit-controls">
-                            <select value={this.state.tag_id} onChange={this.onTagChange}>
-                                {tags}
-                            </select>
-                        </div>
+                        <div>Tags:</div>
+                        <Select
+                            value={this.state.tags}
+                            options={available_tags}
+                            multi={true}
+                            onChange={this.onTagChange}
+                            valueRenderer={(v) => <span className="tag-value">{v.label}</span>}
+                            optionRenderer={(o) => <span className="tag-option">{o.label}</span>}
+                        />
+
                     </div>
                 </div>
                 <div className="description-edit">
@@ -1087,7 +1096,7 @@ interface ExploreProps {
     comment_count: number;
     can_comment: boolean;
     joseki_source: {url: string, description: string};
-    tag: {};
+    tags: Array<any>;
     set_variation_filter: any;
     current_filter: {contributor: number, tag: number, source: number};
     child_count: number;
@@ -1217,111 +1226,121 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
 
         // Highlight marks
-        let description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+        const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
+        const tags = this.props.tags === null ? "" :
+            this.props.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((t, idx) => (
+            <div className="position-tag" key={idx}>
+                <span>{t['description']}</span>
+            </div>
+        ));
 
         return (
             <div className="position-details">
-                <div className="description-column">
-                    {this.props.position_type !== "new" ?
-                        <React.Fragment>
-                            <div className="position-description">
-                                <Markdown source={description} />
-                            </div>
-                            {this.props.tag &&
-                            <div className="position-tag">
-                                <span>{this.props.tag['description']}</span>
-                            </div>}
-                            {this.props.joseki_source !== null && this.props.joseki_source.url.length > 0 &&
-                            <div className="position-joseki-source">
-                                <span>Source:</span><a href={this.props.joseki_source.url}>{this.props.joseki_source.description}</a>
-                            </div>}
-                            {this.props.joseki_source !== null && this.props.joseki_source.url.length === 0 &&
-                            <div className="position-joseki-source">
-                                <span>Source:</span><span>{this.props.joseki_source.description}</span>
-                            </div>}
-                        </React.Fragment>
-                    : ""}
-                </div>
-                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
-                    {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
-                        <React.Fragment>
-                            <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
-                                    onClick={this.showFilterSelector} />
-                            {(this.props.comment_count !== 0 ?
-                                <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
-                                <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)}
+                <div className="position-columns">
+                    <div className="description-column">
+                        {this.props.position_type !== "new" ?
+                        <div className="position-description">
+                            <Markdown source={description} />
+                        </div>
+                        : ""}
+                    </div>
+                    <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
+                        {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
+                            <React.Fragment>
+                                <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
+                                        onClick={this.showFilterSelector} />
+                                {(this.props.comment_count !== 0 ?
+                                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
+                                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)}
 
-                            <i className="fa fa-history" onClick={this.showAuditLog}></i>
-                        </React.Fragment>
-                    }
+                                <i className="fa fa-history" onClick={this.showAuditLog}></i>
+                            </React.Fragment>
+                        }
 
-                    {this.state.extra_info_selected === "comments" &&
-                        <React.Fragment>
-                            <div className="discussion-container">
-                                <div className="extra-info-header">
-                                    <div>Discussion:</div>
-                                    <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                </div>
-                                <div className="discussion-lines">
-                                <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.commentary.map((comment, idx) =>
-                                        <div className="comment" key={idx}>
-                                            <div className="comment-header">
-                                                <Player user={comment.user_id}></Player>
-                                                <div className="comment-date">{comment.date.toDateString()}</div>
-                                            </div>
-                                            <div className="comment-text">{comment.comment}</div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
-                        </React.Fragment>
-                    }
-
-                    {this.state.extra_info_selected === "audit-log" &&
-                        <React.Fragment>
-                            <div className="audit-container">
-                                <div className="extra-info-header">
-                                        <div>Audit Log:</div>
+                        {this.state.extra_info_selected === "comments" &&
+                            <React.Fragment>
+                                <div className="discussion-container">
+                                    <div className="extra-info-header">
+                                        <div>Discussion:</div>
                                         <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                </div>
-                                <div className="audit-entries">
-                                <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.audit_log.map((audit, idx) =>
-                                        <div className="audit-entry" key={idx}>
-                                            <div className="audit-header">
-                                                <Player user={audit.userId}></Player>
-                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
+                                    </div>
+                                    <div className="discussion-lines">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                        {this.state.commentary.map((comment, idx) =>
+                                            <div className="comment" key={idx}>
+                                                <div className="comment-header">
+                                                    <Player user={comment.user_id}></Player>
+                                                    <div className="comment-date">{comment.date.toDateString()}</div>
+                                                </div>
+                                                <div className="comment-text">{comment.comment}</div>
                                             </div>
-                                            {audit.comment}
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </React.Fragment>
-                    }
+                                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                            </React.Fragment>
+                        }
 
-                    {this.state.extra_info_selected === "variation-filter" &&
-                        <React.Fragment>
-                            <div className="filter-container">
-                                <div className="extra-info-header">
-                                        <div>Variation filter:</div>
-                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
+                        {this.state.extra_info_selected === "audit-log" &&
+                            <React.Fragment>
+                                <div className="audit-container">
+                                    <div className="extra-info-header">
+                                            <div>Audit Log:</div>
+                                            <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
+                                    </div>
+                                    <div className="audit-entries">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                        {this.state.audit_log.map((audit, idx) =>
+                                            <div className="audit-entry" key={idx}>
+                                                <div className="audit-header">
+                                                    <Player user={audit.userId}></Player>
+                                                    <div className="audit-date">{new Date(audit.date).toDateString()}</div>
+                                                </div>
+                                                {audit.comment}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <Throbber throb={this.state.extra_throb}/>
-                                <JosekiVariationFilter
-                                    contributor_list_url={server_url + "contributors"}
-                                    tag_list_url = {server_url + "tags"}
-                                    source_list_url = {server_url + "josekisources"}
-                                    current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
-                                    set_variation_filter={this.props.set_variation_filter}
-                                />
-                            </div>
-                        </React.Fragment>
-                    }
+                            </React.Fragment>
+                        }
+
+                        {this.state.extra_info_selected === "variation-filter" &&
+                            <React.Fragment>
+                                <div className="filter-container">
+                                    <div className="extra-info-header">
+                                            <div>Variation filter:</div>
+                                            <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
+                                    </div>
+                                    <Throbber throb={this.state.extra_throb}/>
+                                    <JosekiVariationFilter
+                                        contributor_list_url={server_url + "contributors"}
+                                        tag_list_url = {server_url + "tags"}
+                                        source_list_url = {server_url + "josekisources"}
+                                        current_filter = {this.props.current_filter}
+                                        godojo_headers={godojo_headers}
+                                        set_variation_filter={this.props.set_variation_filter}
+                                    />
+                                </div>
+                            </React.Fragment>
+                        }
+                    </div>
                 </div>
+                {this.props.position_type !== "new" &&
+                    <div className="position-other-info">
+                        <React.Fragment>
+                        {tags}
+                        {this.props.joseki_source !== null && this.props.joseki_source.url.length > 0 &&
+                        <div className="position-joseki-source">
+                            <span>Source:</span><a href={this.props.joseki_source.url}>{this.props.joseki_source.description}</a>
+                        </div>}
+                        {this.props.joseki_source !== null && this.props.joseki_source.url.length === 0 &&
+                        <div className="position-joseki-source">
+                            <span>Source:</span><span>{this.props.joseki_source.description}</span>
+                        </div>}
+                        </React.Fragment>
+                    </div>
+                }
             </div>
         );
     }

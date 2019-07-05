@@ -196,6 +196,14 @@
 
         .position-details {
             flex-grow: 1;
+            flex-basis: auto;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0.2rem;
+        }
+
+        .position-columns {
+            flex-grow: 1;
             flex-shrink:0;
             flex-basis:auto;
             display: flex;
@@ -210,22 +218,27 @@
                     flex-grow: 1;   // put source at the bottom
                     flex-basis: 80%;
                 }
-                .position-tag span {
-                    margin: auto;
-                    padding-left: 3px;
-                    padding-right: 3px;
-                    border-radius: 3px;
-                    themed background-color shade4;
-                }
-                .position-joseki-source {
-                    padding-bottom: 1.5em;
-                    span {
-                         padding-right: 0.5em;
-                    }
-                }
             }
         }
 
+        .position-tag {
+            margin-bottom: 0.2rem;
+        }
+        .position-tag span {
+            margin: auto;
+            padding-left: 3px;
+            padding-right: 3px;
+            border-radius: 3px;
+
+            themed background-color shade4;
+        }
+
+        .position-joseki-source {
+            padding-bottom: 1.5em;
+            span {
+                    padding-right: 0.5em;
+            }
+        }
         .extra-info-column {
             margin-top: 3em;
 
@@ -321,6 +334,10 @@
             }
 
             .joseki-source-edit {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+
                 .joseki-source-edit-controls {
                     display: flex;
                     align-items: center;
@@ -332,15 +349,20 @@
             }
 
             .tag-edit {
-                justify-self: end;
+                justify-self: stretch;
 
-                .tag-edit-controls {
-                    display: flex;
-                    align-items: center;
+                div[class^="Select"] {
+                    themed background bg;
+                    themed color fg;
+                }
 
-                    .fa {
-                        padding-left: 0.5em;
-                    }
+                .Select-control {
+                    border: none;
+                    border-radius: 5px;
+                    border-bottom: 1px solid;
+                }
+                .tag-option {
+                    width: max-content;
                 }
             }
         }

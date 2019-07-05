@@ -10,7 +10,7 @@
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
   "browserslist": [
-      "defaults"
+    "defaults"
   ],
   "devDependencies": {
     "autoprefixer": "^9.6.0",
@@ -65,6 +65,7 @@
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
     "query-string": "^5.0.1",
     "react": "^16.8.6",
     "react-autosuggest": "^9.4.2",
