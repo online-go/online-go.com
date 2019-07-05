@@ -42,7 +42,9 @@ let OGSScoreEstimatorModule;
 /* This is used on the server side */
 export function set_OGSScoreEstimator(mod) {
     OGSScoreEstimatorModule = mod;
-    init_score_estimator().then((tf) => console.info('Score estimator intialized'));
+    init_score_estimator()
+        .then((tf) => console.info('Score estimator intialized'))
+        .catch(err => console.error(err));
 }
 
 let init_promise:Promise<boolean> = null;
@@ -104,7 +106,8 @@ export function init_score_estimator():Promise<boolean> {
 if (CLIENT) {
     init_score_estimator().then((tf) => {
         console.log('SE Initialized');
-    });
+    })
+    .catch(err => console.error(err));
 }
 
 
