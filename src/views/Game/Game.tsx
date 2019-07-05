@@ -132,7 +132,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
-            analyze_pencil_color: "#8DDD3C",
+            analyze_pencil_color: "#004cff",
             show_submit: false,
             user_is_player: false,
             zen_mode: false,
