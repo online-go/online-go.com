@@ -50,6 +50,7 @@ import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
+import {toast} from "toast";
 
 declare var swal;
 
@@ -113,6 +114,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     leave_pushed_analysis: () => void = null;
     stashed_conditional_moves = null;
     volume_sound_debounce: any = null;
+    copied_node: MoveTree = null;
 
     white_username: string = "White";
     black_username: string = "Black";
@@ -220,7 +222,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban_setModeDeferredPlay = this.goban_setModeDeferredPlay.bind(this);
         this.stopEstimatingScore = this.stopEstimatingScore.bind(this);
         this.setStrictSekiMode = this.setStrictSekiMode.bind(this);
-        this.goban_deleteBranch = this.goban_deleteBranch.bind(this);
         this.rematch = this.rematch.bind(this);
         this.onStoneRemovalAutoScore = this.onStoneRemovalAutoScore.bind(this);
         this.onStoneRemovalAccept = this.onStoneRemovalAccept.bind(this);
@@ -1500,7 +1501,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     goban_setModeDeferredPlay() {
         this.goban.setModeDeferred("play");
     }
-    goban_deleteBranch() {
+    goban_deleteBranch = () => {
         if (this.state.mode !== "analyze") {
             return;
         }
@@ -1517,8 +1518,82 @@ export class Game extends React.PureComponent<GameProperties, any> {
             swal({text: _(`The current position is not an explored branch, so there is nothing to delete`)});
         } else {
             swal({text: _("Are you sure you wish to remove this move branch?"), showCancelButton: true})
-            .then(() => this.goban.deleteBranch())
+            .then(() => {
+                this.goban.deleteBranch();
+                this.goban.syncReviewMove();
+            })
             .catch(() => 0);
+        }
+    }
+    goban_copyBranch = () => {
+        if (this.state.mode !== "analyze") {
+            return;
+        }
+
+        try {
+            /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
+            if (!window.getSelection().isCollapsed) {
+                return;
+            }
+        } catch (e) {
+        }
+
+        this.copied_node = this.goban.engine.cur_move;
+        toast(<div>{_("Branch copied")}</div>, 1000);
+    }
+    goban_pasteBranch = () => {
+        if (this.state.mode !== "analyze") {
+            return;
+        }
+
+        try {
+            /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
+            if (!window.getSelection().isCollapsed) {
+                return;
+            }
+        } catch (e) {
+        }
+
+        if (this.copied_node) {
+            let paste = (base:MoveTree, source:MoveTree) => {
+                this.goban.engine.jumpTo(base);
+                if (source.edited) {
+                    this.goban.engine.editPlace(
+                        source.x,
+                        source.y,
+                        source.player,
+                        false
+                    );
+                }
+                else {
+                    this.goban.engine.place(
+                        source.x,
+                        source.y,
+                        false,
+                        false,
+                        true,
+                        false,
+                        false
+                    );
+                }
+                let cur = this.goban.engine.cur_move;
+
+                if (source.trunk_next) {
+                    paste(cur, source.trunk_next);
+                }
+                for (let branch of source.branches) {
+                    paste(cur, branch);
+                }
+            };
+
+            try {
+                paste(this.goban.engine.cur_move, this.copied_node);
+            } catch (e) {
+                errorAlerter(_("A move conflict has been detected"));
+            }
+            this.goban.syncReviewMove();
+        } else {
+            console.log("Nothing copied or cut to paste");
         }
     }
     setStrictSekiMode(ev) {
@@ -2133,16 +2208,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
             */}
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.stone_alternate}
+                     title={_("Place alternating stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && (this.state.analyze_subtool !== "black" && this.state.analyze_subtool !== "white")) ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/black-white.png"}/>
                 </button>
 
                 <button onClick={this.set_analyze_tool.stone_black}
+                    title={_("Place black stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && this.state.analyze_subtool === "black") ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/black.png"}/>
                 </button>
 
                 <button onClick={this.set_analyze_tool.stone_white}
+                    title={_("Place white stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && this.state.analyze_subtool === "white") ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/white.png"}/>
                 </button>
@@ -2150,42 +2228,57 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.draw}
+                    title={_("Draw on the board with a pen")}
                     className={(this.state.analyze_tool === "draw") ? "active" : ""}
                     >
                     <i className="fa fa-pencil"></i>
                 </button>
-                <button onClick={this.clearAnalysisDrawing}>
+                <button onClick={this.clearAnalysisDrawing} title={_("Clear pen marks")}>
                     <i className="fa fa-eraser"></i>
                 </button>
             </div>
-            <input type="color" value={this.state.analyze_pencil_color} onChange={this.setPencilColor}/>
+            <input type="color" value={this.state.analyze_pencil_color}  title={_("Select pen color")} onChange={this.setPencilColor}/>
 
-            <button onClick={this.goban_deleteBranch}>
-                <i className="fa fa-trash"></i>
-            </button>
+            <div className="btn-group">
+                <button onClick={this.goban_copyBranch} title={_("Copy this branch")}>
+                    <i className="fa fa-clone"></i>
+                </button>
+                <button disabled={this.copied_node === null} onClick={this.goban_pasteBranch} title={_("Paste branch")}>
+                    <i className="fa fa-clipboard"></i>
+                </button>
+                <button onClick={this.goban_deleteBranch} title={_("Delete branch")}>
+                    <i className="fa fa-trash"></i>
+                </button>
+            </div>
 
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.label_letters}
+                    title={_("Place alphabetical labels")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "letters") ? "active" : ""}>
                     <i className="fa fa-font"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_numbers}
+                    title={_("Place numeric labels")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "numbers") ? "active" : ""}>
                     <i className="ogs-label-number"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_triangle}
+                    title={_("Place triangle marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "triangle") ? "active" : ""}>
                     <i className="ogs-label-triangle"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_square}
+                    title={_("Place square marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "square") ? "active" : ""}>
                     <i className="ogs-label-square"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_circle}
+                    title={_("Place circle marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "circle") ? "active" : ""}>
                     <i className="ogs-label-circle"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_cross}
+                    title={_("Place X marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "cross") ? "active" : ""}>
                     <i className="ogs-label-x"></i>
                 </button>
@@ -2494,6 +2587,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <KBShortcut shortcut="f6" action={this.set_analyze_tool.label_circle}/>
                 <KBShortcut shortcut="f7" action={this.set_analyze_tool.label_letters}/>
                 <KBShortcut shortcut="f8" action={this.set_analyze_tool.label_numbers}/>
+                <KBShortcut shortcut="ctrl-c" action={this.goban_copyBranch}/>
+                <KBShortcut shortcut="ctrl-v" action={this.goban_pasteBranch}/>
                 <KBShortcut shortcut="f9" action={this.set_analyze_tool.draw}/>
                 {((goban && goban.mode === "analyze") || null) && <KBShortcut shortcut="f10" action={this.set_analyze_tool.clear_and_sync}/>}
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch}/>
