@@ -20,6 +20,7 @@ import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {UIPush} from "UIPush";
+import {errorLogger} from "misc";
 import * as moment from "moment";
 import ITC from "ITC";
 import * as data from "data";
@@ -57,7 +58,8 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                 for (let announcement of announcements) {
                     this.announce(announcement);
                 }
-            });
+            })
+            .catch(errorLogger);
         }, 20);
     }}}
 

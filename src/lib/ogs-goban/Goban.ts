@@ -4285,7 +4285,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
         setTimeout(() => {
-            init_score_estimator().then(do_score_estimation);
+            init_score_estimator()
+                .then(do_score_estimation)
+                .catch(err => console.error(err));
         }, 10);
     } /* }}} */
     private sendMove(mv) { /* {{{ */

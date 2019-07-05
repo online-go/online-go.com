@@ -22,7 +22,7 @@ import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
-import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore} from "misc";
+import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore, errorLogger} from "misc";
 import {LineText} from "misc-ui";
 import {challenge, createDemoBoard} from "ChallengeModal";
 import {openNewGameModal} from "NewGameModal";
@@ -71,7 +71,8 @@ function logout() {
     get("/api/v0/logout").then((config) => {
         data.set(cached.config, config);
         window.location.href = '/';
-    });
+    })
+    .catch(errorLogger);
 }
 
 
