@@ -535,6 +535,64 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
             });
+
+            let stashed_move_string = null;
+            let stashed_review_id = null;
+            /* If we lose connection, save our place when we reconnect so we can jump to it. */
+            this.goban.on("review.load-start", () => {
+                if (this.goban.review_controller_id !== data.get("user").id) {
+                    return;
+                }
+
+                stashed_review_id = this.goban.review_id;
+                stashed_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+                if (stashed_move_string.length === 0) {
+                    stashed_review_id = null;
+                    stashed_move_string = null;
+                }
+            });
+            this.goban.on("review.load-end", () => {
+                if (this.goban.review_controller_id !== data.get("user").id) {
+                    return;
+                }
+
+                if (stashed_move_string && stashed_review_id === this.goban.review_id) {
+                    let cur_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+
+                    let prev_last_review_message = this.goban.getLastReviewMessage();
+                    let moves = GoMath.decodeMoves(stashed_move_string, this.goban.width, this.goban.height);
+
+                    this.goban.engine.jumpTo(this.goban.engine.move_tree);
+                    for (let move of moves) {
+                        if (move.edited) {
+                            this.goban.engine.editPlace(
+                                move.x,
+                                move.y,
+                                move.color,
+                                false
+                            );
+                        }
+                        else {
+                            this.goban.engine.place(
+                                move.x,
+                                move.y,
+                                false,
+                                false,
+                                true,
+                                false,
+                                false
+                            );
+                        }
+                    }
+                    /* This is designed to kinda work around race conditions
+                     * where we start sending out review moves before we have
+                     * authenticated */
+                    setTimeout(() => {
+                        this.goban.setLastReviewMessage(prev_last_review_message);
+                        this.goban.syncReviewMove();
+                    }, 100);
+                }
+            });
         }
 
         if (this.game_id) {
