@@ -419,9 +419,13 @@
             .child-count-details-pane {
                 min-width: 18rem;
                 min-height: 8rem;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
             }
 
             .details-pane-open {
+                align-items: flex-start;
                 themed background-color shade5;
             }
 
@@ -431,6 +435,7 @@
             }
 
             .variation-count-header {
+                min-width: 18rem;
                 display: flex;
                 padding-left: 3px;
                 margin-bottom: 0.2rem;
