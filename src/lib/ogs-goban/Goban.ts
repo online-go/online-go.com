@@ -208,6 +208,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private onPendingResignationCleared;
     private on_disconnects;
     private on_game_screen;
+    private on_review_screen;
+    private on_demo_screen;
     private original_square_size;
     private parent;
     private pattern_search_color;
@@ -275,6 +277,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         //window['active_gobans'][this.goban_id] = this;
         this.destroyed = false;
         this.on_game_screen = this.getLocation().indexOf("/game/") >= 0;
+        this.on_review_screen = this.getLocation().indexOf("/review/") >= 0;
+        this.on_demo_screen = this.getLocation().indexOf("/demo/") >= 0;
+
         this.parent = config["board_div"] ? $(config["board_div"]) : null;
         this.no_display = false;
         if (!this.parent) {
@@ -3992,7 +3997,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } while (idx === this.last_stone_sound);
         this.last_stone_sound = idx;
 
-        if (this.on_game_screen) {
+        if (this.on_game_screen || this.on_review_screen || this.on_demo_screen) {
             if (this.last_sound_played_for_a_stone_placement === "-1,-1") {
                 this.emit('audio-pass');
             } else {
