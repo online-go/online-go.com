@@ -343,7 +343,7 @@
                     align-items: center;
 
                     .fa {
-                        padding-left: 0.5em;
+                        padding-left: 0.5rem;
                     }
                 }
             }
@@ -406,6 +406,52 @@
                     direction: rtl;  // ellipsis on left
                 }
             }
+        }
+
+        .continuations-pane {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-end;
+
+            margin-bottom: 0.3rem;
+
+            .details-pane-open {
+                themed background-color shade5;
+            }
+
+            .count-details {
+                padding-left: 0.2rem;
+                padding-right: 0.5rem;
+            }
+
+            .variation-count-header {
+                display: flex;
+                padding-left: 3px;
+                margin-bottom: 0.2rem;
+
+                flex-direction: row;
+                justify-content: space-between;
+                padding-right: 0.5em;
+                align-items: center;
+                themed background-color shade4;
+
+                .fa {
+                    margin-bottom: 0;
+                }
+            }
+
+            .fa {
+                align-self: flex-end;
+                margin-right: 0.5em;
+                padding: 3px;
+                margin-bottom: 1em; // needed in mobile view
+            }
+
+            .variation-count-item span {
+                margin-right: 0.5rem;
+            }
+
         }
     }
 }

@@ -60,6 +60,14 @@ const position_url = (node_id, variation_filter) => {
 const joseki_sources_url = server_url + "josekisources";
 const tags_url = server_url + "tags";
 
+const tag_count_url = (node_id, tag_id) => (
+    server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id
+);
+
+const tagscount_url = (node_id) => (
+    server_url + "position/tagcounts?id=" + node_id
+);
+
 // Headers needed to talk to the godojo server.
 let godojo_headers = {        // note: user JWT is added to this later
     'Accept': 'application/json',
@@ -141,7 +149,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_type_sequence: [],
             joseki_source: null as {},
             tags: [],
-            variation_filter: {contributor: null, tag: null, source: null}
+            variation_filter: {contributor: null, tag: null, source: null},
+
+            count_details_open: false,
+            tag_counts: []
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -261,6 +272,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
 
             this.processNewJosekiPosition(body);
+
+            if (this.state.count_details_open) {
+                this.showVariationCounts(node_id);
+            }
 
             if (this.state.mode === PageMode.Play) {
 
@@ -456,7 +471,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.next_moves = [];
                 this.setState({
                     position_description: "## Joseki",
-                    current_move_category: "new"
+                    current_move_category: "new",
+                    child_count: 0,
+                    tag_counts: []
                 });
                 this.goban.enableStonePlacement();
             }
@@ -475,7 +492,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 // They clicked a non-Joseki move
                 console.log("Ooops: ", this.state.current_move_category);
                 this.backOneMove();
-             }
+            }
 
             console.log("pp exit");
         }
@@ -513,7 +530,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             mode: PageMode.Play,
             played_mistake: false,
-            move_type_sequence: []
+            move_type_sequence: [],
+            count_display_open: false
         });
     }
 
@@ -566,10 +584,49 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.renderCurrentJosekiPosition();
     }
 
+    showCurrentVariationCounts = () => {
+        this.showVariationCounts(this.state.current_node_id);
+    }
+
+    showVariationCounts = (node_id: number) => {
+        this.setState({
+            tag_counts: [],
+            count_details_open: true
+        });
+
+        fetch(tagscount_url(node_id), {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(res => res.json())
+        .then(body => {
+            let counts = [];
+            Object.keys(body).forEach(t => {
+                counts.push({tagname: t, count: body[t]});
+            });
+            this.setState({tag_counts: counts});
+        });
+    }
+
+    hideVariationCounts = () => {
+        this.setState({count_details_open: false});
+    }
+
     render() {
         console.log("Joseki app rendering ", this.state.move_string);
 
         const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
+
+        const count_details = this.state.count_details_open ?
+            <React.Fragment>
+                {this.state.tag_counts.filter((t) => (t.count > 0)).map((t, idx) => (
+                    <div className="variation-count-item" key={idx}>
+                        <span>{t.tagname}:</span><span>{t.count}</span></div>
+                ))}
+            </React.Fragment>
+            : "";
+
+
         return (
             <div className={"Joseki"}>
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
@@ -580,7 +637,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <div className="right-col">
                     <div className="top-bar">
                         <div className="move-controls">
-                            <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
+                        <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + (this.state.mode !== PageMode.Play ? "" : " hide")} onClick={this.backOneMove}></i>
                             <div
                                 className={"pass-button" + (show_pass_available ? " pass-available" : "")}
@@ -617,11 +674,31 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <span className="moves-made-string">{this.state.move_string}</span>}
                         </div>
                     </div>
-                    {this.state.child_count !== null && this.state.child_count !== 0 &&
-                         <div className="position-child-count">
-                                <span>This position leads to {this.state.child_count} others.</span>
-                        </div>
+                    <div className="continuations-pane">
+                    {(this.state.child_count !== null && this.state.child_count !== 0) &&
+                        <React.Fragment>
+                            <div className="position-child-count">
+                                This position leads to {this.state.child_count} others.
+                            </div>
+                            <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
+                                {!this.state.count_details_open &&
+                                    <i className="fa fa-info-circle" onClick={this.showCurrentVariationCounts}></i>
+                                }
+                                {this.state.count_details_open &&
+                                <React.Fragment>
+                                    <div className="variation-count-header">
+                                        <div>Continuations:</div>
+                                        <i className="fa fa-caret-right" onClick={this.hideVariationCounts} />
+                                    </div>
+                                    <div className="count-details">
+                                        {count_details}
+                                    </div>
+                                </React.Fragment>
+                                }
+                            </div>
+                        </React.Fragment>
                     }
+                    </div>
                 </div>
             </div>
         );
