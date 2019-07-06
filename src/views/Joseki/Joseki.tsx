@@ -152,7 +152,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             variation_filter: {contributor: null, tag: null, source: null},
 
             count_details_open: false,
-            tag_counts: []
+            tag_counts: [],
+            counts_throb: false
         };
 
         this.goban_div = $("<div className='Goban'>");
@@ -591,7 +592,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     showVariationCounts = (node_id: number) => {
         this.setState({
             tag_counts: [],
-            count_details_open: true
+            count_details_open: true,
+            counts_throb: true
         });
 
         fetch(tagscount_url(node_id), {
@@ -604,7 +606,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
             Object.keys(body).forEach(t => {
                 counts.push({tagname: t, count: body[t]});
             });
-            this.setState({tag_counts: counts});
+            this.setState({
+                tag_counts: counts,
+                counts_throb: false
+            });
         });
     }
 
@@ -691,6 +696,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                                         <i className="fa fa-caret-right" onClick={this.hideVariationCounts} />
                                     </div>
                                     <div className="count-details">
+                                        <Throbber throb={this.state.counts_throb}/>
                                         {count_details}
                                     </div>
                                 </React.Fragment>
