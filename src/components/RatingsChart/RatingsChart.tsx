@@ -27,6 +27,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
+import {errorLogger} from 'misc';
 import {
     rank_to_rating,
     rating_to_rank,
@@ -530,7 +531,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.setState({loading: true});
         d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
             makeRatingEntry
-        ).then(this.loadDataAndPlot);
+        ).then(this.loadDataAndPlot)
+        .catch(errorLogger)
+        ;
     }}}
 
     /* The area we can draw all of our charting in */

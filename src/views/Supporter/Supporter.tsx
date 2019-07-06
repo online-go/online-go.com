@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {del, put, post, get} from "requests";
-import {errorAlerter} from "misc";
+import {ignore, errorAlerter} from "misc";
 import * as data from "data";
 import {LineText} from "misc-ui";
 import {openBecomeASiteSupporterModal} from "./BecomeASiteSupporter";
@@ -531,7 +531,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             this.processSupporterSignup('paypal', payment_method, amount, currency, interval)
             .then(() => {
                 console.log("Navigating to paypal purchase page");
-            });
+            })
+            .catch(ignore); /* we already alert in this case */
         })
         .catch(errorAlerter);
     }}}

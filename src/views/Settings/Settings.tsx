@@ -332,9 +332,12 @@ export class Settings extends React.PureComponent<{}, any> {
                     };
 
                     try {
-                        Notification.requestPermission().then(onRequestResult);
+                        Notification.requestPermission()
+                            .then(onRequestResult)
+                            .catch(ignore);
                     } catch (e) {
                         /* deprecated usage, but only way supported on safari currently */
+                        // tslint:disable-next-line:no-floating-promises
                         Notification.requestPermission(onRequestResult);
                     }
 
@@ -351,7 +354,8 @@ export class Settings extends React.PureComponent<{}, any> {
             'site_preferences': {
                 'hide_ui_class': !checked
             }
-        });
+        })
+        .catch(errorAlerter);
     }}}
 
     updateIncidentReportNotifications = (ev) => {{{

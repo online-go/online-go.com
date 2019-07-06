@@ -109,6 +109,13 @@ moment.locale(getPreferredLanguage());
 
 /*** Load our config ***/
 data.watch(cached.config, (config) => {
+    /* We do a pass where we set everything, and then we 'set' everything
+     * again to do the emits that we are expecting. Otherwise triggers
+     * that are depending on other parts of the config will fire without
+     * having up to date information (in particular user / auth stuff) */
+    for (let key in config) {
+        data.setWithoutEmit(`config.${key}`, config[key]);
+    }
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
