@@ -602,9 +602,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         })
         .then(res => res.json())
         .then(body => {
+            console.log("Tags Count GET:", body);
+            let tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group-t2.group) : Math.sign(t1.seq-t2.seq)));
             let counts = [];
-            Object.keys(body).forEach(t => {
-                counts.push({tagname: t, count: body[t]});
+            tags.forEach(t => {
+                counts.push({tagname: t.description, count: t.continuationCount});
             });
             this.setState({
                 tag_counts: counts,
