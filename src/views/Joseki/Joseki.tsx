@@ -300,11 +300,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 else if (body.next_moves.length > 0 && this.state.move_string !== "") {
                     // the computer plays both good and bad moves
                     const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
-                    const location = this.goban.engine.decodeMoves(next_play.placement)[0];
-                    console.log("Will play: ", next_play, location);
+                    console.log("Will play: ", next_play);
                     this.our_turn = true;
-                    this.goban.engine.place(location.x, location.y);
-                    this.onBoardUpdate();
+                    if (next_play.placement === "pass") {
+                        this.goban.pass();
+                        this.onBoardUpdate();
+                    }
+                    else {
+                        const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                        this.goban.engine.place(location.x, location.y);
+                        this.onBoardUpdate();
+                    }
                 }
             }
             if (this.backstepping) {
@@ -362,7 +368,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
             else {
                 const label = option['variation_label'];
-                console.log("Drawing variation", option['placement'], label, option["category"]);
                 new_options[label] = {
                     move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
                     color: ColorMap[option["category"]]
