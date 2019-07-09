@@ -68,10 +68,14 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                         let contributor_list = [...this.state.contributor_list];
                         contributor_list[idx] = {resolved: true, player: p};
                         this.setState({contributor_list});
+                    }).catch((r) => {
+                        console.log("Player cache fetch failed:", r);
                     });
                 }
             });
             this.setState({contributor_list});
+        }).catch((r) => {
+            console.log("Contributors GET failed:", r);
         });
 
         fetch(this.props.tag_list_url, {
@@ -82,6 +86,8 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         .then(body => {
             console.log("Server response to tag GET:", body);
             this.setState({tag_list: body.tags});
+        }).catch((r) => {
+            console.log("Tags GET failed:", r);
         });
 
         fetch(this.props.source_list_url, {
@@ -92,6 +98,8 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         .then(body => {
             console.log("Server response to source GET:", body);
             this.setState({source_list: body.sources});
+        }).catch((r) => {
+            console.log("Sources GET failed:", r);
         });
     }
 

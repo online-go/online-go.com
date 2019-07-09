@@ -217,6 +217,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 user_can_administer: body.is_admin,
                 user_can_comment: body.can_comment
             });
+        }).catch((r) => {
+            console.log("Permissions GET failed:", r);
         });
     }
 
@@ -310,6 +312,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.backstepping = false;
             }
             this.goban.enableStonePlacement();
+        }).catch((r) => {
+            console.log("Node GET failed:", r);
         });
     }
 
@@ -603,7 +607,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(res => res.json())
         .then(body => {
             console.log("Tags Count GET:", body);
-            let tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group-t2.group) : Math.sign(t1.seq-t2.seq)));
+            let tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
             let counts = [];
             tags.forEach(t => {
                 counts.push({tagname: t.description, count: t.continuationCount});
@@ -612,6 +616,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 tag_counts: counts,
                 counts_throb: false
             });
+        }).catch((r) => {
+            console.log("Continuation Counts GET failed:", r);
         });
     }
 
@@ -813,6 +819,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 console.log("Server response to sequence PUT:", body);
                 this.processNewJosekiPosition(body);
                 this.setExploreMode();
+            }).catch((r) => {
+                console.log("Position PUT failed:", r);
             });
         }
         else {
@@ -850,7 +858,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     console.log("Server response to description PUT:", body);
                     this.processNewJosekiPosition(body);
                     this.setExploreMode();
+                }).catch((r) => {
+                    console.log("Position PUT failed:", r);
                 });
+            }).catch((r) => {
+                console.log("PositionS POST failed:", r);
             });
         }
     }
@@ -977,6 +989,8 @@ class EditPane extends React.Component<EditProps, any> {
         .then(body => {
             console.log("Server response to josekisources GET:", body);
             this.setState({joseki_source_list: [{id: 'none', description: "(unknown)"}, ...body.sources]});
+        }).catch((r) => {
+            console.log("Sources GET failed:", r);
         });
 
         // Get the list of position tags
@@ -992,6 +1006,8 @@ class EditPane extends React.Component<EditProps, any> {
             if (this.props.category === "new") {
                 this.setState({tags: [body.tags[0]]});
             }
+        }).catch((r) => {
+            console.log("Tags GET failed:", r);
         });
     }
 
@@ -1074,6 +1090,8 @@ class EditPane extends React.Component<EditProps, any> {
                 joseki_source_list: [new_source, ...this.state.joseki_source_list],
                 joseki_source: new_source.id
             });
+        }).catch((r) => {
+            console.log("Sources PUT failed:", r);
         });
     }
 
@@ -1237,6 +1255,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             console.log("Server response:", body);
             this.setState({extra_throb: false});
             this.extractCommentary(body.commentary);
+        }).catch((r) => {
+            console.log("Comments GET failed:", r);
         });
         this.setState({ extra_info_selected: "comments" });
     }
@@ -1269,6 +1289,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.setState({extra_throb: false});
             console.log("Server response: ", body);
             this.extractAuditLog(body);
+        }).catch((r) => {
+            console.log("Audits GET failed:", r);
         });
         this.setState({ extra_info_selected: "audit-log" });
     }
@@ -1297,6 +1319,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             .then(body => {
                 console.log("Server response to sequence POST:", body);
                 this.extractCommentary(body.commentary);
+            }).catch((r) => {
+                console.log("Comment PUT failed:", r);
             });
 
             this.setState({ next_comment: "" });

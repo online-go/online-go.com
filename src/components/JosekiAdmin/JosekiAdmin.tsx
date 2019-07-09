@@ -61,6 +61,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         .then(res => res.json())
         .then(body => {
             this.setState({schema_version: body.schema_version});
+        }).catch((r) => {
+            console.log("Appinfo GET failed:", r);
         });
     }
 
@@ -110,6 +112,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
                 // get on with the next one, if there are more
                 this.revertSelectedChanges(next_selections);
+            }).catch((r) => {
+                console.log("Revert POST failed:", r);
             });
         }
         else {
@@ -140,6 +144,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                 all_selected: false,
                 loading: false
             });
+        }).catch((r) => {
+            console.log("Changes GET failed:", r);
         });
     }
 

@@ -58,6 +58,8 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
                 can_admin: body.is_admin,
                 throb: false
             });
+        }).catch((r) => {
+            console.log("Permissions GET failed:", r);
         });
     }
 
@@ -97,6 +99,8 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
             // Display the result of what happened
             console.log("permissions result", body);
             this.setState({throb: false});
+        }).catch((r) => {
+            console.log("Permissions PUT failed:", r);
         });
     }
 
