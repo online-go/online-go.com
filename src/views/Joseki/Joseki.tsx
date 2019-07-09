@@ -115,7 +115,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban_div: any;
     goban_opts: any = {};
 
-    last_server_placement = ""; // the most recent placement that the server returned to us
+    last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
@@ -130,7 +130,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         console.log(props);
         this.state = {
-            move_string: "",         // This is used for making sure we know what the current move is.
+            move_string: "",         // This is used for making sure we know what the current move is. It is the display value also.
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
             position_description: "",
             current_move_category: "",
@@ -339,7 +339,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             tags: position.tags,
             child_count: position.child_count
         });
-        this.last_server_placement = position.placement;
+        this.last_server_position = position.play;
         this.next_moves = position.next_moves;
         this.current_marks = JSON.parse(position.marks) || [];
         this.previous_position = position.parent;
@@ -362,13 +362,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
             else {
                 const label = option['variation_label'];
+                console.log("Drawing variation", option['placement'], label, option["category"]);
                 new_options[label] = {
                     move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
                     color: ColorMap[option["category"]]
                 };
-                this.goban.setColoredMarks(new_options);
             }
         });
+        this.goban.setColoredMarks(new_options);
+
         this.setState({pass_available});
         let new_marks = {};
         current_marks.forEach((mark:{}) => {
@@ -376,7 +378,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             new_marks[label] = GoMath.encodePrettyCoord(mark['position'], this.goban.height);
             this.goban.setMarks(new_marks);
         });
-        this.goban.redraw();
+        this.goban.redraw(true);  // stop it optimising away colour changes when mark doesn't change.
     }
 
     /* This is called every time a move is played on the Goban
@@ -392,20 +394,21 @@ export class Joseki extends React.Component<JosekiProps, any> {
         let move_string;
         let the_move;
 
-        //console.log("onBoardUpdate mvs", mvs);
+        console.log("onBoardUpdate mvs", mvs);
         if (mvs.length > 0) {
             let move_string_array = mvs.map((p) => {
                 let coord = GoMath.prettyCoords(p.x, p.y, this.goban.height);
                 coord = coord === '' ? 'pass' : coord;  // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
                 return coord;
             });
-            //console.log("MSA", move_string_array);
+            console.log("MSA", move_string_array);
 
             move_string = move_string_array.join(",");
 
             the_move = mvs[mvs.length - 1];
         }
         else { // empty board
+            console.log("empty board");
             move_string = "";
             the_move = null;
         }
@@ -413,12 +416,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
             console.log("Move placed: ", move_string, the_move);
             this.setState({ move_string });
-            this.processPlacement(the_move);   // this is responsible for making sure stone placement is turned back on
+            this.processPlacement(the_move, move_string);   // this is responsible for making sure stone placement is turned back on
         }
-
+        else {
+            this.backstepping = false;   // Needed for if they backstep twice at the empty board
+        }
     }
 
-    processPlacement(move: any) {
+    processPlacement(move: any, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
             or hit "back" to arrive at an old position,
@@ -434,14 +439,18 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 'pass' :
             "root";
 
-        console.log("Processing placement at:", placement, move);
+        console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
+            const play = ".root." + move_string.replace(',', '.');
+            console.log("backstep to ", play);
+
             if (this.state.current_move_category !== "new") {
                 this.fetchNextMovesFor(this.previous_position.node_id);
                 this.setState({ current_move_category: this.previous_position.category });
             }
-            else if (placement === this.last_server_placement) {
+            else if (play === this.last_server_position) {
+                console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
             }
@@ -457,6 +466,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
+
+            console.log("chosen move:", chosen_move);
 
             if (this.state.mode === PageMode.Play &&
                 !this.our_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
@@ -626,7 +637,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     render() {
-        console.log("Joseki app rendering ", this.state.move_string);
+        console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
         const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
 
@@ -739,7 +750,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     )
 
     renderModeMainPane = () => {
-        console.log("Mode pane render ", this.state.variation_filter);
+        // console.log("Mode pane render ", this.state.variation_filter);
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
