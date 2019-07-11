@@ -204,6 +204,28 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     createTournament = () => {{{
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
     }}}
+    createManualTournament = () => {{{
+        swal({
+            text: _("Tournament Name"),
+            input: "text",
+            showCancelButton: true,
+        })
+        .then((name) => {
+            if (!name) {
+                return;
+            }
+
+            post("manual_tournaments/", {
+                group: this.state.group_id,
+                name: name,
+            })
+            .then((res) => {
+                browserHistory.push(`/manual_tournaments/${res.id}/${name}`);
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }}}
     setGroupName = (ev) => {{{
         this.setState({group: Object.assign({}, this.state.group, {name: ev.target.value})});
     }}}
@@ -437,6 +459,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                      <button className="primary sm" onClick={this.createTournament}>
                                                          {_("Create Tournament")}
                                                      </button>
+                                                     <button className="primary sm" onClick={this.createManualTournament}>
+                                                         Create Tournament [beta]
+                                                     </button>
                                                   </div>
                                               )
                                             : <div>
@@ -445,6 +470,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                  </button>
                                                  <button className="primary sm" onClick={this.createTournament}>
                                                      {_("Create Tournament")}
+                                                 </button>
+                                                 <button className="primary sm" onClick={this.createManualTournament}>
+                                                     Create Tournament [beta]
                                                  </button>
                                               </div>
                                         : group.is_public

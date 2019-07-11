@@ -68,6 +68,10 @@ export function dup(obj: any): any { /* {{{ */
 
     let ret;
     if (typeof(obj) === "object") {
+        if (obj === null) {
+            return null;
+        }
+
         if (Array.isArray(obj)) {
             ret = [];
             for (let i = 0; i < obj.length; ++i) {
