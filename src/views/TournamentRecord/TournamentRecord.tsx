@@ -22,15 +22,19 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {Markdown} from "Markdown";
+import {PaginatedTable} from "PaginatedTable";
 import {Player} from "Player";
 import * as moment from "moment";
 import * as data from "data";
 import {ignore, errorAlerter, dup} from "misc";
+import {rankString, allRanks} from "rank_utils";
 
 
 window['dup'] = dup;
 
 declare var swal;
+let ranks = allRanks();
+
 
 interface TournamentRecordProperties {
     match: {
@@ -40,6 +44,9 @@ interface TournamentRecordProperties {
 
 export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, any> {
     loaded_state:any = {};
+    refs: {
+        players_table;
+    };
 
 
     constructor(props) {
@@ -54,6 +61,8 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
             name: "",
             new_round_name: "",
             rounds: [],
+            new_player_name: '',
+            new_player_rank: 1037,
         };
     }
 
@@ -89,10 +98,6 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     }
 
     save = () => {
-        this.loaded_state.editing = false;
-        this.loaded_state.name = this.state.name;
-        this.loaded_state.description = this.state.description;
-        this.setState({editing: false});
         put(`tournament_records/${this.state.tournament_record_id}`, {
             'name': this.state.name,
             'description': this.state.description,
@@ -100,6 +105,22 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         })
         .then(ignore)
         .catch(errorAlerter);
+
+        for (let round of this.state.rounds) {
+            if (round.updated) {
+                put(`tournament_records/${this.state.tournament_record_id}/round/${round.id}`, {
+                    'name': round.name
+                })
+                .then(ignore)
+                .catch(errorAlerter);
+            }
+        }
+
+        this.loaded_state.editing = false;
+        this.loaded_state.name = this.state.name;
+        this.loaded_state.rounds = dup(this.state.rounds);
+        this.loaded_state.description = this.state.description;
+        this.setState({editing: false});
     }
 
     cancel = () => {
@@ -114,6 +135,12 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     }
     setNewRoundName = (ev) => {
         this.setState({new_round_name: ev.target.value});
+    }
+    setRoundName(idx, ev) {
+        let rounds = dup(this.state.rounds);
+        rounds[idx].name = ev.target.value;
+        rounds[idx].updated = true;
+        this.setState({rounds});
     }
 
     addRound = (ev) => {
@@ -136,8 +163,38 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     }
 
     addPlayer = (ev) => {
-        swal("Still working on this")
-        .then(ignore)
+        let name = this.state.new_player_name;
+        let rank = this.state.new_player_rank;
+
+        if (name.trim().length < 2) {
+            $(".new-player-name").focus();
+            return;
+        }
+
+        let new_player = { name, rank };
+
+        post(`tournament_records/${this.state.tournament_record_id}/players/`, new_player)
+        .then((res) => {
+            this.refs.players_table.update();
+            //this.state.players.push(res);
+            //this.forceUpdate();
+        })
+        .catch(errorAlerter);
+    }
+
+    removePlayer(player:any) {
+        swal({
+            title: "Really remove player?",
+            text: player.name + " [" + rankString(player.rank) + "]",
+            showCancelButton: true,
+        })
+        .then(() => {
+            del(`tournament_records/${this.state.tournament_record_id}/players/${player.id}`)
+            .then(() => {
+                this.refs.players_table.update();
+            })
+            .catch(errorAlerter);
+        })
         .catch(ignore);
     }
 
@@ -184,6 +241,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .cach(ignore);
     }
 
+
     linkGame(round) {
         swal({
             text: _("Please provide the link to the game, review, or demo board"),
@@ -207,9 +265,18 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .catch(ignore);
     }
 
+    setNewPlayerName = (ev) => {
+        this.setState({new_player_name: ev.target.value});
+    }
+
+    setNewPlayerRank = (ev) => {
+        console.log(ev.target.value);
+        this.setState({new_player_rank: parseInt(ev.target.value)});
+    }
+
     render() {
         let user = data.get('user');
-        let editing = this.state.editing;
+        let editing = this.state.editing || null;
         let editable = this.state.editable_by_current_user || null;
 
         if (this.state.loading) {
@@ -249,12 +316,47 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                     }
 
                     <div>
-                        <div className='space-between center'>
-                            <h3>{_("Players")}</h3>
-                            {editable
-                                && <button onClick={this.addPlayer} className='default xs'>{_("Add player")}</button>
-                            }
-                        </div>
+                        <h3>{_("Players")}</h3>
+
+                        <PaginatedTable
+                            className="TournamentRecord-table"
+                            ref="players_table"
+                            name="game-history"
+                            source={`tournament_records/${this.props.match.params.tournament_record_id}/players`}
+                            orderBy={["-rank", "name"]}
+                            columns={[
+                                {header: "",  className: () => "player",
+                                 render: (p) => <span>{p.name}</span>,
+                                },
+
+                                {header: "",  className: () => "rank",
+                                 render: (p) => <span>[{rankString(p.rank)}]</span>,
+                                },
+
+                                {header: "",  className: () => "rank",
+                                 render: (p) => editable && <i className='fa fa-trash' onClick={() => this.removePlayer(p)} />
+                                },
+                            ]}
+                        />
+
+                        {editable
+                            &&
+                            <div className='add-player'>
+                                <input type="text" className='new-player-name'
+                                    onChange={this.setNewPlayerName} value={this.state.new_player_name}
+                                    placeholder="Player name"
+                                    />
+
+                                <select value={this.state.new_player_rank} onChange={this.setNewPlayerRank}
+                                    className="challenge-dropdown form-control">
+                                    {ranks.map((r, idx) => (
+                                        <option key={idx} value={r.rank}>{r.label}</option>
+                                    ))}
+                                </select>
+
+                                <button onClick={this.addPlayer} className='default xs'>{_("Add player")}</button>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -273,12 +375,18 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                 {this.state.rounds.map((round, idx) => (
                     <div key={round.id} className='round'>
                         <div className='space-between center round-name'>
-                            <h3>{round.name}</h3>
+                            {editing
+                                ? <input type='text' className='round-name-editor'
+                                    onChange={(ev) => this.setRoundName(idx, ev)} placeholder={_("Name")} value={round.name} />
+                                : <h3>{round.name}</h3>
+                            }
 
                             {editable &&
                                 <div>
                                     <button onClick={() => this.linkGame(round)} className='default xs'>{_("Link game")}</button>
-                                    <button onClick={() => this.deleteRound(round)} className='default xs'>{_("Remove round")}</button>
+                                    {editing &&
+                                        <button onClick={() => this.deleteRound(round)} className='default xs'>{_("Remove round")}</button>
+                                    }
                                 </div>
                             }
                         </div>

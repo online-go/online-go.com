@@ -610,10 +610,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             <div>
                                 <h3>{_("Tournament Records")}</h3>
 
+
                                 <PaginatedTable
                                     className="TournamentRecord-table"
                                     ref="tournament_record_table"
-                                    name="game-history"
+                                    name="tournament-record-table"
                                     source={`tournament_records/?group=${group.id}`}
                                     orderBy={["-created"]}
                                     columns={[
