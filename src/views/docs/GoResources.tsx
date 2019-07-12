@@ -341,6 +341,7 @@ export let GoResources = (props) => {
                 <dt>{_("Music")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/watch?v=dVd959KJWEI">Playing A game of Go</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/watch?v=-EwuqJfwOU4">The Game of Go - Chris Linn [1981 Swedish New-Wave]</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-1">A Game of Go pt. I</a>
                 <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-2">pt. II</a>
                 </span>,
