@@ -21,6 +21,9 @@ import {errcodeAlerter} from 'ErrcodeModal';
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
 
+// tslint:disable-next-line:no-var-requires
+export const slugify = require('slugify');
+
 declare var swal;
 
 export function updateDup(obj: any, field: string, value: any) {{{

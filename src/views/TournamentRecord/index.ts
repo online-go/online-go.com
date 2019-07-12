@@ -16,4 +16,4 @@
  */
 
 
-export * from "./ManualTournament";
+export * from "./TournamentRecord";

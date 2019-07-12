@@ -32,24 +32,24 @@ window['dup'] = dup;
 
 declare var swal;
 
-interface ManualTournamentProperties {
+interface TournamentRecordProperties {
     match: {
         params: any
     };
 }
 
-export class ManualTournament extends React.PureComponent<ManualTournamentProperties, any> {
+export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, any> {
     loaded_state:any = {};
 
 
     constructor(props) {
         super(props);
 
-        let manual_tournament_id = parseInt(this.props.match.params.manual_tournament_id) || 0;
+        let tournament_record_id = parseInt(this.props.match.params.tournament_record_id) || 0;
 
         this.state = {
             editing: false,
-            manual_tournament_id: manual_tournament_id,
+            tournament_record_id: tournament_record_id,
             loading: true,
             name: "",
             new_round_name: "",
@@ -58,8 +58,8 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
     }
 
     componentDidMount() {
-        if (this.state.manual_tournament_id) {
-            this.resolve(this.state.manual_tournament_id);
+        if (this.state.tournament_record_id) {
+            this.resolve(this.state.tournament_record_id);
         }
     }
 
@@ -68,13 +68,13 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
     }
 
     abort_requests() {
-        abort_requests_in_flight(`manual_tournaments/${this.state.manual_tournament_id}`);
+        abort_requests_in_flight(`tournament_records/${this.state.tournament_record_id}`);
     }
 
-    resolve(manual_tournament_id: number) {
+    resolve(tournament_record_id: number) {
         this.abort_requests();
 
-        get(`manual_tournaments/${this.state.manual_tournament_id}`)
+        get(`tournament_records/${this.state.tournament_record_id}`)
         .then(res => {
             res.loading = false;
             res.editing = false;
@@ -93,7 +93,7 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
         this.loaded_state.name = this.state.name;
         this.loaded_state.description = this.state.description;
         this.setState({editing: false});
-        put(`manual_tournaments/${this.state.manual_tournament_id}`, {
+        put(`tournament_records/${this.state.tournament_record_id}`, {
             'name': this.state.name,
             'description': this.state.description,
             'location': this.state.location,
@@ -117,14 +117,19 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
     }
 
     addRound = (ev) => {
+        if (this.state.new_round_name.trim().length < 2) {
+            $(".round-name-editor").focus();
+            return;
+        }
+
         console.log("asdf");
-        post(`manual_tournaments/${this.state.manual_tournament_id}/rounds`, {
+        post(`tournament_records/${this.state.tournament_record_id}/rounds`, {
             name: this.state.new_round_name,
             notes: '',
         })
         .then((res) => {
             let rounds = dup(this.state.rounds);
-            rounds.push(res);
+            rounds.unshift(res);
             this.setState({rounds});
         })
         .catch(errorAlerter);
@@ -150,11 +155,33 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
             }
             this.forceUpdate();
 
-            del(`manual_tournaments/${this.state.manual_tournament_id}/rounds/${round.id}/${entry.id}`)
+            del(`tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`)
             .then(ignore)
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
+    }
+
+    deleteRound(round) {
+        swal({
+            title: _("Are you sure you wish to delete this round?"),
+            text: round.name,
+            showCancelButton: true,
+        })
+        .then((url) => {
+            del(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`)
+            .then(() => {
+                for (let i = 0; i < this.state.rounds.length; ++i) {
+                    if (this.state.rounds[i].id === round.id) {
+                        this.state.rounds.splice(i, 1);
+                        break;
+                    }
+                }
+                this.forceUpdate();
+            })
+            .catch(errorAlerter);
+        })
+        .cach(ignore);
     }
 
     linkGame(round) {
@@ -170,7 +197,7 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
                 return;
             }
 
-            post(`manual_tournaments/${this.state.manual_tournament_id}/round/${round.id}/`, { url, notes: '' })
+            post(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`, { url, notes: '' })
             .then((res) => {
                 round.entries.unshift(res);
                 this.forceUpdate();
@@ -187,14 +214,14 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
 
         if (this.state.loading) {
             return (
-                <div id='ManualTournament'>
+                <div id='TournamentRecord'>
                     {_("Loading...")}
                 </div>
             );
         }
 
         return (
-            <div id='ManualTournament'>
+            <div id='TournamentRecord'>
                 <div className='space-between center'>
                     {editing
                         ? <input type='text' className='name-editor'
@@ -248,8 +275,11 @@ export class ManualTournament extends React.PureComponent<ManualTournamentProper
                         <div className='space-between center round-name'>
                             <h3>{round.name}</h3>
 
-                            {editable
-                                && <button onClick={() => this.linkGame(round)} className='default xs'>{_("Link game")}</button>
+                            {editable &&
+                                <div>
+                                    <button onClick={() => this.linkGame(round)} className='default xs'>{_("Link game")}</button>
+                                    <button onClick={() => this.deleteRound(round)} className='default xs'>{_("Remove round")}</button>
+                                </div>
                             }
                         </div>
                         <Markdown source={round.notes} />
