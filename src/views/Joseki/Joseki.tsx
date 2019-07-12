@@ -363,6 +363,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         let new_options = {};
         let pass_available = false;
         next_moves.forEach((option) => {
+            new_options = {};
             if (option['placement'] === 'pass') {
                 pass_available = true;
             }
@@ -373,8 +374,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     color: ColorMap[option["category"]]
                 };
             }
+            // we have to do this one at a time in case there are more than one variation with the same label
+            // because we can draw multiple with the same label, but only one at a time with this call!
+            this.goban.setColoredMarks(new_options);
         });
-        this.goban.setColoredMarks(new_options);
+
 
         this.setState({pass_available});
         let new_marks = {};
@@ -447,7 +451,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
-            const play = ".root." + move_string.replace(',', '.');
+            const play = ".root." + move_string.replace(/,/g, '.');
             console.log("backstep to ", play);
 
             if (this.state.current_move_category !== "new") {

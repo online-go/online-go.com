@@ -40,10 +40,18 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
     }
 
     onUserIdChange = (e) => {
-        this.setState({
-            userid: e.target.value,
-            throb: true
-        });
+        const new_id = e.target.value;
+        if (!/^\d*$/.test(new_id)) {
+            return;
+        }
+        else {
+            this.setState({ userid: new_id });
+        }
+        if (!/^\d+$/.test(new_id)) {
+            return;
+        }
+
+        this.setState({ throb: true });
         fetch(this.props.server_url + "permissions?id=" + e.target.value, {
             mode: 'cors',
             headers: this.props.godojo_headers
