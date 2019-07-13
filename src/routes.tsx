@@ -129,6 +129,7 @@ export const routes = (
             <Route path="/groups" component={GroupList}/>
             <Route path="/group/create" component={GroupCreate}/>
             <Route path="/group/:group_id" component={Group}/>
+            <Route path="/group/:group_id/*" component={Group}/>
             <Route path="/tournament/new/:group_id" component={Tournament}/>
             <Route path="/tournament/new" component={Tournament}/>
             <Route path="/tournament/:tournament_id" component={Tournament}/>
@@ -185,13 +186,8 @@ export const routes = (
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
 
-            {/*
-            <Route path="/2019usgc" render={() => <Redirect to="/group/3837"/>} />
-            <Route path="/usgc2019" render={() => <Redirect to="/group/3837"/>}  />
-            */}
-
-            <Route path="/2019usgc" render={() => <Redirect to="/tournament-record/3/2019-US-Go-Congress-in-Madison-WI"/>} />
-            <Route path="/usgc2019" render={() => <Redirect to="/tournament-record/3/2019-US-Go-Congress-in-Madison-WI"/>}  />
+            <Route path="/2019usgc" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>} />
+            <Route path="/usgc2019" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>}  />
 
             <Route path="/" component={Default} exact />
             <Route path="/*" component={PageNotFound} />
