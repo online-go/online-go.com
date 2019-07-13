@@ -46,6 +46,7 @@ import { Puzzle } from "Puzzle";
 import { PuzzleList } from "PuzzleList";
 import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
+import { TournamentRecord } from "TournamentRecord";
 import { TournamentListMainView } from "TournamentList";
 import { Tutorial } from "Tutorial";
 import { LearningHub } from "LearningHub";
@@ -134,6 +135,10 @@ export const routes = (
             <Route path="/tournaments/:tournament_id" component={Tournament}/>
             <Route path="/tournaments" component={TournamentListMainView}/>
             <Route path="/tournaments/" component={TournamentListMainView}/>
+            <Route path="/tournament-record/:tournament_record_id" component={TournamentRecord}/>
+            <Route path="/tournament-records/:tournament_record_id" component={TournamentRecord}/>
+            <Route path="/tournament-record/:tournament_record_id/*" component={TournamentRecord}/>
+            <Route path="/tournament-records/:tournament_record_id/*" component={TournamentRecord}/>
             <Route path="/ladders" component={LadderList}/>
             <Route path="/ladder/:ladder_id" component={Ladder}/>
             <Route path="/puzzles" component={PuzzleList}/>
