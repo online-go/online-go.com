@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Router, Route, Switch } from "react-router-dom";
+import { Router, Route, Switch, Redirect } from "react-router-dom";
 
 import * as data from "data";
 import {_} from "translate";
@@ -184,6 +184,14 @@ export const routes = (
             <Route path="/docs/go-rules-comparison-matrix" component={docs.RulesMatrix}/>
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
+
+            {/*
+            <Route path="/2019usgc" render={() => <Redirect to="/group/3837"/>} />
+            <Route path="/usgc2019" render={() => <Redirect to="/group/3837"/>}  />
+            */}
+
+            <Route path="/2019usgc" render={() => <Redirect to="/tournament-record/3/2019-US-Go-Congress-in-Madison-WI"/>} />
+            <Route path="/usgc2019" render={() => <Redirect to="/tournament-record/3/2019-US-Go-Congress-in-Madison-WI"/>}  />
 
             <Route path="/" component={Default} exact />
             <Route path="/*" component={PageNotFound} />
