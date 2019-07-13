@@ -124,7 +124,8 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     }
 
     cancel = () => {
-        this.setState({editing: false});
+        this.loaded_state.editing = false;
+        this.setState(this.loaded_state);
     }
 
     setName = (ev) => {
