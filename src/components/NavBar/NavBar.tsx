@@ -329,6 +329,10 @@ export class NavBar extends React.PureComponent<{}, any> {
             {/* Right Nav */}
             {user &&
             <div className={"rightnav " + (this.state.right_nav_active ? "active" : "")}>
+                <div style={{'textAlign': 'right'}}>
+                    <Player user={user}  disable-cache-update />
+                </div>
+
                 <NotificationList ref="notification_list" />
 
                 <LineText>{_("Theme")}</LineText>
