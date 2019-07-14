@@ -87,7 +87,7 @@ import { routes } from "./routes";
 
 //import {Promise} from "es6-promise";
 import {get} from "requests";
-import {errorAlerter} from "misc";
+import {errorAlerter, uuid} from "misc";
 import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
@@ -136,6 +136,11 @@ data.watch("config.user", (user) => {
     window["user"] = user;
 });
 
+/***
+ * Setup a device UUID so we can logout other *devices* and not all other
+ * tabs with our new logout-other-devices button
+ */
+data.set('device.uuid', data.get('device.uuid', uuid()));
 
 /*** SweetAlert setup ***/
 swal.setDefaults({

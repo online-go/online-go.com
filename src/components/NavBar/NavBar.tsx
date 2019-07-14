@@ -67,7 +67,7 @@ function toggleTheme() {
 }
 let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
-function logout() {
+export function logout() {
     get("/api/v0/logout").then((config) => {
         data.set(cached.config, config);
         window.location.href = '/';
