@@ -918,9 +918,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
+        for (let k of ['komi', 'rules', 'handicap']) {
+            this.goban.config[k] = this.goban.engine.config[k];
+        }
         openGameInfoModal(
-            //this.goban.config,
-            this.goban.engine.config,
+            this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled, this.creator_id || this.goban.review_owner_id);

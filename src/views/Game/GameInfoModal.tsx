@@ -48,7 +48,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 
 
 
-    save = () => {
+    save = (ev) => {
         let config = this.props.config;
         let review_id = config.review_id;
         let game_id = config.game_id;
@@ -80,6 +80,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 settings['white_player_rank'] = config.players.white.rank;
                 settings['white_player_pro'] = !!config.players.white.pro;
             }
+
             patch(`reviews/${review_id}`, settings)
             .then(() => {
                 this.close();
@@ -215,7 +216,6 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                   {editable &&
                       <button onClick={this.save}>{_("Save")}</button>
                   }
-
               </div>
           </div>
         );
