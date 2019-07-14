@@ -16,4 +16,5 @@
  */
 
 export * from "./Announcements";
+export * from "./ActiveAnnouncements";
 export * from "./TournamentIndicator";

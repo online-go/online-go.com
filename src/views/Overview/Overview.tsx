@@ -39,6 +39,7 @@ import {EmailBanner} from "EmailBanner";
 import {SupporterGoals} from "SupporterGoals";
 import {ProfileCard} from "ProfileCard";
 import {notification_manager} from "Notifications";
+import {ActiveAnnouncements} from "Announcements";
 import {FabX, FabCheck} from "material";
 
 
@@ -122,6 +123,7 @@ export class Overview extends React.Component<{}, any> {
             <div id="Overview">
                 <div className="left">
                     <EmailBanner />
+                    <ActiveAnnouncements  />
                     <ChallengesList onAccept={() => this.refresh()} />
 
 
