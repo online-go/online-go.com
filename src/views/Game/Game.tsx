@@ -919,7 +919,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     showGameInfo() {
         openGameInfoModal(
-            this.goban.config,
+            //this.goban.config,
+            this.goban.engine.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled, this.creator_id || this.goban.review_owner_id);
