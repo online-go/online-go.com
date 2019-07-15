@@ -85,7 +85,7 @@ enum MoveCategory {
     QUESTION = "Question"
 }
 
-const bad_moves = ["MISTAKE", "TRICK", "QUESTION"] as any;  // moves the computer doesn't play
+const bad_moves = ["MISTAKE", "QUESTION"] as any;  // moves the player is not allowed to play in Play mode
 
 enum PageMode {
     Explore, Play, Edit, Admin
@@ -116,6 +116,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban_opts: any = {};
 
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
+    last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
@@ -123,7 +124,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
-    our_turn = false;  // in Play mode, when we are placing the computer's stone
+    our_turn = false;  // in Play mode, its our turn when we are placing the computer's stone
 
     constructor(props) {
         super(props);
@@ -133,20 +134,21 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_string: "",         // This is used for making sure we know what the current move is. It is the display value also.
             current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
             position_description: "",
+            variation_label: '_',
             current_move_category: "",
             pass_available: false,   // Whether pass is one of the joseki moves or not
             contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
 
-            throb: false,   // whether to show board loading throbber
+            throb: false,   // whether to show board-loading throbber
 
             mode: PageMode.Explore,
             user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
             user_can_administer: false,
             user_can_comment: false,
 
-            variation_label: '_',
-            move_type_sequence: [],
+            move_type_sequence: [],   // This is the sequence of "move types" that is passed to the Play pane to display
+
             joseki_source: null as {},
             tags: [],
             variation_filter: {contributor: null, tag: null, source: null},
@@ -243,9 +245,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.fetchNextMovesFor(node_id);
     }
 
-    fetchNextMovesFor = (node_id) => {
+   // Fetch the next moves based on the current filter
+   fetchNextMovesFor = (node_id) => {
         this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
     }
+
+    // Fetch the next moves based on the supplied filter
+    // Note that this is where a "position gets rendered" after the placement of a stone, or some other trigger.
+    // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
+    // in the processing of the result of the fectch for that position.
 
     fetchNextFilteredMovesFor = (node_id, variation_filter) => {
         /* TBD: error handling, cancel on new route */
@@ -285,17 +293,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
 
                 if ((good_moves.length === 0) && !this.played_mistake) {
-                    this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: "** Joseki!"}]});
+                    this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: "Joseki!"}]});
                 }
 
-                if (this.our_turn || this.played_mistake) {
-                    // obviously, don't place another stone if we just placed one
-                    // also, if they made a mistake, then they get another go.
+                if (this.our_turn) {
+                    // obviously, we don't place another stone if we just placed one
                     this.our_turn = false;
-                    if (this.played_mistake) {
-                        console.log("finishing mistake processing");
-                        this.played_mistake = false;
-                    }
                 }
                 else if (body.next_moves.length > 0 && this.state.move_string !== "") {
                     // the computer plays both good and bad moves
@@ -346,6 +349,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             child_count: position.child_count
         });
         this.last_server_position = position.play;
+        this.last_placement = position.placement;
         this.next_moves = position.next_moves;
         this.current_marks = JSON.parse(position.marks) || [];
         this.previous_position = position.parent;
@@ -410,7 +414,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 coord = coord === '' ? 'pass' : coord;  // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
                 return coord;
             });
-            console.log("MSA", move_string_array);
+            //console.log("MSA", move_string_array);
 
             move_string = move_string_array.join(",");
 
@@ -423,7 +427,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         if (move_string !== this.state.move_string) {
             this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
-            console.log("Move placed: ", move_string, the_move);
+            console.log("Move placed: ", the_move);
             this.setState({ move_string });
             this.processPlacement(the_move, move_string);   // this is responsible for making sure stone placement is turned back on
         }
@@ -454,7 +458,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
             const play = ".root." + move_string.replace(/,/g, '.');
             console.log("backstep to ", play);
 
-            if (this.state.current_move_category !== "new") {
+            if (this.state.mode === PageMode.Play) {
+                // in theory can only happen when backstepping out of a mistake
+                // in this case, all the data for the position we arrived at should be valid (not reset exploratory)
+                this.played_mistake = false;
+                this.backstepping = false;
+                this.goban.enableStonePlacement();
+            }
+            else if (this.state.current_move_category !== "new") {
                 this.fetchNextMovesFor(this.previous_position.node_id);
                 this.setState({ current_move_category: this.previous_position.category });
             }
@@ -484,13 +495,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 bad_moves.includes(chosen_move.category))) {
                 console.log("mistake!");
                 this.played_mistake = true;
+                this.last_placement = placement;
             }
 
             if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
                 this.fetchNextMovesFor(chosen_move.node_id);
 
-            } else if (chosen_move === undefined) {
+            } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
                 console.log("exploratory");
                 this.next_moves = [];
@@ -516,10 +528,30 @@ export class Joseki extends React.Component<JosekiProps, any> {
             if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.our_turn) {
                 // They clicked a non-Joseki move
                 console.log("Ooops: ", this.state.current_move_category);
-                this.backOneMove();
+                //this.backOneMove();
+
+                this.renderMistakeResult();
+                // Note: we have not called fetchNextMoves or enablePlacement, so placement is turned off now!
             }
 
             console.log("pp exit");
+        }
+    }
+
+    renderMistakeResult = () => {
+        // Draw the correct options (which must be still in this.next_moves)
+        // and cross out the wrong option (which is expected in this.last_placement)
+        console.log("rendering mistake at", this.last_placement);
+
+        this.renderCurrentJosekiPosition();
+
+        if (this.last_placement !== 'pass') {
+            let new_options = [];
+            new_options['X'] = {
+                move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
+                color: ColorMap['MISTAKE']
+            };
+            this.goban.setColoredMarks(new_options);
         }
     }
 
@@ -569,6 +601,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     resetBoard = () => {
         console.log("Resetting board...");
         this.next_moves = [];
+        this.played_mistake = false;
         this.setState({
             move_string: "",
             current_move_category: "",
@@ -669,9 +702,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 </div>
                 <div className="right-col">
                     <div className="top-bar">
-                        <div className="move-controls">
+                        <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
                         <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
-                            <i className={"fa fa-step-backward" + (this.state.mode !== PageMode.Play ? "" : " hide")} onClick={this.backOneMove}></i>
+                            <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
                             <div
                                 className={"pass-button" + (show_pass_available ? " pass-available" : "")}
                                 onClick={this.doPass}>
@@ -905,9 +938,10 @@ class PlayPane extends React.Component<PlayProps, any> {
 
     iconFor = (move_type) => {
         switch (move_type) {
-            case "good": return (<i className="fa fa-check"/>); break;
-            case "bad": return (<i className="fa fa-times"/>); break;
-            case "computer": return (<i className="fa fa-check hide"/>); break;  // a space equivalent to an icon
+            case 'good': return (<i className="fa fa-check"/>); break;
+            case 'bad': return (<i className="fa fa-times"/>); break;
+            case 'computer': return (<i className="fa fa-desktop"/>); break;
+            case 'complete': return (<i className="fa fa-star"/>); break;
             default: return "";
         }
     }
