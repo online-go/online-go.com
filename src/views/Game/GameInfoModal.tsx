@@ -69,7 +69,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 
         if (review_id) {
             let settings = {
-                'name': config.game_name
+                'name': config.game_name,
+                'outcome': config.outcome,
             };
             if (config.black_player_id === 0) {
                 settings['black_player_name'] = config.players.black.name;
@@ -143,6 +144,10 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.config.players.white.pro = pro;
         this.props.white.rank = rank;
         this.props.white.pro = pro;
+        this.forceUpdate();
+    }
+    updateOutcome = (ev) => {
+        this.props.config.outcome = ev.target.value;
         this.forceUpdate();
     }
 
@@ -229,6 +234,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                     <dt>{_("Annulled")}</dt><dd>{yesno(this.props.annulled)}</dd>
                     <dt>{_("Board Size")}</dt><dd>{config.width}x{config.height}</dd>
                     <dt>{_("Handicap")}</dt><dd>{handicapText(config.handicap)}</dd>
+                    <dt>{_("Result")}</dt><dd>{
+                        (editable && config.review_id && !config.game_id)
+                            ? <input value={config.outcome} onChange={this.updateOutcome} />
+                            : <span>{config.outcome}</span>
+                        }</dd>
                     <dt>{_("Komi")}</dt><dd>{parseFloat(config.komi).toFixed(1)}</dd>
                     <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
                     <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
