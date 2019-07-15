@@ -28,10 +28,6 @@ import * as data from "data";
 
 import {active_announcements, announcement_event_emitter} from './Announcements';
 
-setInterval(() => {
-    console.log("Active announcements: ", active_announcements);
-}, 1000);
-
 interface ActiveAnnouncementsProperties {
 
 }
