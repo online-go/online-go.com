@@ -33,7 +33,7 @@ function sanitize(src) {
     return sanitizeHtml(src, {
         allowedTags: false, /* this means "all" */
         allowedAttributes: {
-            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'width', 'height', 'class']
+            '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'width', 'height', 'class', 'rel']
         },
         allowedStyles: {
             '*': {
@@ -62,7 +62,11 @@ function sanitize(src) {
         transformTags: {
             'script': 'error',
             'iframe': 'error',
-            'style': 'error'
+            'style': 'error',
+            'a': (tagName, attribs) => {
+                attribs['rel'] = 'noopener';
+                return { tagName, attribs };
+            }
         }
     });
 }
