@@ -26,7 +26,8 @@ minjs:
 
 analyze:
 	#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --profile --json > analyze.json
-	npm run webpack-bundle-analyzer dist/ analyze.json
+	#npm run webpack-bundle-analyzer dist/ analyze.json
+	npm run webpack-bundle-analyzer analyze.json dist/ 
 
 .PHONY: dev lint tslint min minjs mincss
 
