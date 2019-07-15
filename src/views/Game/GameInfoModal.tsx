@@ -19,13 +19,14 @@ import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
-import {post, get, patch} from "requests";
+import {post, get, patch, del} from "requests";
 import {openModal, Modal} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {handicapText} from "GameAcceptModal";
 import {errorAlerter, ignore, rulesText} from "misc";
 import {rankString} from 'rank_utils';
+import {browserHistory} from "ogsHistory";
 
 declare var swal;
 
@@ -86,6 +87,28 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 this.close();
             })
             .catch(errorAlerter);
+        }
+    }
+
+    deleteReview = (ev) => {
+        let review_id = this.props.config.review_id;
+
+        if (review_id) {
+            swal({
+                text: _("Are you sure you wish to delete this board?"),
+                showCancelButton: true,
+            })
+            .then(() => {
+                console.log("Should be deleting");
+
+                del(`reviews/${review_id}`)
+                .then(() => {
+                    this.close();
+                    console.log(browserHistory.goBack());
+                })
+                .catch(errorAlerter);
+            })
+            .catch(ignore);
         }
     }
 
@@ -214,7 +237,13 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
               <div className="buttons">
                   <button onClick={this.close}>{_("Close")}</button>
                   {editable &&
-                      <button onClick={this.save}>{_("Save")}</button>
+                      <span>
+                          {(this.props.config.review_id || null)
+                              &&
+                              <button className='danger' onClick={this.deleteReview}>{_("Delete")}</button>
+                          }
+                          <button onClick={this.save}>{_("Save")}</button>
+                      </span>
                   }
               </div>
           </div>
