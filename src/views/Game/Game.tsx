@@ -918,6 +918,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
+        for (let k of ['komi', 'rules', 'handicap']) {
+            this.goban.config[k] = this.goban.engine.config[k];
+        }
         openGameInfoModal(
             this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
@@ -2540,10 +2543,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } catch (e) {}
 
         let sgf_url = null;
+        let sgf_with_comments_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
         } else {
-            sgf_url = api1(`reviews/${this.review_id}/sgf`);
+            sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
+            sgf_with_comments_url = api1(`reviews/${this.review_id}/sgf`);
         }
 
         return (
@@ -2605,6 +2610,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                     : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
+                {(sgf_download_enabled && sgf_with_comments_url)
+                    && <a href={sgf_with_comments_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with comments")}</a>
                 }
                 {(mod || annul) && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}

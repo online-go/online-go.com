@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Router, Route, Switch } from "react-router-dom";
+import { Router, Route, Switch, Redirect } from "react-router-dom";
 
 import * as data from "data";
 import {_} from "translate";
@@ -47,6 +47,7 @@ import { Puzzle } from "Puzzle";
 import { PuzzleList } from "PuzzleList";
 import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
+import { TournamentRecord } from "TournamentRecord";
 import { TournamentListMainView } from "TournamentList";
 import { Tutorial } from "Tutorial";
 import { LearningHub } from "LearningHub";
@@ -132,12 +133,17 @@ export const routes = (
             <Route path="/groups" component={GroupList}/>
             <Route path="/group/create" component={GroupCreate}/>
             <Route path="/group/:group_id" component={Group}/>
+            <Route path="/group/:group_id/*" component={Group}/>
             <Route path="/tournament/new/:group_id" component={Tournament}/>
             <Route path="/tournament/new" component={Tournament}/>
             <Route path="/tournament/:tournament_id" component={Tournament}/>
             <Route path="/tournaments/:tournament_id" component={Tournament}/>
             <Route path="/tournaments" component={TournamentListMainView}/>
             <Route path="/tournaments/" component={TournamentListMainView}/>
+            <Route path="/tournament-record/:tournament_record_id" component={TournamentRecord}/>
+            <Route path="/tournament-records/:tournament_record_id" component={TournamentRecord}/>
+            <Route path="/tournament-record/:tournament_record_id/*" component={TournamentRecord}/>
+            <Route path="/tournament-records/:tournament_record_id/*" component={TournamentRecord}/>
             <Route path="/ladders" component={LadderList}/>
             <Route path="/ladder/:ladder_id" component={Ladder}/>
             <Route path="/puzzles" component={PuzzleList}/>
@@ -183,6 +189,9 @@ export const routes = (
             <Route path="/docs/go-rules-comparison-matrix" component={docs.RulesMatrix}/>
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
+
+            <Route path="/2019usgc" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>} />
+            <Route path="/usgc2019" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>}  />
 
             <Route path="/" component={Default} exact />
             <Route path="/*" component={PageNotFound} />

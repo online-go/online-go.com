@@ -81,6 +81,8 @@ export let GoResources = (props) => {
                 {scramble(
                     <span><Flag country={kr}/><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
                         <br/><span style={{marginLeft: "1.7em", fontSize: "0.9em"}}> Korea Baduk Association</span></span>,
+                    <span><Flag country={en}/> <a rel="noopener" href="https://archive.org/details/gameofgonational00smitrich/page/n9">The Game of Go</a>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Arthur Smith (1908)</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">River Mountain Go 1 (30k-20k)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Oliver Richman</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf">River Mountain Go 2 (20k-8k)</a>

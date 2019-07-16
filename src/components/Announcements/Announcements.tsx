@@ -20,10 +20,19 @@ import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {UIPush} from "UIPush";
+import {TypedEventEmitter} from "TypedEventEmitter";
 import {errorLogger} from "misc";
 import * as moment from "moment";
 import ITC from "ITC";
 import * as data from "data";
+
+interface Events {
+    "announcement": any;
+    "announcement-cleared": any;
+}
+
+export let announcement_event_emitter = new TypedEventEmitter<Events>();
+export let active_announcements = {};
 
 interface AnnouncementsProperties {
 }
@@ -36,6 +45,7 @@ for (let k in cleared_announcements) {
     }
 }
 data.set("announcements.cleared", cleared_announcements);
+
 
 export class Announcements extends React.PureComponent<AnnouncementsProperties, any> {
     constructor(props) {
@@ -67,24 +77,32 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         this.clearAnnouncement(announcement.id, true);
     }}}
     announce = (announcement) => {{{
+        active_announcements[announcement.id] = announcement;
+
         if (announcement.id in announced) {
             return;
         }
 
+        announcement_event_emitter.emit('announcement', announcement);
+
         if (announcement.id in cleared_announcements) {
+            announcement_event_emitter.emit('announcement-cleared', announcement);
             return;
         }
 
+
         announcement.clear = this.clearAnnouncement.bind(this, announcement.id, false);
-        announced[announcement.id] = true;
+        announced[announcement.id] = announcement;
 
         if (announcement.type !== "tournament") {
             this.state.announcements.push(announcement);
             this.forceUpdate();
 
             setTimeout(
-                () => this.clearAnnouncement(announcement.id, true),
-                moment(announcement.expiration).toDate().getTime() - Date.now()
+                () => {
+                    this.clearAnnouncement(announcement.id, true);
+                    delete active_announcements[announcement.id];
+                }, moment(announcement.expiration).toDate().getTime() - Date.now()
             );
         } else {
             let t = moment(announcement.expiration).toDate().getTime() - Date.now();
@@ -96,6 +114,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
 
     clearAnnouncement(id, dont_send_clear_announcement) {{{
         cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
+        announcement_event_emitter.emit('announcement-cleared', announced[id]);
         data.set("announcements.cleared", cleared_announcements);
 
         if (!dont_send_clear_announcement) {

@@ -29,10 +29,27 @@ import * as data from "data";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
-
+import {logout} from 'NavBar';
+import ITC from 'ITC';
 
 declare var swal;
 export const MAX_DOCK_DELAY = 3.0;
+
+ITC.register('logout', (device_uuid) => {
+    if (device_uuid !== data.get('device.uuid', '')) {
+        swal("This device has been logged out remotely").then(logout).catch(logout);
+    }
+});
+function logoutOtherDevices() {
+        swal({
+            text: "Logout of other devices you are logged in to?",
+            showCancelButton: true,
+        }).then((password) => {
+            ITC.send("logout", data.get('device.uuid'));
+            swal("Other devices have been logged out").then(ignore).catch(ignore);
+        }).catch(ignore);
+    //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
+}
 
 export class Settings extends React.PureComponent<{}, any> {
     vacation_base_time = Date.now();
@@ -808,6 +825,13 @@ export class Settings extends React.PureComponent<{}, any> {
                     </Card>
                     {/* }}} */}
 
+                    <Card>
+                        <div className="logout-all-devices-container">
+                            <div>
+                                <button onClick={logoutOtherDevices} className="danger">Logout other devices</button>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

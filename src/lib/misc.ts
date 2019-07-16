@@ -21,6 +21,9 @@ import {errcodeAlerter} from 'ErrcodeModal';
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
 
+// tslint:disable-next-line:no-var-requires
+export const slugify = require('slugify');
+
 declare var swal;
 
 export function updateDup(obj: any, field: string, value: any) {{{
@@ -68,6 +71,10 @@ export function dup(obj: any): any { /* {{{ */
 
     let ret;
     if (typeof(obj) === "object") {
+        if (obj === null) {
+            return null;
+        }
+
         if (Array.isArray(obj)) {
             ret = [];
             for (let i = 0; i < obj.length; ++i) {
