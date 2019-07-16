@@ -100,6 +100,7 @@ export class Settings extends React.PureComponent<{}, any> {
             dock_delay: preferences.get("dock-delay"),
             show_tournament_indicator: preferences.get("show-tournament-indicator"),
             disable_ai_review: !preferences.get("ai-review-enabled"),
+            disable_variations_in_chat: !preferences.get("variations-in-chat-enabled"),
         };
     }
 
@@ -204,6 +205,10 @@ export class Settings extends React.PureComponent<{}, any> {
     toggleAIReview = (ev) => {
         preferences.set("ai-review-enabled", this.state.disable_ai_review);
         this.setState({"disable_ai_review": !this.state.disable_ai_review});
+    }
+    toggleVariationsInChat = (ev) => {
+        preferences.set("variations-in-chat-enabled", this.state.disable_variations_in_chat);
+        this.setState({"disable_variations_in_chat": !this.state.disable_variations_in_chat});
     }
     toggleAutomatchAlertVolume = (ev) => {{{
         this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
@@ -702,6 +707,13 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dt><label htmlFor="function-keys-enabled">{_("Enable function keys for game analysis shortcuts")}</label></dt>
                             <dd>
                                 <input id="function-keys-enabled" type="checkbox" checked={this.state.function_keys_enabled} onChange={this.setFunctionKeysEnabled} />
+                            </dd>
+                            <dt><label htmlFor="disable-varations-in-chat">{_("Disable clickable variations in chat")}</label></dt>
+                            <dd>
+                                <input type="checkbox" id="disable-variations-in-chat" checked={this.state.disable_variations_in_chat} onChange={this.toggleVariationsInChat}/>
+                                <div><i>
+                                {_("This will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
+                                </i></div>
                             </dd>
                         </dl>
                     </Card>
