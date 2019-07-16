@@ -394,34 +394,36 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                         </div>
                         <Markdown source={round.notes} />
 
-                        <table className='round-entries'>
-                            <tbody>
-                                {round.entries.map((entry, idx) => (
-                                    <tr key={entry.id} className='round-entry'>
-                                        {editable && <td><i className='fa fa-trash' onClick={() => this.deleteEntry(round, entry)} /></td>}
-                                        <td><a className='name' href={entry.url}>{entry.name}</a></td>
-                                        <td><Player user={entry.black} disable-cache-update /></td>
-                                        <td><Player user={entry.white} disable-cache-update /></td>
-                                        <td>
-                                            {(entry.game_id || null)
-                                                && <a href={`/api/v1/games/${entry.game_id}/sgf?without-comments=1`}>{_("SGF")}</a>
-                                            }
-                                            {(entry.review_id || null)
-                                                && <a href={`/api/v1/reviews/${entry.review_id}/sgf?without-comments=1`}>{_("SGF")}</a>
-                                            }
-                                        </td>
-                                        <td>
-                                            {(entry.game_id || null)
-                                                && <a href={`/api/v1/games/${entry.game_id}/sgf`}>{_("SGF with comments")}</a>
-                                            }
-                                            {(entry.review_id || null)
-                                                && <a href={`/api/v1/reviews/${entry.review_id}/sgf`}>{_("SGF with comments")}</a>
-                                            }
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className='round-entries-container'>
+                            <table className='round-entries'>
+                                <tbody>
+                                    {round.entries.map((entry, idx) => (
+                                        <tr key={entry.id} className='round-entry'>
+                                            {editable && <td><i className='fa fa-trash' onClick={() => this.deleteEntry(round, entry)} /></td>}
+                                            <td><a className='name' href={entry.url}>{entry.name}</a></td>
+                                            <td><Player user={entry.white} disable-cache-update /></td>
+                                            <td><Player user={entry.black} disable-cache-update /></td>
+                                            <td>
+                                                {(entry.game_id || null)
+                                                    && <a className='sgf' href={`/api/v1/games/${entry.game_id}/sgf?without-comments=1`}>{_("SGF")}</a>
+                                                }
+                                                {(entry.review_id || null)
+                                                    && <a className='sgf' href={`/api/v1/reviews/${entry.review_id}/sgf?without-comments=1`}>{_("SGF")}</a>
+                                                }
+                                            </td>
+                                            <td>
+                                                {(entry.game_id || null)
+                                                    && <a className='sgf with-comments' href={`/api/v1/games/${entry.game_id}/sgf`}>{_("SGF with comments")}</a>
+                                                }
+                                                {(entry.review_id || null)
+                                                    && <a className='sgf with-comments' href={`/api/v1/reviews/${entry.review_id}/sgf`}>{_("SGF with comments")}</a>
+                                                }
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ))}
             </div>
