@@ -46,6 +46,9 @@ interface ChallengeModalProperties {
     initialState?: any;
     config?: any;
     autoCreate?: boolean;
+    playersList?: Array<{name:string, rank:number}>;
+    tournamentRecordId?: number;
+    tournamentRecordRoundId?: number;
 }
 
 function deepAssign(obj1: any, obj2: any) {{{
@@ -187,7 +190,16 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 "private": false,
             }),
             forking_game: !!this.props.initialState,
+            selected_demo_player_black: 0,
+            selected_demo_player_white: this.props.playersList ? this.props.playersList.length - 1 : 0,
         };
+
+        if (this.props.playersList && this.props.playersList.length > 0) {
+            this.state.demo.black_name = this.props.playersList[0].name;
+            this.state.demo.black_ranking = this.props.playersList[0].rank;
+            this.state.demo.white_name = this.props.playersList[this.props.playersList.length - 1].name;
+            this.state.demo.white_ranking = this.props.playersList[this.props.playersList.length - 1].rank;
+        }
 
         let state:any = this.state;
 
@@ -322,12 +334,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         if (demo.white_pro) {
             demo.white_ranking -= 1000;
         }
-        console.log("Sending", demo);
+
+        demo.tournament_record_id = this.props.tournamentRecordId;
+        demo.tournament_record_round_id = this.props.tournamentRecordRoundId;
 
         if (!demo.name) {
             demo.name = _("Demo Board");
         }
 
+        console.log("Sending", demo);
         this.close();
         post("demos", demo).then((res) => {
             console.log("Demo create response: ", res);
@@ -589,6 +604,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
     update_demo_white_ranking   = (ev) => this.upstate("demo.white_ranking", ev);
     /* }}} */
+    update_selected_demo_player_black   = (ev) => {
+        let idx = parseInt(ev.target.value);
+        this.upstate("demo.black_name", this.props.playersList[idx].name);
+        this.upstate("demo.black_ranking", this.props.playersList[idx].rank);
+        this.setState({
+            selected_demo_player_black: idx
+        });
+    }
+    update_selected_demo_player_white   = (ev) => {
+        let idx = parseInt(ev.target.value);
+        this.upstate("demo.white_name", this.props.playersList[idx].name);
+        this.upstate("demo.white_ranking", this.props.playersList[idx].rank);
+        this.setState({
+            selected_demo_player_white: idx
+        });
+    }
 
     /* rendering {{{ */
 
@@ -744,45 +775,63 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="form-group">
                     <label className="control-label" htmlFor="demo-black-name">{_("Black Player")}</label>
                     <div className="controls">
-                        <div className="checkbox">
-                            <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
-                        </div>
+                        {this.props.playersList
+                            ? <select value={this.state.selected_demo_player_black} onChange={this.update_selected_demo_player_black}>
+                                  {this.props.playersList.map((player, idx) =>
+                                     <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
+                                  )}
+                              </select>
+                            : <div className="checkbox">
+                                  <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
+                              </div>
+                        }
                     </div>
                 </div>
-                <div className="form-group">
-                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
-                                {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
-                                ))}
-                            </select>
+                {(!this.props.playersList || null)
+                    && <div className="form-group">
+                        <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <select value={this.state.demo.black_ranking} onChange={this.update_demo_black_ranking} className="challenge-dropdown form-control">
+                                    {demo_ranks.map((r, idx) => (
+                                        <option key={idx} value={r.rank}>{r.label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                       </div>
+                }
             </div>
             <div className="right-pane pane form-horizontal">
                 <div className="form-group">
-                    <label className="control-label" htmlFor="demo-black-name">{_("White Player")}</label>
+                    <label className="control-label" htmlFor="demo-white-name">{_("White Player")}</label>
                     <div className="controls">
-                        <div className="checkbox">
-                            <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
-                        </div>
+                        {this.props.playersList
+                            ? <select value={this.state.selected_demo_player_white} onChange={this.update_selected_demo_player_white}>
+                                  {this.props.playersList.map((player, idx) =>
+                                     <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
+                                  )}
+                              </select>
+                            : <div className="checkbox">
+                                  <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
+                              </div>
+                        }
                     </div>
                 </div>
-                <div className="form-group">
-                    <label className="control-label" htmlFor="demo-black-name">{_("Rank")}</label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
-                                {demo_ranks.map((r, idx) => (
-                                    <option key={idx} value={r.rank}>{r.label}</option>
-                                ))}
-                            </select>
+                {(!this.props.playersList || null)
+                    && <div className="form-group">
+                        <label className="control-label" htmlFor="demo-white-name">{_("Rank")}</label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <select value={this.state.demo.white_ranking} onChange={this.update_demo_white_ranking} className="challenge-dropdown form-control">
+                                    {demo_ranks.map((r, idx) => (
+                                        <option key={idx} value={r.rank}>{r.label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                       </div>
+                }
             </div>
         </div>;
     }
@@ -1008,9 +1057,14 @@ export function challenge(player_id?: number, initial_state?: any, computer?: bo
 
     return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} />);
 }}}
-export function createDemoBoard() {{{
+export function createDemoBoard(players_list?:Array<{name:string, rank:number}>, tournament_record_id?:number, tournament_record_round_id?:number) {{{
     let mode: ChallengeModes = "demo";
-    return openModal(<ChallengeModal mode={mode} />);
+    return openModal(<
+        ChallengeModal mode={mode}
+        playersList={players_list}
+        tournamentRecordId={tournament_record_id}
+        tournamentRecordRoundId={tournament_record_round_id}
+    />);
 }}}
 export function createOpenChallenge() {{{
     return challenge();
