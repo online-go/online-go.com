@@ -40,7 +40,7 @@ export class Capture extends LearningHubSection {
 class Page1 extends LearningPage {
     constructor(props) { super(props); }
     text() {
-        return _("Capture the white stone");
+        return _("A free space adjacent to a stone is called a liberty. A stone without liberties is captured. Capture the white stone");
     }
     config() {
         return {
@@ -65,7 +65,7 @@ class Page2 extends LearningPage {
     }
 
     text() {
-        return _("Capture the group of white stones");
+        return _("Adjacent stones of the same color form a group and share liberties. They are captured together when they have no liberties anymore. Capture the group of white stones");
     }
     config() {
         return {
@@ -91,7 +91,7 @@ class Page3 extends LearningPage {
     }
 
     text() {
-        return _("You can capture on the side too, capture the white stones.");
+        return _("The border of the field does not count as liberty. Capture the white stones on the side.");
     }
     config() {
         return {
@@ -117,7 +117,7 @@ class Page4 extends LearningPage {
     }
 
     text() {
-        return _("Surrounding isn't enough, you have to fill all the space around the stones. Capture the white stones.");
+        return _("Surrounding is not enough, you have to fill all the space around the stones. Capture the white stones. Notice that you can take even if the newly placed stone has no liberties, because the white stones are taken first.");
     }
     config() {
         return {
@@ -144,7 +144,7 @@ class Page5 extends LearningPage {
     }
 
     text() {
-        return _("Capture the white stones before white can form two \"eyes\"");
+        return _("A group of liberties surrounded by stones of the same color is called an eye. A group with two eyes is alive. Capture the white stones before white can form two eyes");
     }
     config() {
         return {
