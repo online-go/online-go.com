@@ -10,7 +10,7 @@
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
   "browserslist": [
-    "defaults"
+      "defaults"
   ],
   "devDependencies": {
     "autoprefixer": "^9.6.0",
