@@ -55,6 +55,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     }
 
     componentDidMount() {
+        window.document.title = _("Ladder");
         this.resolve(this.props.match.params.ladder_id);
     }
 
@@ -79,6 +80,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                 highlight_rank: ladder.player_rank > 0 ? ladder.player_rank : -1,
                 scrollToIndex: Math.max(0, ladder.player_rank - 1),
             });
+            window.document.title = _(ladder.name);
         })
         .catch(errorAlerter);
     }

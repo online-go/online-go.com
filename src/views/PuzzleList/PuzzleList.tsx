@@ -54,6 +54,9 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
         super(props);
         this.state = { };
     }
+    componentDidMount() {
+        window.document.title = _("Puzzles");
+    }
 
     render() {
         let user = data.get("user");

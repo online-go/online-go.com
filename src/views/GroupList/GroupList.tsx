@@ -38,6 +38,9 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
         this.state = {
         };
     }
+    componentDidMount() {
+        window.document.title = _("Groups");
+    }
 
     render() {
         return (

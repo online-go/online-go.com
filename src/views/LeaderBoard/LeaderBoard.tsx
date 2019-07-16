@@ -34,6 +34,7 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     }
 
     componentDidMount() {
+        window.document.title = _("Leaderboards");
         get("leaderboards/")
         .then((leaderboards) => {
             this.setState({

@@ -42,6 +42,9 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
         this.state = {
         };
     }
+    componentDidMount() {
+        window.document.title = _("Moderator Center");
+    }
 
     refreshModlog = () => {{{
         this.refs.modlog.update();

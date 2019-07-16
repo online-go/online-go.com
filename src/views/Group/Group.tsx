@@ -91,6 +91,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
+        window.document.title = _("Group");
         this.resolve(parseInt(this.props.match.params.group_id));
     }}}
     componentWillUnmount() {{{
@@ -107,6 +108,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         let user = data.get("user");
 
         get("groups/%%", group_id).then((group) => {
+            window.document.title = group.name;
+
             let is_admin = false;
 
             for (let admin of group.admins) {

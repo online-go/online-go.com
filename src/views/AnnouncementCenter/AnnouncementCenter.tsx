@@ -53,6 +53,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
     }
 
     componentWillMount() {
+        window.document.title = _("Announcement Center");
         this.refresh();
     }
 

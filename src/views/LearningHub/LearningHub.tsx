@@ -46,6 +46,10 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
         super(props);
     }
 
+    componentDidMount() {
+        window.document.title = _("Learn to play Go");
+    }
+
     render() {
         let section = this._render();
 

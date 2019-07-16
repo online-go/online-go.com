@@ -68,6 +68,7 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     componentDidMount() {{{
+        window.document.title = _("Play");
         this.seekgraph = new SeekGraph({
             canvas: this.canvas
         });

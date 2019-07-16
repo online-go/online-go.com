@@ -52,6 +52,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
     }}}
 
     componentDidMount() {{{
+        window.document.title = _("Games");
         comm_socket.on("gamelist-count", this.updateCounts);
         comm_socket.on("connect", this.doSubscribe);
         if (comm_socket.connected) {
