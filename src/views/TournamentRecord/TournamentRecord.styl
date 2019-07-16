@@ -63,8 +63,41 @@
         padding-right: 1rem;
     }
 
+    .round-entries-container {
+        max-width: 100vw;
+        overflow-x: auto;
+    }
+
     .round-entries {
         width: 100%;
+
+        .round-entry {
+            .sgf {
+                display: inline-block;
+                min-width: 3rem;
+                white-space: nowrap;
+                overflow: hidden;
+
+                &.with-comments {
+                    min-width: 10rem;
+                }
+            }
+
+            .name {
+                display: inline-block;
+                min-width: 15rem;
+                max-width: 50vw;
+                overflow: hidden;
+
+            }
+
+            .Player {
+                display: inline-block;
+                min-width: 8rem;
+                max-width: 15vw
+                overflow: hidden;
+            }
+        }
     }
 
 

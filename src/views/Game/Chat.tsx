@@ -422,6 +422,15 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             try {
                 switch (body.type) {
                     case "analysis": {
+                            if (!preferences.get("variations-in-chat-enabled")) {
+                                return (
+                                    <span>
+                                        {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
+                                    </span>
+                                );
+                            }
+
+
                             let gameview = this.props.gameview;
                             let goban = gameview.goban;
                             let orig_move = null;

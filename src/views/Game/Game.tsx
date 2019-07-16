@@ -2159,19 +2159,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </Resizable>
 
 
-
-                        <div style={{padding: "0.5em"}}>
-                        <div className="input-group">
-                            <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
-                                value={this.state.variation_name}
-                                onChange={this.updateVariationName}
-                                onKeyDown={this.variationKeyPress}
-                                disabled={user.anonymous}
-                                />
-                                {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>}
-                                {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Record")}</button>}
-                        </div>
-                        </div>
+                        {(!this.state.zen_mode || null)
+                            && <div style={{padding: "0.5em"}}>
+                                <div className="input-group">
+                                    <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
+                                        value={this.state.variation_name}
+                                        onChange={this.updateVariationName}
+                                        onKeyDown={this.variationKeyPress}
+                                        disabled={user.anonymous}
+                                        />
+                                        {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>}
+                                        {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Record")}</button>}
+                                </div>
+                               </div>
+                        }
                     </div>
                 }{/* } */}
                 {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
