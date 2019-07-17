@@ -1030,7 +1030,7 @@ class EditPane extends React.Component<EditProps, any> {
             available_tag_list: [],
             // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
             // ('valueKey' and 'labelKey' aren't working for me)
-            tags: this.props.tags === null ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
+            tags: (this.props.tags === null) ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
             variation_label: this.props.variation_label || '1'
         };
 
@@ -1056,10 +1056,6 @@ class EditPane extends React.Component<EditProps, any> {
         .then(body => {
             console.log("Server response to tags GET:", body);
             this.setState({available_tag_list: [{id: 'none', description: ""}, ...body.tags]});
-            // Default the tag (expecting "Joseki:position is settled") for a new position.
-            if (this.props.category === "new") {
-                this.setState({tags: [body.tags[0]]});
-            }
         }).catch((r) => {
             console.log("Tags GET failed:", r);
         });
@@ -1176,6 +1172,8 @@ class EditPane extends React.Component<EditProps, any> {
         let available_tags = this.state.available_tag_list.map((tag, i) => (
             { label: tag.description, value: tag.id }
         ));
+
+        console.log("EditPane render, tags", this.state.tags);
 
         // give feedback that we recognised their marks
         let preview = this.state.new_description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
