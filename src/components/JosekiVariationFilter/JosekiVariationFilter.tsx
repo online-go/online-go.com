@@ -39,8 +39,8 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             tag_list: [],
             source_list: [],
             selected_filter: {
-                contributor: this.props.current_filter['contributor'],
                 tag: this.props.current_filter['tag'],
+                contributor: this.props.current_filter['contributor'],
                 source: this.props.current_filter['source']
             }
         };
@@ -103,22 +103,38 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         });
     }
 
+    onTagChange = (e) => {
+        const val = e.target.value === 'none' ? null : parseInt(e.target.value);
+
+        let new_filter;
+
+        if (val === null) {
+            // There has to be at least one tag filtered - or no filters at all.
+            new_filter = {tag: null, contributor: null, source: null};
+        }
+        else {
+            new_filter = {...this.state.selected_filter, tag: val};
+        }
+
+        console.log("new tag filter", new_filter);
+        this.props.set_variation_filter(new_filter);
+        this.setState({selected_filter: new_filter});
+    }
+
     onContributorChange = (e) => {
+        if (this.state.selected_filter.tag === null) {
+            return;
+        }
         const val = e.target.value === 'none' ? null : parseInt(e.target.value);
         const new_filter = {...this.state.selected_filter, contributor: val};
         this.props.set_variation_filter(new_filter);
         this.setState({selected_filter: new_filter});
     }
 
-    onTagChange = (e) => {
-        const val = e.target.value === 'none' ? null : parseInt(e.target.value);
-        const new_filter = {...this.state.selected_filter, tag: val};
-        console.log("new tag filter", new_filter);
-        this.props.set_variation_filter(new_filter);
-        this.setState({selected_filter: new_filter});
-    }
-
     onSourceChange = (e) => {
+        if (this.state.selected_filter.tag === null) {
+            return;
+        }
         const val = e.target.value === 'none' ? null : parseInt(e.target.value);
         const new_filter = {...this.state.selected_filter, source: val};
         this.props.set_variation_filter(new_filter);
@@ -127,8 +143,8 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
     render() {
         console.log("Variation filter render");
-        console.log("contributors", this.state.contributor_list);
         console.log("tags", this.state.tag_list);
+        console.log("contributors", this.state.contributor_list);
         console.log("sources", this.state.source_list);
 
         let contributors = this.state.contributor_list.map((c, i) => {
@@ -158,13 +174,6 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         return (
             <div className="joseki-variation-filter">
                 <div className="filter-set">
-                    <div className="filter-label">Filter by Contributor</div>
-                    <select value={current_contributor} onChange={this.onContributorChange}>
-                                {contributors}
-                    </select>
-                </div>
-
-                <div className="filter-set">
                     <div className="filter-label">Filter by Tag</div>
                     <select value={current_tag} onChange={this.onTagChange}>
                                 {tags}
@@ -172,10 +181,25 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 </div>
 
                 <div className="filter-set">
+                    <div className="filter-label">Filter by Contributor</div>
+                    <select value={current_contributor} onChange={this.onContributorChange}
+                            className={(this.state.selected_filter.tag === null ? " filter-set-inactive" : "")}
+                            disabled={(this.state.selected_filter.tag === null)}>
+                                {contributors}
+                    </select>
+                </div>
+
+                <div className={"filter-set" + (this.state.selected_filter.tag === null ? " filter-set-inactive" : "")}>
                     <div className="filter-label">Filter by Source</div>
-                    <select value={current_source} onChange={this.onSourceChange}>
+                    <select value={current_source} onChange={this.onSourceChange}
+                            className={(this.state.selected_filter.tag === null ? " filter-set-inactive" : "")}
+                            disabled={(this.state.selected_filter.tag === null)}>
                                 {sources}
                     </select>
+                </div>
+
+                <div className="filter-notes">
+                    {(this.state.selected_filter.tag === null ? " (Select a Tag to filter first)" : "")}
                 </div>
             </div>
         );
