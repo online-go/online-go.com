@@ -69,7 +69,7 @@
                 "call-signature": "nospace",
                 "index-signature": "nospace",
                 "parameter": "nospace",
-                "property-decl  aration": "nospace",
+                "property-declaration": "nospace",
                 "variable-declaration": "nospace"
             }
         ],
