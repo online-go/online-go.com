@@ -151,6 +151,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
+        window.document.title = _("Tournament");
         if (this.state.tournament_id) {
             this.resolve(this.state.tournament_id);
         }
@@ -190,6 +191,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let rounds = res[1];
             let raw_rounds = res[1];
             let players = res[2];
+
+            window.document.title = tournament.name;
 
             while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
                 rounds.pop(); /* account for server bugs that can create empty last rounds */

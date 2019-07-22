@@ -1082,7 +1082,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     <div className='key-moves'>
                         {blunders &&
                             <div>
-                                {interpolate(_("{{black_blunders}} blunders by black, {{white_blunders}} by white"),
+                                {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
                                     { black_blunders: blunders.black, white_blunders: blunders.white, })}
                             </div>
                         }

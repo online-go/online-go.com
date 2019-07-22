@@ -286,6 +286,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }}}
 
     componentDidMount() {{{
+        window.document.title = _("Support OGS");
         amex_express_checkout_callback = (response) => {
                 post("me/process_stripe", {
                     'interval': this.state.interval,

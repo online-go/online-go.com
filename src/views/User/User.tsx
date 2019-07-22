@@ -111,6 +111,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     componentDidMount() {
+        window.document.title = _("Player");
         let interval_start = Date.now();
         this.vacation_update_interval = setInterval(() => {
             if (this.state.user) {
@@ -144,6 +145,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 this.original_username = state.user.username;
                 player_cache.update(state.user);
                 this.update(state);
+                window.document.title = state.user.username;
             } catch (err) {
                 console.error(err.stack);
             }

@@ -49,6 +49,8 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     }
 
     componentDidMount() {
+        window.document.title = "Admin";
+
         if (termination_socket.connected) {
             this.pollStats();
         }

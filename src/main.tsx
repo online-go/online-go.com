@@ -215,7 +215,6 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 declare var gtag;
 
 
-/* ga history hook  */
 browserHistory.listen(location => {
     try {
         let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
@@ -232,6 +231,7 @@ browserHistory.listen(location => {
         }
 
         if (gtag) {
+            /* ga history hook  */
             window["gtag"]("config", 'UA-37743954-2', {
                 'page_path': cleaned_path,
                 'custom_map': {
@@ -239,6 +239,8 @@ browserHistory.listen(location => {
                 }
             });
         }
+
+        window.document.title = "OGS";
 
         close_all_popovers();
     } catch (e) {

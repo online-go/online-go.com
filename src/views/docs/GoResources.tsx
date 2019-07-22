@@ -43,6 +43,8 @@ function scramble(...args) {
 }
 
 export let GoResources = (props) => {
+    window.document.title = _("Other Go Resources");
+
     let country = data.get("user").country || "us";
     let fr = getLanguageFlag("french", country, "fr");
     let en = getLanguageFlag("english", country, "us");

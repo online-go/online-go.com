@@ -105,6 +105,7 @@ export class Settings extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {{{
+        window.document.title = _("Settings");
         this.resolve();
         this.vacation_interval = setInterval(() => {
             if (this.state.profile.on_vacation) {

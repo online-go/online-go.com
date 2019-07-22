@@ -105,6 +105,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }
 
     componentDidMount() {{{
+        window.document.title = _("Puzzle");
         this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         this.onResize();
         $(window).on("resize", this.onResize as () => void);
@@ -193,6 +194,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 this.reset(editing);
                 this.setState(state);
                 this.onResize(true);
+                window.document.title = state.collection.name + ": " + state.name;
             }
         );
     }

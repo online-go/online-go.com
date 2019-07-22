@@ -41,6 +41,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
     }
 
     componentWillMount() {
+        window.document.title = ("Ladders");
         this.resolve();
     }
 
