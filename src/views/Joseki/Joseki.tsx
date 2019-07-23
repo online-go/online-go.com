@@ -37,6 +37,7 @@ import { JosekiAdmin } from "JosekiAdmin";
 import {openModal} from 'Modal';
 import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
+import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
@@ -47,8 +48,8 @@ const position_url = (node_id, variation_filter) => {
         if (variation_filter.contributor !== null) {
             position_url += "&cfilterid=" + variation_filter.contributor;
         }
-        if (variation_filter.tag !== null) {
-            position_url += "&tfilterid=" + variation_filter.tag;
+        if (variation_filter.tags !== null && variation_filter.tags.length !== 0) {
+            position_url += "&tfilterid=" + variation_filter.tags;
         }
         if (variation_filter.source !== null) {
             position_url += "&sfilterid=" + variation_filter.source;
@@ -150,8 +151,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_type_sequence: [],   // This is the sequence of "move types" that is passed to the Play pane to display
 
             joseki_source: null as {},
-            tags: [],
-            variation_filter: {contributor: null, tag: null, source: null},
+            tags: [],   // The tags that are on the current position
+            variation_filter: {contributor: null, tags: null, source: null},
 
             count_details_open: false,
             tag_counts: [],
@@ -925,7 +926,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 interface PlayProps {
     move_type_sequence: [];
     set_variation_filter: any;
-    current_filter: {contributor: number, tag: number, source: number};
+    current_filter: {contributor: number, tags: number[], source: number};
 }
 
 class PlayPane extends React.Component<PlayProps, any> {
@@ -956,7 +957,9 @@ class PlayPane extends React.Component<PlayProps, any> {
 
     render = () => {
         const filter_active =
-            this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
+            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor !== null ||
+            this.props.current_filter.source !== null);
 
         return (
             <div className="play-columns">
@@ -1045,19 +1048,6 @@ class EditPane extends React.Component<EditProps, any> {
             this.setState({joseki_source_list: [{id: 'none', description: "(unknown)"}, ...body.sources]});
         }).catch((r) => {
             console.log("Sources GET failed:", r);
-        });
-
-        // Get the list of position tags
-        fetch(tags_url, {
-            mode: 'cors',
-            headers: godojo_headers
-        })
-        .then(res => res.json())
-        .then(body => {
-            console.log("Server response to tags GET:", body);
-            this.setState({available_tag_list: [{id: 'none', description: ""}, ...body.tags]});
-        }).catch((r) => {
-            console.log("Tags GET failed:", r);
         });
     }
 
@@ -1169,9 +1159,6 @@ class EditPane extends React.Component<EditProps, any> {
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
 
-        let available_tags = this.state.available_tag_list.map((tag, i) => (
-            { label: tag.description, value: tag.id }
-        ));
 
         console.log("EditPane render, tags", this.state.tags);
 
@@ -1205,15 +1192,12 @@ class EditPane extends React.Component<EditProps, any> {
                     </div>
                     <div className="tag-edit">
                         <div>Tags:</div>
-                        <Select
-                            value={this.state.tags}
-                            options={available_tags}
-                            multi={true}
-                            onChange={this.onTagChange}
-                            valueRenderer={(v) => <span className="tag-value">{v.label}</span>}
-                            optionRenderer={(o) => <span className="tag-option">{o.label}</span>}
+                        <JosekiTagSelector
+                            godojo_headers={godojo_headers}
+                            tag_list_url = {server_url + "tags"}
+                            selected_tags= {this.state.tags}
+                            on_tag_update={this.onTagChange}
                         />
-
                     </div>
                 </div>
                 <div className="description-edit">
@@ -1253,7 +1237,7 @@ interface ExploreProps {
     joseki_source: {url: string, description: string};
     tags: Array<any>;
     set_variation_filter: any;
-    current_filter: {contributor: number, tag: number, source: number};
+    current_filter: {contributor: number, tags: number[], source: number};
     child_count: number;
 }
 
@@ -1384,7 +1368,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     render = () => {
         const filter_active =
-            this.props.current_filter.contributor !== null || this.props.current_filter.tag !== null || this.props.current_filter.source !== null;
+            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor !== null ||
+            this.props.current_filter.source !== null);
 
         // Highlight marks
         const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');

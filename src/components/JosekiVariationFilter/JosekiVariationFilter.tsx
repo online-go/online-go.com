@@ -19,8 +19,7 @@ import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 
 import * as player_cache from "player_cache";
-import { tickStep } from "d3";
-import { triggerAsyncId } from "async_hooks";
+import { JosekiTagSelector } from "../JosekiTagSelector";
 
 interface JosekiVariationFilterProps {
     godojo_headers: any;
@@ -28,7 +27,7 @@ interface JosekiVariationFilterProps {
     tag_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
-    current_filter: {contributor: number, tag: number, source: number};
+    current_filter: {contributor: number, tags: number[], source: number};
 }
 
 export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, any> {
@@ -39,7 +38,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             tag_list: [],
             source_list: [],
             selected_filter: {
-                tag: this.props.current_filter['tag'],
+                tags: this.props.current_filter['tags'],
                 contributor: this.props.current_filter['contributor'],
                 source: this.props.current_filter['source']
             }
@@ -78,18 +77,6 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             console.log("Contributors GET failed:", r);
         });
 
-        fetch(this.props.tag_list_url, {
-            mode: 'cors',
-            headers: this.props.godojo_headers
-        })
-        .then(res => res.json())
-        .then(body => {
-            console.log("Server response to tag GET:", body);
-            this.setState({tag_list: body.tags});
-        }).catch((r) => {
-            console.log("Tags GET failed:", r);
-        });
-
         fetch(this.props.source_list_url, {
             mode: 'cors',
             headers: this.props.godojo_headers
@@ -104,16 +91,17 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
     }
 
     onTagChange = (e) => {
-        const val = e.target.value === 'none' ? null : parseInt(e.target.value);
+        console.log("Variation filter update:", e);
+        const val = e;
 
         let new_filter;
 
-        if (val === null) {
+        if (val === null || val === []) {
             // There has to be at least one tag filtered - or no filters at all.
-            new_filter = {tag: null, contributor: null, source: null};
+            new_filter = {tags: null, contributor: null, source: null};
         }
         else {
-            new_filter = {...this.state.selected_filter, tag: val};
+            new_filter = {...this.state.selected_filter, tags: val.map(t => t.value)};
         }
 
         console.log("new tag filter", new_filter);
@@ -143,7 +131,6 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
     render() {
         console.log("Variation filter render");
-        console.log("tags", this.state.tag_list);
         console.log("contributors", this.state.contributor_list);
         console.log("sources", this.state.source_list);
 
@@ -158,16 +145,12 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
         contributors.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
 
-        let tags = this.state.tag_list.map((t, i) => (<option key={i} value={t.id}>{t.description}</option>));
-        tags.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
-
         let sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
         sources.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
 
         const current_contributor = (this.state.selected_filter.contributor === null) ?
              'none' :this.state.selected_filter.contributor;
-        const current_tag = (this.state.selected_filter.tag === null) ?
-             'none' :this.state.selected_filter.tag;
+
         const current_source = (this.state.selected_filter.source === null) ?
              'none' :this.state.selected_filter.source;
 
@@ -175,9 +158,12 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             <div className="joseki-variation-filter">
                 <div className="filter-set">
                     <div className="filter-label">Filter by Tag</div>
-                    <select value={current_tag} onChange={this.onTagChange}>
-                                {tags}
-                    </select>
+                    <JosekiTagSelector
+                        godojo_headers={this.props.godojo_headers}
+                        tag_list_url={this.props.tag_list_url}
+                        selected_tags={this.state.selected_filter.tags}
+                        on_tag_update={this.onTagChange}
+                    />
                 </div>
 
                 <div className="filter-set">
@@ -204,7 +190,5 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             </div>
         );
     }
-
-
 }
 
