@@ -16,17 +16,52 @@
  */
 
 .joseki-tag-selector {
-    div[class^="Select"] {
-        themed background bg;
-        themed color fg;
-    }
 
     .Select-control {
+        themed border-color shade1;
         border: none;
+        themed background bg;
         border-radius: 5px;
         border-bottom: 1px solid;
+
+        div[class^="Select"] {
+            themed background bg;
+            themed color fg;
+            themed border-color shade1;
+        }
     }
+
     .tag-option {
         width: max-content;
+    }
+
+    .Select-menu-outer * {
+        margin: 0 0 0.2rem;
+        padding: 0 0 0 3px;
+    }
+
+    .Select-menu-outer {
+        .Select-menu {
+            themed background bg;
+        }
+
+        .Select-option:not(:hover) {
+            themed background bg;
+            themed color fg;
+        }
+
+        .Select-option:hover {
+            themed background shade1;
+        }
+    }
+}
+
+// react-select is very opinionated about this state of the Select, we have to work hard
+// to override it...
+
+.joseki-tag-selector.Select.Select--multi.is-focused {
+    .Select-control {
+        themed background bg;
+        themed border-color shade1;
     }
 }
