@@ -197,7 +197,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a> </span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a> </span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos">New York Institute of Go</a> </span>
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos">New York Institute of Go</a> </span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
