@@ -925,64 +925,62 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
                 </div>
 
-                {(mode !== "computer" || null) &&
-                    <div>
-                        <div className="form-group" style={{position: "relative"}}>
-                            <label className="control-label" htmlFor="challenge-disable-analysis">{_("Disable Analysis")}</label>
-                            <div className="controls">
-                                <div className="checkbox">
-                                    <input checked={this.state.challenge.game.disable_analysis} onChange={this.update_disable_analysis} id="challenge-disable-analysis" type="checkbox"/> *
-                                </div>
+                <div>
+                    <div className="form-group" style={{position: "relative"}}>
+                        <label className="control-label" htmlFor="challenge-disable-analysis">{_("Disable Analysis")}</label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input checked={this.state.challenge.game.disable_analysis} onChange={this.update_disable_analysis} id="challenge-disable-analysis" type="checkbox"/> *
                             </div>
                         </div>
+                    </div>
 
-                        {(mode === "open" || null) &&
-                            <div>
-                                <div className="form-group" id="challenge-restrict-rank-group">
-                                    <label className="control-label" htmlFor="challenge-restrict-rank">{_("Restrict Rank")}</label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <input checked={this.state.conf.restrict_rank} onChange={this.update_restrict_rank} id="challenge-restrict-rank"
-                                                type="checkbox"/>
-                                        </div>
+                    {(mode === "open" || null) &&
+                        <div>
+                            <div className="form-group" id="challenge-restrict-rank-group">
+                                <label className="control-label" htmlFor="challenge-restrict-rank">{_("Restrict Rank")}</label>
+                                <div className="controls">
+                                    <div className="checkbox">
+                                        <input checked={this.state.conf.restrict_rank} onChange={this.update_restrict_rank} id="challenge-restrict-rank"
+                                            type="checkbox"/>
                                     </div>
                                 </div>
-                                {(conf.restrict_rank || null) &&
-                                    <div>
-
-                                        <div className="form-group" id="challenge-min-rank-group">
-                                            <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group" id="challenge-max-rank-group">
-                                            <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
-                                            <div className="controls">
-                                                <div className="checkbox">
-                                                    <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>{r.label}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                }
                             </div>
-                        }
-                        <div style={{marginTop: "1.0em", textAlign: "right", fontSize: "0.8em"}}>* {_("Also disables conditional moves")}</div>
-                    </div>
-                }
+                            {(conf.restrict_rank || null) &&
+                                <div>
+
+                                    <div className="form-group" id="challenge-min-rank-group">
+                                        <label className="control-label" htmlFor="minimum_ranking">{_("Minimum Ranking")}</label>
+                                        <div className="controls">
+                                            <div className="checkbox">
+                                                <select value={this.state.challenge.min_ranking} onChange={this.update_min_rank} id="challenge-min-rank" className="challenge-dropdown form-control">
+                                                    {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
+                                                        <option key={idx} value={r.rank}>{r.label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" id="challenge-max-rank-group">
+                                        <label className="control-label" htmlFor="maximum_ranking">{_("Maximum Ranking")}</label>
+                                        <div className="controls">
+                                            <div className="checkbox">
+                                                <select value={this.state.challenge.max_ranking} onChange={this.update_max_rank} id="challenge-max-rank" className="challenge-dropdown form-control">
+                                                    {(challenge.game.ranked ? ranked_ranks : ranks).map((r, idx) => (
+                                                        <option key={idx} value={r.rank}>{r.label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+                        </div>
+                    }
+                    <div style={{marginTop: "1.0em", textAlign: "right", fontSize: "0.8em"}}>* {_("Also disables conditional moves")}</div>
+                </div>
             </div>
         </div>;
     }
