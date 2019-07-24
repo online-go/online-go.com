@@ -83,6 +83,7 @@ function lint(done) {
         gulp.src(ts_sources, {base: '.'})
         .pipe(gulpTsLint({
             //formatter: "prose",
+            configuration: "./tslint.json",
             formatter: "stylish",
             program: program,
         }))
