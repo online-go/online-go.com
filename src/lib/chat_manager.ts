@@ -70,32 +70,32 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this._rejoin();
     }
 
-    _rejoin = () => {{{
+    _rejoin = () => {
         if (comm_socket.connected) {
             comm_socket.emit("chat/join", {"channel": this.channel});
         }
-    }}}
-    _destroy() {{{
+    }
+    _destroy() {
         if (comm_socket.connected) {
             comm_socket.emit("chat/part", {"channel": this.channel});
         }
         comm_socket.off("connect", this._rejoin);
         this.removeAllListeners();
-    }}}
-    createProxy(): ChatChannelProxy {{{
+    }
+    createProxy(): ChatChannelProxy {
         let proxy = new ChatChannelProxy(this);
         this.proxies[proxy.id] = proxy;
         return proxy;
-    }}}
-    removeProxy(proxy: ChatChannelProxy): void {{{
+    }
+    removeProxy(proxy: ChatChannelProxy): void {
         delete this.proxies[proxy.id];
         if (Object.keys(this.proxies).length === 0) {
             this._destroy();
             chat_manager._removeChannel(this.channel);
         }
-    }}}
+    }
 
-    handleChat(obj) {{{
+    handleChat(obj) {
         if (obj.message.i in this.chat_ids) {
             return;
         }
@@ -122,8 +122,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    }}}
-    handleJoins(users: Array<any>): void {{{
+    }
+    handleJoins(users: Array<any>): void {
         for (let user of users) {
             if (!(user.id in this.user_list)) {
                 this.user_count++;
@@ -138,8 +138,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
 
-    }}}
-    handlePart(user): void {{{
+    }
+    handlePart(user): void {
         if (user.id in this.user_list) {
             this.user_count--;
             delete this.user_list[user.id];
@@ -151,8 +151,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    }}}
-    _update_sorted_lists() {{{
+    }
+    _update_sorted_lists() {
         this.users_by_name = [];
         this.users_by_rank = [];
         for (let id in this.user_list) {
@@ -161,7 +161,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
         this.users_by_rank.sort(users_by_rank);
-    }}}
+    }
 }
 
 export function users_by_rank(a, b) {
@@ -197,26 +197,26 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this.channel.on("part", this._onPart);
     }
 
-    part() {{{
+    part() {
         this._destroy();
-    }}}
+    }
 
-    _onChat = (...args) => {{{
+    _onChat = (...args) => {
         this.emit.apply(this, ["chat"].concat(args));
-    }}}
-    _onJoin = (...args) => {{{
+    }
+    _onJoin = (...args) => {
         this.emit.apply(this, ["join"].concat(args));
-    }}}
-    _onPart = (...args) => {{{
+    }
+    _onPart = (...args) => {
         this.emit.apply(this, ["part"].concat(args));
-    }}}
-    _destroy() {{{
+    }
+    _destroy() {
         this.channel.off("chat", this._onChat);
         this.channel.off("join", this._onJoin);
         this.channel.off("part", this._onPart);
         this.removeAllListeners();
         this.channel.removeProxy(this);
-    }}}
+    }
 }
 
 
@@ -229,7 +229,7 @@ class ChatManager {
         comm_socket.on("chat-part", this.onPart);
     }
 
-    onMessage = (obj) => {{{
+    onMessage = (obj) => {
         if (!(obj.channel in this.channels)) {
             return;
         }
@@ -244,8 +244,8 @@ class ChatManager {
         }, true);
 
         this.channels[obj.channel].handleChat(obj);
-    }}}
-    onJoin = (joins) => {{{
+    }
+    onJoin = (joins) => {
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
         }
@@ -255,25 +255,25 @@ class ChatManager {
         }
 
         this.channels[joins.channel].handleJoins(joins.users);
-    }}}
-    onPart = (part) => {{{
+    }
+    onPart = (part) => {
         if (!(part.channel in this.channels)) {
             return;
         }
 
         this.channels[part.channel].handlePart(part.user);
-    }}}
-    join(channel: string, display_name: string): ChatChannelProxy {{{
+    }
+    join(channel: string, display_name: string): ChatChannelProxy {
         if (!(channel in this.channels)) {
             this.channels[channel] = new ChatChannel(channel, display_name);
         }
 
         return this.channels[channel].createProxy();
-    }}}
+    }
 
-    _removeChannel(channel: string): void {{{
+    _removeChannel(channel: string): void {
         delete this.channels[channel];
-    }}}
+    }
 }
 
 
