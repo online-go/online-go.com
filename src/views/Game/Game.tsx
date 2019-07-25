@@ -1705,7 +1705,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     setVolume = (ev) => {
         const new_volume = parseFloat(ev.target.value);
         this._setVolume(new_volume);
-        this.saveVolume(new_volume);
     }
     _setVolume(volume) {
         let enabled = volume > 0;
@@ -1723,10 +1722,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
-    }
 
-    saveVolume = (volume) => {
-        let enabled = volume > 0;
         preferences.set("sound-volume", volume);
         preferences.set("sound-enabled", enabled);
     }
