@@ -339,6 +339,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // Decode a response from the server into state we need, and display accordingly
     processNewJosekiPosition = (position) => {
         this.setState({
+            // I really wish I'd just put all of this into a single state object :S
+            // It's on the "gee that would be good to refactor list...
             position_description: position.description,
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
@@ -1250,6 +1252,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             extra_info_selected: "none",
             current_position: "",
             commentary: [],
+            forum_thread: "",
             audit_log: [],
             next_comment: "",
             extra_throb: false
@@ -1276,7 +1279,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     showComments = () => {
-        // TBD don't re-fetch if we already have them for this node
+        // Possible optimisation: don't re-fetch if we already have them for this node
         const comments_url = server_url + "commentary?id=" + this.props.position_id;
         console.log("Fetching comments ", comments_url);
         console.log(godojo_headers);
@@ -1290,7 +1293,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         .then(body => {
             console.log("Server response:", body);
             this.setState({extra_throb: false});
-            this.extractCommentary(body.commentary);
+            this.extractCommentary(body);
         }).catch((r) => {
             console.log("Comments GET failed:", r);
         });
@@ -1298,14 +1301,21 @@ class ExplorePane extends React.Component<ExploreProps, any> {
     }
 
     extractCommentary = (commentary_dto) => {
-        let commentary = commentary_dto.map((comment) => (
+        console.log(commentary_dto);
+        let commentary = commentary_dto.commentary.map((comment) => (
             {
                 user_id: comment.userId,
                 date: new Date(comment.date),
                 comment: comment.comment
             }
         ));
-        this.setState({ commentary: commentary });
+        const forum_thread_url = commentary_dto.forum_thread_id === null ? "" :
+            ("https://forums.online-go.com/t/" + commentary_dto.forum_thread_id);
+
+        this.setState({
+            commentary: commentary,
+            forum_thread: forum_thread_url
+        });
     }
 
     hideExtraInfo = () => {
@@ -1353,8 +1363,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             })
             .then(res => res.json())
             .then(body => {
-                console.log("Server response to sequence POST:", body);
-                this.extractCommentary(body.commentary);
+                console.log("Server response to comment POST:", body);
+                this.extractCommentary(body);
             }).catch((r) => {
                 console.log("Comment PUT failed:", r);
             });
@@ -1412,8 +1422,13 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         <div>Discussion:</div>
                                         <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                     </div>
+                                    {this.state.forum_thread !== "" && false && // let's not do this actually! Keep discussion on this page.
+                                    <div className="comment-thread">
+                                        <a href={this.state.forum_thread}>(see: forum discussion)</a>
+                                    </div>
+                                    }
                                     <div className="discussion-lines">
-                                    <Throbber throb={this.state.extra_throb}/>
+                                        <Throbber throb={this.state.extra_throb}/>
                                         {this.state.commentary.map((comment, idx) =>
                                             <div className="comment" key={idx}>
                                                 <div className="comment-header">
@@ -1437,7 +1452,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                             <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
                                     </div>
                                     <div className="audit-entries">
-                                    <Throbber throb={this.state.extra_throb}/>
+                                        <Throbber throb={this.state.extra_throb}/>
                                         {this.state.audit_log.map((audit, idx) =>
                                             <div className="audit-entry" key={idx}>
                                                 <div className="audit-header">
