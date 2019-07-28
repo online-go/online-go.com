@@ -19,6 +19,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
+import * as queryString from "query-string";
 
 import Select from 'react-select';
 
@@ -121,7 +122,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
-
+    show_comments_requested = false;  //  If there is a "show_comments parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
@@ -201,6 +202,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         if (target_position !== "root") {
             this.load_sequence_to_board = true;
+
+            const queries = queryString.parse(this.props.location.search);
+            if (queries.show_comments) {
+                this.show_comments_requested = true;
+            }
         }
 
         this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
@@ -262,8 +268,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         this.setState({
             position_description: "",
-            throb: true
+            throb: true,
         });
+
+        // We have to turn show_comments_requested off once we are done loading a first position...
+        this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
         console.log("fetching position for node", node_id); // visual indication that we are processing their click
         fetch(position_url(node_id, variation_filter), {
@@ -821,6 +830,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
                     child_count = {this.state.child_count}
+                    show_comments = {this.show_comments_requested}
                 />
             );
         }
@@ -1241,6 +1251,7 @@ interface ExploreProps {
     set_variation_filter: any;
     current_filter: {contributor: number, tags: number[], source: number};
     child_count: number;
+    show_comments: boolean;
 }
 
 class ExplorePane extends React.Component<ExploreProps, any> {
@@ -1259,6 +1270,12 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         };
     }
 
+    componentDidMount = () => {
+        if (this.props.show_comments) {
+            this.showComments();
+        }
+     }
+
     static getDerivedStateFromProps(nextProps, prevState) {
         // Detect position id changes, so we can close the extra_info pane
         if (nextProps.position_id !== prevState.current_position) {
@@ -1275,6 +1292,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 extra_info_selected: "none",
                 commentary: []
             });
+        }
+        else {
+            if (this.props.position_id !== null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
+                this.showComments();
+            }
         }
     }
 
