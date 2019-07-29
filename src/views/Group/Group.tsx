@@ -607,7 +607,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
-		    <EmbeddedChat channel={`group-${this.state.group.id}`} updateTitle={false} />
+                    <EmbeddedChat channel={`group-${this.state.group.id}`} updateTitle={false} />
 
                     <Card>
                         {(group.has_tournament_records || null) &&
