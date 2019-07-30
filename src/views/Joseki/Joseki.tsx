@@ -707,6 +707,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         return (
             <div className={"Joseki"}>
+                <KBShortcut shortcut="home" action={this.resetBoard} />
+                <KBShortcut shortcut="left" action={this.backOneMove} />
+
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
                         <PersistentElement className="Goban" elt={this.goban_div} />
