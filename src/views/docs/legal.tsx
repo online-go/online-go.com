@@ -29,7 +29,10 @@ export let TermsOfService = (props) => ( /* {{{ */
         to lose money or anything else as a result of something you
         perceived to be our fault (whether it's our fault or not!) Don't
         sue us for anything our users do.  Don't sue us for any other
-        reason either.
+        reason either. </div>
+
+        <div className="legal-paragraph">
+        Don't cheat or harass people.
         </div>
 
         <div className="legal-paragraph">
@@ -43,6 +46,33 @@ export let TermsOfService = (props) => ( /* {{{ */
 
     In consideration of your use of the Service, you represent that you are of
     legal age to form a binding contract.
+
+    <h2>Code of Conduct</h2>
+
+    <div className="legal-paragraph">
+    By using our service you agree not to:
+    <ul>
+        <li>Cheat at any games provided by Online-Go.com</li>
+        <li>Threaten, harass, or stalk other members.</li>
+        <li>Upload, post, or otherwise make available any unlawful, harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful,
+            or otherwise objectionable content on Online-Go.com or any service which utilizes Online-Go.com Widgets or Software.</li>
+        <li>Impersonate any person or entity</li>
+        <li>Disrupt the normal flow of dialog or otherwise act in a manner that negatively affects other users' ability to communicate through or use Services provided by Online-Go.com</li>
+        <li>Intentionally or unintentionally violate any applicable local, state, national, or international law</li>
+        <li>Solicit or advertise for any competing Go services</li>
+    </ul>
+    </div>
+
+    <h2>No Cheating or Computer Help</h2>
+
+    <div className="legal-paragraph">
+    You can NEVER use Go programs (Leela, Zen, etc.) or neural networks to
+    analyze current ongoing games unless specifically permitted (e.g.,
+    a computer tournament). The only type of computer assistance
+    allowed is games databases for opening lines and joseki databases
+    for corner patterns in correspondence Go. You cannot receive ANY
+    outside assistance on live or blitz Go games.
+    </div>
 
     <h2>Services</h2>
 
@@ -112,34 +142,6 @@ export let TermsOfService = (props) => ( /* {{{ */
     sole discretion and that Online-Go.com shall not be liable to you or any
     third party for any termination of your account or access to the
     Service.
-
-    <h2>Code of Conduct</h2>
-
-    <div className="legal-paragraph">
-    By using our service you agree not to:
-    <ul>
-        <li>Cheat at any games provided by Online-Go.com</li>
-        <li>Threaten, harass, or stalk other members.</li>
-        <li>Upload, post, or otherwise make available any unlawful, harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful,
-            or otherwise objectionable content on Online-Go.com or any service which utilizes Online-Go.com Widgets or Software.</li>
-        <li>Impersonate any person or entity</li>
-        <li>Disrupt the normal flow of dialog or otherwise act in a manner that negatively affects other users' ability to communicate through or use Services provided by Online-Go.com</li>
-        <li>Intentionally or unintentionally violate any applicable local, state, national, or international law</li>
-        <li>Solicit or advertise for any competing Go services</li>
-    </ul>
-    </div>
-
-    <h2>No Cheating or Computer Help</h2>
-
-    <div className="legal-paragraph">
-    You can NEVER use Go programs (Leela, Zen, etc.) or neural networks to
-    analyze current ongoing games unless specifically permitted (e.g.,
-    a computer tournament). The only type of computer assistance
-    allowed is games databases for opening lines and joseki databases
-    for corner patterns in correspondence Go. You cannot receive ANY
-    outside assistance on live or blitz Go games.
-    </div>
-
 
     <h2>Content</h2>
 
