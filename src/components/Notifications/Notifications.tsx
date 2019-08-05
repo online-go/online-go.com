@@ -222,6 +222,7 @@ class NotificationManager {
         this.ordered_notifications = [];
 
         this.boards_to_move_on = {};
+        this.active_boards = {};
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
@@ -242,13 +243,14 @@ class NotificationManager {
         //notificationPermissionRequest();
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
-        } 
+        }
+
         if (this.boards_to_move_on.length === 0) {
             for (let k in this.active_boards) {
             board_ids.push(parseInt(this.active_boards[k].id));
             }
         }
-        
+
         board_ids.sort((a, b) => { return a - b; });
 
         if (board_ids.length === 0) {
@@ -311,7 +313,9 @@ class NotificationManager {
         });
         comm_socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
-            delete this.active_boards[game.id];
+            if (game.phase === "finished") {
+                delete this.active_boards[game.id];
+            }
 
             if (game.phase === "stone removal") {
                 if ((game.black.id === data.get("user").id && !game.black.accepted)
@@ -325,7 +329,7 @@ class NotificationManager {
                     this.boards_to_move_on[game.id] = game;
                 }
             }
-            else {
+            else if (game.phase !== "finished") {
                 this.active_boards[game.id] = game;
             }
 
