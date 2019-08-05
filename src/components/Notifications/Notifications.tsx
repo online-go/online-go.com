@@ -245,10 +245,11 @@ class NotificationManager {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
         }
 
-        if (this.boards_to_move_on.length === 0) {
-            for (let k in this.active_boards) {
-            board_ids.push(parseInt(this.active_boards[k].id));
+        for (let k in this.active_boards) {
+            if (this.boards_to_move_on.length !== 0) {
+                return;
             }
+            board_ids.push(parseInt(this.active_boards[k].id));
         }
 
         board_ids.sort((a, b) => { return a - b; });
@@ -329,7 +330,8 @@ class NotificationManager {
                     this.boards_to_move_on[game.id] = game;
                 }
             }
-            else if (game.phase !== "finished") {
+
+            if (game.phase !== "finished") {
                 this.active_boards[game.id] = game;
             }
 
