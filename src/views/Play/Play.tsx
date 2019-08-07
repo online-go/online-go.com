@@ -615,9 +615,18 @@ export class Play extends React.Component<PlayProperties, any> {
                                  <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
                                  <p className="cheat-alert-tooltiptext">
                                     {
-                                        (C.komi !== null ? "Custom komi: " + C.komi + ". " : "") +
-                                        (usedForCheating(C.time_control_parameters) ? "Unusual time setting. " : "" ) +
-                                        ((C.handicap !== 0 && C.handicap !== -1) ? "Custom handicap: " + C.handicap_text : "")
+                                        (C.komi !== null ?
+                                            pgettext("Warning for users accepting game", "Custom komi") + ": " + C.komi + " "
+                                            : ""
+                                        ) +
+                                        (usedForCheating(C.time_control_parameters) ?
+                                            pgettext("Warning for users accepting game", "Unusual time setting") + " "
+                                            : ""
+                                        ) +
+                                        ((C.handicap !== 0 && C.handicap !== -1) ?
+                                            pgettext("Warning for users accepting game", "Custom handicap") + ": " + C.handicap_text
+                                            : ""
+                                        )
                                     }
                                 </p>
                                 </React.Fragment>
