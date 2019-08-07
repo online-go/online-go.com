@@ -609,7 +609,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                 (((C.eligible || C.user_challenge) && !C.removed) &&
                                  (C.komi !== null ||
                                   usedForCheating(C.time_control_parameters) ||
-                                  (C.handicap_text !== "Auto" && C.handicap_text !== "No"))
+                                  ((C.handicap !== 0 && C.handicap !== -1)))
                                    || null) &&
                                 <React.Fragment>
                                  <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
@@ -617,7 +617,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                     {
                                         (C.komi !== null ? "Custom komi: " + C.komi + ". " : "") +
                                         (usedForCheating(C.time_control_parameters) ? "Unusual time setting. " : "" ) +
-                                        ((C.handicap_text !== "Auto" && C.handicap_text !== "No") ? "Custom handicap: " + C.handicap_text : "")
+                                        ((C.handicap !== 0 && C.handicap !== -1) ? "Custom handicap: " + C.handicap_text : "")
                                     }
                                 </p>
                                 </React.Fragment>
