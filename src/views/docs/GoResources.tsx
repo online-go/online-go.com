@@ -62,6 +62,8 @@ export let GoResources = (props) => {
     let au = getLanguageFlag("au", country, "au");
     let ca = getLanguageFlag("ca", country, "ca");
     let ru = getLanguageFlag("ru", country, "ru");
+    let gr = "gr";
+    let br = "br";
     let ar = getLanguageFlag("spanish", country, "ar");
 
 
@@ -121,6 +123,20 @@ export let GoResources = (props) => {
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Рочев Антон</span>
                     </span>,
 
+                    <span>
+                        <div style={{"display": "flex", "alignItems": "center"}}>
+                            <span style={{"display": "inline-block", "width": "2.5rem"}}>
+                                <Flag country={en}/> <Flag country={gr}/>
+                                <Flag country={fr}/> <Flag country={br}/>
+                            </span> <a rel="noopener" href="https://www.gobook.eu/">
+                                A Go Guide <span style={{fontSize: "0.9em"}}>From a Beginner</span>
+                            </a>
+                        </div>
+
+                        <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>
+                            Charalampos (Haris) Kapolos
+                        </span>
+                    </span>,
 
                     <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
