@@ -1677,6 +1677,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             let m = this.engine.getMoveByLocation(x, y);
             if (m) {
                 this.engine.jumpTo(m);
+                this.emit("update");
             }
             return;
         }
