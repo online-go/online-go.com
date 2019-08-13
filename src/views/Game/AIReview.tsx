@@ -872,7 +872,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         });
                     }
 
-                    let visits = this.state.selected_ai_review.visits;
+                    let visits = move_ai_review.max_visits[0];
 
                     for (let i = 0 ; i < variations.length; ++i) {
                         if (variations[i].moves.length > 2 || variations[i].move === next_move_pretty_coords) {
