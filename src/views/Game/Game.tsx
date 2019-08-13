@@ -969,7 +969,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.state.ai_review_enabled) {
             this.goban.setHeatmap(null);
             this.goban.setColoredCircles(null);
-            this.goban.engine.cur_move.clearMarks();
+            let move_tree = this.goban.engine.move_tree;
+            while (move_tree.next(true)) { 
+                move_tree = move_tree.next(true); 
+                move_tree.clearMarks(); 
+            }
             this.goban.redraw();
         }
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
