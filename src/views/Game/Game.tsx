@@ -970,9 +970,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.goban.setHeatmap(null);
             this.goban.setColoredCircles(null);
             let move_tree = this.goban.engine.move_tree;
-            while (move_tree.next(true)) { 
-                move_tree = move_tree.next(true); 
-                move_tree.clearMarks(); 
+            while (move_tree.next(true)) {
+                move_tree = move_tree.next(true);
+                move_tree.clearMarks();
             }
             this.goban.redraw();
         }
