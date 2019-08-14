@@ -539,6 +539,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             console.warn(e);
         }
 
+        let blunders = null;
+        if ('blunders' in this.ai_review) {
+            blunders = this.ai_review['blunders'];
+        }
+
         if ('full-network-fastmap' in ai_review) {
             let data:Array<AIReviewEntry> = [];
             let last_full_prediction = 0.5;
@@ -567,6 +572,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 //let last_win_rate = `full-${1 - this.handicapOffset()}` in ai_review
                 let last_win_rate = null;
                 let deltas:Array<number> = [];
+                let blunder_threshold = 0.1;
+                let blunders_black = 0;
+                let blunders_white = 0;
                 let last_player_to_move = null;
                 for (let i = 1; i < last_move.move_number; ++i) {
                     let entry = ai_review[`full-${i - this.handicapOffset()}`];
@@ -579,7 +587,16 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             else if (last_player_to_move === "black") {
                                 fac = +1.0;
                             }
-                            deltas.push(fac * (entry.win_rate - last_win_rate));
+                            let delta = fac * (entry.win_rate - last_win_rate);
+                            deltas.push(delta);
+                            if (delta < -blunder_threshold) {
+                                if (last_player_to_move === "white") {
+                                    blunders_white += 1;
+                                }
+                                else if (last_player_to_move === "black") {
+                                    blunders_black += 1;
+                                }
+                            }
                         }
                         last_win_rate = entry.win_rate;
                         last_player_to_move = entry.player_to_move;
@@ -587,6 +604,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 }
                 let top3_win_rates = dup(deltas).sort((a, b) => a - b).slice(0, 3);
                 top3 = top3_win_rates.map(p => deltas.indexOf(p) + 1);
+
+                if (blunders === null) {
+                    blunders = {threshold: blunder_threshold,
+                                black: blunders_black,
+                                white: blunders_white};
+                }
             } catch (e) {
                 console.error(e);
             }
@@ -596,6 +619,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 full: data,
                 fast: null,
                 top3: top3,
+                blunders: blunders,
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -608,6 +632,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 full: null,
                 fast: ai_review['key-moves'],
                 top3: null,
+                blunders: blunders,
                 updatecount: this.state.updatecount + 1,
             });
         }
@@ -617,6 +642,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 full: null,
                 fast: null,
                 top3: null,
+                blunders: blunders,
                 queue_position: this.state.selected_ai_review.queue.position,
                 queue_pending: this.state.selected_ai_review.queue.pending,
                 updatecount: this.state.updatecount + 1,
@@ -1033,13 +1059,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         win_rate *= 100.0;
 
-        let blunders = null;
-
-        if ('blunders' in this.ai_review) {
-            blunders = this.ai_review['blunders'];
-        }
-
-
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -1095,10 +1114,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {((this.state.fast && this.state.fast.length > 0) || null) &&
                     <div className='key-moves'>
-                        {blunders &&
+                        {this.state.blunders &&
                             <div>
                                 {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
-                                    { black_blunders: blunders.black, white_blunders: blunders.white, })}
+                                    { black_blunders: this.state.blunders.black, white_blunders: this.state.blunders.white, })}
                             </div>
                         }
 
@@ -1126,6 +1145,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                 {((this.state.top3 && this.state.top3.length > 0) || null) &&
                     <div className='key-moves'>
+                        {this.state.blunders &&
+                            <div>
+                                {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
+                                    { black_blunders: this.state.blunders.black, white_blunders: this.state.blunders.white, })}
+                            </div>
+                        }
                         <div>
                             <b>{_("Top game changing moves")}</b>
                         </div>
