@@ -704,6 +704,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
             </React.Fragment>
             : "";
 
+            const tags = this.state.tags === null ? "" :
+            this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((t, idx) => (
+            <div className="position-tag" key={idx}>
+                <span>{t['description']}</span>
+            </div>
+        ));
 
         return (
             <div className={"Joseki"}>
@@ -734,52 +740,67 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                     {this.renderModeMainPane()}
 
-                    <div className={"status-info" + (this.state.move_string === "" ? " hide" : "")} >
-                        <div className="move-category">
-                            {this.state.current_move_category === "" ? "" :
-                                "Last move: " +
-                                (this.state.current_move_category === "new" ? (
-                                    this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
-                                    this.state.current_move_category)}
-                        </div>
-
-                        <div className={"contributor" +
-                            ((this.state.current_move_category === "new") ? " hide" : "")}>
-
-                            <span>Contributor:</span> <Player user={this.state.contributor_id} />
-                        </div>
-                            <div>Moves made:</div>
-                            <div className="moves-made">
-                            {this.state.current_move_category !== "new" ?
-                            <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
-                            <span className="moves-made-string">{this.state.move_string}</span>}
-                        </div>
-                    </div>
-                    <div className="continuations-pane">
-                    {(this.state.child_count !== null && this.state.child_count !== 0) &&
-                        <React.Fragment>
-                            <div className="position-child-count">
-                                This position leads to {this.state.child_count} others.
+                    <div className="position-details">
+                        <div className={"status-info" + (this.state.move_string === "" ? " hide" : "")} >
+                            {this.state.position_type !== "new" &&
+                            <div className="position-other-info">
+                                {tags}
+                                {this.state.joseki_source !== null && this.state.joseki_source.url.length > 0 &&
+                                <div className="position-joseki-source">
+                                    <span>Source:</span><a href={this.state.joseki_source.url}>{this.state.joseki_source.description}</a>
+                                </div>}
+                                {this.state.joseki_source !== null && this.state.joseki_source.url.length === 0 &&
+                                <div className="position-joseki-source">
+                                    <span>Source:</span><span>{this.state.joseki_source.description}</span>
+                                </div>}
                             </div>
-                            <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
-                                {!this.state.count_details_open &&
-                                    <i className="fa fa-info-circle" onClick={this.showCurrentVariationCounts}></i>
-                                }
-                                {this.state.count_details_open &&
-                                <React.Fragment>
-                                    <div className="variation-count-header">
-                                        <div>Continuations:</div>
-                                        <i className="fa fa-caret-right" onClick={this.hideVariationCounts} />
-                                    </div>
-                                    <div className="count-details">
-                                        <Throbber throb={this.state.counts_throb}/>
-                                        {count_details}
-                                    </div>
-                                </React.Fragment>
-                                }
+                            }
+                            <div className="move-category">
+                                {this.state.current_move_category === "" ? "" :
+                                    "Last move: " +
+                                    (this.state.current_move_category === "new" ? (
+                                        this.state.mode === PageMode.Explore ? "Experiment" : "Proposed Move") :
+                                        this.state.current_move_category)}
                             </div>
-                        </React.Fragment>
-                    }
+
+                            <div className={"contributor" +
+                                ((this.state.current_move_category === "new") ? " hide" : "")}>
+
+                                <span>Contributor:</span> <Player user={this.state.contributor_id} />
+                            </div>
+                                <div>Moves made:</div>
+                                <div className="moves-made">
+                                {this.state.current_move_category !== "new" ?
+                                <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
+                                <span className="moves-made-string">{this.state.move_string}</span>}
+                            </div>
+                        </div>
+                        <div className="continuations-pane">
+                            {(this.state.child_count !== null && this.state.child_count !== 0) &&
+                            <React.Fragment>
+                                <div className="position-child-count">
+                                    This position leads to {this.state.child_count} others.
+                                </div>
+                                <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
+                                    {!this.state.count_details_open &&
+                                        <i className="fa fa-info-circle" onClick={this.showCurrentVariationCounts}></i>
+                                    }
+                                    {this.state.count_details_open &&
+                                    <React.Fragment>
+                                        <div className="variation-count-header">
+                                            <div>Continuations:</div>
+                                            <i className="fa fa-caret-right" onClick={this.hideVariationCounts} />
+                                        </div>
+                                        <div className="count-details">
+                                            <Throbber throb={this.state.counts_throb}/>
+                                            {count_details}
+                                        </div>
+                                    </React.Fragment>
+                                    }
+                                </div>
+                            </React.Fragment>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -787,20 +808,20 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     renderModeControl = () => (
-        <div className="mode-control">
-            <button className={"btn s primary " + (this.state.mode === PageMode.Explore ? "selected" : "")} onClick={this.setExploreMode}>
+        <div className="mode-control btn-group">
+            <button className={"btn s  " + (this.state.mode === PageMode.Explore ? "primary" : "")} onClick={this.setExploreMode}>
                 {_("Explore")}
             </button>
-            <button className={"btn s primary " + (this.state.mode === PageMode.Play ? "selected" : "")} onClick={this.setPlayMode}>
+            <button className={"btn s  " + (this.state.mode === PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
             {this.state.user_can_edit &&
             <button
-                className={"btn s primary " + (this.state.mode === PageMode.Edit ? "selected" : "")} onClick={this.setEditMode}>
+                className={"btn s  " + (this.state.mode === PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
             </button>
             }
-            <button className={"btn s primary " + (this.state.mode === PageMode.Admin ? "selected" : "")} onClick={this.setAdminMode}>
+            <button className={"btn s  " + (this.state.mode === PageMode.Admin ? "primary" : "")} onClick={this.setAdminMode}>
                 {this.state.user_can_administer ? _("Admin") : _("Updates")}
             </button>
         </div>
@@ -1410,16 +1431,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         // Highlight marks
         const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
 
-        const tags = this.props.tags === null ? "" :
-            this.props.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((t, idx) => (
-            <div className="position-tag" key={idx}>
-                <span>{t['description']}</span>
-            </div>
-        ));
-
         return (
-            <div className="position-details">
-                <div className="position-columns">
+            <div className="explore-pane">
                     <div className="description-column">
                         {this.props.position_type !== "new" ?
                         <div className="position-description">
@@ -1428,17 +1441,20 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                         : ""}
                     </div>
                     <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
-                        {this.state.extra_info_selected === "none" && this.props.position_type !== "new" &&
-                            <React.Fragment>
-                                <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
-                                        onClick={this.showFilterSelector} />
-                                {(this.props.comment_count !== 0 ?
-                                    <i className="fa fa-comments-o fa-lg" onClick={this.showComments} /> :
-                                    <i className="fa fa-comment-o fa-lg" onClick={this.showComments} />)}
-
-                                <i className="fa fa-history" onClick={this.showAuditLog}></i>
-                            </React.Fragment>
-                        }
+                        <div className="btn-group">
+                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
+                                    onClick={this.showFilterSelector}>
+                                    Filter
+                            </button>
+                            <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
+                                    onClick={this.showComments}>
+                                    Comments
+                            </button>
+                            <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
+                                    onClick={this.showAuditLog}>
+                                    Changes
+                            </button>
+                        </div>
 
                         {this.state.extra_info_selected === "comments" &&
                             <React.Fragment>
@@ -1512,22 +1528,6 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                             </React.Fragment>
                         }
                     </div>
-                </div>
-                {this.props.position_type !== "new" &&
-                    <div className="position-other-info">
-                        <React.Fragment>
-                        {tags}
-                        {this.props.joseki_source !== null && this.props.joseki_source.url.length > 0 &&
-                        <div className="position-joseki-source">
-                            <span>Source:</span><a href={this.props.joseki_source.url}>{this.props.joseki_source.description}</a>
-                        </div>}
-                        {this.props.joseki_source !== null && this.props.joseki_source.url.length === 0 &&
-                        <div className="position-joseki-source">
-                            <span>Source:</span><span>{this.props.joseki_source.description}</span>
-                        </div>}
-                        </React.Fragment>
-                    </div>
-                }
             </div>
         );
     }

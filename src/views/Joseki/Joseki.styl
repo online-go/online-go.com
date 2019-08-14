@@ -70,11 +70,10 @@
         flex-shrink: 1;
         flex-basis: 50%;
         //width: goban-view-bar-width;
-        overflow-y: auto;
+        overflow-y: hidden;
         overflow-x: hidden;
         min-height: auto;
         flex-direction: column;
-        flex-basis: 50%;
         padding-left: 0.5rem;
         min-width: 340px;
     }
@@ -92,6 +91,7 @@
         }
         padding-right: 0;
         height: 100%;
+        max-height: 100%;
         display: flex;
 
         .top-bar {
@@ -213,32 +213,27 @@
             font-style: italic;
         }
 
-        .position-details {
+        .explore-pane {
             flex-grow: 1;
             flex-basis: auto;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             margin-bottom: 0.2rem;
+            overflow-y: hidden;
         }
 
-        .position-columns {
-            flex-grow: 1;
-            flex-shrink:0;
-            flex-basis:auto;
+        .description-column {
             display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            flex-basis: 50%;
 
-            .description-column {
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-                flex-basis: 50%;
-
-                .position-description {
-                    flex-grow: 1;   // put source at the bottom
-                    flex-basis: 80%;
-                }
+            .position-description {
+                flex-grow: 1;   // put source at the bottom
+                flex-basis: 80%;
             }
         }
+
 
         .position-tag {
             margin-bottom: 0.2rem;
@@ -266,7 +261,7 @@
             flex-grow: 1;
             flex-basis: 50%;
             justify-content: space-between; // put chat input at the bottom
-            overflow: auto;
+            overflow: hidden;
 
             .extra-info-header {
                 display: flex;
@@ -277,6 +272,10 @@
                 padding-right: 0.5em;
                 align-items: center;
                 themed background-color shade4;
+            }
+
+            .discussion-container {
+                overflow-y: scroll;
             }
 
             .comment-header, .audit-header {
@@ -391,6 +390,12 @@
             }
         }
 
+        .position-details {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
         .status-info {
             display: flex;
             flex-direction: column;
@@ -416,7 +421,7 @@
 
         .continuations-pane {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: space-between;
             align-items: flex-end;
 
