@@ -258,7 +258,9 @@ class NotificationManager {
 
         board_ids.sort((a, b) => { return a - b; });
 
+
         let idx = -1;
+
         for (let i = 0; i < board_ids.length; ++i) {
             if (game_id === board_ids[i]) {
                 idx = i;
@@ -269,6 +271,7 @@ class NotificationManager {
                 break;
             }
         }
+
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
         if (ev && shouldOpenNewTab(ev)) {
@@ -485,6 +488,7 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
         notification_manager.advanceToNextBoard(ev);
     }
 
+    //findmeBHydden
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
@@ -558,6 +562,7 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <div className="NotificationList">
+                //I think this line below is messing with display of the notification when set to 0
                 {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
                 {this.state.list.length !== 0 &&
                     <div className="contents">
