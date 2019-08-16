@@ -34,9 +34,7 @@ declare let Notification: any;
 
 interface Events {
     "turn-count": number;
-    "notification": any;
-    "notification-list-updated": never;
-    "notification-count": number;
+    "notification": any; "notification-list-updated": never; "notification-count": number;
 }
 
 // null or id of game that we're current viewing
@@ -260,6 +258,7 @@ class NotificationManager {
 
         let idx = -1;
         for (let i = 0; i < board_ids.length; ++i) {
+            
             if (game_id === board_ids[i]) {
                 idx = i;
                 break;
