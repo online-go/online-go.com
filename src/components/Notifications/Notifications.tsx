@@ -34,8 +34,8 @@ declare let Notification: any;
 
 interface Events {
     "turn-count": number;
-    "notification": any; 
-    "notification-list-updated": never; 
+    "notification": any;
+    "notification-list-updated": never;
     "notification-count": number;
 }
 
