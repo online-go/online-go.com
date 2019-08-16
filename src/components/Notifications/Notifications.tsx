@@ -260,7 +260,6 @@ class NotificationManager {
 
         let idx = -1;
         for (let i = 0; i < board_ids.length; ++i) {
-            
             if (game_id === board_ids[i]) {
                 idx = i;
                 break;
