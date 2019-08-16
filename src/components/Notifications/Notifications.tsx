@@ -245,18 +245,18 @@ class NotificationManager {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
         }
 
-        for (let k in this.active_boards) {
-            if (this.boards_to_move_on.length !== 0) {
-                return;
+        if (board_ids.length === 0) {
+            for (let k in this.active_boards) {
+                board_ids.push(parseInt(this.active_boards[k].id));
             }
-            board_ids.push(parseInt(this.active_boards[k].id));
         }
-
-        board_ids.sort((a, b) => { return a - b; });
 
         if (board_ids.length === 0) {
             return;
         }
+
+
+        board_ids.sort((a, b) => { return a - b; });
 
         let idx = -1;
         for (let i = 0; i < board_ids.length; ++i) {
