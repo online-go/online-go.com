@@ -91,7 +91,7 @@
         max-height: 100%;
         display: flex;
 
-        @media screen and (max-width: 600px) {
+        @media screen and (max-width: 1080px) {
             overflow-y: visible;
         }
 
@@ -236,6 +236,11 @@
             flex-grow: 1;
             flex-basis: 50%;
 
+            @media screen and (max-width: 1080px) {
+                    flex-grow: 0;
+                    flex-basis: 0;
+            }
+
             .position-description {
                 flex-grow: 1;   // put source at the bottom
                 flex-basis: 80%;
@@ -272,6 +277,11 @@
             margin-top: 3em;
             margin-bottom: 1em;
             margin-left: 1em;
+
+            @media screen and (max-width: 1080px) {
+                margin-right 1em;
+            }
+
             flex-grow: 1;
             flex-basis: 50%;  // 50-50 left/right columns
 
@@ -436,7 +446,9 @@
         .status-info {
             display: flex;
             flex-direction: column;
-            min-height: 12rem;  // Match continuations pane
+            @media screen and (min-width: 1080px) {
+                min-height: 12rem;  // Match continuations pane
+            }
 
             .hide {
                 display: none;
