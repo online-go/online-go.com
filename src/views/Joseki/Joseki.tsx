@@ -718,6 +718,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
+                        {/*<PersistentElement className="Goban" elt={this.goban_div} /> */}
                         <PersistentElement className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
@@ -779,26 +780,33 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             {(this.state.child_count !== null && this.state.child_count !== 0) &&
                             <React.Fragment>
                                 <div className="position-child-count">
-                                    This position leads to {this.state.child_count} others.
-                                </div>
-                                <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
+                                    This position leads to {this.state.child_count} others
                                     {!this.state.count_details_open &&
-                                        <i className="fa fa-info-circle" onClick={this.showCurrentVariationCounts}></i>
+                                        <i className="fa fa-lg fa-caret-right" onClick={this.showCurrentVariationCounts}></i>
                                     }
                                     {this.state.count_details_open &&
-                                    <React.Fragment>
-                                        <div className="variation-count-header">
-                                            <div>Continuations:</div>
-                                            <i className="fa fa-caret-right" onClick={this.hideVariationCounts} />
-                                        </div>
-                                        <div className="count-details">
-                                            <Throbber throb={this.state.counts_throb}/>
-                                            {count_details}
-                                        </div>
-                                    </React.Fragment>
+                                        <i className="fa fa-lg fa-caret-down" onClick={this.hideVariationCounts}></i>
+                                    }
+                                </div>
+                                <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
+
+                                    {this.state.count_details_open &&
+                                    <div className="count-details">
+                                        <Throbber throb={this.state.counts_throb}/>
+                                        {count_details}
+                                    </div>
                                     }
                                 </div>
                             </React.Fragment>
+                            }
+                            {(this.state.child_count === null || this.state.child_count === 0) &&
+                                <React.Fragment>
+                                <div className="position-child-count">
+                                    This position has no continuations.
+                                </div>
+                                <div className="child-count-details-pane">
+                                </div>
+                                </React.Fragment>
                             }
                         </div>
                     </div>
@@ -1440,92 +1448,67 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                         </div>
                         : ""}
                     </div>
-                    <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
-                        <div className="btn-group">
+                    <div className={"extra-info-column extra-info-open"}>
+                        <div className="btn-group extra-info-selector">
                             <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                                    onClick={this.showFilterSelector}>
+                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
                                     Filter
                             </button>
                             <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
-                                    onClick={this.showComments}>
+                                    onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
                                     Comments
                             </button>
                             <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
-                                    onClick={this.showAuditLog}>
+                                    onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
                                     Changes
                             </button>
                         </div>
 
                         {this.state.extra_info_selected === "comments" &&
-                            <React.Fragment>
-                                <div className="discussion-container">
-                                    <div className="extra-info-header">
-                                        <div>Discussion:</div>
-                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                    </div>
-                                    {this.state.forum_thread !== "" && false && // let's not do this actually! Keep discussion on this page.
-                                    <div className="comment-thread">
-                                        <a href={this.state.forum_thread}>(see: forum discussion)</a>
-                                    </div>
-                                    }
-                                    <div className="discussion-lines">
-                                        <Throbber throb={this.state.extra_throb}/>
-                                        {this.state.commentary.map((comment, idx) =>
-                                            <div className="comment" key={idx}>
-                                                <div className="comment-header">
-                                                    <Player user={comment.user_id}></Player>
-                                                    <div className="comment-date">{comment.date.toDateString()}</div>
-                                                </div>
-                                                <div className="comment-text">{comment.comment}</div>
+                            <div className="discussion-container">
+                                <div className="discussion-lines">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                    {this.state.commentary.map((comment, idx) =>
+                                        <div className="comment" key={idx}>
+                                            <div className="comment-header">
+                                                <Player user={comment.user_id}></Player>
+                                                <div className="comment-date">{comment.date.toDateString()}</div>
                                             </div>
-                                        )}
-                                    </div>
+                                            <div className="comment-text">{comment.comment}</div>
+                                        </div>
+                                    )}
                                 </div>
                                 <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
-                            </React.Fragment>
+                            </div>
                         }
 
                         {this.state.extra_info_selected === "audit-log" &&
-                            <React.Fragment>
-                                <div className="audit-container">
-                                    <div className="extra-info-header">
-                                            <div>Audit Log:</div>
-                                            <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                    </div>
-                                    <div className="audit-entries">
-                                        <Throbber throb={this.state.extra_throb}/>
-                                        {this.state.audit_log.map((audit, idx) =>
-                                            <div className="audit-entry" key={idx}>
-                                                <div className="audit-header">
-                                                    <Player user={audit.userId}></Player>
-                                                    <div className="audit-date">{new Date(audit.date).toDateString()}</div>
-                                                </div>
-                                                {audit.comment}
+                            <div className="audit-container">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                    {this.state.audit_log.map((audit, idx) =>
+                                        <div className="audit-entry" key={idx}>
+                                            <div className="audit-header">
+                                                <Player user={audit.userId}></Player>
+                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </React.Fragment>
+                                            {audit.comment}
+                                        </div>
+                                    )}
+                            </div>
                         }
 
                         {this.state.extra_info_selected === "variation-filter" &&
-                            <React.Fragment>
-                                <div className="filter-container">
-                                    <div className="extra-info-header">
-                                            <div>Variation filter:</div>
-                                            <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                    </div>
-                                    <Throbber throb={this.state.extra_throb}/>
-                                    <JosekiVariationFilter
-                                        contributor_list_url={server_url + "contributors"}
-                                        tag_list_url = {server_url + "tags"}
-                                        source_list_url = {server_url + "josekisources"}
-                                        current_filter = {this.props.current_filter}
-                                        godojo_headers={godojo_headers}
-                                        set_variation_filter={this.props.set_variation_filter}
-                                    />
-                                </div>
-                            </React.Fragment>
+                            <div className="filter-container">
+                                <Throbber throb={this.state.extra_throb}/>
+                                <JosekiVariationFilter
+                                    contributor_list_url={server_url + "contributors"}
+                                    tag_list_url = {server_url + "tags"}
+                                    source_list_url = {server_url + "josekisources"}
+                                    current_filter = {this.props.current_filter}
+                                    godojo_headers={godojo_headers}
+                                    set_variation_filter={this.props.set_variation_filter}
+                                />
+                            </div>
                         }
                     </div>
             </div>
