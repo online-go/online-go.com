@@ -21,6 +21,7 @@ import * as sanitizeHtml from 'sanitize-html';
 
 interface MarkdownProps {
     source: string;
+    className?: string;
 }
 
 const md = markdownit({
@@ -94,7 +95,10 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
 
     render() {
         return (
-            <div dangerouslySetInnerHTML={ {__html: this.state.html } } />
+            <div
+                className={this.props.className ? this.props.className : ""}
+                dangerouslySetInnerHTML={ {__html: this.state.html } }
+            />
         );
     }
 }

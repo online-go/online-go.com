@@ -1258,12 +1258,14 @@ class EditPane extends React.Component<EditProps, any> {
                     </div>
                     <div className="edit-label">Preview:</div>
 
-                    {/* The actual description always rendered here */}
-                    <Markdown source={preview} />
+                    {/* The actual description rendered here */}
+                    {this.state.new_description.length !== 0 &&
+                    <Markdown className="description-preview" source={preview} />
+                    }
 
                     {/* and a placeholder for the description when the markdown is empty*/}
-                    {this.state.new_description.length === 0 ?
-                        <div className="edit-label">({_("position description")})</div> : ""
+                    {this.state.new_description.length === 0 &&
+                    <div className="description-preview edit-label">({_("position description")})</div>
                     }
                 </div>
             </div>

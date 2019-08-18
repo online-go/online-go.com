@@ -406,10 +406,19 @@
                     }
                 }
             }
+
+            .joseki-source-edit, .tag-edit {
+                @media screen and (max-width: 1080px) {
+                    grid-column: span 2;
+                }
+            }
         }
 
         .description-edit {
             flex-grow: 2;
+            display: flex;
+            flex-direction: column;
+            margin-right: 0.5rem;
 
             .edit-label {
                 font-style: italic;
@@ -417,8 +426,16 @@
             }
 
             textarea {
-                width: 100%;
+                flex-grow: 1;
+                margin-left: 0.5rem;
+                resize: vertical;
             }
+
+            .description-preview {
+                flex-grow: 1;
+                padding-left: 0.5rem;
+            }
+
             .position-edit-button {
                 width: 100%
                 display: flex;
