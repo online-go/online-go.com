@@ -1146,7 +1146,10 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.props.current_filter.source !== null);
 
         // Highlight marks
-        const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+        let description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
+        // Transform position tags
+        description = description.replace(/<position: ([0-9]+)>/mg, '**[Position $1](/joseki/$1)**');
 
         return (
             <div className="explore-pane">
@@ -1467,6 +1470,9 @@ class EditPane extends React.Component<EditProps, any> {
 
         // give feedback that we recognised their marks
         let preview = this.state.new_description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
+        // and position tags
+        preview = preview.replace(/<position: ([0-9]+)>/mg, '**[Position $1](/joseki/$1)**');
 
         return (
             <div className="edit-container">

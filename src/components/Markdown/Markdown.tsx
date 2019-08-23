@@ -80,6 +80,8 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
         };
     }
 
+    // This 'massage' appears to be allowing headers to be defined without whitespace after the #.
+    // Possibly 'massage' is a rather generic name for that!?
     massage(source: string): string {
         source = source.split('\n').map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
         return source;
