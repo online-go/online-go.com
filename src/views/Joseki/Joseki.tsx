@@ -978,6 +978,253 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 }
 
+
+
+// This pane responds to changes in position ID by showing the new node information
+interface ExploreProps {
+    position_id: string;
+    description: string;
+    position_type: string;
+    comment_count: number;
+    can_comment: boolean;
+    joseki_source: {url: string, description: string};
+    tags: Array<any>;
+    set_variation_filter: any;
+    current_filter: {contributor: number, tags: number[], source: number};
+    child_count: number;
+    show_comments: boolean;
+}
+
+class ExplorePane extends React.Component<ExploreProps, any> {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            extra_info_selected: "none",
+            current_position: "",
+            commentary: [],
+            forum_thread: "",
+            audit_log: [],
+            next_comment: "",
+            extra_throb: false
+        };
+    }
+
+    componentDidMount = () => {
+        if (this.props.show_comments) {
+            this.showComments();
+        }
+     }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        // Detect position id changes, so we can close the extra_info pane
+        if (nextProps.position_id !== prevState.current_position) {
+            return { current_position: nextProps.position_id };
+        }
+        else {
+            return null;
+        }
+    }
+
+    componentDidUpdate = (prevProps, prevState) => {
+        if (prevProps.position_id !== this.props.position_id) {
+            this.setState({
+                extra_info_selected: "none",
+                commentary: []
+            });
+        }
+        else {
+            if (this.props.position_id !== null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
+                this.showComments();
+            }
+        }
+    }
+
+    showComments = () => {
+        // Possible optimisation: don't re-fetch if we already have them for this node
+        const comments_url = server_url + "commentary?id=" + this.props.position_id;
+        console.log("Fetching comments ", comments_url);
+        console.log(godojo_headers);
+        this.setState({extra_throb: true});
+
+        fetch(comments_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            console.log("Server response:", body);
+            this.setState({extra_throb: false});
+            this.extractCommentary(body);
+        }).catch((r) => {
+            console.log("Comments GET failed:", r);
+        });
+        this.setState({ extra_info_selected: "comments" });
+    }
+
+    extractCommentary = (commentary_dto) => {
+        console.log(commentary_dto);
+        let commentary = commentary_dto.commentary.map((comment) => (
+            {
+                user_id: comment.userId,
+                date: new Date(comment.date),
+                comment: comment.comment
+            }
+        ));
+        const forum_thread_url = commentary_dto.forum_thread_id === null ? "" :
+            ("https://forums.online-go.com/t/" + commentary_dto.forum_thread_id);
+
+        this.setState({
+            commentary: commentary,
+            forum_thread: forum_thread_url
+        });
+    }
+
+    hideExtraInfo = () => {
+        this.setState({ extra_info_selected: "none" });
+    }
+
+    showAuditLog = () => {
+        const audits_url = server_url + "audits?id=" + this.props.position_id;
+        console.log("Fetching audit logs ", audits_url);
+        this.setState({extra_throb: true});
+        fetch(audits_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            this.setState({extra_throb: false});
+            console.log("Server response: ", body);
+            this.extractAuditLog(body);
+        }).catch((r) => {
+            console.log("Audits GET failed:", r);
+        });
+        this.setState({ extra_info_selected: "audit-log" });
+    }
+
+    extractAuditLog = (audit_log_dto) => {
+        // the format is basically what we need.  Just capture it!
+        this.setState({ audit_log: audit_log_dto});
+    }
+
+    showFilterSelector = () => {
+        this.setState({ extra_info_selected: "variation-filter" });
+    }
+
+    onCommentChange = (e) => {
+        // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
+        // (if they are allowed, of course)
+        if (/\r|\n/.exec(e.target.value)) {
+            const comment_url = server_url + "comment?id=" + this.props.position_id;
+            fetch(comment_url, {
+                method: 'post',
+                mode: 'cors',
+                headers: godojo_headers,
+                body: this.state.next_comment
+            })
+            .then(res => res.json())
+            .then(body => {
+                console.log("Server response to comment POST:", body);
+                this.extractCommentary(body);
+            }).catch((r) => {
+                console.log("Comment PUT failed:", r);
+            });
+
+            this.setState({ next_comment: "" });
+        }
+        else if (e.target.value.length < 100 && this.props.can_comment) {
+            this.setState({ next_comment: e.target.value });
+        }
+    }
+
+    render = () => {
+        const filter_active =
+            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor !== null ||
+            this.props.current_filter.source !== null);
+
+        // Highlight marks
+        const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
+        return (
+            <div className="explore-pane">
+                    <div className="description-column">
+                        {this.props.position_type !== "new" ?
+                        <div className="position-description">
+                            <Markdown source={description} />
+                        </div>
+                        : ""}
+                    </div>
+                    <div className={"extra-info-column extra-info-open"}>
+                        <div className="btn-group extra-info-selector">
+                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
+                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
+                                    Filter
+                            </button>
+                            <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
+                                    onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
+                                    Comments ({this.props.comment_count})
+                            </button>
+                            <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
+                                    onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
+                                    Changes
+                            </button>
+                        </div>
+
+                        {this.state.extra_info_selected === "comments" &&
+                            <div className="discussion-container">
+                                <div className="discussion-lines">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                    {this.state.commentary.map((comment, idx) =>
+                                        <div className="comment" key={idx}>
+                                            <div className="comment-header">
+                                                <Player user={comment.user_id}></Player>
+                                                <div className="comment-date">{comment.date.toDateString()}</div>
+                                            </div>
+                                            <div className="comment-text">{comment.comment}</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                            </div>
+                        }
+
+                        {this.state.extra_info_selected === "audit-log" &&
+                            <div className="audit-container">
+                                    <Throbber throb={this.state.extra_throb}/>
+                                    {this.state.audit_log.map((audit, idx) =>
+                                        <div className="audit-entry" key={idx}>
+                                            <div className="audit-header">
+                                                <Player user={audit.userId}></Player>
+                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
+                                            </div>
+                                            {audit.comment}
+                                        </div>
+                                    )}
+                            </div>
+                        }
+
+                        {this.state.extra_info_selected === "variation-filter" &&
+                            <div className="filter-container">
+                                <Throbber throb={this.state.extra_throb}/>
+                                <JosekiVariationFilter
+                                    contributor_list_url={server_url + "contributors"}
+                                    tag_list_url = {server_url + "tags"}
+                                    source_list_url = {server_url + "josekisources"}
+                                    current_filter = {this.props.current_filter}
+                                    godojo_headers={godojo_headers}
+                                    set_variation_filter={this.props.set_variation_filter}
+                                />
+                            </div>
+                        }
+                    </div>
+            </div>
+        );
+    }
+}
+
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
     move_type_sequence: [];
@@ -1285,248 +1532,4 @@ class EditPane extends React.Component<EditProps, any> {
     }
 }
 
-// This pane responds to changes in position ID by showing the new node information
-interface ExploreProps {
-    position_id: string;
-    description: string;
-    position_type: string;
-    comment_count: number;
-    can_comment: boolean;
-    joseki_source: {url: string, description: string};
-    tags: Array<any>;
-    set_variation_filter: any;
-    current_filter: {contributor: number, tags: number[], source: number};
-    child_count: number;
-    show_comments: boolean;
-}
-
-class ExplorePane extends React.Component<ExploreProps, any> {
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            extra_info_selected: "none",
-            current_position: "",
-            commentary: [],
-            forum_thread: "",
-            audit_log: [],
-            next_comment: "",
-            extra_throb: false
-        };
-    }
-
-    componentDidMount = () => {
-        if (this.props.show_comments) {
-            this.showComments();
-        }
-     }
-
-    static getDerivedStateFromProps(nextProps, prevState) {
-        // Detect position id changes, so we can close the extra_info pane
-        if (nextProps.position_id !== prevState.current_position) {
-            return { current_position: nextProps.position_id };
-        }
-        else {
-            return null;
-        }
-    }
-
-    componentDidUpdate = (prevProps, prevState) => {
-        if (prevProps.position_id !== this.props.position_id) {
-            this.setState({
-                extra_info_selected: "none",
-                commentary: []
-            });
-        }
-        else {
-            if (this.props.position_id !== null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
-                this.showComments();
-            }
-        }
-    }
-
-    showComments = () => {
-        // Possible optimisation: don't re-fetch if we already have them for this node
-        const comments_url = server_url + "commentary?id=" + this.props.position_id;
-        console.log("Fetching comments ", comments_url);
-        console.log(godojo_headers);
-        this.setState({extra_throb: true});
-
-        fetch(comments_url, {
-            mode: 'cors',
-            headers: godojo_headers
-        })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            console.log("Server response:", body);
-            this.setState({extra_throb: false});
-            this.extractCommentary(body);
-        }).catch((r) => {
-            console.log("Comments GET failed:", r);
-        });
-        this.setState({ extra_info_selected: "comments" });
-    }
-
-    extractCommentary = (commentary_dto) => {
-        console.log(commentary_dto);
-        let commentary = commentary_dto.commentary.map((comment) => (
-            {
-                user_id: comment.userId,
-                date: new Date(comment.date),
-                comment: comment.comment
-            }
-        ));
-        const forum_thread_url = commentary_dto.forum_thread_id === null ? "" :
-            ("https://forums.online-go.com/t/" + commentary_dto.forum_thread_id);
-
-        this.setState({
-            commentary: commentary,
-            forum_thread: forum_thread_url
-        });
-    }
-
-    hideExtraInfo = () => {
-        this.setState({ extra_info_selected: "none" });
-    }
-
-    showAuditLog = () => {
-        const audits_url = server_url + "audits?id=" + this.props.position_id;
-        console.log("Fetching audit logs ", audits_url);
-        this.setState({extra_throb: true});
-        fetch(audits_url, {
-            mode: 'cors',
-            headers: godojo_headers
-        })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            this.setState({extra_throb: false});
-            console.log("Server response: ", body);
-            this.extractAuditLog(body);
-        }).catch((r) => {
-            console.log("Audits GET failed:", r);
-        });
-        this.setState({ extra_info_selected: "audit-log" });
-    }
-
-    extractAuditLog = (audit_log_dto) => {
-        // the format is basically what we need.  Just capture it!
-        this.setState({ audit_log: audit_log_dto});
-    }
-
-    showFilterSelector = () => {
-        this.setState({ extra_info_selected: "variation-filter" });
-    }
-
-    onCommentChange = (e) => {
-        // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
-        // (if they are allowed, of course)
-        if (/\r|\n/.exec(e.target.value)) {
-            const comment_url = server_url + "comment?id=" + this.props.position_id;
-            fetch(comment_url, {
-                method: 'post',
-                mode: 'cors',
-                headers: godojo_headers,
-                body: this.state.next_comment
-            })
-            .then(res => res.json())
-            .then(body => {
-                console.log("Server response to comment POST:", body);
-                this.extractCommentary(body);
-            }).catch((r) => {
-                console.log("Comment PUT failed:", r);
-            });
-
-            this.setState({ next_comment: "" });
-        }
-        else if (e.target.value.length < 100 && this.props.can_comment) {
-            this.setState({ next_comment: e.target.value });
-        }
-    }
-
-    render = () => {
-        const filter_active =
-            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
-            this.props.current_filter.contributor !== null ||
-            this.props.current_filter.source !== null);
-
-        // Highlight marks
-        const description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
-
-        return (
-            <div className="explore-pane">
-                    <div className="description-column">
-                        {this.props.position_type !== "new" ?
-                        <div className="position-description">
-                            <Markdown source={description} />
-                        </div>
-                        : ""}
-                    </div>
-                    <div className={"extra-info-column extra-info-open"}>
-                        <div className="btn-group extra-info-selector">
-                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                                    Filter
-                            </button>
-                            <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
-                                    Comments ({this.props.comment_count})
-                            </button>
-                            <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
-                                    Changes
-                            </button>
-                        </div>
-
-                        {this.state.extra_info_selected === "comments" &&
-                            <div className="discussion-container">
-                                <div className="discussion-lines">
-                                    <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.commentary.map((comment, idx) =>
-                                        <div className="comment" key={idx}>
-                                            <div className="comment-header">
-                                                <Player user={comment.user_id}></Player>
-                                                <div className="comment-date">{comment.date.toDateString()}</div>
-                                            </div>
-                                            <div className="comment-text">{comment.comment}</div>
-                                        </div>
-                                    )}
-                                </div>
-                                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
-                            </div>
-                        }
-
-                        {this.state.extra_info_selected === "audit-log" &&
-                            <div className="audit-container">
-                                    <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.audit_log.map((audit, idx) =>
-                                        <div className="audit-entry" key={idx}>
-                                            <div className="audit-header">
-                                                <Player user={audit.userId}></Player>
-                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
-                                            </div>
-                                            {audit.comment}
-                                        </div>
-                                    )}
-                            </div>
-                        }
-
-                        {this.state.extra_info_selected === "variation-filter" &&
-                            <div className="filter-container">
-                                <Throbber throb={this.state.extra_throb}/>
-                                <JosekiVariationFilter
-                                    contributor_list_url={server_url + "contributors"}
-                                    tag_list_url = {server_url + "tags"}
-                                    source_list_url = {server_url + "josekisources"}
-                                    current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
-                                    set_variation_filter={this.props.set_variation_filter}
-                                />
-                            </div>
-                        }
-                    </div>
-            </div>
-        );
-    }
-}
 
