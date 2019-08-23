@@ -349,7 +349,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     processNewJosekiPosition = (position) => {
         this.setState({
             // I really wish I'd just put all of this into a single state object :S
-            // It's on the "gee that would be good to refactor list...
+            // It's on the "gee that would be good to refactor" list...
             position_description: position.description,
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
@@ -517,12 +517,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
             } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
                 console.log("exploratory");
+                let next_variation_label = '1';
+                // pre-set the variation label for edit-mode with the number of children this new move's parent has.
+                if (this.next_moves.length > 0) {
+                    const labelled_here = this.next_moves.reduce((count, move) =>
+                        (("123456789".includes(move['variation_label']) && move['placement'] !== 'pass') ? count + 1 : count),
+                    0);
+                    // Chose the next variation label to be the one afer the current count
+                    // Note that '1' will never actually be chosen through this code.
+                    next_variation_label = "123456789_".charAt(labelled_here);
+                    console.log("New exploration: ", this.next_moves, labelled_here, next_variation_label);
+                }
                 this.next_moves = [];
                 this.setState({
                     position_description: "## Joseki",
                     current_move_category: "new",
                     child_count: 0,
-                    tag_counts: []
+                    tag_counts: [],
+                    variation_label: next_variation_label
                 });
                 this.goban.enableStonePlacement();
             }
@@ -1458,7 +1470,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                             </button>
                             <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
                                     onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
-                                    Comments
+                                    Comments ({this.props.comment_count})
                             </button>
                             <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
                                     onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
