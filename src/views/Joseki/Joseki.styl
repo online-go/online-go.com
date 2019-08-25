@@ -91,7 +91,7 @@
         max-height: 100%;
         display: flex;
 
-        @media screen and (max-width: 1080px) {
+        @media screen and (max-width: 1160px) {
             overflow-y: visible;
         }
 
@@ -169,6 +169,12 @@
             flex-shrink:0;
             flex-basis:auto;
             display: flex;
+
+            .fa-filter {
+                align-self: flex-end;
+                margin-right: 0.5em;
+                padding: 3px;
+            }
         }
 
         .play-dashboard {
@@ -213,13 +219,14 @@
         }
 
         .explore-pane {
-            @media screen and (min-width: 1080px) {
+            @media screen and (min-width: 1160px) {
                 flex-direction: row;
             }
 
-            @media screen and (max-width: 1080px) {
+            @media screen and (max-width: 1160px) {
                 flex-direction: column;
                 overflow-y: visible;
+                justify-content: space-between;
             }
 
             flex-grow: 1;
@@ -236,17 +243,10 @@
             flex-grow: 1;
             flex-basis: 50%;
 
-            @media screen and (max-width: 1080px) {
-                    flex-grow: 0;
-                    flex-basis: 0;
-            }
-
             .position-description {
-                flex-grow: 1;   // put source at the bottom
                 flex-basis: 80%;
             }
         }
-
 
         .position-tag {
             margin-bottom: 0.2rem;
@@ -278,7 +278,7 @@
             margin-bottom: 1em;
             margin-left: 1em;
 
-            @media screen and (max-width: 1080px) {
+            @media screen and (max-width: 1160px) {
                 margin-right 1em;
             }
 
@@ -288,7 +288,7 @@
             display: flex;
             flex-direction: column;
 
-            overflow-y: hidden;
+            //overflow-y: hidden;  // not sure why this was here :o !
 
             .extra-info-selector {
                 margin-bottom: 0.5rem;
@@ -342,19 +342,17 @@
                 padding-right: 0.5em;
             }
 
-            .fa {
-                align-self: flex-end;
-                margin-right: 0.5em;
-                padding: 3px;
-                margin-bottom: 1em; // needed in mobile view
-            }
-
             .extra-info-header .fa {
                 margin-bottom: 0;
             }
 
+            .fa-filter {
+                padding-left: 0.5em;
+                color: grey;
+            }
+
             .filter-active {
-                background: #0062e9;
+                color: #0062e9;
                 border-radius: 4px;
             }
 
@@ -408,7 +406,7 @@
             }
 
             .joseki-source-edit, .tag-edit {
-                @media screen and (max-width: 1080px) {
+                @media screen and (max-width: 1160px) {
                     grid-column: span 2;
                 }
             }
@@ -445,11 +443,11 @@
 
         .position-details {
 
-            @media screen and (min-width: 1080px) {
+            @media screen and (min-width: 1160px) {
                 flex-direction: row;
             }
 
-            @media screen and (max-width: 1080px) {
+            @media screen and (max-width: 1160px) {
                 flex-direction: column;
             }
 
@@ -463,7 +461,7 @@
         .status-info {
             display: flex;
             flex-direction: column;
-            @media screen and (min-width: 1080px) {
+            @media screen and (min-width: 1160px) {
                 min-height: 12rem;  // Match continuations pane
             }
 
@@ -487,7 +485,7 @@
 
         .continuations-pane {
 
-            @media screen and (max-width: 1080px) {
+            @media screen and (max-width: 1160px) {
                 align-items: flex-start;
                 padding-top: 1em;
             }

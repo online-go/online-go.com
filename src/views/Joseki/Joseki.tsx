@@ -1164,7 +1164,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                         <div className="btn-group extra-info-selector">
                             <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
                                     onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                                    Filter
+                                    <span>Filter</span>
+                                    {this.state.extra_info_selected === "variation-filter" ?
+                                    <i className={"fa fa-filter hide"}/> :
+                                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
+                                    }
                             </button>
                             <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
                                     onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
