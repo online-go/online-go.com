@@ -599,9 +599,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     setExploreMode = () => {
-        if (this.state.mode !== PageMode.Edit) { // If they were editing, they want to continue from the same place
-            this.resetBoard();
-        }
         this.setState({
             mode: PageMode.Explore,
         });
