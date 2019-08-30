@@ -88,7 +88,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }
 
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {{{
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
@@ -98,7 +98,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     componentWillUnmount() {{{
         setExtraActionCallback(null);
     }}}
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         let group_id = parseInt(next_props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);

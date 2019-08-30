@@ -15,7 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {createBrowserHistory} from 'history';
-
-export const browserHistory = createBrowserHistory();
-window['browserHistory'] = browserHistory;
+export * from "./ServerTimeDisplay";

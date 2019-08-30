@@ -454,6 +454,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 console.log("Challenge response: ", res);
                 let challenge_id = res.challenge;
                 let game_id = typeof(res.game) === "object" ? res.game.id : res.game;
+                let keepalive_interval;
 
                 notification_manager.event_emitter.on("notification", checkForReject);
 
@@ -493,7 +494,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     }
                 }
 
-                let keepalive_interval;
 
                 function active_check() {
                     keepalive_interval = setInterval(() => {

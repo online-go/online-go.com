@@ -25,12 +25,9 @@ import {LineText} from "misc-ui";
 import {errorAlerter, ignore} from "misc";
 import {post} from "requests";
 import cached from 'cached';
-//let md5 = require("blueimp-md5");
-import * as _md5 from 'blueimp-md5';
+import {Md5} from 'ts-md5/dist/md5';
 
-let md5: (p: string) => string = _md5 as any;
-
-window['md5'] = md5;
+window['Md5'] = Md5;
 declare var swal;
 
 export function get_ebi() {
@@ -43,7 +40,7 @@ export function get_ebi() {
     let tzoffset = "0";
     try {
         tzoffset = `${new Date().getTimezoneOffset() + 13}`;
-        user_agent_hash = md5(navigator.userAgent);
+        user_agent_hash = Md5.hashStr(navigator.userAgent) as string;
         screen_dims =
             (window.screen.width || 0) * 37 +
             1 +
@@ -64,7 +61,7 @@ export function get_ebi() {
             console.error(e);
         }
         if (plugin_string !== "") {
-            plugin_hash = md5(plugin_string);
+            plugin_hash = Md5.hashStr(plugin_string) as string;
         }
     } catch (e) {
         console.error(e);

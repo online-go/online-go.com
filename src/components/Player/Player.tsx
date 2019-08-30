@@ -105,7 +105,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     }}}
 
-    componentWillReceiveProps(new_props) {{{
+    UNSAFE_componentWillReceiveProps(new_props) {{{
         if (typeof(new_props.user) === "object") {
             this.setState({user: new_props.user});
         } else {

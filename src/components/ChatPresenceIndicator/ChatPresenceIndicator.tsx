@@ -38,10 +38,10 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
         };
     }
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {{{
         this.init(this.props.channel, this.props.userId);
     }}}
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         if (this.props.channel !== next_props.channel) {
             this.deinit();
             this.init(next_props.channel, next_props.userId);

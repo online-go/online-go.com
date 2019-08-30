@@ -75,7 +75,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     componentDidMount() {
         setTimeout(() => this.renderPickers(), 50);
     }
-    //componentWillReceiveProps(next_props) { }
+    //UNSAFE_componentWillReceiveProps(next_props) { }
     //componentDidUpdate(old_props, old_state) { }
     componentWillUnmount() {
     }

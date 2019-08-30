@@ -173,7 +173,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     componentWillUnmount() {{{
         this.deinitialize();
     }}}
-    componentWillReceiveProps(nextProps) {{{
+    UNSAFE_componentWillReceiveProps(nextProps) {{{
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }}}

@@ -57,7 +57,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     componentDidMount() {
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
     }
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         let update: any = {};
 
         if (this.props.match.params.player_id !== next_props.match.params.player_id) {

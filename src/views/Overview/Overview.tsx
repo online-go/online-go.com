@@ -126,7 +126,6 @@ export class Overview extends React.Component<{}, any> {
                     <ActiveAnnouncements  />
                     <ChallengesList onAccept={() => this.refresh()} />
 
-
                     {((user && user.provisional) || null) &&
                         <DismissableNotification
                             className="learn-how-to-play"

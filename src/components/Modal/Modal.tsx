@@ -61,7 +61,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events &
     componentDidMount() {
         this._open();
     }
-    componentWillReceiveProps(newProps: any) {
+    UNSAFE_componentWillReceiveProps(newProps: any) {
         this._open();
     }
 
@@ -83,7 +83,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events &
     next(): any {
         return this.nextState();
     }
-    componentWillUpdate() {
+    UNSAFE_componentWillUpdate() {
         this.upstate_object = null;
     }
     bulkUpstate(arr) {

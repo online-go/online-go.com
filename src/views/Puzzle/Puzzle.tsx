@@ -110,7 +110,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.onResize();
         $(window).on("resize", this.onResize as () => void);
     }}}
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         if (this.props.match.params.puzzle_id !== next_props.match.params.puzzle_id) {
             this.reinitialize();
             this.setState({

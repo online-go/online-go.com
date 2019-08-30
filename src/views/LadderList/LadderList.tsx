@@ -40,7 +40,7 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         window.document.title = ("Ladders");
         this.resolve();
     }

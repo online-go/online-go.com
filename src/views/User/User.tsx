@@ -130,7 +130,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         clearInterval(this.vacation_update_interval);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.match.params.user_id !== this.props.match.params.user_id) {
             this.setState({"user": null, resolved: false});
             this.resolve(nextProps);
