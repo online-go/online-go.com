@@ -459,6 +459,8 @@
         }
 
         .status-info {
+            flex-basis: 50%;
+            overflow-x: hidden;  // Make sure long "Moves Made" doesn't grow this box
             display: flex;
             flex-direction: column;
             @media screen and (min-width: 1160px) {
@@ -484,6 +486,7 @@
         }
 
         .continuations-pane {
+            flex-basis: 50%;
 
             @media screen and (max-width: 1160px) {
                 align-items: flex-start;
