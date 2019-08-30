@@ -1254,6 +1254,15 @@ class PlayPane extends React.Component<PlayProps, any> {
         }
     }
 
+    componentDidMount = () => {
+        if (this.props.current_filter.contributor === null &&
+            this.props.current_filter.tags === null &&
+            this.props.current_filter.source === null) {
+            // encourage them to use a filter, if they aren't already.
+            this.showFilterSelector();
+        }
+    }
+
     showFilterSelector = () => {
         this.setState({ extra_info_selected: "variation-filter" });
     }
