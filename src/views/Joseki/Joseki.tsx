@@ -126,7 +126,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
-    our_turn = false;  // in Play mode, its our turn when we are placing the computer's stone
+    computer_turn = false;  // when we are placing the computer's stone in Play mode
 
     constructor(props) {
         super(props);
@@ -306,15 +306,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: "Joseki!"}]});
                 }
 
-                if (this.our_turn) {
+                if (this.computer_turn) {
                     // obviously, we don't place another stone if we just placed one
-                    this.our_turn = false;
+                    this.computer_turn = false;
                 }
                 else if (body.next_moves.length > 0 && this.state.move_string !== "") {
                     // the computer plays both good and bad moves
                     const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
                     console.log("Will play: ", next_play);
-                    this.our_turn = true;
+                    this.computer_turn = true;
                     if (next_play.placement === "pass") {
                         this.goban.pass();
                         this.onBoardUpdate();
@@ -502,7 +502,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             console.log("chosen move:", chosen_move);
 
             if (this.state.mode === PageMode.Play &&
-                !this.our_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
+                !this.computer_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
                 (chosen_move === undefined ||  // not in valid list of next_moves
                 bad_moves.includes(chosen_move.category))) {
                 console.log("mistake!");
@@ -540,7 +540,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
 
             if (this.state.mode === PageMode.Play) {
-                const move_type = this.our_turn ? 'computer' :
+                const move_type = this.computer_turn ? 'computer' :
                     (chosen_move === undefined || bad_moves.includes(chosen_move.category)) ? 'bad' : 'good';
 
                 const comment = placement + ": " +
@@ -549,7 +549,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: move_type, comment: comment}]});
             }
 
-            if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.our_turn) {
+            if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.computer_turn) {
                 // They clicked a non-Joseki move
                 console.log("Ooops: ", this.state.current_move_category);
                 //this.backOneMove();
