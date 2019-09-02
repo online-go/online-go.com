@@ -663,8 +663,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.renderCurrentJosekiPosition();
     }
 
-    showCurrentVariationCounts = () => {
-        this.showVariationCounts(this.state.current_node_id);
+    toggleContinuationCountDetail = () => {
+        if (this.state.count_details_open) {
+            this.hideVariationCounts();
+        }
+        else {
+            this.showVariationCounts(this.state.current_node_id);
+        }
     }
 
     showVariationCounts = (node_id: number) => {
@@ -734,13 +739,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <div className="right-col">
                     <div className="top-bar">
                         <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
-                        <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
+                            <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
-                            <div
+                            <button
                                 className={"pass-button" + (show_pass_available ? " pass-available" : "")}
                                 onClick={this.doPass}>
                                 Pass
-                            </div>
+                            </button>
                             <div className="throbber-spacer">
                                 <Throbber throb={this.state.throb}/>
                             </div>
@@ -788,15 +793,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         <div className="continuations-pane">
                             {(this.state.child_count !== null && this.state.child_count !== 0) &&
                             <React.Fragment>
-                                <div className="position-child-count">
+                                <button className="position-child-count" onClick={this.toggleContinuationCountDetail}>
                                     This position leads to {this.state.child_count} others
                                     {!this.state.count_details_open &&
-                                        <i className="fa fa-lg fa-caret-right" onClick={this.showCurrentVariationCounts}></i>
+                                        <i className="fa fa-lg fa-caret-right"></i>
                                     }
                                     {this.state.count_details_open &&
-                                        <i className="fa fa-lg fa-caret-down" onClick={this.hideVariationCounts}></i>
+                                        <i className="fa fa-lg fa-caret-down"></i>
                                     }
-                                </div>
+                                </button>
                                 <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
 
                                     {this.state.count_details_open &&
