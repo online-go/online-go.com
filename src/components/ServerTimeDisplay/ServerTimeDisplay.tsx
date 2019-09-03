@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import {_, pgettext, interpolate} from "translate";
 
 interface ServerTimeDisplayProperties {}
 
@@ -43,17 +44,17 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
         });
     }
     isWeekend() {
-        if (this.state.time.startsWith("Saturday")) {
-            return " It is the weekend!";
+        if (new Date().getUTCDay() == 6) {
+            return _(" It is the weekend!");
         }
-        else if (this.state.time.startsWith("Sunday")) {
-            return " Weekend ends " + moment().utcOffset(0).endOf('day').fromNow() + ".";
+        else if (new Date().getUTCDay() == 0) {
+            return _(" Weekend ends ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
         }
-        else if (this.state.time.startsWith("Friday")) {
-            return " Weekend starts " + moment().utcOffset(0).endOf('day').fromNow() + ".";
+        else if (new Date().getUTCDay() == 5) {
+            return _(" Weekend starts ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
         }
         else {
-            return " It is not the weekend.";
+            return _(" It is not the weekend.");
         }
     }
     render() {
@@ -61,7 +62,7 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
             <div className="server-time-display">
                 <p>
                     <b>
-                    Current Server Time is: {this.state.time}.{this.isWeekend()}
+                    {_("Current Server Time is: ")}{this.state.time}.{this.isWeekend()}
                     </b>
                 </p>
             </div>
