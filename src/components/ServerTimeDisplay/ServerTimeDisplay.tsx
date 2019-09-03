@@ -43,8 +43,14 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
         });
     }
     isWeekend() {
-        if (this.state.time.startsWith("Saturday") || this.state.time.startsWith("Sunday")) {
+        if (this.state.time.startsWith("Saturday")) {
             return " It is the weekend!";
+        }
+        else if (this.state.time.startsWith("Sunday")) {
+            return " Weekend ends " + moment().utcOffset(0).endOf('day').fromNow() + ".";
+        }
+        else if (this.state.time.startsWith("Friday")) {
+            return " Weekend starts " + moment().utcOffset(0).endOf('day').fromNow() + ".";
         }
         else {
             return " It is not the weekend.";
