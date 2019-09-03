@@ -26,7 +26,7 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
     constructor(props) {
         super(props);
         this.state = {
-            time: moment().utcOffset(0).format('dddd, HH:mm:ss')
+            time: moment().utcOffset(0).format('dddd, LT')
         };
     }
     componentDidMount() {
@@ -40,7 +40,7 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
     }
     tick() {
         this.setState({
-            time: moment().utcOffset(0).format('dddd, HH:mm:ss')
+            time: moment().utcOffset(0).format('dddd, LT')
         });
     }
     isWeekend() {
