@@ -44,6 +44,7 @@ import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
 import {UIPush} from "UIPush";
+import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 declare let swal;
 
@@ -73,6 +74,7 @@ let inlineBlock = {display: "inline-block"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
+let time = new Date().toLocaleString();
 
 export class User extends React.PureComponent<UserProperties, any> {
     refs: {
@@ -757,6 +759,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>
                     </Card>
                 }
+
+                <ServerTimeDisplay></ServerTimeDisplay>
 
                 {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
                 <GameList list={this.state.active_games} player={user}/>
