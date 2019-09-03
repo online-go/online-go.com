@@ -125,9 +125,10 @@ export class Overview extends React.Component<{}, any> {
                 <div className="left">
                     <EmailBanner />
                     <ActiveAnnouncements  />
-                    <ServerTimeDisplay />
                     <ChallengesList onAccept={() => this.refresh()} />
 
+
+                    <ServerTimeDisplay />
 
                     {((user && user.provisional) || null) &&
                         <DismissableNotification
