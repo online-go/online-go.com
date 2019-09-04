@@ -21,8 +21,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import * as queryString from "query-string";
 
-import Select from 'react-select';
-
 import * as data from "data";
 import { _, pgettext, interpolate } from "translate";
 import { KBShortcut } from "KBShortcut";
@@ -68,6 +66,18 @@ const tag_count_url = (node_id, tag_id) => (
 const tagscount_url = (node_id) => (
     server_url + "position/tagcounts?id=" + node_id
 );
+
+// Joseki specific markdown
+
+const applyJosekiMarkdown = (markdown: string) => {
+    // Highligh marks in the text
+    let result = markdown.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+
+    // Transform position references into actual link
+    result = result.replace(/<position: *([0-9]+)>/img, '**[Position $1](/joseki/$1)**');
+
+    return result;
+};
 
 // Headers needed to talk to the godojo server.
 let godojo_headers = {        // note: user JWT is added to this later
@@ -982,8 +992,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 }
 
-
-
 // This pane responds to changes in position ID by showing the new node information
 interface ExploreProps {
     position_id: string;
@@ -1138,7 +1146,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
             this.setState({ next_comment: "" });
         }
-        else if (e.target.value.length < 100 && this.props.can_comment) {
+        else if (e.target.value.length < 200 && this.props.can_comment) {
             this.setState({ next_comment: e.target.value });
         }
     }
@@ -1149,11 +1157,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.props.current_filter.contributor !== null ||
             this.props.current_filter.source !== null);
 
-        // Highlight marks
-        let description = this.props.description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
-
-        // Transform position tags
-        description = description.replace(/<position: ([0-9]+)>/mg, '**[Position $1](/joseki/$1)**');
+        let description = applyJosekiMarkdown(this.props.description);
 
         return (
             <div className="explore-pane">
@@ -1194,7 +1198,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                                 <Player user={comment.user_id}></Player>
                                                 <div className="comment-date">{comment.date.toDateString()}</div>
                                             </div>
-                                            <div className="comment-text">{comment.comment}</div>
+                                            <Markdown className="comment-text" source={applyJosekiMarkdown(comment.comment)} />
                                         </div>
                                     )}
                                 </div>
@@ -1486,10 +1490,7 @@ class EditPane extends React.Component<EditProps, any> {
         console.log("EditPane render, tags", this.state.tags);
 
         // give feedback that we recognised their marks
-        let preview = this.state.new_description.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
-
-        // and position tags
-        preview = preview.replace(/<position: ([0-9]+)>/mg, '**[Position $1](/joseki/$1)**');
+        let preview = applyJosekiMarkdown(this.state.new_description);
 
         return (
             <div className="edit-container">
