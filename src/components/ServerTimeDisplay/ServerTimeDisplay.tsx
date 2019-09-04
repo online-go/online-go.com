@@ -17,32 +17,38 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import {_, pgettext, interpolate} from "translate";
+import {_, interpolate} from "translate";
 
 interface ServerTimeDisplayProperties {}
 
 export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperties, any> {
+
     intervalID;
+
     constructor(props) {
         super(props);
         this.state = {
-            time: moment().utcOffset(0).format('dddd, LT')
+            time: moment().utcOffset(0)
         };
     }
+
     componentDidMount() {
         this.intervalID = setInterval(
             () => this.tick(),
             1000
         );
     }
+
     componentWillUnmount() {
         clearInterval(this.intervalID);
     }
+
     tick() {
         this.setState({
-            time: moment().utcOffset(0).format('dddd, LT')
+            time: moment().utcOffset(0)
         });
     }
+
     isWeekend() {
         if (new Date().getUTCDay() === 6) {
             return _(" It is the weekend!");
@@ -57,12 +63,13 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
             return _(" It is not the weekend.");
         }
     }
+
     render() {
         return (
             <div className="server-time-display">
                 <p>
                     <b>
-                    {_("Current Server Time is: ")}{this.state.time}.{this.isWeekend()}
+                    {_("Current Server Time is: ")}{this.state.time.format('dddd, LT')}.{this.isWeekend()}
                     </b>
                 </p>
             </div>
