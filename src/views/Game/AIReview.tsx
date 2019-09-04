@@ -961,7 +961,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
                     }
                     */
-                    heatmap = this.normalizeHeatmap(heatmap);
                 }
             }
             else { // !cur_move.trunk
