@@ -27,7 +27,6 @@ import * as data from "data";
 import { _, pgettext, interpolate } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
-import { errorAlerter, dup, ignore } from "misc";
 import { Goban, GoMath } from "goban";
 import { Markdown } from "Markdown";
 
@@ -368,6 +367,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.mode !== PageMode.Play || this.state.move_string === "") {
             this.renderCurrentJosekiPosition();
         }
+
+        // Give them the URL for this position in the URL bar
+        window.history.replaceState({}, document.title, '/joseki/' + this.state.current_node_id);
     }
 
     // Draw all the variations that we know about from the server (array of moves from the server)
