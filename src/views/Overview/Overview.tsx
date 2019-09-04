@@ -41,6 +41,7 @@ import {ProfileCard} from "ProfileCard";
 import {notification_manager} from "Notifications";
 import {ActiveAnnouncements} from "Announcements";
 import {FabX, FabCheck} from "material";
+import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 
 
@@ -126,6 +127,8 @@ export class Overview extends React.Component<{}, any> {
                     <ActiveAnnouncements  />
                     <ChallengesList onAccept={() => this.refresh()} />
 
+
+                    <ServerTimeDisplay />
 
                     {((user && user.provisional) || null) &&
                         <DismissableNotification
