@@ -874,7 +874,20 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                     let visits = move_ai_review.max_visits[0];
 
+                    heatmap = [];
+                    for (let y = 0; y < this.props.game.goban.engine.height; y++) {
+                        let r = [];
+                        for (let x = 0; x < this.props.game.goban.engine.width; x++) {
+                            r.push(0);
+                        }
+                        heatmap.push(r);
+                    }
+
                     for (let i = 0 ; i < variations.length; ++i) {
+
+                        let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
+                        heatmap[mv.y][mv.x] = variations[i].visits / visits;
+
                         if (variations[i].moves.length > 2 || variations[i].move === next_move_pretty_coords) {
                             let delta = 0;
 
@@ -906,7 +919,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             if (key === "0.0" || key === "-0.0") {
                                 key = "0";
                             }
-                            let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
                             // only show numbers for well explored moves
                             // show number for AI choice and played move as well
                             if (mv && ((i === 0) ||
@@ -949,7 +961,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
                     }
                     */
-                    heatmap = this.normalizeHeatmap(move_ai_review.heatmap);
                 }
             }
             else { // !cur_move.trunk

@@ -2290,7 +2290,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
-                ctx.globalAlpha = this.heatmap[j][i] * 0.5;
+                ctx.globalAlpha = Math.min(this.heatmap[j][i], 0.5);
                 let r = Math.floor(this.square_size * 0.5) - 0.5;
                 ctx.moveTo(cx - r, cy - r);
                 ctx.lineTo(cx + r, cy - r);
