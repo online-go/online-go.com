@@ -49,29 +49,30 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
         });
     }
 
-    isWeekend() {
-        if (new Date().getUTCDay() === 6) {
-            return _(" It is the weekend!");
-        }
-        else if (new Date().getUTCDay() === 0) {
-            return _(" Weekend ends ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
-        }
-        else if (new Date().getUTCDay() === 5) {
-            return _(" Weekend starts ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
-        }
-        else {
-            return _(" It is not the weekend.");
+    weekendTransitionText() {
+        let day = new Date().getUTCDay();
+
+        if (day === 6 || day === 0) { /* Saturday or Sunday */
+            let midnight_sunday = day === 6
+                ?  moment().utcOffset(0).add(1, 'day').endOf('day')
+                :  moment().utcOffset(0).endOf('day')
+            ;
+
+            return interpolate(_("Weekend ends {{time_from_now}}"), {"time_from_now": midnight_sunday.fromNow()});
+        } else {
+            return interpolate(_("Weekend starts {{time_from_now}}"), {"time_from_now": moment().utcOffset(0).isoWeekday(5).endOf('day').fromNow()});
         }
     }
 
     render() {
         return (
             <div className="server-time-display">
-                <p>
-                    <b>
-                    {_("Current Server Time is: ")}{this.state.time.format('dddd, LT')}.{this.isWeekend()}
-                    </b>
-                </p>
+                <div>
+                    {interpolate(_("Server Time: {{time}}"), {"time": this.state.time.format('dddd LTS z')})}
+                </div>
+                <div>
+                    {this.weekendTransitionText()}
+                </div>
             </div>
         );
     }

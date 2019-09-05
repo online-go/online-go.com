@@ -29,10 +29,27 @@ import * as data from "data";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
-
+import {logout} from 'NavBar';
+import ITC from 'ITC';
 
 declare var swal;
 export const MAX_DOCK_DELAY = 3.0;
+
+ITC.register('logout', (device_uuid) => {
+    if (device_uuid !== data.get('device.uuid', '')) {
+        swal("This device has been logged out remotely").then(logout).catch(logout);
+    }
+});
+function logoutOtherDevices() {
+        swal({
+            text: "Logout of other devices you are logged in to?",
+            showCancelButton: true,
+        }).then((password) => {
+            ITC.send("logout", data.get('device.uuid'));
+            swal("Other devices have been logged out").then(ignore).catch(ignore);
+        }).catch(ignore);
+    //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
+}
 
 export class Settings extends React.PureComponent<{}, any> {
     vacation_base_time = Date.now();
@@ -83,10 +100,12 @@ export class Settings extends React.PureComponent<{}, any> {
             dock_delay: preferences.get("dock-delay"),
             show_tournament_indicator: preferences.get("show-tournament-indicator"),
             disable_ai_review: !preferences.get("ai-review-enabled"),
+            disable_variations_in_chat: !preferences.get("variations-in-chat-enabled"),
         };
     }
 
     componentDidMount() {{{
+        window.document.title = _("Settings");
         this.resolve();
         this.vacation_interval = setInterval(() => {
             if (this.state.profile.on_vacation) {
@@ -187,6 +206,10 @@ export class Settings extends React.PureComponent<{}, any> {
     toggleAIReview = (ev) => {
         preferences.set("ai-review-enabled", this.state.disable_ai_review);
         this.setState({"disable_ai_review": !this.state.disable_ai_review});
+    }
+    toggleVariationsInChat = (ev) => {
+        preferences.set("variations-in-chat-enabled", this.state.disable_variations_in_chat);
+        this.setState({"disable_variations_in_chat": !this.state.disable_variations_in_chat});
     }
     toggleAutomatchAlertVolume = (ev) => {{{
         this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
@@ -332,9 +355,12 @@ export class Settings extends React.PureComponent<{}, any> {
                     };
 
                     try {
-                        Notification.requestPermission().then(onRequestResult);
+                        Notification.requestPermission()
+                            .then(onRequestResult)
+                            .catch(ignore);
                     } catch (e) {
                         /* deprecated usage, but only way supported on safari currently */
+                        // tslint:disable-next-line:no-floating-promises
                         Notification.requestPermission(onRequestResult);
                     }
 
@@ -351,7 +377,8 @@ export class Settings extends React.PureComponent<{}, any> {
             'site_preferences': {
                 'hide_ui_class': !checked
             }
-        });
+        })
+        .catch(errorAlerter);
     }}}
 
     updateIncidentReportNotifications = (ev) => {{{
@@ -682,6 +709,13 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="function-keys-enabled" type="checkbox" checked={this.state.function_keys_enabled} onChange={this.setFunctionKeysEnabled} />
                             </dd>
+                            <dt><label htmlFor="disable-varations-in-chat">{_("Disable clickable variations in chat")}</label></dt>
+                            <dd>
+                                <input type="checkbox" id="disable-variations-in-chat" checked={this.state.disable_variations_in_chat} onChange={this.toggleVariationsInChat}/>
+                                <div><i>
+                                {_("This will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
+                                </i></div>
+                            </dd>
                         </dl>
                     </Card>
                     {/* }}} */}
@@ -804,6 +838,13 @@ export class Settings extends React.PureComponent<{}, any> {
                     </Card>
                     {/* }}} */}
 
+                    <Card>
+                        <div className="logout-all-devices-container">
+                            <div>
+                                <button onClick={logoutOtherDevices} className="danger">Logout other devices</button>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </div>

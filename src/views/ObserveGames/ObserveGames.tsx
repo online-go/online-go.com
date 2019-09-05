@@ -20,6 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import * as preferences from "preferences";
 import {GameList} from "GameList";
+import {ActiveAnnouncements} from "Announcements";
 import {comm_socket} from "sockets";
 
 interface ObserveGamesProperties {
@@ -51,6 +52,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
     }}}
 
     componentDidMount() {{{
+        window.document.title = _("Games");
         comm_socket.on("gamelist-count", this.updateCounts);
         comm_socket.on("connect", this.doSubscribe);
         if (comm_socket.connected) {
@@ -187,6 +189,8 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                     </div>
                 </div>
             </div>
+
+            <ActiveAnnouncements  />
 
             <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} />
         </div>

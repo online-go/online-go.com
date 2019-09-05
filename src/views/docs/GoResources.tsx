@@ -43,6 +43,8 @@ function scramble(...args) {
 }
 
 export let GoResources = (props) => {
+    window.document.title = _("Other Go Resources");
+
     let country = data.get("user").country || "us";
     let fr = getLanguageFlag("french", country, "fr");
     let en = getLanguageFlag("english", country, "us");
@@ -60,6 +62,8 @@ export let GoResources = (props) => {
     let au = getLanguageFlag("au", country, "au");
     let ca = getLanguageFlag("ca", country, "ca");
     let ru = getLanguageFlag("ru", country, "ru");
+    let gr = "gr";
+    let br = "br";
     let ar = getLanguageFlag("spanish", country, "ar");
 
 
@@ -81,6 +85,8 @@ export let GoResources = (props) => {
                 {scramble(
                     <span><Flag country={kr}/><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
                         <br/><span style={{marginLeft: "1.7em", fontSize: "0.9em"}}> Korea Baduk Association</span></span>,
+                    <span><Flag country={en}/> <a rel="noopener" href="https://archive.org/details/gameofgonational00smitrich/page/n9">The Game of Go</a>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Arthur Smith (1908)</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">River Mountain Go 1 (30k-20k)</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Oliver Richman</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf">River Mountain Go 2 (20k-8k)</a>
@@ -117,6 +123,20 @@ export let GoResources = (props) => {
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Рочев Антон</span>
                     </span>,
 
+                    <span>
+                        <div style={{"display": "flex", "alignItems": "center"}}>
+                            <span style={{"display": "inline-block", "width": "2.5rem"}}>
+                                <Flag country={en}/> <Flag country={gr}/>
+                                <Flag country={fr}/> <Flag country={br}/>
+                            </span> <a rel="noopener" href="https://www.gobook.eu/">
+                                A Go Guide <span style={{fontSize: "0.9em"}}>From a Beginner</span>
+                            </a>
+                        </div>
+
+                        <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>
+                            Charalampos (Haris) Kapolos
+                        </span>
+                    </span>,
 
                     <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
@@ -342,6 +362,7 @@ export let GoResources = (props) => {
                 <dt>{_("Music")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/watch?v=dVd959KJWEI">Playing A game of Go</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/watch?v=-EwuqJfwOU4">The Game of Go - Chris Linn [1981 Swedish New-Wave]</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-1">A Game of Go pt. I</a>
                 <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-2">pt. II</a>
                 </span>,

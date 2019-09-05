@@ -78,9 +78,14 @@ function lint(done) {
 
     lint_debounce = setTimeout(()=>{
         lint_debounce = null;
+        var program = tslint.Linter.createProgram("./tsconfig.json");
+
         gulp.src(ts_sources, {base: '.'})
         .pipe(gulpTsLint({
-            formatter: "prose"
+            //formatter: "prose",
+            configuration: "./tslint.json",
+            formatter: "stylish",
+            program: program,
         }))
         .pipe(gulpTsLint.report({
             emitError: false,

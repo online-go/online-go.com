@@ -21,9 +21,12 @@ import {errcodeAlerter} from 'ErrcodeModal';
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
 
+// tslint:disable-next-line:no-var-requires
+export const slugify = require('slugify');
+
 declare var swal;
 
-export function updateDup(obj: any, field: string, value: any) {{{
+export function updateDup(obj: any, field: string, value: any) {
     let ret = dup(obj);
     let arr =  field.split(".");
     let cur = ret;
@@ -32,9 +35,9 @@ export function updateDup(obj: any, field: string, value: any) {{{
     }
     cur[arr[arr.length - 1]] = value;
     return ret;
-}}}
+}
 
-export function timeControlSystemText(system) { /* {{{ */
+export function timeControlSystemText(system) {
     if (!system) {
         return "[unknown]";
     }
@@ -48,8 +51,8 @@ export function timeControlSystemText(system) { /* {{{ */
         case "none": return _("None");
     }
     return "[unknown]";
-} /* }}} */
-export function rulesText(rules) { /* {{{ */
+}
+export function rulesText(rules) {
     if (!rules) {
         return "[unknown]";
     }
@@ -63,11 +66,15 @@ export function rulesText(rules) { /* {{{ */
         case "nz": return _("New Zealand");
     }
     return "[unknown]";
-} /* }}} */
-export function dup(obj: any): any { /* {{{ */
+}
+export function dup(obj: any): any {
 
     let ret;
     if (typeof(obj) === "object") {
+        if (obj === null) {
+            return null;
+        }
+
         if (Array.isArray(obj)) {
             ret = [];
             for (let i = 0; i < obj.length; ++i) {
@@ -83,8 +90,8 @@ export function dup(obj: any): any { /* {{{ */
         return obj;
     }
     return ret;
-} /* }}} */
-export function deepEqual(a: any, b: any) { /* {{{ */
+}
+export function deepEqual(a: any, b: any) {
     if (typeof(a) !== typeof(b)) { return false; }
 
     if (typeof(a) === "object") {
@@ -120,11 +127,11 @@ export function deepEqual(a: any, b: any) { /* {{{ */
     } else {
         return a === b;
     }
-} /* }}} */
-export function getRandomInt(min, max) { /* {{{ */
+}
+export function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
-} /* }}} */
-export function getRelativeEventPosition(event) { /* {{{ */
+}
+export function getRelativeEventPosition(event) {
     let x;
     let y;
     let offset = $(event.target).offset();
@@ -144,16 +151,16 @@ export function getRelativeEventPosition(event) { /* {{{ */
     }
 
     return {"x": x, "y": y};
-} /* }}} */
+}
 
-export function uuid(): string { /* {{{ */
+export function uuid(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         let r = Math.random() * 16 | 0;
         let v = c === "x" ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
-} /* }}} */
-export function getOutcomeTranslation(outcome:string) { /* {{{ */
+}
+export function getOutcomeTranslation(outcome:string) {
     /* Note: for the case statements, don't simply do `pgettext("Game outcome", outcome)`,
      * the system to parse out strings to translate needs the text. */
     switch (outcome) {
@@ -183,8 +190,8 @@ export function getOutcomeTranslation(outcome:string) { /* {{{ */
     }
 
     return outcome;
-} /* }}} */
-export function getGameResultText(game) { /* {{{ */
+}
+export function getGameResultText(game) {
     /* SGFs will encode the full result in the outcome */
     if (/[+]/.test(game.outcome)) {
         return game.outcome;
@@ -214,32 +221,32 @@ export function getGameResultText(game) { /* {{{ */
         result += _("annulled");
     }
     return result;
-} /* }}} */
-export function acceptGroupInvite(invite_id) { /* {{{ */
+}
+export function acceptGroupInvite(invite_id) {
     return post("me/groups/invitations", { request_id: invite_id }).catch(errorAlerter);
-} /* }}} */
-export function rejectGroupInvite(invite_id) { /* {{{ */
+}
+export function rejectGroupInvite(invite_id) {
     return post("me/groups/invitations", { "delete": true, request_id: invite_id }).catch(errorAlerter);
-} /* }}} */
-export function acceptFriendRequest(id) { /* {{{ */
+}
+export function acceptFriendRequest(id) {
     return post("me/friends/invitations", { "from_user": id }).catch(errorAlerter);
-} /* }}} */
-export function rejectFriendRequest(id) { /* {{{ */
+}
+export function rejectFriendRequest(id) {
     return post("me/friends/invitations", { "delete": true, "from_user": id }).catch(errorAlerter);
-} /* }}} */
-export function acceptTournamentInvite(id) { /* {{{ */
+}
+export function acceptTournamentInvite(id) {
     return post("me/tournaments/invitations", { "request_id": id }).catch(errorAlerter);
-} /* }}} */
-export function rejectTournamentInvite(id) { /* {{{ */
+}
+export function rejectTournamentInvite(id) {
     return post("me/tournaments/invitations", { "delete": true, "request_id": id }).catch(errorAlerter);
-} /* }}} */
+}
 
-function lengthInUtf8Bytes(str) { /* {{{ */
+function lengthInUtf8Bytes(str) {
   // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
   let m = encodeURIComponent(str).match(/%[89ABab]/g);
   return str.length + (m ? m.length : 0);
-} /* }}} */
-export function splitOnBytes(message, bytes) { /* {{{ */
+}
+export function splitOnBytes(message, bytes) {
     let offs = 0;
 
     while (lengthInUtf8Bytes(message.substr(0, bytes - offs)) > bytes) {
@@ -250,8 +257,8 @@ export function splitOnBytes(message, bytes) { /* {{{ */
         message.substr(0, bytes - offs),
         message.substr(bytes - offs)
     ];
-} /* }}} */
-export function getPrintableError(err) {{{
+}
+export function getPrintableError(err) {
     if (err === "esc" || err === "cancel" || err === "overlay" || err === "timer") {
         /* We get these from swal (sweetalert) modals when the scape key is pressed, not really errors */
         return;
@@ -343,8 +350,8 @@ export function getPrintableError(err) {{{
         console.error("Unable to process error message to a printable error string (2): ", (err.responseText ? JSON.parse(err.responseText) : err));
         return _("An error has occurred");
     }
-}}}
-export function errorAlerter(...args) {{{
+}
+export function errorAlerter(...args) {
     let err = getPrintableError(args[0]);
     if (!err) {
         return;
@@ -369,15 +376,15 @@ export function errorAlerter(...args) {{{
         });
     }
     console.error(err);
-}}}
-export function errorLogger(...args) {{{
+}
+export function errorLogger(...args) {
     let err = getPrintableError(args[0]);
     if (!err) {
         return;
     }
     console.error(err);
-}}}
-export function string_splitter(str: string, max_length: number= 200): Array<string> {{{
+}
+export function string_splitter(str: string, max_length: number= 200): Array<string> {
     let re = new RegExp(`.{1,${max_length}}`, "g");
 
     let arr = str.split(/\s+/).map((s) => s.match(re));
@@ -398,11 +405,11 @@ export function string_splitter(str: string, max_length: number= 200): Array<str
     }
     ret.push(cur);
     return ret;
-}}}
-export function ignore() {{{
+}
+export function ignore() {
     /* do nothing */
-}}}
-export function unicodeFilter(str:string):string {{{
+}
+export function unicodeFilter(str:string):string {
     if (preferences.get('unicode-filter')) {
         return (str
             .replace(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF])/g, "") /* 4 byte unicode */
@@ -410,12 +417,12 @@ export function unicodeFilter(str:string):string {{{
         );
     }
     return str;
-}}}
+}
 
 
 const n2s_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const n2s_alphalen = n2s_alphabet.length;
-export function n2s(n?: number) {{{
+export function n2s(n?: number) {
     if (n < 0) {
         return "-" + n2s(-n);
     }
@@ -434,8 +441,8 @@ export function n2s(n?: number) {{{
     }
 
     return ret;
-}}}
-export function alertModerator(obj) {{{
+}
+export function alertModerator(obj) {
     swal({
         text: (obj.user ? _("Report user:") + " " : "") +
             _("Please provide a brief description of the problem"),
@@ -455,10 +462,10 @@ export function alertModerator(obj) {{{
         ;
     })
     .catch(ignore);
-}}}
+}
 
 /* Returns true on middle clicks and command-clicks */
-export function shouldOpenNewTab(event) { /* {{{ */
+export function shouldOpenNewTab(event) {
     if (event.nativeEvent) {
         event = event.nativeEvent;
     }
@@ -472,14 +479,14 @@ export function shouldOpenNewTab(event) { /* {{{ */
     }
     */
     return false;
-} /* }}} */
+}
 
 let last_navigateTo = {
     path: null,
     timestamp: null
 };
 
-export function navigateTo(path, event?) {{{
+export function navigateTo(path, event?) {
     if (last_navigateTo.path === path && Date.now() - last_navigateTo.timestamp < 100) {
         /* debounce, this is for elements that need to have both onClick and onMouseUp to
          * handle various use cases in different browsers */
@@ -495,9 +502,9 @@ export function navigateTo(path, event?) {{{
     } else {
         browserHistory.push(path);
     }
-}}}
+}
 
-export function deepCompare(x: any, y: any) {{{
+export function deepCompare(x: any, y: any) {
     // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
     let leftChain = [];
     let rightChain = [];
@@ -594,10 +601,10 @@ export function deepCompare(x: any, y: any) {{{
     };
 
     return compare2Objects(x, y);
-}}}
+}
 
 
-/*** OGS Focus detection {{{ ***/
+/*** OGS Focus detection ***/
 let focus_window_id = "" + Math.random();
 try {
     $(window).focus(() => {
@@ -625,7 +632,7 @@ try {
     console.error(e);
 }
 
-export function ogs_has_focus() {{{
+export function ogs_has_focus() {
     try {
         return document.hasFocus() || (localStorage.getItem("focused_window") != null);
     } catch (e) {
@@ -635,5 +642,5 @@ export function ogs_has_focus() {{{
         console.error(e);
         return true;
     }
-}}}
-/* }}} */
+}
+

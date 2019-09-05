@@ -61,6 +61,8 @@ interface Events {
     "move-made": never;
     "review.sync-to-current-move": never;
     "review.updated": never;
+    "review.load-start": never;
+    "review.load-end": never;
     "title": string;
     "puzzle-wrong-answer": never;
     "puzzle-correct-answer": never;
@@ -1028,25 +1030,30 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     this.disableDrawing();
                     /* TODO: Clear our state here better */
 
+                    this.emit("review.load-start");
                     bulk_processing = true;
                     for (let i = 0; i < entries.length; ++i) {
                         process_r(entries[i]);
                     }
                     bulk_processing = false;
-                    this.emit("review.updated");
 
                     this.enableDrawing();
+                    /*
                     if (this.isPlayerController()) {
                         this.done_loading_review = true;
                         this.drawPenMarks(this.engine.cur_move.pen_marks);
                         this.redraw(true);
                         return;
                     }
+                    */
 
                     this.done_loading_review = true;
                     this.drawPenMarks(this.engine.cur_move.pen_marks);
+                    this.emit("review.load-end");
+                    this.emit("review.updated");
                     this.redrawMoveTree();
                     this.redraw(true);
+
                 } catch (e) {
                     console.error(e);
                 }
@@ -1670,6 +1677,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             let m = this.engine.getMoveByLocation(x, y);
             if (m) {
                 this.engine.jumpTo(m);
+                this.emit("update");
             }
             return;
         }
@@ -2282,7 +2290,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
-                ctx.globalAlpha = this.heatmap[j][i] * 0.5;
+                ctx.globalAlpha = Math.min(this.heatmap[j][i], 0.5);
                 let r = Math.floor(this.square_size * 0.5) - 0.5;
                 ctx.moveTo(cx - r, cy - r);
                 ctx.lineTo(cx + r, cy - r);
@@ -4285,7 +4293,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
         setTimeout(() => {
-            init_score_estimator().then(do_score_estimation);
+            init_score_estimator()
+                .then(do_score_estimation)
+                .catch(err => console.error(err));
         }, 10);
     } /* }}} */
     private sendMove(mv) { /* {{{ */
@@ -4755,6 +4765,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
             this.socket.send("review/append", msg);
         }
+
     } /* }}} */
     public setScoringMode(tf):MoveTree { /* {{{ */
         this.scoring_mode = tf;
@@ -4783,6 +4794,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         return this.engine.black_player_id === this.player_id ||
                this.engine.white_player_id === this.player_id;
     } /* }}} */
+    public getLastReviewMessage():any {
+        return this.last_review_message;
+    }
+    public setLastReviewMessage(m:any):void {
+        this.last_review_message = m;
+    }
 }
 function plurality(num, single, plural) {{{
     if (num > 0) {

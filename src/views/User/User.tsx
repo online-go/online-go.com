@@ -44,7 +44,6 @@ import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
 import {UIPush} from "UIPush";
-import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 declare let swal;
 
@@ -113,6 +112,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     componentDidMount() {
+        window.document.title = _("Player");
         let interval_start = Date.now();
         this.vacation_update_interval = setInterval(() => {
             if (this.state.user) {
@@ -146,6 +146,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 this.original_username = state.user.username;
                 player_cache.update(state.user);
                 this.update(state);
+                window.document.title = state.user.username;
             } catch (err) {
                 console.error(err.stack);
             }
@@ -225,7 +226,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                 "ban_affects_all": true,
                 "chatban_affects_all": true
             }});
-        });
+        })
+        .catch(errorAlerter);
     }
 
     saveHostIpSettings() {
@@ -242,19 +244,22 @@ export class User extends React.PureComponent<UserProperties, any> {
 
         if (this.state.host_ip_settings.id) {
             patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
-            .then(() => $("#host-ip-saved").removeClass("hidden"));
+            .then(() => $("#host-ip-saved").removeClass("hidden"))
+            .catch(errorAlerter);
         } else {
             post("host_ip_settings/", obj)
             .then(() => {
                 $("#host-ip-saved").removeClass("hidden");
                 this.updateHostIpSettings();
-            });
+            })
+            .catch(errorAlerter);
         }
     }
 
     addFriend(id) { /* {{{ */
         post("me/friends", { "player_id": id })
-        .then(() => this.setState({friend_request_sent: true}));
+        .then(() => this.setState({friend_request_sent: true}))
+        .catch(errorAlerter);
     } /* }}} */
     removeFriend(id) { /* {{{ */
         swal({
@@ -266,7 +271,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                 friend_request_sent: false,
                 friend_request_received: false,
                 is_friend: false
-            }));
+            }))
+            .catch(errorAlerter);
         })
         .catch(ignore);
     } /* }}} */
@@ -276,7 +282,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             friend_request_sent: false,
             friend_request_received: false,
             is_friend: true
-        }));
+        }))
+        .catch(errorAlerter);
     } /* }}} */
     generateAPIKey() { /* {{{ */
         if (!confirm("Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?")) {
@@ -285,14 +292,16 @@ export class User extends React.PureComponent<UserProperties, any> {
         post("ui/bot/generateAPIKey", { "bot_id": this.state.user.id })
         .then((res) => this.setState({
             bot_apikey: res.bot_apikey
-        }));
+        }))
+        .catch(errorAlerter);
     } /* }}} */
     saveBot() { /* {{{ */
         put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
             swal("Bot Engine updated");
             this.resolve(this.props);
-        });
+        })
+        .catch(errorAlerter);
     } /* }}} */
     pm() { /* {{{ */
         getPrivateChat(this.user_id).open();
@@ -352,7 +361,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                     id: this.user_id,
                     icon: res.icon,
                 });
-            });
+            })
+            .catch(errorAlerter);
         })
         .catch(errorAlerter);
     }}}
@@ -759,8 +769,6 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>
                     </Card>
                 }
-
-                <ServerTimeDisplay />
 
                 {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
                 <GameList list={this.state.active_games} player={user}/>

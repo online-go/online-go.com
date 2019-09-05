@@ -55,13 +55,13 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }
 
     componentDidMount() {
-        this.refresh(this.state.player_id);
+        this.refresh(this.state.player_id).then(ignore).catch(ignore);
     }
     componentWillReceiveProps(next_props) {
         let update: any = {};
 
         if (this.props.match.params.player_id !== next_props.match.params.player_id) {
-            this.refresh(parseInt(next_props.match.params.player_id));
+            this.refresh(parseInt(next_props.match.params.player_id)).then(ignore).catch(ignore);
             update.player_id = parseInt(next_props.match.params.player_id);
             update.games_checked = {};
         }
@@ -183,7 +183,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             files = files.filter((file) => /.sgf$/i.test(file.name));
             Promise.all(files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)))
             .then(() => {
-                this.refresh(this.props.match.params.player_id);
+                this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
             })
             .catch(errorAlerter);
         } else {
@@ -243,7 +243,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             delete_entries: Object.keys(this.state.games_checked)
         })
         .then(() => {
-            this.refresh(this.state.player_id);
+            this.refresh(this.state.player_id).then(ignore).catch(ignore);
         })
         .catch(errorAlerter);
         this.setState({"games_checked": {}});

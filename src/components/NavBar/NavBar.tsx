@@ -22,7 +22,7 @@ import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
-import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore} from "misc";
+import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore, errorLogger} from "misc";
 import {LineText} from "misc-ui";
 import {challenge, createDemoBoard} from "ChallengeModal";
 import {openNewGameModal} from "NewGameModal";
@@ -67,11 +67,12 @@ function toggleTheme() {
 }
 let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
-function logout() {
+export function logout() {
     get("/api/v0/logout").then((config) => {
         data.set(cached.config, config);
         window.location.href = '/';
-    });
+    })
+    .catch(errorLogger);
 }
 
 
@@ -328,6 +329,10 @@ export class NavBar extends React.PureComponent<{}, any> {
             {/* Right Nav */}
             {user &&
             <div className={"rightnav " + (this.state.right_nav_active ? "active" : "")}>
+                <div style={{'textAlign': 'right'}}>
+                    <Player user={user}  disable-cache-update />
+                </div>
+
                 <NotificationList ref="notification_list" />
 
                 <LineText>{_("Theme")}</LineText>

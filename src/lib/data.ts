@@ -26,7 +26,7 @@ let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
 let last_id = 0;
 
-export function set(key: string, value: any | undefined): any {
+export function setWithoutEmit(key: string, value: any | undefined): any {
     if (value === undefined) {
         remove(key);
         return value;
@@ -39,6 +39,11 @@ export function set(key: string, value: any | undefined): any {
         console.warn(`Failed to save setting ogs.${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`);
     }
 
+    return value;
+}
+
+export function set(key: string, value: any | undefined): any {
+    setWithoutEmit(key, value);
     event_emitter.emit(key, value);
     return value;
 }

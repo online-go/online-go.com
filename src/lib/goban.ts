@@ -54,7 +54,7 @@ export class Goban extends OGSGoban {
         return window.location.pathname;
     }
 
-    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {
         switch (preferences.get('board-labeling')) {
             case 'A1':
                 return 'A1';
@@ -70,7 +70,7 @@ export class Goban extends OGSGoban {
                         return 'A1';
                 }
         }
-    }}}
+    }
 
     getShowMoveNumbers():boolean {
         return preferences.get("show-move-numbers");

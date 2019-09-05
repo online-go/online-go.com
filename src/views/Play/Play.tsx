@@ -26,7 +26,7 @@ import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl, usedForCheating} from "TimeControl";
 import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
-import {errorAlerter, rulesText, timeControlSystemText, dup, uuid} from "misc";
+import {errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore} from "misc";
 import {Player} from "Player";
 import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
@@ -68,6 +68,7 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     componentDidMount() {{{
+        window.document.title = _("Play");
         this.seekgraph = new SeekGraph({
             canvas: this.canvas
         });
@@ -141,7 +142,7 @@ export class Play extends React.Component<PlayProperties, any> {
         let corr = [];
         for (let i in challenges) {
             let C = challenges[i];
-            player_cache.fetch(C.user_id).then(() => 0); /* just get the user data ready ready if we don't already have it */
+            player_cache.fetch(C.user_id).then(() => 0).catch(ignore); /* just get the user data ready ready if we don't already have it */
             C.ranked_text = C.ranked ? _("Yes") : _("No");
             if (C.handicap === -1) {
                 C.handicap_text = _("Auto");
@@ -608,15 +609,24 @@ export class Play extends React.Component<PlayProperties, any> {
                                 (((C.eligible || C.user_challenge) && !C.removed) &&
                                  (C.komi !== null ||
                                   usedForCheating(C.time_control_parameters) ||
-                                  (C.handicap_text !== "Auto" && C.handicap_text !== "No"))
+                                  ((C.handicap !== 0 && C.handicap !== -1)))
                                    || null) &&
                                 <React.Fragment>
                                  <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
                                  <p className="cheat-alert-tooltiptext">
                                     {
-                                        (C.komi !== null ? "Custom komi: " + C.komi + ". " : "") +
-                                        (usedForCheating(C.time_control_parameters) ? "Unusual time setting. " : "" ) +
-                                        ((C.handicap_text !== "Auto" && C.handicap_text !== "No") ? "Custom handicap: " + C.handicap_text : "")
+                                        (C.komi !== null ?
+                                            pgettext("Warning for users accepting game", "Custom komi") + ": " + C.komi + " "
+                                            : ""
+                                        ) +
+                                        (usedForCheating(C.time_control_parameters) ?
+                                            pgettext("Warning for users accepting game", "Unusual time setting") + " "
+                                            : ""
+                                        ) +
+                                        ((C.handicap !== 0 && C.handicap !== -1) ?
+                                            pgettext("Warning for users accepting game", "Custom handicap") + ": " + C.handicap_text
+                                            : ""
+                                        )
                                     }
                                 </p>
                                 </React.Fragment>

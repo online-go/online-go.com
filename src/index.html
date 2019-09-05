@@ -73,21 +73,6 @@
       {{EXTRA_CONFIG}}
   </head>
   <body>
-      <amex:init client_id="{{AMEX_CLIENT_ID}}" env="{{AMEX_ENV}}" callback="amexExpressCheckout"></amex:init>
-      <div id='amex-express-checkout'></div>
-      <script>
-          var amex_express_checkout_callback = null;
-          function amexExpressCheckout(response) {
-              if (amex_express_checkout_callback) {
-                  console.log("Amex express checkout completed, routing details to server.");
-                  amex_express_checkout_callback(response);
-              } else {
-                  console.error("No Amex express checkout callback registered, your card has not been charged.");
-              }
-          }
-      </script>
-
-
       <script>
         try {
             document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');

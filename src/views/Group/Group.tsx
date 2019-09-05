@@ -20,7 +20,7 @@ import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, del, put, get, abort_requests_in_flight} from "requests";
-import {errorAlerter, ignore} from "misc";
+import {errorAlerter, ignore, slugify} from "misc";
 import * as data from "data";
 import {Card} from "material";
 import {Player, setExtraActionCallback} from "Player";
@@ -35,7 +35,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
-
+import {EmbeddedChat} from "Chat";
 
 
 declare var swal;
@@ -52,6 +52,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         news;
         new_news_title;
         new_news_body;
+        tournament_record_table;
     };
 
     constructor(props) {
@@ -91,6 +92,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
+        window.document.title = _("Group");
         this.resolve(parseInt(this.props.match.params.group_id));
     }}}
     componentWillUnmount() {{{
@@ -107,6 +109,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         let user = data.get("user");
 
         get("groups/%%", group_id).then((group) => {
+            window.document.title = group.name;
+
             let is_admin = false;
 
             for (let admin of group.admins) {
@@ -203,6 +207,28 @@ export class Group extends React.PureComponent<GroupProperties, any> {
 
     createTournament = () => {{{
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
+    }}}
+    createTournamentRecord = () => {{{
+        swal({
+            text: _("Tournament Name"),
+            input: "text",
+            showCancelButton: true,
+        })
+        .then((name) => {
+            if (!name) {
+                return;
+            }
+
+            post("tournament_records/", {
+                group: this.state.group_id,
+                name: name,
+            })
+            .then((res) => {
+                browserHistory.push(`/tournament-record/${res.id}/${slugify(name)}`);
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
     }}}
     setGroupName = (ev) => {{{
         this.setState({group: Object.assign({}, this.state.group, {name: ev.target.value})});
@@ -435,7 +461,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                          {_("Create news post")}
                                                      </button>
                                                      <button className="primary sm" onClick={this.createTournament}>
-                                                         {_("Create Tournament")}
+                                                         {_("Create tournament")}
+                                                     </button>
+                                                     <button className="primary sm" onClick={this.createTournamentRecord}>
+                                                         {_("Create tournament record")}
                                                      </button>
                                                   </div>
                                               )
@@ -444,7 +473,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                     {_("Leave Group")}
                                                  </button>
                                                  <button className="primary sm" onClick={this.createTournament}>
-                                                     {_("Create Tournament")}
+                                                     {_("Create tournament")}
+                                                 </button>
+                                                 <button className="primary sm" onClick={this.createTournamentRecord}>
+                                                     {_("Create tournament record")}
                                                  </button>
                                               </div>
                                         : group.is_public
@@ -576,27 +608,65 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
+                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChat channel={`group-${this.state.group.id}`} updateTitle={false} />}
+
                     <Card>
-                        <h3>{_("Open Tournaments")}</h3>
-                        <TournamentList filter={{
-                            started__isnull: true,
-                            ended__isnull: true,
-                            group: this.props.match.params.group_id,
-                        }}/>
+                        {(group.has_tournament_records || null) &&
+                            <div>
+                                <h3>{_("Tournament Records")}</h3>
 
-                        <h3>{_("Active Tournaments")}</h3>
-                        <TournamentList filter={{
-                            started__isnull: false,
-                            ended__isnull: true,
-                            group: this.props.match.params.group_id,
-                        }}/>
 
-                        <h3>{_("Finished Tournaments")}</h3>
-                        <TournamentList filter={{
-                            started__isnull: false,
-                            ended__isnull: false,
-                            group: this.props.match.params.group_id,
-                        }}/>
+                                <PaginatedTable
+                                    className="TournamentRecord-table"
+                                    ref="tournament_record_table"
+                                    name="tournament-record-table"
+                                    source={`tournament_records/?group=${group.id}`}
+                                    orderBy={["-created"]}
+                                    columns={[
+                                        {header: _("Tournament"),  className: () => "name",
+                                         render: (tournament) => (
+                                             <div className="tournament-name">
+                                                <Link to={`/tournament-record/${tournament.id}/${slugify(tournament.name)}`}>{tournament.name}</Link>
+                                             </div>
+                                         )
+                                        },
+                                    ]}
+                                />
+                            </div>
+                        }
+
+                        {(group.has_open_tournaments || null) &&
+                            <div>
+                                <h3>{_("Open Tournaments")}</h3>
+                                <TournamentList filter={{
+                                    started__isnull: true,
+                                    ended__isnull: true,
+                                    group: this.props.match.params.group_id,
+                                }}/>
+                            </div>
+                        }
+
+                        {(group.has_active_tournaments || null) &&
+                            <div>
+                                <h3>{_("Active Tournaments")}</h3>
+                                <TournamentList filter={{
+                                    started__isnull: false,
+                                    ended__isnull: true,
+                                    group: this.props.match.params.group_id,
+                                }}/>
+                            </div>
+                        }
+
+                        {(group.has_finished_tournaments || null) &&
+                            <div>
+                                <h3>{_("Finished Tournaments")}</h3>
+                                <TournamentList filter={{
+                                    started__isnull: false,
+                                    ended__isnull: false,
+                                    group: this.props.match.params.group_id,
+                                }}/>
+                            </div>
+                        }
                     </Card>
 
                 </div>

@@ -31,7 +31,7 @@ import online_status from "online_status";
 import * as data from "data";
 import cached from "cached";
 import * as preferences from "preferences";
-import {errorAlerter} from "misc";
+import {errorAlerter, ignore} from "misc";
 import {DismissableNotification} from "DismissableNotification";
 import {FriendList} from "FriendList";
 import {ChallengesList} from "./ChallengesList";
@@ -41,7 +41,6 @@ import {ProfileCard} from "ProfileCard";
 import {notification_manager} from "Notifications";
 import {ActiveAnnouncements} from "Announcements";
 import {FabX, FabCheck} from "material";
-import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 
 
@@ -92,7 +91,7 @@ export class Overview extends React.Component<{}, any> {
     componentDidMount() {
         this.setTitle();
         notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
-        this.refresh();
+        this.refresh().then(ignore).catch(ignore);
     }
 
     componentDidUpdate() {
@@ -126,9 +125,6 @@ export class Overview extends React.Component<{}, any> {
                     <EmailBanner />
                     <ActiveAnnouncements  />
                     <ChallengesList onAccept={() => this.refresh()} />
-
-
-                    <ServerTimeDisplay />
 
                     {((user && user.provisional) || null) &&
                         <DismissableNotification

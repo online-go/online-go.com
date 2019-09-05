@@ -17,7 +17,7 @@
 
 import {get, put} from "requests";
 import * as data from "data";
-import {ignore, errorAlerter} from "misc";
+import {ignore, errorAlerter, errorLogger} from "misc";
 import ITC from "ITC";
 import cached from 'cached';
 import * as player_cache from "player_cache";
@@ -84,7 +84,8 @@ function ignoreUser(uid, dont_fetch = false) {
             } else {
                 console.error("Can't ignore a moderator.");
             }
-        });
+        })
+        .catch(errorLogger);
     }
 }
 function unIgnoreUser(uid) {

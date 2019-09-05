@@ -43,6 +43,10 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
         };
     }
 
+    componentDidMount() {
+        window.document.title = _("Tournaments");
+    }
+
     setTabArchive = () => this.setTab("archive");
     setTabSchedule = () => this.setTab("schedule");
     setTabLive = () => this.setTab("live");

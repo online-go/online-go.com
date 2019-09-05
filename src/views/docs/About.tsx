@@ -20,6 +20,7 @@ import {_} from "translate";
 import {Link} from "react-router-dom";
 import {termination_socket} from "sockets";
 import * as data from "data";
+import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 declare var ogs_release;
 declare var ogs_version;
@@ -34,6 +35,7 @@ export class About extends React.Component<{}, any> {
     }
 
     componentWillMount() {
+        window.document.title = _("About");
         termination_socket.on("connect", () => {
             console.log("Got connect[term]");
             termination_socket.send("versions", true, (res) => this.setState({termination_versions: res}));
@@ -85,6 +87,9 @@ export class About extends React.Component<{}, any> {
                         <div><span className="version-details">API: {server_version}</span></div>
                     </div>
 
+                    <div className='server-time'>
+                        <ServerTimeDisplay />
+                    </div>
                 </div>
             </div>
         );

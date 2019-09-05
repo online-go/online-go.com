@@ -50,6 +50,7 @@ import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
+import {toast} from "toast";
 
 declare var swal;
 
@@ -113,6 +114,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     leave_pushed_analysis: () => void = null;
     stashed_conditional_moves = null;
     volume_sound_debounce: any = null;
+    copied_node: MoveTree = null;
 
     white_username: string = "White";
     black_username: string = "Black";
@@ -132,7 +134,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
-            analyze_pencil_color: "#8DDD3C",
+            analyze_pencil_color: "#004cff",
             show_submit: false,
             user_is_player: false,
             zen_mode: false,
@@ -220,7 +222,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban_setModeDeferredPlay = this.goban_setModeDeferredPlay.bind(this);
         this.stopEstimatingScore = this.stopEstimatingScore.bind(this);
         this.setStrictSekiMode = this.setStrictSekiMode.bind(this);
-        this.goban_deleteBranch = this.goban_deleteBranch.bind(this);
         this.rematch = this.rematch.bind(this);
         this.onStoneRemovalAutoScore = this.onStoneRemovalAutoScore.bind(this);
         this.onStoneRemovalAccept = this.onStoneRemovalAccept.bind(this);
@@ -533,6 +534,64 @@ export class Game extends React.PureComponent<GameProperties, any> {
             });
             this.goban.on("review.sync-to-current-move", () => {
                 this.syncToCurrentReviewMove();
+            });
+
+            let stashed_move_string = null;
+            let stashed_review_id = null;
+            /* If we lose connection, save our place when we reconnect so we can jump to it. */
+            this.goban.on("review.load-start", () => {
+                if (this.goban.review_controller_id !== data.get("user").id) {
+                    return;
+                }
+
+                stashed_review_id = this.goban.review_id;
+                stashed_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+                if (stashed_move_string.length === 0) {
+                    stashed_review_id = null;
+                    stashed_move_string = null;
+                }
+            });
+            this.goban.on("review.load-end", () => {
+                if (this.goban.review_controller_id !== data.get("user").id) {
+                    return;
+                }
+
+                if (stashed_move_string && stashed_review_id === this.goban.review_id) {
+                    let cur_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+
+                    let prev_last_review_message = this.goban.getLastReviewMessage();
+                    let moves = GoMath.decodeMoves(stashed_move_string, this.goban.width, this.goban.height);
+
+                    this.goban.engine.jumpTo(this.goban.engine.move_tree);
+                    for (let move of moves) {
+                        if (move.edited) {
+                            this.goban.engine.editPlace(
+                                move.x,
+                                move.y,
+                                move.color,
+                                false
+                            );
+                        }
+                        else {
+                            this.goban.engine.place(
+                                move.x,
+                                move.y,
+                                false,
+                                false,
+                                true,
+                                false,
+                                false
+                            );
+                        }
+                    }
+                    /* This is designed to kinda work around race conditions
+                     * where we start sending out review moves before we have
+                     * authenticated */
+                    setTimeout(() => {
+                        this.goban.setLastReviewMessage(prev_last_review_message);
+                        this.goban.syncReviewMove();
+                    }, 100);
+                }
             });
         }
 
@@ -859,6 +918,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
+        for (let k of ['komi', 'rules', 'handicap']) {
+            this.goban.config[k] = this.goban.engine.config[k];
+        }
         openGameInfoModal(
             this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
@@ -907,8 +969,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.state.ai_review_enabled) {
             this.goban.setHeatmap(null);
             this.goban.setColoredCircles(null);
-            this.goban.engine.cur_move.clearMarks();
-            this.goban.setMode("play");
+            let move_tree = this.goban.engine.move_tree;
+            while (move_tree.next(true)) {
+                move_tree = move_tree.next(true);
+                move_tree.clearMarks();
+            }
+            this.goban.redraw();
         }
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
     }
@@ -1500,7 +1566,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     goban_setModeDeferredPlay() {
         this.goban.setModeDeferred("play");
     }
-    goban_deleteBranch() {
+    goban_deleteBranch = () => {
         if (this.state.mode !== "analyze") {
             return;
         }
@@ -1517,8 +1583,82 @@ export class Game extends React.PureComponent<GameProperties, any> {
             swal({text: _(`The current position is not an explored branch, so there is nothing to delete`)});
         } else {
             swal({text: _("Are you sure you wish to remove this move branch?"), showCancelButton: true})
-            .then(() => this.goban.deleteBranch())
+            .then(() => {
+                this.goban.deleteBranch();
+                this.goban.syncReviewMove();
+            })
             .catch(() => 0);
+        }
+    }
+    goban_copyBranch = () => {
+        if (this.state.mode !== "analyze") {
+            return;
+        }
+
+        try {
+            /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
+            if (!window.getSelection().isCollapsed) {
+                return;
+            }
+        } catch (e) {
+        }
+
+        this.copied_node = this.goban.engine.cur_move;
+        toast(<div>{_("Branch copied")}</div>, 1000);
+    }
+    goban_pasteBranch = () => {
+        if (this.state.mode !== "analyze") {
+            return;
+        }
+
+        try {
+            /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
+            if (!window.getSelection().isCollapsed) {
+                return;
+            }
+        } catch (e) {
+        }
+
+        if (this.copied_node) {
+            let paste = (base:MoveTree, source:MoveTree) => {
+                this.goban.engine.jumpTo(base);
+                if (source.edited) {
+                    this.goban.engine.editPlace(
+                        source.x,
+                        source.y,
+                        source.player,
+                        false
+                    );
+                }
+                else {
+                    this.goban.engine.place(
+                        source.x,
+                        source.y,
+                        false,
+                        false,
+                        true,
+                        false,
+                        false
+                    );
+                }
+                let cur = this.goban.engine.cur_move;
+
+                if (source.trunk_next) {
+                    paste(cur, source.trunk_next);
+                }
+                for (let branch of source.branches) {
+                    paste(cur, branch);
+                }
+            };
+
+            try {
+                paste(this.goban.engine.cur_move, this.copied_node);
+            } catch (e) {
+                errorAlerter(_("A move conflict has been detected"));
+            }
+            this.goban.syncReviewMove();
+        } else {
+            console.log("Nothing copied or cut to paste");
         }
     }
     setStrictSekiMode(ev) {
@@ -1569,7 +1709,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     setVolume = (ev) => {
         const new_volume = parseFloat(ev.target.value);
         this._setVolume(new_volume);
-        this.saveVolume(new_volume);
     }
     _setVolume(volume) {
         let enabled = volume > 0;
@@ -1587,10 +1726,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
-    }
 
-    saveVolume = (volume) => {
-        let enabled = volume > 0;
         preferences.set("sound-volume", volume);
         preferences.set("sound-enabled", enabled);
     }
@@ -2023,19 +2159,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </Resizable>
 
 
-
-                        <div style={{padding: "0.5em"}}>
-                        <div className="input-group">
-                            <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
-                                value={this.state.variation_name}
-                                onChange={this.updateVariationName}
-                                onKeyDown={this.variationKeyPress}
-                                disabled={user.anonymous}
-                                />
-                                {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>}
-                                {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Record")}</button>}
-                        </div>
-                        </div>
+                        {(!this.state.zen_mode || null)
+                            && <div style={{padding: "0.5em"}}>
+                                <div className="input-group">
+                                    <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
+                                        value={this.state.variation_name}
+                                        onChange={this.updateVariationName}
+                                        onKeyDown={this.variationKeyPress}
+                                        disabled={user.anonymous}
+                                        />
+                                        {(this.state.chat_log !== "malkovich" || null) && <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>}
+                                        {(this.state.chat_log === "malkovich" || null) && <button className="sm malkovich" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Record")}</button>}
+                                </div>
+                               </div>
+                        }
                     </div>
                 }{/* } */}
                 {(state.mode === "play" && state.phase === "play" && this.goban.isAnalysisDisabled() && state.cur_move_number < state.official_move_number || null) &&
@@ -2133,16 +2270,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
             */}
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.stone_alternate}
+                     title={_("Place alternating stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && (this.state.analyze_subtool !== "black" && this.state.analyze_subtool !== "white")) ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/black-white.png"}/>
                 </button>
 
                 <button onClick={this.set_analyze_tool.stone_black}
+                    title={_("Place black stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && this.state.analyze_subtool === "black") ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/black.png"}/>
                 </button>
 
                 <button onClick={this.set_analyze_tool.stone_white}
+                    title={_("Place white stones")}
                      className={"stone-button " + ((this.state.analyze_tool === "stone" && this.state.analyze_subtool === "white") ? "active" : "")}>
                      <img alt="alternate" src={data.get("config.cdn_release") + "/img/white.png"}/>
                 </button>
@@ -2150,42 +2290,57 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.draw}
+                    title={_("Draw on the board with a pen")}
                     className={(this.state.analyze_tool === "draw") ? "active" : ""}
                     >
                     <i className="fa fa-pencil"></i>
                 </button>
-                <button onClick={this.clearAnalysisDrawing}>
+                <button onClick={this.clearAnalysisDrawing} title={_("Clear pen marks")}>
                     <i className="fa fa-eraser"></i>
                 </button>
             </div>
-            <input type="color" value={this.state.analyze_pencil_color} onChange={this.setPencilColor}/>
+            <input type="color" value={this.state.analyze_pencil_color}  title={_("Select pen color")} onChange={this.setPencilColor}/>
 
-            <button onClick={this.goban_deleteBranch}>
-                <i className="fa fa-trash"></i>
-            </button>
+            <div className="btn-group">
+                <button onClick={this.goban_copyBranch} title={_("Copy this branch")}>
+                    <i className="fa fa-clone"></i>
+                </button>
+                <button disabled={this.copied_node === null} onClick={this.goban_pasteBranch} title={_("Paste branch")}>
+                    <i className="fa fa-clipboard"></i>
+                </button>
+                <button onClick={this.goban_deleteBranch} title={_("Delete branch")}>
+                    <i className="fa fa-trash"></i>
+                </button>
+            </div>
 
             <div className="btn-group">
                 <button onClick={this.set_analyze_tool.label_letters}
+                    title={_("Place alphabetical labels")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "letters") ? "active" : ""}>
                     <i className="fa fa-font"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_numbers}
+                    title={_("Place numeric labels")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "numbers") ? "active" : ""}>
                     <i className="ogs-label-number"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_triangle}
+                    title={_("Place triangle marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "triangle") ? "active" : ""}>
                     <i className="ogs-label-triangle"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_square}
+                    title={_("Place square marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "square") ? "active" : ""}>
                     <i className="ogs-label-square"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_circle}
+                    title={_("Place circle marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "circle") ? "active" : ""}>
                     <i className="ogs-label-circle"></i>
                 </button>
                 <button onClick={this.set_analyze_tool.label_cross}
+                    title={_("Place X marks")}
                     className={(this.state.analyze_tool === "label" && this.state.analyze_subtool === "cross") ? "active" : ""}>
                     <i className="ogs-label-x"></i>
                 </button>
@@ -2367,6 +2522,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     frag_dock() {
         let goban = this.goban;
+        let supporter_ai_review_ready = (goban && (data.get("user").supporter || data.get("user").is_moderator) && goban.engine.phase === "finished" || null);
         let superuser_ai_review_ready = (goban && data.get("user").is_superuser && goban.engine.phase === "finished" || null);
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
@@ -2389,10 +2545,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } catch (e) {}
 
         let sgf_url = null;
+        let sgf_with_comments_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
         } else {
-            sgf_url = api1(`reviews/${this.review_id}/sgf`);
+            sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
+            sgf_with_comments_url = api1(`reviews/${this.review_id}/sgf`);
         }
 
         return (
@@ -2455,6 +2613,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                     : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
                 }
+                {(sgf_download_enabled && sgf_with_comments_url)
+                    && <a href={sgf_with_comments_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with comments")}</a>
+                }
                 {(mod || annul) && <hr/>}
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
@@ -2462,9 +2623,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
                 {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
 
-                {(superuser_ai_review_ready) && <hr/>}
-                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI review"}</a>}
-                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {"Full AI review"}</a>}
+                {(supporter_ai_review_ready) && <hr/>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI Review"}</a>}
+                {(supporter_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {_("Full AI Review")}</a>}
                 {(superuser_ai_review_ready) && <a onClick={this.delete_ai_reviews}><i className="fa fa-trash"></i> {"Delete AI reviews"}</a>}
             </Dock>
         );
@@ -2494,6 +2655,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 <KBShortcut shortcut="f6" action={this.set_analyze_tool.label_circle}/>
                 <KBShortcut shortcut="f7" action={this.set_analyze_tool.label_letters}/>
                 <KBShortcut shortcut="f8" action={this.set_analyze_tool.label_numbers}/>
+                <KBShortcut shortcut="ctrl-c" action={this.goban_copyBranch}/>
+                <KBShortcut shortcut="ctrl-v" action={this.goban_pasteBranch}/>
                 <KBShortcut shortcut="f9" action={this.set_analyze_tool.draw}/>
                 {((goban && goban.mode === "analyze") || null) && <KBShortcut shortcut="f10" action={this.set_analyze_tool.clear_and_sync}/>}
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch}/>

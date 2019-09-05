@@ -87,7 +87,7 @@ import { routes } from "./routes";
 
 //import {Promise} from "es6-promise";
 import {get} from "requests";
-import {errorAlerter} from "misc";
+import {errorAlerter, uuid} from "misc";
 import {close_all_popovers} from "popover";
 import * as sockets from "sockets";
 import {_} from "translate";
@@ -109,6 +109,13 @@ moment.locale(getPreferredLanguage());
 
 /*** Load our config ***/
 data.watch(cached.config, (config) => {
+    /* We do a pass where we set everything, and then we 'set' everything
+     * again to do the emits that we are expecting. Otherwise triggers
+     * that are depending on other parts of the config will fire without
+     * having up to date information (in particular user / auth stuff) */
+    for (let key in config) {
+        data.setWithoutEmit(`config.${key}`, config[key]);
+    }
     for (let key in config) {
         data.set(`config.${key}`, config[key]);
     }
@@ -129,6 +136,11 @@ data.watch("config.user", (user) => {
     window["user"] = user;
 });
 
+/***
+ * Setup a device UUID so we can logout other *devices* and not all other
+ * tabs with our new logout-other-devices button
+ */
+data.set('device.uuid', data.get('device.uuid', uuid()));
 
 /*** SweetAlert setup ***/
 swal.setDefaults({
@@ -203,7 +215,6 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 declare var gtag;
 
 
-/* ga history hook  */
 browserHistory.listen(location => {
     try {
         let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
@@ -220,6 +231,7 @@ browserHistory.listen(location => {
         }
 
         if (gtag) {
+            /* ga history hook  */
             window["gtag"]("config", 'UA-37743954-2', {
                 'page_path': cleaned_path,
                 'custom_map': {
@@ -227,6 +239,8 @@ browserHistory.listen(location => {
                 }
             });
         }
+
+        window.document.title = "OGS";
 
         close_all_popovers();
     } catch (e) {
