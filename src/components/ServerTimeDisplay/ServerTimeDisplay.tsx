@@ -17,45 +17,59 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import {_, interpolate} from "translate";
 
 interface ServerTimeDisplayProperties {}
 
 export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperties, any> {
+
     intervalID;
+
     constructor(props) {
         super(props);
         this.state = {
-            time: moment().utcOffset(0).format('dddd, HH:mm:ss')
+            time: moment().utcOffset(0)
         };
     }
+
     componentDidMount() {
         this.intervalID = setInterval(
             () => this.tick(),
             1000
         );
     }
+
     componentWillUnmount() {
         clearInterval(this.intervalID);
     }
+
     tick() {
         this.setState({
-            time: moment().utcOffset(0).format('dddd, HH:mm:ss')
+            time: moment().utcOffset(0)
         });
     }
+
     isWeekend() {
-        if (this.state.time.startsWith("Saturday") || this.state.time.startsWith("Sunday")) {
-            return " It is the weekend!"; 
-        } 
-        else { 
-            return " It is not the weekend.";
+        if (new Date().getUTCDay() === 6) {
+            return _(" It is the weekend!");
+        }
+        else if (new Date().getUTCDay() === 0) {
+            return _(" Weekend ends ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
+        }
+        else if (new Date().getUTCDay() === 5) {
+            return _(" Weekend starts ") + moment().utcOffset(0).endOf('day').fromNow() + ".";
+        }
+        else {
+            return _(" It is not the weekend.");
         }
     }
+
     render() {
         return (
             <div className="server-time-display">
                 <p>
                     <b>
-                    Current Server Time is: {this.state.time}.{this.isWeekend()}
+                    {_("Current Server Time is: ")}{this.state.time.format('dddd, LT')}.{this.isWeekend()}
                     </b>
                 </p>
             </div>

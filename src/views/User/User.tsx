@@ -760,7 +760,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                     </Card>
                 }
 
-                <ServerTimeDisplay></ServerTimeDisplay>
+                <ServerTimeDisplay />
 
                 {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
                 <GameList list={this.state.active_games} player={user}/>
