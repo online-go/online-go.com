@@ -722,7 +722,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
                                 <div className='powered-by-stripe'>
                                     <a href='https://stripe.com/'>
-                                        <img src={`${cdn_release}/powered_by_stripe.svg`} />
+                                        <img src={`${cdn_release}/img/powered_by_stripe.svg`} />
                                     </a>
                                 </div>
                             </div>
