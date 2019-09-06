@@ -50,9 +50,16 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                          render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },
 
                         {header: "System"     , render: (X) => X.system} ,
-                        {header: "URI"        , render: (X) => X.request_uri} ,
-                        {header: "Meta"       , render: (X) => <pre>{clean_meta(X.request_meta)}</pre>} ,
-                        {header: "Body"       , render: (X) => <pre>{clean_body(X.request_body)}</pre>} ,
+                        {header: "Event"      , render: (X) => {
+                            try {
+                                return JSON.parse(X.request_body).type;
+                            } catch (e) {
+                            }
+                            return "";
+                        }},
+                        //{header: "URI"        , render: (X) => X.request_uri} ,
+                        {header: "Meta"       , render: (X) => <pre className='meta'>{clean_meta(X.request_meta)}</pre>} ,
+                        {header: "Body"       , render: (X) => <pre className='body'>{clean_body(X.request_body)}</pre>} ,
                         {header: "Status"     , render: (X) => X.response_status_code} ,
                         {header: "Reponse"    , render: (X) => <pre>{clean_body(X.response_body)}</pre>} ,
                         {header: "Exception"  , render: (X) => <pre>{clean_exception(X.exception)}</pre>} ,
@@ -71,23 +78,48 @@ function clean_body(str:string):string {
     let obj:any = str;
     try {
         obj = JSON.parse(str);
+        console.log(obj);
     } catch (e) {
     }
 
     try {
-        obj = parseQuery(str);
+        if (typeof(obj) === "string") {
+            obj = parseQuery(str);
+        }
     } catch (e) {
     }
 
     try {
-        return JSON.stringify(obj, Object.keys(obj).sort(), 1);
-    } catch {
+        return orderedJsonStringify(obj);
+    } catch (e) {
     }
+
     return JSON.stringify(obj, null, 1);
 }
 function clean_exception(str:string):string {
     return str;
 }
+
+
+function sortObjByKey(value) {
+  return (typeof value === 'object') ?
+    (Array.isArray(value) ?
+      value.map(sortObjByKey) :
+      Object.keys(value).sort().reduce(
+        (o, key) => {
+          const v = value[key];
+          o[key] = sortObjByKey(v);
+          return o;
+        }, {})
+    ) :
+    value;
+}
+
+
+function orderedJsonStringify(obj) {
+  return JSON.stringify(sortObjByKey(obj));
+}
+
 
 function parseQuery(queryString) {
     let query = {};
