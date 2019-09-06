@@ -210,6 +210,7 @@ class NotificationManager {
     unread_notification_count;
     boards_to_move_on;
     active_boards;
+    all_boards_waiting;
     turn_offset;
     auth;
     event_emitter: TypedEventEmitter<Events>;
@@ -224,6 +225,7 @@ class NotificationManager {
         this.boards_to_move_on = {};
         this.active_boards = {};
         this.turn_offset = 0;
+        this.all_boards_waiting = false;
         browserHistory.listen(this.onNavigate);
     }}}
     setUser(user) {{{
@@ -243,15 +245,18 @@ class NotificationManager {
         //notificationPermissionRequest();
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
+            this.all_boards_waiting = false;
         }
 
         if (board_ids.length === 0) {
             for (let k in this.active_boards) {
                 board_ids.push(parseInt(this.active_boards[k].id));
+                this.all_boards_waiting = true;
             }
         }
 
         if (board_ids.length === 0) {
+            this.all_boards_waiting = false;
             return;
         }
 
@@ -474,7 +479,9 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     constructor(props) {
         super(props);
         this.state = {
-            count: Object.keys(notification_manager.boards_to_move_on).length
+            count: Object.keys(notification_manager.boards_to_move_on).length,
+            total: Object.keys(notification_manager.active_boards).length,
+            waiting: notification_manager.all_boards_waiting
         };
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
@@ -492,7 +499,7 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
-                <span className={this.state.count > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
+                <span className={this.state.total > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
             </span>
        );
     }
@@ -562,9 +569,8 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <div className="NotificationList">
-                //I think this line below is messing with display of the notification when set to 0
                 {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
-                {this.state.list.length !== 0 &&
+                {this.state.list.length !== 0 || notification_manager.all_boards_waiting === true &&
                     <div className="contents">
                         <div className="list">
                             {this.state.list.map((notification, idx) => (
