@@ -2284,7 +2284,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         /* Heatmap */
         /* {{{ */
-        if (this.heatmap) {
+        if (this.heatmap && this.mode === "analyze") {
             if (this.heatmap[j][i] > 0.001) {
                 let color = "#00FF00";
                 ctx.lineCap = "square";
@@ -2329,7 +2329,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         /* Colored stones */
         /* {{{ */
-        if (this.colored_circles) {
+        if (this.colored_circles && this.mode === "analyze") {
             if (this.colored_circles[j][i]) {
                 let circle = this.colored_circles[j][i];
                 let color = circle.color;
@@ -2579,7 +2579,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         {{{
             let letter = null;
             let transparent = false;
-            if ("letter" in pos && pos.letter.length > 0) {
+            if (this.mode === "analyze" && "letter" in pos && pos.letter.length > 0) {
                 letter = pos.letter;
             }
 
@@ -2656,7 +2656,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
 
-            if (pos.circle || hovermark === "circle") {
+            if ((pos.circle || hovermark === "circle")  && this.mode === "analyze") {
                 ctx.lineCap = "round";
                 ctx.save();
                 ctx.beginPath();
@@ -2670,7 +2670,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.restore();
                 draw_last_move = false;
             }
-            if (pos.triangle || pos.chat_triangle || pos.sub_triangle || altmarking === "triangle" || hovermark === "triangle") {
+            if (((pos.triangle || pos.sub_triangle || hovermark === "triangle") && this.mode === "analyze") || pos.chat_triangle || altmarking === "triangle" ) {
                 let scale = 1.0;
                 let oy = 0.0;
                 if (pos.sub_triangle) {
@@ -2699,7 +2699,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.restore();
                 draw_last_move = false;
             }
-            if (pos.cross || hovermark === "cross") {
+            if ((pos.cross || hovermark === "cross") && this.mode === "analyze") {
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
@@ -2718,7 +2718,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 draw_last_move = false;
             }
 
-            if (pos.square || hovermark === "square") {
+            if ((pos.square || hovermark === "square") && this.mode === "analyze") {
                 ctx.lineCap = "square";
                 ctx.save();
                 ctx.beginPath();
@@ -2816,14 +2816,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         ret += stone_color + ",";
 
         /* Draw heatmap */
-        if (this.heatmap) {
+        if (this.heatmap && this.mode === "analyze") {
             if (this.heatmap[j][i] > 0.001) {
                 ret += "heat " + this.heatmap[j][i] + ",";
             }
         }
 
         /* Colored stones */
-        if (this.colored_circles) {
+        if (this.colored_circles && this.mode === "analyze") {
             if (this.colored_circles[j][i]) {
                 let circle = this.colored_circles[j][i];
                 ret += "circle " + circle.color;
@@ -3039,23 +3039,23 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         {{{
             let hovermark;
             if (this.analyze_tool === "label" && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)) {
-                if (this.analyze_subtool === "triangle" || this.analyze_subtool === "square" || this.analyze_subtool === "cross" || this.analyze_subtool === "circle") {
+                if (this.mode === "analyze" && (this.analyze_subtool === "triangle" || this.analyze_subtool === "square" || this.analyze_subtool === "cross" || this.analyze_subtool === "circle")) {
                     hovermark = this.analyze_subtool;
                     ret += "hover " + this.analyze_subtool + ",";
                 }
             }
 
 
-            if (pos.circle) {
+            if (pos.circle && this.mode === "analyze") {
                 ret += "circle,";
             }
-            if (pos.triangle || pos.chat_triangle || altmarking === "triangle") {
+            if ((pos.triangle && this.mode === "analyze") || pos.chat_triangle || altmarking === "triangle") {
                 ret += "triangle,";
             }
-            if (pos.cross) {
+            if (pos.cross && this.mode === "analyze") {
                 ret += "cross,";
             }
-            if (pos.square) {
+            if (pos.square && this.mode === "analyze") {
                 ret += "square,";
             }
         }}}
