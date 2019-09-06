@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import createHistory from 'history/createBrowserHistory';
+import {createBrowserHistory} from 'history';
 
-export const browserHistory = createHistory();
+export const browserHistory = createBrowserHistory();
 window['browserHistory'] = browserHistory;

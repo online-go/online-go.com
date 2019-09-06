@@ -44,7 +44,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state));
         this.time_control = makeTimeControlParameters(this.state);
     } /* }}} */
-    componentWillReceiveProps(next_props: TimeControlPickerProperties) {{{
+    UNSAFE_componentWillReceiveProps(next_props: TimeControlPickerProperties) {{{
         let update: any = {};
         if (this.props.value !== next_props.value) {
             update = Object.assign(update, makeTimeControlParameters(next_props.value));

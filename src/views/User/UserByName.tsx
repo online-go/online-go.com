@@ -47,7 +47,7 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
         }
     }
 
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (next_props.match.params.username !== this.props.match.params.username) {
             let user = player_cache.lookup_by_username(next_props.match.params.username);
 

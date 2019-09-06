@@ -60,7 +60,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         });
     }
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {{{
         setTimeout(() => {
             /* Defer this get so we can load whatever page we're on first */
             get("announcements")

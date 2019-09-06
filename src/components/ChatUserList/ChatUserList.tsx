@@ -41,10 +41,10 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
         super(props);
         this.state = {tick: 0};
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.init(this.props.channel, this.props.display_name);
     }
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.channel !== next_props.channel) {
             this.deinit();
             this.init(next_props.channel, next_props.display_name);

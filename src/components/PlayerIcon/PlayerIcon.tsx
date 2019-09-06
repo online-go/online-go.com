@@ -88,7 +88,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         this.subscriber.off(this.subscriber.players());
     }
 
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         let current_id = this.getId(this.props);
         let next_id = this.getId(next_props);
         if (current_id !== next_id) {

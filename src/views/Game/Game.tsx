@@ -235,12 +235,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban_resumeGame = this.goban_resumeGame.bind(this);
         this.updateVariationName = this.updateVariationName.bind(this);
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         setActiveGameView(this);
         setExtraActionCallback(this.renderExtraPlayerActions);
         $(window).on("focus", this.onFocus);
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (
             this.props.match.params.game_id !== nextProps.match.params.game_id ||
             this.props.match.params.review_id !== nextProps.match.params.review_id
@@ -263,7 +263,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
-            console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
+            console.log("UNSAFE_componentWillReceiveProps called with same game id: ", this.props, nextProps);
         }
     }
     componentDidUpdate(prevProps, prevState) {

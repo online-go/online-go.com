@@ -59,7 +59,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         this.reload();
         $(window).on("resize", this.re_render);
     }
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
     }
     componentDidUpdate(old_props, old_state) {
         if (this.props.ladderId !== old_props.ladderId) {

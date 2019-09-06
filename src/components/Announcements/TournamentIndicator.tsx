@@ -31,7 +31,7 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
             tournament: null
         };
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         data.watch("active-tournament", (tournament) => {
             this.setState({tournament: tournament});
             if (this.update_interval) {
