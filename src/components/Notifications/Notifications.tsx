@@ -224,8 +224,8 @@ class NotificationManager {
 
         this.boards_to_move_on = {};
         this.active_boards = {};
-        this.turn_offset = 0;
         this.all_boards_waiting = false;
+        this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
     setUser(user) {{{
@@ -276,7 +276,6 @@ class NotificationManager {
                 break;
             }
         }
-
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
         if (ev && shouldOpenNewTab(ev)) {
@@ -570,7 +569,7 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
         return (
             <div className="NotificationList">
                 {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
-                {this.state.list.length !== 0 || notification_manager.all_boards_waiting === true &&
+                {this.state.list.length !== 0 &&
                     <div className="contents">
                         <div className="list">
                             {this.state.list.map((notification, idx) => (
