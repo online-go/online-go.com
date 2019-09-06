@@ -211,7 +211,6 @@ class NotificationManager {
     unread_notification_count;
     boards_to_move_on;
     active_boards;
-    all_boards_waiting;
     turn_offset;
     auth;
     event_emitter: TypedEventEmitter<Events>;
@@ -225,7 +224,6 @@ class NotificationManager {
 
         this.boards_to_move_on = {};
         this.active_boards = {};
-        this.all_boards_waiting = false;
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
@@ -243,7 +241,6 @@ class NotificationManager {
     advanceToNextBoard(ev?) {{{
         let game_id = getCurrentGameId() || 0;
         let board_ids = [];
-        this.all_boards_waiting = false;
         //notificationPermissionRequest();
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
@@ -253,11 +250,9 @@ class NotificationManager {
             for (let k in this.active_boards) {
                 board_ids.push(parseInt(this.active_boards[k].id));
             }
-            this.all_boards_waiting = true;
         }
 
         if (board_ids.length === 0) {
-            this.all_boards_waiting = false;
             return;
         }
 
@@ -482,7 +477,6 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
         this.state = {
             count: Object.keys(notification_manager.boards_to_move_on).length,
             total: Object.keys(notification_manager.active_boards).length,
-            waiting: notification_manager.all_boards_waiting
         };
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
@@ -500,7 +494,6 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
         notification_manager.advanceToNextBoard(ev);
     }
 
-    //findmeBHydden
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
