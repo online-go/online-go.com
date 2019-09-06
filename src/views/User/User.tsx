@@ -73,7 +73,6 @@ let inlineBlock = {display: "inline-block"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
-let time = new Date().toLocaleString();
 
 export class User extends React.PureComponent<UserProperties, any> {
     refs: {
