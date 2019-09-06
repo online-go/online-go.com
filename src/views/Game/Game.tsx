@@ -1436,6 +1436,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     estimateScore():boolean {
+        let user = data.get("user");
+        let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
+
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
+            return null;
+        }
+
         if (this.goban.engine.phase === "stone removal") {
             console.log("Cowardly refusing to enter score estimation phase while stone removal phase is active");
             return false;
@@ -2604,7 +2611,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
-                {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
+                {game &&
+                    <a onClick={this.estimateScore} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
+                        <i className="fa fa-tachometer"></i> {_("Estimate score")}
+                    </a>}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
