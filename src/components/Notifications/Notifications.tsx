@@ -34,6 +34,7 @@ declare let Notification: any;
 
 interface Events {
     "turn-count": number;
+    "total-count": number;
     "notification": any;
     "notification-list-updated": never;
     "notification-count": number;
@@ -242,17 +243,17 @@ class NotificationManager {
     advanceToNextBoard(ev?) {{{
         let game_id = getCurrentGameId() || 0;
         let board_ids = [];
+        this.all_boards_waiting = false;
         //notificationPermissionRequest();
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
-            this.all_boards_waiting = false;
         }
 
         if (board_ids.length === 0) {
             for (let k in this.active_boards) {
                 board_ids.push(parseInt(this.active_boards[k].id));
-                this.all_boards_waiting = true;
             }
+            this.all_boards_waiting = true;
         }
 
         if (board_ids.length === 0) {
@@ -358,6 +359,7 @@ class NotificationManager {
             }
 
             this.event_emitter.emit("turn-count", Object.keys(this.boards_to_move_on).length);
+            this.event_emitter.emit("total-count", Object.keys(this.active_boards).length);
         });
 
         comm_socket.on("notification", (notification) => {
@@ -487,6 +489,10 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
 
         notification_manager.event_emitter.on("turn-count", (ct) => {
             this.setState({count: ct});
+        });
+
+        notification_manager.event_emitter.on("total-count", (tt) => {
+            this.setState({total: tt});
         });
     }
 
