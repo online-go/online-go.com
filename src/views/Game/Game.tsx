@@ -2095,7 +2095,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                        <br/>
 
                        <div style={{textAlign: "center"}}>
-                           {(this.state.user_is_player || null) &&
+                           {(this.state.user_is_player || user.is_moderator || null) &&
                                <button id="game-stone-removal-auto-score" onClick={this.onStoneRemovalAutoScore}>
                                    {_("Auto-score")}
                                </button>

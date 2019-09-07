@@ -4245,7 +4245,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     } /* }}} */
     public autoScore() { /* {{{ */
         try {
-            if (!window["user"] || !this.on_game_screen  || !this.engine || (window["user"].id !== this.engine.black_player_id && window["user"].id !== this.engine.white_player_id)) {
+            if (!window["user"] || !this.on_game_screen  || !this.engine || (window["user"].id !== this.engine.black_player_id && window["user"].id !== this.engine.white_player_id && window["user"].is_moderator !== true)) {
                 return;
             }
         } catch (e) {
