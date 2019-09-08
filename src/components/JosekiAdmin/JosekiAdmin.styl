@@ -24,8 +24,22 @@
 
     .audit-actions {
         flex-grow: 1;
+
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+
+        margin-top: 0.2rem;
+
+        .audit-user-filter {
+            display: flex;
+            flex-direction: row;
+            padding-left: 2rem;
+            align-items: center;
+
+            input {
+                max-width: 6em;
+            }
+        }
     }
 
     .position-link {

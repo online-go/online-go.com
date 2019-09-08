@@ -47,9 +47,6 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         else {
             this.setState({ userid: new_id });
         }
-        if (!/^\d+$/.test(new_id)) {
-            return;
-        }
 
         this.setState({ throb: true });
         fetch(this.props.server_url + "permissions?id=" + e.target.value, {

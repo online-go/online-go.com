@@ -49,7 +49,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             server_status: "",
             selections: new Map(),
             reversions: new Map(),
-            schema_version: ''
+            schema_version: '',
+            user_id: 0
         };
     }
 
@@ -125,7 +126,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
     reloadData = () => {
         fetch(this.props.server_url +
-            `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`, {
+            `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}&user_id=${this.state.user_id}`, {
             mode: 'cors',
             headers: this.props.godojo_headers
         })
@@ -159,6 +160,18 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }, this.reloadData);
     }
 
+    onUserIdChange = (e) => {
+        const new_id = e.target.value;
+        if (!/^\d*$/.test(new_id)) {
+            return;
+        }
+        else {
+            this.setState(
+                { user_id: new_id },
+                this.reloadData);
+        }
+    }
+
     render = () => {
         console.log("Joseki Admin render");
 
@@ -169,7 +182,12 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         return (
             <div className="audit-container">
                 {this.props.user_can_administer &&
-                 <div className="audit-actions">
+                <div className="audit-actions">
+                    <div className="audit-user-filter">
+                        <div>Filter by user:</div>
+                        <input value={this.state.user_id} onChange={this.onUserIdChange}/>
+                        <span>(<Player user={parseInt(this.state.user_id)}/>)</span>
+                    </div>
                     <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertAllSelectedChanges}>
                         {_("Revert")}
                     </button>
