@@ -89,10 +89,8 @@ indiciator-size=1.5rem
         height: indiciator-size;
         border-radius: 50%;
         text-align: center;
-        border: 2px solid #fff;
+        border: 2px transparent;
         font-weight: 700;
-        background-color: #000;
-        color: #fff;
     }
 
     .active.count {
@@ -100,6 +98,19 @@ indiciator-size=1.5rem
     }
 }
 
+body.light #NavBar .turn-indicator {
+    .count {
+        background-color: #101010;
+        color: #fff;
+    }
+}
+
+body.dark #NavBar .turn-indicator {
+    .count {
+        background-color: #bbb;
+        color: #252525;
+    }
+}
 
 notification-list-height=14rem
 
