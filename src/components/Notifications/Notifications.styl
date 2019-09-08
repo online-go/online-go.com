@@ -96,6 +96,9 @@ indiciator-size=1.5rem
     .active.count {
         visibility: visible;
     }
+    .inactive.count {
+        visibility: visible;
+    }
 }
 
 body.light #NavBar .turn-indicator {
@@ -103,12 +106,18 @@ body.light #NavBar .turn-indicator {
         background-color: #101010;
         color: #fff;
     }
+    .inactive.count {
+        background-color: #d2d2d2;
+    }
 }
 
 body.dark #NavBar .turn-indicator {
     .count {
         background-color: #bbb;
         color: #252525;
+    }
+    .inactive.count {
+        background-color: #535353;
     }
 }
 
