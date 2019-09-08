@@ -235,12 +235,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban_resumeGame = this.goban_resumeGame.bind(this);
         this.updateVariationName = this.updateVariationName.bind(this);
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         setActiveGameView(this);
         setExtraActionCallback(this.renderExtraPlayerActions);
         $(window).on("focus", this.onFocus);
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (
             this.props.match.params.game_id !== nextProps.match.params.game_id ||
             this.props.match.params.review_id !== nextProps.match.params.review_id
@@ -263,7 +263,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
-            console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
+            console.log("UNSAFE_componentWillReceiveProps called with same game id: ", this.props, nextProps);
         }
     }
     componentDidUpdate(prevProps, prevState) {
@@ -1436,6 +1436,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     estimateScore():boolean {
+        let user = data.get("user");
+        let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
+
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
+            return null;
+        }
+
         if (this.goban.engine.phase === "stone removal") {
             console.log("Cowardly refusing to enter score estimation phase while stone removal phase is active");
             return false;
@@ -2604,7 +2611,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
-                {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
+                {game &&
+                    <a onClick={this.estimateScore} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
+                        <i className="fa fa-tachometer"></i> {_("Estimate score")}
+                    </a>}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}

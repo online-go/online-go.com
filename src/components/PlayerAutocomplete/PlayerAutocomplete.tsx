@@ -54,7 +54,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         }
     }
 
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         if (this.props.playerId !== next_props.player_id) {
             let user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {

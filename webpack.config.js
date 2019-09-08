@@ -99,6 +99,8 @@ module.exports = {
         }
     },
 
+    stats: 'errors-only',
+
 
     plugins: plugins,
 

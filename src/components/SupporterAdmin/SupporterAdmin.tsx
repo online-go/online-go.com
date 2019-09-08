@@ -48,7 +48,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         get("supporter_center/player/%%", this.props.playerId)
         .then((res) => {
 

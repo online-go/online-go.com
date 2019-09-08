@@ -68,7 +68,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         }
     }
 
-    componentWillMount()  {
+    UNSAFE_componentWillMount()  {
         this.resolve(this.props.playerId);
     }
 
@@ -109,7 +109,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             }
         });
     }}}
-    componentWillReceiveProps(new_props) {{{
+    UNSAFE_componentWillReceiveProps(new_props) {{{
         if (new_props.playerId !== this.props.playerId) {
             let player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();

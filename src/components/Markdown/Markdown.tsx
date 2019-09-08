@@ -87,7 +87,7 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
         return source;
     }
 
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         if (next_props.source !== this.props.source) {
             this.setState({
                 html: next_props.source ? sanitize(md.render(this.massage(next_props.source))) : ""

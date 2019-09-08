@@ -34,7 +34,7 @@ export class About extends React.Component<{}, any> {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         window.document.title = _("About");
         termination_socket.on("connect", () => {
             console.log("Got connect[term]");

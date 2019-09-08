@@ -147,7 +147,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.elimination_tree_container.append(this.elimination_tree);
     } /* }}} */
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {{{
         setExtraActionCallback(this.renderExtraPlayerActions);
     }}}
     componentDidMount() {{{
@@ -167,7 +167,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.abort_requests();
         setExtraActionCallback(null);
     }}}
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {{{
         if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
             this.setState({tournament_id: parseInt(next_props.match.params.tournament_id)});
             this.resolve(parseInt(next_props.match.params.tournament_id));

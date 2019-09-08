@@ -34,6 +34,7 @@ declare let Notification: any;
 
 interface Events {
     "turn-count": number;
+    "total-count": number;
     "notification": any;
     "notification-list-updated": never;
     "notification-count": number;
@@ -209,6 +210,7 @@ class NotificationManager {
     ordered_notifications;
     unread_notification_count;
     boards_to_move_on;
+    active_boards;
     turn_offset;
     auth;
     event_emitter: TypedEventEmitter<Events>;
@@ -221,6 +223,7 @@ class NotificationManager {
         this.ordered_notifications = [];
 
         this.boards_to_move_on = {};
+        this.active_boards = {};
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
     }}}
@@ -242,13 +245,23 @@ class NotificationManager {
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
         }
-        board_ids.sort((a, b) => { return a - b; });
+
+        if (board_ids.length === 0) {
+            for (let k in this.active_boards) {
+                board_ids.push(parseInt(this.active_boards[k].id));
+            }
+        }
 
         if (board_ids.length === 0) {
             return;
         }
 
+
+        board_ids.sort((a, b) => { return a - b; });
+
+
         let idx = -1;
+
         for (let i = 0; i < board_ids.length; ++i) {
             if (game_id === board_ids[i]) {
                 idx = i;
@@ -304,6 +317,9 @@ class NotificationManager {
         });
         comm_socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
+            if (game.phase === "finished") {
+                delete this.active_boards[game.id];
+            }
 
             if (game.phase === "stone removal") {
                 if ((game.black.id === data.get("user").id && !game.black.accepted)
@@ -316,6 +332,10 @@ class NotificationManager {
                 if (game.player_to_move === data.get("user").id) {
                     this.boards_to_move_on[game.id] = game;
                 }
+            }
+
+            if (game.phase !== "finished") {
+                this.active_boards[game.id] = game;
             }
 
             if (this.boards_to_move_on[game.id]) {
@@ -334,6 +354,7 @@ class NotificationManager {
             }
 
             this.event_emitter.emit("turn-count", Object.keys(this.boards_to_move_on).length);
+            this.event_emitter.emit("total-count", Object.keys(this.active_boards).length);
         });
 
         comm_socket.on("notification", (notification) => {
@@ -454,13 +475,18 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     constructor(props) {
         super(props);
         this.state = {
-            count: Object.keys(notification_manager.boards_to_move_on).length
+            count: Object.keys(notification_manager.boards_to_move_on).length,
+            total: Object.keys(notification_manager.active_boards).length,
         };
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
 
         notification_manager.event_emitter.on("turn-count", (ct) => {
             this.setState({count: ct});
+        });
+
+        notification_manager.event_emitter.on("total-count", (tt) => {
+            this.setState({total: tt});
         });
     }
 
@@ -471,7 +497,7 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
-                <span className={this.state.count > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
+                <span className={this.state.total > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
             </span>
        );
     }

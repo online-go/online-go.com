@@ -102,7 +102,7 @@ export class VoiceChat extends React.PureComponent<VoiceChatProperties, any> {
         this.join(this.state.channel);
         comm_socket.on("connect", this.join);
     }
-    componentWillReceiveProps(new_props) {
+    UNSAFE_componentWillReceiveProps(new_props) {
         if (this.state.channel !== new_props.channel) {
             this.part(this.state.channel);
             this.join(new_props.channel);

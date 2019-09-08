@@ -112,7 +112,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleDebug = this.toggleDebug.bind(this);
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         data.watch("config.user", (user) => this.setState({"user": user}));
 
         browserHistory.listen(location => {

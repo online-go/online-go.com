@@ -34,7 +34,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
         this.state = Object.assign({}, getBlocks(this.props.playerId));
     }
 
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         this.setState(getBlocks(next_props.playerId));
     }
 

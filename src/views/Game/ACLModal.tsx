@@ -54,7 +54,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.refresh();
     }
     componentWillUnmount() {

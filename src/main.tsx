@@ -47,6 +47,11 @@ if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) 
                 'dev.beta.online-go.com'
             ],
             environment: sentry_env,
+            integrations: [
+                new Sentry.Integrations.Breadcrumbs({
+                    console: false
+                })
+            ]
         });
 
         Sentry.setTag("version", ogs_version || 'dev');
