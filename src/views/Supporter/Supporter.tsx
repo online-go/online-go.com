@@ -25,8 +25,6 @@ import {LineText} from "misc-ui";
 import {openBecomeASiteSupporterModal} from "./BecomeASiteSupporter";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
-//import { default as ReactNumberFormat } from 'react-number-format';
-//import NumberFormat from 'react-number-format';
 import * as NumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
 import { SiteSupporterText } from './SiteSupporterText';
@@ -37,14 +35,11 @@ import * as preferences from "preferences";
 declare var swal;
 declare var ogs_release;
 declare var StripeCheckout;
-declare var amex_express_checkout_callback;
 declare var MODE;
 const ReactNumberFormat:any = NumberFormat;
 
 interface SupporterProperties {
 }
-
-let amex_express_checkout_button = document.getElementById('amex-express-checkout');
 
 let amount_steps = {
     'month': [
@@ -207,9 +202,8 @@ function guessCurrency() {
 
 
 
-let amex_express_js_promise;
+let DEPRECATED_stripe_checkout_js_promise;
 let stripe_checkout_js_promise;
-let stripe_js_promise;
 let checkout = null;
 
 /* TODO: Delete this code after we're sure we don't need it anymore. This allows anoek
@@ -282,48 +276,29 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }
 
     componentWillUnmount() {{{
-        $("body").append(amex_express_checkout_button);
     }}}
 
     componentDidMount() {{{
         window.document.title = _("Support OGS");
-        amex_express_checkout_callback = (response) => {
-                post("me/process_stripe", {
-                    'interval': this.state.interval,
-                    'currency': this.state.currency,
-                    'amount': this.getAmount(),
-                    'stripe_amount': this.getStripeAmount(),
-                    'payment_method_token': {"id": response.token}
-                })
-                .then(() => {
-                    this.setState({processing: false});
-                    window.location.reload();
-                })
-                .catch(errorAlerter);
-        };
 
-        if (!amex_express_js_promise) {
-            amex_express_js_promise = new Promise((resolve, reject) => {
+        if (!DEPRECATED_stripe_checkout_js_promise) {
+            DEPRECATED_stripe_checkout_js_promise = new Promise((resolve, reject) => {
                 let script = document.createElement("script");
-                script.src = "https://icm.aexp-static.com/Internet/IMDC/US_en/RegisteredCard/AmexExpressCheckout/js/AmexExpressCheckout.js";
+                script.src = "https://checkout.stripe.com/checkout.js";
                 script.async = true;
                 script.charset = "utf-8";
                 script.onload = () => {
                     resolve();
                 };
                 script.onerror = () => {
-                    reject("Unable to load stripe checkout");
+                    reject("Unable to load old stripe checkout");
                 };
                 document.head.appendChild(script);
             });
-        }
 
-
-
-        if (!stripe_checkout_js_promise) {
             stripe_checkout_js_promise = new Promise((resolve, reject) => {
                 let script = document.createElement("script");
-                script.src = "https://checkout.stripe.com/checkout.js";
+                script.src = "https://js.stripe.com/v3";
                 script.async = true;
                 script.charset = "utf-8";
                 script.onload = () => {
@@ -339,7 +314,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
 
         if (!data.get('user').anonymous) {
-            stripe_checkout_js_promise.then(() => {
+            DEPRECATED_stripe_checkout_js_promise.then(() => {
                 get("me/supporter")
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
@@ -764,11 +739,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                               {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
                             </button>
                         }
-                        {/*
-                        <div className='other-payment-options'>
-                            <PersistentElement elt={amex_express_checkout_button} />
-                        </div>
-                        */}
                     </div>
                 </div>
             </div>

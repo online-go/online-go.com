@@ -20,6 +20,7 @@ import {_} from "translate";
 import {Link} from "react-router-dom";
 import {termination_socket} from "sockets";
 import * as data from "data";
+import {ServerTimeDisplay} from "ServerTimeDisplay";
 
 declare var ogs_release;
 declare var ogs_version;
@@ -86,6 +87,9 @@ export class About extends React.Component<{}, any> {
                         <div><span className="version-details">API: {server_version}</span></div>
                     </div>
 
+                    <div className='server-time'>
+                        <ServerTimeDisplay />
+                    </div>
                 </div>
             </div>
         );
