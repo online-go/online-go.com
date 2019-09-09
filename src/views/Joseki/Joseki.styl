@@ -79,6 +79,17 @@
 
     /* Here follow overrides, changing shtuff from Games.style... */
 
+    .joseki-help {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        .fa {
+            themed color fg;
+            padding: 0.2rem;
+        }
+    }
+
     .left-col {
         padding-left: 1 em;
         padding-top: 1em;
@@ -112,6 +123,17 @@
             .throbber-spacer {
                 min-height: 38px;
                 min-width: 32px;
+            }
+
+            .top-right {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-end;
+                alighn-items: center;
+
+                a {
+                    margin: 0.2rem;
+                }
             }
 
             .move-controls {

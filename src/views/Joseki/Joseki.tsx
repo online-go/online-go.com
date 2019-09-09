@@ -742,6 +742,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <KBShortcut shortcut="home" action={this.resetBoard} />
                 <KBShortcut shortcut="left" action={this.backOneMove} />
 
+                <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Dictionary" className="joseki-help">
+                    <i className="fa fa-question-circle-o"></i>
+                </a>
+
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref="goban_container" className="goban-container">
                         {/*<PersistentElement className="Goban" elt={this.goban_div} /> */}
