@@ -63,7 +63,6 @@
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",
-    "prop-types": "^15.7.2",
     "query-string": "^5.0.1",
     "react": "^16.9.0",
     "react-autosuggest": "^9.4.2",
