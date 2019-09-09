@@ -497,7 +497,7 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
-                <span className={this.state.total > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
+                <span className={this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"}><span>{this.state.count}</span></span>
             </span>
        );
     }
