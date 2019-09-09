@@ -55,7 +55,7 @@ data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
           "\\b"  + cleaned_username_regex + "\\b"
-        + "|player ?[0-9]+"
+        + "|\\bplayer ?" + user.id + "\\b"
         , "i");
 });
 
