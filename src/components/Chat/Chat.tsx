@@ -56,6 +56,7 @@ data.watch("config.user", (user) => {
     name_match_regex = new RegExp(
           "\\b"  + cleaned_username_regex + "([?:,.!*'\\s])"
         + "|\\b" + cleaned_username_regex + "$"
+        + "|player [0-9]+"
         , "i");
 });
 
