@@ -254,7 +254,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
             Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
         );
         this.goban.redraw();
+        this.recenterGoban();
     }
+
+    recenterGoban() {
+        let m = this.goban.computeMetrics();
+        $('.goban-container .Goban').css({
+            top: Math.ceil(this.refs.goban_container.offsetHeight - m.height) / 2,
+            left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
+        });
+    }
+
 
     loadPosition = (node_id) => {
         this.load_sequence_to_board = true;

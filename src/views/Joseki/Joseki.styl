@@ -30,7 +30,7 @@
     @media screen and (max-width: 800px) {
         flex-direction: column;
     }
-    @media screen and (min-width: 800px) {
+    @media screen and (min-width: 801px) {
         flex-direction: row;
     }
 
@@ -58,6 +58,13 @@
                 top: 0;
                 left: 0;
             }
+        }
+    }
+
+    @media screen and (max-width: 800px) {
+        .left-col {
+            height: 100vw;
+            flex-basis: 99%;
         }
     }
 
