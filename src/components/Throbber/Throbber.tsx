@@ -36,12 +36,12 @@ export class Throbber extends React.PureComponent<ThrobberProps, any> {
     }
 
     turnOnThrob = () => {
-        console.log("turning on throb");
+        // console.log("turning on throb");
         this.setState({throbbing: true});
     }
 
     componentDidUpdate = (prevProps, prevState) => {
-        console.log("throb request", this.props.throb);
+        // console.log("throb request", this.props.throb);
         if (this.props.throb) {
             if (!prevState.throbbing) {
                 this.throb_delay_timer = setTimeout(this.turnOnThrob , 150);
