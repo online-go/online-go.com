@@ -53,17 +53,17 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to contributors GET:", body);
+            // console.log("Server response to contributors GET:", body);
             let contributor_list = [];
             body.forEach((id, idx) => {
-                console.log("Looking up player", id, idx);
+                // console.log("Looking up player", id, idx);
                 const player = player_cache.lookup(id);
                 contributor_list[idx] = {resolved: player !== null, player: player === null ? id : player};
 
                 if (player === null) {
-                    console.log("fetching player", id, idx);
+                    // console.log("fetching player", id, idx);
                     player_cache.fetch(id).then((p) => {
-                        console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
+                        // console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
                         let contributor_list = [...this.state.contributor_list];
                         contributor_list[idx] = {resolved: true, player: p};
                         this.setState({contributor_list});
@@ -83,7 +83,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to source GET:", body);
+            // console.log("Server response to source GET:", body);
             this.setState({source_list: body.sources});
         }).catch((r) => {
             console.log("Sources GET failed:", r);
@@ -91,7 +91,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
     }
 
     onTagChange = (e) => {
-        console.log("Variation filter update:", e);
+        // console.log("Variation filter update:", e);
         const val = e;
 
         let new_filter;
@@ -104,7 +104,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             new_filter = {...this.state.selected_filter, tags: val.map(t => t.value)};
         }
 
-        console.log("new tag filter", new_filter);
+        // console.log("new tag filter", new_filter);
         this.props.set_variation_filter(new_filter);
         this.setState({selected_filter: new_filter});
     }
@@ -130,10 +130,10 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
     }
 
     render() {
-        console.log("Variation filter render");
-        console.log("contributors", this.state.contributor_list);
-        console.log("sources", this.state.source_list);
-        console.log(" filter", this.state.selected_filter);
+        // console.log("Variation filter render");
+        // console.log("contributors", this.state.contributor_list);
+        // console.log("sources", this.state.source_list);
+        // console.log(" filter", this.state.selected_filter);
 
         let contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved) {
@@ -160,7 +160,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         return (
             <div className="joseki-variation-filter">
                 <div className="filter-set">
-                    <div className="filter-label">Filter by Tag</div>
+                    <div className="filter-label">{_("Filter by Tag")}</div>
                     <JosekiTagSelector
                         godojo_headers={this.props.godojo_headers}
                         tag_list_url={this.props.tag_list_url}
@@ -170,7 +170,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 </div>
 
                 <div className="filter-set">
-                    <div className="filter-label">Filter by Contributor</div>
+                    <div className="filter-label">{_("Filter by Contributor")}</div>
                     <select value={current_contributor} onChange={this.onContributorChange}
                             className={(a_tag_selected ? "" : " filter-set-inactive")}
                             disabled={!a_tag_selected}>
@@ -179,7 +179,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 </div>
 
                 <div className="filter-set">
-                    <div className="filter-label">Filter by Source</div>
+                    <div className="filter-label">{_("Filter by Source")}</div>
                     <select value={current_source} onChange={this.onSourceChange}
                             className={(a_tag_selected ? "" : " filter-set-inactive")}
                             disabled={!a_tag_selected}>
@@ -188,7 +188,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 </div>
 
                 <div className="filter-notes">
-                    {(this.state.selected_filter.tag === null ? " (Select a Tag to filter first)" : "")}
+                    {(this.state.selected_filter.tags === null ? " (" + _("Select a Tag to filter first") + ")" : "")}
                 </div>
             </div>
         );

@@ -60,9 +60,9 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
 
         return (
             <div className="Modal JosekiSourceModal" ref="modal">
-                <div className="header">New Joseki Source</div>
+                <div className="header">{_("New Joseki Source")}</div>
                 <div className="description">
-                    <div>Source:</div>
+                    <div>{_("Source")}:</div>
                     <input value={this.state.description} onChange={this.setDescription} />
                 </div>
                 <div className="url">

@@ -92,7 +92,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         // And if there was one, revert it then move on to the next after the previous is done.
         if (current_selections.get(next_selection)) {
             const target_id = next_selection.substring(7);  //  get rid of the wierd "select-" from SelectTable
-            console.log("Revert requested for ", target_id);
+            // console.log("Revert requested for ", target_id);
             fetch(this.props.server_url + "revert/", {
                 method: 'post',
                 mode: 'cors',
@@ -101,7 +101,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             }).then (res => res.json())
             .then (body => {
                 // Display the result of what happened
-                console.log("reversion result", body);
+                // console.log("reversion result", body);
                 let next_selections = new Map(current_selections);
                 next_selections.set(next_selection, false);
                 let next_reversions = new Map(this.state.reversions);
@@ -173,7 +173,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     }
 
     render = () => {
-        console.log("Joseki Admin render");
+        // console.log("Joseki Admin render");
 
         // Don't let the user select rows if they can't actually do anything with them.
         const AuditTable = this.props.user_can_administer ?
@@ -236,7 +236,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     onFetchData={this.fetchDataForTable}
                     columns={[
                         {
-                            Header: "At", accessor: "placement",
+                            Header: _("At"), accessor: "placement",
                             maxWidth: 60,
                             // Click the placement to see the position on the board
                             getProps: (state, rowInfo, column) => (
@@ -249,18 +249,18 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             )
                         },
                         {
-                            Header: "User", accessor: "user_id",
+                            Header: _("User"), accessor: "user_id",
                             Cell: props => <Player user={props.value}></Player>
                         },
                         {
-                            Header: "Date", accessor: "date",
+                            Header: _("Date"), accessor: "date",
                         },
                         {
-                            Header: "Action", accessor: "comment",
+                            Header: _("Action"), accessor: "comment",
                             minWidth: 200
                         },
                         {
-                            Header: "Result", accessor: "new_value",
+                            Header: _("Result"), accessor: "new_value",
                             minWidth: 250
                         }
                     ]}
@@ -268,14 +268,14 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                 {this.props.user_can_administer &&
                 <div className="bottom-admin-stuff">
                     <div className="user-admin">
-                        <div>Permissions Admin</div>
+                        <div>{_("Permissions Admin")}</div>
                         <JosekiPermissionsPanel
                             godojo_headers={this.props.godojo_headers}
                             server_url={this.props.server_url}
                         />
                     </div>
                     <div className="admin-info">
-                        Schema version: {this.state.schema_version}
+                        {_("Schema version")}: {this.state.schema_version}
                     </div>
                 </div>
                 }

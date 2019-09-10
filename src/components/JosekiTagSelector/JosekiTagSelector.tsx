@@ -43,7 +43,7 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to tag GET:", body);
+            // console.log("Server response to tag GET:", body);
             const available_tags = body.tags.map((tag, i) => (
                 { label: tag.description, value: tag.id }
             ));
@@ -58,8 +58,8 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
     }
 
     render() {
-        console.log("Tag selector render");
-        console.log("tags", this.state.tag_list);
+        // console.log("Tag selector render");
+        // console.log("tags", this.state.tag_list);
 
         return (
             <Select className="joseki-tag-selector"
