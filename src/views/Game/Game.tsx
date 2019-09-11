@@ -19,6 +19,7 @@ import * as data from "data";
 import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
@@ -299,7 +300,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.creator_id = null;
         this.ladder_id = null;
         this.tournament_id = null;
-        $(window).off("resize", this.onResize as () => void);
         $(document).off("keypress", this.setLabelHandler);
         try {
             this.goban.destroy();
@@ -331,7 +331,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.chat_proxy = this.game_id
             ? chat_manager.join(`game-${this.game_id}`, interpolate(_("Game {{number}}"), {"number": this.game_id}))
             : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
-        $(window).on("resize", this.onResize as () => void);
         $(document).on("keypress", this.setLabelHandler);
 
         let label_position = preferences.get("label-positioning");
@@ -1798,6 +1797,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
+                            <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                             <PersistentElement className="Goban" elt={this.goban_div}/>
                         </div>
                     }

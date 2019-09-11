@@ -19,6 +19,7 @@
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import * as data from "data";
 import {Player} from "Player";
 import {UIPush} from "UIPush";
@@ -105,7 +106,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     componentDidUpdate(prevProps, prevState) {
         this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
-        this.resize();
+        this.onResize();
     }
     componentWillUnmount() {
         this.deinitialize();
@@ -278,8 +279,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         this.plot();
 
-        $(window).on("resize", this.resize as () => void);
-        this.resize();
+        this.onResize();
     }
     plot() {
         if (this.props.entries.length <= 0) {
@@ -302,7 +302,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     deinitialize() {
         this.destroyed = true;
-        $(window).off("resize", this.resize as () => void);
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
@@ -310,7 +309,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.svg.remove();
         this.container = null;
     }
-    resize = (no_debounce:boolean = false) => {
+    onResize = (no_debounce:boolean = false) => {
         if (this.destroyed) {
             return;
         }
@@ -321,7 +320,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         }
 
         if (!no_debounce) {
-            this.resize_debounce = setTimeout(() => this.resize(true), 10);
+            this.resize_debounce = setTimeout(() => this.onResize(true), 10);
             return;
         }
 
@@ -351,12 +350,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let need_resize = this.container === null;
         this.container = e;
         if (need_resize) {
-            this.resize();
+            this.onResize();
         }
     }
     render() {
         return (
             <div ref={this.setContainer} className="AIReviewChart">
+                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                 <PersistentElement elt={this.chart_div}/>
             </div>
         );

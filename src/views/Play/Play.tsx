@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -72,16 +73,14 @@ export class Play extends React.Component<PlayProperties, any> {
         this.seekgraph = new SeekGraph({
             canvas: this.canvas
         });
-        this.resize();
+        this.onResize();
         this.seekgraph.on("challenges", this.updateChallenges);
         automatch_manager.on('entry', this.onAutomatchEntry);
         automatch_manager.on('start', this.onAutomatchStart);
         automatch_manager.on('cancel', this.onAutomatchCancel);
-        $(window).on("resize", this.resize);
     }}}
 
     componentWillUnmount() {{{
-        $(window).off("resize", this.resize);
         automatch_manager.off('entry', this.onAutomatchEntry);
         automatch_manager.off('start', this.onAutomatchStart);
         automatch_manager.off('cancel', this.onAutomatchCancel);
@@ -99,7 +98,7 @@ export class Play extends React.Component<PlayProperties, any> {
         }
     }}}
 
-    resize = () => {{{
+    onResize = () => {{{
         if (!this.ref_container) {
             return;
         }
@@ -110,7 +109,7 @@ export class Play extends React.Component<PlayProperties, any> {
             this.seekgraph.resize(w, h);
         }
         if (w === 0 || h === 0) { // Wait for positive size
-            setTimeout(this.resize, 500);
+            setTimeout(this.onResize, 500);
         }
     }}}
 
@@ -342,6 +341,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='col-sm-6'>
                         <Card>
                             <div ref={el => this.ref_container = el} className="seek-graph-container">
+                                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                                 <PersistentElement elt={this.canvas}/>
                             </div>
                         </Card>
