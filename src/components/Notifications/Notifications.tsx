@@ -465,6 +465,9 @@ class NotificationManager {
         this.event_emitter.emit("notification-count", this.unread_notification_count);
         this.event_emitter.emit("notification-list-updated");
     }}}
+    anyYourMove() {
+        return true;
+    }
 }
 
 

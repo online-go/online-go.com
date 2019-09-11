@@ -107,10 +107,12 @@ export class Goban extends OGSGoban {
         return getSelectedThemes();
     }
 
+        /*
     getBoardsToMoveOn() {
-        let count = notification_manager.boards_to_move_on.length;
-        return count;
-    }
+        let length = notification_manager.boards_to_move_on.length;
+        return true;
+    } 
+        */
 
     autoadvance = () => {
         let user = data.get('user');
@@ -119,7 +121,7 @@ export class Goban extends OGSGoban {
             /* if we just moved */
             if (this.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
-                    if (this.getBoardsToMoveOn() > 0) {
+                    if (notification_manager.anyYourMove()) {
                         this.emit("advance-to-next-board");
                     }
                 }
