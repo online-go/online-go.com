@@ -2159,8 +2159,6 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             movetree_contains_this_square = true;
         }
 
-
-
         let have_text_to_draw = false;
         let text_color = this.theme_blank_text_color;
         for (let key in pos) {
@@ -2307,9 +2305,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         /* Draw square highlights if any */
         {{{
-            if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
+            if (pos.hint || (
+                this.highlight_movetree_moves && movetree_contains_this_square ||
+                pos.color)) {
 
-                let color = pos.hint ? "#8EFF0A" : "#FF8E0A";
+                let color = pos.color ? pos.color : pos.hint ? "#8EFF0A" : "#FF8E0A";
 
                 ctx.lineCap = "square";
                 ctx.save();
@@ -3549,13 +3549,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 break;
         }
     } /* }}} */
-    private disableStonePlacement() { /* {{{ */
+    public disableStonePlacement() { /* {{{ */
         this.stone_placement_enabled = false;
+        // console.log("disabled stone placement");
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
     } /* }}} */
-    private enableStonePlacement() { /* {{{ */
+    public enableStonePlacement() { /* {{{ */
         if (this.stone_placement_enabled) {
             this.disableStonePlacement();
         }
@@ -3568,6 +3569,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.stone_placement_enabled = true;
+        // console.log("enabled stone placement");
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
@@ -4070,6 +4072,21 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
     }
 
+    public setColoredMarks(colored_marks) {
+        for (let key in colored_marks) {
+            let locations = this.engine.decodeMoves(colored_marks[key].move);
+            for (let i = 0; i < locations.length; ++i) {
+                let pt = locations[i];
+                this.setMarkColor(pt.x, pt.y, colored_marks[key].color);
+                this.setMark(pt.x, pt.y, key, false);
+            }
+        }
+    }
+
+    private setMarkColor(x, y, color: string) {
+        this.engine.cur_move.getMarks(x, y).color = color;
+    }
+
     private setLetterMark(x, y, mark: string, drawSquare?) {
         this.engine.cur_move.getMarks(x, y).letter = mark;
         if (drawSquare) { this.drawSquare(x, y);  }
@@ -4202,7 +4219,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
     } /* }}} */
-    private clearMark(x, y, mark) { /* {{{ */
+    public clearMark(x, y, mark) { /* {{{ */
         try {
             if (typeof(mark) === "number") {
                 mark = "" + mark;
