@@ -22,6 +22,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
@@ -513,13 +514,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .attr('class', 'x brush')
             .call(this.brush);
 
-        $(window).on("resize", this.resize as () => void);
-
         this.refreshData();
     }}}
     deinitialize() {{{
         this.destroyed = true;
-        $(window).off("resize", this.resize as () => void);
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
@@ -545,7 +543,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         };
     }}}
 
-    resize = (no_debounce:boolean = false) => {{{
+    onResize = (no_debounce:boolean = false) => {{{
         if (this.destroyed) {
             return;
         }
@@ -556,7 +554,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
 
         if (!no_debounce) {
-            this.resize_debounce = setTimeout(() => this.resize(true), 10);
+            this.resize_debounce = setTimeout(() => this.onResize(true), 10);
             return;
         }
 
@@ -973,7 +971,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let need_resize = this.container === null;
         this.container = e;
         if (need_resize) {
-            this.resize();
+            this.onResize();
         }
     }
 
@@ -989,6 +987,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                     : this.state.nodata
                         ? <div className='nodata'>{_("No rated games played yet")}</div>
                         : <div className='ratings-graph'>
+                            <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                             <PersistentElement elt={this.chart_div}/>
                         </div>
                 }

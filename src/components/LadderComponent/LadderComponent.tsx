@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -57,7 +58,6 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
     componentDidMount() {
         this.reload();
-        $(window).on("resize", this.re_render);
     }
     UNSAFE_componentWillReceiveProps(next_props) {
     }
@@ -66,11 +66,8 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             this.reload();
         }
     }
-    componentWillUnmount() {
-        $(window).off("resize", this.re_render);
-    }
 
-    re_render = () => {
+    onResize = () => {
         this.forceUpdate();
     }
 
@@ -186,6 +183,8 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
         return (
             <div className="LadderComponent">
+                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+
                 <UIPush event="players-updated" channel={`ladder-${this.props.ladderId}`} action={this.updatePlayers} />
 
                 {(this.props.showTitle || null) &&

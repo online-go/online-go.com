@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -108,7 +109,6 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         window.document.title = _("Puzzle");
         this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         this.onResize();
-        $(window).on("resize", this.onResize as () => void);
     }}}
     UNSAFE_componentWillReceiveProps(next_props) {{{
         if (this.props.match.params.puzzle_id !== next_props.match.params.puzzle_id) {
@@ -124,7 +124,6 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
     }}}
     componentWillUnmount() {{{
-        $(window).off("resize", this.onResize as () => void);
     }}}
     componentDidUpdate() {{{
         this.onResize();
@@ -562,6 +561,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
             <div className={"center-col"}>
                 <div ref="goban_container" className="goban-container">
+                    <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                     <PersistentElement className="Goban" elt={this.goban_div}/>
                 </div>
             </div>

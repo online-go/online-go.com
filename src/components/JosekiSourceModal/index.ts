@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,19 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
 
-export class PersistentElement extends React.Component<{elt; className?}, any> {
-    container:HTMLDivElement;
-
-    componentDidMount() {
-        if (this.container) {
-            let elt = this.props.elt instanceof jQuery ? this.props.elt[0] : this.props.elt;
-            this.container.appendChild(elt);
-        }
-    }
-
-    render() {
-        return <div className={this.props.className || ""} ref={e => this.container = e} />;
-    }
-}
+export * from "./JosekiSourceModal";

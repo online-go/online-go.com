@@ -54,8 +54,8 @@ let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-          "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
-        + "|\\b" + cleaned_username_regex + "$"
+          "\\b"  + cleaned_username_regex + "\\b"
+        + "|\\bplayer ?" + user.id + "\\b"
         + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
 });

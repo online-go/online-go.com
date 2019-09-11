@@ -35,6 +35,7 @@ export interface MarkInterface {
     hint?             : boolean;
     black?            : boolean;
     white?            : boolean;
+    color?            : string;
 }
 
 export interface MoveTreeJson {

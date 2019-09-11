@@ -3,12 +3,12 @@
     "buildOnSave": false,
     "compilerOptions": {
         "outDir": "./dist/",
-        "target": "es5",
+        "target": "es2017",
         "moduleResolution": "node",
         "removeComments": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "lib": ["es2015", "dom"],
+        "lib": ["es2017", "dom"],
         "baseUrl": ".",
         "paths": {
             "*": [

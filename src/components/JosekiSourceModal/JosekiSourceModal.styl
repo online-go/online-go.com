@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,19 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
+.JosekiSourceModal {
+    width: 40rem;
+    max-width: 100%;
 
-export class PersistentElement extends React.Component<{elt; className?}, any> {
-    container:HTMLDivElement;
+    max-height: 100%;
 
-    componentDidMount() {
-        if (this.container) {
-            let elt = this.props.elt instanceof jQuery ? this.props.elt[0] : this.props.elt;
-            this.container.appendChild(elt);
+    .description, .url {
+        padding: 0.25em 0 0.25em 3em;
+
+        input {
+            width: 25em;
+            max-width: 90%;
         }
-    }
-
-    render() {
-        return <div className={this.props.className || ""} ref={e => this.container = e} />;
     }
 }

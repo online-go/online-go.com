@@ -1,0 +1,84 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.audit-container {
+    flex-grow: 1;
+    flex-shrink:0;
+    flex-basis:auto;
+    display: flex;
+    flex-direction: column;
+
+    .audit-actions {
+        flex-grow: 1;
+
+        display: flex;
+        justify-content: space-between;
+
+        margin-top: 0.2rem;
+
+        .audit-user-filter {
+            display: flex;
+            flex-direction: row;
+            padding-left: 2rem;
+            align-items: center;
+
+            input {
+                max-width: 6em;
+            }
+        }
+    }
+
+    .position-link {
+        themed color link-color;
+    }
+
+    .position-link:hover {
+        cursor:pointer;
+        text-decoration:underline;
+    }
+
+    .ReactTable, .ReactTable * {
+        themed border-color shade5 !important;
+    }
+
+    .pagination-bottom .-pagination {
+        .-btn {
+            themed color fg;
+            themed background card-background-color;
+        }
+
+        input, select {
+            themed background input-bg;
+        }
+    }
+
+    .bottom-admin-stuff {
+        display: flex;
+        justify-content: space-between;
+
+        .user-admin {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-info {
+            flex-grow: 1;
+            text-align: right;
+            margin-right: 3px;
+        }
+    }
+}
