@@ -922,6 +922,10 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /\b(issue ?[0-9]+)\b/gi, pattern: /\b(issue ?([0-9]+))\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1]}</a>)},
         {split: /\b(pr ?[0-9]+)\b/gi, pattern: /\b(pr ?([0-9]+))\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{m[1]}</a>)},
         {split: /\b(gh[- ]?[0-9]+)\b/gi, pattern: /\b(gh[- ]?([0-9]+))\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1]}</a>)},
+        // links to the wiki
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/[!#$&-;=-\[\]_a-zA-Z0-9~]*)\b/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/([!#$&-;=-\[\]_a-zA-Z0-9~]*))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={m[1]}>{"wiki: " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</Link>)},
         // Match forum links
         {split: /\b(https?:\/\/forums\.online-go\.com\/t\/[a-zA-z0-9-]+\/[0-9]+[!#$&-;=?-\[\]_a-zA-Z0-9~]*)\\b/gi,
             pattern: /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-z0-9-]+)\/[0-9]+[!#$&-;=?-\[\]_a-zA-Z0-9~]*)\b/gi,
