@@ -24,6 +24,7 @@ import {_, pgettext, interpolate, current_language} from "translate";
 import * as preferences from "preferences";
 import * as data from "data";
 import * as player_cache from "player_cache";
+import {notification_manager} from "Notifications";
 
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';
@@ -106,6 +107,11 @@ export class Goban extends OGSGoban {
         return getSelectedThemes();
     }
 
+    getBoardsToMoveOn() {
+        let count = notification_manager.boards_to_move_on.length;
+        return count;
+    }
+
     autoadvance = () => {
         let user = data.get('user');
 
@@ -113,7 +119,9 @@ export class Goban extends OGSGoban {
             /* if we just moved */
             if (this.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
-                    this.emit("advance-to-next-board");
+                    if (this.getBoardsToMoveOn() > 0) {
+                        this.emit("advance-to-next-board");
+                    }
                 }
             }
         }
