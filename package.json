@@ -72,6 +72,7 @@
     "react-dropzone": "^3.7.3",
     "react-number-format": "^3.0.2",
     "react-redux": "^4.4.6",
+    "react-resize-detector": "^4.2.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
     "react-select": "^1.2.1",

@@ -19,6 +19,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
+import ReactResizeDetector from 'react-resize-detector';
 import * as queryString from "query-string";
 
 import * as data from "data";
@@ -37,6 +38,7 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
+
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -118,13 +120,12 @@ interface JosekiProps {
 }
 
 export class Joseki extends React.Component<JosekiProps, any> {
-    refs: {
-        goban_container;
-    };
 
     goban: Goban;
     goban_div: any;
     goban_opts: any = {};
+    goban_container:HTMLDivElement;
+    goban_persistent_element:PersistentElement;
 
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
@@ -200,7 +201,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     componentDidMount = () => {
-        $(window).on("resize", this.onResize as () => void);
         this.onResize();  // make Goban size itself properly after the DOM is rendered
 
         godojo_headers["X-User-Info"] = this.getOGSJWT();
@@ -251,7 +251,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     onResize = () => {
         this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
+            Math.min(this.goban_container.offsetWidth, this.goban_container.offsetHeight)
         );
         this.goban.redraw();
         this.recenterGoban();
@@ -259,9 +259,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     recenterGoban() {
         let m = this.goban.computeMetrics();
-        $('.goban-container .Goban').css({
-            left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
-        });
+        if (this.goban_container.offsetWidth > 0 && m.width > 0) {
+            this.goban_persistent_element.container.style.left = Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
+        }
     }
 
     loadPosition = (node_id) => {
@@ -608,9 +608,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         // try to persuade goban to render at the correct size all the time
-        this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight)
-        );
+        this.onResize();
     }
 
     setAdminMode = () => {
@@ -757,8 +755,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 </a>
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
-                    <div ref="goban_container" className="goban-container">
-                        <PersistentElement className="Goban" elt={this.goban_div} />
+                    <div ref={(e) => this.goban_container = e} className="goban-container">
+                        <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                        <PersistentElement ref={(e) => this.goban_persistent_element = e} className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
                 <div className="right-col">

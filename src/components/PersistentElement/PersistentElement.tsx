@@ -18,15 +18,16 @@
 import * as React from "react";
 
 export class PersistentElement extends React.Component<{elt; className?}, any> {
-    refs: {
-        elt;
-    };
+    container:HTMLDivElement;
 
     componentDidMount() {
-        $(this.refs.elt).append(this.props.elt);
+        if (this.container) {
+            let elt = this.props.elt instanceof jQuery ? this.props.elt[0] : this.props.elt;
+            this.container.appendChild(elt);
+        }
     }
 
     render() {
-        return <div className={this.props.className || ""} ref="elt"/>;
+        return <div className={this.props.className || ""} ref={e => this.container = e} />;
     }
 }
