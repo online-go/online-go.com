@@ -913,11 +913,11 @@ function ChatLine(props) {{{
 export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {{{
     let replacements = [
         // Match github
-        {split: /\b(https?:\/\/github.com\/online-go\/online-go.com\/pull\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/github.com\/online-go\/online-go.com\/pull\/([0-9]+))\b/gi,
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+)\b/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/([0-9]+))\b/gi,
             replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{"GH-" + m[2]}</a>)},
-        {split: /\b(https?:\/\/github.com\/online-go\/online-go.com\/issues\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/github.com\/online-go\/online-go.com\/issues\/([0-9]+))\b/gi,
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/[0-9]+)\b/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/([0-9]+))\b/gi,
             replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{"GH-" + m[2]}</a>)},
         {split: /\b(issue ?[0-9]+)\b/gi, pattern: /\b(issue ?([0-9]+))\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1]}</a>)},
         {split: /\b(pr ?[0-9]+)\b/gi, pattern: /\b(pr ?([0-9]+))\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{m[1]}</a>)},
