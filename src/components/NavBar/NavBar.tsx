@@ -37,6 +37,7 @@ import {Player} from "Player";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
 import cached from 'cached';
+import {isIframe} from "IFrame";
 
 let body = $(document.body);
 
@@ -237,6 +238,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
     render() {
+
         let user = this.state.user.anonymous ? null : this.state.user;
         let anon = this.state.user.anonymous;
         let tournament_invites = this.state.tournament_invites;
@@ -261,6 +263,10 @@ export class NavBar extends React.PureComponent<{}, any> {
             this.state.omnisearch_tournaments.length +
             this.state.omnisearch_groups.length +
             this.state.omnisearch_sitemap.length ;
+
+        if (isIframe()) {
+            return (<div id="" className=""></div>);
+        }
 
         return (
         <div id="NavBar" className={(this.state.left_nav_active || this.state.right_nav_active) ? "active" : ""}>
