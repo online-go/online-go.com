@@ -52,6 +52,7 @@ import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
 import {toast} from "toast";
+import {isIframe, OGSIframeLogo} from "IFrame";
 
 declare var swal;
 
@@ -1778,6 +1779,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     render() {
+        if (isIframe()) {
+            return (
+                <div>
+                    <div className={"Game MainGobanView iframe " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
+                        <div className="center-col">
+                            <div className="horizontal">
+                                <OGSIframeLogo></OGSIframeLogo>
+                                {this.frag_players(true)}
+                            </div>
+                            <div ref={el => this.ref_goban_container = el} className="goban-container">
+                                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                                <PersistentElement className="Goban" elt={this.goban_div}/>
+                            </div>
+                            {this.frag_below_board_controls()}
+                        </div>
+                    </div>
+                </div>);
+        }
+
         const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
@@ -2404,7 +2424,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
           </div>
         );
     }
-    frag_players() {
+    frag_players(iframe?) {
         let goban = this.goban;
         if (!goban) {
             return null;
@@ -2414,7 +2434,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
         return (
-            <div ref={el => this.ref_players = el} className="players">
+            <div ref={el => this.ref_players = el} className={"players" + (iframe ? " iframe" : "")}>
               {["black", "white"].map((color, idx) => {
                   let player_bg: any = {};
                   if (this.state[`historical_${color}`]) {
@@ -2423,7 +2443,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                   }
 
                   return (
-                  <div key={idx} className={`${color} player-container`}>
+                  <div key={idx} className={`${color} player-container` + (iframe ? " iframe" : "")}>
                       {this.state[`${color}_auto_resign_expiration`] &&
                           <div className={`auto-resign-overlay`}>
                               <i className='fa fa-bolt' />
@@ -2439,7 +2459,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                               </div>
                           }
 
-                          {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
+                          {(!iframe) && (goban.engine.phase !== "finished" && !goban.review_id || null) &&
                               this.frag_clock(color)
                           }
                       </div>
@@ -2449,6 +2469,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                              <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
                           </div>
                       }
+
+                      {iframe && this.frag_clock(color)}
 
                       {((!goban.engine.players[color]) || null) &&
                           <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>

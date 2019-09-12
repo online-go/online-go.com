@@ -24,6 +24,10 @@
     left: 0;
 }
 
+.Game.iframe {
+    top: 0;
+}
+
 .outer-banner {
     .Game, .Dock {
         top: below-navbar + 5.4 !important;
@@ -80,6 +84,10 @@ goban-view-bar-width=400px
     //justify-content: stretch;
 
     // .players is handled in Players.styl
+
+    .horizontal {
+        display: flex;
+    }
 
     .play-controls { /* {{{ */
         flex-grow: 0;

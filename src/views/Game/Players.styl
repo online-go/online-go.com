@@ -114,6 +114,10 @@
         }
     }
 
+    .player-container.iframe {
+        flex-direction: row;
+    }
+
 
     .white.player-container {
         box-shadow: 0 2px 5px rgba(50,50,50,.51);
@@ -403,5 +407,46 @@
         .periods, .period-time {
             font-size: font-size-extra-small;
         }
+    }
+}
+
+
+.MainGobanView .players.iframe {
+    flex-shrink: 1;
+    flex-grow: 1;
+    min-height: 1rem;
+
+    .captures, .points, .komi, .hidden {
+        display: none;
+    }
+
+    .player-container {
+        margin-top: 0;
+    }
+
+    .player-icon-container {
+        flex-grow: 0;
+        flex-shrink: 1;
+        width: 100%;
+        min-height: 1rem;
+        min-width: 1rem;
+    }
+
+    .player-icon-clock-row{
+        display: contents;
+    }
+
+    .main-time {
+        text-align: left;
+        flex-grow: 0;
+    }
+
+    .byo-yomi-periods {
+        flex-grow: 1;
+        text-align: left;
+    }
+
+    .player-name-container {
+
     }
 }
