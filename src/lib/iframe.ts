@@ -18,8 +18,7 @@
 export function isIframe() {
     try {
         return window.self !== window.top;
-    }
-    catch (e) {
+    } catch (e) {
         return true;
     }
 }
