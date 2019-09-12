@@ -18,24 +18,22 @@
 
 import * as React from "react";
 
-
-export class OGS_iframe_logo extends React.PureComponent<{}, any> {
+export class OGSIframeLogo extends React.PureComponent<{}, any> {
 
     constructor(props) {
         super(props);
     }
 
     openInNewTab() {
-        window.open(document.URL)
+        window.open(document.URL);
     }
 
-    render () {
+    render() {
         return (
             <span className="ogs-iframe-logo-container" onClick={this.openInNewTab}>
-                <i className="fa fa-bars"/>
                 <span className="ogs-nav-logo"/>
             </span>
-        )
+        );
     }
 }
 
