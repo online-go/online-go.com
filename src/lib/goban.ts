@@ -104,6 +104,7 @@ export class Goban extends OGSGoban {
     getSelectedThemes() {
         return getSelectedThemes();
     }
+};
 
 OGSGoban.getMoveTreeNumbering = ():string => {
     return preferences.get("move-tree-numbering");
