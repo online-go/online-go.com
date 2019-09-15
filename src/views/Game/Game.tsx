@@ -293,6 +293,23 @@ export class Game extends React.PureComponent<GameProperties, any> {
         $(window).off("focus", this.onFocus);
         window.document.title = "OGS";
     }
+    getLocation():string {
+        return window.location.pathname;
+    }
+    autoadvance = () => {
+        let user = data.get('user');
+
+        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
+            /* if we just moved */
+            if (this.engine.playerNotToMove() === user.id) {
+                if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
+                    if (notification_manager.anyYourMove()) {
+                        notification_manger.advanceToNextBoard()
+                    }
+                }
+            }
+        }
+    }
     deinitialize() {
         this.chat_proxy.part();
         this.chat_log = [];
@@ -461,7 +478,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         });
 
-        this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
+        this.on('move-made', this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());

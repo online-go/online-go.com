@@ -24,7 +24,6 @@ import {_, pgettext, interpolate, current_language} from "translate";
 import * as preferences from "preferences";
 import * as data from "data";
 import * as player_cache from "player_cache";
-import {notification_manager} from "Notifications";
 
 
 export {GoEngine, sfx, GoThemes, GoMath} from 'ogs-goban';
@@ -33,7 +32,6 @@ export {MoveTree} from 'ogs-goban/MoveTree';
 export class Goban extends OGSGoban {
     constructor(config, preloaded_data?) {
         super(config, preloaded_data);
-        this.on('move-made', this.autoadvance);
     }
 
     defaultConfig() {
@@ -106,29 +104,6 @@ export class Goban extends OGSGoban {
     getSelectedThemes() {
         return getSelectedThemes();
     }
-
-        /*
-    getBoardsToMoveOn() {
-        let length = notification_manager.boards_to_move_on.length;
-        return true;
-    } 
-        */
-
-    autoadvance = () => {
-        let user = data.get('user');
-
-        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
-            /* if we just moved */
-            if (this.engine.playerNotToMove() === user.id) {
-                if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
-                    if (notification_manager.anyYourMove()) {
-                        this.emit("advance-to-next-board");
-                    }
-                }
-            }
-        }
-    }
-}
 
 OGSGoban.getMoveTreeNumbering = ():string => {
     return preferences.get("move-tree-numbering");
