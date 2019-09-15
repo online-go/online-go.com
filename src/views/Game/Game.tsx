@@ -304,7 +304,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             if (this.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
                     if (notification_manager.anyYourMove()) {
-                        notification_manger.advanceToNextBoard()
+                        notification_manger.advanceToNextBoard();
                     }
                 }
             }
