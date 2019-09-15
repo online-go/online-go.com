@@ -301,10 +301,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
             /* if we just moved */
-            if (this.engine.playerNotToMove() === user.id) {
-                if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
+            if (this.goban.engine.playerNotToMove() === user.id) {
+                if (!isLiveGame(this.goban.engine.time_control) && preferences.get("auto-advance-after-submit")) {
                     if (notification_manager.anyYourMove()) {
-                        notification_manger.advanceToNextBoard();
+                        notification_manager.advanceToNextBoard();
                     }
                 }
             }
@@ -478,7 +478,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         });
 
-        this.goban.on('move-made', this.autoadvance);
+        this.goban.on("move-made", this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());

@@ -466,6 +466,9 @@ class NotificationManager {
         this.event_emitter.emit("notification-list-updated");
     }}}
     anyYourMove() {
+        if (Object.keys(this.boards_to_move_on).length === 0) {
+            return false;
+        }
         return true;
     }
 }
