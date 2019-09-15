@@ -478,7 +478,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         });
 
-        this.on('move-made', this.autoadvance);
+        this.goban.on('move-made', this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
