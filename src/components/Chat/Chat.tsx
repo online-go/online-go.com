@@ -976,7 +976,7 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // links to senseis
         {split: /\b(https?:\/\/senseis\.xmp\.net\/\?[!#$&-;=-\[\]_a-zA-Z0-9~]*)\b/gi,
             pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([!#$&-;=-\[\]_a-zA-Z0-9~]*))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={m[1]}>{"senseis: " + m[2]}</Link>)},
+            replacement: (m, idx) => (<a key={idx} target='_blank' href={m[1]}>{"senseis: " + m[2]}</a>)},
         // mails
         {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
         // general urls
