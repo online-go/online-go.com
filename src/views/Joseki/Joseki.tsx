@@ -706,7 +706,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(res => res.json())
         .then(body => {
             // console.log("Tags Count GET:", body);
-            let tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
+            let tags = [];
+            if (body.tags !== null) {
+                tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
+            }
             let counts = [];
             tags.forEach(t => {
                 counts.push({tagname: t.description, count: t.continuationCount});
@@ -738,7 +741,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             </React.Fragment>
             : "";
 
-            const tags = this.state.tags === null ? "" :
+        const tags = this.state.tags === null ? "" :
             this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
             <div className="position-tag" key={idx}>
                 <span>{tag['description']}</span>
@@ -1443,6 +1446,10 @@ class EditPane extends React.Component<EditProps, any> {
     currentMarksInDescription = (description) => {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
+
+        if (description === null) { // I don't see how, but Sentry logs seem to imply there is a way!
+            return [];
+        }
 
         const mark_matches = [...description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg)];
 
