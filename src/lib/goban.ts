@@ -32,7 +32,6 @@ export {MoveTree} from 'ogs-goban/MoveTree';
 export class Goban extends OGSGoban {
     constructor(config, preloaded_data?) {
         super(config, preloaded_data);
-        this.on('move-made', this.autoadvance);
     }
 
     defaultConfig() {
@@ -104,19 +103,6 @@ export class Goban extends OGSGoban {
 
     getSelectedThemes() {
         return getSelectedThemes();
-    }
-
-    autoadvance = () => {
-        let user = data.get('user');
-
-        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
-            /* if we just moved */
-            if (this.engine.playerNotToMove() === user.id) {
-                if (!isLiveGame(this.engine.time_control) && preferences.get("auto-advance-after-submit")) {
-                    this.emit("advance-to-next-board");
-                }
-            }
-        }
     }
 }
 
