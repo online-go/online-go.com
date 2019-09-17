@@ -764,14 +764,14 @@ export class MoveTree {
         */
 
         // isStrong(B, A)) {
-        if (B.trunk_next == null && B.branches.length === 0 && (A.trunk_next != null || A.branches.length !== 0)) {
+        if (B.trunk_next == null && B.branches.length === 0 && (A.trunk_next !== null || A.branches.length !== 0)) {
             let t = A;
             A = B;
             B = t;
         }
 
         //isStrong(A, B);
-        let strong = A.trunk_next == null && A.branches.length === 0 && (B.trunk_next != null || B.branches.length !== 0)
+        let strong = A.trunk_next == null && A.branches.length === 0 && (B.trunk_next !== null || B.branches.length !== 0);
 
         ctx.beginPath();
         ctx.strokeStyle = MoveTree.isobranch_colors[strong ? "strong" : "weak"];

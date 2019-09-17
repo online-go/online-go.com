@@ -1546,7 +1546,7 @@ export class GoEngine {
          * that should be run which will perform the actual moves. This function is
          * constructed by making a bunch of dyanmic functions and chaining them
          * together.. slick or sick, depending on your PoV..  */
-        let instructions:Array<()=>void> = [];
+        let instructions:Array<() => void> = [];
 
         let self = this;
         let pos = 0;

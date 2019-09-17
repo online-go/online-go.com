@@ -374,13 +374,12 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }}}
 
     openPuzzleSettings = (ev) => {{{
-        let promise = openPuzzleSettingsControls(ev);
+        let puzzle_settings = openPuzzleSettingsControls(ev);
 
         let randomize_transform = preferences.get("puzzle.randomize.transform");
         let randomize_color = preferences.get("puzzle.randomize.color");
 
-
-        promise.on("close", () => {
+        puzzle_settings.on("close", () => {
             if (randomize_transform !== preferences.get("puzzle.randomize.transform")  ||
                 randomize_color !== preferences.get("puzzle.randomize.color")
             ) {
