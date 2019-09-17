@@ -228,7 +228,8 @@ export class MoveTree {
         __isobranches_state_hash = {};
 
         let buildHashes = (node:MoveTree):void => {
-            let hash = JSON.stringify(node.state.board) + node.player;
+            let hash = node.state.isobranch_hash ? node.state.isobranch_hash :
+                node.state.isobranch_hash = node.state.board.map(arr => arr.join('')).join('') + node.player;
             node.isobranch_hash = hash;
 
             if (!(hash in __isobranches_state_hash)) {
@@ -249,9 +250,7 @@ export class MoveTree {
         let recompute = (node:MoveTree):void => {
             node.isobranches = [];
 
-            for (let i = 0; i < __isobranches_state_hash[node.isobranch_hash].length; ++i) {
-                let n = __isobranches_state_hash[node.isobranch_hash][i];
-
+            for (let n of __isobranches_state_hash[node.isobranch_hash]) {
                 if (node.id !== n.id) {
                     if (node.isAncestorOf(n) || n.isAncestorOf(node)) {
                         continue;
@@ -730,8 +729,14 @@ export class MoveTree {
         }
         return null;
     } /* }}} */
-    _drawPath(ctx:CanvasRenderingContext2D):void { /* {{{ */
+    _drawPath(ctx:CanvasRenderingContext2D, viewport:ViewPortInterface):void { /* {{{ */
+
         if (this.parent) {
+            if (this.parent.layout_cx < viewport.minx && this.layout_cx < viewport.minx) { return; }
+            if (this.parent.layout_cy < viewport.miny && this.layout_cy < viewport.miny) { return; }
+            if (this.parent.layout_cx > viewport.maxx && this.layout_cx > viewport.maxx) { return; }
+            if (this.parent.layout_cy > viewport.maxy && this.layout_cy > viewport.maxy) { return; }
+
             ctx.beginPath();
             ctx.strokeStyle = this.trunk ? "#000000" : MoveTree.line_colors[this.line_color];
             ctx.moveTo(this.parent.layout_cx, this.parent.layout_cy);
@@ -742,21 +747,31 @@ export class MoveTree {
             ctx.stroke();
         }
     } /* }}} */
-    drawIsoBranchTo(ctx:CanvasRenderingContext2D, node:MoveTree):void { /* {{{ */
+    drawIsoBranchTo(ctx:CanvasRenderingContext2D, node:MoveTree, viewport:ViewPortInterface):void { /* {{{ */
         let A:MoveTree = this;
         let B:MoveTree = node;
 
+        /* don't render if it's off screen */
+        if (A.layout_cx < viewport.minx && B.layout_cx < viewport.minx) { return; }
+        if (A.layout_cy < viewport.miny && B.layout_cy < viewport.miny) { return; }
+        if (A.layout_cx > viewport.maxx && B.layout_cx > viewport.maxx) { return; }
+        if (A.layout_cy > viewport.maxy && B.layout_cy > viewport.maxy) { return; }
+
+        /*
         let isStrong = (a, b):boolean => {
             return a.trunk_next == null && a.branches.length === 0 && (b.trunk_next != null || b.branches.length !== 0);
         };
+        */
 
-        if (isStrong(B, A)) {
+        // isStrong(B, A)) {
+        if (B.trunk_next == null && B.branches.length === 0 && (A.trunk_next != null || A.branches.length !== 0)) {
             let t = A;
             A = B;
             B = t;
         }
 
-        let strong = isStrong(A, B);
+        //isStrong(A, B);
+        let strong = A.trunk_next == null && A.branches.length === 0 && (B.trunk_next != null || B.branches.length !== 0)
 
         ctx.beginPath();
         ctx.strokeStyle = MoveTree.isobranch_colors[strong ? "strong" : "weak"];
@@ -782,14 +797,14 @@ export class MoveTree {
 
         if (this.isobranches) {
             for (let i = 0; i < this.isobranches.length; ++i) {
-                this.drawIsoBranchTo(ctx, this.isobranches[i]);
+                this.drawIsoBranchTo(ctx, this.isobranches[i], viewport);
             }
         }
 
         /* only consider x, since lines can extend awhile on the y */
-        if (viewport == null || (this.layout_cx >= viewport.minx && this.layout_cx <= viewport.maxx)) {
-            this._drawPath(ctx);
-        }
+        //if (this.layout_cx >= viewport.minx && this.layout_cx <= viewport.maxx) {
+        this._drawPath(ctx, viewport);
+        //}
     } /* }}} */
     findStrongIsobranches():Array<MoveTree> { /* {{{ */
         let c:MoveTree = this;
@@ -810,23 +825,25 @@ export class MoveTree {
 
         return ret;
     } /* }}} */
-    /* draws path from children to node, and from node to parent */
-    drawPath(ctx:CanvasRenderingContext2D):void { /* {{{ */
+    /*
+    // draws path from children to node, and from node to parent
+    drawPath(ctx:CanvasRenderingContext2D, viewport:ViewPortInterface):void {
         if (this.trunk_next) {
-            this.trunk_next._drawPath(ctx);
+            this.trunk_next._drawPath(ctx, viewport);
         }
         for (let i = 0; i < this.branches.length; ++i) {
-            this.branches[i]._drawPath(ctx);
+            this.branches[i]._drawPath(ctx, viewport);
         }
 
-        this._drawPath(ctx);
-    } /* }}} */
-    reverseDrawPath(ctx:CanvasRenderingContext2D):void { /* {{{ */
-        this._drawPath(ctx);
+        this._drawPath(ctx, viewport);
+    }
+    reverseDrawPath(ctx:CanvasRenderingContext2D, viewport:ViewPortInterface):void {
+        this._drawPath(ctx, viewport);
         if (this.parent) {
-            this.parent.reverseDrawPath(ctx);
+            this.parent.reverseDrawPath(ctx, viewport);
         }
-    } /* }}} */
+    }
+    */
     drawStone(ctx:CanvasRenderingContext2D, board:BoardInterface, active_path_number:number):void { /* {{{ */
         let stone_idx = this.move_number * 31;
         let cx = this.layout_cx;

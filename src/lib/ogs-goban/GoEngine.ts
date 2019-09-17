@@ -29,6 +29,7 @@ export interface GoEngineState {
     black_prisoners: any;
     udata_state: any;
     board: Array<Array<number>>;
+    isobranch_hash?: string;
 }
 
 let __currentMarker = 0;
