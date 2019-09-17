@@ -254,7 +254,7 @@
         }
 
         .explore-pane {
-            @media screen and (min-width: 1160px) {
+            @media screen and (min-width: 1161px) {
                 flex-direction: row;
             }
 
@@ -507,13 +507,14 @@
         }
 
         .status-info {
-            flex-basis: 50%;     // share the space with continuations pane
-            overflow-x: hidden;  // Make sure long "Moves Made" doesn't grow this box
+            @media screen and (min-width: 1160px) {
+                flex-basis: 50%;     // share the space with continuations pane
+                overflow-x: hidden;  // Make sure long "Moves Made" doesn't grow this box
+                min-height: 12rem;   // Match continuations pane
+            }
+
             display: flex;
             flex-direction: column;
-            @media screen and (min-width: 1160px) {
-                min-height: 12rem;  // Match continuations pane
-            }
 
             .hide {
                 display: none;
