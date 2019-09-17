@@ -601,6 +601,30 @@ export function durationString(seconds): string { /* {{{ */
 
     return ret.trim();
 } /* }}} */
+export function daysOnlyDurationString(seconds): string { /* {{{ */
+    let days = Math.floor(seconds / 86400);
+
+    function plurality(num, single, plural): string {
+        num = Math.round(num);
+        if (num > 0) {
+            if (num === 1) {
+                return " " + num + " " + single;
+            }
+            return " " + num + " " + plural;
+        }
+        return "";
+    }
+
+    let ret: string = "";
+    if (days) {
+        ret += plurality(days, _("Day"), _("Days"));
+    }
+    else {
+        ret += _("0 Days");
+    }
+
+    return ret.trim();
+} /* }}} */
 export function shortDurationString(seconds) { /* {{{ */
     let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;

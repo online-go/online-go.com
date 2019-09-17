@@ -29,7 +29,7 @@ import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
-import {durationString} from "TimeControl";
+import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
@@ -85,6 +85,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
+    vacation_accrued_interval: any;
     moderator_note:any = null;
     moderator_log:any = null;
 
@@ -97,6 +98,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             ip: null,
             vacation_left: null,
             vacation_left_text: "",
+            vacation_accrued_text: "",
             ranks: [],
             syncRating: null,
             host_ip_settings: null,
@@ -124,10 +126,20 @@ export class User extends React.PureComponent<UserProperties, any> {
                 }
             }
         }, 1000);
+        this.vacation_accrued_interval = setInterval(() => {
+            if (this.state.user) {
+                let time_accrued = Math.round(((Date.now()) - interval_start) / 1000);
+                let vacation_time_accrued = this.state.user.vacation_left + time_accrued;
+                this.setState({
+                    vacation_accrued_text: daysOnlyDurationString(vacation_time_accrued)
+                });
+            }
+        }, 1000);
         this.resolve(this.props);
     }
     componentWillUnmount() {
         clearInterval(this.vacation_update_interval);
+        clearInterval(this.vacation_accrued_interval);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -956,6 +968,11 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                     <h2>{_("Activity")}</h2>
                     <Card className="activity-card">
+                        {(!user.supporter && !user.is_moderator && !user.is_superUser) && <h4>{_("Vacation Accrued: (Non-Supporter)")}</h4>}
+                        {(user.supporter || user.is_moderator || user.is_superUser) && <h4>{_("Vacation Accrued: (Supporter)")}</h4>}
+                        {(user.on_vacation) && <div >{_("User On Vacation")}</div>}
+                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_(" out of 60 Days (+1 Day / 5 Days)")}</div>}
+                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_(" out of 30 Days (+1 Day / 8 Days)")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">
