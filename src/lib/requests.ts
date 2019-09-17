@@ -73,118 +73,109 @@ let requests_in_flight = {};
 let last_request_id: number = 0;
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-interface RequestFunction {
-    (url: string): Promise<any>;
-    (url: string, id_or_data: number | any): Promise<any>;
-    (url: string, id: number, data: any): Promise<any>;
-}
+export function request(method: Method, url:string, id_or_data?:any, data?:any): Promise<any> {
+    initialize();
 
-export function request(method: Method): RequestFunction {
-    return (url, ...rest) => {
-        initialize();
+    let id: number | string | undefined;
+    switch (typeof id_or_data) {
+        case "number":
+        case "string":
+            id = id_or_data;
+            data = data || {};
+            break;
+        case "object":
+            id = undefined;
+            data = data;
+            break;
+        case "undefined":
+            id = undefined;
+            data = {};
+            break;
+    }
+    if (url.indexOf("%%") < 0 && id !== undefined) {
+        console.warn("Url doesn't contain an id but one was given.", url, id);
+        console.trace();
+    }
+    if (url.indexOf("%%") >= 0 && id === undefined) {
+        console.error("Url contains an id but none was given.", url);
+        console.trace();
+    }
 
-        let id: number | string | undefined;
-        let data: any;
-        switch (typeof rest[0]) {
-            case "number":
-            case "string":
-                id = rest[0];
-                data = rest[1] || {};
-                break;
-            case "object":
-                id = undefined;
-                data = rest[0];
-                break;
-            case "undefined":
-                id = undefined;
-                data = {};
-                break;
+    let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+    let real_data: any;
+    real_data = data;
+
+    for (let req_id in requests_in_flight) {
+        let req = requests_in_flight[req_id];
+        if (req.promise && (req.url === real_url) && (method === req.type) && deepCompare(req.data, real_data)) {
+            //console.log("Duplicate in flight request, chaining");
+            return req.promise;
         }
-        if (url.indexOf("%%") < 0 && id !== undefined) {
-            console.warn("Url doesn't contain an id but one was given.", url, id);
-            console.trace();
-        }
-        if (url.indexOf("%%") >= 0 && id === undefined) {
-            console.error("Url contains an id but none was given.", url);
-            console.trace();
-        }
+    }
 
-        let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
-        let real_data: any;
-        real_data = data;
+    let request_id = ++last_request_id;
+    let traceback = new Error();
 
-        for (let req_id in requests_in_flight) {
-            let req = requests_in_flight[req_id];
-            if (req.promise && (req.url === real_url) && (method === req.type) && deepCompare(req.data, real_data)) {
-                //console.log("Duplicate in flight request, chaining");
-                return req.promise;
-            }
-        }
-
-        let request_id = ++last_request_id;
-        let traceback = new Error();
-
-        requests_in_flight[request_id] = {
-            type: method,
-            url: real_url,
-            data: real_data,
-        };
-
-
-        requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            let opts = {
-                url: api1ify(real_url),
-                type: method,
-                data: undefined,
-                dataType: "json",
-                contentType: "application/json",
-                success: (res) => {
-                    delete requests_in_flight[request_id];
-                    resolve(res);
-                },
-                error: (err) => {
-                    delete requests_in_flight[request_id];
-                    if (err.status !== 0) { /* Ignore aborts */
-                        console.warn(api1ify(real_url), err.status, err.statusText);
-                        console.warn(traceback.stack);
-                    }
-                    console.error(err);
-                    reject(err);
-                }
-            };
-            if (real_data) {
-                if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
-                    opts.data = new FormData();
-                    if (real_data instanceof Blob) {
-                        opts.data.append("file", real_data);
-                    } else {
-                        for (let file of (real_data as Array<Blob>)) {
-                            opts.data.append("file", file);
-                        }
-                    }
-                    (opts as any).processData = false;
-                    (opts as any).contentType = false;
-                } else {
-                    if (method === "GET") {
-                        opts.data = real_data;
-                    } else {
-                        opts.data = JSON.stringify(real_data);
-                    }
-                }
-            }
-
-            requests_in_flight[request_id].request = $.ajax(opts);
-        });
-
-        return requests_in_flight[request_id].promise;
+    requests_in_flight[request_id] = {
+        type: method,
+        url: real_url,
+        data: real_data,
     };
+
+
+    requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
+        let opts = {
+            url: api1ify(real_url),
+            type: method,
+            data: undefined,
+            dataType: "json",
+            contentType: "application/json",
+            success: (res) => {
+                delete requests_in_flight[request_id];
+                resolve(res);
+            },
+            error: (err) => {
+                delete requests_in_flight[request_id];
+                if (err.status !== 0) { /* Ignore aborts */
+                    console.warn(api1ify(real_url), err.status, err.statusText);
+                    console.warn(traceback.stack);
+                }
+                console.error(err);
+                reject(err);
+            }
+        };
+        if (real_data) {
+            if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
+                opts.data = new FormData();
+                if (real_data instanceof Blob) {
+                    opts.data.append("file", real_data);
+                } else {
+                    for (let file of (real_data as Array<Blob>)) {
+                        opts.data.append("file", file);
+                    }
+                }
+                (opts as any).processData = false;
+                (opts as any).contentType = false;
+            } else {
+                if (method === "GET") {
+                    opts.data = real_data;
+                } else {
+                    opts.data = JSON.stringify(real_data);
+                }
+            }
+        }
+
+        requests_in_flight[request_id].request = $.ajax(opts);
+    });
+
+    return requests_in_flight[request_id].promise;
 }
 
-export const get = request("GET");
-export const post = request("POST");
-export const put = request("PUT");
-export const patch = request("PATCH");
-export const del = request("DELETE");
+export function get(url:string, id_or_data?:any, data?:any):Promise<any> { return request("GET", url, id_or_data, data); }
+export function post(url:string, id_or_data?:any, data?:any):Promise<any> { return request("POST", url, id_or_data, data); }
+export function put(url:string, id_or_data?:any, data?:any):Promise<any> { return request("PUT", url, id_or_data, data); }
+export function patch(url:string, id_or_data?:any, data?:any):Promise<any> { return request("PATCH", url, id_or_data, data); }
+export function del(url:string, id?:number):Promise<any> { return request("DELETE", url, id); }
 
 export function abort_requests_in_flight(url, method?: Method) {
     for (let id in requests_in_flight) {
