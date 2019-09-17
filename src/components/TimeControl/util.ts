@@ -620,7 +620,7 @@ export function daysOnlyDurationString(seconds): string { /* {{{ */
         ret += plurality(days, _("Day"), _("Days"));
     }
     else {
-        ret += _("0 Days");
+        ret += _(" 0 Days");
     }
 
     return ret.trim();
