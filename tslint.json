@@ -69,7 +69,6 @@
                 "call-signature": "nospace",
                 "index-signature": "nospace",
                 "parameter": "nospace",
-                //"property-declaration": "nospace", (comments _are_ allowed in tslint.json)
                 "variable-declaration": "nospace"
             }
         ],
