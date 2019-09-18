@@ -29,15 +29,21 @@
         justify-content: space-between;
 
         margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
 
-        .audit-user-filter {
-            display: flex;
-            flex-direction: row;
-            padding-left: 2rem;
-            align-items: center;
+        .audit-filters {
+            .audit-filter {
+                display: flex;
+                flex-direction: row;
+                padding-left: 2rem;
+                align-items: center;
 
-            input {
-                max-width: 6em;
+                input {
+                    max-width: 6em;
+                }
+            }
+            .audit-filter-overridden {
+                color: grey;
             }
         }
     }

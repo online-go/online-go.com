@@ -884,6 +884,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     godojo_headers={godojo_headers}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
+                    user_can_edit={this.state.user_can_edit}
                     loadPositionToBoard = {this.loadPosition}
                 />
             );
@@ -1360,8 +1361,6 @@ interface EditProps {
 }
 
 class EditPane extends React.Component<EditProps, any> {
-    selections: any = null;
-
     constructor(props) {
         super(props);
 
