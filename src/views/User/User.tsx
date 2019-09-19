@@ -85,7 +85,6 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
-    vacation_accrued_interval: any;
     moderator_note:any = null;
     moderator_log:any = null;
 
@@ -98,7 +97,6 @@ export class User extends React.PureComponent<UserProperties, any> {
             ip: null,
             vacation_left: null,
             vacation_left_text: "",
-            vacation_accrued_text: "",
             ranks: [],
             syncRating: null,
             host_ip_settings: null,
@@ -126,20 +124,18 @@ export class User extends React.PureComponent<UserProperties, any> {
                 }
             }
         }, 1000);
-        this.vacation_accrued_interval = setInterval(() => {
-            if (this.state.user) {
-                let time_accrued = Math.round(((Date.now()) - interval_start) / 1000);
-                let vacation_time_accrued = this.state.user.vacation_left + time_accrued;
-                this.setState({
-                    vacation_accrued_text: daysOnlyDurationString(vacation_time_accrued)
-                });
-            }
-        }, 1000);
         this.resolve(this.props);
     }
     componentWillUnmount() {
         clearInterval(this.vacation_update_interval);
-        clearInterval(this.vacation_accrued_interval);
+    }
+
+    vacationAccrued() {
+        if (this.state.user) {
+            let vacation_time_accrued = this.state.user.vacation_left;
+            return daysOnlyDurationString(vacation_time_accrued);
+        }
+        return "";
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -971,8 +967,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         {(!user.supporter && !user.is_moderator && !user.is_superUser) && <h4>{_("Vacation Accrued: (Non-Supporter)")}</h4>}
                         {(user.supporter || user.is_moderator || user.is_superUser) && <h4>{_("Vacation Accrued: (Supporter)")}</h4>}
                         {(user.on_vacation) && <div >{_("User On Vacation")}</div>}
-                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_("out of 60 Days")}</div>}
-                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_("out of 30 Days")}</div>}
+                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.vacationAccrued()} {_("out of 60 Days")}</div>}
+                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.vacationAccrued()} {_("out of 30 Days")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">
