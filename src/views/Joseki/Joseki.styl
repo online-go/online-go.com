@@ -17,9 +17,6 @@
 
 
 .Joseki {
-    /* Here follow settings copied from Game.styl, to match behaviour as closely as possible... */
-    // (but with center->left for this page because we have only two columns)
-    position: absolute;
     top: below-navbar;
     bottom: 0;
     right: 0;
@@ -32,8 +29,8 @@
     }
     @media screen and (min-width: 801px) {
         flex-direction: row;
+        position: absolute;
     }
-
 
     align-items: stretch;
 
@@ -59,11 +56,15 @@
                 left: 0;
             }
         }
-    }
 
-    @media screen and (max-width: 800px) {
-        .left-col {
+        @media screen and (min-width: 801px) {
+            padding-left: 1 em;
+        }
+        padding-top: 1em;
+
+        @media screen and (max-width: 801px) {
             height: 100vw;
+            max-height: 100vw;  // firefox needs this
             flex-basis: 99%;
         }
     }
@@ -76,43 +77,19 @@
         flex-grow: 1;
         flex-shrink: 1;
         flex-basis: 55%;
-
         overflow-x: hidden;
         min-height: auto;
         flex-direction: column;
         padding-left: 0.5rem;
         min-width: 340px;
-    }
 
-    /* Here follow overrides, changing shtuff from Games.style... */
-
-    .joseki-help {
-        position: absolute;
-        top: 0;
-        right: 0;
-
-        @media screen and (max-width: 800px) {
-            top: unset;
-            bottom: 0;
-        }
-        .fa {
-            themed color shade1;
-            padding: 0.3rem;
-        }
-    }
-
-    .left-col {
-        @media screen and (min-width: 801px) {
-            padding-left: 1 em;
-        }
-        padding-top: 1em;
-    }
-
-    .right-col {
         padding-right: 0;
-        height: 100%;
-        max-height: 100%;
         display: flex;
+
+        @media screen and (min-width: 1161px) {
+            height: 100%;
+            max-height: 100%;
+        }
 
         @media screen and (max-width: 1160px) {
             overflow-y: visible;
@@ -144,6 +121,18 @@
 
                 a {
                     margin: 0.2rem;
+                }
+            }
+
+            .top-bar-other {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .joseki-help {
+                .fa {
+                    themed color shade1;
+                    padding: 0.3rem;
                 }
             }
 
@@ -191,7 +180,7 @@
                 flex-direction: row;
                 justify-content: flex-end;
 
-                margin-right: 1.5rem; // space for the help icon in the top right
+                margin-right: 0.5rem; // space for the help icon in the top right
 
                 .btn {
                     min-width: 5em;
@@ -256,12 +245,14 @@
         .explore-pane {
             @media screen and (min-width: 1161px) {
                 flex-direction: row;
+                min-height: 20rem;  // prevent this from being shrunk too small when continuations pane grows big
             }
 
             @media screen and (max-width: 1160px) {
                 flex-direction: column;
                 overflow-y: visible;
                 justify-content: space-between;
+                min-height: fit-content;
             }
 
             flex-grow: 1;
@@ -269,7 +260,6 @@
             display: flex;
             margin-left: 0.5rem;
             margin-bottom: 0.2rem;
-            min-height: 20rem;  // prevent this from being shrunk too small when continuations pane grows big
 
             overflow-y: hidden;
         }
@@ -317,6 +307,7 @@
 
             @media screen and (max-width: 1160px) {
                 margin-right 1em;
+                min-height: 17rem;
             }
 
             flex-grow: 1;
