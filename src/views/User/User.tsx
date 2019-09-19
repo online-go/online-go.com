@@ -130,12 +130,24 @@ export class User extends React.PureComponent<UserProperties, any> {
         clearInterval(this.vacation_update_interval);
     }
 
+    isSpecialUser() {
+        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superUser) {
+            return true;
+        }
+        return false;
+    }
+
     vacationAccrued() {
         if (this.state.user) {
             let vacation_time_accrued = this.state.user.vacation_left;
-            return daysOnlyDurationString(vacation_time_accrued);
+            if (this.isSpecialUser()) {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
+            }
+            else {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
+            }
         }
-        return "";
+        return "User not Found";
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -964,11 +976,9 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                     <h2>{_("Activity")}</h2>
                     <Card className="activity-card">
-                        {(!user.supporter && !user.is_moderator && !user.is_superUser) && <h4>{_("Vacation Accrued: (Non-Supporter)")}</h4>}
-                        {(user.supporter || user.is_moderator || user.is_superUser) && <h4>{_("Vacation Accrued: (Supporter)")}</h4>}
-                        {(user.on_vacation) && <div >{_("User On Vacation")}</div>}
-                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.vacationAccrued()} {_("out of 60 Days")}</div>}
-                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.vacationAccrued()} {_("out of 30 Days")}</div>}
+                        <h4>{_("Vacation Accrued:")} {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}</h4>
+                        {!user.on_vacation && <div >{this.vacationAccrued()}</div>}
+                        {user.on_vacation && <div >{_("User On Vacation")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">

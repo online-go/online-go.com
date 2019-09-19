@@ -606,9 +606,8 @@ export function daysOnlyDurationString(seconds): string { /* {{{ */
 
     let ret: string = "";
     if (days) {
-        ret += days + " " + ngettext(_("Day"), _("Days"), days);
+        ret += interpolate(_("{{number_of_days}} {{day_or_days_plurality}}"), {number_of_days: days, day_or_days_plurality: ngettext("Day", "Days", days)});
     }
-
     return ret.trim();
 } /* }}} */
 export function shortDurationString(seconds) { /* {{{ */
