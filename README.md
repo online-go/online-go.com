@@ -16,13 +16,12 @@ relatively small portion of the community actively develops the code base and
 regularly visits this github page and the issue tracker. As such:
 
 * https://forums.online-go.com should be used to discuss any proposed functional changes or any new notable features, allowing non developers to chime in with their thoughts and ideas.
-* https://ogs.uservoice.com/ should be used when it is desired to obtain a gauge on community interest for a feature or change.
 * The [github issue tracker](https://github.com/online-go/online-go.com/issues) should be used to track all bugs, minor "obvious" enhancements, and accepted major enhancements. Any enhancements (and ideally bugs) posted need to be articulated in a way that it is obvious what needs to be done, partial thoughts will be closed and should be moved back to the forums for further discussion.
 
 # Utilizing the Website
 Online-go provides several resources that allows you to interact with the project to create your own. These resources help to get you started.
 * https://online-go.com/developer to access documentation.
-* https://ogs.readme.io/ to get started and how to use the website.
+* https://github.com/online-go/online-go.com/wiki to get started and how to use the website.
 * https://ogs.docs.apiary.io/# for API documentation.
 * https://online-go.com/oauth2/applications/ OAuth2 Application Manager (you must be signed into an account on OGS.)
 

@@ -29,9 +29,23 @@ import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
 interface JosekiAdminProps {
     godojo_headers: any;
     server_url: string;
-    user_can_administer: boolean;
+    user_can_administer: boolean; // allows them to revert changes, give permissions etc
+    user_can_edit: boolean;       // allows them to filter
     loadPositionToBoard(pos: string);
 }
+
+const AuditTypes = [
+        "CREATED",
+        "CATEGORY_CHANGE",
+        "DESCRIPTION_CHANGE",
+        "SOURCE_CHANGE",
+        "ADD_CHILD",
+        "REMOVE_CHILD",
+        "ADD_COMMENT",
+        "REMOVE_COMMENT",
+        "DEACTIVATE",
+        "REACTIVATE"
+];
 
 const SelectTable = selectTableHOC(ReactTable) ;
 
@@ -49,8 +63,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             server_status: "",
             selections: new Map(),
             reversions: new Map(),
-            schema_version: '',
-            user_id: 0
+            schema_version: "",
+            filter_user_id: "",
+            filter_position_id: "",
+            filter_audit_type: ""
         };
     }
 
@@ -125,8 +141,21 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     }
 
     reloadData = () => {
-        fetch(this.props.server_url +
-            `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}&user_id=${this.state.user_id}`, {
+        let audits_url = this.props.server_url + `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`;
+
+        if (this.state.filter_position_id !== "") {
+            audits_url += `&position_id=${this.state.filter_position_id}`;
+        }
+        // note that the back end currently doesn't support multiple filters, but one day it might...
+        if (this.state.filter_user_id !== "") {
+            audits_url += `&user_id=${this.state.filter_user_id}`;
+        }
+
+        if (this.state.filter_audit_type !== "") {
+            audits_url += `&audit_type=${this.state.filter_audit_type}`;
+        }
+
+        fetch(audits_url, {
             mode: 'cors',
             headers: this.props.godojo_headers
         })
@@ -167,9 +196,35 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }
         else {
             this.setState(
-                { user_id: new_id },
-                this.reloadData);
+                { filter_user_id: new_id },
+                this.reloadData
+            );
         }
+    }
+
+    onFilterPositionChange = (e) => {
+        const new_id = e.target.value;
+        if (!/^\d*$/.test(new_id)) {
+            return;
+        }
+        else {
+            this.setState(
+                { filter_position_id: new_id },
+                this.renderFilteredPosition
+            );
+        }
+    }
+
+    renderFilteredPosition = () => {
+        this.reloadData();
+        this.props.loadPositionToBoard(this.state.filter_position_id);
+    }
+
+    onFilterAuditTypeChange = (e) => {
+        this.setState(
+            {filter_audit_type: e.target.value},
+            this.reloadData
+        );
     }
 
     render = () => {
@@ -179,18 +234,38 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         const AuditTable = this.props.user_can_administer ?
             SelectTable : ReactTable;
 
+        let audit_type_selections = Object.keys(AuditTypes).map((selection, i) => (
+            <option key={i} value={AuditTypes[selection]}>{AuditTypes[selection].toLowerCase()}</option>
+        ));
+
+         audit_type_selections.unshift(<option key={-1} value=""></option>);
+
         return (
             <div className="audit-container">
-                {this.props.user_can_administer &&
+                {this.props.user_can_edit &&
                 <div className="audit-actions">
-                    <div className="audit-user-filter">
-                        <div>Filter by user:</div>
-                        <input value={this.state.user_id} onChange={this.onUserIdChange}/>
-                        <span>(<Player user={parseInt(this.state.user_id)}/>)</span>
+                    <div className="audit-filters">
+                    <div className="audit-filter">
+                            <div>Filter by position:</div>
+                            <input value={this.state.filter_position_id} onChange={this.onFilterPositionChange}/>
+                        </div>
+                        <div className={"audit-filter" + (this.state.filter_position_id === "" ? "" : " audit-filter-overridden")}>
+                            <div>Filter by user (id):</div>
+                            <input value={this.state.filter_user_id} onChange={this.onUserIdChange}/>
+                            <span>(<Player user={parseInt(this.state.filter_user_id)}/>)</span>
+                        </div>
+                        <div className={"audit-filter" + ((this.state.filter_position_id === "" && this.state.filter_user_id === "") ? "" : " audit-filter-overridden")}>
+                            <div>Filter by type:</div>
+                            <select value={this.state.filter_audit_type} onChange={this.onFilterAuditTypeChange}>
+                                {audit_type_selections}
+                            </select>
+                        </div>
                     </div>
+                    {this.props.user_can_administer &&
                     <button className={"btn" + (this.state.any_selected ? " danger" : "disabled")} onClick={this.revertAllSelectedChanges}>
                         {_("Revert")}
                     </button>
+                    }
                 </div>
                 }
                 {this.state.reversions.size > 0 &&

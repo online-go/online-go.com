@@ -222,22 +222,22 @@ export function getGameResultText(game) {
     }
     return result;
 }
-export function acceptGroupInvite(invite_id) {
+export function acceptGroupInvite(invite_id):Promise<any> {
     return post("me/groups/invitations", { request_id: invite_id }).catch(errorAlerter);
 }
-export function rejectGroupInvite(invite_id) {
+export function rejectGroupInvite(invite_id):Promise<any> {
     return post("me/groups/invitations", { "delete": true, request_id: invite_id }).catch(errorAlerter);
 }
-export function acceptFriendRequest(id) {
+export function acceptFriendRequest(id):Promise<any> {
     return post("me/friends/invitations", { "from_user": id }).catch(errorAlerter);
 }
-export function rejectFriendRequest(id) {
+export function rejectFriendRequest(id):Promise<any> {
     return post("me/friends/invitations", { "delete": true, "from_user": id }).catch(errorAlerter);
 }
-export function acceptTournamentInvite(id) {
+export function acceptTournamentInvite(id):Promise<any> {
     return post("me/tournaments/invitations", { "request_id": id }).catch(errorAlerter);
 }
-export function rejectTournamentInvite(id) {
+export function rejectTournamentInvite(id):Promise<any> {
     return post("me/tournaments/invitations", { "delete": true, "request_id": id }).catch(errorAlerter);
 }
 

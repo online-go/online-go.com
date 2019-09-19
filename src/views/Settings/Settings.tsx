@@ -421,19 +421,6 @@ export class Settings extends React.PureComponent<{}, any> {
                 email_message: _("Email updated successfully!")
             });
         }).catch(errorAlerter);
-        /*
-        swal({
-            text: _("Enter your current password"),
-        }).then((password) => {
-            put("me/settings", {
-                'password': password,
-                ...
-            })
-            .then(()=>{
-                swal(_("Email updated successfully!"))
-            })
-        }).catch(()=>0);
-        */
     }}}
     savePassword = () => {{{
         if (this.state.profile.no_password_set) { // ie social auth account

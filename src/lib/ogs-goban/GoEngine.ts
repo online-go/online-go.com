@@ -29,6 +29,7 @@ export interface GoEngineState {
     black_prisoners: any;
     udata_state: any;
     board: Array<Array<number>>;
+    isobranch_hash?: string;
 }
 
 let __currentMarker = 0;
@@ -1540,12 +1541,12 @@ export class GoEngine {
         delete game_obj.komi;
         return game_obj;
     } /* }}} */
-    private parseSGF(sgf) { /* {{{ */
+    private parseSGF(sgf):() => void { /* {{{ */
         /* This callback is eventually returned after the parse. It is the function
          * that should be run which will perform the actual moves. This function is
          * constructed by making a bunch of dyanmic functions and chaining them
          * together.. slick or sick, depending on your PoV..  */
-        let cb = () => {};
+        let instructions:Array<() => void> = [];
 
         let self = this;
         let pos = 0;
@@ -1598,22 +1599,18 @@ export class GoEngine {
             }
             function process() {
                 let cur;
-                let cb1 = cb;
-                cb = () => {
-                    cb1();
+                instructions.push(() => {
                     cur = self.cur_move;
                     //console.log("Stashing jump pos: ", cur.id);
-                };
+                });
 
                 let g = gametree();
                 ret.push(g);
 
-                let cb2 = cb;
-                cb = () => {
-                    cb2();
+                instructions.push(() => {
                     //console.log("Jumping back to ", cur.id);
                     self.jumpTo(cur);
-                };
+                });
             }
 
             whitespace();
@@ -1697,15 +1694,13 @@ export class GoEngine {
                     case "AW":
                             {
                             if (!inMainBranch) {
-                                let old_cb = cb;
-                                cb = () => {
-                                    old_cb();
+                                instructions.push(() => {
                                     if (val === "") {
                                     } else {
                                         let mv = self.decodeMoves(val)[0];
                                         self.editPlace(mv.x, mv.y, ident === "AB" ? 1 : 2);
                                     }
-                                };
+                                });
                             } else {
                                 if (ident === "AB") {
                                     self.config.initial_state.black += val;
@@ -1720,10 +1715,7 @@ export class GoEngine {
                     case "B":
                         {
                             inMainBranch = false;
-                            let old_cb = cb;
-                            cb = () => {
-                                old_cb();
-
+                            instructions.push(() => {
                                 if (val === "") {
                                 } else {
                                     let mv = self.decodeMoves(val)[0];
@@ -1736,18 +1728,15 @@ export class GoEngine {
                                         farthest_move = self.cur_move;
                                     }
                                 }
-                            };
+                            });
                         }
 
                     break;
                     case "C":
                         {
-                            let old_cb = cb;
-                            cb = () => {
-                                old_cb();
-
+                            instructions.push(() => {
                                 self.cur_move.text += val;
-                            };
+                            });
                         }
                         break;
                     case "LB":
@@ -1756,10 +1745,7 @@ export class GoEngine {
                     case "SQ":
                     case "XX":
                         {
-                            let old_cb = cb;
-                            cb = () => {
-                                old_cb();
-
+                            instructions.push(() => {
                                 try {
                                     pos = val.substr(0, 2);
                                     let extra = val.substr(3);
@@ -1775,22 +1761,19 @@ export class GoEngine {
                                         case "XX": marks.cross = true; break;
                                     }
                                 } catch (e) { console.error(e); }
-                            };
+                            });
                         }
                         break;
                     case "RE":
                         {
-                            let old_cb = cb;
-                            cb = () => {
-                                old_cb();
-
+                            instructions.push(() => {
                                 if (val[0].toLowerCase() === "b") {
                                     self.winner = "black";
                                 }
                                 if (val[0].toLowerCase() === "w") {
                                     self.winner = "white";
                                 }
-                            };
+                            });
                         }
                         break;
                 }
@@ -1807,7 +1790,7 @@ export class GoEngine {
 
 
         return () => {
-            cb();
+            instructions.map(f => f());
 
             this.move_tree.hoistFirstBranchToTrunk();
 

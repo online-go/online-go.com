@@ -753,10 +753,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 <KBShortcut shortcut="home" action={this.resetBoard} />
                 <KBShortcut shortcut="left" action={this.backOneMove} />
 
-                <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer" className="joseki-help">
-                    <i className="fa fa-question-circle-o"></i>
-                </a>
-
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref={(e) => this.goban_container = e} className="goban-container">
                         <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
@@ -777,7 +773,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                                 <Throbber throb={this.state.throb}/>
                             </div>
                         </div>
-                        {this.renderModeControl()}
+                        <div className="top-bar-other">
+                            {this.renderModeControl()}
+                            <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer" className="joseki-help">
+                                <i className="fa fa-question-circle-o"></i>
+                            </a>
+                        </div>
                     </div>
 
                     {this.renderModeMainPane()}
@@ -884,6 +885,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     godojo_headers={godojo_headers}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
+                    user_can_edit={this.state.user_can_edit}
                     loadPositionToBoard = {this.loadPosition}
                 />
             );
@@ -1360,8 +1362,6 @@ interface EditProps {
 }
 
 class EditPane extends React.Component<EditProps, any> {
-    selections: any = null;
-
     constructor(props) {
         super(props);
 
