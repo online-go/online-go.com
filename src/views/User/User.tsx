@@ -971,8 +971,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                         {(!user.supporter && !user.is_moderator && !user.is_superUser) && <h4>{_("Vacation Accrued: (Non-Supporter)")}</h4>}
                         {(user.supporter || user.is_moderator || user.is_superUser) && <h4>{_("Vacation Accrued: (Supporter)")}</h4>}
                         {(user.on_vacation) && <div >{_("User On Vacation")}</div>}
-                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_(" out of 60 Days")}</div>}
-                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_(" out of 30 Days")}</div>}
+                        {(!user.on_vacation && (user.supporter || user.is_moderator || user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_("out of 60 Days")}</div>}
+                        {(!user.on_vacation && (!user.supporter && !user.is_moderator && !user.is_superUser)) && <div >{this.state.vacation_accrued_text} {_("out of 30 Days")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">

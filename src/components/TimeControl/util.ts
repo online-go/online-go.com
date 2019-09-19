@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import {_, pgettext, interpolate} from "translate";
+import {_, pgettext, ngettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 
 const times = [ /* {{{ */
@@ -604,23 +604,9 @@ export function durationString(seconds): string { /* {{{ */
 export function daysOnlyDurationString(seconds): string { /* {{{ */
     let days = Math.floor(seconds / 86400);
 
-    function plurality(num, single, plural): string {
-        num = Math.round(num);
-        if (num > 0) {
-            if (num === 1) {
-                return " " + num + " " + single;
-            }
-            return " " + num + " " + plural;
-        }
-        return "";
-    }
-
     let ret: string = "";
     if (days) {
-        ret += plurality(days, _("Day"), _("Days"));
-    }
-    else {
-        ret += _(" 0 Days");
+        ret += days + " " + ngettext(_("Day"), _("Days"), days);
     }
 
     return ret.trim();
