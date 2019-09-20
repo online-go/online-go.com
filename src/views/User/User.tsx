@@ -29,7 +29,7 @@ import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
-import {durationString} from "TimeControl";
+import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
@@ -128,6 +128,26 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
     componentWillUnmount() {
         clearInterval(this.vacation_update_interval);
+    }
+
+    isSpecialUser() {
+        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superUser) {
+            return true;
+        }
+        return false;
+    }
+
+    vacationAccrued() {
+        if (this.state.user) {
+            let vacation_time_accrued = this.state.user.vacation_left;
+            if (this.isSpecialUser()) {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
+            }
+            else {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
+            }
+        }
+        return "User not Found";
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -956,6 +976,9 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                     <h2>{_("Activity")}</h2>
                     <Card className="activity-card">
+                        <h4>{_("Vacation Accrued:")} {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}</h4>
+                        {!user.on_vacation && <div >{this.vacationAccrued()}</div>}
+                        {user.on_vacation && <div >{_("User On Vacation")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">
