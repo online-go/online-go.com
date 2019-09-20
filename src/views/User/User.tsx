@@ -246,7 +246,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 "chatban_affects_all": true
             }});
         })
-        .catch(errorAlerter);
+        .catch(ignore);
     }
 
     saveHostIpSettings() {
