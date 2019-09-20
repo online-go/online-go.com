@@ -47,7 +47,7 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
             const available_tags = body.tags.map((tag, i) => (
                 { label: tag.description, value: tag.id }
             ));
-            this.setState({tag_list: [{value: 'none', label: ""}, ...available_tags]});
+            this.setState({tag_list: available_tags});
         }).catch((r) => {
             console.log("Tags GET failed:", r);
         });
