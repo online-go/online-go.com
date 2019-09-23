@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017  Online-Go.com
+ * Copyright (C) 2012-2019  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import * as queryString from "query-string";
 
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
+import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { Goban, GoMath } from "goban";
@@ -39,7 +39,6 @@ import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
 import { forceLoad } from "@sentry/browser";
-
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -1368,6 +1367,9 @@ class PlayPane extends React.Component<PlayProps, any> {
             // encourage them to use a filter, if they aren't already.
             this.showFilterSelector();
         }
+        else {
+            this.showResults();
+        }
     }
 
     showFilterSelector = () => {
@@ -1416,18 +1418,21 @@ class PlayPane extends React.Component<PlayProps, any> {
                         </div>
                         {this.state.extra_info_selected === "results" &&
                             <div className="play-results-container">
-                                <h3>{_("Overall:")}</h3>
+                                <h4>{_("Overall:")}</h4>
                                 <div>{_("Josekis played")}: {this.props.josekis_played}</div>
                                 <div>{_("Josekis played correctly")}: {this.props.josekis_completed}</div>
 
-                                <h3>{_("This Sequence:")}</h3>
+                                <h4>{_("This Sequence:")}</h4>
                                 <div>{_("Mistakes so far")}: {this.props.joseki_errors}</div>
 
                                 {this.props.joseki_successes !== null &&
                                     <div>{_("Correct plays of this position")}: {this.props.joseki_successes}</div>
                                 }
                                 {this.props.joseki_best_attempt !== null && this.props.joseki_best_attempt !== 0 &&
-                                    <div>{interpolate(_("Best attempt: {{mistakes}} mistakes"), {mistakes: this.props.joseki_best_attempt})}</div>
+                                    <div>
+                                    {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
+                                     + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
+                                    </div>
                                 }
                             </div>
                         }
