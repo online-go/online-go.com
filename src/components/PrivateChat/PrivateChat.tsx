@@ -114,6 +114,7 @@ class PrivateChat {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
                     superchat.addClass("enabled");
+                    this.dom.addChat("superchat");
 
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
@@ -123,6 +124,7 @@ class PrivateChat {
                     });
                 } else {
                     superchat.removeClass("enabled");
+                    this.dom.removeClass("superchat");
                     comm_socket.send("chat/pm/superchat", {
                         "player_id": this.user_id,
                         "username": this.player.username,

@@ -293,6 +293,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         setExtraActionCallback(null);
         $(window).off("focus", this.onFocus);
         window.document.title = "OGS";
+        let body = document.getElementsByTagName('body')[0];
+        body.classList.remove("zen");   //remove the class
     }
     getLocation():string {
         return window.location.pathname;
@@ -968,11 +970,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     toggleZenMode() {
         if (this.state.zen_mode) {
+            let body = document.getElementsByTagName('body')[0];
+            body.classList.remove("zen");   //remove the class
             this.setState({
                 zen_mode: false,
                 view_mode: this.computeViewMode(true),
             });
         } else {
+            let body = document.getElementsByTagName('body')[0];
+            body.classList.add("zen");   //add the class
             this.setState({
                 zen_mode: true,
                 view_mode: "zen",
