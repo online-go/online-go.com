@@ -937,6 +937,9 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /\b(https?:\/\/online-go\.com\/user\/view\/[0-9]+)\b/gi,
             pattern: /\b(https?:\/\/online-go\.com\/user\/view\/([0-9]+))\b/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/user/view/${m[2]}`}>{"player " + m[2]}</Link>)},
+        {split: /\b(https?:\/\/online-go\.com\/player\/[0-9]+\/?)/gi,
+            pattern: /\b(https?:\/\/online-go\.com\/player\/([0-9]+)\/?)/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/player/${m[2]}`}>{"player " + m[2]}</Link>)},
         // games
         {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}game ${m[2] || ""}${m[4] || ""}`}</Link>)},
