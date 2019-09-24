@@ -165,6 +165,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             josekis_completed: null,
             joseki_successes: null,
             joseki_best_attempt: null,
+            joseki_tag_id: null,       // the id of the "This is Joseki" tag, for use in setting default
 
             joseki_source: null as {},
             tags: [],   // The tags that are on the current position
@@ -224,6 +225,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
+
+        // When we go into Play mode we need to know what tag is the Joseki one
+        // We ask the server about that now so we have it handy
+        this.getJosekiTag();
     }
 
     getUserJosekiPermissions = () => {
@@ -242,6 +247,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
             });
         }).catch((r) => {
             console.log("Permissions GET failed:", r);
+        });
+    }
+
+    getJosekiTag = () => {
+        // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
+        fetch(server_url + "tag?group=0&seq=0", {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            //console.log("Server response:", body);
+
+            this.setState({
+                joseki_tag_id: body.tags[0].id
+            });
+        }).catch((r) => {
+            console.log("Joseki tag GET failed:", r);
         });
     }
 
@@ -675,10 +698,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         });
     }
 
+    // Here we are getting the user's overall play history results
     fetchPlayResults = () => {
         let results_url = server_url + "playrecord";
 
-        console.log("Fetching play record logs ", results_url);
+        // console.log("Fetching play record logs ", results_url);
         this.setState({extra_throb: true});
         fetch(results_url, {
             mode: 'cors',
@@ -687,14 +711,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
             this.setState({extra_throb: false});
-            console.log("Server response: ", body);
+            // console.log("Server response: ", body);
             this.extractPlayResults(body);
         }).catch((r) => {
             console.log("Play results GET failed:", r);
         });
     }
 
-    // results DTO can come from either a fetch of the player record, or a put of the results of a particular sequence
+    // results DTO can come from either a fetch of the overall player record, or a put of the results of a particular sequence
     extractPlayResults = (results_dto) => {
         this.setState({
             josekis_played: results_dto.josekis_played,
@@ -1001,6 +1025,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     josekis_completed={this.state.josekis_completed}
                     joseki_best_attempt={this.state.joseki_best_attempt}
                     joseki_successes={this.state.joseki_successes}
+                    joseki_tag_id={this.state.joseki_tag_id}
                     set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
                 />
@@ -1337,6 +1362,7 @@ interface PlayProps {
     josekis_completed: number;
     joseki_best_attempt: number;
     joseki_successes: number;
+    joseki_tag_id: number;
     set_variation_filter: any;
     current_filter: {contributor: number, tags: number[], source: number};
 }
@@ -1364,8 +1390,12 @@ class PlayPane extends React.Component<PlayProps, any> {
         if (this.props.current_filter.contributor === null &&
             this.props.current_filter.tags === null &&
             this.props.current_filter.source === null) {
-            // encourage them to use a filter, if they aren't already.
-            this.showFilterSelector();
+            // Set up a Joseki filter by default
+                this.props.set_variation_filter({
+                    tags:[this.props.joseki_tag_id],
+                    contributor: null,
+                    source: null
+                });
         }
         else {
             this.showResults();
