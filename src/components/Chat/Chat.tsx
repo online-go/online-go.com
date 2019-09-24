@@ -962,6 +962,11 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /\b(https?:\/\/online-go\.com\/review\/[0-9]+)\b/gi,
             pattern: /\b(https?:\/\/online-go\.com\/review\/([0-9]+))\b/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2]}`}>{"review " + m[2]}</Link>)},
+        // joseki
+        {split: /\b(joseki[- ]?[0-9]+)\b/gi, pattern: /\b(joseki[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{m[1]}</Link>)},
+        {split: /\b(https?:\/\/online-go\.com\/joseki\/[0-9]+)\b/gi,
+            pattern: /\b(https?:\/\/online-go\.com\/joseki\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{"joseki " + m[2]}</Link>)},
         // groups
         {split: /\b(group[- ]?[0-9]+)\b/gi, pattern: /\b(group[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
         {split: /\b(https?:\/\/online-go\.com\/group\/[0-9]+)\b/gi,
