@@ -2590,14 +2590,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
 
                 <a>
-                    <i className={"fa volume-icon " +
-                        (this.state.volume === 0 ? "fa-volume-off"
-                            : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                            onClick={this.toggleVolume}
-                    /> <input type="range"
-                        onChange={this.setVolume}
-                        value={this.state.volume} min={0} max={1.0} step={0.01}
-                    />
+                        <i className={ "fa volume-icon " +
+                            (this.state.volume === 0 ? "fa-volume-off"
+                                : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                                onClick={this.toggleVolume}
+                        />
+                        <input type="range"
+                            onChange={this.setVolume}
+                            value={this.state.volume} min={0} max={1.0} step={0.01}
+                        />
+                        <i className={ "fa volume-icon " +
+                            (this.state.volume === 0 ? "fa-volume-off"
+                                : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                                onClick={this.toggleVolume}
+                        />
                 </a>
 
                 <a onClick={this.toggleZenMode}><i className="ogs-zen-mode"></i> {_("Zen mode")}</a>
