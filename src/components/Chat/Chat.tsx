@@ -968,7 +968,7 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // library
         {split: /\b((?:library )?https?:\/\/online-go\.com\/library\/[0-9]+(?:\/[0-9]+)?)\b/gi,
             pattern: /\b((joseki )?https?:\/\/online-go\.com\/library\/([0-9]+)(?:\/([0-9]+))?)\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/library/${m[3]}` + (m[4] ? `/`+m[4] : ``)}>{"library" + (m[4] ? " " + m[4] : "") + " of player " + m[3]}</Link>)},
+            replacement: (m, idx) => (<Link key={idx} to={`/library/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{"library" + (m[4] ? " " + m[4] : "") + " of player " + m[3]}</Link>)},
         // groups
         {split: /\b(group[- ]?[0-9]+)\b/gi, pattern: /\b(group[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
         {split: /\b((?:group )?https?:\/\/online-go\.com\/group\/[0-9]+(?:\/[!#$&-;=-\[\]_a-z0-9~]+)*)\b/gi,
@@ -995,7 +995,7 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // learning-hub
         {split: /\b((?:tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/[-a-z]+(?:\/[0-9]+)?)\b/gi,
             pattern: /\b((tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/([-a-z]+)(?:\/([0-9]+))?)\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/learn-to-play-go/${m[3]}` + (m[4] ? `/` + m[4]: ``)}>{(m[2] ? m[2] : "tutorial ") + m[3] + (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}</Link>)},
+            replacement: (m, idx) => (<Link key={idx} to={`/learn-to-play-go/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{(m[2] ? m[2] : "tutorial ") + m[3] + (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}</Link>)},
         // links to senseis
         {split: /\b(https?:\/\/senseis\.xmp\.net\/\?[!#$&-;=-\[\]_a-zA-Z0-9~]*)\b/gi,
             pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([!#$&-;=-\[\]_a-zA-Z0-9~]*))\b/gi,
