@@ -934,45 +934,68 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // Match online-go links
         // user profiles
         {split: /\b(player ?[0-9]+)\b/gi, pattern: /\b(player ?([0-9]+))\b/gi, replacement: (m, idx) => (<Link key={idx} to={`/user/view/${m[2]}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/user\/view\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/user\/view\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/user/view/${m[2]}`}>{"player " + m[2]}</Link>)},
+        {split: /\b((?:player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/[0-9]+\/?[!#$&-;=-\[\]_a-zA-Z0-9~]*\/?)/gi,
+            pattern: /\b((player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/([0-9]+)\/?[!#$&-;=-\[\]_a-zA-Z0-9~]*\/?)/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/player/${m[3]}`}>{(m[2] ? m[2] : "player ") + m[3]}</Link>)},
+        {split: /\b((?:player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/[!#$&-;=-\[\]_a-z0-9~]+\/?)/gi,
+            pattern: /\b((player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/([!#$&-;=-\[\]_a-z0-9~]+)\/?)/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/u/${m[3]}`}>{(m[2] ? m[2] : "player ") + m[3]}</Link>)},
         // games
         {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}game ${m[2] || ""}${m[4] || ""}`}</Link>)},
         {split: /(^game[- ]?[0-9]{3,}|[ ]game[- ]?[0-9]{3,})/gi, pattern: /(^game[- ]?([0-9]{3,})|([ ])game[- ]?([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/game\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/game\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2]}`}>{"game " + m[2]}</Link>)},
+        {split: /\b((?:game )?https?:\/\/online-go\.com\/game(?:\/view)?\/[0-9]+)\b/gi,
+            pattern: /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/game/${m[3]}`}>{(m[2] ? m[2] : "game ") + m[3]}</Link>)},
         // reviews
         {split: /(^##[0-9]{3,}|[ ]##[0-9]{3,})/gi, pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}review ${m[2] || ""}${m[4] || ""}`}</Link>)},
         {split: /(^review[- ]?[0-9]{3,}|[ ]review[- ]?[0-9]{3,})/gi, pattern: /(^review[- ]?([0-9]{3,})|([ ])review[- ]?([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/review\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/review\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2]}`}>{"review " + m[2]}</Link>)},
+        {split: /\b((?:review )?https?:\/\/online-go\.com\/review(?:\/view)?\/[0-9]+)\b/gi,
+            pattern: /\b((review )?https?:\/\/online-go\.com\/review(?:\/view)?\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[3]}`}>{(m[2] ? m[2] : "review ") + m[3]}</Link>)},
+        // demos
+        {split: /\b((?:demo )?https?:\/\/online-go\.com\/demo(?:\/view)?\/[0-9]+)\b/gi,
+            pattern: /\b((demo )?https?:\/\/online-go\.com\/demo(?:\/view)?\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/demo/${m[3]}`}>{(m[2] ? m[2] : "demo ") + m[3]}</Link>)},
+        // joseki
+        {split: /\b(joseki[- ]?[0-9]+)\b/gi, pattern: /\b(joseki[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{m[1]}</Link>)},
+        {split: /\b((?:joseki )?https?:\/\/online-go\.com\/joseki\/[0-9]+)\b/gi,
+            pattern: /\b((?:joseki )?https?:\/\/online-go\.com\/joseki\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{"joseki " + m[2]}</Link>)},
+        // library
+        {split: /\b((?:library )?https?:\/\/online-go\.com\/library\/[0-9]+(?:\/[0-9]+)?)\b/gi,
+            pattern: /\b((joseki )?https?:\/\/online-go\.com\/library\/([0-9]+)(?:\/([0-9]+))?)\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/library/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{"library" + (m[4] ? " " + m[4] : "") + " of player " + m[3]}</Link>)},
         // groups
         {split: /\b(group[- ]?[0-9]+)\b/gi, pattern: /\b(group[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/group\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/group\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{"group " + m[2]}</Link>)},
-        // puzzles
-        {split: /\b(puzzle[- ]?[0-9]+)\b/gi, pattern: /\b(puzzle[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[2]}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/puzzle\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/puzzle\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[2]}`}>{"puzzle " + m[2]}</Link>)},
+        {split: /\b((?:group )?https?:\/\/online-go\.com\/group\/[0-9]+(?:\/[!#$&-;=-\[\]_a-z0-9~]+)*)\b/gi,
+            pattern: /\b((group )?https?:\/\/online-go\.com\/group\/([0-9]+)(?:\/[!#$&-;=-\[\]_a-z0-9~]+)*)\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/group/${m[3]}`}>{(m[2] ? m[2] : "group ") + m[3]}</Link>)},
         // tournaments
         {split: /\b(tournament[- ]?[0-9]+)\b/gi, pattern: /\b(tournament[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/tournament/${m[2]}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/tournament\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/tournament\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/tournament/${m[2]}`}>{"tournament " + m[2]}</Link>)},
+        {split: /\b((?:tournament )?https?:\/\/online-go\.com\/tournaments?\/[0-9]+)\b/gi,
+            pattern: /\b((tournament )?https?:\/\/online-go\.com\/tournaments?\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/tournament/${m[3]}`}>{(m[2] ? m[2] : "tournament ") + m[3]}</Link>)},
+        {split: /\b((?:tournament |tournament-record )?https?:\/\/online-go\.com\/tournament-records?\/[0-9]+(?:\/[!#$&-;=-\[\]_a-z0-9~]+)*)\b/gi,
+            pattern: /\b((tournament |tournament-record )?https?:\/\/online-go\.com\/tournament-records?\/([0-9]+)(?:\/[!#$&-;=-\[\]_a-z0-9~]+)*)\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/tournament-records/${m[3]}`}>{(m[2] ? m[2] : "tournament-record ") + m[3]}</Link>)},
         // ladders
         {split: /\b(ladder[- ]?[0-9]+)\b/gi, pattern: /\b(ladder[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/ladder/${m[2]}`}>{m[1]}</Link>)},
-        {split: /\b(https?:\/\/online-go\.com\/ladder\/[0-9]+)\b/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/ladder\/([0-9]+))\b/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/ladder/${m[2]}`}>{"ladder " + m[2]}</Link>)},
+        {split: /\b((?:ladder )?https?:\/\/online-go\.com\/ladder\/[0-9]+)\b/gi,
+            pattern: /\b((ladder )?https?:\/\/online-go\.com\/ladder\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/ladder/${m[3]}`}>{(m[2] ? m[2] : "ladder ") + m[3]}</Link>)},
+        // puzzles
+        {split: /\b(puzzle[- ]?[0-9]+)\b/gi, pattern: /\b(puzzle[- ]?([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[2]}`}>{m[1]}</Link>)},
+        {split: /\b((?:puzzle )?https?:\/\/online-go\.com\/puzzle\/[0-9]+)\b/gi,
+            pattern: /\b((puzzle )?https?:\/\/online-go\.com\/puzzle\/([0-9]+))\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[3]}`}>{(m[2] ? m[2] : "puzzle ") + m[3]}</Link>)},
+        // learning-hub
+        {split: /\b((?:tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/[-a-z]+(?:\/[0-9]+)?)\b/gi,
+            pattern: /\b((tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/([-a-z]+)(?:\/([0-9]+))?)\b/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/learn-to-play-go/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{(m[2] ? m[2] : "tutorial ") + m[3] + (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}</Link>)},
         // links to senseis
         {split: /\b(https?:\/\/senseis\.xmp\.net\/\?[!#$&-;=-\[\]_a-zA-Z0-9~]*)\b/gi,
             pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([!#$&-;=-\[\]_a-zA-Z0-9~]*))\b/gi,
@@ -981,8 +1004,11 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
         // general urls
         // replaces any url not matched above
-        {split: /(https?:\/\/[^<> ]+)/gi, pattern: /(https?:\/\/[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
-    ];
+        {split: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, pattern: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
+        {split: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019))\b/gi,
+            pattern: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019))\b/gi,
+            replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)}
+];
 
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
