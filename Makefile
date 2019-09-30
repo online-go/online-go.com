@@ -13,7 +13,7 @@ node_modules:
 pretty prettier:
 	npm run prettytsx
 	npm run prettyts
-	sed -ir 's@[ ]+$$/@@' `find src/ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
+	sed -r -i 's@[ ]+$$/@@' `find src/ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
 
 
 lint tslint:
