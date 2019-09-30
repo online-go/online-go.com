@@ -221,10 +221,10 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("config.user").is_moderator) /* aliases  */ {
             state.ip = null;
             state.host_ip_settings = null;
-         } /* }}} */
+         } 
 
         this.setState(state);
         this.updateHostIpSettings();
@@ -275,12 +275,12 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
     }
 
-    addFriend(id) { /* {{{ */
+    addFriend(id) { 
         post("me/friends", { "player_id": id })
         .then(() => this.setState({friend_request_sent: true}))
         .catch(errorAlerter);
-    } /* }}} */
-    removeFriend(id) { /* {{{ */
+    } 
+    removeFriend(id) { 
         swal({
             text: _("Are you sure you wish to remove this friend?"),
             showCancelButton: true,
@@ -294,8 +294,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    } /* }}} */
-    acceptFriend(id) { /* {{{ */
+    } 
+    acceptFriend(id) { 
         post("me/friends/invitations", { "from_user": id })
         .then(() => this.setState({
             friend_request_sent: false,
@@ -303,8 +303,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             is_friend: true
         }))
         .catch(errorAlerter);
-    } /* }}} */
-    generateAPIKey() { /* {{{ */
+    } 
+    generateAPIKey() { 
         if (!confirm("Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?")) {
             return;
         }
@@ -313,19 +313,19 @@ export class User extends React.PureComponent<UserProperties, any> {
             bot_apikey: res.bot_apikey
         }))
         .catch(errorAlerter);
-    } /* }}} */
-    saveBot() { /* {{{ */
+    } 
+    saveBot() { 
         put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
             swal("Bot Engine updated");
             this.resolve(this.props);
         })
         .catch(errorAlerter);
-    } /* }}} */
-    pm() { /* {{{ */
+    } 
+    pm() { 
         getPrivateChat(this.user_id).open();
-    } /* }}} */
-    saveSuperUserStuff() { /* {{{ */
+    } 
+    saveSuperUserStuff() { 
         let moderation_note = null;
         do {
             moderation_note = prompt("Moderator note:");
@@ -367,9 +367,9 @@ export class User extends React.PureComponent<UserProperties, any> {
         //.then(()=>$("#user-su-controls").modal('toggle'))
         .then(() => alert("Should be toggling modal")) // TODO
         .catch(errorAlerter);
-    } /* }}} */
+    } 
 
-    updateIcon = (files) => {{{
+    updateIcon = (files) => {
         console.log(files);
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
@@ -384,8 +384,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
-    clearIcon = () => {{{
+    }
+    clearIcon = () => {
         this.setState({new_icon: null});
         del("players/%%/icon", this.user_id)
         .then((res) => {
@@ -396,42 +396,42 @@ export class User extends React.PureComponent<UserProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    toggleEdit = () => {{{
+    }
+    toggleEdit = () => {
         if (this.state.editing) {
             this.saveEditChanges();
         } else {
             this.setState({editing: true});
         }
-    }}}
-    saveCountry = (ev) => {{{
+    }
+    saveCountry = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {country: ev.target.value})});
-    }}}
-    saveAbout = (ev) => {{{
+    }
+    saveAbout = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {about: ev.target.value})});
-    }}}
-    saveUsername = (ev) => {{{
+    }
+    saveUsername = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {username: ev.target.value})});
-    }}}
-    saveWebsite = (ev) => {{{
+    }
+    saveWebsite = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {website: ev.target.value})});
-    }}}
-    saveRealFirstName = (ev) => {{{
+    }
+    saveRealFirstName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             first_name: ev.target.value,
             name: ev.target.value + " " + (this.state.user.last_name || ""),
         })});
-    }}}
-    saveRealLastName = (ev) => {{{
+    }
+    saveRealLastName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             last_name: ev.target.value,
             name: (this.state.user.first_name || "") + " " + ev.target.value,
         })});
-    }}}
-    saveRealNameIsPrivate = (ev) => {{{
+    }
+    saveRealNameIsPrivate = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
-    }}}
-    saveEditChanges() {{{
+    }
+    saveEditChanges() {
         let username = this.state.user.username.trim();
         let promise: Promise<void>;
         if (!data.get('user').is_moderator && (this.original_username !== username)) {
@@ -460,30 +460,30 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }}}
-    openModerateUser = () => {{{
+    }
+    openModerateUser = () => {
         let modal = openModerateUserModal(this.state.user);
         modal.on("close", () => {
             this.resolve(this.props);
         });
-    }}}
+    }
 
-    updateGameSearch = (player) => {{{
+    updateGameSearch = (player) => {
         if (player) {
             this.refs.game_table.filter.alt_player = player.id;
         } else {
             delete this.refs.game_table.filter.alt_player;
         }
         this.refs.game_table.filter_updated();
-    }}}
-    updateReviewSearch = (player) => {{{
+    }
+    updateReviewSearch = (player) => {
         if (player) {
             this.refs.review_table.filter.alt_player = player.id;
         } else {
             delete this.refs.review_table.filter.alt_player;
         }
         this.refs.review_table.filter_updated();
-    }}}
+    }
 
 
     addModeratorNote = () => {
@@ -511,14 +511,14 @@ export class User extends React.PureComponent<UserProperties, any> {
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
         let domWorkScaleback = 1;
-        let doDomWork = () => { /* {{{ */
+        let doDomWork = () => { 
             try {
                 $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
             } catch (e) {
                 console.log(e.stack);
             }
-        }; /* }}} */
-        setTimeout(doDomWork, 0); /* }}} */
+        }; 
+        setTimeout(doDomWork, 0); 
 
         const rows = [
             ["a1", "b1", "c1"],
@@ -611,10 +611,10 @@ export class User extends React.PureComponent<UserProperties, any> {
 
         return (
           <div className="User container">
-            <div>{/* Profile card {{{ */}
+            <div>{/* Profile card  */}
                 <div className="profile-card">
                     <div className="avatar-and-ratings-row">
-                        <div className="avatar-container">{/* Avatar container{{{ */}
+                        <div className="avatar-container">{/* Avatar container */}
                             {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
                                 : <span className='username'><Player user={user}/></span>
@@ -700,19 +700,19 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
                             </div>
                         </div>
-                        {/* }}} */}
-                        {/* }}} */}
+                        
+                        
                         {(!user.professional || global_user.id === user.id) &&
-                            <div className='ratings-container'>{/* Ratings {{{ */}
+                            <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>{_("Ratings")}</h3>
                                 {this.renderRatingGrid()}
                             </div>
                         }
-                        {/* }}} */}
+                        
                     </div>
                 </div>
             </div>
-            {/* }}} */}
+            
 
             {(!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
@@ -723,8 +723,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
 
             <div className="row">
-                <div className='col-sm-8'>{/* {{{ */}
-                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
+                <div className='col-sm-8'>
+                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
                         <b>Users with the same IP or Browser ID</b>
                         <PaginatedTable
                             className="aliases"
@@ -778,7 +778,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             ]}
                         />
                     </Card>
-                    /* }}} */}
+                    }
 
                 {(user.about || editing || null) &&
                     <Card>
@@ -793,7 +793,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 <GameList list={this.state.active_games} player={user}/>
 
 
-                    <div className="row">{/* Game History {{{ */}
+                    <div className="row">{/* Game History  */}
                         <div className="col-sm-12">
                             <h2>{_("Game History")}</h2>
                             <Card>
@@ -827,8 +827,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </Card>
                         </div>
                     </div>
-                    {/* }}} */}
-                    <div className="row">{/* Reviews and Demos{{{ */}
+                    
+                    <div className="row">{/* Reviews and Demos */}
                         <div className="col-sm-12">
                             <h2>{_("Reviews and Demos")}</h2>
                             <Card>
@@ -859,11 +859,11 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </Card>
                         </div>
                     </div>
-                    {/* }}} */}
+                    
                 </div>
-                {/* }}} */}
+                
 
-                <div className="col-sm-4">{/* {{{ */}
+                <div className="col-sm-4">
                     {(!(user.professional)) &&
                         <div >
 
@@ -1023,7 +1023,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>}
                     </Card>
                 </div>
-                {/* end right col }}} */}
+                {/* end right col  */}
             </div>
           </div>
         );

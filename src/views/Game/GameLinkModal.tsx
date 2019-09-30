@@ -90,6 +90,6 @@ export function openGameLinkModal(goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
 }
 
-function yesno(tf: boolean) {{{
+function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
-}}}
+}

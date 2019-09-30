@@ -275,10 +275,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
     }
 
-    componentWillUnmount() {{{
-    }}}
+    componentWillUnmount() {
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         window.document.title = _("Support OGS");
 
         if (!DEPRECATED_stripe_checkout_js_promise) {
@@ -333,9 +333,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(errorAlerter);
         }
 
-    }}}
+    }
 
-    setAmountByStep = (ev) => {{{
+    setAmountByStep = (ev) => {
         let step = parseInt(ev.target.value);
         let amount = amount_steps[this.state.interval][parseInt(ev.target.value)];
 
@@ -344,8 +344,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             amount: amount,
             custom_amount: amount ? this.state.custom_amount : amount_steps[this.state.interval][amount_steps[this.state.interval].length - 2] * 2 * getCurrencyScale(this.state.currency)
         });
-    }}}
-    setCurrency = (currency) => {{{
+    }
+    setCurrency = (currency) => {
         let custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
 
         if (currency) {
@@ -355,8 +355,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
             preferences.set("supporter.currency", currency);
         }
-    }}}
-    setInterval = (interval) => {{{
+    }
+    setInterval = (interval) => {
         if (interval) {
             let step = this.state.amount_step;
 
@@ -367,30 +367,30 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
             preferences.set("supporter.interval", interval);
         }
-    }}}
-    updateCustomAmount = (values) => {{{
+    }
+    updateCustomAmount = (values) => {
         console.log(values);
         this.setState({
             custom_amount: values.floatValue || 0.0
         });
-    }}}
-    isValueAllowed = (values) => {{{
+    }
+    isValueAllowed = (values) => {
         return (values.floatValue || 0) >= 0;
-    }}}
-    getAmount() {{{
+    }
+    getAmount() {
         if (this.state.amount) {
             return this.state.amount * getCurrencyScale(this.state.currency);
         }
         return this.state.custom_amount;
-    }}}
-    getStripeAmount() {{{
+    }
+    getStripeAmount() {
         /* Stripe wants amount values in whole number units of the smallest currency fraction, which
          * is to say, $5.00 => 500 */
         return this.getAmount() * Math.pow(10, getCurrencyDecimals(this.state.currency));
-    }}}
+    }
 
 
-    cancelRecurringDonation(id) {{{
+    cancelRecurringDonation(id) {
         swal({
             text: _("Are you sure you want to cancel your support for OGS?"),
             showCancelButton: true,
@@ -409,10 +409,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     /**** DEPRECATED BRAINTREE CODE ****/
-    DEPRECATEDprocessBraintreeCC = () => {{{
+    DEPRECATEDprocessBraintreeCC = () => {
         let amount = this.getAmount();
 
         if (amount < 1.0) {
@@ -448,10 +448,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     /*
-    DEPRECATEDupdateCC = () => {{{
+    DEPRECATEDupdateCC = () => {
         if (!this.validateCC()) {
             return;
         }
@@ -482,11 +482,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             window.location.reload();
         })
         .catch(errorAlerter);
-    }}}
+    }
     */
     /**** END DEPRECATED BRAINTREE CODE ****/
 
-    processPaypal = () => {{{
+    processPaypal = () => {
         if (this.state.disable_payment_buttons) {
             return;
         }
@@ -512,14 +512,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(ignore); /* we already alert in this case */
         })
         .catch(errorAlerter);
-    }}}
-    cancelPaypal = () => {{{
+    }
+    cancelPaypal = () => {
         swal({
             html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please log in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
         });
-    }}}
+    }
 
-    createPaymentAccountAndMethod(vendor, details) {{{
+    createPaymentAccountAndMethod(vendor, details) {
         let obj = {
             "payment_vendor": vendor,
         };
@@ -535,8 +535,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         console.log("Creating payment account for vendor ", vendor, details);
         return post("me/payment_accounts", obj);
-    }}}
-    processSupporterSignup(vendor, payment_method, amount, currency, interval) {{{
+    }
+    processSupporterSignup(vendor, payment_method, amount, currency, interval) {
         let promise = post("me/supporter", {
             "vendor": vendor,
             "payment_method": payment_method,
@@ -563,7 +563,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         .catch(errorAlerter);
 
         return promise;
-    }}}
+    }
 
     /* Returns the aggregate descaled support amount per month */
     getSupportLevel():number {

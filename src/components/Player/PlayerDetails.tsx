@@ -72,7 +72,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         this.resolve(this.props.playerId);
     }
 
-    blankState() {{{
+    blankState() {
         return {
             resolved: false,
             resolving: 0,
@@ -85,8 +85,8 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             country: "un",
             error: null,
         };
-    }}}
-    resolve(player_id) {{{
+    }
+    resolve(player_id) {
         this.setState({resolved: false});
         player_cache.fetch(
             this.props.playerId,
@@ -108,8 +108,8 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 console.error(err);
             }
         });
-    }}}
-    UNSAFE_componentWillReceiveProps(new_props) {{{
+    }
+    UNSAFE_componentWillReceiveProps(new_props) {
         if (new_props.playerId !== this.props.playerId) {
             let player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();
@@ -121,16 +121,16 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 this.resolve(new_props.playerId);
             }, 1);
         }
-    }}}
-    componentWillUnmount() {{{
-    }}}
+    }
+    componentWillUnmount() {
+    }
 
     close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
     }
 
-    gotoPlayerView = (ev) => {{{
+    gotoPlayerView = (ev) => {
         this.close_all_modals_and_popovers();
 
         let url = `/player/${this.props.playerId}/${this.state.username}`;
@@ -139,52 +139,52 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         } else {
             browserHistory.push(url);
         }
-    }}}
-    challenge = (_ev) => {{{
+    }
+    challenge = (_ev) => {
         challenge(this.props.playerId);
         this.close_all_modals_and_popovers();
-    }}}
-    message = (_ev) => {{{
+    }
+    message = (_ev) => {
         getPrivateChat(this.props.playerId).open();
         this.close_all_modals_and_popovers();
-    }}}
-    report = (_ev) => {{{
+    }
+    report = (_ev) => {
         alertModerator({user: this.props.playerId});
         this.close_all_modals_and_popovers();
-    }}}
-    block = (ev) => {{{
+    }
+    block = (ev) => {
         let controls = openBlockPlayerControls(ev, this.props.playerId);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
-    }}}
-    ban = (_ev) => {{{
+    }
+    ban = (_ev) => {
         ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }}}
-    shadowban = (_ev) => {{{
+    }
+    shadowban = (_ev) => {
         shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }}}
-    removeShadowban = (_ev) => {{{
+    }
+    removeShadowban = (_ev) => {
         remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }}}
-    removeBan = (_ev) => {{{
+    }
+    removeBan = (_ev) => {
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }}}
-    openSupporterAdmin = () => {{{
+    }
+    openSupporterAdmin = () => {
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
-    }}}
-    addFriend = () => {{{
+    }
+    addFriend = () => {
         toast(<div>{_("Sent friend request")}</div>, 5000);
         this.close_all_modals_and_popovers();
         post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
-    }}}
-    removeFriend = () => {{{
+    }
+    removeFriend = () => {
         toast(<div>{_("Removed friend")}</div>, 5000);
         this.close_all_modals_and_popovers();
         post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
-    }}}
-    removeSingleLine = () => {{{
+    }
+    removeSingleLine = () => {
         let m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
         if (m) {
             let game    = m[1] === 'g';
@@ -211,8 +211,8 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         }
 
         this.close_all_modals_and_popovers();
-    }}}
-    removeAllChats = () => {{{
+    }
+    removeAllChats = () => {
         this.close_all_modals_and_popovers();
 
         swal({
@@ -224,7 +224,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         })
         .then(() => termination_socket.send('chat/remove_all', {player_id: this.props.playerId}))
         .catch(() => 0);
-    }}}
+    }
     render() {
         let user = data.get("user");
 
@@ -310,6 +310,6 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     }
 }
 
-export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {{{
+export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
     extraActionCallback = cb;
-}}}
+}

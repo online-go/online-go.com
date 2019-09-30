@@ -266,6 +266,6 @@ export function openGameInfoModal(config:any, black: any, white:any, annulled:bo
     openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
 }
 
-function yesno(tf: boolean) {{{
+function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
-}}}
+}

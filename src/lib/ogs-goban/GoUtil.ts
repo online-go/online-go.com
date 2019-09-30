@@ -22,11 +22,11 @@ let __deviceCanvasScalingRatio = null;
 /* Creates a non-blury canvas object. Most systems don't have an issue with
  * this, but HDPI android devices deal with scaling canvases and images in a
  * retarded fashion and require this hack to get around it. */
-export function createDeviceScaledCanvas(width, height) { /* {{{ */
+export function createDeviceScaledCanvas(width, height) { 
     //return rescaleDeviceScaledCanvas($("<canvas>").attr("width", width).attr("height", height), width, height);
     return $("<canvas>").attr("width", width).attr("height", height);
-} /* }}} */
-export function resizeDeviceScaledCanvas(_canvas, width, height) { /* {{{ */
+} 
+export function resizeDeviceScaledCanvas(_canvas, width, height) { 
     let canvas = _canvas[0];
     let context = (canvas as HTMLCanvasElement).getContext("2d");
 
@@ -68,9 +68,9 @@ export function resizeDeviceScaledCanvas(_canvas, width, height) { /* {{{ */
     }
 
     return _canvas;
-} /* }}} */
+} 
 
-export function deviceCanvasScalingRatio() { /* {{{ */
+export function deviceCanvasScalingRatio() { 
     if (!__deviceCanvasScalingRatio) {
         let canvas = $("<canvas>").attr("width", 257).attr("height", 257)[0];
         let context = (canvas as HTMLCanvasElement).getContext("2d");
@@ -86,9 +86,9 @@ export function deviceCanvasScalingRatio() { /* {{{ */
     }
 
     return __deviceCanvasScalingRatio;
-} /* }}} */
+} 
 
-export function getRelativeEventPosition(event) { /* {{{ */
+export function getRelativeEventPosition(event) { 
     let x;
     let y;
     let offset = $(event.target).offset();
@@ -109,11 +109,11 @@ export function getRelativeEventPosition(event) { /* {{{ */
     }
 
     return {"x": x, "y": y};
-} /* }}} */
-export function getRandomInt(min, max) { /* {{{ */
+} 
+export function getRandomInt(min, max) { 
   return Math.floor(Math.random() * (max - min)) + min;
-} /* }}} */
-export function shortDurationString(seconds) { /* {{{ */
+} 
+export function shortDurationString(seconds) { 
     let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
@@ -124,8 +124,8 @@ export function shortDurationString(seconds) { /* {{{ */
         (hours ? " " + interpolate(pgettext("Short time (hours)", "%sh"), [hours]) : "") +
         (minutes ? " " + interpolate(pgettext("Short time (minutes)", "%sm"), [minutes]) : "") +
         (seconds ? " " + interpolate(pgettext("Short time (seconds)", "%ss"), [seconds]) : "");
-} /* }}} */
-export function dup(obj: any): any { /* {{{ */
+} 
+export function dup(obj: any): any { 
     let ret;
     if (typeof(obj) === "object") {
         if (Array.isArray(obj)) {
@@ -143,8 +143,8 @@ export function dup(obj: any): any { /* {{{ */
         return obj;
     }
     return ret;
-} /* }}} */
-export function deepEqual(a: any, b: any) { /* {{{ */
+} 
+export function deepEqual(a: any, b: any) { 
     if (typeof(a) !== typeof(b)) { return false; }
 
     if (typeof(a) === "object") {
@@ -180,4 +180,4 @@ export function deepEqual(a: any, b: any) { /* {{{ */
     } else {
         return a === b;
     }
-} /* }}} */
+} 

@@ -178,7 +178,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         return promise;
     }
 
-    uploadSGFs = (files) => {{{
+    uploadSGFs = (files) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
             Promise.all(files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)))
@@ -189,12 +189,12 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         } else {
             console.log("Not uploading selected files since we're not on our own library page");
         }
-    }}}
+    }
 
-    setCollection(collection_id) {{{
+    setCollection(collection_id) {
         browserHistory.push(`/library/${this.state.player_id}/${collection_id}`);
-    }}}
-    setCheckedGame(entry_id, event) {{{
+    }
+    setCheckedGame(entry_id, event) {
         let new_games_checked = Object.assign({}, this.state.games_checked);
         if (event.target.checked) {
             new_games_checked[entry_id] = true;
@@ -205,14 +205,14 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.setState({
             games_checked: new_games_checked
         });
-    }}}
-    setNewCollectionName = (ev) => {{{
+    }
+    setNewCollectionName = (ev) => {
         this.setState({new_collection_name: ev.target.value});
-    }}}
-    setNewCollectionPrivate = (ev) => {{{
+    }
+    setNewCollectionPrivate = (ev) => {
         this.setState({new_collection_private: ev.target.checked});
-    }}}
-    createCollection = () => {{{
+    }
+    createCollection = () => {
 
         post("library/%%/collections", this.state.player_id, {
             "parent_id": this.state.collection_id,
@@ -225,8 +225,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.setState({
             new_collection_name: ""
         });
-    }}}
-    deleteCollection = () => {{{
+    }
+    deleteCollection = () => {
         let parent = this.state.collections[this.state.collection_id].parent;
         post("library/%%", this.state.player_id, {
             delete_collections: [this.state.collection_id]
@@ -237,8 +237,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             .catch(ignore);
         })
         .catch(errorAlerter);
-    }}}
-    deleteGames = () => {{{
+    }
+    deleteGames = () => {
         post("library/%%", this.state.player_id, {
             delete_entries: Object.keys(this.state.games_checked)
         })
@@ -247,14 +247,14 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         })
         .catch(errorAlerter);
         this.setState({"games_checked": {}});
-    }}}
+    }
     /*
-    toggleLock = (collection) => {{{
+    toggleLock = (collection) => {
         collection['private'] = !collection['private'];
         this.forceUpdate();
-    }}}
+    }
     */
-    toggleAllGamesChecked = () => {{{
+    toggleAllGamesChecked = () => {
         let collection = this.state.collections[this.state.collection_id];
         let all_games_checked = true;
         for (let g of collection.games) {
@@ -272,7 +272,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             }
             this.setState({games_checked: new_checked});
         }
-    }}}
+    }
 
     render() {
         let owner = this.state.player_id === data.get("user").id || null;
@@ -404,7 +404,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }
 }
 
-function outcome_formatter(entry) {{{
+function outcome_formatter(entry) {
     if (entry.outcome && entry.outcome !== "?") {
         let ret = "T";
         if (entry.white_lost && !entry.black_lost) {
@@ -424,4 +424,4 @@ function outcome_formatter(entry) {{{
     } else {
         return entry.outcome;
     }
-}}}
+}

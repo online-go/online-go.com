@@ -71,19 +71,19 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         this.forceUpdate();
     }
 
-    reload = () => {{{
+    reload = () => {
         get("ladders/%%", this.props.ladderId)
         .then((ladder) => this.setState({ladder: ladder}))
         .catch(errorAlerter);
 
         this.updatePlayers();
-    }}}
+    }
 
-    updatePlayers = () => {{{
+    updatePlayers = () => {
         if (this.refs.ladder) {
             this.refs.ladder.update();
         }
-    }}}
+    }
 
     challenge(ladder_player) {
         console.log(ladder_player);

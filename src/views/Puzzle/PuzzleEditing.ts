@@ -122,7 +122,7 @@ export class PuzzleEditor {
      * @param puzzle_id puzzle id
      * @param callback assignes new state and editing status
      */
-    fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {{{
+    fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {
         abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
             get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
@@ -178,7 +178,7 @@ export class PuzzleEditor {
             callback(new_state, false);
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     /**
      * Reset board
@@ -186,7 +186,7 @@ export class PuzzleEditor {
      * @param editing True if it is editing
      * @return Goban options
      */
-    reset(goban_div: any, editing: boolean, replacementSettingsFunction: () => object): any {{{
+    reset(goban_div: any, editing: boolean, replacementSettingsFunction: () => object): any {
         let puzzle = this.puzzle = dup(this.orig_puzzle);
 
         if (!puzzle) {
@@ -236,10 +236,10 @@ export class PuzzleEditor {
         }
 
         return opts;
-    }}}
+    }
 
 
-    getBounds(puzzle, width, height) {{{
+    getBounds(puzzle, width, height) {
         let ret = {
             top: 9999,
             bottom: 0,
@@ -302,7 +302,7 @@ export class PuzzleEditor {
         }
 
         return ret;
-    }}}
+    }
 
 
 }

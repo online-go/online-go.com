@@ -38,40 +38,40 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
         };
     }
 
-    UNSAFE_componentWillMount() {{{
+    UNSAFE_componentWillMount() {
         this.init(this.props.channel, this.props.userId);
-    }}}
-    UNSAFE_componentWillReceiveProps(next_props) {{{
+    }
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.channel !== next_props.channel) {
             this.deinit();
             this.init(next_props.channel, next_props.userId);
         }
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.deinit();
-    }}}
+    }
 
-    init(channel, user_id) {{{
+    init(channel, user_id) {
         this.proxy = chat_manager.join(channel, user_id);
         this.proxy.on("join", () => this.update(user_id));
         this.proxy.on("part", () => this.update(user_id));
         this.update(user_id);
-    }}}
-    deinit() {{{
+    }
+    deinit() {
         this.proxy.part();
         this.proxy = null;
-    }}}
-    update = (user_id) => {{{
+    }
+    update = (user_id) => {
         let online = user_id in this.proxy.channel.user_list;
         if (this.state.online !== online) {
             this.setState({online: online});
         }
-    }}}
-    toggleSortOrder = () => {{{
+    }
+    toggleSortOrder = () => {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }}}
+    }
 
 
     render() {

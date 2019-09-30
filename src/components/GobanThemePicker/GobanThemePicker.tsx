@@ -168,7 +168,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         );
     }
 
-    renderPickers() {{{
+    renderPickers() {
         let start = new Date();
         let square_size = this.state.size;
 
@@ -224,5 +224,5 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
         let end = new Date();
         //console.info("Render time: ", (end.getTime() - start.getTime()))
-    }}}
+    }
 }

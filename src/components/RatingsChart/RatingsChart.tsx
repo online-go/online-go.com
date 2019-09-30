@@ -150,15 +150,15 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         };
         this.chart_div = $("<div>")[0];
     }
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
         if (this.shouldDisplayRankInformation()) {
             this.y_axis_rank_labels.style('display', null);
         } else {
             this.y_axis_rank_labels.style('display', 'none');
         }
-    }}}
-    componentDidUpdate(prevProps, prevState) {{{
+    }
+    componentDidUpdate(prevProps, prevState) {
         if (this.props.playerId !== prevProps.playerId
             || this.props.speed !== prevProps.speed
             || this.props.size  !== prevProps.size
@@ -170,14 +170,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         } else {
             this.y_axis_rank_labels.style('display', 'none');
         }
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.deinitialize();
-    }}}
-    UNSAFE_componentWillReceiveProps(nextProps) {{{
+    }
+    UNSAFE_componentWillReceiveProps(nextProps) {
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
-    }}}
+    }
     shouldComponentUpdate(nextProps, nextState) {
         if (this.props.playerId !== nextProps.playerId
             || this.props.speed !== nextProps.speed
@@ -227,7 +227,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         return this.props.size === 0 && this.props.speed === 'overall';
     }
 
-    setRanges = () => {{{
+    setRanges = () => {
         let sizes = this.chart_sizes();
 
         this.width = sizes.width;
@@ -250,9 +250,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.outcomes_y.range([win_loss_bars_height, 0]);
-    }}}
+    }
 
-    initialize() {{{
+    initialize() {
         let self = this;
 
         this.setRanges();
@@ -515,8 +515,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .call(this.brush);
 
         this.refreshData();
-    }}}
-    deinitialize() {{{
+    }
+    deinitialize() {
         this.destroyed = true;
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
@@ -524,26 +524,26 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
         this.svg.remove();
         this.container = null;
-    }}}
-    refreshData() {{{
+    }
+    refreshData() {
         this.setState({loading: true});
         d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
             makeRatingEntry
         ).then(this.loadDataAndPlot)
         .catch(errorLogger)
         ;
-    }}}
+    }
 
     /* The area we can draw all of our charting in */
-    chart_sizes() {{{
+    chart_sizes() {
         let width = Math.max(chart_min_width, $(this.container).width()  - margin.left - margin.right);
         return {
             width: width,
             height: height,
         };
-    }}}
+    }
 
-    onResize = (no_debounce:boolean = false) => {{{
+    onResize = (no_debounce:boolean = false) => {
         if (this.destroyed) {
             return;
         }
@@ -597,9 +597,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
             this.onTimelineBrush();
         }
-    }}}
+    }
 
-    plotWinLossPie = () => {{{
+    plotWinLossPie = () => {
         let agg = this.win_loss_aggregate;
 
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
@@ -683,11 +683,11 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('x', legend_xoffset + 15 + 10)
                 .attr('y', legend_yoffset + i * 20 + 12);
         });
-    }}}
+    }
 
     /* Callback function for data retrieval, which plots the retrieved data */
-    //loadDataAndPlot = (err, data) => {{{
-    loadDataAndPlot = (data) => {{{
+    //loadDataAndPlot = (err, data) => {
+    loadDataAndPlot = (data) => {
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
@@ -797,9 +797,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
 
         this.plotWinLossBars();
-    }}}
+    }
 
-    plotWinLossBars = () => {{{
+    plotWinLossBars = () => {
         const W = (d:RatingEntry, alpha:number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
@@ -875,9 +875,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('width', (d:RatingEntry) => W(d, 0.999))
                 .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
         );
-    }}}
+    }
 
-    getUTCMonthWidth(d:Date):number {{{
+    getUTCMonthWidth(d:Date):number {
         let days_in_month;
 
         /*
@@ -904,8 +904,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
         return this.graph_width * (days_in_month / days_in_range);
-    }}}
-    onTimelineBrush = () => {{{
+    }
+    onTimelineBrush = () => {
         this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
         this.date_extents[0].setHours(0, 0, 0, 0);    /* start of day */
@@ -965,7 +965,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.rating_graph.select('.x.axis').call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
-    }}}
+    }
 
     setContainer = (e) => {
         let need_resize = this.container === null;
@@ -975,7 +975,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
     }
 
-    render() {{{
+    render() {
         this.computeWinLossNumbers();
         if (!this.state.loading && this.show_pie) {
             this.plotWinLossPie();
@@ -994,9 +994,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 {this.show_pie ? null : this.renderWinLossNumbersAsText()}
             </div>
         );
-    }}}
+    }
 
-    computeWinLossNumbers() {{{
+    computeWinLossNumbers() {
         let date_extents = [];
 
         if (this.state.hovered_date) {
@@ -1053,9 +1053,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
 
         this.win_loss_aggregate = agg;
-    }}}
+    }
 
-    renderWinLossNumbersAsText() {{{
+    renderWinLossNumbersAsText() {
         if (this.state.loading || this.state.nodata || !this.game_entries) {
             return <div className='win-loss-stats'/>;
         }
@@ -1082,18 +1082,18 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 </div>
             </div>
         );
-    }}}
+    }
 }
 
 
-function speed_translation(speed:speed_t) {{{
+function speed_translation(speed:speed_t) {
     switch (speed) {
         case 'overall': return _("Overall");
         case 'blitz' : return _("Blitz");
         case 'live' : return _("Live");
         case 'correspondence' : return _("Correspondence");
     }
-}}}
-function is_same_month(d1:Date, d2:Date):boolean {{{
+}
+function is_same_month(d1:Date, d2:Date):boolean {
     return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
-}}}
+}

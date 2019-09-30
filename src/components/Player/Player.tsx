@@ -65,7 +65,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         if (!this.props.disableCacheUpdate) {
             if (this.state.user && this.state.user.id > 0) {
                 player_cache.update(this.state.user);
@@ -83,13 +83,13 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
         this.syncUpdateOnline(this.props.user);
-    }}}
+    }
 
-    updateOnline = (_player_id, tf) => {{{
+    updateOnline = (_player_id, tf) => {
         this.setState({is_online: tf});
-    }}}
+    }
 
-    syncUpdateOnline(user_or_id) {{{
+    syncUpdateOnline(user_or_id) {
         let id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
 
         if (!this.props.online || id !== this.online_subscription_user_id) {
@@ -103,9 +103,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             online_status.subscribe(this.online_subscription_user_id, this.updateOnline);
         }
 
-    }}}
+    }
 
-    UNSAFE_componentWillReceiveProps(new_props) {{{
+    UNSAFE_componentWillReceiveProps(new_props) {
         if (typeof(new_props.user) === "object") {
             this.setState({user: new_props.user});
         } else {
@@ -130,13 +130,13 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
         this.syncUpdateOnline(new_props.user);
-    }}}
-    componentDidUpdate() {{{
+    }
+    componentDidUpdate() {
         this.syncUpdateOnline(this.props.user);
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.syncUpdateOnline(null);
-    }}}
+    }
 
     render() {
         if (!this.state.user) {

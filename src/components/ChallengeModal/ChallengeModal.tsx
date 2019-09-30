@@ -51,7 +51,7 @@ interface ChallengeModalProperties {
     tournamentRecordRoundId?: number;
 }
 
-function deepAssign(obj1: any, obj2: any) {{{
+function deepAssign(obj1: any, obj2: any) {
     if (typeof(obj1) !== "object" || typeof(obj2) !== "object") {
         return obj1;
     }
@@ -71,11 +71,11 @@ function deepAssign(obj1: any, obj2: any) {{{
     }
 
     return obj1;
-}}}
+}
 
 export let username_to_id = {};
 
-/* Constants {{{ */
+/* Constants  */
 
 let negKomiRanges = [];
 let posKomiRanges = [];
@@ -116,13 +116,13 @@ const standard_board_sizes = {
     "5x13": "5x13",
 };
 
-/* }}} */
+
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
     refs: {
         time_control_picker
     };
-    constructor(props) { /* {{{ */
+    constructor(props) { 
         super(props);
 
         let speed = data.get("challenge.speed", "live");
@@ -236,9 +236,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 this.close();
             }, 1);
         }
-    } /* }}} */
+    } 
 
-    syncBoardSize(value) {{{
+    syncBoardSize(value) {
         let conf = dup(this.state.conf);
         let challenge = dup(this.state.challenge);
 
@@ -250,8 +250,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         this.setState({ conf: conf, challenge: challenge});
-    }}}
-    setAGARanked(tf) {{{
+    }
+    setAGARanked(tf) {
         let next = this.nextState();
 
         next.challenge.aga_ranked = tf;
@@ -261,9 +261,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         } else {
             this.setState({challenge: next.challenge});
         }
-    }}}
+    }
 
-    setRanked(tf) { /* {{{ */
+    setRanked(tf) { 
         let next = this.nextState();
 
         next.challenge.game.ranked = tf;
@@ -291,9 +291,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge: next.challenge,
             conf: next.conf,
         });
-    } /* }}} */
+    } 
 
-    saveSettings() {{{
+    saveSettings() {
         let next = this.next();
         if (this.refs.time_control_picker) {
             this.refs.time_control_picker.saveSettings();
@@ -303,8 +303,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         data.set("challenge.bot", next.conf.bot_id);
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
         data.set("demo.settings", next.demo);
-    }}}
-    createDemo = () => {{{
+    }
+    createDemo = () => {
         if (!this.validateBoardSize()) { return; }
 
         let next = this.next();
@@ -348,8 +348,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             console.log("Demo create response: ", res);
             browserHistory.push(`/demo/view/${res.id}`);
         }).catch(errorAlerter);
-    }}}
-    validateBoardSize() {{{
+    }
+    validateBoardSize() {
         let next = this.next();
 
         try {
@@ -365,8 +365,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             return false;
         }
         return true;
-    }}}
-    createChallenge = () => {{{
+    }
+    createChallenge = () => {
         let next = this.next();
 
         if (!this.validateBoardSize()) {
@@ -545,9 +545,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             })
         .catch(errorAlerter);
-    }}}
+    }
 
-    /* update bindings {{{ */
+    /* update bindings  */
     update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", ev);
     update_challenge_game_name  = (ev) => this.upstate("challenge.game.name", ev);
     update_private              = (ev) => this.upstate([["challenge.game.private", ev], ["challenge.game.ranked", false]]);
@@ -603,7 +603,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_demo_white_name      = (ev) => this.upstate("demo.white_name", ev);
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
     update_demo_white_ranking   = (ev) => this.upstate("demo.white_ranking", ev);
-    /* }}} */
+    
     update_selected_demo_player_black   = (ev) => {
         let idx = parseInt(ev.target.value);
         this.upstate("demo.black_name", this.props.playersList[idx].name);
@@ -621,7 +621,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         });
     }
 
-    /* rendering {{{ */
+    /* rendering  */
 
     // game name and privacy
     basicSettings = () => {
@@ -1009,19 +1009,19 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="challenge  form-inline">
                     <div className="challenge-pane-container">
                       { this.basicSettings() }
-                      {(!this.state.initial_state || null) && /* {{{ */
+                      {(!this.state.initial_state || null) && 
                           this.additionalSettings()
-                      }{/* }}} */}
+                      }
                     </div>
 
                     <hr/>
-                    {(mode !== "demo" || null) && /* {{{ */
+                    {(mode !== "demo" || null) && 
                         this.advancedSettings()
-                    }{/* }}} */}
-                    {(mode === "demo" || null) && /* {{{ */
+                    }
+                    {(mode === "demo" || null) && 
                         this.advancedDemoSettings()
                     }
-                    {/* }}} */}
+                    
                 </div>
               </div>
               <div className="buttons">
@@ -1034,10 +1034,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
           </div>
         );
     }
-    /* }}} */
+    
 }
 
-export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {{{
+export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {
     // TODO: Support challenge by player, w/ initial state, or computer
 
     if (player_id && typeof(player_id) !== "number") {
@@ -1054,8 +1054,8 @@ export function challenge(player_id?: number, initial_state?: any, computer?: bo
     }
 
     return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} />);
-}}}
-export function createDemoBoard(players_list?:Array<{name:string, rank:number}>, tournament_record_id?:number, tournament_record_round_id?:number) {{{
+}
+export function createDemoBoard(players_list?:Array<{name:string, rank:number}>, tournament_record_id?:number, tournament_record_round_id?:number) {
     let mode: ChallengeModes = "demo";
     return openModal(<
         ChallengeModal mode={mode}
@@ -1063,14 +1063,14 @@ export function createDemoBoard(players_list?:Array<{name:string, rank:number}>,
         tournamentRecordId={tournament_record_id}
         tournamentRecordRoundId={tournament_record_round_id}
     />);
-}}}
-export function createOpenChallenge() {{{
+}
+export function createOpenChallenge() {
     return challenge();
-}}}
-export function challengeComputer() {{{
+}
+export function challengeComputer() {
     return challenge(null, null, true);
-}}}
-export function challengeFromBoardPosition(goban) {{{
+}
+export function challengeFromBoardPosition(goban) {
     if (!goban) { return; }
 
     openForkModal(goban);
@@ -1095,8 +1095,8 @@ export function challengeFromBoardPosition(goban) {{{
 
     challenge(null, state);
     */
-}}}
-export function challengeRematch(goban, player, original_game_meta) { /* {{{ */
+}
+export function challengeRematch(goban, player, original_game_meta) { 
     /* TODO: Fix up challengeRematch time control stuff */
     let conf = goban.engine;
     let config: any = {
@@ -1137,8 +1137,8 @@ export function challengeRematch(goban, player, original_game_meta) { /* {{{ */
     //config.syncTimeControl();
 
     challenge(player.id, null, false, config);
-} /* }}} */
-export function createBlitz() {{{
+} 
+export function createBlitz() {
     let user = data.get("user");
     let config = dup(blitz_config);
     config.challenge.min_ranking = user.ranking - 3;
@@ -1146,8 +1146,8 @@ export function createBlitz() {{{
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}}}
-export function createLive() {{{
+}
+export function createLive() {
     let user = data.get("user");
     let config = dup(live_config);
     config.challenge.min_ranking = user.ranking - 3;
@@ -1155,8 +1155,8 @@ export function createLive() {{{
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}}}
-export function createCorrespondence() {{{
+}
+export function createCorrespondence() {
     let user = data.get("user");
     let config = dup(correspondence_config);
     config.challenge.min_ranking = user.ranking - 3;
@@ -1164,10 +1164,10 @@ export function createCorrespondence() {{{
     config.challenge.game.width = preferences.get("new-game-board-size");
     config.challenge.game.height = preferences.get("new-game-board-size");
     return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}}}
+}
 
 
-export function challenge_text_description(challenge) { /* {{{ */
+export function challenge_text_description(challenge) { 
     let c = challenge;
     let g = "game" in challenge ? challenge.game : challenge;
     let details_html =
@@ -1220,9 +1220,9 @@ export function challenge_text_description(challenge) { /* {{{ */
     }
 
     return details_html;
-} /* }}} */
+} 
 
-export let blitz_config = { /* {{{ */
+export let blitz_config = { 
     conf: {
         restrict_rank: true,
     },
@@ -1247,8 +1247,8 @@ export let blitz_config = { /* {{{ */
         max_time          : 30,
         pause_on_weekends: false,
     }
-}; /* }}} */
-export let live_config = { /* {{{ */
+}; 
+export let live_config = { 
     conf: {
         restrict_rank: true,
     },
@@ -1273,8 +1273,8 @@ export let live_config = { /* {{{ */
         periods: 5,
         pause_on_weekends: false,
     }
-}; /* }}} */
-export let correspondence_config = { /* {{{ */
+}; 
+export let correspondence_config = { 
     conf: {
         restrict_rank: true,
     },
@@ -1299,4 +1299,4 @@ export let correspondence_config = { /* {{{ */
         max_time          : 7 * 86400,
         pause_on_weekends : true,
     }
-}; /* }}} */
+}; 

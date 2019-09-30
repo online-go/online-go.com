@@ -253,7 +253,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
     private white_name;
 
 
-    constructor(config, preloaded_data?) { /* {{{ */
+    constructor(config, preloaded_data?) { 
         super();
 
         this.goban_id = ++last_goban_id;
@@ -469,53 +469,53 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         };
         $(window).on("keydown", this.handleShiftKey);
         $(window).on("keyup", this.handleShiftKey);
-    } /* }}} */
+    } 
 
-    private _socket_on(event, cb) {{{
+    private _socket_on(event, cb) {
         this.socket.on(event, cb);
         this.socket_event_bindings.push([event, cb]);
-    }}}
+    }
 
-    protected getClockDrift():number {{{
+    protected getClockDrift():number {
         console.warn("getClockDrift not provided for Goban instance");
         return 0;
-    }}}
-    protected getNetworkLatency():number {{{
+    }
+    protected getNetworkLatency():number {
         console.warn("getNetworkLatency not provided for Goban instance");
         return 0;
-    }}}
-    protected getCoordinateDisplaySystem():'A1'|'1-1' {{{
+    }
+    protected getCoordinateDisplaySystem():'A1'|'1-1' {
         return 'A1';
-    }}}
-    protected getShowMoveNumbers():boolean {{{
+    }
+    protected getShowMoveNumbers():boolean {
         return false;
-    }}}
-    protected getShowVariationMoveNumbers():boolean {{{
+    }
+    protected getShowVariationMoveNumbers():boolean {
         return false;
-    }}}
-    public static getMoveTreeNumbering():string {{{
+    }
+    public static getMoveTreeNumbering():string {
         return 'move-number';
-    }}}
-    public static getCDNReleaseBase():string {{{
+    }
+    public static getCDNReleaseBase():string {
         return '';
-    }}}
-    public static getSoundEnabled():boolean {{{
+    }
+    public static getSoundEnabled():boolean {
         return true;
-    }}}
-    public static getSoundVolume():number {{{
+    }
+    public static getSoundVolume():number {
         return 0.5;
-    }}}
-    protected defaultConfig():any {{{
+    }
+    protected defaultConfig():any {
         return {};
-    }}}
-    protected watchSelectedThemes(cb):{ remove:() => any } {{{
+    }
+    protected watchSelectedThemes(cb):{ remove:() => any } {
         return { remove: () => {} };
-    }}}
+    }
 
-    protected getLocation():string {{{
+    protected getLocation():string {
         return window.location.pathname;
-    }}}
-    private connect(server_socket) { /* {{{ */
+    }
+    private connect(server_socket) { 
         let socket = this.socket = server_socket;
 
         this.disconnectedFromGame = false;
@@ -600,7 +600,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         /*** Game mode ***/
         /*****************/
         if (this.game_id) {
-            this._socket_on(prefix + "gamedata", (obj) => { /* {{{ */
+            this._socket_on(prefix + "gamedata", (obj) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 this.clearMessage();
@@ -622,35 +622,35 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
                 */
-            }); /* }}} */
-            this._socket_on(prefix + "chat", (obj) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "chat", (obj) => { 
                 if (this.disconnectedFromGame) { return; }
                 obj.line.channel = obj.channel;
                 this.emit("chat", obj.line);
-            }); /* }}} */
-            this._socket_on(prefix + "reset-chats", (obj) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "reset-chats", (obj) => { 
                 if (this.disconnectedFromGame) { return; }
                 this.emit("chat-reset");
-            }); /* }}} */
-            this._socket_on(prefix + "chat/remove", (obj) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "chat/remove", (obj) => { 
                 if (this.disconnectedFromGame) { return; }
                 this.emit("chat-remove", obj);
-            }); /* }}} */
-            this._socket_on(prefix + "message", (msg) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "message", (msg) => { 
                 if (this.disconnectedFromGame) { return; }
                 this.message(msg);
-            }); /* }}} */
+            }); 
             this.last_phase = null;
 
-            this._socket_on(prefix + "clock", (obj) => { /* {{{ */
+            this._socket_on(prefix + "clock", (obj) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 this.setGameClock(obj);
 
                 this.updateTitleAndStonePlacement();
                 this.emit("update");
-            }); /* }}} */
-            this._socket_on(prefix + "phase", (new_phase) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "phase", (new_phase) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 this.setMode("play");
@@ -674,14 +674,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
                 this.updateTitleAndStonePlacement();
                 this.emit("update");
-            }); /* }}} */
-            this._socket_on(prefix + "undo_requested", (move_number) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "undo_requested", (move_number) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 this.engine.undo_requested = parseInt(move_number);
                 this.emit("update");
-            }); /* }}} */
-            this._socket_on(prefix + "undo_accepted", (move_number) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "undo_accepted", (move_number) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 if (!this.engine.undo_requested) {
@@ -701,8 +701,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 delete this.engine.undo_requested;
                 this.updateTitleAndStonePlacement();
                 this.emit("update");
-            }); /* }}} */
-            this._socket_on(prefix + "move", (move_obj) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "move", (move_obj) => { 
                 try {
                     if (this.disconnectedFromGame) { return; }
 
@@ -780,8 +780,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 } catch (e) {
                     console.error(e);
                 }
-            }); /* }}} */
-            this._socket_on(prefix + "conditional_moves", (cmoves) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "conditional_moves", (cmoves) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 if (cmoves.moves == null) {
@@ -789,8 +789,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 } else {
                     this.setConditionalTree(GoConditionalMove.decode(cmoves.moves));
                 }
-            }); /* }}} */
-            this._socket_on(prefix + "removed_stones", (cfg) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "removed_stones", (cfg) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 if ("strict_seki_mode" in cfg) {
@@ -811,8 +811,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
                 this.updateTitleAndStonePlacement();
                 this.emit("update");
-            }); /* }}} */
-            this._socket_on(prefix + "removed_stones_accepted", (cfg) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "removed_stones_accepted", (cfg) => { 
                 if (this.disconnectedFromGame) { return; }
 
                 let player_id = cfg.player_id;
@@ -828,21 +828,21 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
                 this.updateTitleAndStonePlacement();
                 this.emit("update");
-            }); /* }}} */
+            }); 
 
-            this._socket_on(prefix + "auto_resign", (obj) => { /* {{{ */
+            this._socket_on(prefix + "auto_resign", (obj) => { 
                 this.emit('auto-resign', {
                     game_id: obj.game_id,
                     player_id: obj.player_id,
                     expiration: obj.expiration,
                 });
-            }); /* }}} */
-            this._socket_on(prefix + "clear_auto_resign", (obj) => { /* {{{ */
+            }); 
+            this._socket_on(prefix + "clear_auto_resign", (obj) => { 
                 this.emit('clear-auto-resign', {
                     game_id: obj.game_id,
                     player_id: obj.player_id,
                 });
-            }); /* }}} */
+            }); 
         }
 
 
@@ -850,7 +850,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         /*** Review mode ***/
         /*******************/
         let bulk_processing = false;
-        let process_r = (obj) => {{{
+        let process_r = (obj) => {
             if (this.disconnectedFromGame) { return; }
 
             if ("chat" in obj) {
@@ -1016,7 +1016,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (!bulk_processing) {
                 this.emit("review.updated");
             }
-        }}};
+        };
 
         if (this.review_id) {
             this._socket_on(prefix + "full_state", (entries) => {
@@ -1064,8 +1064,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
         return socket;
-    } /* }}} */
-    public destroy() { /* {{{ */
+    } 
+    public destroy() { 
         this.emit("destroy");
         //delete window['active_gobans'][this.goban_id];
         this.destroyed = true;
@@ -1091,8 +1091,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         $(window).off("keydown", this.handleShiftKey);
         $(window).off("keyup", this.handleShiftKey);
-    } /* }}} */
-    private disconnect() { /* {{{ */
+    } 
+    private disconnect() { 
         this.emit("destroy");
         if (!this.disconnectedFromGame) {
             this.disconnectedFromGame = true;
@@ -1109,8 +1109,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.socket.off(pair[0], pair[1]);
         }
         this.socket_event_bindings = [];
-    } /* }}} */
-    private scheduleRedrawPenLayer() { /* {{{ */
+    } 
+    private scheduleRedrawPenLayer() { 
         if (!this.__board_redraw_pen_layer_timer) {
             this.__board_redraw_pen_layer_timer = setTimeout(() => {
                 if (this.engine.cur_move.pen_marks.length) {
@@ -1121,9 +1121,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.__board_redraw_pen_layer_timer = null;
             }, 100);
         }
-    } /* }}} */
+    } 
 
-    public sendChat(msg_body, type) { /* {{{ */
+    public sendChat(msg_body, type) { 
         if (typeof(msg_body) === "string" && msg_body.length === 0) {
             return;
         }
@@ -1147,8 +1147,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.socket.send(where, msg);
-    } /* }}} */
-    public message(msg, timeout?) { /* {{{ */
+    } 
+    public message(msg, timeout?) { 
         this.clearMessage();
 
         this.message_div = $("<div>").addClass("GobanMessage");
@@ -1172,8 +1172,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.clearMessage();
             }, timeout);
         }
-    } /* }}} */
-    private clearMessage() { /* {{{ */
+    } 
+    private clearMessage() { 
         if (this.message_div) {
             this.message_div.remove();
             this.message_div = null;
@@ -1182,8 +1182,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             clearTimeout(this.message_timeout);
             this.message_timeout = null;
         }
-    } /* }}} */
-    private setTitle(title) { /* {{{ */
+    } 
+    private setTitle(title) { 
         this.title = title;
         if (this.title_div) {
             if (typeof(title) === "string") {
@@ -1194,12 +1194,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
         this.emit('title', title);
-    } /* }}} */
+    } 
 
-    private getWidthForSquareSize(square_size) { /* {{{ */
+    private getWidthForSquareSize(square_size) { 
         return (this.bounded_width + +this.draw_left_labels + +this.draw_right_labels) * square_size;
-    } /* }}} */
-    private xy2ij(x, y) { /* {{{ */
+    } 
+    private xy2ij(x, y) { 
         if (x > 0 && y > 0) {
             if (this.bounds.left > 0) {
                 x += this.bounds.left * this.square_size;
@@ -1217,8 +1217,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let i = Math.floor(x / this.square_size);
         let j = Math.floor(y / this.square_size);
         return {"i": i, "j": j, "valid": i >= 0 && j >= 0 && i < this.width && j < this.height};
-    } /* }}} */
-    public setAnalyzeTool(tool, subtool) { /* {{{ */
+    } 
+    public setAnalyzeTool(tool, subtool) { 
         this.analyze_tool = tool;
         this.analyze_subtool = subtool;
         if (tool === "stone" && subtool === "black") {
@@ -1235,16 +1235,16 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (tool === "draw") {
             this.attachPenCanvas();
         }
-    } /* }}} */
+    } 
 
-    private detachShadowLayer() { /* {{{ */
+    private detachShadowLayer() { 
         if (this.shadow_layer) {
             this.shadow_layer.remove();
             this.shadow_layer = null;
             this.shadow_ctx = null;
         }
-    } /* }}} */
-    private attachShadowLayer() { /* {{{ */
+    } 
+    private attachShadowLayer() { 
         if (!this.shadow_layer) {
             this.shadow_layer = createDeviceScaledCanvas(this.metrics.width, this.metrics.height).attr("class", "shadow-canvas").addClass("ShadowLayer");
             this.shadow_layer.insertBefore(this.board);
@@ -1252,15 +1252,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.shadow_ctx = this.shadow_layer[0].getContext("2d");
             this.bindPointerBindings(this.shadow_layer);
         }
-    } /* }}} */
-    public detachPenCanvas() { /* {{{ */
+    } 
+    public detachPenCanvas() { 
         if (this.pen_layer) {
             this.pen_layer.remove();
             this.pen_layer = null;
             this.pen_ctx = null;
         }
-    } /* }}} */
-    private attachPenCanvas() { /* {{{ */
+    } 
+    private attachPenCanvas() { 
         if (!this.pen_layer) {
             this.pen_layer = createDeviceScaledCanvas(this.metrics.width, this.metrics.height).attr("id", "pen-canvas").addClass("PenLayer");
             this.parent.append(this.pen_layer);
@@ -1268,8 +1268,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.pen_ctx = this.pen_layer[0].getContext("2d");
             this.bindPointerBindings(this.pen_layer);
         }
-    } /* }}} */
-    private bindPointerBindings(canvas) { /* {{{ */
+    } 
+    private bindPointerBindings(canvas) { 
         if (!this.interactive) {
             return;
         }
@@ -1456,30 +1456,30 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             $(document).off("touchend", onTouchEnd);
             $(document).off("touchmove", onTouchMove);
         });
-    } /* }}} */
-    public clearAnalysisDrawing() { /* {{{ */
+    } 
+    public clearAnalysisDrawing() { 
         this.pen_marks = [];
         if (this.pen_ctx) {
             this.pen_ctx.clearRect(0, 0, this.metrics.width, this.metrics.height);
         }
-    } /* }}} */
-    private xy2pen(x, y) { /* {{{ */
+    } 
+    private xy2pen(x, y) { 
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
         return [Math.round(((x / this.square_size) + lx) * 64), Math.round(((y / this.square_size) + ly) * 64)];
-    } /* }}} */
-    private pen2xy(x, y) { /* {{{ */
+    } 
+    private pen2xy(x, y) { 
         let lx = this.draw_left_labels ? 0.0 : 1.0;
         let ly = this.draw_top_labels ? 0.0 : 1.0;
 
         return [((x / 64) - lx) * this.square_size, ((y / 64) - ly) * this.square_size];
-    } /* }}} */
-    private setPenStyle(color) { /* {{{ */
+    } 
+    private setPenStyle(color) { 
         this.pen_ctx.strokeStyle = color;
         this.pen_ctx.lineWidth = Math.max(1, Math.round(this.square_size * 0.1));
         this.pen_ctx.lineCap = "round";
-    } /* }}} */
-    private onPenStart(ev) { /* {{{ */
+    } 
+    private onPenStart(ev) { 
         this.attachPenCanvas();
 
         let pos = getRelativeEventPosition(ev);
@@ -1489,8 +1489,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.setPenStyle(this.analyze_subtool);
 
         this.syncReviewMove({"pen": this.analyze_subtool, "pp": this.xy2pen(pos.x, pos.y)});
-    } /* }}} */
-    private onPenMove(ev) { /* {{{ */
+    } 
+    private onPenMove(ev) { 
         let pos = getRelativeEventPosition(ev);
         let start = this.last_pen_position;
         let s = this.pen2xy(start[0], start[1]);
@@ -1512,8 +1512,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.pen_ctx.stroke();
 
         this.syncReviewMove({"pp": [dx, dy]});
-    } /* }}} */
-    public drawPenMarks(penmarks) { /* {{{ */
+    } 
+    public drawPenMarks(penmarks) { 
         if (this.review_id && !this.done_loading_review) { return; }
         if (!(penmarks.length || this.pen_layer)) {
             return;
@@ -1538,10 +1538,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
             this.pen_ctx.stroke();
         }
-    } /* }}} */
+    } 
 
 
-    private putOrClearLabel(x, y, mode?) { /* {{{ */
+    private putOrClearLabel(x, y, mode?) { 
         let ret = null;
         if (mode == null || typeof(mode) === "undefined") {
             if (this.analyze_subtool === "letters" || this.analyze_subtool === "numbers") {
@@ -1572,8 +1572,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         this.syncReviewMove();
         return ret;
-    } /* }}} */
-    private onLabelingStart(ev) { /* {{{ */
+    } 
+    private onLabelingStart(ev) { 
         let pos = getRelativeEventPosition(ev);
         this.last_label_position = this.xy2ij(pos.x, pos.y);
 
@@ -1595,8 +1595,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         this.__last_pt = this.xy2ij(-1, -1);
         this.drawSquare(this.last_label_position.i, this.last_label_position.j);
-    } /* }}} */
-    private onLabelingMove(ev) { /* {{{ */
+    } 
+    private onLabelingMove(ev) { 
         let pos = getRelativeEventPosition(ev);
         let cur = this.xy2ij(pos.x, pos.y);
 
@@ -1613,15 +1613,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.putOrClearLabel(cur.i, cur.j, this.labeling_mode);
             this.setLabelCharacterFromMarks();
         }
-    } /* }}} */
-    public setSquareSize(new_ss) { /* {{{ */
+    } 
+    public setSquareSize(new_ss) { 
         let redraw = this.square_size !== new_ss;
         this.square_size = new_ss;
         if (redraw) {
             this.redraw(true);
         }
-    } /* }}} */
-    public setSquareSizeBasedOnDisplayWidth(display_width) {{{
+    } 
+    public setSquareSizeBasedOnDisplayWidth(display_width) {
         let n_squares = Math.max(
             this.bounded_width  + +this.draw_left_labels + +this.draw_right_labels,
             this.bounded_height + +this.draw_bottom_labels + +this.draw_top_labels
@@ -1645,10 +1645,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.setSquareSize(Math.floor(this.display_width / n_squares));
-    }}}
+    }
 
 
-    private onTap(event, double_tap) { /* {{{ */
+    private onTap(event, double_tap) { 
         if (!(this.stone_placement_enabled && (this.player_id || this.engine.black_player_id === 0 || this.mode === "analyze" || this.mode === "pattern search" || this.mode === "puzzle"))) { return; }
 
         let pos = getRelativeEventPosition(event);
@@ -1724,7 +1724,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (this.mode === "play") {
                 $("#pass-resign-buttons").removeClass("hidden");
             }
-            if ((this.engine.phase === "stone removal" || this.scoring_mode) && this.isParticipatingPlayer()) { /* {{{ */
+            if ((this.engine.phase === "stone removal" || this.scoring_mode) && this.isParticipatingPlayer()) { 
                 let arrs;
                 if (event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) {
                     let removed = !this.engine.removal[y][x];
@@ -1753,8 +1753,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         this.redraw(true);
                     }
                 }
-            } /* }}} */
-            else if (this.mode === "pattern search") { /* {{{ */
+            } 
+            else if (this.mode === "pattern search") { 
                 let color = (this.engine.board[y][x] + 1) % 3; /* cycle through the colors */
                 if (this.pattern_search_color) {
                     color = this.pattern_search_color;
@@ -1772,8 +1772,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     this.engine.editPlace(x, y, color);
                 }
                 this.emit("update");
-            } /* }}} */
-            else if (this.mode === "puzzle") { /* {{{ */
+            } 
+            else if (this.mode === "puzzle") { 
                 let puzzle_mode = "place";
                 let color = 0;
                 if (this.getPuzzlePlacementSetting) {
@@ -1801,7 +1801,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                         let calls = 0;
 
                         if (this.engine.puzzle_player_move_mode !== "fixed" || this.engine.cur_move.lookupMove(x, y, this.engine.player, false)) {
-                            let puzzle_place = (mv_x, mv_y) => {{{
+                            let puzzle_place = (mv_x, mv_y) => {
                                 ++calls;
 
                                 this.engine.place(mv_x, mv_y, true, false, true, false, false);
@@ -1862,7 +1862,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                                         //break;
                                     }
                                 }
-                            }}};
+                            };
                             puzzle_place(x, y);
                         }
                     }
@@ -1875,8 +1875,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     }
                 }
                 this.emit("update");
-            } /* }}} */
-            else if (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze")) { /* {{{ */
+            } 
+            else if (this.engine.phase === "play" || (this.engine.phase === "finished" && this.mode === "analyze")) { 
                 if (this.move_selected) {
                     if (this.mode === "play") {
                         this.engine.cur_move.removeIfNoChildren();
@@ -1998,7 +1998,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 if (force_redraw) {
                     this.redraw();
                 }
-            } /* }}} */
+            } 
 
         } catch (e) {
             this.move_selected = false;
@@ -2007,8 +2007,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.emit("error");
             this.emit("update");
         }
-    } /* }}} */
-    public setStrictSekiMode(tf) { /* {{{ */
+    } 
+    public setStrictSekiMode(tf) { 
         if (this.engine.phase !== "stone removal") {
             throw "Not in stone removal phase";
         }
@@ -2021,8 +2021,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             "player_id"       : this.config.player_id,
             "strict_seki_mode": tf
         });
-    } /* }}} */
-    private onMouseMove(event) { /* {{{ */
+    } 
+    private onMouseMove(event) { 
         if (!(this.stone_placement_enabled &&
             (this.player_id || this.engine.black_player_id === 0 || this.mode === "analyze" || this.scoring_mode)
             )) { return; }
@@ -2051,8 +2051,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.last_hover_square = {"x": pt.i, "y": pt.j};
             this.drawSquare(pt.i, pt.j);
         }
-    } /* }}} */
-    private onMouseOut(event) { /* {{{ */
+    } 
+    private onMouseOut(event) { 
         if (this.__last_pt.valid) {
             let last_hover = this.last_hover_square;
             this.last_hover_square = null;
@@ -2061,13 +2061,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
         }
         this.__last_pt = this.xy2ij(-1, -1);
-    } /* }}} */
-    private refreshHoverPosition() { /* {{{ */
+    } 
+    private refreshHoverPosition() { 
         if (this.last_hover_square) {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
-    } /* }}} */
-    public computeMetrics() { /* {{{ */
+    } 
+    public computeMetrics() { 
         if (this.square_size <= 0) {
             //console.error("Non positive square size set", this.square_size);
             //console.error(new Error().stack);
@@ -2084,34 +2084,34 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.square_size % 2 === 0) { ret.mid -= 0.5; ret.offset = 0.5; }
 
         return ret;
-    } /* }}} */
-    private setSubmit(fn) { /* {{{ */
+    } 
+    private setSubmit(fn) { 
         this.submit_move = fn;
         this.emit("show-submit", fn != null);
-    } /* }}} */
+    } 
 
-    private enableDrawing() { /* {{{ */
+    private enableDrawing() { 
         this.drawing_enabled = true;
-    } /* }}} */
-    private disableDrawing() { /* {{{ */
+    } 
+    private disableDrawing() { 
         this.drawing_enabled = false;
-    } /* }}} */
-    private markDirty() { /* {{{ */
+    } 
+    private markDirty() { 
         if (!this.dirty_redraw) {
             this.dirty_redraw = setTimeout(() => {
                 this.dirty_redraw = null;
                 this.redraw();
             }, 1);
         }
-    }  /* }}} */
+    }  
 
-    public drawSquare(i, j) { /* {{{ */
+    public drawSquare(i, j) { 
         if (i < 0 || j < 0) { return; }
         if (this.__draw_state[j][i] !== this.drawingHash(i, j)) {
             this.__drawSquare(i, j);
         }
-    } /* }}} */
-    private __drawSquare(i, j) { /* {{{ */
+    } 
+    private __drawSquare(i, j) { 
         if (!this.drawing_enabled) { return; }
         if (this.no_display) { return; }
         let ctx = this.ctx;
@@ -2175,7 +2175,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
 
         /* clear and draw lines */
-        {{{
+        {
             let l = i * s + ox;
             let r = (i + 1) * s + ox;
             let t = j * s + oy;
@@ -2231,10 +2231,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             ctx.moveTo(mx, Math.floor(sy));
             ctx.lineTo(mx, Math.floor(ey));
             ctx.stroke();
-        }}}
+        }
 
         /* Draw star points */
-        {{{
+        {
             let star_radius;
             if (this.square_size < 5) {
                 star_radius = 0.5;
@@ -2278,10 +2278,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.arc(cx, cy, star_radius, 0.001, 2 * Math.PI, false); /* 0.001 to workaround fucked up chrome 27 bug */
                 ctx.fill();
             }
-        }}}
+        }
 
         /* Heatmap */
-        /* {{{ */
+        
         if (this.heatmap) {
             if (this.heatmap[j][i] > 0.001) {
                 let color = "#00FF00";
@@ -2300,11 +2300,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.restore();
             }
         }
-        /* }}} */
+        
 
 
         /* Draw square highlights if any */
-        {{{
+        {
             if (pos.hint || (
                 this.highlight_movetree_moves && movetree_contains_this_square ||
                 pos.color)) {
@@ -2325,10 +2325,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.fill();
                 ctx.restore();
             }
-        }}}
+        }
 
         /* Colored stones */
-        /* {{{ */
+        
         if (this.colored_circles) {
             if (this.colored_circles[j][i]) {
                 let circle = this.colored_circles[j][i];
@@ -2357,11 +2357,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
             }
         }
-        /* }}} */
+        
 
 
         /* Draw stones & hovers */
-        {{{
+        {
             if (stone_color  /* if there is really a stone here */
                 || (this.stone_placement_enabled
                     && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
@@ -2479,10 +2479,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     ctx.restore();
                 }
             }
-        }}}
+        }
 
         /* Draw delete X's */
-        {{{
+        {
             let draw_x = false;
             let transparent_x = false;
             if (this.engine && (this.scoring_mode || this.engine.phase === "stone removal") && this.stone_placement_enabled
@@ -2516,10 +2516,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 ctx.stroke();
                 ctx.restore();
             }
-        }}}
+        }
 
         /* Draw Scores */
-        {{{
+        {
             if ((pos.score && (this.engine.phase !== "finished" ||  this.mode === "play"))
                 || (this.scoring_mode
                      && this.score_estimate
@@ -2570,13 +2570,13 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
                 ctx.stroke();
             }
-        }}}
+        }
 
 
 
         /* Draw letters and numbers */
         let letter_was_drawn = false;
-        {{{
+        {
             let letter = null;
             let transparent = false;
             if ("letter" in pos && pos.letter.length > 0) {
@@ -2639,10 +2639,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 draw_last_move = false;
                 ctx.restore();
             }
-        }}}
+        }
 
         /* draw special symbols */
-        {{{
+        {
             let transparent = letter_was_drawn;
             let hovermark = null;
             let symbol_color = stone_color === 1 ? this.theme_black_text_color : stone_color === 2 ? this.theme_white_text_color : text_color;
@@ -2738,18 +2738,18 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 draw_last_move = false;
             }
 
-        }}}
+        }
 
 
         /* Clear last move */
-        if (this.last_move && this.engine && !this.last_move.is(this.engine.cur_move)) { /* {{{ */
+        if (this.last_move && this.engine && !this.last_move.is(this.engine.cur_move)) { 
             let m = this.last_move;
             this.last_move = null;
             this.drawSquare(m.x, m.y);
-        } /* }}} */
+        } 
 
         /* Draw last move */
-        if (draw_last_move && this.engine && this.engine.cur_move) { /* {{{ */
+        if (draw_last_move && this.engine && this.engine.cur_move) { 
             if (this.engine.cur_move.x === i && this.engine.cur_move.y === j && this.engine.board[j][i] &&
                   (this.engine.phase === "play" || (this.engine.phase === "finished"))
             ) {
@@ -2767,11 +2767,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     ctx.stroke();
                 }
             }
-        } /* }}} */
+        } 
 
 
         /* Score Estimation */
-        /* {{{ */
+        
         if (this.scoring_mode && this.score_estimate) {
             let se = this.score_estimate;
             let est = se.heat[j][i];
@@ -2794,12 +2794,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             ctx.fill();
             ctx.stroke();
         }
-        /* }}} */
+        
 
 
         this.__draw_state[j][i] = this.drawingHash(i, j);
-    } /* }}} */
-    private drawingHash(i, j) { /* {{{ */
+    } 
+    private drawingHash(i, j) { 
         if (i < 0 || j < 0) {
             return "..";
         }
@@ -2854,7 +2854,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         /* Draw stones & hovers */
-        {{{
+        {
             if (stone_color   /* if there is really a stone here */
                 || (this.stone_placement_enabled
                     && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)
@@ -2919,10 +2919,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
                 ret += (transparent ? "T" : "") + color + ",";
             }
-        }}}
+        }
 
         /* Draw square highlights if any */
-        {{{
+        {
             if (pos.hint || (this.highlight_movetree_moves && movetree_contains_this_square)) {
                 if (pos.hint) {
                     ret += "hint,";
@@ -2930,12 +2930,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                     ret += "highlight,";
                 }
             }
-        }}}
+        }
 
 
 
         /* Draw delete X's */
-        {{{
+        {
             let draw_x = false;
             let transparent = false;
             if (this.engine && (this.scoring_mode || this.engine.phase === "stone removal") && this.stone_placement_enabled
@@ -2961,10 +2961,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
 
             ret += draw_x + "," + transparent;
-        }}}
+        }
 
         /* Draw Scores */
-        {{{
+        {
             if ((pos.score && (this.engine.phase !== "finished" ||  this.mode === "play"))
                 || (this.scoring_mode && this.score_estimate && (this.score_estimate.territory[j][i] || (this.score_estimate.removal[j][i] && this.score_estimate.board[j][i] === 0)))
                 || ((this.engine.phase === "stone removal" || (this.engine.phase === "finished" && this.mode === "play")) &&
@@ -2989,12 +2989,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
                 ret += "score " + color + ",";
             }
-        }}}
+        }
 
 
 
         /* Draw letters and numbers */
-        {{{
+        {
             let letter = null;
             let transparent = false;
             if ("letter" in pos && pos.letter.length > 0) {
@@ -3033,10 +3033,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (letter) {
                 ret += letter + (transparent ? " fade" : "") + ",";
             }
-        }}}
+        }
 
         /* draw special symbols */
-        {{{
+        {
             let hovermark;
             if (this.analyze_tool === "label" && (this.last_hover_square && this.last_hover_square.x === i && this.last_hover_square.y === j)) {
                 if (this.analyze_subtool === "triangle" || this.analyze_subtool === "square" || this.analyze_subtool === "cross" || this.analyze_subtool === "circle") {
@@ -3058,7 +3058,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             if (pos.square) {
                 ret += "square,";
             }
-        }}}
+        }
 
 
         /* Draw last move */
@@ -3071,9 +3071,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         return ret;
-    } /* }}} */
+    } 
 
-    public redraw(force_clear?: boolean) { /* {{{ */
+    public redraw(force_clear?: boolean) { 
         if (!this.drawing_enabled) {
             return;
         }
@@ -3251,10 +3251,10 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.move_tree_div) {
             this.redrawMoveTree();
         }
-    } /* }}} */
+    } 
     abstract getSelectedThemes();
 
-    private computeThemeStoneRadius(metrics) {{{
+    private computeThemeStoneRadius(metrics) {
         // Scale proportionally in general
         let r = this.square_size * 0.488;
 
@@ -3264,8 +3264,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         return Math.max(1, r);
-    }}}
-    private setThemes(themes, dont_redraw) { /* {{{ */
+    }
+    private setThemes(themes, dont_redraw) { 
         if (this.no_display) {
             return;
         }
@@ -3329,8 +3329,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.redrawMoveTree();
             }
         }
-    } /* }}} */
-    public redrawMoveTree() { /* {{{ */
+    } 
+    public redrawMoveTree() { 
         let d = $(this.move_tree_div);
         let c = $(this.move_tree_canvas);
         if (d.length && c.length) {
@@ -3341,19 +3341,19 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 "canvas": c
             });
         }
-    } /* }}} */
-    private updateMoveTree() { /* {{{ */
+    } 
+    private updateMoveTree() { 
         this.redrawMoveTree();
-    } /* }}} */
-    private updateOrRedrawMoveTree() { /* {{{ */
+    } 
+    private updateOrRedrawMoveTree() { 
         if (MoveTree.layout_dirty) {
             this.redrawMoveTree();
         } else {
             this.updateMoveTree();
         }
-    } /* }}} */
+    } 
 
-    public load(config) { /* {{{ */
+    public load(config) { 
         for (let k in config) {
             this.config[k] = config[k];
         }
@@ -3454,11 +3454,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.engine.phase === "stone removal" && !("auto_scoring_done" in this) && !("auto_scoring_done" in (this as any).engine)) {
             (this as any).autoScore();
         }
-    } /* }}} */
-    private set(x, y, player) { /* {{{ */
+    } 
+    private set(x, y, player) { 
         this.markDirty();
-    } /* }}} */
-    private setForRemoval(x, y, removed) { /* {{{ */
+    } 
+    private setForRemoval(x, y, removed) { 
         if (removed) {
             this.getMarks(x, y).stone_removed = true;
             this.getMarks(x, y).remove = true;
@@ -3468,8 +3468,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         this.drawSquare(x, y);
         this.emit("set-for-removal", {x, y, removed});
-    } /* }}} */
-    public showScores(score) { /* {{{ */
+    } 
+    public showScores(score) { 
         this.hideScores();
         this.showing_scores = true;
 
@@ -3487,8 +3487,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
             }
         }
-    } /* }}} */
-    public hideScores() { /* {{{ */
+    } 
+    public hideScores() { 
         this.showing_scores = false;
         for (let j = 0; j < this.height; ++j) {
             for (let i = 0; i < this.width; ++i) {
@@ -3498,9 +3498,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
             }
         }
-    } /* }}} */
+    } 
 
-    public updatePlayerToMoveTitle() { /* {{{ */
+    public updatePlayerToMoveTitle() { 
         switch (this.engine.phase) {
             case "play":
                 if (this.player_id && this.player_id === this.engine.playerToMove() && this.mode !== "edit" && this.engine.cur_move.id === this.engine.last_official_move.id) {
@@ -3548,15 +3548,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.setTitle(this.engine.phase);
                 break;
         }
-    } /* }}} */
-    public disableStonePlacement() { /* {{{ */
+    } 
+    public disableStonePlacement() { 
         this.stone_placement_enabled = false;
         // console.log("disabled stone placement");
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
-    } /* }}} */
-    public enableStonePlacement() { /* {{{ */
+    } 
+    public enableStonePlacement() { 
         if (this.stone_placement_enabled) {
             this.disableStonePlacement();
         }
@@ -3573,15 +3573,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (this.__last_pt && this.__last_pt.valid) {
             this.drawSquare(this.__last_pt.i, this.__last_pt.j);
         }
-    } /* }}} */
-    public showFirst(dont_update_display?) { /* {{{ */
+    } 
+    public showFirst(dont_update_display?) { 
         this.engine.jumpTo(this.engine.move_tree);
         if (!dont_update_display) {
             this.updateTitleAndStonePlacement();
             this.emit("update");
         }
-    } /* }}} */
-    public showPrevious(dont_update_display?) { /* {{{ */
+    } 
+    public showPrevious(dont_update_display?) { 
         if (this.mode === "conditional") {
             if (this.conditional_path.length >= 2) {
                 let prev_path = this.conditional_path.substr(0, this.conditional_path.length - 2);
@@ -3601,8 +3601,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.updateTitleAndStonePlacement();
             this.emit("update");
         }
-    } /* }}} */
-    public showNext(dont_update_display?) { /* {{{ */
+    } 
+    public showNext(dont_update_display?) { 
         if (this.mode === "conditional") {
             if (this.currently_my_cmove) {
                 if (this.current_cmove.move != null) {
@@ -3625,22 +3625,22 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.updateTitleAndStonePlacement();
             this.emit("update");
         }
-    } /* }}} */
-    public prevSibling() { /* {{{ */
+    } 
+    public prevSibling() { 
         let sibling = this.engine.cur_move.prevSibling();
         if (sibling) {
             this.engine.jumpTo(sibling);
             this.emit("update");
         }
-    } /* }}} */
-    public nextSibling() { /* {{{ */
+    } 
+    public nextSibling() { 
         let sibling = this.engine.cur_move.nextSibling();
         if (sibling) {
             this.engine.jumpTo(sibling);
             this.emit("update");
         }
-    } /* }}} */
-    public deleteBranch() { /* {{{ */
+    } 
+    public deleteBranch() { 
         if (!this.engine.cur_move.trunk) {
             if (this.isPlayerController()) {
                 this.syncReviewMove({"delete": 1});
@@ -3649,9 +3649,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.emit("update");
             this.redrawMoveTree();
         }
-    } /* }}} */
+    } 
 
-    public jumpToLastOfficialMove() { /* {{{ */
+    public jumpToLastOfficialMove() { 
         this.move_selected = false;
         this.engine.jumpToLastOfficialMove();
         this.updateTitleAndStonePlacement();
@@ -3663,16 +3663,16 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.emit("update");
-    } /* }}} */
-    private setLastOfficialMove() { /* {{{ */
+    } 
+    private setLastOfficialMove() { 
         this.engine.setLastOfficialMove();
         this.updateTitleAndStonePlacement();
-    } /* }}} */
-    private isLastOfficialMove() { /* {{{ */
+    } 
+    private isLastOfficialMove() { 
         return this.engine.isLastOfficialMove();
-    } /* }}} */
+    } 
 
-    public updateTitleAndStonePlacement() { /* {{{ */
+    public updateTitleAndStonePlacement() { 
         this.updatePlayerToMoveTitle();
 
         if (this.engine.phase === "stone removal" || this.scoring_mode) {
@@ -3710,9 +3710,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.enableStonePlacement();
             }
         }
-    } /* }}} */
+    } 
 
-    public setConditionalTree(conditional_tree) { /* {{{ */
+    public setConditionalTree(conditional_tree) { 
         if (conditional_tree == null) {
             conditional_tree = new GoConditionalMove(null, null);
         }
@@ -3720,15 +3720,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.current_cmove = conditional_tree;
 
         this.emit("update");
-    } /* }}} */
-    public followConditionalPath(movepath) { /* {{{ */
+    } 
+    public followConditionalPath(movepath) { 
         let moves = this.engine.decodeMoves(movepath);
         for (let i = 0; i < moves.length; ++i) {
             this.engine.place(moves[i].x, moves[i].y);
             this.followConditionalSegment(moves[i].x, moves[i].y);
         }
-    } /* }}} */
-    private followConditionalSegment(x, y) { /* {{{ */
+    } 
+    private followConditionalSegment(x, y) { 
         let mv = encodeMove(x, y);
         this.conditional_path += mv;
 
@@ -3749,8 +3749,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.currently_my_cmove = !this.currently_my_cmove;
-    } /* }}} */
-    private deleteConditionalSegment(x, y) { /* {{{ */
+    } 
+    private deleteConditionalSegment(x, y) { 
         this.conditional_path += encodeMove(x, y);
 
         if (this.currently_my_cmove) {
@@ -3778,8 +3778,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         this.currently_my_cmove = !this.currently_my_cmove;
-    } /* }}} */
-    public deleteConditionalPath(movepath) { /* {{{ */
+    } 
+    public deleteConditionalPath(movepath) { 
         let moves = this.engine.decodeMoves(movepath);
         if (moves.length) {
             for (let i = 0; i < moves.length - 1; ++i) {
@@ -3790,11 +3790,11 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
             this.deleteConditionalSegment(moves[moves.length - 1].x, moves[moves.length - 1].y);
         }
-    } /* }}} */
-    public getCurrentConditionalPath() { /* {{{ */
+    } 
+    public getCurrentConditionalPath() { 
         return this.conditional_path;
-    } /* }}} */
-    public saveConditionalMoves() { /* {{{ */
+    } 
+    public saveConditionalMoves() { 
         this.socket.send("game/conditional_moves/set", {
             "auth"        : this.config.auth,
             "move_number" : this.engine.getCurrentMoveNumber(),
@@ -3802,12 +3802,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             "player_id"   : this.config.player_id,
             "cmoves"      : this.conditional_tree.encode()
         });
-    } /* }}} */
+    } 
 
-    public setModeDeferred(mode) {  /* {{{ */
+    public setModeDeferred(mode) {  
         setTimeout(() => { this.setMode(mode); }, 1);
-    } /* }}} */
-    public setMode(mode, dont_jump_to_official_move?) { /* {{{ */
+    } 
+    public setMode(mode, dont_jump_to_official_move?) { 
         if (mode === "conditional" && this.player_id === this.engine.playerToMove()) {
             /* this shouldn't ever get called, but incase we screw up.. */
             swal("Can't enter conditional move planning when it's your turn");
@@ -3859,41 +3859,41 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.updateTitleAndStonePlacement();
 
         return true;
-    } /* }}} */
-    public resign() { /* {{{ */
+    } 
+    public resign() { 
         this.socket.send("game/resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
-    private sendPendingResignation() { /* {{{ */
+    } 
+    private sendPendingResignation() { 
         window["comm_socket"].send("game/delayed_resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id
         });
-    } /* }}} */
-    private clearPendingResignation() { /* {{{ */
+    } 
+    private clearPendingResignation() { 
         window["comm_socket"].send("game/clear_delayed_resign", {
             "auth": this.config.auth,
             "game_id": this.config.game_id
         });
-    } /* }}} */
-    public cancelGame() { /* {{{ */
+    } 
+    public cancelGame() { 
         this.socket.send("game/cancel", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
-    private annul() { /* {{{ */
+    } 
+    private annul() { 
         this.socket.send("game/annul", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
-    public pass() { /* {{{ */
+    } 
+    public pass() { 
         this.engine.place(-1, -1);
         if (this.mode === "play") {
             this.sendMove({
@@ -3908,39 +3908,39 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.redrawMoveTree();
             }
         }
-    } /* }}} */
-    public requestUndo() { /* {{{ */
+    } 
+    public requestUndo() { 
         this.socket.send("game/undo/request", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id,
             "move_number": this.engine.getCurrentMoveNumber()
         });
-    } /* }}} */
-    public acceptUndo() { /* {{{ */
+    } 
+    public acceptUndo() { 
         this.socket.send("game/undo/accept", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id,
             "move_number": this.engine.getCurrentMoveNumber()
         });
-    } /* }}} */
-    public pauseGame() { /* {{{ */
+    } 
+    public pauseGame() { 
         this.socket.send("game/pause", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
-    public resumeGame() { /* {{{ */
+    } 
+    public resumeGame() { 
         this.socket.send("game/resume", {
             "auth": this.config.auth,
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
+    } 
 
-    public acceptRemovedStones() { /* {{{ */
+    public acceptRemovedStones() { 
         let stones = this.engine.getStoneRemovalString();
         this.engine.players[this.engine.playerColor(this.config.player_id)].accepted_stones = stones;
         this.socket.send("game/removed_stones/accept", {
@@ -3950,8 +3950,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             "stones": stones,
             "strict_seki_mode": this.engine.strict_seki_mode
         });
-    } /* }}} */
-    public rejectRemovedStones() { /* {{{ */
+    } 
+    public rejectRemovedStones() { 
         let stones = this.engine.getStoneRemovalString();
         this.engine.players[this.engine.playerColor(this.config.player_id)].accepted_stones = null;
         this.socket.send("game/removed_stones/reject", {
@@ -3959,12 +3959,12 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             "game_id": this.config.game_id,
             "player_id": this.config.player_id
         });
-    } /* }}} */
-    public setEditColor(color) { /* {{{ */
+    } 
+    public setEditColor(color) { 
         this.edit_color = color;
         this.updateTitleAndStonePlacement();
-    } /* }}} */
-    private editSettings(changes) { /* {{{ */
+    } 
+    private editSettings(changes) { 
         let need_to_change = false;
         for (let k in changes) {
             if (this.engine[k] !== changes[k]) {
@@ -3982,8 +3982,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 "changes": changes
             });
         }
-    } /* }}} */
-    private playMovementSound() { /* {{{ */
+    } 
+    private playMovementSound() { 
         if (this.last_sound_played_for_a_stone_placement === this.engine.cur_move.x + "," + this.engine.cur_move.y) {
             return;
         }
@@ -4002,8 +4002,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.emit('audio-stone', idx);
             }
         }
-    } /* }}} */
-    private setState(state) { /* {{{ */
+    } 
+    private setState(state) { 
         if ((this.game_type === "review" || this.game_type === "demo") && this.engine) {
             this.drawPenMarks(this.engine.cur_move.pen_marks);
             if (this.isPlayerController() && this.connectToReviewSent) {
@@ -4013,33 +4013,33 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
         this.setLabelCharacterFromMarks();
         this.markDirty();
-    } /* }}} */
-    private getState() { /* {{{ */
+    } 
+    private getState() { 
         /* This is a callback that gets called by GoEngine.getState to store board state in its state stack */
         let ret = { };
         return ret;
-    } /* }}} */
-    public giveReviewControl(player_id: number) { /* {{{ */
+    } 
+    public giveReviewControl(player_id: number) { 
         this.syncReviewMove({ "controller": player_id });
-    } /* }}} */
-    private giveVoice(player_id: number) { /* {{{ */
+    } 
+    private giveVoice(player_id: number) { 
         this.socket.send("review/voice/give", {
             "review_id": this.review_id,
             "voice_player": {
                 "id": player_id,
             }
         });
-    } /* }}} */
-    private removeVoice(player_id: number) { /* {{{ */
+    } 
+    private removeVoice(player_id: number) { 
         this.socket.send("review/voice/remove", {
             "review_id": this.review_id,
             "voice_player": {
                 "id": player_id,
             }
         });
-    } /* }}} */
+    } 
 
-    public setMarks(marks, dont_draw?) { /* {{{ */
+    public setMarks(marks, dont_draw?) { 
         for (let key in marks) {
             let locations = this.engine.decodeMoves(marks[key]);
             for (let i = 0; i < locations.length; ++i) {
@@ -4047,7 +4047,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 this.setMark(pt.x, pt.y, key, dont_draw);
             }
         }
-    } /* }}} */
+    } 
     public setHeatmap(heatmap:Array<Array<number>>, dont_draw?:boolean): Array<Array<number>> {
         let ret = this.heatmap;
         this.heatmap = heatmap;
@@ -4100,7 +4100,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         if (drawSquare) { this.drawSquare(x, y); }
     }
 
-    public setMark(x, y, mark, dont_draw) { /* {{{ */
+    public setMark(x, y, mark, dont_draw) { 
         try {
             if (x >= 0 && y >= 0) {
                 if (typeof(mark) === "number") {
@@ -4116,8 +4116,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e.stack);
         }
-    } /* }}} */
-    private setTransientMark(x, y, mark, dont_draw) { /* {{{ */
+    } 
+    private setTransientMark(x, y, mark, dont_draw) { 
         try {
             if (x >= 0 && y >= 0) {
                 if (typeof(mark) === "number") {
@@ -4137,14 +4137,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e.stack);
         }
-    } /* }}} */
-    public getMarks(x, y) { /* {{{ */
+    } 
+    public getMarks(x, y) { 
         if (this.engine && this.engine.cur_move) {
             return this.engine.cur_move.getMarks(x, y);
         }
         return {};
-    } /* }}} */
-    private toggleMark(x, y, mark, force_label?, force_put?) { /* {{{ */
+    } 
+    private toggleMark(x, y, mark, force_label?, force_put?) { 
         let ret = true;
         if (typeof(mark) === "number") {
             mark = "" + mark;
@@ -4176,16 +4176,16 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
         this.drawSquare(x, y);
         return ret;
-    } /* }}} */
-    private incrementLabelCharacter() { /* {{{ */
+    } 
+    private incrementLabelCharacter() { 
         let seq1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         if (parseInt(this.label_character)) {
             this.label_character = "" + (parseInt(this.label_character) + 1);
         } else if (seq1.indexOf(this.label_character) !== -1) {
             this.label_character = seq1[(seq1.indexOf(this.label_character) + 1) % seq1.length];
         }
-    } /* }}} */
-    private setLabelCharacterFromMarks(set_override?) { /* {{{ */
+    } 
+    private setLabelCharacterFromMarks(set_override?) { 
         if (set_override === "letters" || /^[a-zA-Z]$/.test(this.label_character)) {
             let seq1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
             let idx = -1;
@@ -4212,14 +4212,14 @@ export abstract class Goban extends TypedEventEmitter<Events> {
 
             this.label_character = "" + (val + 1);
         }
-    } /* }}} */
-    public setLabelCharacter(ch) { /* {{{ */
+    } 
+    public setLabelCharacter(ch) { 
         this.label_character = ch;
         if (this.last_hover_square) {
             this.drawSquare(this.last_hover_square.x, this.last_hover_square.y);
         }
-    } /* }}} */
-    public clearMark(x, y, mark) { /* {{{ */
+    } 
+    public clearMark(x, y, mark) { 
         try {
             if (typeof(mark) === "number") {
                 mark = "" + mark;
@@ -4234,8 +4234,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    } /* }}} */
-    private clearTransientMark(x, y, mark) { /* {{{ */
+    } 
+    private clearTransientMark(x, y, mark) { 
         try {
             if (typeof(mark) === "number") {
                 mark = "" + mark;
@@ -4250,8 +4250,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-    } /* }}} */
-    private updateScoreEstimation() { /* {{{ */
+    } 
+    private updateScoreEstimation() { 
         if (this.score_estimate) {
             let est = this.score_estimate.estimated_hard_score - this.engine.komi;
             let color;
@@ -4259,8 +4259,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             else         { color = _("White"); }
             $("#score-estimation").text(interpolate(pgettext("Score estimation result", "Estimation: %s by %s"), [color, Math.abs(est).toFixed(1)]));
         }
-    } /* }}} */
-    public autoScore() { /* {{{ */
+    } 
+    public autoScore() { 
         try {
             if (!window["user"] || !this.on_game_screen  || !this.engine || (window["user"].id !== this.engine.black_player_id && window["user"].id !== this.engine.white_player_id)) {
                 return;
@@ -4314,8 +4314,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 .then(do_score_estimation)
                 .catch(err => console.error(err));
         }, 10);
-    } /* }}} */
-    private sendMove(mv) { /* {{{ */
+    } 
+    private sendMove(mv) { 
         let timeout = setTimeout(() => {
             this.message(_("Error submitting move"), -1);
 
@@ -4334,9 +4334,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             clearTimeout(timeout);
             this.clearMessage();
         });
-    } /* }}} */
+    } 
 
-    public setGameClock(clock) { /* {{{ */
+    public setGameClock(clock) { 
         //console.log('Setting clock: ', clock);
         if (!this.white_clock || !this.black_clock) { return; }
 
@@ -4384,7 +4384,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         let use_short_format = this.config.use_short_format_clock;
         //let now_delta = Date.now() - clock.now;
 
-        let updateClockDisplay = (clock_div, time, base_time: number, player_id?: number):number => { /* {{{ */
+        let updateClockDisplay = (clock_div, time, base_time: number, player_id?: number):number => { 
             let next_clock_update = 60000;
             let ms;
             let time_suffix = "";
@@ -4599,9 +4599,9 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             }
             clock_div.html(`<span class='clock ${cls}'>${html}<span>${(use_short_format ? "" : time_suffix)}`);
             return next_clock_update;
-        }; /* }}} */
+        }; 
 
-        let updateTime = () => { /* {{{ */
+        let updateTime = () => { 
             now = Date.now();
 
             /* correct for when we used to store paused_since in terms of seconds instead of ms */
@@ -4696,15 +4696,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
                 }
                 this.__clock_timer = setTimeout(updateTime, next_clock_update);
             }
-        }; /* }}} */
+        }; 
 
         try {
             updateTime();
         } catch (e) {
             console.error(e);
         }
-    } /* }}} */
-    public syncReviewMove(msg_override?, node_text?) { /* {{{ */
+    } 
+    public syncReviewMove(msg_override?, node_text?) { 
         if (this.review_id && (this.isPlayerController() || (this.isPlayerOwner() && msg_override && msg_override.controller)) && this.done_loading_review) {
             if (this.isInPushedAnalysis()) {
                 return;
@@ -4783,8 +4783,8 @@ export abstract class Goban extends TypedEventEmitter<Events> {
             this.socket.send("review/append", msg);
         }
 
-    } /* }}} */
-    public setScoringMode(tf):MoveTree { /* {{{ */
+    } 
+    public setScoringMode(tf):MoveTree { 
         this.scoring_mode = tf;
         let ret = this.engine.cur_move;
 
@@ -4802,15 +4802,15 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         }
 
         return ret;
-    } /* }}} */
+    } 
     /**
      * Returns true if the user has signed in and if the signed in user is a participating player in this game
      * (and not only spectating), that is, if they are either white or black.
      */
-    public isParticipatingPlayer():boolean { /* {{{ */
+    public isParticipatingPlayer():boolean { 
         return this.engine.black_player_id === this.player_id ||
                this.engine.white_player_id === this.player_id;
-    } /* }}} */
+    } 
     public getLastReviewMessage():any {
         return this.last_review_message;
     }
@@ -4818,7 +4818,7 @@ export abstract class Goban extends TypedEventEmitter<Events> {
         this.last_review_message = m;
     }
 }
-function plurality(num, single, plural) {{{
+function plurality(num, single, plural) {
     if (num > 0) {
         if (num === 1) {
             return num + " " + single;
@@ -4826,11 +4826,11 @@ function plurality(num, single, plural) {{{
         return num + " " + plural;
     }
     return "";
-}}}
-function uuid(): string { /* {{{ */
+}
+function uuid(): string { 
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         let r = Math.random() * 16 | 0;
         let v = c === "x" ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
-} /* }}} */
+} 

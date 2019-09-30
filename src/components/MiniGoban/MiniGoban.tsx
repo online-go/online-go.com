@@ -56,20 +56,20 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         this.black_clock = $("<span>");
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.destroy();
-    }}}
-    componentDidUpdate(prev_props) {{{
+    }
+    componentDidUpdate(prev_props) {
         if (prev_props.id !== this.props.id) {
             this.destroy();
             this.initialize();
         }
-    }}}
+    }
 
-    initialize() {{{
+    initialize() {
 
         this.goban = new Goban({
             "board_div": this.goban_div,
@@ -99,7 +99,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             "white_pause_text": new_text.white_pause_text,
             "black_pause_text": new_text.black_pause_text,
         }));
-    }}}
+    }
 
     destroy() {
         this.goban.destroy();

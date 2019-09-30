@@ -79,7 +79,7 @@ function lists_are_equal(A, B) {
 export class SeekGraph extends TypedEventEmitter<Events> {
     static blitz_line_ratio = 0.1;
     static live_line_ratio = 0.6;
-    static time_columns = [ /* {{{ */
+    static time_columns = [ 
         {"ratio": 0.97, "time_per_move": 0},
         {"ratio": 0.000001, "time_per_move": 1},
 
@@ -103,7 +103,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         {"ratio": 0.85, "time_per_move": 172800},
         {"ratio": 0.90, "time_per_move": 259200},
         {"ratio": 0.95, "time_per_move": 604800},
-    ]; /* }}} */
+    ]; 
 
     canvas: any;
     show_live_games: boolean;
@@ -124,7 +124,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     height;
 
 
-    constructor(config: SeekGraphConfig) { /* {{{ */
+    constructor(config: SeekGraphConfig) { 
         super();
 
         this.canvas = $(config.canvas);
@@ -146,7 +146,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         $(document).on("touchend", this.onTouchEnd);
         $(document).on("touchstart touchmove", this.onTouchStartMove);
-    } /* }}} */
+    } 
 
     userRank() {
         let user = data.get('user');
@@ -155,16 +155,16 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         return bounded_rank(user);
     }
-    onDisconnect = () => {{{
-    }}}
-    onConnect = () => {{{
+    onDisconnect = () => {
+    }
+    onConnect = () => {
         this.connected = true;
         this.socket.send("seek_graph/connect", {"channel": "global"});
         if (this.show_live_games) {
             this.connectToLiveGameList();
         }
-    }}}
-    onSeekgraphGlobal = (lst) => {{{
+    }
+    onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
             let e = lst[i];
             if ("game_started" in e) {
@@ -216,20 +216,20 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         this.redraw();
         this.emit("challenges", this.challenges);
-    }}}
-    onTouchEnd = (ev) => {{{
+    }
+    onTouchEnd = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerDown(ev);
         }
-    }}}
-    onTouchStartMove = (ev) => {{{
+    }
+    onTouchStartMove = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerMove(ev);
             ev.preventDefault();
             return false;
         }
-    }}}
-    onPointerMove = (ev) => {{{
+    }
+    onPointerMove = (ev) => {
         let new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
         if (!lists_are_equal(new_list, this.list_hits)) {
@@ -241,8 +241,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         } else {
             this.closeChallengeList(ev);
         }
-    }}}
-    onPointerDown = (ev) => {{{
+    }
+    onPointerDown = (ev) => {
         let new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
         if (!lists_are_equal(new_list, this.list_hits)) {
@@ -266,17 +266,17 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.list_locked = false;
             this.closeChallengeList();
         }
-    }}}
-    onPointerOut = (ev) => {{{
+    }
+    onPointerOut = (ev) => {
         if (!this.list_locked) {
             this.closeChallengeList();
         }
-    }}}
+    }
 
-    connectToLiveGameList() {{{
+    connectToLiveGameList() {
         this.socket.send("gamelist/subscribe", {"gamelist": "gamelist/global"});
-    }}}
-    setShowLiveGames(tf) {{{
+    }
+    setShowLiveGames(tf) {
         let changed = (tf !== this.show_live_games);
         this.show_live_games = tf;
         if (changed) {
@@ -287,8 +287,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
             this.redraw();
         }
-    }}}
-    destroy() {{{
+    }
+    destroy() {
         this.list_locked = false;
         this.closeChallengeList();
         this.setShowLiveGames(false);
@@ -302,9 +302,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         $(document).off("touchend", this.onTouchEnd);
         $(document).off("touchstart touchmove", this.onTouchStartMove);
-    }}}
+    }
 
-    getHits(ev) {{{
+    getHits(ev) {
         let pos = getRelativeEventPosition(ev);
         let ret = [];
 
@@ -329,8 +329,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         return ret;
-    }}}
-    redraw() {{{
+    }
+    redraw() {
         let ctx = this.canvas[0].getContext("2d");
         let w = this.canvas.width();
         let h = this.canvas.height();
@@ -459,8 +459,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         //console.log("Redrawing seekgraph");
-    }}}
-    resize(w, h) {{{
+    }
+    resize(w, h) {
         this.width = w;
         this.height = h;
 
@@ -476,8 +476,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.canvas.attr("width", w).attr("height", h);
 
         this.redraw();
-    }}}
-    drawAxes() {{{
+    }
+    drawAxes() {
         let ctx = this.canvas[0].getContext("2d");
         let w = this.canvas.width();
         let h = this.canvas.height();
@@ -567,9 +567,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         } catch (e) {
         }
         ctx.restore();
-    }}}
+    }
 
-    moveChallengeList(ev) {{{
+    moveChallengeList(ev) {
         this.popupChallengeList(ev);
         if (this.list_locked) { return; }
 
@@ -599,8 +599,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         pos.y = Math.min(pos.y, win_bottom + list_height);
 
         this.list.css({"left": pos.x, "top": pos.y});
-    }}}
-    popupChallengeList(ev) {{{
+    }
+    popupChallengeList(ev) {
         if (this.list_open) { return; }
         this.list_open = true;
 
@@ -755,8 +755,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         $(document.body).append(list);
         this.moveChallengeList(ev);
-    }}}
-    closeChallengeList(ev?) {{{
+    }
+    closeChallengeList(ev?) {
         if (this.modal) {
             removeModal(this.modal);
         }
@@ -767,11 +767,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         this.list_open = false;
         this.list.remove();
-    }}}
+    }
 }
 
 
-/* Modal stuff {{{ */
+/* Modal stuff  */
 function createModal(close_callback, priority) {
     let modal = null;
     function onClose() {
@@ -827,6 +827,6 @@ $(document).on('keydown', function(event) {
 });
 */
 
-/* }}} */
+
 
 

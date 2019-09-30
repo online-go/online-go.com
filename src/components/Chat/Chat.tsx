@@ -60,7 +60,7 @@ data.watch("config.user", (user) => {
         , "i");
 });
 
-let global_channels: Array<any> = [ /* {{{ */
+let global_channels: Array<any> = [ 
     {"id": "global-english" , "name": "English", "country": "us"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
@@ -96,7 +96,7 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"},
     {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
-]; /* }}} */
+]; 
 
 data.watch("config.ogs", (settings) => {
     if (settings && settings.channels) {
@@ -112,7 +112,7 @@ for (let chan of global_channels) {
 
 let channels = { };
 
-function getChannel(channel) { /* {{{ */
+function getChannel(channel) { 
     if (!(channel in channels)) {
         channels[channel] = {
             name: "<error>",
@@ -126,7 +126,7 @@ function getChannel(channel) { /* {{{ */
         };
     }
     return channels[channel];
-} /* }}} */
+} 
 
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
@@ -177,21 +177,21 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    updateGroups = (groups) => {{{
+    updateGroups = (groups) => {
         this.setState({group_channels: groups});
         groups.map((g) => {
             getChannel("group-" + g.id).name = g.name;
         });
-    }}}
+    }
 
-    updateTournaments = (tournaments) => {{{
+    updateTournaments = (tournaments) => {
         this.setState({tournament_channels: tournaments});
         tournaments.map((t) => {
             getChannel("tournament-" + t.id).name = t.name;
         });
-    }}}
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.groups, this.updateGroups);
         data.watch(cached.active_tournaments, this.updateTournaments);
 
@@ -227,11 +227,11 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
         I = setInterval(resizeSeekgraph, 50);
         resizeSeekgraph();
-    }}}
-    componentDidUpdate() {{{
+    }
+    componentDidUpdate() {
         this.autoscroll();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         data.unwatch(cached.groups, this.updateGroups);
         data.unwatch(cached.active_tournaments, this.updateTournaments);
         this.disconnect();
@@ -242,9 +242,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             window.document.title = "OGS";
         }
         this.seekgraph.destroy();
-    }}}
+    }
 
-    connect = () => {{{
+    connect = () => {
         channels = {};
         global_channels.map((chan) => getChannel(chan.id).name = chan.name);
         this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
@@ -264,8 +264,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             this.join(channel);
         }
         this.setActiveChannel(this.state.active_channel);
-    }}}
-    disconnect = () => {{{
+    }
+    disconnect = () => {
         channels = {};
         comm_socket.off("chat-message", this.onChatMessage);
         comm_socket.off("chat-join", this.onChatJoin);
@@ -276,15 +276,15 @@ export class Chat extends React.Component<ChatProperties, any> {
             this.part(channel, true, true);
         }
         clearInterval(this.online_count_interval);
-    }}}
-    onDocumentFocus = () => {{{
+    }
+    onDocumentFocus = () => {
         this.unread_ct = 0;
         if (this.props.updateTitle) {
             window.document.title = _("Chat");
         }
-    }}}
+    }
 
-    onChatMessageRemoved = (obj) => {{{
+    onChatMessageRemoved = (obj) => {
         console.log("Chat message removed: ", obj);
         let c = getChannel(obj.channel);
         c.chat_ids[obj.uuid] = true;
@@ -295,8 +295,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             }
         }
         this.syncStateSoon();
-    }}}
-    onChatMessage = (obj) => {{{
+    }
+    onChatMessage = (obj) => {
         let mentioned = false;
         try {
             if (typeof(obj.message.m) === "string") {
@@ -356,8 +356,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 window.document.title = `(${this.unread_ct}) ` + _("Chat");
             }
         }
-    }}}
-    onChatJoin = (joins) => {{{
+    }
+    onChatJoin = (joins) => {
         let c = getChannel(joins.channel);
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
@@ -369,8 +369,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         //if (this.state.active_channel === joins.channel) {
         this.syncStateSoon();
         //}
-    }}}
-    onChatPart = (part) => {{{
+    }
+    onChatPart = (part) => {
         let c = getChannel(part.channel);
         if ((part.user.id in c.user_list)) {
             c.user_count--;
@@ -380,8 +380,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         //if (this.state.active_channel === part.channel) {
             this.syncStateSoon();
         //}
-    }}}
-    systemMessage(text, type) {{{
+    }
+    systemMessage(text, type) {
         let c = getChannel(this.state.active_channel);
         c.chat_log.push({
             message: {
@@ -392,8 +392,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             "body": text,
         });
         this.syncStateSoon();
-    }}}
-    clearSystemMessages(type) {{{
+    }
+    clearSystemMessages(type) {
         for (let channel in channels) {
             let c = getChannel(channel);
             for (let i = 0; i < c.chat_log.length; ++i) {
@@ -404,9 +404,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             }
         }
         this.syncStateSoon();
-    }}}
+    }
 
-    join(channel) {{{
+    join(channel) {
         if (!channel) {
             throw new Error(`Attempted to join invalid channel: ${channel}`);
         }
@@ -425,8 +425,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 joined_channels: data.get("chat.joined")
             });
         }
-    }}}
-    part(channel, dont_autoset_active, dont_clear_joined) {{{
+    }
+    part(channel, dont_autoset_active, dont_clear_joined) {
         if (comm_socket.connected) {
             comm_socket.send("chat/part", {"channel": channel});
         }
@@ -450,8 +450,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 this.setActiveChannel("global-english");
             }
         }
-    }}}
-    syncStateSoon() {{{
+    }
+    syncStateSoon() {
         if (!this.defered_state_update) {
             this.defered_state_update = setTimeout(() => {
                 this.defered_state_update = null;
@@ -462,8 +462,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 });
             }, 20);
         }
-    }}}
-    setActiveChannel = (channel_or_ev) => { /* {{{ */
+    }
+    setActiveChannel = (channel_or_ev) => { 
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
@@ -515,8 +515,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.should_scroll_chatlog = true;
         this.scrollChats();
         */
-    } /* }}} */
-    sortedUserList(): Array<any> {{{
+    } 
+    sortedUserList(): Array<any> {
         let lst = [];
         for (let id in this.state.user_list) {
             lst.push(this.state.user_list[id]);
@@ -530,15 +530,15 @@ export class Chat extends React.Component<ChatProperties, any> {
             });
         }
         return lst;
-    }}}
-    toggleSortOrder = () => {{{
+    }
+    toggleSortOrder = () => {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }}}
+    }
 
 
-    onKeyPress = (event) => {{{
+    onKeyPress = (event) => {
         if (event.charCode === 13) {
             let input = event.target as HTMLInputElement;
             if (!comm_socket.connected) {
@@ -551,8 +551,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             input.value = "";
             return false;
         }
-    }}}
-    sendChat(txt, channel) {{{
+    }
+    sendChat(txt, channel) {
         let actually_send = (txt, channel) => {
             if (this.flood_protection) {
                 return;
@@ -611,23 +611,23 @@ export class Chat extends React.Component<ChatProperties, any> {
         for (let str of string_splitter(txt, 300)) {
             actually_send(str, channel);
         }
-    }}}
-    focusInput = () => {{{
+    }
+    focusInput = () => {
         let sel = window.getSelection();
 
         if (!sel || sel.isCollapsed) {
             $(this.refs.input.refs.input).focus();
         }
-    }}}
-    updateScrollPosition = () => {{{
+    }
+    updateScrollPosition = () => {
         let tf = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
             this.refs.chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
         this.scrolled_to_bottom = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
-    }}}
-    autoscroll() {{{
+    }
+    autoscroll() {
         if (this.scrolled_to_bottom) {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
             setTimeout(() => {
@@ -637,28 +637,28 @@ export class Chat extends React.Component<ChatProperties, any> {
                 }
             } , 100);
         }
-    }}}
+    }
 
     toggleChannelList = () => this.setState({force_show_channels: !this.state.force_show_channels});
     toggleUserList = () => this.setState({force_show_users: !this.state.force_show_users});
 
-    leaveActiveChannel = () => {{{
+    leaveActiveChannel = () => {
         this.part(this.state.active_channel, false, false);
-    }}}
-    toggleShowAllGlobalChannels = () => {{{
+    }
+    toggleShowAllGlobalChannels = () => {
         preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels),
         this.setState({show_all_global_channels: !this.state.show_all_global_channels});
-    }}}
-    toggleShowAllGroupChannels = () => {{{
+    }
+    toggleShowAllGroupChannels = () => {
         preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels),
         this.setState({show_all_group_channels: !this.state.show_all_group_channels});
-    }}}
-    toggleShowAllTournamentChannels = () => {{{
+    }
+    toggleShowAllTournamentChannels = () => {
         preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels),
         this.setState({show_all_tournament_channels: !this.state.show_all_tournament_channels});
-    }}}
+    }
 
-    render() {{{
+    render() {
         let sorted_user_list = this.sortedUserList();
         let last_line = null;
 
@@ -814,7 +814,7 @@ export class Chat extends React.Component<ChatProperties, any> {
                 }
             </div>
         );
-    }}}
+    }
 }
 
 
@@ -843,7 +843,7 @@ function generateChatSearchLine(urlString, command, body) {
     }
 }
 
-function ChatLine(props) {{{
+function ChatLine(props) {
     let line = props.line;
     let lastline = props.lastline;
     let user = line;
@@ -910,8 +910,8 @@ function ChatLine(props) {{{
             <span className="body">{chat_markup(body)}</span>
         </div>
     );
-}}}
-export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {{{
+}
+export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
     let replacements = [
         // Match github
         {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+)\b/gi,
@@ -1038,4 +1038,4 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
     }
 
     return ret;
-}}}
+}

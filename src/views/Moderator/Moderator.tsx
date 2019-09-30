@@ -46,14 +46,14 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
         window.document.title = _("Moderator Center");
     }
 
-    refreshModlog = () => {{{
+    refreshModlog = () => {
         this.refs.modlog.update();
-    }}}
-    refreshUserlog = () => {{{
+    }
+    refreshUserlog = () => {
         this.refs.userlog.update();
-    }}}
+    }
 
-    render() {{{
+    render() {
         return (
         <div className="Moderator">
             <UIPush event="modlog-updated" channel="moderators" action={this.refreshModlog} />
@@ -158,10 +158,10 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
 
         </div>
         );
-    }}}
+    }
 }
 
-function moderate(player_id, prompt, obj) {{{
+function moderate(player_id, prompt, obj) {
     return new Promise((resolve, reject) => {
         swal({
             text: prompt,
@@ -173,8 +173,8 @@ function moderate(player_id, prompt, obj) {{{
             put("players/" + player_id + "/moderate", obj).then(resolve).catch(reject);
         }, reject);
     });
-}}}
-export function ban(player_id) {{{
+}
+export function ban(player_id) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             "ban": 1,
@@ -183,8 +183,8 @@ export function ban(player_id) {{{
     } else {
         return moderate(player_id, "Reason for banning?", {"is_banned": 1});
     }
-}}}
-export function shadowban(player_id) {{{
+}
+export function shadowban(player_id) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             "ban": 1,
@@ -193,8 +193,8 @@ export function shadowban(player_id) {{{
     } else {
         return moderate(player_id, "Reason for shadow banning?", {"is_shadowbanned": 1});
     }
-}}}
-export function remove_ban(player_id) {{{
+}
+export function remove_ban(player_id) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             "ban": 0,
@@ -203,8 +203,8 @@ export function remove_ban(player_id) {{{
     } else {
         return moderate(player_id, "Reason for removing ban?", {"is_banned": 0});
     }
-}}}
-export function remove_shadowban(player_id) {{{
+}
+export function remove_shadowban(player_id) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             "ban": 0,
@@ -213,4 +213,4 @@ export function remove_shadowban(player_id) {{{
     } else {
         return moderate(player_id, "Reason for removing the shadow ban?", {"is_shadowbanned": 0});
     }
-}}}
+}

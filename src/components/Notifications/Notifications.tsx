@@ -49,7 +49,7 @@ function getCurrentGameId() {
     return null;
 }
 
-function formatTime(seconds) { /* {{{ */
+function formatTime(seconds) { 
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
@@ -80,7 +80,7 @@ function formatTime(seconds) { /* {{{ */
         return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
     return _("no time left");
-} /* }}} */
+} 
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;
@@ -98,7 +98,7 @@ $(window).on("storage", (event) => {
     }
 });
 
-export function emitNotification(title, body, cb?) {{{
+export function emitNotification(title, body, cb?) {
     try {
         if (!preferences.get('desktop-notifications')) {
             return;
@@ -198,10 +198,10 @@ export function emitNotification(title, body, cb?) {{{
     } catch (e) {
         console.log("Error emitting notification: ", e);
     }
-}}}
-function silenceNotificationsFor5Seconds() {{{
+}
+function silenceNotificationsFor5Seconds() {
     boot_time = Date.now();
-}}}
+}
 
 
 class NotificationManager {
@@ -215,7 +215,7 @@ class NotificationManager {
     auth;
     event_emitter: TypedEventEmitter<Events>;
 
-    constructor() {{{
+    constructor() {
         window["notification_manager"] = this;
         this.event_emitter = new TypedEventEmitter<Events>();
 
@@ -226,8 +226,8 @@ class NotificationManager {
         this.active_boards = {};
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
-    }}}
-    setUser(user) {{{
+    }
+    setUser(user) {
         if (this.user && (user.id === this.user.id)) {
             return;
         }
@@ -237,8 +237,8 @@ class NotificationManager {
         this.user = user;
         this.auth = data.get("config.notification_auth");
         this.connect();
-    }}}
-    advanceToNextBoard(ev?) {{{
+    }
+    advanceToNextBoard(ev?) {
         let game_id = getCurrentGameId() || 0;
         let board_ids = [];
         //notificationPermissionRequest();
@@ -283,15 +283,15 @@ class NotificationManager {
                 browserHistory.push("/game/" + board_ids[idx]);
             }
         }
-    }}}
-    deleteNotification(notification, dont_rebuild?: boolean) {{{
+    }
+    deleteNotification(notification, dont_rebuild?: boolean) {
         comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
         delete this.notifications[notification.id];
         if (!dont_rebuild) {
             this.rebuildNotificationList();
         }
-    }}}
-    clearAllNonActionableNotifications() {{{
+    }
+    clearAllNonActionableNotifications() {
         for (let id in this.notifications) {
             let notification = this.notifications[id];
             switch (notification.type) {
@@ -307,8 +307,8 @@ class NotificationManager {
             comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
         }
         this.rebuildNotificationList();
-    }}}
-    connect() {{{
+    }
+    connect() {
         comm_socket.on("connect", () => {
             comm_socket.send("notification/connect", {"player_id": this.user.id, "auth": this.auth});
         });
@@ -432,8 +432,8 @@ class NotificationManager {
         });
 
         return comm_socket;
-    }}}
-    onNavigate = (location) => {{{
+    }
+    onNavigate = (location) => {
         let current_game_id = getCurrentGameId();
         if (current_game_id) {
             let found = false;
@@ -448,8 +448,8 @@ class NotificationManager {
                 this.rebuildNotificationList();
             }
         }
-    }}}
-    rebuildNotificationList() {{{
+    }
+    rebuildNotificationList() {
         this.ordered_notifications = [];
 
         this.unread_notification_count = 0;
@@ -464,7 +464,7 @@ class NotificationManager {
 
         this.event_emitter.emit("notification-count", this.unread_notification_count);
         this.event_emitter.emit("notification-list-updated");
-    }}}
+    }
     anyYourMove() {
         if (Object.keys(this.boards_to_move_on).length === 0) {
             return false;
@@ -477,7 +477,7 @@ class NotificationManager {
 
 export let notification_manager: NotificationManager = new NotificationManager();
 
-export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
+export class TurnIndicator extends React.Component<{}, any> { 
     constructor(props) {
         super(props);
         this.state = {
@@ -507,9 +507,9 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
             </span>
        );
     }
-} /* }}} */
+} 
 
-export class NotificationIndicator extends React.Component<{}, any> { /* {{{ */
+export class NotificationIndicator extends React.Component<{}, any> { 
     constructor(props) {
         super(props);
         this.state = {
@@ -537,9 +537,9 @@ export class NotificationIndicator extends React.Component<{}, any> { /* {{{ */
             </span>
         );
     }
-} /* }}} */
+} 
 
-export class NotificationList extends React.Component<{}, any> { /* {{{ */
+export class NotificationList extends React.Component<{}, any> { 
     constructor(props) {
         super(props);
         this.state = {
@@ -589,9 +589,9 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
+} 
 
-class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
+class NotificationEntry extends React.Component<{notification}, any> { 
     constructor(props) {
         super(props);
         this.state = {
@@ -909,7 +909,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                 break;
         }
     }
-} /* }}} */
+} 
 
 
 data.watch("config.user", (user) => notification_manager.setUser(user));

@@ -43,25 +43,25 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         this.goban_div = $("<div class='Goban'>");
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.destroy();
-    }}}
-    componentDidUpdate(prev_props) {{{
+    }
+    componentDidUpdate(prev_props) {
         if (prev_props.config !== this.props.config) {
             this.destroy();
             this.initialize();
         }
-    }}}
+    }
 
     reset() {
         this.destroy();
         this.initialize();
     }
 
-    initialize() {{{
+    initialize() {
         this.goban = new Goban({
             "board_div": this.goban_div,
             "initial_player": "black",
@@ -119,7 +119,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         if (this.props.config['onError']) {
             this.goban.on("error", this.props.config.onError);
         }
-    }}}
+    }
     destroy() {
         this.goban.destroy();
     }

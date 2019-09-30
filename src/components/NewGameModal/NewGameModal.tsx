@@ -139,6 +139,6 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     }
 }
 
-export function openNewGameModal() {{{
+export function openNewGameModal() {
     return openModal(<NewGameModal fastDismiss={true} />);
-}}}
+}

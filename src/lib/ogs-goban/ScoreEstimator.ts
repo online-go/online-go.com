@@ -126,7 +126,7 @@ class SEGroup {
     liberties;
 
 
-    constructor(se, color, id) { /* {{{ */
+    constructor(se, color, id) { 
         this.points = [];
         this.se = se;
         this.id = id;
@@ -139,16 +139,16 @@ class SEGroup {
         this.removed = false;
         this.estimated_score = 0.0;
         this.estimated_hard_score = 0.0;
-    } /* }}} */
-    add(i, j, color) { /* {{{ */
+    } 
+    add(i, j, color) { 
         this.points.push({x: i, y: j, color: color});
-    } /* }}} */
-    foreachPoint(fn) { /* {{{ */
+    } 
+    foreachPoint(fn) { 
         for (let i = 0; i < this.points.length; ++i) {
             fn(this.points[i]);
         }
-    } /* }}} */
-    foreachNeighboringPoint(fn) { /* {{{ */
+    } 
+    foreachNeighboringPoint(fn) { 
         let self = this;
         let points = this.points;
         let done_array = new Array(this.se.height * this.se.width);
@@ -173,8 +173,8 @@ class SEGroup {
             if (pt.y - 1 >= 0)               { checkAndDo(pt.x, pt.y - 1); }
             if (pt.y + 1 !== this.se.height) { checkAndDo(pt.x, pt.y + 1); }
         }
-    } /* }}} */
-    addNeighbor(group) { /* {{{ */
+    } 
+    addNeighbor(group) { 
         if (!(group.id in this.neighbor_map)) {
             this.neighbors.push(group);
             this.neighbor_map[group.id] = true;
@@ -185,35 +185,35 @@ class SEGroup {
                 this.neighboring_enemy.push(group);
             }
         }
-    } /* }}} */
-    foreachNeighborGroup(fn) { /* {{{ */
+    } 
+    foreachNeighborGroup(fn) { 
         for (let i = 0; i < this.neighbors.length; ++i) {
             //if (!this.neighbors[i].removed) {
                 fn(this.neighbors[i]);
             //}
         }
-    } /* }}} */
-    foreachNeighborSpaceGroup(fn) { /* {{{ */
+    } 
+    foreachNeighborSpaceGroup(fn) { 
         for (let i = 0; i < this.neighboring_space.length; ++i) {
             //if (!this.neighboring_space[i].removed) {
                 fn(this.neighboring_space[i]);
             //}
         }
-    } /* }}} */
-    foreachNeighborEnemyGroup(fn) { /* {{{ */
+    } 
+    foreachNeighborEnemyGroup(fn) { 
         for (let i = 0; i < this.neighboring_enemy.length; ++i) {
             //if (!this.neighboring_enemy[i].removed) {
                 fn(this.neighboring_enemy[i]);
             //}
         }
-    } /* }}} */
-    setRemoved(removed) { /* {{{ */
+    } 
+    setRemoved(removed) { 
         this.removed = removed;
         for (let i = 0; i < this.points.length; ++i) {
             let pt = this.points[i];
             this.se.setRemoved(pt.x, pt.y, removed);
         }
-    } /* }}} */
+    } 
 }
 
 export class ScoreEstimator {
@@ -251,11 +251,11 @@ export class ScoreEstimator {
 
 
 
-    constructor(cb) { /* {{{ */
+    constructor(cb) { 
         this.cb = cb;
-    } /* }}} */
+    } 
 
-    init(engine, trials, tolerance) { /* {{{ */
+    init(engine, trials, tolerance) { 
         this.currentMarker = 1;
         this.engine = engine;
         this.width = engine.width;
@@ -278,8 +278,8 @@ export class ScoreEstimator {
         this.resetGroups();
         this.estimateScore(this.trials, this.tolerance);
         //this.sealDame();
-    } /* }}} */
-    estimateScore(trials, tolerance) { /* {{{ */
+    } 
+    estimateScore(trials, tolerance) { 
         if (!OGSScoreEstimator_initialized) {
             throw new Error("Score estimator not intialized yet");
         }
@@ -354,8 +354,8 @@ export class ScoreEstimator {
         if (this.cb && this.cb.updateScoreEstimation) {
             this.cb.updateScoreEstimation();
         }
-    } /* }}} */
-    getProbablyDead() { /* {{{ */
+    } 
+    getProbablyDead() { 
         let ret = "";
         let arr = [];
         for (let y = 0; y < this.height; ++y) {
@@ -375,8 +375,8 @@ export class ScoreEstimator {
             ret += arr[i];
         }
         return ret;
-    } /* }}} */
-    resetGroups() { /* {{{ */
+    } 
+    resetGroups() { 
         let self = this;
         console.log("resetting groups");
         this.territory = GoMath.makeMatrix(this.width, this.height, 0);
@@ -439,13 +439,13 @@ export class ScoreEstimator {
                 g.liberties = liberties;
             }
         });
-    } /* }}} */
-    foreachGroup(fn) { /* {{{ */
+    } 
+    foreachGroup(fn) { 
         for (let i = 0; i < this.group_list.length; ++i) {
             fn(this.group_list[i]);
         }
-    } /* }}} */
-    handleClick(i, j, modkey) { /* {{{ */
+    } 
+    handleClick(i, j, modkey) { 
         if (modkey) {
             this.setRemoved(i, j, !this.removal[j][i]);
         } else {
@@ -454,8 +454,8 @@ export class ScoreEstimator {
 
         this.estimateScore(this.trials, this.tolerance);
         //this.resetGroups();
-    } /* }}} */
-    toggleMetaGroupRemoval(x, y) { /* {{{ */
+    } 
+    toggleMetaGroupRemoval(x, y) { 
         let self = this;
         let len = 0;
         let already_done = {};
@@ -505,14 +505,14 @@ export class ScoreEstimator {
             console.log(e.stack);
         }
 
-    } /* }}} */
-    setRemoved(x, y, removed) { /* {{{ */
+    } 
+    setRemoved(x, y, removed) { 
         this.removal[y][x] = removed;
         if (this.cb) {
             this.cb.setForRemoval(x, y, this.removal[y][x]);
         }
-    } /* }}} */
-    clearRemoved() { /* {{{ */
+    } 
+    clearRemoved() { 
         for (let y = 0; y < this.height; ++y) {
             for (let x = 0; x < this.width; ++x) {
                 if (this.removal[y][x]) {
@@ -520,8 +520,8 @@ export class ScoreEstimator {
                 }
             }
         }
-    } /* }}} */
-    getStoneRemovalString() { /* {{{ */
+    } 
+    getStoneRemovalString() { 
         let ret = "";
         let arr = [];
         for (let y = 0; y < this.height; ++y) {
@@ -536,26 +536,26 @@ export class ScoreEstimator {
             ret += arr[i];
         }
         return ret;
-    } /* }}} */
-    getGroup(x, y) { /* {{{ */
+    } 
+    getGroup(x, y) { 
         return this.groups[y][x];
-    } /* }}} */
-    incrementCurrentMarker() { /* {{{ */
+    } 
+    incrementCurrentMarker() { 
         ++this.currentMarker;
-    } /* }}} */
+    } 
 
     /** Returns an array of groups connected to the given group */
-    markGroup(group) { /* {{{ */
+    markGroup(group) { 
         for (let i = 0; i < group.length; ++i) {
             this.marks[group[i].y][group[i].x] = this.currentMarker;
         }
-    } /* }}} */
+    } 
     /**
      * This gets run after we've instructed the estimator how/when to fill dame,
      * manually mark removed/dame, etc..  it does an official scoring from the
      * remaining territory.
      */
-    score() { /* {{{ */
+    score() { 
         this.white = {
                 "total": 0,
                 "stones": 0,
@@ -639,8 +639,8 @@ export class ScoreEstimator {
         }
 
         return this;
-    } /* }}} */
-    foreachNeighbor(pt_or_group, fn_of_neighbor_pt) { /* {{{ */
+    } 
+    foreachNeighbor(pt_or_group, fn_of_neighbor_pt) { 
         let self = this;
         let group;
         let done_array;
@@ -675,5 +675,5 @@ export class ScoreEstimator {
 
             fn_of_neighbor_pt(x, y);
         }
-    } /* }}} */
+    } 
 }

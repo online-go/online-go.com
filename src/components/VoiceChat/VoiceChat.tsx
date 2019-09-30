@@ -201,7 +201,7 @@ export class VoiceChat extends React.PureComponent<VoiceChatProperties, any> {
     }
 
     autoplay_timeout = null;
-    handleAudio = (obj) => {{{
+    handleAudio = (obj) => {
         let channel = obj.channel;
         if (channel !== this.state.channel) {
             return;
@@ -225,9 +225,9 @@ export class VoiceChat extends React.PureComponent<VoiceChatProperties, any> {
                 }, 100);
             }
         }
-    }}}
+    }
 
-    beginBroadcasting() {{{
+    beginBroadcasting() {
         this.setState({broadcasting: true});
 
         if (this.recorder == null) {
@@ -266,9 +266,9 @@ export class VoiceChat extends React.PureComponent<VoiceChatProperties, any> {
         /* workaround for https://github.com/Microsoft/TypeScript/issues/10242 */
         (this.recorder as any).catch(errorLogger);
 
-    }}}
+    }
 
-    endBroadcasting() {{{
+    endBroadcasting() {
         this.setState({broadcasting: false});
         if (this.recorder) {
             this.recorder = null;
@@ -288,23 +288,23 @@ export class VoiceChat extends React.PureComponent<VoiceChatProperties, any> {
             this.recorder = null;
         }
         */
-    }}}
+    }
 
-    toggleBroadcasting = () => {{{
+    toggleBroadcasting = () => {
         if (this.state.broadcasting) {
             this.endBroadcasting();
         } else {
             this.beginBroadcasting();
         }
-    }}}
+    }
 
-    togglePlay = (event) => {{{
+    togglePlay = (event) => {
         if (this.playing()) {
             this.stop(event);
         } else {
             this.play();
         }
-    }}}
+    }
 
 
     render() {

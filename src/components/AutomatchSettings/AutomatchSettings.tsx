@@ -126,12 +126,12 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
         };
     }
 
-    setTab = (tab) => {{{
+    setTab = (tab) => {
         data.set('automatch.last-tab', tab);
         this.setState({'tab': tab});
-    }}}
+    }
 
-    getSelectedSettings() {{{
+    getSelectedSettings() {
         switch (this.state.tab) {
             case 'blitz':
                 return dup(this.state.blitz_settings);
@@ -141,8 +141,8 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                 return dup(this.state.correspondence_settings);
         }
         return null;
-    }}}
-    setSelectedSettings(settings) {{{
+    }
+    setSelectedSettings(settings) {
         settings = dup(settings);
         switch (this.state.tab) {
             case 'blitz':
@@ -158,35 +158,35 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                 this.setState({correspondence_settings: settings});
                 break;
         }
-    }}}
-    setLowerRankDiff = (ev) => {{{
+    }
+    setLowerRankDiff = (ev) => {
         let settings = this.getSelectedSettings();
         let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
         this.setSelectedSettings(settings);
-    }}}
-    setUpperRankDiff = (ev) => {{{
+    }
+    setUpperRankDiff = (ev) => {
         let settings = this.getSelectedSettings();
         let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
-    }}}
-    setHandicapCondition = (ev) => {{{
+    }
+    setHandicapCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.handicap.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
-    setTimeControlCondition = (ev) => {{{
+    }
+    setTimeControlCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.time_control.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
-    setRulesCondition = (ev) => {{{
+    }
+    setRulesCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.rules.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
-    toggleSize(size) {{{
+    }
+    toggleSize(size) {
         let settings = this.getSelectedSettings();
         if (settings.size_options.indexOf(size) >= 0) {
             settings.size_options = settings.size_options.filter((x) => x !== size);
@@ -198,23 +198,23 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
             settings.size_options.push('19x19');
         }
         this.setSelectedSettings(settings);
-    }}}
+    }
 
-    setHandicapValue = (ev) => {{{
+    setHandicapValue = (ev) => {
         let settings = this.getSelectedSettings();
         settings.handicap.value = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
-    setRulesValue = (ev) => {{{
+    }
+    setRulesValue = (ev) => {
         let settings = this.getSelectedSettings();
         settings.rules.value = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
-    setTimeControlSystem = (ev) => {{{
+    }
+    setTimeControlSystem = (ev) => {
         let settings = this.getSelectedSettings();
         settings.time_control.value.system = ev.target.value;
         this.setSelectedSettings(settings);
-    }}}
+    }
 
     render() {
         let settings = this.getSelectedSettings();
@@ -316,6 +316,6 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
 }
 
 
-export function openAutomatchSettings() {{{
+export function openAutomatchSettings() {
     return openModal(<AutomatchSettings fastDismiss={true} />);
-}}}
+}

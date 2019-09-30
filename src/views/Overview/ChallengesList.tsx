@@ -40,23 +40,23 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.challenge_list, this.update);
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         data.unwatch(cached.challenge_list, this.update);
-    }}}
-    update = (challenge_list) => {{{
+    }
+    update = (challenge_list) => {
         this.setState({"challenges": challenge_list});
-    }}}
+    }
 
-    deleteChallenge(challenge) {{{
+    deleteChallenge(challenge) {
         del("me/challenges/%%", challenge.id)
         .then(ignore)
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
-    }}}
-    acceptChallenge(challenge) {{{
+    }
+    acceptChallenge(challenge) {
         post("me/challenges/%%/accept", challenge.id, {})
         .then((res) => {
             if (res.time_per_move > 0 && res.time_per_move < 1800) {
@@ -69,9 +69,9 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
         })
         .catch(ignore);
         this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
-    }}}
+    }
 
-    render() {{{
+    render() {
         let user = data.get('user');
 
         return (
@@ -105,5 +105,5 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
                 </div>
             </div>
         );
-    }}}
+    }
 }

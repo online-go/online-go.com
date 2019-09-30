@@ -51,7 +51,7 @@ export class PuzzleTransform {
         public settings: TransformSettings
     ) {}
 
-    transformMoveText(puzzle, txt) {{{
+    transformMoveText(puzzle, txt) {
         if (this.settings.transform_color) {
             let colors = {
                 "White" : "Black",
@@ -117,9 +117,9 @@ export class PuzzleTransform {
         });
 
         return txt;
-    }}}
+    }
 
-    transformCoordinate(puzzle, coord, width, height) {{{
+    transformCoordinate(puzzle, coord, width, height) {
         if (coord.marks && Array.isArray(coord.marks)) {
             for (let i = 0; i < coord.marks.length; ++i) {
                 this.transformCoordinate(puzzle, coord.marks[i], width, height);
@@ -138,9 +138,9 @@ export class PuzzleTransform {
         }
         if (this.settings.transform_h) { coord.x = (width - 1) - coord.x; }
         if (this.settings.transform_v) { coord.y = (height - 1) - coord.y; }
-    }}}
+    }
 
-    transformCoordinates(puzzle, coords, width, height) {{{
+    transformCoordinates(puzzle, coords, width, height) {
         if (Array.isArray(coords)) {
             for (let i = 0; i < coords.length; ++i) {
                 this.transformCoordinate(puzzle, coords[i], width, height);
@@ -155,9 +155,9 @@ export class PuzzleTransform {
             }
         }
         return coords;
-    }}}
+    }
 
-    transformPuzzle(puzzle) {{{
+    transformPuzzle(puzzle) {
         let width = puzzle.width;
         let height = puzzle.height;
 
@@ -186,7 +186,7 @@ export class PuzzleTransform {
         if (puzzle.puzzle_description) {
             puzzle.puzzle_description = this.transformMoveText(puzzle, puzzle.puzzle_description);
         }
-    }}}
+    }
 
 
     /**
@@ -194,7 +194,7 @@ export class PuzzleTransform {
      * @param what transformation key
      * @return Puzzle State
      */
-    stateForTransformation(what): any {{{
+    stateForTransformation(what): any {
         let state: any = null;
 
         switch (what) {
@@ -208,7 +208,7 @@ export class PuzzleTransform {
         }
 
        return state;
-    }}}
+    }
 
 
 }

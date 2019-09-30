@@ -36,7 +36,7 @@ export class GoStoneGroup {
     is_territory_in_seki: any;
 
 
-    constructor(engine, id, color, dame) { /* {{{ */
+    constructor(engine, id, color, dame) { 
         this.engine = engine;
         this.points = [];
         this.neighbors = [];
@@ -50,40 +50,40 @@ export class GoStoneGroup {
 
         this.__added_neighbors = {};
         this.corner_groups = {};
-    } /* }}} */
-    addStone(x, y) { /* {{{ */
+    } 
+    addStone(x, y) { 
         this.points.push({"x": x, "y": y});
-    } /* }}} */
-    addNeighborGroup(group) { /* {{{ */
+    } 
+    addNeighborGroup(group) { 
         if (!(group.id in this.__added_neighbors)) {
             this.neighbors.push(group);
             this.__added_neighbors[group.id] = true;
         }
-    } /* }}} */
-    addCornerGroup(x, y, group) { /* {{{ */
+    } 
+    addCornerGroup(x, y, group) { 
         if (!(y in this.corner_groups)) { this.corner_groups[y]  = {}; }
         this.corner_groups[y][x] = group;
-    } /* }}} */
-    foreachStone(fn) { /* {{{ */
+    } 
+    foreachStone(fn) { 
         for (let i = 0; i < this.points.length; ++i) {
             fn(this.points[i]);
         }
-    } /* }}} */
-    foreachNeighborGroup(fn) { /* {{{ */
+    } 
+    foreachNeighborGroup(fn) { 
         for (let i = 0; i < this.neighbors.length; ++i) {
             fn(this.neighbors[i]);
         }
-    } /* }}} */
-    computeIsEye() { /* {{{ */
+    } 
+    computeIsEye() { 
         this.is_eye = false;
 
         if (this.points.length > 1) { return; }
         this.is_eye = this.is_territory;
-    } /* }}} */
-    size() { /* {{{ */
+    } 
+    size() { 
         return this.points.length;
-    } /* }}} */
-    computeIsStrongEye() { /* {{{ */
+    } 
+    computeIsStrongEye() { 
         /* If a single eye is surrounded by 7+ stones of the same color, 5 stones
          * for edges, and 3 stones for corners, or if any of those spots are
          * territory owned by the same color, it is considered strong. */
@@ -116,16 +116,16 @@ export class GoStoneGroup {
             }
         }
 
-    } /* }}} */
-    computeIsStrongString() { /* {{{ */
+    } 
+    computeIsStrongString() { 
         /* A group is considered a strong string if it is adjacent to two strong eyes */
         let strong_eye_count = 0;
         this.foreachNeighborGroup((gr) => {
             strong_eye_count += gr.is_strong_eye;
         });
         this.is_strong_string = strong_eye_count >= 2;
-    } /* }}} */
-    computeIsTerritory() { /* {{{ */
+    } 
+    computeIsTerritory() { 
         /* An empty group is considered territory if all of it's neighbors are of
          * the same color */
         this.is_territory = false;
@@ -152,8 +152,8 @@ export class GoStoneGroup {
             this.is_territory = true;
             this.territory_color = color;
         }
-    } /* }}} */
-    computeIsTerritoryInSeki() { /* {{{ */
+    } 
+    computeIsTerritoryInSeki() { 
         /* An empty group is considered territory if all of it's neighbors are of
          * the same color */
         this.is_territory_in_seki = false;
@@ -178,8 +178,8 @@ export class GoStoneGroup {
                 });
             });
         }
-    } /* }}} */
-    computeProbableColor() { /* {{{ */
+    } 
+    computeProbableColor() { 
         /* For open area that has no definitive owner, compute the weight
          * of how much of who is touching the area */
         this.adjacent_black = 0;
@@ -192,8 +192,8 @@ export class GoStoneGroup {
         });
         if (this.adjacent_white >= this.adjacent_black * 3) { this.probable_color = 2; }
         if (this.adjacent_black >= this.adjacent_white * 3) { this.probable_color = 1; }
-    } /* }}} */
-    computeProbablyDead() { /* {{{ */
+    } 
+    computeProbablyDead() { 
         this.is_probably_dead = false;
 
         if (this.color) {
@@ -215,12 +215,12 @@ export class GoStoneGroup {
             this.is_probably_dead = !probably_alive;
         }
 
-    } /* }}} */
-    computeProbablyDame() { /* {{{ */
+    } 
+    computeProbablyDame() { 
         this.is_probably_dame = false;
         if (!this.is_territory && this.color === 0 && this.size() < 2) {
             this.is_probably_dame = true;
         }
-    } /* }}} */
+    } 
 
 }

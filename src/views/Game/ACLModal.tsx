@@ -157,6 +157,6 @@ export function openACLModal(game_id?: number, review_id?: number, engine?: GoEn
     }
 }
 
-function yesno(tf: boolean) {{{
+function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
-}}}
+}

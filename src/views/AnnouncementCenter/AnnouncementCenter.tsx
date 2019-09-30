@@ -57,10 +57,10 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         this.refresh();
     }
 
-    setType = (ev) => {{{
+    setType = (ev) => {
         this.setState({type: ev.target.value});
-    }}}
-    setExpiration = (moment_date) => {{{
+    }
+    setExpiration = (moment_date) => {
 
         let message = null;
         let announcement_duration = moment_date.toDate().getTime() - Date.now();
@@ -73,17 +73,17 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
             expiration: moment_date._d.toISOString(),
             expiration_message: message
         });
-    }}}
-    setText = (ev) => {{{
+    }
+    setText = (ev) => {
         this.setState({text: ev.target.value});
-    }}}
-    setLink = (ev) => {{{
+    }
+    setLink = (ev) => {
         let link  = ev.target.value.trim();
         this.setState({
             link: link
         });
-    }}}
-    create = () => {{{
+    }
+    create = () => {
         let announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             return;
@@ -101,20 +101,20 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         })
         .then(this.refresh)
         .catch(errorAlerter);
-    }}}
-    refresh = () => {{{
+    }
+    refresh = () => {
         get("announcements")
         .then((list) => {
             console.log(list);
             this.setState({announcements: list});
         })
         .catch(errorAlerter);
-    }}}
-    deleteAnnouncement(announcement) {{{
+    }
+    deleteAnnouncement(announcement) {
         del("announcements/%%", announcement.id)
         .then(this.refresh)
         .catch(errorAlerter);
-    }}}
+    }
 
 
 

@@ -50,20 +50,20 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
         this.black_clock = $("<span>");
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.destroy();
-    }}}
-    componentDidUpdate(prev_props) {{{
+    }
+    componentDidUpdate(prev_props) {
         if (prev_props.id !== this.props.id) {
             this.destroy();
             this.initialize();
         }
-    }}}
+    }
 
-    initialize() {{{
+    initialize() {
         this.goban = new Goban({
             "board_div": null,
             "black_clock": this.black_clock,
@@ -90,7 +90,7 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
         if (this.props.gobanref) {
             this.props.gobanref(this.goban);
         }
-    }}}
+    }
 
     destroy() {
         this.goban.destroy();

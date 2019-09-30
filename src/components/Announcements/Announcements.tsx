@@ -60,7 +60,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         });
     }
 
-    UNSAFE_componentWillMount() {{{
+    UNSAFE_componentWillMount() {
         setTimeout(() => {
             /* Defer this get so we can load whatever page we're on first */
             get("announcements")
@@ -71,12 +71,12 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
             })
             .catch(errorLogger);
         }, 20);
-    }}}
+    }
 
-    retract = (announcement) => {{{
+    retract = (announcement) => {
         this.clearAnnouncement(announcement.id, true);
-    }}}
-    announce = (announcement) => {{{
+    }
+    announce = (announcement) => {
         active_announcements[announcement.id] = announcement;
 
         if (announcement.id in announced) {
@@ -110,9 +110,9 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                 data.set("active-tournament", announcement);
             }
         }
-    }}}
+    }
 
-    clearAnnouncement(id, dont_send_clear_announcement) {{{
+    clearAnnouncement(id, dont_send_clear_announcement) {
         cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
         announcement_event_emitter.emit('announcement-cleared', announced[id]);
         data.set("announcements.cleared", cleared_announcements);
@@ -130,7 +130,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         }
 
         this.forceUpdate();
-    }}}
+    }
 
 
     render() {

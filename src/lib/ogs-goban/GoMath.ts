@@ -40,7 +40,7 @@ export class GoMath {
     public group_id_map: Array<Array<number>>;
     public groups: Array<GoStoneGroup>;
 
-    constructor(state:BoardState, original_board?:Array<Array<number>>) { /* {{{ */
+    constructor(state:BoardState, original_board?:Array<Array<number>>) { 
         let groups:Array<GoStoneGroup> = [null];
         let group_id_map:Array<Array<number>> = null;
 
@@ -117,17 +117,17 @@ export class GoMath {
         this.foreachGroup((gr) => { gr.computeIsEye(); });
         this.foreachGroup((gr) => { gr.computeIsStrongEye(); });
         this.foreachGroup((gr) => { gr.computeIsStrongString(); });
-    } /* }}} */
-    public foreachGroup(fn) { /* {{{ */
+    } 
+    public foreachGroup(fn) { 
         for (let i = 1; i < this.groups.length; ++i) {
             fn(this.groups[i]);
         }
-    } /* }}} */
-    //private getGroup(x, y) { /* {{{ */
+    } 
+    //private getGroup(x, y) { 
     //    return this.groups[this.group_id_map[y][x]];
-    //}; /* }}} */
+    //}; 
 
-    public static makeMatrix(width:number, height:number, initialValue:number = 0):Array<Array<number>> { /* {{{ */
+    public static makeMatrix(width:number, height:number, initialValue:number = 0):Array<Array<number>> { 
 
 
         let ret = [];
@@ -138,8 +138,8 @@ export class GoMath {
             }
         }
         return ret;
-    } /* }}} */
-    public static makeObjectMatrix<T>(width:number, height:number):Array<Array<T>> { /* {{{ */
+    } 
+    public static makeObjectMatrix<T>(width:number, height:number):Array<Array<T>> { 
         let ret = new Array<Array<T>>(height);
         for (let y = 0; y < height; ++y) {
             let row = new Array<T>(width);
@@ -149,22 +149,22 @@ export class GoMath {
             ret[y] = row;
         }
         return ret;
-    } /* }}} */
-    public static makeEmptyObjectMatrix<T>(width:number, height:number):Array<Array<T>> { /* {{{ */
+    } 
+    public static makeEmptyObjectMatrix<T>(width:number, height:number):Array<Array<T>> { 
         let ret = new Array<Array<T>>(height);
         for (let y = 0; y < height; ++y) {
             let row = new Array<T>(width);
             ret[y] = row;
         }
         return ret;
-    } /* }}} */
-    public static prettyCoords(x:number, y:number, board_height:number):string { /* {{{ */
+    } 
+    public static prettyCoords(x:number, y:number, board_height:number):string { 
         if (x >= 0) {
             return ("ABCDEFGHJKLMNOPQRSTUVWXYZ"[x]) + ("" + (board_height - y));
         }
         return "";
-    } /* }}} */
-    private static convertMoveStringToArrayFormat(move_string:string, width:number, height:number):Array<MoveArray> { /* {{{ */
+    } 
+    private static convertMoveStringToArrayFormat(move_string:string, width:number, height:number):Array<MoveArray> { 
         let moves = GoMath.decodeMoves(move_string, width, height);
         let ret = [];
         for (let i = 0; i < moves.length; ++i) {
@@ -172,8 +172,8 @@ export class GoMath {
             ret.push(GoMath.encodeMoveToArray(mv));
         }
         return ret;
-    } /* }}} */
-    public static decodeMoves(move_obj:MoveArray | string, width?:number, height?:number): Array<Move> { /* {{{ */
+    } 
+    public static decodeMoves(move_obj:MoveArray | string, width?:number, height?:number): Array<Move> { 
         let ret: Array<Move> = [];
 
         function decodeSingleMoveArray(arr) {
@@ -262,20 +262,20 @@ export class GoMath {
         }
 
         return ret;
-    } /* }}} */
-    private static char2num(ch:string):number { /* {{{ */
+    } 
+    private static char2num(ch:string):number { 
         if (ch === ".") { return -1; }
         return "abcdefghijklmnopqrstuvwxyz".indexOf(ch);
-    } /* }}} */
-    private static pretty_char2num(ch:string):number { /* {{{ */
+    } 
+    private static pretty_char2num(ch:string):number { 
         if (ch === ".") { return -1; }
         return "abcdefghjklmnopqrstuvwxyz".indexOf(ch.toLowerCase());
-    } /* }}} */
-    public static num2char(num:number):string { /* {{{ */
+    } 
+    public static num2char(num:number):string { 
         if (num === -1) { return "."; }
         return "abcdefghijklmnopqrstuvwxyz"[num];
-    } /* }}} */
-    public static encodeMove(x, y?):string { /* {{{ */
+    } 
+    public static encodeMove(x, y?):string { 
         if (typeof(x) === "number") {
             return GoMath.num2char(x) + GoMath.num2char(y);
         } else {
@@ -287,20 +287,20 @@ export class GoMath {
                 return "!" + mv.player + GoMath.num2char(mv.x) + GoMath.num2char(mv.y);
             }
         }
-    } /* }}} */
+    } 
     public static encodePrettyCoord(coord: string, height: number) { // "C12" with no "I"
         const x = GoMath.num2char(GoMath.pretty_char2num(coord.charAt(0).toLowerCase()));
         const y = GoMath.num2char(height - parseInt(coord.substring(1)));
         return x + y;
     }
-    public static encodeMoves(lst:Array<Move>):string { /* {{{ */
+    public static encodeMoves(lst:Array<Move>):string { 
         let ret = "";
         for (let i = 0; i < lst.length; ++i) {
             ret += GoMath.encodeMove(lst[i]);
         }
         return ret;
-    } /* }}} */
-    public static encodeMoveToArray(mv:Move):MoveArray { /* {{{ */
+    } 
+    public static encodeMoveToArray(mv:Move):MoveArray { 
         let arr:MoveArray = [mv.x, mv.y, mv.timedelta ? mv.timedelta : -1, undefined];
         if (mv.edited) {
             arr[3] = mv.color;
@@ -308,17 +308,17 @@ export class GoMath {
             arr.pop();
         }
         return arr;
-    } /* }}} */
-    public static encodeMovesToArray(moves):Array<MoveArray> { /* {{{ */
+    } 
+    public static encodeMovesToArray(moves):Array<MoveArray> { 
         let ret:Array<MoveArray> = [];
         for (let i = 0; i < moves.length; ++i) {
             ret.push(GoMath.encodeMoveToArray(moves[i]));
         }
         return ret;
-    } /* }}} */
+    } 
 
     /* Returns a sorted move string, this is used in our stone removal logic */
-    public static sortMoves(move_string:string):string { /* {{{ */
+    public static sortMoves(move_string:string):string { 
         let moves = GoMath.decodeMoves(move_string);
         moves.sort((a, b) => {
             let av = (a.edited ? 1 : 0) * 10000 + a.x + a.y * 100;
@@ -326,5 +326,5 @@ export class GoMath {
             return av - bv;
         });
         return GoMath.encodeMoves(moves);
-    } /* }}} */
+    } 
 }

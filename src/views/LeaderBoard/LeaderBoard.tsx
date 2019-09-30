@@ -146,11 +146,11 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     }
 }
 
-function points(n) {{{
+function points(n) {
     n = parseFloat(n);
     if (n < 1) {
         return n.toPrecision(3);
     }
     return n.toPrecision(4);
-}}}
+}
 
