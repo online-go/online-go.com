@@ -218,10 +218,12 @@
         try {
             var script = document.createElement('script');
             script.id = "ogs_score_estimator_script";
-            if (typeof WebAssembly === "object")  {
+            try {
+                new WebAssembly.Memory({ initial: 0 });
                 console.log("WASM support detected, score estimator will be fast"); 
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
-            } else {
+            } catch (error) {
+                console.warn(error);
                 console.log("No WASM support detected, score estimator falling back to ASM.js mode"); 
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
             }
