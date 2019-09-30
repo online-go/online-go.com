@@ -1372,7 +1372,8 @@ class PlayPane extends React.Component<PlayProps, any> {
         super(props);
         this.state = {
             extra_info_selected: "none",
-            extra_throb: false
+            extra_throb: false,
+            forced_filter: false
         };
     }
 
@@ -1391,14 +1392,27 @@ class PlayPane extends React.Component<PlayProps, any> {
             this.props.current_filter.tags === null &&
             this.props.current_filter.source === null) {
             // Set up a Joseki filter by default
-                this.props.set_variation_filter({
-                    tags:[this.props.joseki_tag_id],
-                    contributor: null,
-                    source: null
-                });
+            this.props.set_variation_filter({
+                tags:[this.props.joseki_tag_id],
+                contributor: null,
+                source: null
+            });
+            this.showFilterSelector();
+            this.setState({forced_filter: true});
         }
         else {
             this.showResults();
+        }
+    }
+
+    // here we are detecting each time they play a move, so we can
+    // set the extra info selector in the most helpful way
+    static getDerivedStateFromProps = (nextProps, prevState) => {
+        if (prevState.forced_filter && nextProps.move_type_sequence.length > 1) {
+            return ({
+                extra_info_selected: 'results',
+                forced_filter: false
+            });
         }
     }
 
