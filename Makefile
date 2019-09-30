@@ -10,6 +10,11 @@ node_modules:
 	npm install supervisor
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) yarn install
 
+pretty prettier:
+	npm run pretty
+	sed -ir 's@[ ]+$$/@@' `find ./ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
+
+
 lint tslint:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --project tsconfig.json
 

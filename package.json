@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "gulp",
+    "pretty": "prettier --write src/*.ts src/*.tsx src/**/*.tsx src/**/*.ts",
     "webpack": "webpack",
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },
@@ -29,6 +30,7 @@
     "html-minifier": "3.5.6",
     "pofile": "^1.0.8",
     "postcss-inline-svg": "^3.0.0",
+    "prettier": "1.18.2",
     "pump": "^1.0.2",
     "source-map-loader": "^0.2.4",
     "stylus": "^0.54.7",
