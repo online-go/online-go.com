@@ -826,7 +826,3 @@ $(document).on('keydown', function(event) {
     return true;
 });
 */
-
-
-
-

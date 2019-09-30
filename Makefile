@@ -13,8 +13,6 @@ node_modules:
 pretty prettier:
 	npm run prettytsx
 	npm run prettyts
-	sed -r -i 's@[ ]+$$/@@' `find src/ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
-
 
 lint tslint:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --project tsconfig.json
