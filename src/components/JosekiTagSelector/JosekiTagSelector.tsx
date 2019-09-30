@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017  Online-Go.com
+ * Copyright (C) 2012-2019  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -47,7 +47,7 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
             const available_tags = body.tags.map((tag, i) => (
                 { label: tag.description, value: tag.id }
             ));
-            this.setState({tag_list: [{value: 'none', label: ""}, ...available_tags]});
+            this.setState({tag_list: available_tags});
         }).catch((r) => {
             console.log("Tags GET failed:", r);
         });
