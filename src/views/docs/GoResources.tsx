@@ -224,6 +224,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Sites")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="WhereToPlayGo.com">WhereToPlayGo.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://openstudyroom.org">Open Study Room</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://gobase.org/">GoBase.org</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="http://rfg.jeudego.org/">Revue Française de Go</a></span>,
@@ -242,6 +243,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Blogs")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="https://write.as/fraze/">A Baduk Blog</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://twitter.com/yikego_en">Yike Weiqi</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="https://artdugo.fr">Art du Go</a></span>,
                 <span><Flag country={es}/> <a rel="noopener" href="http://badukaires.com/">Badukaires</a></span>,
@@ -254,6 +256,14 @@ export let GoResources = (props) => {
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
+            </dl>
+
+            <dl>
+                <dt>{_("Podcasts")}</dt>
+                {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="http://podcast.baduk.club/">We Heart Baduk Podcast</a></span>
+                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
+                }
             </dl>
 
             <dl>
@@ -315,6 +325,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Club Support")}</dt>
                 {scramble(
+                <span><Flag country={us}/> <a rel="noopener" href="https://baduk.club/">Baduk Club</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="https://www.goclubs.org/">GoClubsOnline</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
