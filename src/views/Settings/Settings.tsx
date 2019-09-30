@@ -705,7 +705,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             </dd>
                         </dl>
                     </Card>
-                    
+
 
 
                     <Card>
@@ -721,10 +721,10 @@ export class Settings extends React.PureComponent<{}, any> {
                             </div>
                         )}
                     </Card>
-                    
 
 
-                    {aga_ratings_enabled && 
+
+                    {aga_ratings_enabled &&
                         <Card>
                             <h3>{_("AGA Settings")}</h3>
 
@@ -767,7 +767,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             }</div>
                         </div>
                     </Card>
-                    
+
 
 
                     <Card>
@@ -823,7 +823,7 @@ export class Settings extends React.PureComponent<{}, any> {
 
 
                     </Card>
-                    
+
 
                     <Card>
                         <div className="logout-all-devices-container">

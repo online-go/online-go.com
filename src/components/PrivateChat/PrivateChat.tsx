@@ -60,7 +60,7 @@ class PrivateChat {
     display_state = "closed";
 
 
-    constructor(user_id, username) { 
+    constructor(user_id, username) {
         this.user_id = user_id;
         comm_socket.send("chat/pm/load", user_id);
 
@@ -94,9 +94,9 @@ class PrivateChat {
             console.error(err);
             this.player_dom.text("[error]");
         });
-    } 
+    }
 
-    open(send_itc?) { 
+    open(send_itc?) {
         if (this.display_state === "open") { return; }
         if (this.display_state !== "closed") { this.close(false, true); }
         private_chats.push(this);
@@ -265,7 +265,7 @@ class PrivateChat {
             //ITC.send("private-chat-open", {"user_id": this.user_id, "username": this.player.username});
             data.set("pm.read-" + this.user_id, this.last_uid);
         }
-    } 
+    }
     updateInputPlaceholder() {
         if (!this.input) {
             return;
@@ -278,7 +278,7 @@ class PrivateChat {
             this.input.removeAttr("disabled");
         }
     }
-    minimize(send_itc?) { 
+    minimize(send_itc?) {
         if (this.superchat_enabled) { return; }
         if (this.display_state === "minimized") { return; }
         if (this.display_state !== "closed") { this.close(false, true); }
@@ -312,8 +312,8 @@ class PrivateChat {
         if (send_itc) {
             ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": this.player.username});
         }
-    } 
-    close(send_itc, dont_send_pm_close?) { 
+    }
+    close(send_itc, dont_send_pm_close?) {
         this.display_state = "closed";
         for (let i = 0; i < private_chats.length; ++i) {
             if (private_chats[i].id === this.id) {
@@ -335,8 +335,8 @@ class PrivateChat {
         if (comm_socket && !dont_send_pm_close) {
             comm_socket.send("chat/pm/close", this.user_id);
         }
-    } 
-    addChat(from, txt, user_id, timestamp) { 
+    }
+    addChat(from, txt, user_id, timestamp) {
         from = unicodeFilter(from);
 
         let line = $("<div>").addClass("chat-line");
@@ -378,8 +378,8 @@ class PrivateChat {
             }
         }
         this.updateInputPlaceholder();
-    } 
-    addSystem(message) { 
+    }
+    addSystem(message) {
         let line = $("<div>").addClass("chat-line system");
         line.text(message.message);
         this.lines.push(line);
@@ -397,18 +397,18 @@ class PrivateChat {
                 body.scrollTop = body.scrollHeight;
             }
         }
-    } 
-    hilight() { 
+    }
+    hilight() {
         if (this.dom) {
             this.dom.addClass("highlighted");
         }
-    } 
-    removeHilight() { 
+    }
+    removeHilight() {
         if (this.dom) {
             this.dom.removeClass("highlighted");
         }
-    } 
-    handleChat(line) { 
+    }
+    handleChat(line) {
 
         if (line.message.i) {
             if ((line.message.i + " " + line.message.t + " " + line.from.username) in this.received_messages) {
@@ -448,8 +448,8 @@ class PrivateChat {
         if (this.last_uid === data.get("pm.read-" + this.user_id, "-")) {
             this.removeHilight();
         }
-    } 
-    sendChat(msg) { 
+    }
+    sendChat(msg) {
 
         while (msg.length) {
             let arr = splitOnBytes(msg, 500);
@@ -468,22 +468,22 @@ class PrivateChat {
             });
         }
         this.input.val("");
-    } 
+    }
 
-    startFloating() { 
+    startFloating() {
         if (!this.floating) {
             this.dom.addClass("floating");
             this.floating = true;
             update_chat_layout();
         }
-    } 
-    dock() { 
+    }
+    dock() {
         if (this.floating) {
             this.floating = false;
             this.dom.removeClass("floating");
             update_chat_layout();
         }
-    } 
+    }
     superchat(enable) {
         this.superchat_enabled = enable;
         if (enable) {
@@ -539,13 +539,13 @@ function update_chat_layout() {
     }
 }
 
-export function getPrivateChat(user_id, username?) { 
+export function getPrivateChat(user_id, username?) {
     if (user_id in instances) {
         return instances[user_id];
     }
 
     return (instances[user_id] = new PrivateChat(user_id, username));
-} 
+}
 comm_socket.on("private-message", (line) => {
     let pc;
     if (line.from.id === data.get("user").id) {
@@ -589,13 +589,13 @@ comm_socket.on("private-superchat", (config) => {
         }
     }
 });
-ITC.register("private-chat-close", (data) => { 
+ITC.register("private-chat-close", (data) => {
     let pc = getPrivateChat(data.user_id);
     if (pc.display_state === "minimized") {
         pc.close();
     }
-}); 
-function chat_markup(body) { 
+});
+function chat_markup(body) {
     if (typeof(body) === "string") {
         let ret = $("<div>").text(body).html();
         // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
@@ -619,4 +619,4 @@ function chat_markup(body) {
     } else {
         console.log("Attempted to markup non-text object: ", body);
     }
-} 
+}

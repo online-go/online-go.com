@@ -56,7 +56,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
     scrolled_to_bottom: boolean = true;
 
-    constructor(props) { 
+    constructor(props) {
         super(props);
         this.state = {
             chat_log: "main",
@@ -68,7 +68,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.onKeyPress = this.onKeyPress.bind(this);
         this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
-    } 
+    }
 
     chat_log_filter(line) {
         return true;

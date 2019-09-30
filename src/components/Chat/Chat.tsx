@@ -60,7 +60,7 @@ data.watch("config.user", (user) => {
         , "i");
 });
 
-let global_channels: Array<any> = [ 
+let global_channels: Array<any> = [
     {"id": "global-english" , "name": "English", "country": "us"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
@@ -96,7 +96,7 @@ let global_channels: Array<any> = [
     {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"},
     {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
-]; 
+];
 
 data.watch("config.ogs", (settings) => {
     if (settings && settings.channels) {
@@ -112,7 +112,7 @@ for (let chan of global_channels) {
 
 let channels = { };
 
-function getChannel(channel) { 
+function getChannel(channel) {
     if (!(channel in channels)) {
         channels[channel] = {
             name: "<error>",
@@ -126,7 +126,7 @@ function getChannel(channel) {
         };
     }
     return channels[channel];
-} 
+}
 
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
@@ -463,7 +463,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             }, 20);
         }
     }
-    setActiveChannel = (channel_or_ev) => { 
+    setActiveChannel = (channel_or_ev) => {
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
@@ -515,7 +515,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.should_scroll_chatlog = true;
         this.scrollChats();
         */
-    } 
+    }
     sortedUserList(): Array<any> {
         let lst = [];
         for (let id in this.state.user_list) {

@@ -49,7 +49,7 @@ function getCurrentGameId() {
     return null;
 }
 
-function formatTime(seconds) { 
+function formatTime(seconds) {
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
@@ -80,7 +80,7 @@ function formatTime(seconds) {
         return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
     return _("no time left");
-} 
+}
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;
@@ -477,7 +477,7 @@ class NotificationManager {
 
 export let notification_manager: NotificationManager = new NotificationManager();
 
-export class TurnIndicator extends React.Component<{}, any> { 
+export class TurnIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -507,9 +507,9 @@ export class TurnIndicator extends React.Component<{}, any> {
             </span>
        );
     }
-} 
+}
 
-export class NotificationIndicator extends React.Component<{}, any> { 
+export class NotificationIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -537,9 +537,9 @@ export class NotificationIndicator extends React.Component<{}, any> {
             </span>
         );
     }
-} 
+}
 
-export class NotificationList extends React.Component<{}, any> { 
+export class NotificationList extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -589,9 +589,9 @@ export class NotificationList extends React.Component<{}, any> {
             </div>
         );
     }
-} 
+}
 
-class NotificationEntry extends React.Component<{notification}, any> { 
+class NotificationEntry extends React.Component<{notification}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -909,7 +909,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 break;
         }
     }
-} 
+}
 
 
 data.watch("config.user", (user) => notification_manager.setUser(user));

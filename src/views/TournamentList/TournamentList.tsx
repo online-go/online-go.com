@@ -35,7 +35,7 @@ interface TournamentListProperties {
     filter: any;
 }
 
-export class TournamentListMainView extends React.PureComponent<TournamentListProperties, any> { 
+export class TournamentListMainView extends React.PureComponent<TournamentListProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -137,9 +137,9 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
             </div>
         );
     }
-} 
+}
 
-class Schedule extends React.PureComponent<{}, any> { 
+class Schedule extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -201,8 +201,8 @@ class Schedule extends React.PureComponent<{}, any> {
             </div>
         );
     }
-} 
-export class TournamentList extends React.PureComponent<TournamentListProperties, any> { 
+}
+export class TournamentList extends React.PureComponent<TournamentListProperties, any> {
     refs: {
         table
     };
@@ -264,7 +264,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
             </div>
         );
     }
-} 
+}
 
 function mk32icon(path) {
     return path.replace(/-[0-9]+.png/, "-32.png");

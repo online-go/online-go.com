@@ -23,13 +23,13 @@ interface PuzzleSettingsModalProperties {
 }
 
 export class PuzzleSettingsModal extends React.PureComponent<PuzzleSettingsModalProperties, any> {
-    constructor(props) { 
+    constructor(props) {
         super(props);
         this.state = {
             randomize_transform: preferences.get("puzzle.randomize.transform"),
             randomize_color: preferences.get("puzzle.randomize.color"),
         };
-    } 
+    }
 
     toggleTransform = () => {
         preferences.set("puzzle.randomize.transform", !this.state.randomize_transform);

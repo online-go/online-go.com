@@ -220,11 +220,11 @@
             script.id = "ogs_score_estimator_script";
             try {
                 new WebAssembly.Memory({ initial: 0 });
-                console.log("WASM support detected, score estimator will be fast"); 
+                console.log("WASM support detected, score estimator will be fast");
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
             } catch (error) {
                 console.warn(error);
-                console.log("No WASM support detected, score estimator falling back to ASM.js mode"); 
+                console.log("No WASM support detected, score estimator falling back to ASM.js mode");
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
             }
             document.head.appendChild(script);
@@ -261,7 +261,7 @@
           function version_print_setters() {
               var ret = "\n\n";
 
-              var scripts = $("script"); 
+              var scripts = $("script");
               for (var idx = 0; idx < scripts.length; ++idx) {
                   var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
                   if (m) {
@@ -270,7 +270,7 @@
                   }
               }
 
-              var stylesheets = $("link"); 
+              var stylesheets = $("link");
               for (var idx = 0; idx < stylesheets.length; ++idx) {
                   if (stylesheets[idx].rel === "stylesheet") {
                       var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)

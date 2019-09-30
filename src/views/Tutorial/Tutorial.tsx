@@ -66,7 +66,7 @@ export class Tutorial extends React.PureComponent<TutorialProperties, any> {
 interface TutorialPageProperties {
 }
 
-abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, any> { 
+abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, any> {
     refs: {
         igoban;
     };
@@ -140,10 +140,10 @@ abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, 
             </div>
         );
     }
-} 
+}
 
 
-class ThisIsAGoban extends TutorialPage { 
+class ThisIsAGoban extends TutorialPage {
     constructor(props) {
         super(props);
 
@@ -181,8 +181,8 @@ class ThisIsAGoban extends TutorialPage {
     showNext() {
         return !!this.refs.igoban.goban.engine.cur_move.parent;
     }
-} 
-class CapturingStones1 extends TutorialPage { 
+}
+class CapturingStones1 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -214,8 +214,8 @@ class CapturingStones1 extends TutorialPage {
     showNext() {
         return this.refs.igoban.goban.engine.board[4][4] !== 2;
     }
-} 
-class CapturingStones2 extends TutorialPage { 
+}
+class CapturingStones2 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -247,8 +247,8 @@ class CapturingStones2 extends TutorialPage {
     showNext() {
         return this.refs.igoban.goban.engine.board[4][4] !== 2;
     }
-} 
-class CapturingStones3 extends TutorialPage { 
+}
+class CapturingStones3 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -281,8 +281,8 @@ class CapturingStones3 extends TutorialPage {
     showNext() {
         return this.refs.igoban.goban.engine.board[4][0] !== 2;
     }
-} 
-class CapturingStones4 extends TutorialPage { 
+}
+class CapturingStones4 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -314,9 +314,9 @@ class CapturingStones4 extends TutorialPage {
     showNext() {
         return this.refs.igoban.goban.engine.board[4][3] !== 2;
     }
-} 
+}
 
-class StayingAlive1 extends TutorialPage { 
+class StayingAlive1 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -340,8 +340,8 @@ class StayingAlive1 extends TutorialPage {
     showNext() {
         return true;
     }
-} 
-class StayingAlive2 extends TutorialPage { 
+}
+class StayingAlive2 extends TutorialPage {
     constructor(props) {
         super(props);
         this.state = {
@@ -406,8 +406,8 @@ class StayingAlive2 extends TutorialPage {
     showReset() {
         return this.state.show_reset;
     }
-} 
-class Ko extends TutorialPage { 
+}
+class Ko extends TutorialPage {
     constructor(props) {
         super(props);
         this.state = {
@@ -451,8 +451,8 @@ class Ko extends TutorialPage {
     showReset() {
         return this.state.show_reset;
     }
-} 
-class Snapback extends TutorialPage { 
+}
+class Snapback extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -484,8 +484,8 @@ class Snapback extends TutorialPage {
     showNext() {
         return this.refs.igoban.goban.engine.board[5][4] === 0 && this.refs.igoban.goban.engine.board[5][5] === 1;
     }
-} 
-class Scoring1 extends TutorialPage { 
+}
+class Scoring1 extends TutorialPage {
     constructor(props) {
         super(props);
     }
@@ -509,8 +509,8 @@ class Scoring1 extends TutorialPage {
             },
         };
     }
-} 
-class Scoring2 extends TutorialPage { 
+}
+class Scoring2 extends TutorialPage {
     constructor(props) {
         super(props);
         this.state = {
@@ -579,9 +579,9 @@ class Scoring2 extends TutorialPage {
     showReset() {
         return this.state.show_reset;
     }
-} 
+}
 
-class Done extends React.PureComponent<{}, any> { 
+class Done extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
     }
@@ -658,4 +658,4 @@ class Done extends React.PureComponent<{}, any> {
             </div>
         );
     }
-} 
+}

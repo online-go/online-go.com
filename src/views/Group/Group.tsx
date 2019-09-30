@@ -552,7 +552,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             </div>
                         }
                     </Card>
-                    
+
 
                     {((!editing && group.bulletin) || null) && <Card><Markdown source={group.bulletin}/></Card>}
                     {(editing || null) &&
@@ -709,7 +709,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     ))}
                 </div>
-                
+
 
 
             </div>

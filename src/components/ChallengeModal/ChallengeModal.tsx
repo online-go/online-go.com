@@ -122,7 +122,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     refs: {
         time_control_picker
     };
-    constructor(props) { 
+    constructor(props) {
         super(props);
 
         let speed = data.get("challenge.speed", "live");
@@ -236,7 +236,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 this.close();
             }, 1);
         }
-    } 
+    }
 
     syncBoardSize(value) {
         let conf = dup(this.state.conf);
@@ -263,7 +263,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
     }
 
-    setRanked(tf) { 
+    setRanked(tf) {
         let next = this.nextState();
 
         next.challenge.game.ranked = tf;
@@ -291,7 +291,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge: next.challenge,
             conf: next.conf,
         });
-    } 
+    }
 
     saveSettings() {
         let next = this.next();
@@ -603,7 +603,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_demo_white_name      = (ev) => this.upstate("demo.white_name", ev);
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
     update_demo_white_ranking   = (ev) => this.upstate("demo.white_ranking", ev);
-    
+
     update_selected_demo_player_black   = (ev) => {
         let idx = parseInt(ev.target.value);
         this.upstate("demo.black_name", this.props.playersList[idx].name);
@@ -1009,19 +1009,19 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="challenge  form-inline">
                     <div className="challenge-pane-container">
                       { this.basicSettings() }
-                      {(!this.state.initial_state || null) && 
+                      {(!this.state.initial_state || null) &&
                           this.additionalSettings()
                       }
                     </div>
 
                     <hr/>
-                    {(mode !== "demo" || null) && 
+                    {(mode !== "demo" || null) &&
                         this.advancedSettings()
                     }
-                    {(mode === "demo" || null) && 
+                    {(mode === "demo" || null) &&
                         this.advancedDemoSettings()
                     }
-                    
+
                 </div>
               </div>
               <div className="buttons">
@@ -1034,7 +1034,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
           </div>
         );
     }
-    
+
 }
 
 export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {
@@ -1096,7 +1096,7 @@ export function challengeFromBoardPosition(goban) {
     challenge(null, state);
     */
 }
-export function challengeRematch(goban, player, original_game_meta) { 
+export function challengeRematch(goban, player, original_game_meta) {
     /* TODO: Fix up challengeRematch time control stuff */
     let conf = goban.engine;
     let config: any = {
@@ -1137,7 +1137,7 @@ export function challengeRematch(goban, player, original_game_meta) {
     //config.syncTimeControl();
 
     challenge(player.id, null, false, config);
-} 
+}
 export function createBlitz() {
     let user = data.get("user");
     let config = dup(blitz_config);
@@ -1167,7 +1167,7 @@ export function createCorrespondence() {
 }
 
 
-export function challenge_text_description(challenge) { 
+export function challenge_text_description(challenge) {
     let c = challenge;
     let g = "game" in challenge ? challenge.game : challenge;
     let details_html =
@@ -1220,9 +1220,9 @@ export function challenge_text_description(challenge) {
     }
 
     return details_html;
-} 
+}
 
-export let blitz_config = { 
+export let blitz_config = {
     conf: {
         restrict_rank: true,
     },
@@ -1247,8 +1247,8 @@ export let blitz_config = {
         max_time          : 30,
         pause_on_weekends: false,
     }
-}; 
-export let live_config = { 
+};
+export let live_config = {
     conf: {
         restrict_rank: true,
     },
@@ -1273,8 +1273,8 @@ export let live_config = {
         periods: 5,
         pause_on_weekends: false,
     }
-}; 
-export let correspondence_config = { 
+};
+export let correspondence_config = {
     conf: {
         restrict_rank: true,
     },
@@ -1299,4 +1299,4 @@ export let correspondence_config = {
         max_time          : 7 * 86400,
         pause_on_weekends : true,
     }
-}; 
+};

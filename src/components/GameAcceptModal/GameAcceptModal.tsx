@@ -127,11 +127,11 @@ export function openGameAcceptModal(challenge): Promise<any> {
     });
 }
 
-export function handicapText(handicap) { 
+export function handicapText(handicap) {
     if (handicap < 0)   { return _("Auto"); }
     if (handicap === 0) { return _("None"); }
     return handicap;
-} 
+}
 function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
 }

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-themed(field, variable) 
-    for theme-name in themes 
+themed(field, variable)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -27,20 +27,20 @@ themed(field, variable)
             }
         }
 
-themed-important(field, variable) 
-    for theme-name in themes 
+themed-important(field, variable)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
-                {field}: theme[variable] !important; 
+                {field}: theme[variable] !important;
             }
             else {
                 p('Warning: ' + theme-name + ' ' + variable + ' not defined')
             }
         }
 
-themed-lighten(field, variable, amt) 
-    for theme-name in themes 
+themed-lighten(field, variable, amt)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -51,8 +51,8 @@ themed-lighten(field, variable, amt)
             }
         }
 
-themed-darken(field, variable, amt) 
-    for theme-name in themes 
+themed-darken(field, variable, amt)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -64,8 +64,8 @@ themed-darken(field, variable, amt)
         }
 
 
-themed-desaturate-and-lighten(field, variable, amt) 
-    for theme-name in themes 
+themed-desaturate-and-lighten(field, variable, amt)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -76,8 +76,8 @@ themed-desaturate-and-lighten(field, variable, amt)
             }
         }
 
-themed-desaturate-and-lighten-darken(field, variable, lighten-amt, darken-amt) 
-    for theme-name in themes 
+themed-desaturate-and-lighten-darken(field, variable, lighten-amt, darken-amt)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -92,8 +92,8 @@ themed-desaturate-and-lighten-darken(field, variable, lighten-amt, darken-amt)
             }
         }
 
-themed-desaturate(field, variable, amt) 
-    for theme-name in themes 
+themed-desaturate(field, variable, amt)
+    for theme-name in themes
         theme=themes[theme-name]
         body.{theme-name} & {
             if variable in theme {
@@ -106,17 +106,17 @@ themed-desaturate(field, variable, amt)
 
 
 
-phone() 
+phone()
     @media only screen and (max-width: 543px) {
         arguments;
     }
 
-tablet() 
+tablet()
     @media only screen and (min-width: 544px) and (max-width: 767px) {
         arguments;
     }
 
-desktop() 
+desktop()
     @media only screen and (min-width: 768px) {
         arguments;
     }

@@ -200,7 +200,7 @@ export class Overview extends React.Component<{}, any> {
     }
 }
 
-export class GroupList extends React.PureComponent<{}, any> { 
+export class GroupList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -250,8 +250,8 @@ export class GroupList extends React.PureComponent<{}, any> {
             </div>
         );
     }
-} 
-export class TournamentList extends React.PureComponent<{}, any> { 
+}
+export class TournamentList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -292,8 +292,8 @@ export class TournamentList extends React.PureComponent<{}, any> {
             </div>
         );
     }
-} 
-export class LadderList extends React.PureComponent<{}, any> { 
+}
+export class LadderList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -328,4 +328,4 @@ export class LadderList extends React.PureComponent<{}, any> {
             </div>
         );
     }
-} 
+}

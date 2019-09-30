@@ -79,7 +79,7 @@ function lists_are_equal(A, B) {
 export class SeekGraph extends TypedEventEmitter<Events> {
     static blitz_line_ratio = 0.1;
     static live_line_ratio = 0.6;
-    static time_columns = [ 
+    static time_columns = [
         {"ratio": 0.97, "time_per_move": 0},
         {"ratio": 0.000001, "time_per_move": 1},
 
@@ -103,7 +103,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         {"ratio": 0.85, "time_per_move": 172800},
         {"ratio": 0.90, "time_per_move": 259200},
         {"ratio": 0.95, "time_per_move": 604800},
-    ]; 
+    ];
 
     canvas: any;
     show_live_games: boolean;
@@ -124,7 +124,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     height;
 
 
-    constructor(config: SeekGraphConfig) { 
+    constructor(config: SeekGraphConfig) {
         super();
 
         this.canvas = $(config.canvas);
@@ -146,7 +146,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         $(document).on("touchend", this.onTouchEnd);
         $(document).on("touchstart touchmove", this.onTouchStartMove);
-    } 
+    }
 
     userRank() {
         let user = data.get('user');

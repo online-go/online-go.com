@@ -31,7 +31,7 @@ interface TimeControlPickerProperties {
 export class TimeControlPicker extends React.PureComponent<TimeControlPickerProperties, any> {
     time_control: TimeControl;
 
-    constructor(props) { 
+    constructor(props) {
         super(props);
 
         let speed = data.get("time_control.speed", "correspondence");
@@ -43,7 +43,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         }
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state));
         this.time_control = makeTimeControlParameters(this.state);
-    } 
+    }
     UNSAFE_componentWillReceiveProps(next_props: TimeControlPickerProperties) {
         let update: any = {};
         if (this.props.value !== next_props.value) {
@@ -128,7 +128,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         if (this.props.onChange) {
             this.props.onChange(this.time_control);
         }
-    } 
+    }
 
     setSpeedBracket = (bracket) => {
         this.syncTimeControl(Object.assign(
@@ -388,7 +388,7 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
 }
 
 
-const default_time_options = { 
+const default_time_options = {
     "blitz": {
         "system"                : "byoyomi",
 
@@ -481,7 +481,7 @@ const default_time_options = {
             "pause_on_weekends" : false,
         },
     }
-}; 
+};
 function recallTimeControlSettings(speed, time_control_system) {
     if (speed !== "blitz" && speed !== "live" && speed !== "correspondence") {
         throw new Error(`Invalid speed: ${speed}`);

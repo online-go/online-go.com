@@ -29,7 +29,7 @@ import {deviceCanvasScalingRatio} from "../GoUtil";
  * @param   Number  b       The blue color value
  * @return  Array           The HSL representation
  */
-function rgbToHsl(r, g, b) { 
+function rgbToHsl(r, g, b) {
     r /= 255;
     g /= 255;
     b /= 255;
@@ -53,7 +53,7 @@ function rgbToHsl(r, g, b) {
     }
 
     return [h, s, l];
-} 
+}
 
 /**
  * Converts an HSL color value to RGB. Conversion formula
@@ -77,7 +77,7 @@ function hue2rgb(p, q, t) {
     if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
     return p;
 }
-function hslToRgb(h, s, l) { 
+function hslToRgb(h, s, l) {
     let r;
     let g;
     let b;
@@ -93,24 +93,24 @@ function hslToRgb(h, s, l) {
     }
 
     return [Math.min(255, r * 255), Math.min(255, g * 255), Math.min(255, b * 255)];
-} 
+}
 
-function add(A, B) { 
+function add(A, B) {
     return [A[0] + B[0], A[1] + B[1], A[2] + B[2]];
-} 
-function dot(A, B) { 
+}
+function dot(A, B) {
     return A[0] * B[0] + A[1] * B[1] + A[2] * B[2];
-} 
-function scale(A, x) { 
+}
+function scale(A, x) {
     return [A[0] * x, A[1] * x, A[2] * x];
-} 
-function length(A) { 
+}
+function length(A) {
     return Math.sqrt(dot(A, A));
-} 
-function normalized(A) { 
+}
+function normalized(A) {
     return scale(A, 1 / length(A));
-} 
-function stone_normal(x, y, radius) { 
+}
+function stone_normal(x, y, radius) {
     let z = Math.sqrt(Math.max(0, radius * radius - x * x - y * y));
 
     let ret = normalized([x, y, z]);
@@ -119,14 +119,14 @@ function stone_normal(x, y, radius) {
     //ret[2] = z*z*z*(z*(z*6-15)+10); /* scurve5 */
 
     return ret;
-} 
-function square_size(radius, scaled) { 
+}
+function square_size(radius, scaled) {
     return 2 * Math.ceil(radius) + (scaled ? 0 : 1);
-} 
-function stone_center_in_square(radius, scaled) { 
+}
+function stone_center_in_square(radius, scaled) {
     return Math.ceil(radius) + (scaled ? 0 : 0.5);
-} 
-function copyAlpha(ctx, width, height) { 
+}
+function copyAlpha(ctx, width, height) {
     if (width <= 0 || height <= 0) {
         throw ("Invalid width/height given: " + (width + "x" + height));
     }
@@ -143,8 +143,8 @@ function copyAlpha(ctx, width, height) {
         }
     }
     return ret;
-} 
-function pasteAlpha(ctx, alpha, width, height) { 
+}
+function pasteAlpha(ctx, alpha, width, height) {
     let image = ctx.getImageData(0, 0, width, height);
     let idx = 0;
     let i = 0;
@@ -157,8 +157,8 @@ function pasteAlpha(ctx, alpha, width, height) {
         }
     }
     ctx.putImageData(image, 0, 0);
-} 
-function applyPhongShading(ctx, ss, center, radius, ambient, specular_hardness, diffuse_light_distance, specular_light_distance, light) { 
+}
+function applyPhongShading(ctx, ss, center, radius, ambient, specular_hardness, diffuse_light_distance, specular_light_distance, light) {
     let image = ctx.getImageData(0, 0, ss, ss);
 
     let r2 = (radius + 1) * (radius + 1); /* alpha will save us from overrunning the image*/
@@ -194,8 +194,8 @@ function applyPhongShading(ctx, ss, center, radius, ambient, specular_hardness, 
     }
 
     ctx.putImageData(image, 0, 0);
-} 
-function clearAboveColor(ctx, width, height, r, g, b) { 
+}
+function clearAboveColor(ctx, width, height, r, g, b) {
     let image = ctx.getImageData(0, 0, width, height);
 
     let idx = 0;
@@ -213,8 +213,8 @@ function clearAboveColor(ctx, width, height, r, g, b) {
     }
 
     ctx.putImageData(image, 0, 0);
-} 
-function preRenderStone(radius, seed, options) { 
+}
+function preRenderStone(radius, seed, options) {
 
     let dcsr = deviceCanvasScalingRatio();
     radius *= dcsr;
@@ -259,7 +259,7 @@ function preRenderStone(radius, seed, options) {
     ctx.arc(center, center, radius, 0, 2 * Math.PI, false);
     ctx.fill();
     /* draw clamshell lines */
-    if (options.shell_lines) { 
+    if (options.shell_lines) {
         try {
             let alphas = copyAlpha(ctx, ss, ss);
             let nlines = 5 + seed % 5;
@@ -324,7 +324,7 @@ function preRenderStone(radius, seed, options) {
         } catch (e) {
             console.log(e);
         }
-    } 
+    }
 
     applyPhongShading(ctx, ss, center, radius, options.ambient, options.specular_hardness, options.diffuse_light_distance, options.specular_light_distance, options.light);
 
@@ -355,7 +355,7 @@ function preRenderStone(radius, seed, options) {
     clearAboveColor(shadow_ctx, sss, sss, 150, 150, 150);
 
     return [{"stone": stone[0], "shadow": shadow[0]}];
-} 
+}
 function placeRenderedStone(ctx, shadow_ctx, stone, cx, cy, radius) {
 
     let dcsr = deviceCanvasScalingRatio();
@@ -450,7 +450,7 @@ export default function(GoThemes) {
     _("Shell"); // ensure translation
     GoThemes["white"]["Shell"] = Shell;
 
-    
+
 
     /* Glass  */
 
@@ -496,7 +496,7 @@ export default function(GoThemes) {
 
     GoThemes["white"]["Glass"] = GlassWhite;
 
-    
+
 
     /* Worn Glass  */
 
@@ -540,7 +540,7 @@ export default function(GoThemes) {
         }
     }
     GoThemes["white"]["Worn Glass"] = WornGlassWhite;
-    
+
 
     /* Night  */
     class NightBlack extends Common {
@@ -584,5 +584,5 @@ export default function(GoThemes) {
         }
     }
     GoThemes["white"]["Night"] = NightWhite;
-    
+
 }

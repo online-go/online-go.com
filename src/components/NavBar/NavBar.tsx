@@ -370,7 +370,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                            value={this.state.omnisearch_string}
                            onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
                 </div>
-                {(!omnisearch_searching || null) && 
+                {(!omnisearch_searching || null) &&
                     <ul id="items">
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
                         {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i> {_("Sign In")}</Link></li>}
@@ -470,7 +470,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                         }
                     </ul>
                 }
-                {(omnisearch_searching || null) && 
+                {(omnisearch_searching || null) &&
                     <div className="OmniSearch-results">
                         {(this.state.omnisearch_sitemap.length || null) &&
                             <div>
