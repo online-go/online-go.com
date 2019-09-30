@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "gulp",
-    "pretty": "prettier --write src/*.ts src/*.tsx src/**/*.tsx src/**/*.ts",
+    "prettytsx": "prettier --write 'src/**/*.tsx'",
+    "prettyts": "prettier --write 'src/**/*.ts'",
     "webpack": "webpack",
     "webpack-bundle-analyzer": "webpack-bundle-analyzer"
   },

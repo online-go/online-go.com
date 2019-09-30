@@ -11,8 +11,9 @@ node_modules:
 	NODE_PATH=$(NODE_PATH) PATH=$(PATH) yarn install
 
 pretty prettier:
-	npm run pretty
-	sed -ir 's@[ ]+$$/@@' `find ./ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
+	npm run prettytsx
+	npm run prettyts
+	sed -ir 's@[ ]+$$/@@' `find src/ -regex '.*\.\(ts\|tsx\|styl\|html\)'`
 
 
 lint tslint:
