@@ -16,16 +16,18 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import { get} from "requests";
-import {errorAlerter} from "misc";
-import {Player} from "Player";
-import {Card} from "material";
+import { _, pgettext, interpolate } from "translate";
+import { get } from "requests";
+import { errorAlerter } from "misc";
+import { Player } from "Player";
+import { Card } from "material";
 
-interface LeaderBoardProperties {
-}
+interface LeaderBoardProperties {}
 
-export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any> {
+export class LeaderBoard extends React.PureComponent<
+    LeaderBoardProperties,
+    any
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -36,104 +38,116 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     componentDidMount() {
         window.document.title = _("Leaderboards");
         get("leaderboards/")
-        .then((leaderboards) => {
-            this.setState({
-                leaderboards: [
-                    [
-                        {
-                            "name": _("Overall"),
-                            "userlist": leaderboards.overall,
-                        },
-                        {
-                            "name": _("Blitz"),
-                            "userlist": leaderboards.blitz,
-                        },
-                        {
-                            "name": _("Live"),
-                            "userlist": leaderboards.live,
-                        },
-                        {
-                            "name": _("Correspondence"),
-                            "userlist": leaderboards.correspondence,
-                        },
-                    ],
+            .then(leaderboards => {
+                this.setState({
+                    leaderboards: [
+                        [
+                            {
+                                name: _("Overall"),
+                                userlist: leaderboards.overall
+                            },
+                            {
+                                name: _("Blitz"),
+                                userlist: leaderboards.blitz
+                            },
+                            {
+                                name: _("Live"),
+                                userlist: leaderboards.live
+                            },
+                            {
+                                name: _("Correspondence"),
+                                userlist: leaderboards.correspondence
+                            }
+                        ],
 
-                    [
-                        {
-                            "name": "19x19",
-                            "userlist": leaderboards.overall_19,
-                        },
-                        {
-                            "name": _("Blitz") + " 19x19",
-                            "userlist": leaderboards.blitz_19,
-                        },
-                        {
-                            "name": _("Live") + " 19x19",
-                            "userlist": leaderboards.live_19,
-                        },
-                        {
-                            "name": _("Correspondence") + " 19x19",
-                            "userlist": leaderboards.correspondence_19,
-                        },
-                    ],
+                        [
+                            {
+                                name: "19x19",
+                                userlist: leaderboards.overall_19
+                            },
+                            {
+                                name: _("Blitz") + " 19x19",
+                                userlist: leaderboards.blitz_19
+                            },
+                            {
+                                name: _("Live") + " 19x19",
+                                userlist: leaderboards.live_19
+                            },
+                            {
+                                name: _("Correspondence") + " 19x19",
+                                userlist: leaderboards.correspondence_19
+                            }
+                        ],
 
-                    [
-                        {
-                            "name": "13x13",
-                            "userlist": leaderboards.overall_13,
-                        },
-                        {
-                            "name": _("Blitz") + " 13x13",
-                            "userlist": leaderboards.blitz_13,
-                        },
-                        {
-                            "name": _("Live") + " 13x13",
-                            "userlist": leaderboards.live_13,
-                        },
-                        {
-                            "name": _("Correspondence") + " 13x13",
-                            "userlist": leaderboards.correspondence_13,
-                        },
-                    ],
+                        [
+                            {
+                                name: "13x13",
+                                userlist: leaderboards.overall_13
+                            },
+                            {
+                                name: _("Blitz") + " 13x13",
+                                userlist: leaderboards.blitz_13
+                            },
+                            {
+                                name: _("Live") + " 13x13",
+                                userlist: leaderboards.live_13
+                            },
+                            {
+                                name: _("Correspondence") + " 13x13",
+                                userlist: leaderboards.correspondence_13
+                            }
+                        ],
 
-                    [
-                        {
-                            "name": "9x9",
-                            "userlist": leaderboards.overall_9,
-                        },
-                        {
-                            "name": _("Blitz") + " 9x9",
-                            "userlist": leaderboards.blitz_9,
-                        },
-                        {
-                            "name": _("Live") + " 9x9",
-                            "userlist": leaderboards.live_9,
-                        },
-                        {
-                            "name": _("Correspondence") + " 9x9",
-                            "userlist": leaderboards.correspondence_9,
-                        },
+                        [
+                            {
+                                name: "9x9",
+                                userlist: leaderboards.overall_9
+                            },
+                            {
+                                name: _("Blitz") + " 9x9",
+                                userlist: leaderboards.blitz_9
+                            },
+                            {
+                                name: _("Live") + " 9x9",
+                                userlist: leaderboards.live_9
+                            },
+                            {
+                                name: _("Correspondence") + " 9x9",
+                                userlist: leaderboards.correspondence_9
+                            }
+                        ]
                     ]
-
-                ]
-            });
-        })
-        .catch(errorAlerter);
+                });
+            })
+            .catch(errorAlerter);
     }
 
     render() {
         return (
             <div className="LeaderBoard page-width">
-                <h2><span>{_("Site Wide")}</span> <i className="fa fa-list-ol"></i> {_("Leaderboards")} </h2>
+                <h2>
+                    <i className="fa fa-trophy"></i>{" "}
+                    {_("Site Wide Tournament Leaderboards")}{" "}
+                    <i className="fa fa-list-ol"></i>
+                </h2>
                 <Card>
                     {this.state.leaderboards.map((row, ridx) => (
                         <div key={ridx} className="row">
                             {row.map((cell, cidx) => (
-                                <div key={`${ridx}x${cidx}`} className="col-sm-3">
+                                <div
+                                    key={`${ridx}x${cidx}`}
+                                    className="col-sm-3"
+                                >
                                     <h3>{cell.name}</h3>
                                     {cell.userlist.map((entry, eidx) => (
-                                        <div key={`${ridx}x${cidx}x${eidx}`} className="entry">
-                                            <span className="points">{points(entry.points)}</span> <Player flag user={entry}/>
+                                        <div
+                                            key={`${ridx}x${cidx}x${eidx}`}
+                                            className="entry"
+                                        >
+                                            <span className="points">
+                                                {points(entry.points)}
+                                            </span>{" "}
+                                            <Player flag user={entry} />
                                         </div>
                                     ))}
                                 </div>
@@ -146,11 +160,14 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     }
 }
 
-function points(n) {{{
-    n = parseFloat(n);
-    if (n < 1) {
-        return n.toPrecision(3);
+function points(n) {
+    {
+        {
+            n = parseFloat(n);
+            if (n < 1) {
+                return n.toPrecision(3);
+            }
+            return n.toPrecision(4);
+        }
     }
-    return n.toPrecision(4);
-}}}
-
+}
