@@ -161,10 +161,8 @@ function min_styl(done) {
 function background_webpack(done) {
     function spawn_webpack() {
         let env = process.env;
-        let webpack = spawn('node', ['node_modules/webpack/bin/webpack.js', '--watch', '--progress', '--colors'])
+        let webpack = spawn('node', ['node_modules/webpack/bin/webpack.js', '--watch', '--progress', '--colors'], { stdio: 'inherit' })
 
-        webpack.stdout.on('data', o => process.stdout.write(o))
-        webpack.stderr.on('data', o => process.stderr.write(o))
         webpack.on('exit', spawn_webpack);
     }
     spawn_webpack();
