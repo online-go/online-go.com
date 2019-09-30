@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017  Online-Go.com
+ * Copyright (C) 2012-2019  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import * as queryString from "query-string";
 
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
+import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { Goban, GoMath } from "goban";
@@ -38,7 +38,7 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
-
+import { forceLoad } from "@sentry/browser";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -160,6 +160,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
             user_can_comment: false,
 
             move_type_sequence: [],   // This is the sequence of "move types" that is passed to the Play pane to display
+            joseki_errors: 0,         // How many errors made by the player in the current sequence in Play mode.
+            josekis_played: null,
+            josekis_completed: null,
+            joseki_successes: null,
+            joseki_best_attempt: null,
+            joseki_tag_id: null,       // the id of the "This is Joseki" tag, for use in setting default
 
             joseki_source: null as {},
             tags: [],   // The tags that are on the current position
@@ -219,6 +225,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
+
+        // When we go into Play mode we need to know what tag is the Joseki one
+        // We ask the server about that now so we have it handy
+        this.getJosekiTag();
     }
 
     getUserJosekiPermissions = () => {
@@ -237,6 +247,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
             });
         }).catch((r) => {
             console.log("Permissions GET failed:", r);
+        });
+    }
+
+    getJosekiTag = () => {
+        // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
+        fetch(server_url + "tag?group=0&seq=0", {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            //console.log("Server response:", body);
+
+            this.setState({
+                joseki_tag_id: body.tags[0].id
+            });
+        }).catch((r) => {
+            console.log("Joseki tag GET failed:", r);
         });
     }
 
@@ -267,6 +295,25 @@ export class Joseki extends React.Component<JosekiProps, any> {
     loadPosition = (node_id) => {
         this.load_sequence_to_board = true;
         this.fetchNextMovesFor(node_id);
+    }
+
+    updatePlayerJosekiRecord = (node_id) => {
+        fetch(server_url + "playrecord/", {
+            method: 'put',
+            mode: 'cors',
+            headers: godojo_headers,
+            body: JSON.stringify({
+                position_id: node_id,
+                errors: this.state.joseki_errors
+            })
+        })
+        .then(res => res.json())
+        .then(body => {
+            console.log("Server response to play record PUT:", body);
+            this.extractPlayResults(body);
+        }).catch((r) => {
+            console.log("Play record PUT failed:", r);
+        });
     }
 
    // Fetch the next moves based on the current filter
@@ -321,7 +368,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
 
                 if ((good_moves.length === 0) && !this.played_mistake) {
-                    this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: 'complete', comment: _("Joseki!")}]});
+                    this.setState({
+                        move_type_sequence: [
+                            ...this.state.move_type_sequence,
+                            {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
+                        ]});
+                    this.updatePlayerJosekiRecord(node_id);
                 }
 
                 if (this.computer_turn) {
@@ -569,7 +621,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 const comment = placement + ": " +
                     ((chosen_move === undefined) ? _("That move isn't listed!") :  MoveCategory[chosen_move.category]);
 
-                this.setState({move_type_sequence: [...this.state.move_type_sequence, {type: move_type, comment: comment}]});
+                this.setState({
+                    move_type_sequence: [...this.state.move_type_sequence, {type: move_type, comment: comment}],
+                    joseki_errors: (move_type === 'bad' ? this.state.joseki_errors + 1 : this.state.joseki_errors)
+                });
             }
 
             if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.computer_turn) {
@@ -629,13 +684,47 @@ export class Joseki extends React.Component<JosekiProps, any> {
             mode: PageMode.Play,
             played_mistake: false,
             move_type_sequence: [],
+            joseki_errors: 0,
+            joseki_successes: null,
+            joseki_best_attempt: null,
             count_display_open: false
         });
+        this.fetchPlayResults();
     }
 
     setEditMode = () => {
         this.setState({
             mode: PageMode.Edit,
+        });
+    }
+
+    // Here we are getting the user's overall play history results
+    fetchPlayResults = () => {
+        let results_url = server_url + "playrecord";
+
+        // console.log("Fetching play record logs ", results_url);
+        this.setState({extra_throb: true});
+        fetch(results_url, {
+            mode: 'cors',
+            headers: godojo_headers
+        })
+        .then(response => response.json()) // wait for the body of the response
+        .then(body => {
+            this.setState({extra_throb: false});
+            // console.log("Server response: ", body);
+            this.extractPlayResults(body);
+        }).catch((r) => {
+            console.log("Play results GET failed:", r);
+        });
+    }
+
+    // results DTO can come from either a fetch of the overall player record, or a put of the results of a particular sequence
+    extractPlayResults = (results_dto) => {
+        this.setState({
+            josekis_played: results_dto.josekis_played,
+            josekis_completed: results_dto.josekis_completed,
+            joseki_best_attempt: results_dto.error_count,
+            joseki_successes: results_dto.successes
         });
     }
 
@@ -646,7 +735,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             move_string: "",
             current_move_category: "",
-            move_type_sequence: []
+            move_type_sequence: [],
+            joseki_errors: 0,
+            joseki_successes: null,
+            joseki_best_attempt: null
         });
         this.initializeGoban();
         this.onResize();
@@ -928,6 +1020,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
             return (
                 <PlayPane
                     move_type_sequence={this.state.move_type_sequence}
+                    joseki_errors={this.state.joseki_errors}
+                    josekis_played={this.state.josekis_played}
+                    josekis_completed={this.state.josekis_completed}
+                    joseki_best_attempt={this.state.joseki_best_attempt}
+                    joseki_successes={this.state.joseki_successes}
+                    joseki_tag_id={this.state.joseki_tag_id}
                     set_variation_filter = {this.updateVariationFilter}
                     current_filter = {this.state.variation_filter}
                 />
@@ -1240,7 +1338,6 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
                         {this.state.extra_info_selected === "variation-filter" &&
                             <div className="filter-container">
-                                <Throbber throb={this.state.extra_throb}/>
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
                                     tag_list_url = {server_url + "tags"}
@@ -1260,6 +1357,12 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
     move_type_sequence: [];
+    joseki_errors: number;
+    josekis_played: number;
+    josekis_completed: number;
+    joseki_best_attempt: number;
+    joseki_successes: number;
+    joseki_tag_id: number;
     set_variation_filter: any;
     current_filter: {contributor: number, tags: number[], source: number};
 }
@@ -1268,7 +1371,8 @@ class PlayPane extends React.Component<PlayProps, any> {
     constructor(props) {
         super(props);
         this.state = {
-            extra_info_selected: "none"
+            extra_info_selected: "none",
+            extra_throb: false
         };
     }
 
@@ -1286,13 +1390,24 @@ class PlayPane extends React.Component<PlayProps, any> {
         if (this.props.current_filter.contributor === null &&
             this.props.current_filter.tags === null &&
             this.props.current_filter.source === null) {
-            // encourage them to use a filter, if they aren't already.
-            this.showFilterSelector();
+            // Set up a Joseki filter by default
+                this.props.set_variation_filter({
+                    tags:[this.props.joseki_tag_id],
+                    contributor: null,
+                    source: null
+                });
+        }
+        else {
+            this.showResults();
         }
     }
 
     showFilterSelector = () => {
         this.setState({ extra_info_selected: "variation-filter" });
+    }
+
+    showResults = () => {
+        this.setState({ extra_info_selected: 'results'});
     }
 
     hideExtraInfo = () => {
@@ -1316,18 +1431,44 @@ class PlayPane extends React.Component<PlayProps, any> {
                             {move_type['comment']}
                         </div>))}
                 </div>
-                <div className={"extra-info-column" + (this.state.extra_info_selected !== "none" ? " extra-info-open" : "")}>
-                    {this.state.extra_info_selected === "none" &&
-                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}
-                        onClick={this.showFilterSelector} />
-                    }
-                    {this.state.extra_info_selected === "variation-filter" &&
-                        <React.Fragment>
+                <div className={"extra-info-column extra-info-open"}>
+                        <div className="btn-group extra-info-selector">
+                            <button className={"btn s " + (this.state.extra_info_selected === "results" ? " primary" : "")}
+                                    onClick={(this.state.extra_info_selected === "results") ? this.hideExtraInfo : this.showResults}>
+                                    {_("Results")}
+                            </button>
+                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
+                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
+                                    <span>{_("Filter")}</span>
+                                    {this.state.extra_info_selected === "variation-filter" ?
+                                    <i className={"fa fa-filter hide"}/> :
+                                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
+                                    }
+                            </button>
+                        </div>
+                        {this.state.extra_info_selected === "results" &&
+                            <div className="play-results-container">
+                                <h4>{_("Overall:")}</h4>
+                                <div>{_("Josekis played")}: {this.props.josekis_played}</div>
+                                <div>{_("Josekis played correctly")}: {this.props.josekis_completed}</div>
+
+                                <h4>{_("This Sequence:")}</h4>
+                                <div>{_("Mistakes so far")}: {this.props.joseki_errors}</div>
+
+                                {this.props.joseki_successes !== null &&
+                                    <div>{_("Correct plays of this position")}: {this.props.joseki_successes}</div>
+                                }
+                                {this.props.joseki_best_attempt !== null && this.props.joseki_best_attempt !== 0 &&
+                                    <div>
+                                    {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
+                                     + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        {this.state.extra_info_selected === "variation-filter" &&
                             <div className="filter-container">
-                                <div className="extra-info-header">
-                                        <div>Variation filter:</div>
-                                        <i className="fa fa-caret-right" onClick={this.hideExtraInfo} />
-                                </div>
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
                                     tag_list_url = {server_url + "tags"}
@@ -1337,9 +1478,8 @@ class PlayPane extends React.Component<PlayProps, any> {
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
-                        </React.Fragment>
-                    }
-                </div>
+                        }
+                    </div>
             </div>
         );
     }

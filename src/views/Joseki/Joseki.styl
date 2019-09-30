@@ -166,6 +166,7 @@
                 .pass-available {
                     themed border-color supporter  // the only available yellowish color :)
                     border-width: 2px;
+                    box-shadow: 0 0 0.8rem gold; // can't theme box shadow, gold works in both themes
                 }
             }
 
@@ -212,7 +213,8 @@
             flex-basis:50%;
             display: flex;
             flex-direction: column;
-            padding-top: 3em;
+            padding-top: 3rem;
+            padding-bottom: 1rem;
 
             .fa {
                 margin-right: 3px;
@@ -398,7 +400,15 @@
                 border-radius: 4px;
             }
 
-
+            .play-results-container {
+                padding-left: 1rem;
+                h4 {
+                    margin-bottom: 0.3rem;
+                }
+                div {
+                    margin-left: 0.5rem;
+                }
+            }
         }
 
         .hide {
