@@ -154,6 +154,27 @@ export function lookup_by_username(username: string): PlayerCacheEntry {
     return null;
 }
 
+
+export function fetch_by_username(username: string, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
+    let user = lookup_by_username(username);
+    if (user) {
+        return fetch(user.id, required_fields);
+    }
+    else {
+        let res = get("players", {username: username})
+                    .then((res) => {
+                    if (res.results.length) {
+                        return fetch(res.results[0].id);
+                    } else {
+                        console.error("Attempted to fetch invalid player name: ", username);
+                        return Promise.reject("invalid player name");
+                    }
+                });
+        return res;
+    }
+}
+
+
 export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);

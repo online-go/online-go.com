@@ -72,10 +72,18 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
 
             let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+            let username = typeof(this.props.user) !== "object" ? this.props.user : this.props.user.username ;
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
+            else if (username) {
+                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (username === user.username) {
                         this.setState({user: user});
                     }
                 }).catch(errorLogger);
@@ -114,6 +122,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
         if (!new_props.disableCacheUpdate) {
             let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+            let username = typeof(this.props.user) !== "object" ? this.props.user : this.props.user.username ;
 
             if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
@@ -123,6 +132,13 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (player_id === user.id) {
+                        this.setState({user: user});
+                    }
+                }).catch(errorLogger);
+            }
+            else if (username) {
+                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (username === user.username) {
                         this.setState({user: user});
                     }
                 }).catch(errorLogger);
