@@ -177,8 +177,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
         };
 
         this.goban_div = $("<div className='Goban'>");
-
-        this.initializeGoban();
     }
 
     initializeGoban = (initial_position?) => {
@@ -207,11 +205,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     componentDidMount = () => {
-        this.onResize();  // make Goban size itself properly after the DOM is rendered
-
         godojo_headers["X-User-Info"] = this.getOGSJWT();
 
         this.getUserJosekiPermissions();
+
+        // When we go into Play mode we need to know what tag is the Joseki one
+        // We ask the server about that now so we have it handy
+        this.getJosekiTag();
 
         const target_position = this.props.match.params.pos || "root";
 
@@ -224,11 +224,28 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
         }
 
-        this.resetJosekiSequence(target_position); // initialise joseki playing sequence with server
+        this.initializeBoard(target_position);
+    }
 
-        // When we go into Play mode we need to know what tag is the Joseki one
-        // We ask the server about that now so we have it handy
-        this.getJosekiTag();
+    initializeBoard = (target_position: string = "root") => {
+        // console.log("Resetting board...");
+        this.next_moves = [];
+        this.played_mistake = false;
+        this.setState({
+            move_string: "",
+            current_move_category: "",
+            move_type_sequence: [],
+            joseki_errors: 0,
+            joseki_successes: null,
+            joseki_best_attempt: null
+        });
+        this.initializeGoban();
+        this.onResize();
+        this.resetJosekiSequence(target_position);
+    }
+
+    resetBoard = () => {
+        this.initializeBoard("root");
     }
 
     getUserJosekiPermissions = () => {
@@ -723,26 +740,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             josekis_played: results_dto.josekis_played,
             josekis_completed: results_dto.josekis_completed,
-            joseki_best_attempt: results_dto.error_count,
+            joseki_best_attempt: results_dto.error_count || null,
             joseki_successes: results_dto.successes
         });
-    }
-
-    resetBoard = () => {
-        // console.log("Resetting board...");
-        this.next_moves = [];
-        this.played_mistake = false;
-        this.setState({
-            move_string: "",
-            current_move_category: "",
-            move_type_sequence: [],
-            joseki_errors: 0,
-            joseki_successes: null,
-            joseki_best_attempt: null
-        });
-        this.initializeGoban();
-        this.onResize();
-        this.resetJosekiSequence("root");
     }
 
     backOneMove = () => {
