@@ -940,6 +940,9 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /\b((?:player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/(?:[^\/<> ]+)(?:\/|\b))/gi,
             pattern: /\b((player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/([^\/<> ]+)(?:\/|\b))/gi,
             replacement: (m, idx) => (<Player user={{"id": -1, username: m[3]}} rank={false} noextracontrols />)},
+        {split: /(@"[^"]+")/gi,
+            pattern: /(@"([^"]+)")/gi,
+            replacement: (m, idx) => (<Player user={{"id": -1, username: m[2]}} rank={false} noextracontrols />)},
         // games
         {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}game ${m[2] || ""}${m[4] || ""}`}</Link>)},
