@@ -723,7 +723,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             josekis_played: results_dto.josekis_played,
             josekis_completed: results_dto.josekis_completed,
-            joseki_best_attempt: results_dto.error_count,
+            joseki_best_attempt: results_dto.error_count || null,
             joseki_successes: results_dto.successes
         });
     }
