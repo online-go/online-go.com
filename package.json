@@ -15,7 +15,7 @@
     "defaults"
   ],
   "devDependencies": {
-    "autoprefixer": "^9.6.0",
+    "autoprefixer": "^9.6.1",
     "body-parser": "^1.16.1",
     "cssnano": "^4.1.4",
     "express": "^4.14.1",
@@ -36,14 +36,14 @@
     "source-map-loader": "^0.2.4",
     "stylus": "^0.54.7",
     "supervisor": "^0.12.0",
-    "ts-loader": "^6.0.4",
-    "tslint": "^5.19.0",
-    "typescript": "^3.6.2",
-    "webpack": "^4.39.3",
+    "ts-loader": "^6.2.0",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3",
+    "webpack": "^4.41.0",
     "webpack-bundle-analyzer": "",
-    "webpack-cli": "^3.3.8",
+    "webpack-cli": "^3.3.9",
     "xgettext-js": "^1.1.0",
-    "yarn": "^1.17.3"
+    "yarn": "^1.19.0"
   },
   "dependencies": {
     "@sentry/browser": "^5.6.3",
