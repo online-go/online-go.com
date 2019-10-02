@@ -1605,7 +1605,7 @@ class EditPane extends React.Component<EditProps, any> {
             return [];
         }
 
-        const mark_matches = [...description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg)];
+        const mark_matches = Array.from(description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg));
 
         return mark_matches.map((mark_match) => ({label:mark_match[1], position: mark_match[2]}));
     }
