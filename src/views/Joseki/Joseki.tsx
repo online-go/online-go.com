@@ -1597,7 +1597,7 @@ class EditPane extends React.Component<EditProps, any> {
             this.currentMarksInDescription(this.state.new_description));
     }
 
-    currentMarksInDescription = (description: string) => {
+    currentMarksInDescription = (description: string): Array<{label: string, position: string}> => {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
 
