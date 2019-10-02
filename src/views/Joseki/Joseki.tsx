@@ -1597,7 +1597,7 @@ class EditPane extends React.Component<EditProps, any> {
             this.currentMarksInDescription(this.state.new_description));
     }
 
-    currentMarksInDescription = (description) => {
+    currentMarksInDescription = (description: string): Array<{label: string, position: string}> => {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
 
@@ -1605,9 +1605,26 @@ class EditPane extends React.Component<EditProps, any> {
             return [];
         }
 
-        const mark_matches = [...description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg)];
+        // we have to grok each mark out of the multiline string then parse it, because es5.
+        const mark_matches = description.match(/<[A-Z]:[A-Z][0-9]{1,2}>/mg);
+
+        let current_marks = [];
+
+        if (mark_matches) {
+            mark_matches.forEach(mark => {
+                const extract = mark.match(/<([A-Z]):([A-Z][0-9]{1,2})>/);
+                current_marks.push({label: extract[1], position: extract[2]});
+            });
+        }
+
+        return current_marks;
+
+        /* The es2017 way:
+
+        const mark_matches = Array.from(description.matchAll(/<([A-Z]):([A-Z][0-9]{1,2})>/mg));
 
         return mark_matches.map((mark_match) => ({label:mark_match[1], position: mark_match[2]}));
+        */
     }
 
     promptForJosekiSource = (e) => {
