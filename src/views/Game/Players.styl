@@ -19,7 +19,6 @@
     50% { color: #888; }
 }
 
-
 .MainGobanView .players {
     flex-shrink: 0;
     flex-grow: 0;
@@ -372,6 +371,19 @@
 
 }
 
+&.zen .MainGobanView .players {
+    div.in-game-clock {
+        &.paused .main-time {
+            animation-iteration-count: 0
+        }
+        .pause-text {
+            display: none;
+        }
+    }
+    .player-name-container, .player-icon-container, .score-details {
+        display: none;
+    }
+}
 
 .MainGobanView.portrait .players {
     .player-icon-container {
@@ -403,5 +415,20 @@
         .periods, .period-time {
             font-size: font-size-extra-small;
         }
+    }
+}
+
+&.zen .MainGobanView.portrait .players {
+    div.in-game-clock {
+        &.paused .main-time {
+            animation-iteration-count: 0
+        }
+        .pause-text {
+            display: none;
+        }
+    }
+
+    .player-name-container, .player-icon-container, .score-details {
+        display: none;
     }
 }

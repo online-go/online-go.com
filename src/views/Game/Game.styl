@@ -392,12 +392,65 @@ goban-view-bar-width=400px
 
     &.zen {
         themed background-color bg
-        .left-col, .right-col {
+        .left-col {
             display: none;
+        }
+        .right-col {
+            padding-right: 0.5rem;
+            min-width: 150px;
+            max-width: 300px;
+            padding-top: 2.8rem;
+            justify-content: start;
+
+            .game-state {
+                display: none;
+            }
+            .play-controls {
+                display: block;
+                flex-grow: 0;
+            }
+            .players {
+                flex-direction: column-reverse;
+            }
+            .player-container {
+                width: 100%;
+            }
+            .black.player-container {
+                background: #333 !important;
+            }
+            .white.player-container {
+                background: #ddd !important;
+                .score-container {
+                    color: #000;   
+                }
+            }
         }
 
         .leave-zen-mode-button {
             display: inline-block;
+        }
+        .Dock {
+            display: none;
+        }
+    }
+
+    &.portrait.zen {
+        .center-col {
+            padding-top: 2.8rem
+            display: block;
+
+            .game-state {
+                display: none;
+            }
+            .black.player-container {
+                background: #333 !important;
+            }
+            .white.player-container {
+                background: #ddd !important;
+                .score-container {
+                    color: #000;   
+                }
+            }
         }
     }
 
