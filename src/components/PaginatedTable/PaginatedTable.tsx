@@ -137,24 +137,18 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         return post(this.source_url, query); // TODO: Check the URLs and typify the result again
     }
 
-
-    needs_another_update: boolean = false;
     filter_updated() {
         this.setPage(1);
-        if (this.updating) {
-            this.needs_another_update = true;
-        } else {
-            this.update();
-        }
+        this.update();
     }
 
-    updating: boolean = false;
+    update_debounce = null;
     update() {
-        if (this.updating) {
-            return;
-        }
-        this.updating = true;
-        this.needs_another_update = false;
+        clearTimeout(this.update_debounce);
+        this.update_debounce = setTimeout(this._update.bind(this), 100);
+    }
+
+    _update() {
         this.source_function(this.filter, this.sorting)
         .then((res) => {
             let new_rows = this.props.groom ? this.props.groom(res.results || []) : res.results || [];
@@ -163,24 +157,14 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
                 console.debug("PaginatedTable groomed rows: ", new_rows);
             }
 
-            this.updating = false;
             this.setState({
                 total: res.count,
                 rows: new_rows,
                 num_pages:  Math.ceil(res.count / this.state.page_size),
             });
-
-            if (this.needs_another_update) {
-                this.update();
-            }
         })
         .catch((err) => {
-            this.updating = false;
             console.error(err.stack);
-
-            if (this.needs_another_update) {
-                this.update();
-            }
         });
     }
 
