@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import GoTheme from "../GoTheme";
+import { GoTheme } from "ogs-goban";
 import {_} from "../translate";
 import * as data from "data";
 

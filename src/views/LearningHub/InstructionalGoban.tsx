@@ -19,7 +19,7 @@
 import * as React from "react";
 import {post, get} from "requests";
 import {Goban} from "goban";
-import {sfx} from "ogs-goban/SFXManager";
+import {sfx} from "ogs-goban";
 import {PersistentElement} from "PersistentElement";
 
 interface InstructionalGobanProps {

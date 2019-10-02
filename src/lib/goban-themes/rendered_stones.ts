@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import GoTheme from "../GoTheme";
+import { GoTheme, deviceCanvasScalingRatio } from "ogs-goban";
 import {_} from "../translate";
-import {deviceCanvasScalingRatio} from "../GoUtil";
 
 /**
  * Converts an RGB color value to HSL. Conversion formula

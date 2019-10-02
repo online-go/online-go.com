@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import GoTheme from "../GoTheme";
+import { Goban, GoTheme } from "ogs-goban";
 import {_} from "../translate";
-import {Goban} from '../Goban';
 
 
 export default function(GoThemes) {
