@@ -707,8 +707,18 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             + chan_class("group-" + chan.id)
                                         }
                                     >
-                                        <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel}>
-                                            <img className="icon" src={chan.icon}/> {chan.name}
+                                        <span
+                                            className="channel-name"
+                                            data-channel={"group-" + chan.id}
+                                            onClick={this.setActiveChannel}
+                                        >
+                                            <a href={"/group/" + chan.id}>
+                                                <img
+                                                    className="icon"
+                                                    src={chan.icon}
+                                                    title={_("Go to group page")}
+                                                />
+                                            </a>{" "}{chan.name}
                                         </span>
                                         {user_count("group-" + chan.id)}
                                     </div>
@@ -729,8 +739,17 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             + chan_class("tournament-" + chan.id)
                                         }
                                     >
-                                        <span className="channel-name" data-channel={"tournament-" + chan.id} onClick={this.setActiveChannel} >
-                                            <i className="fa fa-trophy" /> {chan.name}
+                                        <span
+                                            className="channel-name"
+                                            data-channel={"tournament-" + chan.id}
+                                            onClick={this.setActiveChannel}
+                                        >
+                                            <a href={"/tournament/" + chan.id}>
+                                                <i
+                                                    className="fa fa-trophy"
+                                                    title={_("Go to tournament page")}
+                                                />
+                                            </a>{" "}{chan.name}
                                         </span>
                                         {user_count("tournament-" + chan.id)}
                                     </div>
