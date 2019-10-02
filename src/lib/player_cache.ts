@@ -164,7 +164,7 @@ export function fetch_by_username(username: string, required_fields?: Array<stri
         let res = get("players", {username: username})
                     .then((res) => {
                     if (res.results.length) {
-                        return fetch(res.results[0].id);
+                        return fetch(res.results[0].id, required_fields);
                     } else {
                         console.error("Attempted to fetch invalid player name: ", username);
                         return Promise.reject("invalid player name");
