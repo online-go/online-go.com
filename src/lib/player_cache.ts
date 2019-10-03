@@ -20,6 +20,7 @@ import {Batcher} from "batcher";
 import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 
 import Debug from "debug";
+import { reject } from "q";
 const debug = new Debug("player_cache");
 
 // The player cache's Subscriber is just like a vanilla Subscriber, but can
@@ -167,6 +168,7 @@ export function fetch_by_username(username: string, required_fields?: Array<stri
                         return fetch(res.results[0].id, required_fields);
                     } else {
                         console.error("Attempted to fetch invalid player name: ", username);
+                        cache_by_username[username] = {id: null, username: username, ui_class: "provisional", pro: false};
                         return Promise.reject("invalid player name");
                     }
                 });
@@ -256,6 +258,24 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
             }
         })
         .catch((err) => {
+            if ("error" in err.responseJSON) {
+                if (/Player ([0-9]+) not found in cassandra/gi.test(err.responseJSON.error)) {
+                    let err_player_id = Number(/Player ([0-9]+) not found in cassandra/gi.exec(err.responseJSON.error)[1]);
+                    // create a dummy entry for missing player
+                    let idx = 0;
+                    for (; idx < 100; idx ++) {
+                        if (queue[idx].player_id === err_player_id) {
+                            break;
+                        }
+                    }
+                    let reject = queue[idx].reject;
+                    let player = {id: err_player_id, username: "?player" + err_player_id + "?", ui_class: "provisional", pro: false};
+                    update(player);
+                    debug.error(err);
+                    reject(err);
+                    return;
+                }
+            }
             debug.error(err);
             for (let idx = 0; idx < queue.length; ++idx) {
                 delete active_fetches[queue[idx].player_id];
