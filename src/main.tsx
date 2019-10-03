@@ -18,6 +18,7 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
+import { configure_goban } from 'configure-goban';
 
 declare var ogs_current_language;
 declare var ogs_version;
@@ -97,6 +98,8 @@ data.setDefault("config.user", {
     "country": "un",
     "pro": 0,
 });
+
+configure_goban();
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";

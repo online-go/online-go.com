@@ -3,35 +3,35 @@ PATH:=node_modules/.bin/:$(PATH)
 
 
 dev: node_modules
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) supervisor -w Gulpfile.js,webpack.config.js,tsconfig.json supervisor -w Gulpfile.js -x gulp --
+	npm run dev
 
 node_modules:
 	npm install yarn
-	npm install supervisor
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) yarn install
+	npm run yarn install
 
 pretty prettier:
 	npm run prettytsx
 	npm run prettyts
 
 lint tslint:
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) tslint --project tsconfig.json
+	npm run tslint -- --project tsconfig.json
 
 min: minjs mincss
 
 mincss:
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) gulp min_styl
+	npm run gulp min_styl
 	@echo 'gzipped ogs.min.css: ' `gzip -9 dist/ogs.min.css -c | wc -c`
 
 minjs:
-	NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --display-modules
+	npm run webpack -- --mode production --optimize-minimize --devtool=source-map --display-modules
 	@echo 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
 	@echo 'gzipped vendor.min.js: ' `gzip -9 dist/vendor.min.js -c | wc -c`
 
 analyze:
-	#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --profile --json > analyze.json
-	#npm run webpack-bundle-analyzer dist/ analyze.json
-	npm run webpack-bundle-analyzer analyze.json dist/ 
+	ANALYZE=true npm run analyze
+
+#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --profile --json > analyze.json
+#npm run webpack-bundle-analyzer dist/ analyze.json
 
 .PHONY: dev lint tslint min minjs mincss
 

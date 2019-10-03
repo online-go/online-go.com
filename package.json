@@ -5,11 +5,15 @@
   "license": "AGPL-3.0",
   "private": true,
   "scripts": {
-    "dev": "gulp",
+    "dev": "supervisor -w Gulpfile.js,webpack.config.js,tsconfig.json supervisor -w Gulpfile.js -x gulp --",
     "prettytsx": "prettier --write 'src/**/*.tsx'",
     "prettyts": "prettier --write 'src/**/*.ts'",
     "webpack": "webpack",
-    "webpack-bundle-analyzer": "webpack-bundle-analyzer"
+    "webpack-watch": "webpack --watch --progress --colors",
+    "yarn": "yarn",
+    "tslint": "tslint",
+    "gulp": "gulp",
+    "analyze": "webpack --mode production --profile --optimize-minimize --devtool=source-map"
   },
   "browserslist": [
     "defaults"
@@ -40,7 +44,7 @@
     "tslint": "^5.20.0",
     "typescript": "^3.6.3",
     "webpack": "^4.41.0",
-    "webpack-bundle-analyzer": "",
+    "webpack-bundle-analyzer": "^3.5.2",
     "webpack-cli": "^3.3.9",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.19.0"
@@ -66,7 +70,7 @@
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",
-    "ogs-goban": "file:../ogs-goban",
+    "goban": "file:../goban",
     "prop-types": "^15.5.0",
     "query-string": "^5.0.1",
     "react": "^16.9.0",
@@ -84,10 +88,8 @@
     "react-virtualized": "^9.21.0",
     "redux": "^3.7.2",
     "sanitize-html": "^1.14.1",
-    "slugify": "^1.3.4",
     "ts-md5": "^1.2.5",
     "valid-url": "^1.0.9",
-    "webpack-bundle-analyzer": "^3.4.1",
     "whatwg-fetch": "^3.0.0"
   }
 }

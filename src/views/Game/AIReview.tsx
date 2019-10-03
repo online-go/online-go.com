@@ -31,7 +31,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
-import {GoMath, MoveTree, ColoredCircle} from 'ogs-goban';
+import {GoMath, MoveTree, ColoredCircle} from 'goban';
 import Select from 'react-select';
 import {close_all_popovers, popover} from "popover";
 
