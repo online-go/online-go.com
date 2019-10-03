@@ -79,14 +79,20 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (username === user.username) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
         }
 
@@ -134,14 +140,20 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (username === user.username) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
         }
 
