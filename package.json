@@ -13,6 +13,7 @@
     "yarn": "yarn",
     "tslint": "tslint",
     "gulp": "gulp",
+    "minify-index": "gulp minify-index --silent",
     "analyze": "webpack --mode production --profile --optimize-minimize --devtool=source-map"
   },
   "browserslist": [
@@ -70,7 +71,7 @@
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",
-    "goban": "^0.2.0",
+    "goban": "^0.2.1",
     "prop-types": "^15.5.0",
     "query-string": "^5.0.1",
     "react": "^16.9.0",
