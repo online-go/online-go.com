@@ -46,7 +46,7 @@ import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
-import {sfx} from "ogs-goban/SFXManager";
+import {sfx} from "goban";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
