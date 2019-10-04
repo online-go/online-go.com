@@ -17,3 +17,4 @@
 
 
 export * from "./Chat";
+export * from "./ChatDetails";
