@@ -58,9 +58,12 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         //this.state = this.blankState();
         //let player = player_cache.lookup(this.props.playerId);
         let channel = this.props.chatChannelId;
-        //if (channel) {
-        //    this.state = Object.assign(this.state, channel);
-        //}
+        if (channel) {
+            this.state = {
+                channelId: channel,
+            };
+        }
+        
         ////if (player) {
         //    this.state = Object.assign(this.state, player);
         //}
@@ -131,15 +134,15 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
 
     leave = (_ev) => {
         //Chat.part(this.channel, false, false);
-        Chat.leaveActiveChannel();
+        leaveActiveChannel();
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
-        browserHistory.push('/group/' + this.channel);
+        browserHistory.push('/group/' + this.channelId);
         this.close_all_modals_and_popovers();
     }
     goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + this.channel);
+        browserHistory.push('/tournament/' + this.channelId);
         this.close_all_modals_and_popovers();
     }
 
