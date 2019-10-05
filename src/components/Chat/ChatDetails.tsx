@@ -63,7 +63,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                 channelId: channel,
             };
         }
-        
+
         ////if (player) {
         //    this.state = Object.assign(this.state, player);
         //}
