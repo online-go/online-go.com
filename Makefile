@@ -5,7 +5,7 @@ PATH:=node_modules/.bin/:$(PATH)
 dev: node_modules
 	npm run dev
 
-node_modules:
+node_modules: package.json
 	npm install yarn
 	npm run yarn install
 
