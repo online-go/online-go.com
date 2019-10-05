@@ -715,7 +715,6 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             <img
                                                 className="icon"
                                                 src={chan.icon}
-                                                title={_("Go to group page")}
                                             />{" "}{chan.name}
                                         </span>
                                         {user_count("group-" + chan.id)}
@@ -744,7 +743,6 @@ export class Chat extends React.Component<ChatProperties, any> {
                                         >
                                             <i
                                                 className="fa fa-trophy"
-                                                title={_("Go to tournament page")}
                                             />{" "}{chan.name}
                                         </span>
                                         {user_count("tournament-" + chan.id)}
