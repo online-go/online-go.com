@@ -5,8 +5,8 @@ PATH:=node_modules/.bin/:$(PATH)
 dev: node_modules
 	npm run dev
 
-node_modules:
-	npm install yarn
+node_modules: package.json
+	npm ls yarn || npm install yarn
 	npm run yarn install
 
 pretty prettier:
