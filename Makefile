@@ -6,7 +6,7 @@ dev: node_modules
 	npm run dev
 
 node_modules: package.json
-	npm install yarn
+	npm ls yarn || npm install yarn
 	npm run yarn install
 
 pretty prettier:
