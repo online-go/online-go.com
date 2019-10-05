@@ -134,15 +134,15 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
 
     leave = (_ev) => {
         //Chat.part(this.channel, false, false);
-        leaveActiveChannel();
+        //leaveActiveChannel(); //figure out how to ask chat to leave channel
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
-        browserHistory.push('/group/' + this.channelId);
+        browserHistory.push('/group/' + this.state.channelId);
         this.close_all_modals_and_popovers();
     }
     goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + this.channelId);
+        browserHistory.push('/tournament/' + this.state.channelId);
         this.close_all_modals_and_popovers();
     }
 
