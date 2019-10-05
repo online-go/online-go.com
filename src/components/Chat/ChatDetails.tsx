@@ -41,7 +41,7 @@ import cached from 'cached';
 //declare var swal;
 
 interface ChatDetailsProperties {
-    chatChannelID: string;
+    chatChannelId: string;
 //     playerId: number;
 //     chatId?: string;
 //     gameChatId?: string;
@@ -57,7 +57,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         super(props);
         //this.state = this.blankState();
         //let player = player_cache.lookup(this.props.playerId);
-        // let channel = this.props.chatChannel;
+        let channel = this.props.chatChannelId;
         //if (channel) {
         //    this.state = Object.assign(this.state, channel);
         //}
@@ -130,15 +130,16 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 
     leave = (_ev) => {
-        Chat.part(this.props.chatChannelID, false, false);
+        //Chat.part(this.channel, false, false);
+        Chat.leaveActiveChannel();
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
-        browserHistory.push('/group/' + chatChannelID);
+        browserHistory.push('/group/' + this.channel);
         this.close_all_modals_and_popovers();
     }
     goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + chatChannelID);
+        browserHistory.push('/tournament/' + this.channel);
         this.close_all_modals_and_popovers();
     }
 
