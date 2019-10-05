@@ -5,6 +5,7 @@ typings
 *.swo
 webpack-stats.json
 analyze.json
+stats.json
 src/components/base
 .vscode
 todo
@@ -15,6 +16,7 @@ how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
 package-lock.json
+report.*.json
 
 
 
