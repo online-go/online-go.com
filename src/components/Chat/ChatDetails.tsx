@@ -243,7 +243,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
 
         return (
            <div className="ChatDetails">
-               <div className="details">
+               // <div className="details">
         //            <div className="icon" style={{backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")'}}>
         //                <Flag country={this.state.country}/>
         //            </div>
@@ -274,7 +274,8 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         //            </div>
         //        </div>
         //        {!user.anonymous && (user.id !== this.props.playerId || null) &&
-                   <div className="actions">
+                    {!user.anonymous &&
+                     <div className="actions">
         //                {!this.props.nochallenge &&
             //                    <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}>
             //                    <i className="ogs-goban"/>
@@ -288,10 +289,25 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         //                    ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
         //                    : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
         //                }
-        //                <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
-        //                <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
-        //            </div>
-        //        }
+                       // <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
+                       // <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
+                        <button
+                            className="xs noshadow"
+                            onClick={this.leave}>
+                            <i className="fa fa-times"/>{_("Leave Channel")}
+                        </button>
+                        <button
+                            className="xs noshadow"
+                            onClick={this.goToGroup}>
+                            <i className="fa fa-users"/>{_("Go to Group")}
+                        </button>
+                        <button
+                            className="xs noshadow"
+                            onClick={this.goToTournament}>
+                            <i className="fa fa-trophy"/>{_("Go to Tournament")}
+                        </button>
+                     </div>
+                    }
         //        {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
         //        { ((user.is_moderator) || null) &&
         //            <div className="actions">
