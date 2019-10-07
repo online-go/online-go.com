@@ -149,28 +149,27 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     render() {
         let user = data.get("user");
 
+        console.log("I'm rendering");
         return (
-           <div className="ChatDetails">
-                    {!user.anonymous &&
-                     <div className="actions">
-                        <button
-                            className="xs noshadow"
-                            onClick={this.leave}>
-                            <i className="fa fa-times"/>{_("Leave Channel")}
-                        </button>
-                        <button
-                            className="xs noshadow"
-                            onClick={this.goToGroup}>
-                            <i className="fa fa-users"/>{_("Go to Group")}
-                        </button>
-                        <button
-                            className="xs noshadow"
-                            onClick={this.goToTournament}>
-                            <i className="fa fa-trophy"/>{_("Go to Tournament")}
-                        </button>
-                     </div>
-                    }
-           </div>
+            <div className="ChatDetails">
+                <div className="actions">
+                    <button
+                        className="xs noshadow"
+                        onClick={this.leave}>
+                        <i className="fa fa-times"/>{_("Leave Channel")}
+                    </button>
+                    <button
+                        className="xs noshadow"
+                        onClick={this.goToGroup}>
+                        <i className="fa fa-users"/>{_("Go to Group")}
+                    </button>
+                    <button
+                        className="xs noshadow"
+                        onClick={this.goToTournament}>
+                        <i className="fa fa-trophy"/>{_("Go to Tournament")}
+                    </button>
+                </div>
+            </div>
         );
     }
 }
