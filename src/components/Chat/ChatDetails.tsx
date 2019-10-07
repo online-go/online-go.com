@@ -174,6 +174,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 }
 
-// export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
-//     extraActionCallback = cb;
-// }
+export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
+    extraActionCallback = cb;
+    console.log("this actually gets used?");
+}
