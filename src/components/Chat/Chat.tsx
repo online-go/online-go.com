@@ -679,9 +679,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             let leave_text = "▼";
             let c = getChannel(channel);
             if (c.unread_ct) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} onClick={this.display_details} />;
-            } else if (channel in this.state.joined_channels) {
-                return <span className="unread-count" data-count="" data-leave={leave_text} onClick={this.display_details} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} data-channel={channel} onClick={this.display_details} />;
+            } else if (channel in (this.state.joined_channels || this.state.group_channels || this.state.tournament_channels)) {
+                return <span className="unread-count" data-count="" data-leave={leave_text} data-channel={channel} onClick={this.display_details} />;
             }
             /*
             if (c.user_count) {
@@ -690,7 +690,6 @@ export class Chat extends React.Component<ChatProperties, any> {
             */
             return null;
         };
-
 
         let showChannels = !!this.props.showChannels;
         let showUserList = !!this.props.showUserList;
@@ -715,15 +714,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             + chan_class("group-" + chan.id)
                                         }
                                     >
-                                        <span
-                                            className="channel-name"
-                                            data-channel={"group-" + chan.id}
-                                            onClick={this.setActiveChannel}
-                                        >
-                                            <img
-                                                className="icon"
-                                                src={chan.icon}
-                                            />{" "}{chan.name}
+                                        <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel} >
+                                            <img className="icon" src={chan.icon} /> {chan.name}
                                         </span>
                                         {user_count("group-" + chan.id)}
                                     </div>
@@ -744,14 +736,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             + chan_class("tournament-" + chan.id)
                                         }
                                     >
-                                        <span
-                                            className="channel-name"
-                                            data-channel={"tournament-" + chan.id}
-                                            onClick={this.setActiveChannel}
-                                        >
-                                            <i
-                                                className="fa fa-trophy"
-                                            />{" "}{chan.name}
+                                        <span className="channel-name" data-channel={"tournament-" + chan.id} onClick={this.setActiveChannel} >
+                                            <i className="fa fa-trophy" /> {chan.name}
                                         </span>
                                         {user_count("tournament-" + chan.id)}
                                     </div>
@@ -838,59 +824,18 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 
     display_details = (event) => {
-        // if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
-        //     return;
-        // }
-
         if (!this.props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get the popup warnings */
             return;
         }
 
-        // event.stopPropogation();
-        // event.preventDefault();
+        let channel = event.currentTarget.getAttribute('data-channel');
 
-        let channn = global_channels.map((chan) => getChannel(chan.id).id = chan.id);
-        console.log("chan id " + channn);
-        // console.log("chan id " + channn.id);
-        let ggg = this.state.group_channels.map((g) => getChannel("group-" + g.id).id = g.id);
-        console.log("group id " + ggg);
-        console.log("group id " + ggg.id);
-        let ttt = this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).id = t.id);
-        console.log("tournament id " + ttt);
-        console.log("tournament id " + ttt.id);
-        // let aaa = this.state.active_channel.map((a) => getChannel(a.id).id = a.id);
-        let aaa = this.state.active_channel;
-        console.log("active id " + aaa);
-        // let chan = this.state.group_channels;
-        // console.log("group_details " + this.state.group_channels);
-        // console.log("chan " + chan);
-        // let channel_id = chan.id;
-        // console.log ("chan.id " + chan.id);
-        // console.log ("channel_id " + channel_id);
-
-        let channel_idd = "2";
-        // let chat_id = null;
-        // try {
-        //     let cur = $(this.refs.elt);
-
-        //     while (cur && cur[0].nodeName !== 'BODY') {
-        //         chat_id = cur.attr('data-chat-id');
-        //         if (chat_id) {
-        //             break;
-        //         }
-        //         cur = cur.parent();
-        //     }
-        // } catch (e) {
-        //     console.error(e);
-        // }
-
-        console.log("just 2 string " + channel_idd);
         popover({
-            elt: (<ChatDetails chatChannelId={channel_idd} />),
-            below: this.refs.elt,
-            minWidth: 240,
-            minHeight: 250,
+            elt: (<ChatDetails chatChannelId={channel} />),
+            below: event.currentTarget.parentElement,
+            minWidth: 130,
+            minHeight: 80,
         });
     }
 }

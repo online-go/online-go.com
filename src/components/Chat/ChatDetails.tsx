@@ -21,96 +21,31 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-// import {rankString, getUserRating, is_novice, humble_rating} from "rank_utils";
-// import * as player_cache from "player_cache";
-// import {icon_size_url} from "PlayerIcon";
 import {termination_socket} from "sockets";
 import * as data from "data";
 import {close_all_popovers} from "popover";
-// import {Flag} from "Flag";
-// import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
-// import {openSupporterAdminModal} from "SupporterAdmin";
-// import {challenge} from "ChallengeModal";
-// import {getPrivateChat} from "PrivateChat";
-// import {openBlockPlayerControls} from "BlockPlayer";
-// import {Player} from "./Player";
 import {Chat} from "./Chat";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 
-//declare var swal;
 
 interface ChatDetailsProperties {
     chatChannelId: string;
-//     playerId: number;
-//     chatId?: string;
-//     gameChatId?: string;
-//     reviewChatId?: string;
-//     noextracontrols?: boolean;
-//     nochallenge?: boolean;
 }
-
-let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
 export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any> {
     constructor(props) {
         super(props);
-        //this.state = this.blankState();
-        //let player = player_cache.lookup(this.props.playerId);
         let channel = this.props.chatChannelId;
         if (channel) {
             this.state = {
                 channelId: channel,
             };
         }
-
-        ////if (player) {
-        //    this.state = Object.assign(this.state, player);
-        //}
     }
 
     // UNSAFE_componentWillMount()  {
-        //this.resolve(this.props.playerId);
-        // this.resolve(this.props.chatChannel);
     // }
-
-    //blankState() {
-        //return {
-        //    resolved: false,
-        //    resolving: 0,
-        //    username: "...",
-        //    //icon: data.get('config.cdn_release') + '/img/default-user.svg',
-        //    icon: "",
-        //    ranking: "...",
-        //    rating: "...",
-        //    ui_class: "...",
-        //    country: "un",
-        //    error: null,
-        //};
-    //}
-    //resolve(player_id) {
-        //this.setState({resolved: false});
-        //player_cache.fetch(
-        //    this.props.playerId,
-        //    [
-        //        "username",
-        //        "icon",
-        //        "ratings",
-        //        "pro",
-        //        "country",
-        //        "ui_class",
-        //    ]
-        //)
-        //.then((player) => {
-        //    this.setState(Object.assign({resolved: true}, player as any));
-        //})
-        //.catch((err) => {
-        //    if (player_id === this.props.playerId) {
-        //        this.setState({resolved: true, error: _("Error loading player information")});
-        //        console.error(err);
-        //    }
-        //});
-    //}
     //UNSAFE_componentWillReceiveProps(new_props) {
         //if (new_props.playerId !== this.props.playerId) {
         //    let player = player_cache.lookup(new_props.playerId);
@@ -133,48 +68,48 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 
     leave = (_ev) => {
-        //Chat.part(this.channel, false, false);
+        // part(this.state.channelId, false, false);
         //leaveActiveChannel(); //figure out how to ask chat to leave channel
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
-        browserHistory.push('/group/' + this.state.channelId);
+        browserHistory.push('/group/' + this.state.channelId.slice(6));
         this.close_all_modals_and_popovers();
     }
     goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + this.state.channelId);
+        browserHistory.push('/tournament/' + this.state.channelId.slice(11));
         this.close_all_modals_and_popovers();
     }
 
     render() {
-        let user = data.get("user");
+        let group_text = pgettext("Go to the main page for this group.", "Group Page");
+        let tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
+        let leave_text = pgettext("Leave the selected channel.", "Leave Channel");
 
-        console.log("I'm rendering");
         return (
             <div className="ChatDetails">
                 <div className="actions">
+                    {this.state.channelId.startsWith("group") &&
+                        <button
+                            className="xs noshadow"
+                            onClick={this.goToGroup}>
+                            <i className="fa fa-users"/>{" "}{group_text}
+                        </button>
+                    }
+                    {this.state.channelId.startsWith("tournament") &&
+                        <button
+                            className="xs noshadow"
+                            onClick={this.goToTournament}>
+                            <i className="fa fa-trophy"/>{" "}{tournament_text}
+                        </button>
+                    }
                     <button
-                        className="xs noshadow"
+                        className="xs noshadow reject"
                         onClick={this.leave}>
-                        <i className="fa fa-times"/>{_("Leave Channel")}
-                    </button>
-                    <button
-                        className="xs noshadow"
-                        onClick={this.goToGroup}>
-                        <i className="fa fa-users"/>{_("Go to Group")}
-                    </button>
-                    <button
-                        className="xs noshadow"
-                        onClick={this.goToTournament}>
-                        <i className="fa fa-trophy"/>{_("Go to Tournament")}
+                        <i className="fa fa-times"/>{" "}{leave_text}
                     </button>
                 </div>
             </div>
         );
     }
-}
-
-export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
-    extraActionCallback = cb;
-    console.log("this actually gets used?");
 }
