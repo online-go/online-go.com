@@ -37,7 +37,7 @@ import * as moment from "moment";
 import cached from 'cached';
 import {popover} from "popover";
 import {ChatDetails} from './ChatDetails';
-import {shouldOpenNewTab, errorLogger} from 'misc';
+import {shouldOpenNewTab} from 'misc';
 
 
 declare let swal;
@@ -51,7 +51,6 @@ interface ChatProperties {
     showChannels?: boolean;
     showUserList?: boolean;
     updateTitle: boolean;
-    nolink?: boolean;
     fakelink?: boolean;
 }
 
@@ -714,8 +713,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                                             + chan_class("group-" + chan.id)
                                         }
                                     >
-                                        <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel} >
-                                            <img className="icon" src={chan.icon} /> {chan.name}
+                                        <span className="channel-name" data-channel={"group-" + chan.id} onClick={this.setActiveChannel}>
+                                            <img className="icon" src={chan.icon}/> {chan.name}
                                         </span>
                                         {user_count("group-" + chan.id)}
                                     </div>
