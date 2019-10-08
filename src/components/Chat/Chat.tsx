@@ -834,7 +834,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         let channel = event.currentTarget.getAttribute('data-channel');
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} />),
+            elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
             below: event.currentTarget.parentElement,
             minWidth: 130,
             minHeight: 80,

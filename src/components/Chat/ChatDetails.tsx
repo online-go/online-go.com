@@ -32,6 +32,7 @@ import {emitNotification} from "Notifications";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
+    partFunc: any;
 }
 
 export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any> {
@@ -70,13 +71,15 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
 
     leave = (_ev) => {
         // this.emit("part", this.state.channelId);
-        console.log(_ev);
+        // console.log(_ev);
         // _ev.on("disconnect", this.state.channelId);
         // ChatChannelProxy(this.state.channelId).part();
         // <Chat channel={this.state.channelId} part={true} updateTitle={false} />;
-        console.log("chat call");
-        _ev.bind.part(this.state.channelId, false, false);
+        // console.log("chat call");
+        // _ev.bind.part(this.state.channelId, false, false);
         //leaveActiveChannel(); //figure out how to ask chat to leave channel
+        let c = this.state.channelId;
+        this.props.partFunc(c, false, true);
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
