@@ -25,9 +25,10 @@ import {termination_socket} from "sockets";
 import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Chat} from "./Chat";
-import {close_friend_list} from 'FriendList/FriendIndicator';
-import cached from 'cached';
-
+import {close_friend_list} from "FriendList/FriendIndicator";
+import cached from "cached";
+import {ChatChannelProxy} from "chat_manager";
+import {emitNotification} from "Notifications";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
@@ -68,7 +69,13 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 
     leave = (_ev) => {
-        // part(this.state.channelId, false, false);
+        // this.emit("part", this.state.channelId);
+        console.log(_ev);
+        // _ev.on("disconnect", this.state.channelId);
+        // ChatChannelProxy(this.state.channelId).part();
+        // <Chat channel={this.state.channelId} part={true} updateTitle={false} />;
+        console.log("chat call");
+        _ev.bind.part(this.state.channelId, false, false);
         //leaveActiveChannel(); //figure out how to ask chat to leave channel
         this.close_all_modals_and_popovers();
     }
@@ -93,20 +100,20 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                         <button
                             className="xs noshadow"
                             onClick={this.goToGroup}>
-                            <i className="fa fa-users"/>{" "}{group_text}
+                                <i className="fa fa-users"/>{" "}{group_text}
                         </button>
                     }
                     {this.state.channelId.startsWith("tournament") &&
                         <button
                             className="xs noshadow"
                             onClick={this.goToTournament}>
-                            <i className="fa fa-trophy"/>{" "}{tournament_text}
+                                <i className="fa fa-trophy"/>{" "}{tournament_text}
                         </button>
                     }
                     <button
                         className="xs noshadow reject"
                         onClick={this.leave}>
-                        <i className="fa fa-times"/>{" "}{leave_text}
+                            <i className="fa fa-times"/>{" "}{leave_text}
                     </button>
                 </div>
             </div>

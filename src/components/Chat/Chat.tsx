@@ -52,6 +52,7 @@ interface ChatProperties {
     showUserList?: boolean;
     updateTitle: boolean;
     fakelink?: boolean;
+    part?: boolean;
 }
 
 let name_match_regex = /^loading...$/;
@@ -212,6 +213,10 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.autoscroll();
         $(window).on("focus", this.onDocumentFocus);
 
+        if (this.props.part) {
+            this.part(this.props.channel, false, false);
+            console.log(this.props.channel);
+        }
 
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
@@ -674,13 +679,11 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
 
         let user_count = (channel: string) => {
-            // let leave_text = pgettext("Leave chat room", "leave");
-            let leave_text = "▼";
             let c = getChannel(channel);
             if (c.unread_ct) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} data-channel={channel} onClick={this.display_details} />;
-            } else if (channel in (this.state.joined_channels || this.state.group_channels || this.state.tournament_channels)) {
-                return <span className="unread-count" data-count="" data-leave={leave_text} data-channel={channel} onClick={this.display_details} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
+            } else if (channel in this.state.joined_channels) {
+                return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             }
             /*
             if (c.user_count) {
