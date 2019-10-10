@@ -52,7 +52,6 @@ interface ChatProperties {
     showUserList?: boolean;
     updateTitle: boolean;
     fakelink?: boolean;
-    part?: boolean;
 }
 
 let name_match_regex = /^loading...$/;
@@ -212,11 +211,6 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         this.autoscroll();
         $(window).on("focus", this.onDocumentFocus);
-
-        if (this.props.part) {
-            this.part(this.props.channel, false, false);
-            console.log(this.props.channel);
-        }
 
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
@@ -437,6 +431,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
     }
     part(channel, dont_autoset_active, dont_clear_joined) {
+        console.log(channel);
         if (comm_socket.connected) {
             comm_socket.send("chat/part", {"channel": channel});
         }

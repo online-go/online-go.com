@@ -35,6 +35,7 @@ interface ChatDetailsProperties {
     partFunc: any;
 }
 
+
 export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any> {
     constructor(props) {
         super(props);
@@ -46,40 +47,15 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         }
     }
 
-    // UNSAFE_componentWillMount()  {
-    // }
-    //UNSAFE_componentWillReceiveProps(new_props) {
-        //if (new_props.playerId !== this.props.playerId) {
-        //    let player = player_cache.lookup(new_props.playerId);
-        //    let new_state = this.blankState();
-        //    if (player) {
-        //        new_state = Object.assign(new_state, this.state, player);
-        //    }
-        //    this.setState(new_state);
-        //    setTimeout(() => {
-        //        this.resolve(new_props.playerId);
-        //    }, 1);
-        //}
-    //}
-    //componentWillUnmount() {
-    //}
-
     close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
     }
 
     leave = (_ev) => {
-        // this.emit("part", this.state.channelId);
-        // console.log(_ev);
-        // _ev.on("disconnect", this.state.channelId);
-        // ChatChannelProxy(this.state.channelId).part();
-        // <Chat channel={this.state.channelId} part={true} updateTitle={false} />;
-        // console.log("chat call");
-        // _ev.bind.part(this.state.channelId, false, false);
-        //leaveActiveChannel(); //figure out how to ask chat to leave channel
         let c = this.state.channelId;
-        this.props.partFunc(c, false, true);
+        console.log(c);
+        this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     }
     goToGroup = (_ev) => {
