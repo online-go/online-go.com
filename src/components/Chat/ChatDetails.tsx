@@ -16,19 +16,10 @@
  */
 
 import * as React from "react";
-import {toast} from "toast";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
-import {post} from "requests";
-import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-import {termination_socket} from "sockets";
-import * as data from "data";
 import {close_all_popovers} from "popover";
-import {Chat} from "./Chat";
 import {close_friend_list} from "FriendList/FriendIndicator";
-import cached from "cached";
-import {ChatChannelProxy} from "chat_manager";
-import {emitNotification} from "Notifications";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
