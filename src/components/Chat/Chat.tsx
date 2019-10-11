@@ -430,8 +430,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             });
         }
     }
-    part(channel, dont_autoset_active, dont_clear_joined) {
-        console.log(channel);
+    part = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
         if (comm_socket.connected) {
             comm_socket.send("chat/part", {"channel": channel});
         }
@@ -832,11 +831,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
             below: event.currentTarget.parentElement,
             minWidth: 130,
-            minHeight: 80,
         });
     }
 }
-
 
 function searchString(site, parameters) {
     if (parameters.length === 1) {

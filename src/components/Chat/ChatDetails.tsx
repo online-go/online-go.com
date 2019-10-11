@@ -54,7 +54,6 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
 
     leave = (_ev) => {
         let c = this.state.channelId;
-        console.log(c);
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     }
