@@ -829,7 +829,7 @@ export class Chat extends React.Component<ChatProperties, any> {
 
         popover({
             elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
-            below: event.currentTarget.parentElement,
+            below: event.currentTarget,
             minWidth: 130,
         });
     }
