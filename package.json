@@ -71,7 +71,7 @@
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",
-    "goban": "^0.2.2",
+    "goban": "=0.2.2",
     "prop-types": "^15.5.0",
     "query-string": "^5.0.1",
     "react": "^16.9.0",
