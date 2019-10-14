@@ -237,6 +237,26 @@ function dev_server(done) {
         req2.end();
     });
 
+    devserver.get('/goban.js', (req, res) => {
+        let js = fs.readFileSync('node_modules/goban/lib/index.js', {encoding: 'utf-8'});
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader("Content-Length", js.length);
+        res.status(200).send(js);
+    });
+
+    devserver.get('/index.js.map', (req, res) => {
+        let js = fs.readFileSync('node_modules/goban/lib/index.js.map', {encoding: 'utf-8'});
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader("Content-Length", js.length);
+        res.status(200).send(js);
+    });
+
     devserver.get('*', (req, res) => {
         console.info(`GET ${req.path}`);
 

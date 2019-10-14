@@ -52,6 +52,7 @@ import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
 import {toast} from "toast";
+import {Clock} from "Clock";
 
 declare var swal;
 
@@ -89,9 +90,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     ladder_id: number;
     tournament_id: number;
     review_id: number;
-    goban_div: any;
-    white_clock: any;
-    black_clock: any;
+    goban_div: HTMLDivElement;
     goban: Goban;
     resize_debounce: any = null;
     set_analyze_tool: any = {};
@@ -158,9 +157,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
-        this.goban_div = $("<div class='Goban'>");
-        this.white_clock = $("<div class='Goban'>");
-        this.black_clock = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
         this.checkAndEnterAnalysis = this.checkAndEnterAnalysis.bind(this);
         this.nav_up = this.nav_up.bind(this);
         this.nav_down = this.nav_down.bind(this);
@@ -247,7 +245,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.props.match.params.review_id !== nextProps.match.params.review_id
         ) {
             this.deinitialize();
-            this.goban_div.empty();
+            while (this.goban_div.firstChild) {
+                this.goban_div.removeChild(this.goban_div.firstChild);
+            }
 
             this.setState({
                 portrait_tab: "game",
@@ -355,9 +355,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let label_position = preferences.get("label-positioning");
         let opts: any = {
             "board_div": this.goban_div,
-            "black_clock": "#game-black-clock",
-            "white_clock": "#game-white-clock",
-            "stone_removal_clock": "#stone-removal-clock",
             "node_textarea": "#game-move-node-text",
             "interactive": true,
             "connect_to_chat": true,
@@ -435,6 +432,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             });
             /* } */
         }
+
 
         this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
         this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
@@ -627,7 +625,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 if (this.white_username && this.black_username && !preferences.get("dynamic-title")) {
                     this.on_refocus_title = this.black_username + " vs " + this.white_username;
                     window.document.title = this.on_refocus_title;
-
                 }
                 this.creator_id = game.creator;
                 this.ladder_id = game.ladder;
@@ -2096,7 +2093,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                            {(this.state.user_is_player || null) &&
                                <button id="game-stone-removal-accept" className="primary" onClick={this.onStoneRemovalAccept}>
                                    {_("Accept removed stones")}
-                                   <span style={{whiteSpace: "nowrap"}}>(<span id="stone-removal-clock"></span>)</span>
+                                   <Clock goban={this.goban} color='stone-removal' />
                                </button>
                            }
                        </div>
@@ -2400,33 +2397,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return null;
     }
 
-    frag_clock(color) {
-                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
-        return (
-          <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
-              <div className="main-time boxed"></div>
-              {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-                  <span className="byo-yomi-periods" />
-              }
-              {(this.goban.engine.time_control.time_control === "canadian" || null) &&
-                  <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
-              }
-              {(this.state[`${color}_pause_text`] || null) &&
-                  <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
-              }
-              {null && (this.goban.engine.time_control.time_control === "byoyomi" || this.goban.engine.time_control.time_control === "canadian" || null) &&
-
-                  <div className="overtime-container">
-                      <div className="overtime">{_("OVERTIME")}</div>
-                      <div className="periods-container">
-                          <div className="periods boxed">&nbsp;</div>
-                          <div className="period-time boxed">&nbsp;</div>
-                      </div>
-                  </div>
-              }
-          </div>
-        );
-    }
     frag_players() {
         let goban = this.goban;
         if (!goban) {
@@ -2438,7 +2408,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div ref={el => this.ref_players = el} className="players">
-              {["black", "white"].map((color, idx) => {
+              {["black", "white"].map((color: 'black' | 'white', idx) => {
                   let player_bg: any = {};
                   if (this.state[`historical_${color}`]) {
                       let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
@@ -2463,7 +2433,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                           }
 
                           {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
-                              this.frag_clock(color)
+                              <Clock goban={this.goban} color={color} className="in-game-clock" />
                           }
                       </div>
 

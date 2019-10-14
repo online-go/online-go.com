@@ -30,15 +30,16 @@ interface InstructionalGobanProps {
 }
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
-    goban_div;
-    goban;
+    goban_div:HTMLDivElement;
+    goban:Goban;
 
     constructor(props) {
         super(props);
         this.state = {
         };
 
-        this.goban_div = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
     componentDidMount() {

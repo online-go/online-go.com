@@ -122,7 +122,7 @@ interface JosekiProps {
 export class Joseki extends React.Component<JosekiProps, any> {
 
     goban: Goban;
-    goban_div: any;
+    goban_div: HTMLDivElement;
     goban_opts: any = {};
     goban_container:HTMLDivElement;
     goban_persistent_element:PersistentElement;
@@ -176,7 +176,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             counts_throb: false
         };
 
-        this.goban_div = $("<div className='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
     initializeGoban = (initial_position?) => {

@@ -29,7 +29,7 @@ export class GobanTest extends React.Component<{}, any> {
     };
 
     goban: Goban;
-    goban_div: any;
+    goban_div: HTMLDivElement;
     goban_opts: any = {};
 
     constructor(props) {
@@ -39,7 +39,8 @@ export class GobanTest extends React.Component<{}, any> {
             move_string: "",
         };
 
-        this.goban_div = $("<div className='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
 
         let opts = {
             "board_div": this.goban_div,

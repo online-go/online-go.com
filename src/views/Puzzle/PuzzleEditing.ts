@@ -24,10 +24,6 @@ import * as preferences from "preferences";
 
 
 export class PuzzleEditor {
-
-    // goban: Goban;
-    // goban_div: any;
-
     orig_puzzle: any = null;
     puzzle: any = null;
 
@@ -186,7 +182,7 @@ export class PuzzleEditor {
      * @param editing True if it is editing
      * @return Goban options
      */
-    reset(goban_div: any, editing: boolean, replacementSettingsFunction: () => object): any {
+    reset(goban_div: HTMLDivElement, editing: boolean, replacementSettingsFunction: () => object): any {
         let puzzle = this.puzzle = dup(this.orig_puzzle);
 
         if (!puzzle) {
@@ -203,7 +199,9 @@ export class PuzzleEditor {
 
         let label_position = preferences.get("label-positioning");
 
-        goban_div.empty();
+        while (goban_div.firstChild) {
+            goban_div.removeChild(goban_div.firstChild);
+        }
 
         let opts: any = Object.assign({
             "board_div": goban_div,
