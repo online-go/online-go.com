@@ -11,7 +11,7 @@ src/components/base
 todo
 yarn-error.log
 deployment-staging-area
-Makefile.production
+Makefile.passwords
 how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
