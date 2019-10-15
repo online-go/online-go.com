@@ -1812,6 +1812,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
+                <div className="align-row-start"></div>
                 <div className="left-col">
                 </div>
 
@@ -1869,8 +1870,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(this.state.view_mode !== "portrait" || null) &&
                     <div className="right-col">
+                        {(this.state.view_mode === "zen" || null) &&
+                            <div className="align-col-start"></div>
+                        }
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && this.frag_players()}
+                            this.state.view_mode === "wide" ||
+                            this.state.view_mode === "zen"  || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" || null) && this.frag_ai_review()}
@@ -1888,8 +1893,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
                         {this.frag_dock()}
+                        {(this.state.view_mode === "zen" || null) &&
+                            <div className="align-col-end"></div>
+                        }
                     </div>
                 }
+
+                <div className="align-row-end"></div>
 
              </div>
             </div>
@@ -2409,7 +2419,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                   <span className="byo-yomi-periods" />
               }
               {(this.goban.engine.time_control.time_control === "canadian" || null) &&
-                  <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
+                  <span className="canadian-periods"> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
               }
               {(this.state[`${color}_pause_text`] || null) &&
                   <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
@@ -2427,14 +2437,38 @@ export class Game extends React.PureComponent<GameProperties, any> {
           </div>
         );
     }
+    frag_num_captures_text(color) {
+        let all_prisoner_colors = this.state.view_mode === "zen" ? ["black", "white"] : [color];
+        return (
+          <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
+            {all_prisoner_colors.map((prisoner_color, id) => {
+                let num_prisoners = this.state.score[prisoner_color].prisoners;
+                let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
+                return (
+                    <span className="num-captures-container">
+                        <span className="num-captures-count">{num_prisoners}</span>
+                        {(this.state.view_mode !== "zen" || null) &&
+                            <span className="num-captures-units">
+                                {` ${ngettext("capture", "captures", num_prisoners)}`}
+                            </span>
+                        }
+                        {(this.state.view_mode === "zen" || null) &&
+                            <span className="num-captures-stone">
+                                <img className="stone-image" src={prisoner_img_src} />
+                            </span>
+                        }
+                    </span>
+                );
+            })}
+          </div>
+        );
+    }
     frag_players() {
         let goban = this.goban;
         if (!goban) {
             return null;
         }
         let engine = goban.engine;
-        let portrait_game_mode = this.state.view_mode === "portrait" && this.state.portrait_tab === "game";
-
 
         return (
             <div ref={el => this.ref_players = el} className="players">
@@ -2443,6 +2477,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                   if (this.state[`historical_${color}`]) {
                       let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                       player_bg.backgroundImage = `url("${icon}")`;
+                  }
+                  if (this.state.view_mode === "zen" && !(goban.mode === "play" && goban.player_id === engine.players[color].id)) {
+                      return null;
                   }
 
                   return (
@@ -2487,9 +2524,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
-                                  {interpolate(_("{{captures}} {{unit}}"), {"captures": this.state.score[color].prisoners, "unit": ngettext("capture", "captures", this.state.score[color].prisoners)})}
-                              </div>
+                                this.frag_num_captures_text(color)
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&

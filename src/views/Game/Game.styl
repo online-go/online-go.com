@@ -390,17 +390,6 @@ goban-view-bar-width=400px
         themed color fg
     }
 
-    &.zen {
-        themed background-color bg
-        .left-col, .right-col {
-            display: none;
-        }
-
-        .leave-zen-mode-button {
-            display: inline-block;
-        }
-    }
-
     .center-col {
         flex-grow: 1;
         flex-shrink: 1;
@@ -507,14 +496,47 @@ goban-view-bar-width=400px
         }
     }
 
-
-
-
-
     &.zen {
-        .action-bar, .chat-container {
+        themed background-color bg
+        .left-col, .right-col {
+			padding: 0px;
+        }
+
+        .leave-zen-mode-button {
+            display: inline-block;
+        }
+
+		.Dock, .action-bar {
             display: none;
         }
+		.right-col {
+			.chat-container, .play-controls {
+				display: none;
+			}
+			justify-content: center;
+			min-width: auto;
+			flex-basis: auto;
+			width: auto;
+			margin-left: 5%;
+			flex-grow: 0;
+		}
+		.center-col {
+			.goban-container {
+				flex-grow: 0;
+			}
+			justify-content: center;
+			flex-grow: 0;
+		}
+		.align-row-start, .align-col-start {
+			align-self: flex-start;
+		}
+		.align-row-end, .align-col-end {
+			align-self: flex-end;
+		}
+		.align-row-start, .align-row-end {
+			flex-basis: 5%;
+			flex-grow: 1;
+		}
     }
 
 

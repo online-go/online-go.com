@@ -405,3 +405,109 @@
         }
     }
 }
+
+body.dark .MainGobanView.zen .players {
+	.white {
+		&.player-container {
+			background: none;
+			background-color: #383838;
+			border: 1px solid #484848;
+		}
+	}
+	#game-white-clock,
+	.white .score-container {
+		color: #BBB;
+	}
+
+	.black {
+		&.player-container {
+			background: none;
+			background-color: #111111;
+			border: 1px solid #222;
+		}
+	}
+	#game-black-clock,
+	.black .score-container {
+		color: #AAA;
+	}
+}
+body.light .MainGobanView.zen .players {
+	.white.player-container {
+	}
+	.black.player-container {
+		background: linear-gradient(#666 0%, #181818 100%);
+	}
+}
+.MainGobanView.zen .players {
+	.black.player-container {
+		border-top: none;
+	}
+	.player-container {
+		justify-content: center;
+		min-width: 150px;
+	}
+	.player-icon-clock-row {
+		width: auto;
+		flex-grow: 1;
+	}
+	div.in-game-clock {
+		min-height: 80px;
+		.byo-yomi-periods,
+		.canadian-periods,
+		.pause-text {
+			display: none;
+		}
+		.main-time {
+			line-height: 50px;
+			font-size: 30pt;
+		}
+		.boxed {
+			text-align: center;
+		}
+	}
+	.captures {
+		display: flex;
+		justify-content: center;
+		flex-basis: 70%;
+	}
+	.score-container {
+		margin: 0px;
+		justify-content: center;
+		flex-grow: 0;
+	}
+	.num-captures-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: row;
+		flex-grow: 1;
+		.stone-image {
+			width: 14px;
+			height: 14px;
+		}
+		.num-captures-stone {
+			margin-left: 3px;
+			margin-right: 3px;
+		}
+	}
+	.player-icon-container,
+	.player-name-container,
+	.player-name-plain,
+	.score-details,
+	.period-time,
+	.komi {
+		display: none;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
