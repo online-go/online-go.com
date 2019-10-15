@@ -35,6 +35,9 @@ import {PersistentElement} from "PersistentElement";
 import {users_by_rank} from 'chat_manager';
 import * as moment from "moment";
 import cached from 'cached';
+import {popover} from "popover";
+import {ChatDetails} from './ChatDetails';
+import {shouldOpenNewTab} from 'misc';
 
 
 declare let swal;
@@ -48,6 +51,7 @@ interface ChatProperties {
     showChannels?: boolean;
     showUserList?: boolean;
     updateTitle: boolean;
+    fakelink?: boolean;
 }
 
 let name_match_regex = /^loading...$/;
@@ -139,6 +143,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     refs: {
         input;
         chat_log;
+        elt;
     };
 
     received_messages = {};
@@ -206,7 +211,6 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         this.autoscroll();
         $(window).on("focus", this.onDocumentFocus);
-
 
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
@@ -426,7 +430,7 @@ export class Chat extends React.Component<ChatProperties, any> {
             });
         }
     }
-    part(channel, dont_autoset_active, dont_clear_joined) {
+    part = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
         if (comm_socket.connected) {
             comm_socket.send("chat/part", {"channel": channel});
         }
@@ -669,12 +673,11 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
 
         let user_count = (channel: string) => {
-            let leave_text = pgettext("Leave chat room", "leave");
             let c = getChannel(channel);
             if (c.unread_ct) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             } else if (channel in this.state.joined_channels) {
-                return <span className="unread-count" data-count="" data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             }
             /*
             if (c.user_count) {
@@ -815,8 +818,22 @@ export class Chat extends React.Component<ChatProperties, any> {
             </div>
         );
     }
-}
 
+    display_details = (event) => {
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get the popup warnings */
+            return;
+        }
+
+        let channel = event.currentTarget.getAttribute('data-channel');
+
+        popover({
+            elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
+            below: event.currentTarget,
+            minWidth: 130,
+        });
+    }
+}
 
 function searchString(site, parameters) {
     if (parameters.length === 1) {

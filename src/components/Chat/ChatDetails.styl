@@ -15,6 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.ChatDetails {
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
+    border: 1px solid transparent;
+    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.16), 0px 1px 1px 0px rgba(0, 0, 0, 0.15);
+    themed background-color shade4
+    themed border-color shade3
+    themed color fg
+    max-width: 130px;
+    padding: 0.1rem;
 
-export * from "./Chat";
-export * from "./ChatDetails";
+    .actions {
+        margin-top: 0.1rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+
+        > button {
+            min-width: 98%;
+            text-align: left;
+            .fa, .ogs-goban {
+                padding-right: 0.1rem;
+            }
+        }
+    }
+}
