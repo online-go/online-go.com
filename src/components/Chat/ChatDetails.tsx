@@ -18,6 +18,7 @@
 import * as React from "react";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
+import {shouldOpenNewTab} from "misc";
 import {close_all_popovers} from "popover";
 import {close_friend_list} from "FriendList/FriendIndicator";
 
@@ -48,13 +49,29 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     }
-    goToGroup = (_ev) => {
-        browserHistory.push('/group/' + this.state.channelId.slice(6));
+    goToGroup = (ev) => {
         this.close_all_modals_and_popovers();
+
+        let url = '/group/' + this.state.channelId.slice(6);
+        console.log('group button is trusted? ' + ev.isTrusted);
+        if (shouldOpenNewTab(ev)) {
+            console.log("goToGroup()");
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
-    goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + this.state.channelId.slice(11));
+    goToTournament = (ev) => {
         this.close_all_modals_and_popovers();
+
+        let url = '/tournament/' + this.state.channelId.slice(11);
+        console.log('tournament button is trusted? ' + ev.isTrusted);
+        if (shouldOpenNewTab(ev)) {
+            console.log("goToTournament()");
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
 
     render() {
