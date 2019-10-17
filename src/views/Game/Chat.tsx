@@ -450,7 +450,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                     orig_move.marks = orig_marks;
                                     goban.pen_marks = stashed_pen_marks;
                                     if (goban.pen_marks.length === 0) {
-                                        goban.detachPenCanvas();
+                                        goban.disablePen();
                                     }
                                     goban.redraw();
                                 }
