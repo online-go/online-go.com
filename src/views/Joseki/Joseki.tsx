@@ -26,7 +26,7 @@ import * as data from "data";
 import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
-import { Goban, GoMath } from "goban";
+import { Goban, GoMath, GobanConfig } from "goban";
 import { Markdown } from "Markdown";
 
 import { Player } from "Player";
@@ -186,7 +186,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.goban.destroy();
         }
 
-        let opts = {
+        let opts:GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",

@@ -423,7 +423,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
         this.setState({edit_step: "moves"});
         setTimeout(() => {
-            this.goban.redrawMoveTree();
+            this.goban.move_tree_redraw();
         }, 1);
     }
     validateSetup = () => {
@@ -487,20 +487,20 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     updateMoveText = (ev) => {
         this.setState({move_text: ev.target.value});
         this.goban.engine.cur_move.text = ev.target.value;
-        this.goban.redrawMoveTree();
+        this.goban.move_tree_redraw();
         //this.goban.syncReviewMove(null, ev.target.value);
     }
 
     setCorrectAnswer = () => {
         this.goban.engine.cur_move.wrong_answer = false;
         this.goban.engine.cur_move.correct_answer = !this.goban.engine.cur_move.correct_answer;
-        this.goban.redrawMoveTree();
+        this.goban.move_tree_redraw();
         this.forceUpdate();
     }
     setIncorrectAnswer = () => {
         this.goban.engine.cur_move.correct_answer = false;
         this.goban.engine.cur_move.wrong_answer = !this.goban.engine.cur_move.wrong_answer;
-        this.goban.redrawMoveTree();
+        this.goban.move_tree_redraw();
         this.forceUpdate();
     }
     deletePuzzle = () => {

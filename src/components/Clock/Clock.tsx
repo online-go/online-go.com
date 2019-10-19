@@ -51,11 +51,10 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
         return <span>TODO</span>;
     } else {
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
-
-        //console.log(clock);
+        let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
 
         return (
-            <span className={`Clock ${color} ${clock.paused_state ? ' paused' : ''} ${className || ''}`}>
+            <span className={`Clock ${color} ${clock.pause_state ? ' paused' : ''} ${className || ''}`}>
                 {player_clock.main_time > 0 &&
                     <span className='main-time boxed'>{prettyTime(player_clock.main_time)}</span>
                 }
@@ -85,6 +84,8 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
                         </span>
                     </React.Fragment>
                 }
+
+                {clock.pause_state && <ClockPauseReason clock={clock} player_id={player_id} />}
             </span>
         );
     }
@@ -97,6 +98,26 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
             setClock(Object.assign({}, clock));
         }
     }
+}
+
+function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}):JSX.Element {
+    let pause_text = _("Paused");
+    let pause_state = clock.pause_state;
+    console.log(pause_state);
+
+    if (pause_state.weekend) {
+        pause_text = _("Weekend");
+    }
+
+    if (pause_state.server) {
+        pause_text = _("Paused by Server");
+    }
+
+    if (pause_state.vacation && pause_state.vacation[player_id]) {
+        pause_text = _("Vacation");
+    }
+
+    return <span className='pause-text'>{pause_text}</span>;
 }
 
 function prettyTime(ms:number):string {
@@ -173,17 +194,6 @@ function prettyTime(ms:number):string {
       {(this.state[`${color}_pause_text`] || null) &&
           <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
       }
-      {null && (this.goban.engine.time_control.time_control === "byoyomi" || this.goban.engine.time_control.time_control === "canadian" || null) &&
-
-          <div className="overtime-container">
-              <div className="overtime">{_("OVERTIME")}</div>
-              <div className="periods-container">
-                  <div className="periods boxed">&nbsp;</div>
-                  <div className="period-time boxed">&nbsp;</div>
-              </div>
-          </div>
-      }
   </div>
-
 
 */

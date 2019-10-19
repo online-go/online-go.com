@@ -28,7 +28,7 @@ import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GoEngine, GoMath, MoveTree} from "goban";
+import {Goban, GobanCanvas, GoEngine, GoMath, MoveTree} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -78,12 +78,13 @@ type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-ba
 
 export class Game extends React.PureComponent<GameProperties, any> {
     ref_goban;
-    ref_goban_container;
+    ref_goban_container:HTMLElement;
     ref_players;
     ref_action_bar;
     ref_game_action_buttons;
     ref_game_state_label;
     ref_chat;
+    ref_move_tree_container:HTMLElement;
 
     game_id: number;
     creator_id: number;
@@ -355,6 +356,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let label_position = preferences.get("label-positioning");
         let opts: any = {
             "board_div": this.goban_div,
+            "move_tree_container": this.ref_move_tree_container,
             "node_textarea": "#game-move-node-text",
             "interactive": true,
             "connect_to_chat": true,
@@ -364,15 +366,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     this.leave_pushed_analysis();
                 }
             },
-
             "game_id": null,
             "review_id": null,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "move_tree_div": "#move-tree-container",
-            "move_tree_canvas": "#move-tree-canvas",
             "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
         };
 
@@ -484,10 +483,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.on("show-submit", (tf) => {
             this.setState({show_submit: tf});
         });
-        this.goban.on("pause-text", (new_text) => this.setState({
-            "white_pause_text": new_text.white_pause_text,
-            "black_pause_text": new_text.black_pause_text,
-        }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
             this.debouncedChatUpdate();
@@ -1259,8 +1254,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.paused = goban.engine.pause_control && !!goban.engine.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
-            new_state.white_pause_text = goban.white_pause_text;
-            new_state.black_pause_text = goban.black_pause_text;
 
             if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
@@ -2181,10 +2174,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <div>
                         {this.frag_analyze_button_bar()}
 
-                        <Resizable id="move-tree-container" className="vertically-resizable">
-                            <canvas id="move-tree-canvas"></canvas>
-                        </Resizable>
-
+                        <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
 
                         {(!this.state.zen_mode || null)
                             && <div style={{padding: "0.5em"}}>
@@ -2249,9 +2239,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         }
                     </div>
 
-                    <Resizable id="move-tree-container" className="vertically-resizable">
-                        <canvas id="move-tree-canvas"></canvas>
-                    </Resizable>
+                    <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
 
                     <div style={{paddingLeft: "0.5em", paddingRight: "0.5em"}}>
                         <textarea id="game-move-node-text" placeholder={_("Move comments...")}
@@ -2713,6 +2701,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
             );
         }
         return null;
+    }
+    setMoveTreeContainer = (ref) => {
+        this.ref_move_tree_container = ref;
+        if (this.goban) {
+            (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
+        }
     }
 }
 
