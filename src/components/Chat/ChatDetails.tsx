@@ -49,29 +49,25 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     }
-    goToGroup = (): string => {
+    goToGroup = (ev) => {
         this.close_all_modals_and_popovers();
 
         let url: string = '/group/' + this.state.channelId.slice(6);
-        return url;
-        // if (shouldOpenNewTab(ev)) {
-        //     console.log("goToGroup()");
-        //     window.open(url, "_blank");
-        // } else {
-        //     browserHistory.push(url);
-        // }
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
-    goToTournament = (): string => {
+    goToTournament = (ev) => {
         this.close_all_modals_and_popovers();
 
         let url: string = '/tournament/' + this.state.channelId.slice(11);
-        return url;
-        // if (shouldOpenNewTab(ev)) {
-        //     console.log("goToTournament()");
-        //     window.open(url, "_blank");
-        // } else {
-        //     browserHistory.push(url);
-        // }
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
 
     render() {
@@ -83,22 +79,20 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
             <div className="ChatDetails">
                 <div className="actions">
                     {this.state.channelId.startsWith("group") &&
-                        <a href={this.goToGroup}>
-                            <button
-                                className="xs noshadow"
-                                onClick={this.goToGroup}>
-                                    <i className="fa fa-users"/>{" "}{group_text}
-                            </button>
-                        </a>
+                        <button
+                            className="xs noshadow"
+                            onAuxClick={this.goToGroup}
+                            onClick={this.goToGroup}>
+                                <i className="fa fa-users"/>{" "}{group_text}
+                        </button>
                     }
                     {this.state.channelId.startsWith("tournament") &&
-                        <a href={this.goToTournament}>
-                            <button
-                                className="xs noshadow"
-                                onClick={this.goToTournament}>
-                                    <i className="fa fa-trophy"/>{" "}{tournament_text}
-                            </button>
-                        </a>
+                        <button
+                            className="xs noshadow"
+                            onAuxClick={this.goToTournament}
+                            onClick={this.goToTournament}>
+                                <i className="fa fa-trophy"/>{" "}{tournament_text}
+                        </button>
                     }
                     <button
                         className="xs noshadow reject"
