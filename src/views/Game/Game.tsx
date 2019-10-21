@@ -72,7 +72,7 @@ interface GameProperties {
 /* TODO: Implement giving voice and control over to players in Reviews */
 /* TODO: Implement mobile interface for reviews */
 
-export type ViewMode = "portrait"|"wide"|"square"|"zen";
+export type ViewMode = "portrait"|"wide"|"square";
 type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
@@ -131,7 +131,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
-            view_mode: "wide" as ViewMode,
+            view_mode: this.computeViewMode(),
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
@@ -154,8 +154,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             white_auto_resign_expiration: null,
             ai_review_enabled: preferences.get('ai-review-enabled'),
         };
-
-        (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = $("<div class='Goban'>");
@@ -904,11 +902,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         }
     }
-    computeViewMode(ignore_zen_mode?): ViewMode {
-        if (!ignore_zen_mode && this.state.zen_mode) {
-            return "zen";
-        }
-
+    computeViewMode(): ViewMode {
         return goban_view_mode();
     }
     computeSquashed(): boolean {
@@ -974,14 +968,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
             body.classList.remove("zen");   //remove the class
             this.setState({
                 zen_mode: false,
-                view_mode: this.computeViewMode(true),
+                view_mode: this.computeViewMode(),
             });
         } else {
             let body = document.getElementsByTagName('body')[0];
             body.classList.add("zen");   //add the class
             this.setState({
                 zen_mode: true,
-                view_mode: "zen",
+                view_mode: this.computeViewMode(),
             });
         }
         this.onResize();
@@ -1808,7 +1802,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div>
-             <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
+             <div className={"Game MainGobanView " + (this.state.zen_mode ? "zen " : "") + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
@@ -1816,7 +1810,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 </div>
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" || null) && this.frag_players()}
+                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
@@ -1841,26 +1835,26 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
 
-                    {(this.state.view_mode === "portrait" || null) && this.frag_ai_review()}
+                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
-                    {((this.state.view_mode === "portrait") || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode) || null) &&
                         (review
                             ? this.frag_review_controls()
                             : this.frag_play_controls(false)
                         )
                     }
 
-                    {((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */) || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode /* && this.state.portrait_tab === 'chat' */) || null) &&
                         CHAT
                     }
 
-                    {(((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */)
+                    {(((this.state.view_mode === "portrait" && !this.state.zen_mode /* && this.state.portrait_tab === 'chat' */)
                       && this.state.user_is_player && this.state.phase !== "finished" ) || null) &&
                         this.frag_cancel_button()
                     }
 
 
-                    {((this.state.view_mode === "portrait" && this.state.portrait_tab === "game") || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode && this.state.portrait_tab === "game") || null) &&
                         this.frag_dock()
                     }
 
