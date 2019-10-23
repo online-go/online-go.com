@@ -665,10 +665,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.renderCurrentJosekiPosition();
 
         if (this.last_placement !== 'pass') {
-            let new_options = [];
-            new_options['X'] = {
-                move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
-                color: ColorMap['MISTAKE']
+            let new_options = {
+                'X': {
+                    move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
+                    color: ColorMap['MISTAKE']
+                }
             };
             this.goban.setColoredMarks(new_options);
         }

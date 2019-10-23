@@ -15,25 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Goban, GoMath} from "goban";
+import {
+    Goban,
+    GobanCanvasConfig,
+    NumericPlayerColor,
+    GoMath,
+    PuzzleConfig,
+    PuzzlePlacementSetting,
+} from "goban";
 import {errorAlerter, dup, ignore} from "misc";
 import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
+import {Puzzle} from './Puzzle';
 import * as data from "data";
 import {abort_requests_in_flight, post, get, put, del} from "requests";
 import * as preferences from "preferences";
 
 
 export class PuzzleEditor {
-    orig_puzzle: any = null;
-    puzzle: any = null;
+    orig_puzzle_config: PuzzleConfig = null;
+    puzzle_config: PuzzleConfig = null;
+    puzzle: Puzzle;
+    transform: PuzzleTransform ;
 
     constructor(
-        private transform: PuzzleTransform
-    ) {}
+        puzzle: Puzzle,
+        transform: PuzzleTransform
+    ) {
+        this.puzzle = puzzle;
+        this.transform = transform;
+    }
 
     clearPuzzles() {
-        this.orig_puzzle = null;
-        this.puzzle = null;
+        this.orig_puzzle_config = null;
+        this.puzzle_config = null;
     }
 
     /**
@@ -84,7 +98,7 @@ export class PuzzleEditor {
                 "rank": 18,
                 "collection": { },
             });
-            this.orig_puzzle = obj.puzzle;
+            this.orig_puzzle_config = obj.puzzle;
             obj.puzzle_collection_summary = [];
         }
 
@@ -166,7 +180,7 @@ export class PuzzleEditor {
                 transform_x: this.transform.settings.transform_x,
             }, arr[0]);
 
-            this.orig_puzzle = puzzle;
+            this.orig_puzzle_config = puzzle;
 
             let bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
             new_state.zoomable = bounds && (bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1);
@@ -182,8 +196,8 @@ export class PuzzleEditor {
      * @param editing True if it is editing
      * @return Goban options
      */
-    reset(goban_div: HTMLDivElement, editing: boolean, replacementSettingsFunction: () => object): any {
-        let puzzle = this.puzzle = dup(this.orig_puzzle);
+    reset(goban_div: HTMLDivElement, editing: boolean, replacementSettingsFunction: () => PuzzlePlacementSetting): GobanCanvasConfig {
+        let puzzle = this.puzzle_config = dup(this.orig_puzzle_config);
 
         if (!puzzle) {
             throw new Error("No puzzle loaded");
@@ -203,7 +217,7 @@ export class PuzzleEditor {
             goban_div.removeChild(goban_div.firstChild);
         }
 
-        let opts: any = Object.assign({
+        let opts:GobanCanvasConfig = Object.assign({
             "board_div": goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -211,9 +225,7 @@ export class PuzzleEditor {
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "getPuzzlePlacementSetting": () => {
-                return {"mode": "play"};
-            },
+            "getPuzzlePlacementSetting": () => ({ "mode": "play" }),
             "bounds": bounds,
             "player_id": 0,
             "server_socket": null,
@@ -229,8 +241,7 @@ export class PuzzleEditor {
             opts.puzzle_rank = puzzle && puzzle.puzzle_rank ? puzzle.puzzle_rank : 0;
             opts.puzzle_collection = (puzzle && puzzle.collection ? puzzle.collection.id : 0);
             opts.puzzle_type = (puzzle && puzzle.type ? puzzle.type : "");
-            opts.move_tree_div = "#move-tree-container";
-            opts.move_tree_canvas = "#move-tree-canvas";
+            opts.move_tree_container = document.getElementById("move-tree-container");
         }
 
         return opts;

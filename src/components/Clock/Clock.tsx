@@ -53,8 +53,19 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
         let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
 
+        let clock_className = 'Clock ' + color;
+        if (clock.pause_state) {
+            clock_className += ' paused';
+        }
+        if (player_clock.main_time <= 0) {
+            clock_className += ' in-overtime';
+        }
+        if (className) {
+            clock_className += ' ' + className;
+        }
+
         return (
-            <span className={`Clock ${color} ${clock.pause_state ? ' paused' : ''} ${className || ''}`}>
+            <span className={clock_className}>
                 {player_clock.main_time > 0 &&
                     <span className='main-time boxed'>{prettyTime(player_clock.main_time)}</span>
                 }
@@ -103,7 +114,7 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
 function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}):JSX.Element {
     let pause_text = _("Paused");
     let pause_state = clock.pause_state;
-    console.log(pause_state);
+    //console.log(pause_state);
 
     if (pause_state.weekend) {
         pause_text = _("Weekend");

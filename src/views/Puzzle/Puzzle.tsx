@@ -26,7 +26,13 @@ import {goban_view_mode, goban_view_squashed} from "Game";
 import {PersistentElement} from "PersistentElement";
 import {errorAlerter, dup, ignore} from "misc";
 import {longRankString, rankList} from "rank_utils";
-import {Goban, GoMath} from "goban";
+import {
+    Goban,
+    GoMath,
+    GobanCanvas,
+    GobanCanvasConfig,
+    PuzzlePlacementSetting,
+} from "goban";
 import {Markdown} from "Markdown";
 import {Player} from "Player";
 import {StarRating} from "StarRating";
@@ -60,9 +66,10 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         name;
         puzzle_type;
     };
+    ref_move_tree_container:HTMLElement;
 
     goban: Goban;
-    goban_div: any;
+    goban_div: HTMLDivElement;
     goban_opts: any = {};
 
     transform = new PuzzleTransform(new TransformSettings());
@@ -74,7 +81,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     constructor(props) {
         super(props);
 
-        this.editor  = new PuzzleEditor(this.transform);
+        this.editor  = new PuzzleEditor(this, this.transform);
 
         this.state = {
             loaded: false,
@@ -84,7 +91,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             hintsOn: false,
         };
 
-        this.goban_div = $("<div className='Goban'>");
+        this.goban_div = document.createElement("div");
+        this.goban_div.className = "Goban";
         this.reinitialize();
 
         this.set_analyze_tool = {
@@ -154,7 +162,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             this.goban = null;
             this.navigation.goban = null;
         }
-        this.goban_div.empty();
+        while (this.goban_div.firstChild) {
+            this.goban_div.removeChild(this.goban_div.firstChild);
+        }
         this.editor.clearPuzzles();
     }
 
@@ -198,7 +208,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         );
     }
 
-    replacementSettingFunction(): object {
+    replacementSettingFunction(): PuzzlePlacementSetting {
         if (this.state.edit_step === "setup") {
             return {
                 "mode": "setup",
@@ -215,8 +225,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }
 
     reset(editing?: boolean) {
-        let opts = this.editor.reset(this.goban_div, editing, this.replacementSettingFunction.bind(this));
+        let opts:GobanCanvasConfig = this.editor.reset(this.goban_div, editing, this.replacementSettingFunction.bind(this));
 
+        opts.move_tree_container = this.ref_move_tree_container;
         this.goban_opts = opts;
 
         this.goban = new Goban(opts);
@@ -527,6 +538,13 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             this.setState({hintsOn: true});
         }
     }
+    setMoveTreeContainer = (resizable:Resizable):void => {
+        this.ref_move_tree_container = resizable ? resizable.div : null;
+        if (this.goban) {
+            (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
+        }
+    }
+
 
     render() {
         if (this.state.editing) {
@@ -854,9 +872,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                             </button>
                         </div>
 
-                        <Resizable id="move-tree-container" className="vertically-resizable" >
-                            <canvas id="move-tree-canvas"></canvas>
-                        </Resizable>
+                        <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
 
                         <textarea id="game-move-node-text" placeholder={_("Move notes")}
                             rows={5}

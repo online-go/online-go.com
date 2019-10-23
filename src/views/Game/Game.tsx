@@ -437,18 +437,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
         this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
-        let last_clock_played = null;
-        this.goban.on('audio-clock', (clock) => {
+        this.goban.on('audio-clock', (audio_clock_event) => {
             let user = data.get('user');
             if (user.anonymous) {
+                return;
+            }
+
+            if (audio_clock_event.countdown_seconds > 10) {
                 return;
             }
 
             let audio_enabled = false;
 
             if (preferences.get("sound-voice-countdown")) {
-                if (clock.time_control_system === "byoyomi" || clock.time_control_system === "canadian") {
-                    if (preferences.get("sound-voice-countdown-main") || clock.in_overtime) {
+                if (audio_clock_event.time_control_system === "byoyomi" || audio_clock_event.time_control_system === "canadian") {
+                    if (preferences.get("sound-voice-countdown-main") || audio_clock_event.in_overtime) {
                         audio_enabled = true;
                     }
                 } else {
@@ -464,16 +467,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 return;
             }
 
-            if (!(user.id === clock.clock_player && user.id === clock.player_to_move)) {
+            if (!(user.id.toString() === audio_clock_event.player_id )) {
                 return;
             }
 
-            if (last_clock_played === clock.seconds_left) {
-                // debounce
-            } else {
-                last_clock_played = clock.seconds_left;
-                sfx.play(clock.seconds_left);
-            }
+            sfx.play(audio_clock_event.countdown_seconds.toString());
         });
 
         this.goban.on("move-made", this.autoadvance);
@@ -2702,8 +2700,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         return null;
     }
-    setMoveTreeContainer = (ref) => {
-        this.ref_move_tree_container = ref;
+    setMoveTreeContainer = (resizable:Resizable):void => {
+        this.ref_move_tree_container = resizable ? resizable.div : null;
         if (this.goban) {
             (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
         }
