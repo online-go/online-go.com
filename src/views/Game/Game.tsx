@@ -28,7 +28,7 @@ import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GobanCanvas, GoEngine, GoMath, MoveTree} from "goban";
+import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -53,6 +53,7 @@ import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
 import {toast} from "toast";
 import {Clock} from "Clock";
+import {JGOFClock} from "goban";
 
 declare var swal;
 
@@ -69,9 +70,6 @@ interface GameProperties {
         }
     };
 }
-
-/* TODO: Implement giving voice and control over to players in Reviews */
-/* TODO: Implement mobile interface for reviews */
 
 export type ViewMode = "portrait"|"wide"|"square"|"zen";
 type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
@@ -354,10 +352,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         $(document).on("keypress", this.setLabelHandler);
 
         let label_position = preferences.get("label-positioning");
-        let opts: any = {
+        let opts: GobanCanvasConfig = {
             "board_div": this.goban_div,
             "move_tree_container": this.ref_move_tree_container,
-            "node_textarea": "#game-move-node-text",
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
@@ -474,6 +471,84 @@ export class Game extends React.PureComponent<GameProperties, any> {
             sfx.play(audio_clock_event.countdown_seconds.toString());
         });
 
+        this.goban.on("clock", (clock:JGOFClock) => {
+            /* This is the code that draws the count down number on the "hover
+             * stone" for the current player if they are running low on time */
+            let user = data.get('user');
+
+            if (!clock) {
+                return;
+            }
+
+            if (user.anonymous) {
+                return;
+            }
+
+            if (user.id.toString() !== clock.current_player_id) {
+                this.goban.setByoYomiLabel(null);
+                return;
+            }
+
+            let ms_left = 0;
+            let player_clock = clock.current_player === 'black' ? clock.black_clock : clock.white_clock;
+            if (player_clock.main_time > 0) {
+                ms_left = player_clock.main_time;
+                if (this.goban.engine.time_control.system === "byoyomi"
+                    || this.goban.engine.time_control.system === "canadian") {
+                    ms_left = 0;
+                }
+            }  else {
+                ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
+            }
+
+
+            let seconds = Math.ceil((ms_left - 1) / 1000);
+
+            if (seconds > 0 && seconds < 10) {
+                this.goban.setByoYomiLabel(seconds.toString());
+            } else {
+                this.goban.setByoYomiLabel(null);
+            }
+
+
+        /*
+        if (minutes === 0 && seconds <= 10) {
+            if (seconds % 2 === 0) {
+                cls += " low_time";
+            }
+
+            if (this.on_game_screen && player_id) {
+                if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
+                    this.byoyomi_label = "" + seconds;
+                    let last_byoyomi_label = this.byoyomi_label;
+                    if (this.last_hover_square) {
+                        this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
+                    }
+                    setTimeout(() => {
+                        if (this.byoyomi_label === last_byoyomi_label) {
+                            this.byoyomi_label = null;
+                            if (this.last_hover_square) {
+                                this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
+                            }
+                        }
+                    }, 1100);
+                }
+
+                if (this.mode === "play") {
+                    this.emit('audio-clock', {
+                        seconds_left: seconds,
+                        player_to_move: this.engine.playerToMove(),
+                        clock_player: player_id,
+                        time_control_system: timing_type,
+                        in_overtime: in_overtime,
+                    });
+                }
+            }
+        }
+        */
+
+
+        });
         this.goban.on("move-made", this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());

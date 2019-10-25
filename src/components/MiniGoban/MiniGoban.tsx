@@ -144,12 +144,12 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                 elt={this.goban_div} />
                 <div className={`title-black ${this.state.black_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.black_name}</span>
-                    <Clock goban={this.goban} color='black' className='mini-goban' />
+                    <Clock compact goban={this.goban} color='black' className='mini-goban' />
                     <span className="score">{this.state.black_score}</span>
                 </div>
                 <div className={`title-white ${this.state.white_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.white_name}</span>
-                    <Clock goban={this.goban} color='white' className='mini-goban' />
+                    <Clock compact goban={this.goban} color='white' className='mini-goban' />
                     <span className="score">{this.state.white_score}</span>
                 </div>
             </div>

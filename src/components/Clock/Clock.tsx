@@ -25,7 +25,7 @@ type clock_color = 'black' | 'white' | 'stone-removal';
 let ct = 0;
 
 
-export function Clock({goban, color, className}:{goban:Goban, color:clock_color, className?:string}):JSX.Element {
+export function Clock({goban, color, className, compact}:{goban:Goban, color:clock_color, className?:string, compact?:boolean}):JSX.Element {
     const [clock, setClock]:[JGOFClock, (x:JGOFClock) => void] = useState(null);
 
     useEffect(() => {
@@ -48,7 +48,7 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
 
     if (color === 'stone-removal') {
         console.log('stone removal', clock);
-        return <span>TODO</span>;
+        return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
         let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
@@ -71,24 +71,29 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
                 }
 
                 {time_control.system === 'byoyomi' &&
-                    <React.Fragment>
-                        {player_clock.main_time > 0 && <span> + </span>}
-                        <span className={'period-time boxed' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
-                            {prettyTime(player_clock.period_time_left)}
-                        </span>
+                    <div>
+                        {(!compact || player_clock.main_time <= 0) &&
+                            <React.Fragment>
+                                {player_clock.main_time > 0 && <span> + </span>}
+                                <span className={'period-time boxed' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
+                                    {prettyTime(player_clock.period_time_left)}
+                                </span>
+                            </React.Fragment>
+                        }
                         <span className={'byo-yomi-periods ' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}
                             > ({
                                 player_clock.periods_left === 1
                                     ?  pgettext("Final byo-yomi period (Sudden Death)", "SD")
                                     : `${player_clock.periods_left}`
                             })</span>
-                    </React.Fragment>
+                    </div>
                 }
 
                 {time_control.system === 'canadian' &&
+                 (!compact || player_clock.main_time <= 0) &&
                     <React.Fragment>
-                        {player_clock.main_time > 0 && <span> + </span>}
                         <span>
+                            {player_clock.main_time > 0 && <span> + </span>}
                             <span className='period-time boxed'>{prettyTime(player_clock.block_time_left)}</span>
                             /
                             <span className='periods boxed'>{player_clock.moves_left}</span>
@@ -96,15 +101,14 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
                     </React.Fragment>
                 }
 
-                {clock.pause_state && <ClockPauseReason clock={clock} player_id={player_id} />}
+                {!compact && clock.pause_state && <ClockPauseReason clock={clock} player_id={player_id} />}
             </span>
         );
     }
 
-
     throw new Error('Clock failed to render');
 
-    function update(clock) {
+    function update(clock:JGOFClock) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }
@@ -114,7 +118,6 @@ export function Clock({goban, color, className}:{goban:Goban, color:clock_color,
 function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}):JSX.Element {
     let pause_text = _("Paused");
     let pause_state = clock.pause_state;
-    //console.log(pause_state);
 
     if (pause_state.weekend) {
         pause_text = _("Weekend");
@@ -132,6 +135,8 @@ function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}
 }
 
 function prettyTime(ms:number):string {
+    //return shortDurationString(Math.round(ms / 1000));
+
     let seconds = Math.ceil((ms - 1) / 1000);
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
@@ -151,60 +156,7 @@ function prettyTime(ms:number):string {
             : interpolate(pgettext("Game clock: hours", "%sh"), [hours + 24]);
     } else {
         ret = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-        /*
-        if (minutes === 0 && seconds <= 10) {
-            if (seconds % 2 === 0) {
-                cls += " low_time";
-            }
-
-            if (this.on_game_screen && player_id) {
-                if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
-                    this.byoyomi_label = "" + seconds;
-                    let last_byoyomi_label = this.byoyomi_label;
-                    if (this.last_hover_square) {
-                        this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                    }
-                    setTimeout(() => {
-                        if (this.byoyomi_label === last_byoyomi_label) {
-                            this.byoyomi_label = null;
-                            if (this.last_hover_square) {
-                                this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                            }
-                        }
-                    }, 1100);
-                }
-
-                if (this.mode === "play") {
-                    this.emit('audio-clock', {
-                        seconds_left: seconds,
-                        player_to_move: this.engine.playerToMove(),
-                        clock_player: player_id,
-                        time_control_system: timing_type,
-                        in_overtime: in_overtime,
-                    });
-                }
-            }
-        }
-        */
     }
 
     return ret;
 }
-
-
-/*
-
-  <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
-      <div className="main-time boxed"></div>
-      {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-          <span className="byo-yomi-periods" />
-      }
-      {(this.goban.engine.time_control.time_control === "canadian" || null) &&
-          <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
-      }
-      {(this.state[`${color}_pause_text`] || null) &&
-          <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
-      }
-  </div>
-
-*/

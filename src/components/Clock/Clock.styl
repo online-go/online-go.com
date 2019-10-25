@@ -17,9 +17,7 @@
 
 
 .Clock {
-
     & {
-
         flex: 1;
         display: flex;
         flex-direction: row;
@@ -32,7 +30,7 @@
             display: inline-block;
         }
 
-        &.paused .main-time {
+        &.paused {
             animation-name: pulsate-paused-clock;
             animation-duration: 1s;
             animation-timing-function: step-end;
@@ -88,16 +86,6 @@
         .boxed {
             text-align: right;
         }
-
-
-    }
-
-    &.mini-goban {
-        float: right;
-
-        &.paused {
-            color: #888;
-        }
     }
 
     &.in-overtime {
@@ -107,6 +95,23 @@
         }
         .boxed {
             border-color: #a55 !important;
+        }
+
+        .periods, .period-time, .byo-yomi-periods {
+            font-size: font-size-mid;
+        }
+    }
+
+    &.mini-goban {
+        float: right;
+
+        &.paused {
+            color: #888;
+        }
+        &.in-overtime {
+            .periods, .period-time, .byo-yomi-periods {
+                font-size: font-size-small;
+            }
         }
     }
 }
