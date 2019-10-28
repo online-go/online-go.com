@@ -84,6 +84,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     errorLogger(user);
                 });
             }
+            else if (player_id && player_id <= 0) {
+                // do nothing
+            }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (username === user.username) {
@@ -144,6 +147,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
                     errorLogger(user);
                 });
+            }
+            else if (player_id && player_id <= 0) {
+                // do nothing
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
