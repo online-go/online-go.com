@@ -1191,7 +1191,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.orig_move.marks = this.orig_marks;
             goban.pen_marks = this.stashed_pen_marks;
             if (goban.pen_marks.length === 0) {
-                goban.detachPenCanvas();
+                goban.disablePen();
             }
             goban.setHeatmap(this.stashed_heatmap);
             this.stashed_heatmap = null;

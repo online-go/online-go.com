@@ -26,7 +26,7 @@ import * as data from "data";
 import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
-import { Goban, GoMath } from "goban";
+import { Goban, GoMath, GobanConfig } from "goban";
 import { Markdown } from "Markdown";
 
 import { Player } from "Player";
@@ -122,7 +122,7 @@ interface JosekiProps {
 export class Joseki extends React.Component<JosekiProps, any> {
 
     goban: Goban;
-    goban_div: any;
+    goban_div: HTMLDivElement;
     goban_opts: any = {};
     goban_container:HTMLDivElement;
     goban_persistent_element:PersistentElement;
@@ -177,7 +177,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             counts_throb: false
         };
 
-        this.goban_div = $("<div className='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
     initializeGoban = (initial_position?) => {
@@ -186,7 +187,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.goban.destroy();
         }
 
-        let opts = {
+        let opts:GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -667,10 +668,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.renderCurrentJosekiPosition();
 
         if (this.last_placement !== 'pass') {
-            let new_options = [];
-            new_options['X'] = {
-                move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
-                color: ColorMap['MISTAKE']
+            let new_options = {
+                'X': {
+                    move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
+                    color: ColorMap['MISTAKE']
+                }
             };
             this.goban.setColoredMarks(new_options);
         }

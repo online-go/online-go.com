@@ -8,6 +8,25 @@ const pkg = require('./package.json');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
+let plugins = [];
+
+plugins.push(new webpack.BannerPlugin(
+`Copyright (C) 2012-2019  Online-Go.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+`));
+
 
 module.exports = (env, argv) => {
     const production = argv.mode === 'production';
@@ -16,24 +35,6 @@ module.exports = (env, argv) => {
         console.log("Production build");
     }
 
-    let plugins = [];
-
-    plugins.push(new webpack.BannerPlugin(
-    `Copyright (C) 2012-2019  Online-Go.com
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    `));
 
     /*
     plugins.push(
@@ -130,6 +131,7 @@ module.exports = (env, argv) => {
         // This is important because it allows us to avoid bundling all of our
         // dependencies, which allows browsers to cache those libraries between builds.
         externals: {
+            "goban": "goban",
             "swal": "swal", // can't seem to import anyways
         },
 

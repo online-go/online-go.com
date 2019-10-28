@@ -25,6 +25,7 @@ import {termination_socket} from "sockets";
 import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {rankString, getUserRating} from "rank_utils";
+import { Clock } from 'Clock';
 
 interface MiniGobanProps {
     id: number;
@@ -39,9 +40,7 @@ interface MiniGobanProps {
 }
 
 export class MiniGoban extends React.Component<MiniGobanProps, any> {
-    goban_div;
-    white_clock;
-    black_clock;
+    public goban_div:HTMLDivElement;
     goban;
 
     constructor(props) {
@@ -51,9 +50,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_score: "",
         };
 
-        this.goban_div = $("<div class='Goban'>");
-        this.white_clock = $("<span>");
-        this.black_clock = $("<span>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
     componentDidMount() {
@@ -73,13 +71,10 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
 
         this.goban = new Goban({
             "board_div": this.goban_div,
-            "black_clock": this.black_clock,
-            "white_clock": this.white_clock,
             "draw_top_labels": false,
             "draw_bottom_labels": false,
             "draw_left_labels": false,
             "draw_right_labels": false,
-            "use_short_format_clock": false,
             "game_id": this.props.id,
             "display_width": this.props.displayWidth || (Math.min($("body").width() - 50, $("#em10").width() * 2)),
             "square_size": "auto",
@@ -149,12 +144,12 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                 elt={this.goban_div} />
                 <div className={`title-black ${this.state.black_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.black_name}</span>
-                    <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
+                    <Clock compact goban={this.goban} color='black' className='mini-goban' />
                     <span className="score">{this.state.black_score}</span>
                 </div>
                 <div className={`title-white ${this.state.white_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.white_name}</span>
-                    <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
+                    <Clock compact goban={this.goban} color='white' className='mini-goban' />
                     <span className="score">{this.state.white_score}</span>
                 </div>
             </div>

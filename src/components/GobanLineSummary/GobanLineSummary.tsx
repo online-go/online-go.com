@@ -23,6 +23,7 @@ import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {rankString} from "rank_utils";
 import {Player} from "Player";
+import {Clock} from "Clock";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -35,8 +36,6 @@ interface GobanLineSummaryProps {
 }
 
 export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
-    white_clock;
-    black_clock;
     goban;
 
     constructor(props) {
@@ -45,9 +44,6 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             white_score: "",
             black_score: "",
         };
-
-        this.white_clock = $("<span>");
-        this.black_clock = $("<span>");
     }
 
     componentDidMount() {
@@ -66,13 +62,10 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
     initialize() {
         this.goban = new Goban({
             "board_div": null,
-            "black_clock": this.black_clock,
-            "white_clock": this.white_clock,
             "draw_top_labels": false,
             "draw_bottom_labels": false,
             "draw_left_labels": false,
             "draw_right_labels": false,
-            "use_short_format_clock": false,
             "game_id": this.props.id,
             "square_size": "auto",
         });
@@ -127,21 +120,21 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
     render() {
         let player;
         let opponent;
-        let player_clock;
-        let opponent_clock;
+        let player_color:string;
+        let opponent_color:string;
 
         if (this.props.player && this.props.player.id === this.props.black.id) {
             player = this.props.black;
             opponent = this.props.white;
-            player_clock = this.black_clock;
-            opponent_clock = this.white_clock;
+            player_color = 'black';
+            opponent_color = 'white';
         }
 
         if (this.props.player && this.props.player.id === this.props.white.id) {
             player = this.props.white;
             opponent = this.props.black;
-            player_clock = this.white_clock;
-            opponent_clock = this.black_clock;
+            player_color = 'white';
+            opponent_color = 'black';
         }
 
         return (
@@ -156,25 +149,25 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
                 {player && <div className="player"><Player user={opponent} fakelink rank /></div> }
                 {player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={player_clock} />
+                        <Clock goban={this.goban} color={player_color as 'black' | 'white'} />
                     </div>
                 }
                 {player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={opponent_clock} />
+                        <Clock goban={this.goban} color={opponent_color as 'black' | 'white'} />
                     </div>
                 }
 
                 {!player && <div className="player"><Player user={this.props.black} fakelink rank/></div> }
                 {!player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.black_clock} />
+                        <Clock goban={this.goban} color='black' />
                     </div>
                 }
                 {!player && <div className="player"><Player user={this.props.white} fakelink /></div> }
                 {!player &&
                     <div>
-                        <PersistentElement className={`clock ${this.state.paused}`} elt={this.white_clock} />
+                        <Clock goban={this.goban} color='white' />
                     </div>
                 }
                 <div className="size">{this.props.width + "x" + this.props.height}</div>

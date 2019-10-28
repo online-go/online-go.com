@@ -203,89 +203,6 @@
         }
     }
 
-
-    div.in-game-clock {
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        align-items: center;
-
-        .main-time {
-            flex-grow: 1;
-            display: inline-block;
-            font-size: 14pt;
-        }
-
-        &.paused .main-time {
-            animation-name: pulsate-paused-clock;
-            animation-duration: 1s;
-            animation-timing-function: step-end;
-            animation-iteration-count: infinite
-        }
-
-        .overtime-container {
-            flex-grow: 1;
-            display: inline-block;
-        }
-        .periods-container {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            align-content: stretch;
-
-            div {
-                //margin: auto;
-                margin-left: 0.5em;
-                margin-right: 0.5em;
-            }
-        }
-
-        .periods {
-            display: inline-block;
-            font-size: 10pt;
-        }
-        .period-time {
-            display: inline-block;
-            font-size: 10pt;
-        }
-        .byo-yomi-periods {
-            display: inline-block;
-            font-size: 10pt;
-            margin-left: 0.5rem;
-
-            &.sudden-death {
-                color: red;
-            }
-        }
-        .overtime {
-            font-size: 6pt;
-            text-align: center;
-        }
-
-        .pause-text {
-            width: 100%;
-            text-align: right;
-            font-size: font-size-small;
-            display: block;
-        }
-
-        .boxed {
-            text-align: right;
-        }
-    }
-
-    .in-overtime {
-        .overtime {
-            font-weight: bold;
-            color: #a55 !important;
-        }
-        .boxed {
-            border-color: #a55 !important;
-        }
-    }
-
     #game-black-clock{
         themed color player-black-clock
     }
@@ -309,15 +226,10 @@
         font-size: 0.7em;
     }
 
-    #game-black-clock .start_clock, #game-white-clock .start_clock {
-        color: #147AFF !important;
-    }
-
     #game-black-clock .low_time, #game-white-clock .low_time {
         color: #f44 !important;
         font-weight: bold;
     }
-
 
     #black_score, #white_score, .clock-container {
         font-weight: bold;
@@ -368,8 +280,12 @@
         padding-bottom: 1em;
     }
 
+    .Clock {
+        .main-time {
+            font-size: 14pt;
 
-
+        }
+    }
 }
 
 
@@ -396,7 +312,8 @@
     .score-container {
         margin-top: 0;
     }
-    div.in-game-clock {
+
+    .Clock {
         .main-time {
             font-size: font-size-small;
         }
