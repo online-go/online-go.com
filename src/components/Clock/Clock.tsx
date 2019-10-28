@@ -47,7 +47,6 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
     const time_control:JGOFTimeControl = goban.engine.time_control;
 
     if (color === 'stone-removal') {
-        console.log('stone removal', clock);
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
@@ -62,6 +61,15 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
         }
         if (className) {
             clock_className += ' ' + className;
+        }
+
+        if (clock.start_mode && clock.current_player === color) {
+            clock_className += ' start-mode';
+            return (
+                <span className={clock_className}>
+                    {prettyTime(clock.start_time_left)}
+                </span>
+            );
         }
 
         return (
