@@ -948,16 +948,16 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
             replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{(m[2]).replace(/(\-)/gi, " ")}</a>)},
         // Match online-go links
         // user profiles
-        {split: /\b((?:player|user) ?(?:#)?[0-9]+)\b/gi, pattern: /\b(player|user) ?(?:#)?([0-9]+)\b/gi, replacement: (m, idx) => (<Player user={{id: Number(m[2])}} rank={false} noextracontrols />)},
+        {split: /\b((?:player|user) ?(?:#)?[0-9]+)\b/gi, pattern: /\b(player|user) ?(?:#)?([0-9]+)\b/gi, replacement: (m, idx) => (<Player key={idx} user={{id: Number(m[2])}} rank={false} noextracontrols />)},
         {split: /\b((?:player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/[0-9]+(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
             pattern: /\b((player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/([0-9]+)(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
-            replacement: (m, idx) => (<Player user={{id: Number(m[3])}} rank={false} noextracontrols />)},
+            replacement: (m, idx) => (<Player key={idx} user={{id: Number(m[3])}} rank={false} noextracontrols />)},
         {split: /\b((?:player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/(?:[^\/<> ]+)(?:\/|\b))/gi,
             pattern: /\b((player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/([^\/<> ]+)(?:\/|\b))/gi,
-            replacement: (m, idx) => (<Player user={{"id": -1, username: m[3]}} rank={false} noextracontrols />)},
+            replacement: (m, idx) => (<Player key={idx} user={{"id": -1, username: m[3]}} rank={false} noextracontrols />)},
         {split: /(@"[^"\/]+(?:\/[0-9]+)?")/gi,
             pattern: /(@"([^"\/]+)(?:\/([0-9]+))?")/gi,
-            replacement: (m, idx) => (<Player user={(m[3] ? {id: Number(m[3])} : {username: m[2]})} rank={false} noextracontrols />)},
+            replacement: (m, idx) => (<Player key={idx} user={(m[3] ? {id: Number(m[3])} : {username: m[2]})} rank={false} noextracontrols />)},
         // games
         {split: /\b((?:game)[- ]?(?:#)?[0-9]{3,})/gi, pattern: /(\bgame)[- ]?(?:#)?([0-9]{3,})/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
@@ -1023,8 +1023,8 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // general urls
         // replaces any url not matched above
         {split: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, pattern: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
-        {split: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019)(?:\/|\b))/gi,
-            pattern: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019)(?:\/|\b))/gi,
+        {split: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019|api\/[^<> ]+|termination-api\/[^<> ]+)(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019|api\/[^<> ]+|termination-api\/[^<> ]+)(?:\/|\b))/gi,
             replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)}
 ];
 

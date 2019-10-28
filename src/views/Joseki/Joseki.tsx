@@ -61,17 +61,17 @@ const position_url = (node_id, variation_filter) => {
 const joseki_sources_url = server_url + "josekisources";
 const tags_url = server_url + "tags";
 
-const tag_count_url = (node_id, tag_id) => (
+const tag_count_url = (node_id: number, tag_id:number): string => (
     server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id
 );
 
-const tagscount_url = (node_id) => (
+const tagscount_url = (node_id: number): string => (
     server_url + "position/tagcounts?id=" + node_id
 );
 
 // Joseki specific markdown
 
-const applyJosekiMarkdown = (markdown: string) => {
+const applyJosekiMarkdown = (markdown: string): string => {
     // Highligh marks in the text
     let result = markdown.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
 
@@ -167,12 +167,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
             joseki_best_attempt: null,
             joseki_tag_id: null,       // the id of the "This is Joseki" tag, for use in setting default
 
-            joseki_source: null as {},
-            tags: [],   // The tags that are on the current position
+            joseki_source: null as {}, // the source of the current position
+            tags: [],                  // the tags that are on the current position
+
             variation_filter: {contributor: null, tags: null, source: null},
 
             count_details_open: false,
-            tag_counts: [],
+            tag_counts: [],  // A count of the number of continuations from this position that have each tag
             counts_throb: false
         };
 
@@ -627,7 +628,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     current_move_category: "new",
                     child_count: 0,
                     tag_counts: [],
-                    variation_label: next_variation_label
+                    variation_label: next_variation_label,
+                    joseki_source: null,
+                    tags: []
                 });
                 this.goban.enableStonePlacement();
             }
@@ -1118,7 +1121,7 @@ interface ExploreProps {
     can_comment: boolean;
     joseki_source: {url: string, description: string};
     tags: Array<any>;
-    set_variation_filter: any;
+    set_variation_filter(filter: any): void;
     current_filter: {contributor: number, tags: number[], source: number};
     child_count: number;
     show_comments: boolean;
@@ -1365,7 +1368,7 @@ interface PlayProps {
     joseki_best_attempt: number;
     joseki_successes: number;
     joseki_tag_id: number;
-    set_variation_filter: any;
+    set_variation_filter(filter: any): void;
     current_filter: {contributor: number, tags: number[], source: number};
 }
 
