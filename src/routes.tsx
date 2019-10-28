@@ -190,8 +190,10 @@ export const routes = (
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
 
+            {/* These are short hand slugs we've created for the bigger AGA tournaments */}
             <Route path="/2019usgc" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>} />
             <Route path="/usgc2019" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>}  />
+            <Route path="/cotsen2019" render={() => <Redirect to="/tournament-record/45/"/>} />
 
             <Route path="/" component={Default} exact />
             <Route path="/*" component={PageNotFound} />
