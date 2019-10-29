@@ -97,7 +97,9 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
     }
 
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            this.goban.destroy();
+        }
     }
 
     sync_state() {

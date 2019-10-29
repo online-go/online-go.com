@@ -153,7 +153,9 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
     }
 
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            this.goban.destroy();
+        }
     }
 
 
