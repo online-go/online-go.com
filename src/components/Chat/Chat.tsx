@@ -825,7 +825,20 @@ export class Chat extends React.Component<ChatProperties, any> {
             return;
         }
 
+        event.stopPropagation();
+        event.preventDefault();
+
         let channel = event.currentTarget.getAttribute('data-channel');
+        if (shouldOpenNewTab(event)) {
+            let uri = "";
+            if (channel.startsWith('group')) {
+                uri += '/group/' + channel.slice(6);
+            }
+            if (channel.startsWith("tournament")) {
+                uri += "/tournament/" + channel.slice(11);
+            }
+            window.open(uri, "_blank");
+        }
 
         popover({
             elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),

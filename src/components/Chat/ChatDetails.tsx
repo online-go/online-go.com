@@ -18,6 +18,7 @@
 import * as React from "react";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
+import {shouldOpenNewTab} from "misc";
 import {close_all_popovers} from "popover";
 import {close_friend_list} from "FriendList/FriendIndicator";
 
@@ -48,13 +49,25 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     }
-    goToGroup = (_ev) => {
-        browserHistory.push('/group/' + this.state.channelId.slice(6));
+    goToGroup = (ev) => {
         this.close_all_modals_and_popovers();
+
+        let url: string = '/group/' + this.state.channelId.slice(6);
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
-    goToTournament = (_ev) => {
-        browserHistory.push('/tournament/' + this.state.channelId.slice(11));
+    goToTournament = (ev) => {
         this.close_all_modals_and_popovers();
+
+        let url: string = '/tournament/' + this.state.channelId.slice(11);
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     }
 
     render() {
@@ -68,6 +81,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                     {this.state.channelId.startsWith("group") &&
                         <button
                             className="xs noshadow"
+                            onAuxClick={this.goToGroup}
                             onClick={this.goToGroup}>
                                 <i className="fa fa-users"/>{" "}{group_text}
                         </button>
@@ -75,6 +89,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                     {this.state.channelId.startsWith("tournament") &&
                         <button
                             className="xs noshadow"
+                            onAuxClick={this.goToTournament}
                             onClick={this.goToTournament}>
                                 <i className="fa fa-trophy"/>{" "}{tournament_text}
                         </button>
