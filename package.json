@@ -52,7 +52,7 @@
     "yarn": "^1.19.0"
   },
   "dependencies": {
-    "@sentry/browser": "^5.6.3",
+    "@sentry/browser": "^5.7.1",
     "@types/d3": "^5.0.0",
     "@types/fixed-data-table": "^0.6.30",
     "@types/jquery": "^2.0.34",
