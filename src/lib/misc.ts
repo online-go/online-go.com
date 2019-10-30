@@ -407,6 +407,10 @@ export function ignore() {
     /* do nothing */
 }
 export function unicodeFilter(str:string):string {
+    if (!str) {
+        return str;
+    }
+
     if (preferences.get('unicode-filter')) {
         return (str
             .replace(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF])/g, "") /* 4 byte unicode */
