@@ -53,7 +53,7 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
         let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
 
         let clock_className = 'Clock ' + color;
-        if (clock.pause_state) {
+        if (clock.pause_state && time_control.speed !== 'correspondence') {
             clock_className += ' paused';
         }
         if (player_clock.main_time <= 0) {
