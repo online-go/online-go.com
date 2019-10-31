@@ -601,15 +601,15 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                 if (item.white_won) {
                   if (item.white.id === this.user_id) {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
                   } else {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
                   }
                 } else {
                   if (item.white.id === this.user_id) {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
                   } else {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
                   }
                 }
 
