@@ -537,6 +537,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 };
 
                 item.width = r.width;
+                item.speed = r.time_control_parameters.speed;
                 item.height = r.height;
                 item.date = r.ended ? new Date(r.ended) : null;
                 item.black = r.players.black;
@@ -547,23 +548,26 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
-                if (item.white_won) {
-                  if (item.white.id === this.user_id) {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost)) {
+                    item.result_class = "";
+                } else if (item.white_won) {
+                  if (item.white.id === this.user_id && r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                  } else if (r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
                   } else {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                    item.result_class = item.white.id === this.user_id ? "library-won-result-unranked" : "library-lost-result-unranked";
                   }
                 } else {
-                  if (item.white.id === this.user_id) {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                  if (item.white.id === this.user_id && r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                  } else if (r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
                   } else {
-                    item.result_class = item.white.ratings.overall.rating > item.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                    item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
                   }
                 }
 
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost)) {
-                    item.result_class = "";
-                }
                 item.name = r.name;
 
                 if (item.name && item.name.trim() === "") {
@@ -843,6 +847,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     columns={[
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
+                                        // {header: _(""),       className: () => "speed",                           render: (X) => `${X.speed}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
                                         {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
                                         {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
