@@ -537,7 +537,6 @@ export class User extends React.PureComponent<UserProperties, any> {
                 };
 
                 item.width = r.width;
-                item.speed = r.time_control_parameters.speed;
                 item.height = r.height;
                 item.date = r.ended ? new Date(r.ended) : null;
                 item.black = r.players.black;
@@ -566,6 +565,17 @@ export class User extends React.PureComponent<UserProperties, any> {
                   } else {
                     item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
                   }
+                }
+
+                if (r.time_per_move >= 3600) {
+                  item.speed = "Correspondence";
+                  item.speed_icon_class = "speed-icon ogs-turtle";
+                } else if (r.time_per_move < 10) {
+                  item.speed = "Blitz";
+                  item.speed_icon_class = "speed-icon fa fa-bolt";
+                } else {
+                  item.speed = "Live";
+                  item.speed_icon_class = "speed-icon fa fa-clock-o";
                 }
 
                 item.name = r.name;
@@ -845,9 +855,9 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
                                     columns={[
+                                        {header: _(""),       className: () => "speed",                           render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
-                                        // {header: _(""),       className: () => "speed",                           render: (X) => `${X.speed}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
                                         {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
                                         {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
