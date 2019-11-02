@@ -498,6 +498,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         .catch(err => console.error(err));
     }
 
+    moveNumOffset = this.handicapOffset() > 0 ? 1 : 0;
+
     handicapOffset():number {
         if (this.props.game
             && this.props.game.goban
@@ -1133,8 +1135,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         </div>
 
                         {this.state.top3.map((move, idx) =>
-                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset())}>
-                                {move + 1}
+                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset() + this.moveNumOffset)}>
+                                {move + 1 + this.handicapOffset() + this.moveNumOffset}
                             </span>
                         )}
                     </div>
