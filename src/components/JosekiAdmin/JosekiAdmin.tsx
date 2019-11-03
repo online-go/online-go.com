@@ -22,9 +22,12 @@ import ReactTable from 'react-table';
 
 import selectTableHOC from "react-table/lib/hoc/selectTable";
 
+import {openModal} from 'Modal';
 import { Player } from "Player";
 
 import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
+import { JosekiStatsModal } from "JosekiStatsModal";
+
 
 interface JosekiAdminProps {
     godojo_headers: any;
@@ -66,7 +69,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             schema_version: "",
             filter_user_id: "",
             filter_position_id: "",
-            filter_audit_type: ""
+            filter_audit_type: "",
+            page_visits: null,
+            daily_visits: []
         };
     }
 
@@ -77,7 +82,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         })
         .then(res => res.json())
         .then(body => {
-            this.setState({schema_version: body.schema_version});
+            this.setState({
+                schema_version: body.schema_version,
+                page_visits: body.page_visits,
+                daily_visits: body.daily_visits
+            });
         }).catch((r) => {
             console.log("Appinfo GET failed:", r);
         });
@@ -227,6 +236,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         );
     }
 
+    showVisitStats = () => {
+        openModal(<JosekiStatsModal fastDismiss daily_page_visits={this.state.daily_visits}/>);
+    }
+
     render = () => {
         // console.log("Joseki Admin render");
 
@@ -340,6 +353,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                         }
                     ]}
                 />
+                <div className="explorer-stats">
+                    <span>Page visits: {this.state.page_visits || "..."}</span>
+                    <button className="btn s" onClick={this.showVisitStats}>
+                        details
+                    </button>
+                </div>
+
                 {this.props.user_can_administer &&
                 <div className="bottom-admin-stuff">
                     <div className="user-admin">
