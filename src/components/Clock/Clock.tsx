@@ -54,7 +54,11 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
 
         let clock_className = 'Clock ' + color;
         if (clock.pause_state) {
-            clock_className += ' paused';
+            if (time_control.speed === 'correspondence') {
+                clock_className += ' paused-correspondence';
+            } else {
+                clock_className += ' paused';
+            }
         }
         if (player_clock.main_time <= 0) {
             clock_className += ' in-overtime';

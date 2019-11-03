@@ -86,7 +86,13 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
     }
 
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            /* This is guarded because we hit this being called before
+             * initialize ran a few times, so I guess componentWillUnmount can
+             * be called without componentDidMount having been executed, or
+             * something else fuggly is going on. */
+            this.goban.destroy();
+        }
     }
 
     sync_state() {
