@@ -567,6 +567,12 @@ export class User extends React.PureComponent<UserProperties, any> {
                   }
                 }
 
+                if ("time_control_parameters" in r) {
+                    let tcp = JSON.parse(r.time_control_parameters);
+                    if ("speed" in tcp) {
+                        item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
+                    }
+                }
                 if (!item.speed) { // fallback
                     if (r.time_per_move >= 3600 || r.time_per_move === 0) {
                         item.speed = "Correspondence";
