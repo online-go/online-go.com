@@ -24,7 +24,7 @@ import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
 import {bounded_rank, longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
-import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
+import {timeControlDescription} from "TimeControl";
 import {Markdown} from "Markdown";
 import {Player, setExtraActionCallback} from "Player";
 import * as moment from "moment";
@@ -41,7 +41,9 @@ import * as player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
+import {computeAverageMoveTime} from 'goban';
 import * as d3 from "d3";
+
 
 declare var swal;
 
