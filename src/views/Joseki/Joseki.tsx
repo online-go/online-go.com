@@ -174,7 +174,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             count_details_open: false,
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
-            counts_throb: false
+            counts_throb: false,
+
+            db_locked_down: true // pessimistic till it tells us otherwise
         };
 
         this.goban_div = document.createElement('div');
@@ -437,6 +439,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     // Decode a response from the server into state we need, and display accordingly
+    // "position" is a BoardPositionDTO
     processNewJosekiPosition = (position) => {
         this.setState({
             // I really wish I'd just put all of this into a single state object :S
@@ -449,7 +452,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
             tags: position.tags,
-            child_count: position.child_count
+            child_count: position.child_count,
+            db_locked_down: position.db_locked_down
         });
         this.last_server_position = position.play;
         this.last_placement = position.placement;
@@ -824,6 +828,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({count_details_open: false});
     }
 
+    updateDBLockStatus = (new_status) => {
+        this.setState({db_locked_down: new_status});
+    }
+
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
@@ -962,10 +970,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
             <button className={"btn s  " + (this.state.mode === PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            {this.state.user_can_edit &&
+            {this.state.user_can_edit && !this.state.db_locked_down &&
             <button
                 className={"btn s  " + (this.state.mode === PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
+            </button>
+            }
+            {this.state.user_can_edit && this.state.db_locked_down &&
+            <button
+                className={"btn s "} disabled>
+                Edit <i className="fa fa-lock"/>
             </button>
             }
             <button className={"btn s  " + (this.state.mode === PageMode.Admin ? "primary" : "")} onClick={this.setAdminMode}>
@@ -983,7 +997,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
+                    db_locked_down={this.state.db_locked_down}
                     loadPositionToBoard = {this.loadPosition}
+                    updateDBLockStatus = {this.updateDBLockStatus}
                 />
             );
         }

@@ -34,7 +34,9 @@ interface JosekiAdminProps {
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean;       // allows them to filter
+    db_locked_down: boolean;
     loadPositionToBoard(pos: string);
+    updateDBLockStatus(value: boolean);
 }
 
 const AuditTypes = [
@@ -240,6 +242,22 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         openModal(<JosekiStatsModal fastDismiss daily_page_visits={this.state.daily_visits}/>);
     }
 
+    toggleLockdown = () => {
+        const lockdown_url = this.props.server_url + 'lockdown?lockdown=' + !(this.props.db_locked_down);
+
+        fetch(lockdown_url, {
+            method: 'put',
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(() => {
+            this.props.updateDBLockStatus(!this.props.db_locked_down);
+        })
+        .catch((r) => {
+            console.log("Toggle lockdown failed:", r);
+        });
+    }
+
     render = () => {
         // console.log("Joseki Admin render");
 
@@ -369,8 +387,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             server_url={this.props.server_url}
                         />
                     </div>
-                    <div className="admin-info">
-                        {_("Schema version")}: {this.state.schema_version}
+                    <div className="misc-admin">
+                        <button className={"btn"} onClick={this.toggleLockdown}>
+                            {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
+                        </button>
+                        <span>{_("Schema version")}: {this.state.schema_version}</span>
                     </div>
                 </div>
                 }
