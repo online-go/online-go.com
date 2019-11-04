@@ -39,6 +39,7 @@ import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
 import { forceLoad } from "@sentry/browser";
+import { node } from "prop-types";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -137,6 +138,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
     computer_turn = false;  // when we are placing the computer's stone in Play mode
+    filter_change = false;  // set to true when a position is being reloaded due to filter change
 
     constructor(props) {
         super(props);
@@ -176,7 +178,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
             counts_throb: false,
 
-            db_locked_down: true // pessimistic till it tells us otherwise
+            db_locked_down: true, // pessimistic till it tells us otherwise
+            cached_positions: {}
         };
 
         this.goban_div = document.createElement('div');
@@ -347,7 +350,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
     // in the processing of the result of the fectch for that position.
 
-    fetchNextFilteredMovesFor = (node_id, variation_filter) => {
+    fetchNextFilteredMovesFor = (node_id, variation_filter, force_fetch = false) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
@@ -360,72 +363,88 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log("fetching position for node", node_id);
-        fetch(position_url(node_id, variation_filter), {
-            mode: 'cors',
-            headers: godojo_headers
-        })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response:", body);
+        // console.log(this.state.cached_positions);
 
-            this.setState({throb: false});
+        if (!force_fetch && this.state.cached_positions.hasOwnProperty(node_id)) {
+            //console.log("cached position:", node_id);
+            this.processNewMoves(node_id, this.state.cached_positions[node_id]);
+        }
+        else {
+            // console.log("fetching position for node", node_id);
+            fetch(position_url(node_id, variation_filter), {
+                mode: 'cors',
+                headers: godojo_headers
+            })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                // console.log("Server response:", body);
+                this.processNewMoves(node_id, body);
+                this.setState({cached_positions: {[node_id]: body, ...this.state.cached_positions}});
+            }).catch((r) => {
+                console.log("Node GET failed:", r);
+            });
+        }
+    }
 
-            if (this.load_sequence_to_board) {
-                // when they clicked a position link, we have to load the whole sequence we recieved onto the board
-                // to get to that position
-                this.loadSequenceToBoard(body.play);
-                this.load_sequence_to_board = false;
+    // Handle the per-move processing of getting to the new node.
+    // The data is in dto - it is a BoardPositionDTO from the server, but may have been
+    // cached locally.
+
+    processNewMoves = (node_id, dto) => {
+        this.setState({throb: false});
+
+        if (this.load_sequence_to_board) {
+            // when they clicked a position link, we have to load the whole sequence we recieved onto the board
+            // to get to that position
+            this.loadSequenceToBoard(dto.play);
+            this.load_sequence_to_board = false;
+        }
+
+        this.processNewJosekiPosition(dto);
+
+        if (this.state.count_details_open) {
+            this.showVariationCounts(node_id);
+        }
+
+        if (this.state.mode === PageMode.Play) {
+
+            const good_moves = dto.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
+
+            if ((good_moves.length === 0) && !this.played_mistake) {
+                this.setState({
+                    move_type_sequence: [
+                        ...this.state.move_type_sequence,
+                        {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
+                    ]});
+                this.updatePlayerJosekiRecord(node_id);
             }
 
-            this.processNewJosekiPosition(body);
-
-            if (this.state.count_details_open) {
-                this.showVariationCounts(node_id);
+            if (this.computer_turn) {
+                // obviously, we don't place another stone if we just placed one
+                this.computer_turn = false;
             }
+            else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
+                // the computer plays both good and bad moves
+                const next_play = dto.next_moves[Math.floor(Math.random() * dto.next_moves.length)];
+                // console.log("Will play: ", next_play);
 
-            if (this.state.mode === PageMode.Play) {
-
-                const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
-
-                if ((good_moves.length === 0) && !this.played_mistake) {
-                    this.setState({
-                        move_type_sequence: [
-                            ...this.state.move_type_sequence,
-                            {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
-                        ]});
-                    this.updatePlayerJosekiRecord(node_id);
+                this.computer_turn = true;
+                if (next_play.placement === "pass") {
+                    this.goban.pass();
+                    this.onBoardUpdate();
                 }
-
-                if (this.computer_turn) {
-                    // obviously, we don't place another stone if we just placed one
-                    this.computer_turn = false;
-                }
-                else if (body.next_moves.length > 0 && this.state.move_string !== "") {
-                    // the computer plays both good and bad moves
-                    const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
-                    // console.log("Will play: ", next_play);
-
-                    this.computer_turn = true;
-                    if (next_play.placement === "pass") {
-                        this.goban.pass();
-                        this.onBoardUpdate();
-                    }
-                    else {
-                        const location = this.goban.engine.decodeMoves(next_play.placement)[0];
-                        this.goban.engine.place(location.x, location.y);
-                        this.onBoardUpdate();
-                    }
+                else {
+                    const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                    this.goban.engine.place(location.x, location.y);
+                    this.onBoardUpdate();
                 }
             }
-            if (this.backstepping) {
-                // console.log("finishing backstep");
-                this.backstepping = false;
-            }
-            this.goban.enableStonePlacement();
-        }).catch((r) => {
-            console.log("Node GET failed:", r);
-        });
+        }
+        if (this.backstepping) {
+            // console.log("finishing backstep");
+            this.backstepping = false;
+        }
+        this.goban.enableStonePlacement();
     }
 
     loadSequenceToBoard = (sequence: string) => {
@@ -775,8 +794,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     updateVariationFilter = (filter) => {
         // console.log("update filter:", filter);
-        this.setState({variation_filter: filter});
-        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
+        this.setState({
+            variation_filter: filter,
+            cached_positions: {} // dump cache because the filter changed, and the cache holds filtered results
+        });
+        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter, true); // true: force the fetch, due to filter change.
     }
 
     updateMarks = (marks) => {
