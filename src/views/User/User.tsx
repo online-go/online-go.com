@@ -567,15 +567,25 @@ export class User extends React.PureComponent<UserProperties, any> {
                   }
                 }
 
-                if (r.time_per_move >= 3600) {
-                  item.speed = "Correspondence";
-                  item.speed_icon_class = "speed-icon ogs-turtle";
-                } else if (r.time_per_move < 10) {
-                  item.speed = "Blitz";
-                  item.speed_icon_class = "speed-icon fa fa-bolt";
+                if (!item.speed) { // fallback
+                    if (r.time_per_move >= 3600 || r.time_per_move === 0) {
+                        item.speed = "Correspondence";
+                    } else if (r.time_per_move < 10 && r.time_per_move > 0) {
+                        item.speed = "Blitz";
+                    } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
+                        item.speed = "Live";
+                    } else {
+                        console.log("time_per_move < 0");
+                    }
+                }
+                if (item.speed === "Correspondence") {
+                    item.speed_icon_class = "speed-icon ogs-turtle";
+                } else if (item.speed === "Blitz") {
+                    item.speed_icon_class = "speed-icon fa fa-bolt";
+                } else if (item.speed === "Live") {
+                    item.speed_icon_class = "speed-icon fa fa-clock-o";
                 } else {
-                  item.speed = "Live";
-                  item.speed_icon_class = "speed-icon fa fa-clock-o";
+                    console.log("unsupported speed setting: " + item.speed);
                 }
 
                 item.name = r.name;
