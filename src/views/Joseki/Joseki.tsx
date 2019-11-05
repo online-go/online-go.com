@@ -137,6 +137,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     played_mistake = false;
     computer_turn = false;  // when we are placing the computer's stone in Play mode
     filter_change = false;  // set to true when a position is being reloaded due to filter change
+    cached_positions = {};
 
     constructor(props) {
         super(props);
@@ -176,8 +177,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
             counts_throb: false,
 
-            db_locked_down: true, // pessimistic till it tells us otherwise
-            cached_positions: {}
+            db_locked_down: true // pessimistic till it tells us otherwise
         };
 
         this.goban_div = document.createElement('div');
@@ -348,7 +348,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
     // in the processing of the result of the fectch for that position.
 
-    fetchNextFilteredMovesFor = (node_id, variation_filter, force_fetch = false) => {
+    fetchNextFilteredMovesFor = (node_id, variation_filter) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
@@ -361,11 +361,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log(this.state.cached_positions);
+        console.log(this.cached_positions);
 
-        if (!force_fetch && this.state.cached_positions.hasOwnProperty(node_id)) {
+        if (this.cached_positions.hasOwnProperty(node_id)) {
             //console.log("cached position:", node_id);
-            this.processNewMoves(node_id, this.state.cached_positions[node_id]);
+            this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
             // console.log("fetching position for node", node_id);
@@ -377,7 +377,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             .then(body => {
                 // console.log("Server response:", body);
                 this.processNewMoves(node_id, body);
-                this.setState({cached_positions: {[node_id]: body, ...this.state.cached_positions}});
+                this.cached_positions = {[node_id]: body, ...this.cached_positions};
             }).catch((r) => {
                 console.log("Node GET failed:", r);
             });
@@ -793,10 +793,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
     updateVariationFilter = (filter) => {
         // console.log("update filter:", filter);
         this.setState({
-            variation_filter: filter,
-            cached_positions: {} // dump cache because the filter changed, and the cache holds filtered results
+            variation_filter: filter
         });
-        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter, true); // true: force the fetch, due to filter change.
+        this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
+        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     }
 
     updateMarks = (marks) => {
