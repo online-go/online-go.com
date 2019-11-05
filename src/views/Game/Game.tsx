@@ -1882,18 +1882,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     }
 
-                    {
-                        /*
-                        ((this.state.view_mode === 'portrait' && this.state.portrait_tab === 'chat') || null) &&
-                        this.frag_players()
-                        */
-                    }
-
                     {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
 
                     {this.frag_below_board_controls()}
-
-                    {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
