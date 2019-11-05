@@ -57,7 +57,7 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
         <div className="page-width">
             <div id='PuzzleCollection'>
                 <dl>
-                    <dt>{_("Puzzle name")}</dt>
+                    <dt>{_("Puzzle collection")}</dt>
                     <dd><input value={name} onChange={ev => setName(ev.target.value)} placeholder={_('Name')} /></dd>
 
                     <dt>

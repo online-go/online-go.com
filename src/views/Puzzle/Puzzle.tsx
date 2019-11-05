@@ -366,7 +366,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             /* create */
             post("puzzles/", {"puzzle": puzzle})
             .then((res) => {
-                browserHistory.push("/puzzles");
+                browserHistory.push(`/puzzle-collection/${puzzle.puzzle_collection}`);
             })
             .catch(errorAlerter);
         }
@@ -521,7 +521,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         })
         .then(() => {
             del("puzzles/%%", +this.props.match.params.puzzle_id)
-            .then(() => browserHistory.push(`/puzzles`))
+            .then(() => browserHistory.push(`/puzzle-collection/${this.state.puzzle.puzzle_collection}`))
             .catch(errorAlerter);
         })
         .catch(ignore);

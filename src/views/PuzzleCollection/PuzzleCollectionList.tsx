@@ -19,19 +19,24 @@ import * as React from "react";
 import * as moment from "moment";
 import { _ } from "translate";
 import { post, get, del, patch, abort_requests_in_flight } from "requests";
-import { errorAlerter, navigateTo, unitify } from 'misc';
+import { ignore, errorAlerter, navigateTo, unitify } from 'misc';
 import { PaginatedTable } from "PaginatedTable";
 import { longRankString, rankString } from "rank_utils";
 import { StarRating } from "StarRating";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";
 
+declare var swal;
 
 export function PuzzleCollectionList({match:{params:{player_id}}}:{match:{params:{player_id:number}}}):JSX.Element {
     return (
         <div className="page-width">
             <div className="PuzzleList container">
                 <div className="puzzle-list-container" style={{clear:'both'}}>
+                    <div style={{'textAlign': 'center', 'margin': '1rem'}}>
+                        <button className='btn primary' onClick={newPuzzleCollection}>{_("New puzzle collection")}</button>
+                    </div>
+
                     <PaginatedTable
                         className=""
                         source={`puzzles/collections/`}
@@ -92,4 +97,28 @@ export function PuzzleCollectionList({match:{params:{player_id}}}:{match:{params
             </div>
         </div>
     );
+
+    function newPuzzleCollection() {
+        swal({
+            text: _("Collection name"),
+            input: "text",
+            showCancelButton: true,
+        })
+        .then((name) => {
+            if (!name || name.length < 5) {
+                swal({ "text": _("Please provide a longer name for your new puzzle collection") })
+                .then(ignore).catch(ignore);
+                return;
+            }
+
+            post("puzzles/collections/", {
+                "name": name,
+                "private": true,
+                "price": "0.00",
+            }).then((res) => {
+                navigateTo(`/puzzle-collection/${res.id}`);
+            }).catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
 }
