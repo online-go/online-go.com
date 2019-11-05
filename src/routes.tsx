@@ -45,6 +45,7 @@ import { Moderator } from "Moderator";
 import { ObserveGames } from "ObserveGames";
 import { Puzzle } from "Puzzle";
 import { PuzzleList } from "PuzzleList";
+import { PuzzleCollectionList, PuzzleCollection } from "PuzzleCollection";
 import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
 import { TournamentRecord } from "TournamentRecord";
@@ -148,6 +149,8 @@ export const routes = (
             <Route path="/ladder/:ladder_id" component={Ladder}/>
             <Route path="/puzzles" component={PuzzleList}/>
             <Route path="/puzzle/:puzzle_id" component={Puzzle}/>
+            <Route path="/puzzle-collections/:player_id" component={PuzzleCollectionList}/>
+            <Route path="/puzzle-collection/:collection_id" component={PuzzleCollection}/>
             <Route path="/leaderboards" component={LeaderBoard}/>
             <Route path="/leaderboard" component={LeaderBoard}/>
             <Route path="/developer" component={Developer}/>

@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
@@ -25,25 +26,13 @@ import {MiniGoban} from "MiniGoban";
 import {SearchInput} from "misc-ui";
 import {StarRating} from "StarRating";
 import {longRankString, rankString} from "rank_utils";
-import {navigateTo} from "misc";
+import {navigateTo, unitify} from "misc";
 import * as data from "data";
 import * as moment from "moment";
 
 interface PuzzleListProperties {
 }
 
-function unitify(num: number): string {
-    if (num > 1000000000) {
-        return (num / 1000000000.0).toFixed(1) + "B";
-    }
-    if (num > 1000000) {
-        return (num / 1000000.0).toFixed(1) + "M";
-    }
-    if (num > 1000) {
-        return (num / 1000.0).toFixed(1) + "K";
-    }
-    return num.toString();
-}
 
 export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
     refs: {
@@ -72,7 +61,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
 
                             <div>
                                 {((!user.anonymous) || null) &&
-                                    <a href="/puzzle/new"><i className="fa fa-plus-square" /> {_("New puzzle")}</a>
+                                    <Link to={`/puzzle-collections/${user.id}`}>{_("My puzzles")}</Link>
                                 }
 
                                 <SearchInput

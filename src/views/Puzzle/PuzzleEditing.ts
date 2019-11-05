@@ -66,6 +66,12 @@ export class PuzzleEditor {
         };
 
         if (new_puzzle) {
+            let collection_id = 0;
+            let m = window.location.href.match(/collection_id=([0-9]+)/);
+            if (m) {
+                collection_id = parseInt(m[1]);
+            }
+
             obj = Object.assign(obj, {
                 "id": 242,
                 "owner": data.get("user"),
@@ -82,7 +88,7 @@ export class PuzzleEditor {
                     "height": 19,
                     "width": 19,
                     "mode": "puzzle",
-                    "puzzle_collection": 0,
+                    "puzzle_collection": collection_id,
                     "puzzle_type": "life_and_death",
                     "initial_state": {
                         "white": "",
