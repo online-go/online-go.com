@@ -99,6 +99,11 @@ data.setDefault("config.user", {
     "pro": 0,
 });
 
+data.setDefault('config.cdn', window['cdn_service']);
+data.setDefault('config.cdn_host', window['cdn_service'].replace('https://', '').replace('http://', '').replace('//', ''));
+data.setDefault('config.cdn_release', window['cdn_service'] + '/' + window['ogs_release']);
+data.setDefault('config.release', window['ogs_release']);
+
 configure_goban();
 
 import * as React from "react";
