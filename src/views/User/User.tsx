@@ -545,12 +545,39 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white = r.players.white;
                 item.white_won = !r.white_lost && r.black_lost;
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
-                item.result_class = (item.white_won && (item.white.id === this.user_id)) || (item.black_won && (item.black.id === this.user_id)) ? "library-won-result" : "library-lost-result";
                 item.historical = r.historical_ratings;
 
                 if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost)) {
                     item.result_class = "";
+                } else if (item.white_won) {
+                  if (item.white.id === this.user_id && r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                  } else if (r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                  } else {
+                    item.result_class = item.white.id === this.user_id ? "library-won-result-unranked" : "library-lost-result-unranked";
+                  }
+                } else {
+                  if (item.white.id === this.user_id && r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                  } else if (r.ranked && !r.annulled) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                  } else {
+                    item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
+                  }
                 }
+
+                if (r.time_per_move >= 3600) {
+                  item.speed = "Correspondence";
+                  item.speed_icon_class = "speed-icon ogs-turtle";
+                } else if (r.time_per_move < 10) {
+                  item.speed = "Blitz";
+                  item.speed_icon_class = "speed-icon fa fa-bolt";
+                } else {
+                  item.speed = "Live";
+                  item.speed_icon_class = "speed-icon fa fa-clock-o";
+                }
+
                 item.name = r.name;
 
                 if (item.name && item.name.trim() === "") {
@@ -582,10 +609,23 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.white = r.players.white;
                 item.white_won = !r.white_lost && r.black_lost;
-                item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.name = r.name;
                 item.href = "/review/" + item.id;
                 item.historical = r.game.historical_ratings || { 'black': item.black, 'white': item.white };
+
+                if (item.white_won) {
+                  if (item.white.id === this.user_id) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                  } else {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                  }
+                } else {
+                  if (item.white.id === this.user_id) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                  } else {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                  }
+                }
 
                 if (!item.name || item.name.trim() === "") {
                     item.name = item.href;
@@ -815,6 +855,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
                                     columns={[
+                                        {header: _(""),       className: () => "speed",                           render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
