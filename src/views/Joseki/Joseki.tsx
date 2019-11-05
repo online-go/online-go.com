@@ -38,7 +38,6 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
-import { forceLoad } from "@sentry/browser";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -137,6 +136,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
     computer_turn = false;  // when we are placing the computer's stone in Play mode
+    filter_change = false;  // set to true when a position is being reloaded due to filter change
+    cached_positions = {};
 
     constructor(props) {
         super(props);
@@ -174,7 +175,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             count_details_open: false,
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
-            counts_throb: false
+            counts_throb: false,
+
+            db_locked_down: true // pessimistic till it tells us otherwise
         };
 
         this.goban_div = document.createElement('div');
@@ -358,72 +361,88 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log("fetching position for node", node_id);
-        fetch(position_url(node_id, variation_filter), {
-            mode: 'cors',
-            headers: godojo_headers
-        })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response:", body);
+        console.log(this.cached_positions);
 
-            this.setState({throb: false});
+        if (this.cached_positions.hasOwnProperty(node_id)) {
+            //console.log("cached position:", node_id);
+            this.processNewMoves(node_id, this.cached_positions[node_id]);
+        }
+        else {
+            // console.log("fetching position for node", node_id);
+            fetch(position_url(node_id, variation_filter), {
+                mode: 'cors',
+                headers: godojo_headers
+            })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                // console.log("Server response:", body);
+                this.processNewMoves(node_id, body);
+                this.cached_positions = {[node_id]: body, ...this.cached_positions};
+            }).catch((r) => {
+                console.log("Node GET failed:", r);
+            });
+        }
+    }
 
-            if (this.load_sequence_to_board) {
-                // when they clicked a position link, we have to load the whole sequence we recieved onto the board
-                // to get to that position
-                this.loadSequenceToBoard(body.play);
-                this.load_sequence_to_board = false;
+    // Handle the per-move processing of getting to the new node.
+    // The data is in dto - it is a BoardPositionDTO from the server, but may have been
+    // cached locally.
+
+    processNewMoves = (node_id, dto) => {
+        this.setState({throb: false});
+
+        if (this.load_sequence_to_board) {
+            // when they clicked a position link, we have to load the whole sequence we recieved onto the board
+            // to get to that position
+            this.loadSequenceToBoard(dto.play);
+            this.load_sequence_to_board = false;
+        }
+
+        this.processNewJosekiPosition(dto);
+
+        if (this.state.count_details_open) {
+            this.showVariationCounts(node_id);
+        }
+
+        if (this.state.mode === PageMode.Play) {
+
+            const good_moves = dto.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
+
+            if ((good_moves.length === 0) && !this.played_mistake) {
+                this.setState({
+                    move_type_sequence: [
+                        ...this.state.move_type_sequence,
+                        {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
+                    ]});
+                this.updatePlayerJosekiRecord(node_id);
             }
 
-            this.processNewJosekiPosition(body);
-
-            if (this.state.count_details_open) {
-                this.showVariationCounts(node_id);
+            if (this.computer_turn) {
+                // obviously, we don't place another stone if we just placed one
+                this.computer_turn = false;
             }
+            else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
+                // the computer plays both good and bad moves
+                const next_play = dto.next_moves[Math.floor(Math.random() * dto.next_moves.length)];
+                // console.log("Will play: ", next_play);
 
-            if (this.state.mode === PageMode.Play) {
-
-                const good_moves = body.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
-
-                if ((good_moves.length === 0) && !this.played_mistake) {
-                    this.setState({
-                        move_type_sequence: [
-                            ...this.state.move_type_sequence,
-                            {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
-                        ]});
-                    this.updatePlayerJosekiRecord(node_id);
+                this.computer_turn = true;
+                if (next_play.placement === "pass") {
+                    this.goban.pass();
+                    this.onBoardUpdate();
                 }
-
-                if (this.computer_turn) {
-                    // obviously, we don't place another stone if we just placed one
-                    this.computer_turn = false;
-                }
-                else if (body.next_moves.length > 0 && this.state.move_string !== "") {
-                    // the computer plays both good and bad moves
-                    const next_play = body.next_moves[Math.floor(Math.random() * body.next_moves.length)];
-                    // console.log("Will play: ", next_play);
-
-                    this.computer_turn = true;
-                    if (next_play.placement === "pass") {
-                        this.goban.pass();
-                        this.onBoardUpdate();
-                    }
-                    else {
-                        const location = this.goban.engine.decodeMoves(next_play.placement)[0];
-                        this.goban.engine.place(location.x, location.y);
-                        this.onBoardUpdate();
-                    }
+                else {
+                    const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                    this.goban.engine.place(location.x, location.y);
+                    this.onBoardUpdate();
                 }
             }
-            if (this.backstepping) {
-                // console.log("finishing backstep");
-                this.backstepping = false;
-            }
-            this.goban.enableStonePlacement();
-        }).catch((r) => {
-            console.log("Node GET failed:", r);
-        });
+        }
+        if (this.backstepping) {
+            // console.log("finishing backstep");
+            this.backstepping = false;
+        }
+        this.goban.enableStonePlacement();
     }
 
     loadSequenceToBoard = (sequence: string) => {
@@ -437,6 +456,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     // Decode a response from the server into state we need, and display accordingly
+    // "position" is a BoardPositionDTO
     processNewJosekiPosition = (position) => {
         this.setState({
             // I really wish I'd just put all of this into a single state object :S
@@ -449,7 +469,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
             tags: position.tags,
-            child_count: position.child_count
+            child_count: position.child_count,
+            db_locked_down: position.db_locked_down
         });
         this.last_server_position = position.play;
         this.last_placement = position.placement;
@@ -771,7 +792,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     updateVariationFilter = (filter) => {
         // console.log("update filter:", filter);
-        this.setState({variation_filter: filter});
+        this.setState({
+            variation_filter: filter
+        });
+        this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     }
 
@@ -822,6 +846,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     hideVariationCounts = () => {
         this.setState({count_details_open: false});
+    }
+
+    updateDBLockStatus = (new_status) => {
+        this.setState({db_locked_down: new_status});
     }
 
     render() {
@@ -962,10 +990,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
             <button className={"btn s  " + (this.state.mode === PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
                 {_("Play")}
             </button>
-            {this.state.user_can_edit &&
+            {this.state.user_can_edit && !this.state.db_locked_down &&
             <button
                 className={"btn s  " + (this.state.mode === PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
                 {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
+            </button>
+            }
+            {this.state.user_can_edit && this.state.db_locked_down &&
+            <button
+                className={"btn s "} disabled>
+                Edit <i className="fa fa-lock"/>
             </button>
             }
             <button className={"btn s  " + (this.state.mode === PageMode.Admin ? "primary" : "")} onClick={this.setAdminMode}>
@@ -983,7 +1017,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
+                    db_locked_down={this.state.db_locked_down}
                     loadPositionToBoard = {this.loadPosition}
+                    updateDBLockStatus = {this.updateDBLockStatus}
                 />
             );
         }

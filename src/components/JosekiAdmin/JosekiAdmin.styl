@@ -72,18 +72,33 @@
         }
     }
 
+    .explorer-stats {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 3px;
+        button {
+
+        }
+    }
+
     .bottom-admin-stuff {
         display: flex;
         justify-content: space-between;
+        flex-direction: column;
 
         .user-admin {
             display: flex;
             flex-direction: column;
         }
 
-        .admin-info {
+        .misc-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+
             flex-grow: 1;
-            text-align: right;
+            margin-top: 5px;
             margin-right: 3px;
         }
     }
