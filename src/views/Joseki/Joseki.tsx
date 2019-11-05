@@ -38,8 +38,6 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
-import { forceLoad } from "@sentry/browser";
-import { node } from "prop-types";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
