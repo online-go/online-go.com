@@ -59,7 +59,6 @@ export let TermsOfService = (props) => (
         <li>Impersonate any person or entity</li>
         <li>Disrupt the normal flow of dialog or otherwise act in a manner that negatively affects other users' ability to communicate through or use Services provided by Online-Go.com</li>
         <li>Intentionally or unintentionally violate any applicable local, state, national, or international law</li>
-        <li>Solicit or advertise for any competing Go services</li>
     </ul>
     </div>
 
