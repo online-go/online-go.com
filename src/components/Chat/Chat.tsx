@@ -971,6 +971,7 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         {split: /(@"[^"\/]+(?:\/[0-9]+)?")/gi,
             pattern: /(@"([^"\/]+)(?:\/([0-9]+))?")/gi,
             replacement: (m, idx) => (<Player key={idx} user={(m[3] ? {id: Number(m[3])} : {username: m[2]})} rank={false} noextracontrols />)},
+        {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])}/>)},
         // games
         {split: /\b((?:game)[- ]?(?:#)?[0-9]{3,})/gi, pattern: /(\bgame)[- ]?(?:#)?([0-9]{3,})/gi,
             replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
