@@ -1078,6 +1078,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         const mark_string = JSON.stringify(marks); // 'marks' is just a string as far as back end is concerned
 
+        this.cached_positions = {}; // dump cache to make sure the editor sees their new results
+
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
 
