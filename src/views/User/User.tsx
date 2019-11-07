@@ -548,7 +548,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.historical = r.historical_ratings;
 
                 if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
-                    item.result_class = "";
+                    item.result_class = "library-tie-result";
                 } else if (item.white_won) {
                   if (item.white.id === this.user_id && r.ranked) {
                     item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
