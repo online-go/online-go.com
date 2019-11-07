@@ -185,6 +185,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         let player = this.state.user;
         let player_id = player.id || player.player_id;
         let nolink = !!this.props.nolink;
+        let rank:JSX.Element = null;
 
 
         let main_attrs: any = {
@@ -240,7 +241,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 rank_text = rating.bounded_rank_label;
             }
 
-            main_attrs["data-rank"] = " [" + rank_text + "]";
+            rank = <span className='Player-rank'>[{rank_text}]</span>;
         }
 
         if (props.flare) {
@@ -251,7 +252,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
-        let username = unicodeFilter(player.username || player.name);
+        let username_string = unicodeFilter(player.username || player.name);
+        let username = <span className='Player-username'>{username_string}</span>;
 
 
         if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
@@ -259,18 +261,18 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}
+                    {username}{rank}
                 </span>
             );
         } else {
             let player_id = this.state.user.id || this.state.user.player_id;
-            let uri = `/player/${player_id}/${encodeURIComponent(username)}`;
+            let uri:string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
                 <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}
+                    {username}{rank}
                 </a>
             );
         }
