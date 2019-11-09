@@ -233,7 +233,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     initializeBoard = (target_position: string = "root") => {
-        console.log("Resetting board...");
+        // console.log("Resetting board...");
         this.next_moves = [];
         this.played_mistake = false;
         this.computer_turn = false;
@@ -374,7 +374,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
-            console.log("fetching position for node", node_id);
+            // console.log("fetching position for node", node_id);
             fetch(position_url(node_id, variation_filter), {
                 mode: 'cors',
                 headers: godojo_headers
@@ -430,7 +430,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
                 // the computer plays both good and bad moves
                 const next_play = dto.next_moves[Math.floor(Math.random() * dto.next_moves.length)];
-                console.log("Will play: ", next_play);
+                // console.log("Will play: ", next_play);
 
                 this.computer_turn = true;
                 if (next_play.placement === "pass") {
