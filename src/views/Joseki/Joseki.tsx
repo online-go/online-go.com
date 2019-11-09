@@ -367,7 +367,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         // Because of tricky sequencing of state update from server responses, only
         // explore mode works with this caching ... the others need processNewMoves to happen after completion
-        // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching...
+        // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
+        // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
             console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
