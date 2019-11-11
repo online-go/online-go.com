@@ -236,6 +236,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // console.log("Resetting board...");
         this.next_moves = [];
         this.played_mistake = false;
+        this.computer_turn = false;
+
         this.setState({
             move_string: "",
             current_move_category: "",
@@ -361,10 +363,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        console.log(this.cached_positions);
+        // console.log("cache:", this.cached_positions);
 
-        if (this.cached_positions.hasOwnProperty(node_id)) {
-            //console.log("cached position:", node_id);
+        // Because of tricky sequencing of state update from server responses, only
+        // explore mode works with this caching ... the others need processNewMoves to happen after completion
+        // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
+        // to make that work
+        if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
+            console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
@@ -608,13 +614,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
         }
         else if (this.load_sequence_to_board) {
-            // console.log("nothing to do in process placement");
+            // console.log("loaded sequence: nothing to do in process placement");
             this.goban.enableStonePlacement();
         }
         else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
-            // console.log("chosen move:", chosen_move);
+            // console.log("chosen move:", chosen_move, this.computer_turn);
 
             if (this.state.mode === PageMode.Play &&
                 !this.computer_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
@@ -727,6 +733,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             mode: PageMode.Play,
             played_mistake: false,
             move_type_sequence: [],
+            computer_turn: false,
             joseki_errors: 0,
             joseki_successes: null,
             joseki_best_attempt: null,
@@ -1457,6 +1464,7 @@ class PlayPane extends React.Component<PlayProps, any> {
                 forced_filter: false
             });
         }
+        return null;
     }
 
     showFilterSelector = () => {
@@ -1472,6 +1480,8 @@ class PlayPane extends React.Component<PlayProps, any> {
     }
 
     render = () => {
+        // console.log("Play render", this.props.move_type_sequence);
+
         const filter_active =
             ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
             this.props.current_filter.contributor !== null ||
