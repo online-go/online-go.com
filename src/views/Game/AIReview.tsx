@@ -569,16 +569,25 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 //let last_win_rate = `full-${1 - this.handicapOffset()}` in ai_review
                 let last_win_rate = null;
                 let deltas:Array<number> = [];
+                let last_player_to_move = null;
                 for (let i = 1; i < last_move.move_number; ++i) {
                     let entry = ai_review[`full-${i - this.handicapOffset()}`];
                     if (entry) {
                         if (last_win_rate !== null) {
-                            deltas.push(Math.abs(entry.win_rate - last_win_rate));
+                            let fac = null;
+                            if (last_player_to_move === "white") {
+                                fac = -1.0;
+                            }
+                            else if (last_player_to_move === "black") {
+                                fac = +1.0;
+                            }
+                            deltas.push(fac * (entry.win_rate - last_win_rate));
                         }
                         last_win_rate = entry.win_rate;
+                        last_player_to_move = entry.player_to_move;
                     }
                 }
-                let top3_win_rates = dup(deltas).sort((a, b) => b - a).slice(0, 3);
+                let top3_win_rates = dup(deltas).sort((a, b) => a - b).slice(0, 3);
                 top3 = top3_win_rates.map(p => deltas.indexOf(p) + 1);
             } catch (e) {
                 console.error(e);
