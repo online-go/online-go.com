@@ -18,6 +18,7 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
+import { configure_goban } from 'configure-goban';
 
 declare var ogs_current_language;
 declare var ogs_version;
@@ -32,31 +33,49 @@ if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) 
 }  else {
     sentry_env = "development";
 }
-    try {
-        Sentry.init({
-            dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
-            release: ogs_version || 'dev',
-            whitelistUrls: [
-                'online-go.com',
-                'online-baduk.com',
-                'online-weiqi.com',
-                'online-covay.com',
-                'online-igo.com',
-                'cdn.online-go.com',
-                'beta.online-go.com',
-                'dev.beta.online-go.com'
-            ],
-            environment: sentry_env,
-        });
 
-        Sentry.setTag("version", ogs_version || 'dev');
-        Sentry.setExtra("language", ogs_current_language || 'unknown');
-        Sentry.setExtra("version", ogs_version || 'dev');
-    } catch (e) {
+try {
+    Sentry.init({
+        dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
+        release: ogs_version || 'dev',
+        whitelistUrls: [
+            'online-go.com',
+            'online-baduk.com',
+            'online-weiqi.com',
+            'online-covay.com',
+            'online-igo.com',
+            'cdn.online-go.com',
+            'beta.online-go.com',
+            'dev.beta.online-go.com'
+        ],
+        environment: sentry_env,
+        integrations: [
+            new Sentry.Integrations.GlobalHandlers({
+                onerror: true,
+                onunhandledrejection: false
+            }),
+            new Sentry.Integrations.Breadcrumbs({
+                console: false
+            })
+        ]
+    });
+
+    Sentry.setTag("version", ogs_version || 'dev');
+    Sentry.setExtra("language", ogs_current_language || 'unknown');
+    Sentry.setExtra("version", ogs_version || 'dev');
+} catch (e) {
+    console.error(e);
+}
+
+try {
+    window.onunhandledrejection = (e) => {
         console.error(e);
-    }
-//}
-
+        console.error(e.reason);
+        console.error(e.stack);
+    };
+} catch (e) {
+    console.log(e);
+}
 
 import * as data from "data";
 
@@ -79,6 +98,13 @@ data.setDefault("config.user", {
     "country": "un",
     "pro": 0,
 });
+
+data.setDefault('config.cdn', window['cdn_service']);
+data.setDefault('config.cdn_host', window['cdn_service'].replace('https://', '').replace('http://', '').replace('//', ''));
+data.setDefault('config.cdn_release', window['cdn_service'] + '/' + window['ogs_release']);
+data.setDefault('config.release', window['ogs_release']);
+
+configure_goban();
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";

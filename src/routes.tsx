@@ -32,6 +32,7 @@ import { Admin, MerchantLog } from "Admin";
 import { ChatView } from "ChatView";
 import { Developer } from "Developer";
 import { Game } from "Game";
+import { Joseki } from "Joseki";
 import { Group } from "Group";
 import { GroupCreate } from "GroupCreate";
 import { GroupList } from "GroupList";
@@ -44,6 +45,7 @@ import { Moderator } from "Moderator";
 import { ObserveGames } from "ObserveGames";
 import { Puzzle } from "Puzzle";
 import { PuzzleList } from "PuzzleList";
+import { PuzzleCollectionList, PuzzleCollection } from "PuzzleCollection";
 import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
 import { TournamentRecord } from "TournamentRecord";
@@ -100,6 +102,9 @@ export const routes = (
             <Route path="/demo/view/:review_id" component={Game}/>
             <Route path="/demo/:review_id" component={Game}/>
 
+            <Route path="/joseki/" exact component={Joseki}/> {/* this is equivalent to specifying pos = "root" */}
+            <Route path="/joseki/:pos" component={Joseki}/>
+
             <Route path="/player/settings" component={Settings}/>
             <Route path="/player/supporter" component={Supporter}/>
             <Route path="/player/:user_id" component={User}/>
@@ -144,6 +149,8 @@ export const routes = (
             <Route path="/ladder/:ladder_id" component={Ladder}/>
             <Route path="/puzzles" component={PuzzleList}/>
             <Route path="/puzzle/:puzzle_id" component={Puzzle}/>
+            <Route path="/puzzle-collections/:player_id" component={PuzzleCollectionList}/>
+            <Route path="/puzzle-collection/:collection_id" component={PuzzleCollection}/>
             <Route path="/leaderboards" component={LeaderBoard}/>
             <Route path="/leaderboard" component={LeaderBoard}/>
             <Route path="/developer" component={Developer}/>
@@ -186,8 +193,10 @@ export const routes = (
             <Route path="/docs/team" component={docs.Team}/>
             <Route path="/docs/other-go-resources" component={docs.GoResources}/>
 
+            {/* These are short hand slugs we've created for the bigger AGA tournaments */}
             <Route path="/2019usgc" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>} />
             <Route path="/usgc2019" render={() => <Redirect to="/group/3837/2019-us-go-congress-in-madison-wi"/>}  />
+            <Route path="/cotsen2019" render={() => <Redirect to="/tournament-record/45/"/>} />
 
             <Route path="/" component={Default} exact />
             <Route path="/*" component={PageNotFound} />

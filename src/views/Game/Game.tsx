@@ -19,6 +19,7 @@ import * as data from "data";
 import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, ngettext, pgettext, interpolate} from "translate";
@@ -27,7 +28,7 @@ import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GoEngine, GoMath, MoveTree} from "goban";
+import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -45,12 +46,14 @@ import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "./ACLModal";
-import {sfx} from "ogs-goban/SFXManager";
+import {sfx} from "goban";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
 import {CountDown} from "./CountDown";
 import {toast} from "toast";
+import {Clock} from "Clock";
+import {JGOFClock} from "goban";
 
 declare var swal;
 
@@ -68,29 +71,25 @@ interface GameProperties {
     };
 }
 
-/* TODO: Implement giving voice and control over to players in Reviews */
-/* TODO: Implement mobile interface for reviews */
-
-export type ViewMode = "portrait"|"wide"|"square"|"zen";
+export type ViewMode = "portrait"|"wide"|"square";
 type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
     ref_goban;
-    ref_goban_container;
+    ref_goban_container:HTMLElement;
     ref_players;
     ref_action_bar;
     ref_game_action_buttons;
     ref_game_state_label;
     ref_chat;
+    ref_move_tree_container:HTMLElement;
 
     game_id: number;
     creator_id: number;
     ladder_id: number;
     tournament_id: number;
     review_id: number;
-    goban_div: any;
-    white_clock: any;
-    black_clock: any;
+    goban_div: HTMLDivElement;
     goban: Goban;
     resize_debounce: any = null;
     set_analyze_tool: any = {};
@@ -130,7 +129,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
         this.state = {
-            view_mode: "wide" as ViewMode,
+            view_mode: this.computeViewMode(),
             squashed: goban_view_squashed(),
             undo_requested: false,
             estimating_score: false,
@@ -154,12 +153,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             ai_review_enabled: preferences.get('ai-review-enabled'),
         };
 
-        (this.state as any).view_mode = this.computeViewMode(); /* needs to access this.state.zen_mode, so can't be set above */
-
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
-        this.goban_div = $("<div class='Goban'>");
-        this.white_clock = $("<div class='Goban'>");
-        this.black_clock = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
         this.checkAndEnterAnalysis = this.checkAndEnterAnalysis.bind(this);
         this.nav_up = this.nav_up.bind(this);
         this.nav_down = this.nav_down.bind(this);
@@ -235,18 +231,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban_resumeGame = this.goban_resumeGame.bind(this);
         this.updateVariationName = this.updateVariationName.bind(this);
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         setActiveGameView(this);
         setExtraActionCallback(this.renderExtraPlayerActions);
         $(window).on("focus", this.onFocus);
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (
             this.props.match.params.game_id !== nextProps.match.params.game_id ||
             this.props.match.params.review_id !== nextProps.match.params.review_id
         ) {
             this.deinitialize();
-            this.goban_div.empty();
+            while (this.goban_div.firstChild) {
+                this.goban_div.removeChild(this.goban_div.firstChild);
+            }
 
             this.setState({
                 portrait_tab: "game",
@@ -263,7 +261,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.review_id = nextProps.match.params.review_id ? parseInt(nextProps.match.params.review_id) : 0;
             this.sync_state();
         } else {
-            console.log("componentWillReceiveProps called with same game id: ", this.props, nextProps);
+            console.log("UNSAFE_componentWillReceiveProps called with same game id: ", this.props, nextProps);
         }
     }
     componentDidUpdate(prevProps, prevState) {
@@ -292,6 +290,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
         setExtraActionCallback(null);
         $(window).off("focus", this.onFocus);
         window.document.title = "OGS";
+        let body = document.getElementsByTagName('body')[0];
+        body.classList.remove("zen");   //remove the class
+    }
+    getLocation():string {
+        return window.location.pathname;
+    }
+    autoadvance = () => {
+        let user = data.get('user');
+
+        if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
+            /* if we just moved */
+            if (this.goban.engine.playerNotToMove() === user.id) {
+                if (!isLiveGame(this.goban.engine.time_control) && preferences.get("auto-advance-after-submit")) {
+                    if (notification_manager.anyYourMove()) {
+                        notification_manager.advanceToNextBoard();
+                    }
+                }
+            }
+        }
     }
     deinitialize() {
         this.chat_proxy.part();
@@ -299,7 +316,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.creator_id = null;
         this.ladder_id = null;
         this.tournament_id = null;
-        $(window).off("resize", this.onResize as () => void);
         $(document).off("keypress", this.setLabelHandler);
         try {
             this.goban.destroy();
@@ -331,16 +347,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.chat_proxy = this.game_id
             ? chat_manager.join(`game-${this.game_id}`, interpolate(_("Game {{number}}"), {"number": this.game_id}))
             : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
-        $(window).on("resize", this.onResize as () => void);
         $(document).on("keypress", this.setLabelHandler);
 
         let label_position = preferences.get("label-positioning");
-        let opts: any = {
+        let opts: GobanCanvasConfig = {
             "board_div": this.goban_div,
-            "black_clock": "#game-black-clock",
-            "white_clock": "#game-white-clock",
-            "stone_removal_clock": "#stone-removal-clock",
-            "node_textarea": "#game-move-node-text",
+            "move_tree_container": this.ref_move_tree_container,
             "interactive": true,
             "connect_to_chat": true,
             "isInPushedAnalysis": () => this.in_pushed_analysis,
@@ -349,15 +361,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     this.leave_pushed_analysis();
                 }
             },
-
             "game_id": null,
             "review_id": null,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "move_tree_div": "#move-tree-container",
-            "move_tree_canvas": "#move-tree-canvas",
             "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
         };
 
@@ -418,22 +427,26 @@ export class Game extends React.PureComponent<GameProperties, any> {
             /* } */
         }
 
+
         this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
         this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
         this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
-        let last_clock_played = null;
-        this.goban.on('audio-clock', (clock) => {
+        this.goban.on('audio-clock', (audio_clock_event) => {
             let user = data.get('user');
             if (user.anonymous) {
+                return;
+            }
+
+            if (audio_clock_event.countdown_seconds > 10) {
                 return;
             }
 
             let audio_enabled = false;
 
             if (preferences.get("sound-voice-countdown")) {
-                if (clock.time_control_system === "byoyomi" || clock.time_control_system === "canadian") {
-                    if (preferences.get("sound-voice-countdown-main") || clock.in_overtime) {
+                if (audio_clock_event.time_control_system === "byoyomi" || audio_clock_event.time_control_system === "canadian") {
+                    if (preferences.get("sound-voice-countdown-main") || audio_clock_event.in_overtime) {
                         audio_enabled = true;
                     }
                 } else {
@@ -449,29 +462,98 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 return;
             }
 
-            if (!(user.id === clock.clock_player && user.id === clock.player_to_move)) {
+            if (!(user.id.toString() === audio_clock_event.player_id )) {
                 return;
             }
 
-            if (last_clock_played === clock.seconds_left) {
-                // debounce
-            } else {
-                last_clock_played = clock.seconds_left;
-                sfx.play(clock.seconds_left);
-            }
+            sfx.play(audio_clock_event.countdown_seconds.toString());
         });
 
-        this.goban.on("advance-to-next-board", () => notification_manager.advanceToNextBoard());
+        this.goban.on("clock", (clock:JGOFClock) => {
+            /* This is the code that draws the count down number on the "hover
+             * stone" for the current player if they are running low on time */
+            let user = data.get('user');
+
+            if (!clock) {
+                return;
+            }
+
+            if (user.anonymous) {
+                return;
+            }
+
+            if (user.id.toString() !== clock.current_player_id) {
+                this.goban.setByoYomiLabel(null);
+                return;
+            }
+
+            let ms_left = 0;
+            let player_clock = clock.current_player === 'black' ? clock.black_clock : clock.white_clock;
+            if (player_clock.main_time > 0) {
+                ms_left = player_clock.main_time;
+                if (this.goban.engine.time_control.system === "byoyomi"
+                    || this.goban.engine.time_control.system === "canadian") {
+                    ms_left = 0;
+                }
+            }  else {
+                ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
+            }
+
+
+            let seconds = Math.ceil((ms_left - 1) / 1000);
+
+            if (seconds > 0 && seconds < 10) {
+                this.goban.setByoYomiLabel(seconds.toString());
+            } else {
+                this.goban.setByoYomiLabel(null);
+            }
+
+
+        /*
+        if (minutes === 0 && seconds <= 10) {
+            if (seconds % 2 === 0) {
+                cls += " low_time";
+            }
+
+            if (this.on_game_screen && player_id) {
+                if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
+                    this.byoyomi_label = "" + seconds;
+                    let last_byoyomi_label = this.byoyomi_label;
+                    if (this.last_hover_square) {
+                        this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
+                    }
+                    setTimeout(() => {
+                        if (this.byoyomi_label === last_byoyomi_label) {
+                            this.byoyomi_label = null;
+                            if (this.last_hover_square) {
+                                this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
+                            }
+                        }
+                    }, 1100);
+                }
+
+                if (this.mode === "play") {
+                    this.emit('audio-clock', {
+                        seconds_left: seconds,
+                        player_to_move: this.engine.playerToMove(),
+                        clock_player: player_id,
+                        time_control_system: timing_type,
+                        in_overtime: in_overtime,
+                    });
+                }
+            }
+        }
+        */
+
+
+        });
+        this.goban.on("move-made", this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
         this.goban.on("show-submit", (tf) => {
             this.setState({show_submit: tf});
         });
-        this.goban.on("pause-text", (new_text) => this.setState({
-            "white_pause_text": new_text.white_pause_text,
-            "black_pause_text": new_text.black_pause_text,
-        }));
         this.goban.on("chat", (line) => {
             this.chat_log.push(line);
             this.debouncedChatUpdate();
@@ -609,7 +691,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 if (this.white_username && this.black_username && !preferences.get("dynamic-title")) {
                     this.on_refocus_title = this.black_username + " vs " + this.white_username;
                     window.document.title = this.on_refocus_title;
-
                 }
                 this.creator_id = game.creator;
                 this.ladder_id = game.ladder;
@@ -886,11 +967,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         }
     }
-    computeViewMode(ignore_zen_mode?): ViewMode {
-        if (!ignore_zen_mode && this.state.zen_mode) {
-            return "zen";
-        }
-
+    computeViewMode(): ViewMode {
         return goban_view_mode();
     }
     computeSquashed(): boolean {
@@ -952,14 +1029,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     toggleZenMode() {
         if (this.state.zen_mode) {
+            let body = document.getElementsByTagName('body')[0];
+            body.classList.remove("zen");   //remove the class
             this.setState({
                 zen_mode: false,
-                view_mode: this.computeViewMode(true),
+                view_mode: this.computeViewMode(),
             });
         } else {
+            let body = document.getElementsByTagName('body')[0];
+            body.classList.add("zen");   //add the class
             this.setState({
                 zen_mode: true,
-                view_mode: "zen",
+                view_mode: this.computeViewMode(),
             });
         }
         this.onResize();
@@ -1240,8 +1321,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.paused = goban.engine.pause_control && !!goban.engine.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
-            new_state.white_pause_text = goban.white_pause_text;
-            new_state.black_pause_text = goban.black_pause_text;
 
             if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
@@ -1436,6 +1515,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     estimateScore():boolean {
+        let user = data.get("user");
+        let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
+
+        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
+            return null;
+        }
+
         if (this.goban.engine.phase === "stone removal") {
             console.log("Cowardly refusing to enter score estimation phase while stone removal phase is active");
             return false;
@@ -1779,7 +1865,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div>
-             <div className={"Game MainGobanView " + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
+             <div className={"Game MainGobanView " + (this.state.zen_mode ? "zen " : "") + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
@@ -1787,50 +1873,42 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 </div>
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" || null) && this.frag_players()}
+                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
+                            <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                             <PersistentElement className="Goban" elt={this.goban_div}/>
                         </div>
-                    }
-
-                    {
-                        /*
-                        ((this.state.view_mode === 'portrait' && this.state.portrait_tab === 'chat') || null) &&
-                        this.frag_players()
-                        */
                     }
 
                     {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
 
                     {this.frag_below_board_controls()}
 
-                    {/* ((this.state.view_mode === 'wide' && win.width() > 1024) || null) && CURSE_ATF_AD */}
-
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
 
 
-                    {(this.state.view_mode === "portrait" || null) && this.frag_ai_review()}
+                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
-                    {((this.state.view_mode === "portrait") || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode) || null) &&
                         (review
                             ? this.frag_review_controls()
                             : this.frag_play_controls(false)
                         )
                     }
 
-                    {((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */) || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode /* && this.state.portrait_tab === 'chat' */) || null) &&
                         CHAT
                     }
 
-                    {(((this.state.view_mode === "portrait" /* && this.state.portrait_tab === 'chat' */)
+                    {(((this.state.view_mode === "portrait" && !this.state.zen_mode /* && this.state.portrait_tab === 'chat' */)
                       && this.state.user_is_player && this.state.phase !== "finished" ) || null) &&
                         this.frag_cancel_button()
                     }
 
 
-                    {((this.state.view_mode === "portrait" && this.state.portrait_tab === "game") || null) &&
+                    {((this.state.view_mode === "portrait" && !this.state.zen_mode && this.state.portrait_tab === "game") || null) &&
                         this.frag_dock()
                     }
 
@@ -2066,7 +2144,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                            {(this.state.user_is_player || null) &&
                                <button id="game-stone-removal-accept" className="primary" onClick={this.onStoneRemovalAccept}>
                                    {_("Accept removed stones")}
-                                   <span style={{whiteSpace: "nowrap"}}>(<span id="stone-removal-clock"></span>)</span>
+                                   <Clock goban={this.goban} color='stone-removal' />
                                </button>
                            }
                        </div>
@@ -2154,10 +2232,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     <div>
                         {this.frag_analyze_button_bar()}
 
-                        <Resizable id="move-tree-container" className="vertically-resizable">
-                            <canvas id="move-tree-canvas"></canvas>
-                        </Resizable>
-
+                        <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
 
                         {(!this.state.zen_mode || null)
                             && <div style={{padding: "0.5em"}}>
@@ -2222,9 +2297,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         }
                     </div>
 
-                    <Resizable id="move-tree-container" className="vertically-resizable">
-                        <canvas id="move-tree-canvas"></canvas>
-                    </Resizable>
+                    <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
 
                     <div style={{paddingLeft: "0.5em", paddingRight: "0.5em"}}>
                         <textarea id="game-move-node-text" placeholder={_("Move comments...")}
@@ -2370,33 +2443,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return null;
     }
 
-    frag_clock(color) {
-                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
-        return (
-          <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
-              <div className="main-time boxed"></div>
-              {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
-                  <span className="byo-yomi-periods" />
-              }
-              {(this.goban.engine.time_control.time_control === "canadian" || null) &&
-                  <span> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
-              }
-              {(this.state[`${color}_pause_text`] || null) &&
-                  <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
-              }
-              {null && (this.goban.engine.time_control.time_control === "byoyomi" || this.goban.engine.time_control.time_control === "canadian" || null) &&
-
-                  <div className="overtime-container">
-                      <div className="overtime">{_("OVERTIME")}</div>
-                      <div className="periods-container">
-                          <div className="periods boxed">&nbsp;</div>
-                          <div className="period-time boxed">&nbsp;</div>
-                      </div>
-                  </div>
-              }
-          </div>
-        );
-    }
     frag_players() {
         let goban = this.goban;
         if (!goban) {
@@ -2408,7 +2454,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div ref={el => this.ref_players = el} className="players">
-              {["black", "white"].map((color, idx) => {
+              {["black", "white"].map((color: 'black' | 'white', idx) => {
                   let player_bg: any = {};
                   if (this.state[`historical_${color}`]) {
                       let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
@@ -2433,7 +2479,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                           }
 
                           {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
-                              this.frag_clock(color)
+                              <Clock goban={this.goban} color={color} className="in-game-clock" />
                           }
                       </div>
 
@@ -2451,13 +2497,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
                           {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
                             goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
-                              <div className="points">
+                              <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
                                   {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
                               </div>
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className="captures">
+                              <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
                                   {interpolate(_("{{captures}} {{unit}}"), {"captures": this.state.score[color].prisoners, "unit": ngettext("capture", "captures", this.state.score[color].prisoners)})}
                               </div>
                           }
@@ -2573,6 +2619,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     /> <input type="range"
                         onChange={this.setVolume}
                         value={this.state.volume} min={0} max={1.0} step={0.01}
+                    /> <i className={"fa volume-icon " +
+                        (this.state.volume === 0 ? "fa-volume-off"
+                            : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                            onClick={this.toggleVolume}
                     />
                 </a>
 
@@ -2604,7 +2654,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
-                {game && <a onClick={this.estimateScore}><i className="fa fa-tachometer"></i> {_("Estimate score")}</a>}
+                {game &&
+                    <a onClick={this.estimateScore} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
+                        <i className="fa fa-tachometer"></i> {_("Estimate score")}
+                    </a>}
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
@@ -2706,6 +2759,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
             );
         }
         return null;
+    }
+    setMoveTreeContainer = (resizable:Resizable):void => {
+        this.ref_move_tree_container = resizable ? resizable.div : null;
+        if (this.goban) {
+            (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
+        }
     }
 }
 

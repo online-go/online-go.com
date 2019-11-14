@@ -104,7 +104,7 @@ export class Settings extends React.PureComponent<{}, any> {
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         window.document.title = _("Settings");
         this.resolve();
         this.vacation_interval = setInterval(() => {
@@ -116,13 +116,13 @@ export class Settings extends React.PureComponent<{}, any> {
                 }
             }
         }, 1000);
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         if (this.vacation_interval) {
             clearInterval(this.vacation_interval);
         }
-    }}}
-    resolve() {{{
+    }
+    resolve() {
         get("me/settings")
         .then((settings) => {
             this.setState({
@@ -133,8 +133,8 @@ export class Settings extends React.PureComponent<{}, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    endVacation = () => {{{
+    }
+    endVacation = () => {
         del("me/vacation")
         .then((data) => {
             this.vacation_base_time = Date.now();
@@ -146,8 +146,8 @@ export class Settings extends React.PureComponent<{}, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    startVacation = () => {{{
+    }
+    startVacation = () => {
         put("me/vacation")
         .then((data) => {
             this.vacation_base_time = Date.now();
@@ -159,11 +159,11 @@ export class Settings extends React.PureComponent<{}, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    setVolume = (ev) => {{{
+    }
+    setVolume = (ev) => {
         this._setVolume(parseFloat(ev.target.value));
-    }}}
-    _setVolume(volume) {{{
+    }
+    _setVolume(volume) {
         let enabled = volume > 0;
 
         preferences.set("sound-volume", volume);
@@ -173,36 +173,36 @@ export class Settings extends React.PureComponent<{}, any> {
             volume: volume,
             sound_enabled: enabled,
         });
-    }}}
-    setAutomatchAlertVolume = (ev) => {{{
+    }
+    setAutomatchAlertVolume = (ev) => {
         this._setAutomatchAlertVolume(parseFloat(ev.target.value));
-    }}}
-    _setAutomatchAlertVolume(volume) {{{
+    }
+    _setAutomatchAlertVolume(volume) {
         preferences.set("automatch-alert-volume", volume);
 
         this.setState({
             automatch_alert_volume: volume,
         });
-    }}}
-    setDockDelay = (ev) => {{{
+    }
+    setDockDelay = (ev) => {
         let new_delay = parseFloat(ev.target.value);
         preferences.set("dock-delay", new_delay);
         this.setState({"dock_delay": new_delay});
-    }}}
+    }
 
-    setVoiceCountdown = (ev) => {{{
+    setVoiceCountdown = (ev) => {
         preferences.set("sound-voice-countdown", ev.target.checked);
         this.setState({"voice_countdown": ev.target.checked});
-    }}}
+    }
 
-    setVoiceCountdownMain = (ev) => {{{
+    setVoiceCountdownMain = (ev) => {
         preferences.set("sound-voice-countdown-main", ev.target.checked);
         this.setState({"voice_countdown_main": ev.target.checked});
-    }}}
+    }
 
-    toggleVolume = (ev) => {{{
+    toggleVolume = (ev) => {
         this._setVolume(this.state.volume > 0 ? 0 : 0.5);
-    }}}
+    }
     toggleAIReview = (ev) => {
         preferences.set("ai-review-enabled", this.state.disable_ai_review);
         this.setState({"disable_ai_review": !this.state.disable_ai_review});
@@ -211,25 +211,25 @@ export class Settings extends React.PureComponent<{}, any> {
         preferences.set("variations-in-chat-enabled", this.state.disable_variations_in_chat);
         this.setState({"disable_variations_in_chat": !this.state.disable_variations_in_chat});
     }
-    toggleAutomatchAlertVolume = (ev) => {{{
+    toggleAutomatchAlertVolume = (ev) => {
         this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
-    }}}
-    playSampleSound = () => {{{
+    }
+    playSampleSound = () => {
         let num = Math.round(Math.random() * 10000) % 5;
         sfx.play("stone-" + (num + 1));
-    }}}
-    playAutomatchAlert = () => {{{
+    }
+    playAutomatchAlert = () => {
         let t = sfx.volume_override;
         sfx.volume_override = preferences.get("automatch-alert-volume");
         sfx.play(preferences.get("automatch-alert-sound"));
         sfx.volume_override = t;
-    }}}
-    getSubmitMode(speed) {{{
+    }
+    getSubmitMode(speed) {
         let single = preferences.get(`one-click-submit-${speed}` as any);
         let dbl = preferences.get(`double-click-submit-${speed}` as any);
         return single ? "single" : (dbl ? "double" : "button");
-    }}}
-    setSubmitMode(speed, mode) {{{
+    }
+    setSubmitMode(speed, mode) {
         switch (mode) {
             case "single":
                 preferences.set(`double-click-submit-${speed}`, false);
@@ -250,26 +250,26 @@ export class Settings extends React.PureComponent<{}, any> {
         if (speed === "correspondence") {
             this.setState({corr_submit_mode: this.getSubmitMode(speed)});
         }
-    }}}
-    setLiveSubmitMode = (ev) => {{{
+    }
+    setLiveSubmitMode = (ev) => {
         this.setSubmitMode("live", ev.target.value);
-    }}}
-    setCorrSubmitMode = (ev) => {{{
+    }
+    setCorrSubmitMode = (ev) => {
         this.setSubmitMode("correspondence", ev.target.value);
-    }}}
-    setBoardLabeling = (ev) => {{{
+    }
+    setBoardLabeling = (ev) => {
         preferences.set('board-labeling', ev.target.value);
         this.setState({'board_labeling': ev.target.value});
-    }}}
+    }
 
     notification_bindings = {};
-    updateNotification(key) {{{
+    updateNotification(key) {
         if (!(key in this.notification_bindings)) {
             this.notification_bindings[key] = this._updateNotification.bind(this, key);
         }
         return this.notification_bindings[key];
-    }}}
-    _updateNotification(key, event) {{{
+    }
+    _updateNotification(key, event) {
         let up = {};
         up[key] = {
             "description": this.state.notifications[key].description,
@@ -284,46 +284,46 @@ export class Settings extends React.PureComponent<{}, any> {
         })
         .then(() => 0)
         .catch(errorAlerter);
-    }}}
-    updateProfanityFilter = (ev) => {{{
+    }
+    updateProfanityFilter = (ev) => {
         let new_profanity_settings = {};
         Array.prototype.filter.apply(ev.target.options, [x => x.selected]).map(opt => new_profanity_settings[opt.value] = true);
         preferences.set("profanity-filter", new_profanity_settings);
         this.setState({profanity_filter: Object.keys(new_profanity_settings)});
-    }}}
-    setAutoAdvance = (ev) => {{{
+    }
+    setAutoAdvance = (ev) => {
         preferences.set("auto-advance-after-submit", ev.target.checked),
         this.setState({autoadvance: preferences.get("auto-advance-after-submit")});
-    }}}
-    setAlwaysDisableAnalysis = (ev) => {{{
+    }
+    setAlwaysDisableAnalysis = (ev) => {
         preferences.set("always-disable-analysis", ev.target.checked),
         this.setState({always_disable_analysis: preferences.get("always-disable-analysis")});
-    }}}
-    setDynamicTitle = (ev) => {{{
+    }
+    setDynamicTitle = (ev) => {
         preferences.set("dynamic-title", ev.target.checked),
         this.setState({dynamic_title: preferences.get("dynamic-title")});
-    }}}
-    setFunctionKeysEnabled = (ev) => {{{
+    }
+    setFunctionKeysEnabled = (ev) => {
         preferences.set("function-keys-enabled", ev.target.checked),
         this.setState({function_keys_enabled: preferences.get("function-keys-enabled")});
-    }}}
-    setShowOfflineFriends = (ev) => {{{
+    }
+    setShowOfflineFriends = (ev) => {
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
-    }}}
-    setShowTournamentIndicator = (ev) => {{{
+    }
+    setShowTournamentIndicator = (ev) => {
         preferences.set("show-tournament-indicator", ev.target.checked),
         this.setState({show_tournament_indicator: preferences.get("show-tournament-indicator")});
-    }}}
-    setUnicodeFilterUsernames = (ev) => {{{
+    }
+    setUnicodeFilterUsernames = (ev) => {
         preferences.set("unicode-filter", ev.target.checked),
         this.setState({unicode_filter_usernames: preferences.get("unicode-filter")});
-    }}}
-    setTranslationDialogNeverShow = (ev) => {{{
+    }
+    setTranslationDialogNeverShow = (ev) => {
         preferences.set("translation-dialog-never-show", ev.target.checked),
         this.setState({translation_dialog_never_show: preferences.get("translation-dialog-never-show")});
-    }}}
-    updateDesktopNotifications = (ev) => {{{
+    }
+    updateDesktopNotifications = (ev) => {
         let enabled = ev.target.checked;
 
         if (!enabled) {
@@ -369,8 +369,8 @@ export class Settings extends React.PureComponent<{}, any> {
         } catch (e) {
             console.error(e);
         }
-    }}}
-    updateHideUIClass = (ev) => {{{
+    }
+    updateHideUIClass = (ev) => {
         let checked = ev.target.checked;
         this.setState({'hide_ui_class': !checked});
         put(`me/settings`, 0, {
@@ -379,39 +379,39 @@ export class Settings extends React.PureComponent<{}, any> {
             }
         })
         .catch(errorAlerter);
-    }}}
+    }
 
-    updateIncidentReportNotifications = (ev) => {{{
+    updateIncidentReportNotifications = (ev) => {
         let checked = ev.target.checked;
         this.setState({'incident_report_notifications': checked});
         preferences.set("notify-on-incident-report", checked);
-    }}}
+    }
 
-    updatePassword1 = (ev) => {{{
+    updatePassword1 = (ev) => {
         this.setState({password1: ev.target.value});
-    }}}
-    updatePassword2 = (ev) => {{{
+    }
+    updatePassword2 = (ev) => {
         this.setState({password2: ev.target.value});
-    }}}
-    updateEmail = (ev) => {{{
+    }
+    updateEmail = (ev) => {
         this.setState({
             profile: Object.assign({}, this.state.profile, {email: ev.target.value.trim()}),
             email_changed: true
         });
-    }}}
+    }
 
-    passwordIsValid() {{{
+    passwordIsValid() {
         return this.state.password1.length < 1024 && this.state.password1.length > 3 && this.state.password1 === this.state.password2;
-    }}}
-    emailIsValid() {{{
+    }
+    emailIsValid() {
         if (this.state.profile.email.trim() === "") {
             return true;
         }
         let re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
         return re.test(this.state.profile.email.trim());
-    }}}
+    }
 
-    saveEmail = () => {{{
+    saveEmail = () => {
         put("players/%%", this.state.profile.id, {
             "email": this.state.profile.email
         })
@@ -421,21 +421,8 @@ export class Settings extends React.PureComponent<{}, any> {
                 email_message: _("Email updated successfully!")
             });
         }).catch(errorAlerter);
-        /*
-        swal({
-            text: _("Enter your current password"),
-        }).then((password) => {
-            put("me/settings", {
-                'password': password,
-                ...
-            })
-            .then(()=>{
-                swal(_("Email updated successfully!"))
-            })
-        }).catch(()=>0);
-        */
-    }}}
-    savePassword = () => {{{
+    }
+    savePassword = () => {
         if (this.state.profile.no_password_set) { // ie social auth account
             post("/api/v0/changePassword", {
                 "new_password": this.state.password1,
@@ -461,30 +448,30 @@ export class Settings extends React.PureComponent<{}, any> {
                 .catch(errorAlerter);
             }).catch(errorAlerter);
         }
-    }}}
+    }
 
-    updateGameListThreshold = (ev) => {{{
+    updateGameListThreshold = (ev) => {
         this.setState({
             game_list_threshold: parseInt(ev.target.value)
         });
         preferences.set("game-list-threshold", parseInt(ev.target.value));
-    }}}
+    }
 
-    updateAutoplayDelay = (ev) => {{{
+    updateAutoplayDelay = (ev) => {
         this.setState({
             autoplay_delay: ev.target.value
         });
         if (parseFloat(ev.target.value) && parseFloat(ev.target.value) >= 0.1) {
             preferences.set("autoplay-delay", Math.round(1000 * parseFloat(ev.target.value)));
         }
-    }}}
-    resendValidationEmail = () => {{{
+    }
+    resendValidationEmail = () => {
         post("me/validateEmail", {})
         .then(() => {
             swal("Validation email sent! Please check your email and click the validation link.");
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     render() {
         let user = data.get("user");
@@ -604,7 +591,7 @@ export class Settings extends React.PureComponent<{}, any> {
                         </dl>
                     </Card>
 
-                    <Card>{/* {{{ */}
+                    <Card>
                         <h3>{_("Game Preferences")}</h3>
                         <dl>
                             <dt>{_("Sound")}</dt>
@@ -718,10 +705,10 @@ export class Settings extends React.PureComponent<{}, any> {
                             </dd>
                         </dl>
                     </Card>
-                    {/* }}} */}
 
 
-                    <Card>{/* {{{ */}
+
+                    <Card>
                         <h3>{_("Email Notifications")}</h3>
                         {_("Email me a notification when ...")}
                         {Object.keys(this.state.notifications).map((k, idx) =>
@@ -734,21 +721,21 @@ export class Settings extends React.PureComponent<{}, any> {
                             </div>
                         )}
                     </Card>
-                    {/* }}} */}
 
 
-                    {aga_ratings_enabled && /* {{{ */
+
+                    {aga_ratings_enabled &&
                         <Card>
                             <h3>{_("AGA Settings")}</h3>
 
 
                         </Card>
-                    /* }}} */}
+                    }
 
                 </div>
                 <div className="col-sm-5">
 
-                    <Card>{/* {{{ */}
+                    <Card>
                         <h3>
                             {this.state.profile.on_vacation
                                 ?  <span className="vacation-status">
@@ -780,10 +767,10 @@ export class Settings extends React.PureComponent<{}, any> {
                             }</div>
                         </div>
                     </Card>
-                    {/* }}} */}
 
 
-                    <Card>{/* {{{ */}
+
+                    <Card>
                         <h3>{_("Account Settings")}</h3>
 
                         <dl>
@@ -836,7 +823,7 @@ export class Settings extends React.PureComponent<{}, any> {
 
 
                     </Card>
-                    {/* }}} */}
+
 
                     <Card>
                         <div className="logout-all-devices-container">

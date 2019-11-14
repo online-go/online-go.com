@@ -139,6 +139,11 @@ light.weak-loss                         = lighten(light.loss, 25%)
 light.strong-win                        = darken(light.win, 25%)
 light.strong-loss                       = darken(light.loss, 25%)
 
+light.strong-w-text                     = light.bg
+light.strong-l-text                     = light.bg
+light.weak-w-text                       = light.fg
+light.weak-l-text                       = light.fg
+
 light.shade0                            = lighten(light.fg, 20%)
 light.shade1                            = lighten(light.fg, 40%)
 light.shade2                            = lighten(light.fg, 60%)
@@ -230,7 +235,7 @@ dark.bot                                = light.bot
 dark.moderator                          = lighten(light.moderator, 20%)
 dark.admin                              = lighten(light.admin, 20%)
 dark.ambassador                         = light.ambassador
-dark.teacher                            = light.teacher 
+dark.teacher                            = light.teacher
 
 dark.shade0                             = lighten(dark.bg, 70%)
 dark.shade1                             = lighten(dark.bg, 50%)
@@ -255,6 +260,11 @@ dark.strong-loss                        = lighten(dark.loss, 25%)
 
 dark.weak-win                           = darken(dark.win, 25%)
 dark.weak-loss                          = darken(dark.loss, 25%)
+
+dark.strong-w-text                      = dark.bg
+dark.strong-l-text                      = dark.bg
+dark.weak-w-text                        = dark.fg
+dark.weak-l-text                        = dark.fg
 
 
 /** Navbar **/
@@ -319,7 +329,7 @@ nowrap()
 @require "global_styl/bootstrap-esq.styl";
 @require "global_styl/misc-ui.styl";
 @require "global_styl/ogs-font.styl";
-@require "lib/ogs-goban/Goban.styl";
+@require "../node_modules/goban/src/Goban.styl";
 @require "global_styl/swal.styl";
 @require "global_styl/flags16.styl";
 @require "global_styl/flags32.styl";
@@ -338,3 +348,4 @@ nowrap()
 
 @require '../node_modules/react-select/dist/react-select.css';
 
+@require '../node_modules/react-table/react-table.css';

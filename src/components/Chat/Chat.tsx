@@ -35,6 +35,9 @@ import {PersistentElement} from "PersistentElement";
 import {users_by_rank} from 'chat_manager';
 import * as moment from "moment";
 import cached from 'cached';
+import {popover} from "popover";
+import {ChatDetails} from './ChatDetails';
+import {shouldOpenNewTab} from 'misc';
 
 
 declare let swal;
@@ -48,18 +51,20 @@ interface ChatProperties {
     showChannels?: boolean;
     showUserList?: boolean;
     updateTitle: boolean;
+    fakelink?: boolean;
 }
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-          "\\b"  + cleaned_username_regex + "([?:.!*\\s])"
-        + "|\\b" + cleaned_username_regex + "$"
+          "\\b"  + cleaned_username_regex + "\\b"
+        + "|\\bplayer ?" + user.id + "\\b"
+        + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
 });
 
-let global_channels: Array<any> = [ /* {{{ */
+let global_channels: Array<any> = [
     {"id": "global-english" , "name": "English", "country": "us"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
@@ -95,7 +100,7 @@ let global_channels: Array<any> = [ /* {{{ */
     {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"},
     {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
-]; /* }}} */
+];
 
 data.watch("config.ogs", (settings) => {
     if (settings && settings.channels) {
@@ -111,7 +116,7 @@ for (let chan of global_channels) {
 
 let channels = { };
 
-function getChannel(channel) { /* {{{ */
+function getChannel(channel) {
     if (!(channel in channels)) {
         channels[channel] = {
             name: "<error>",
@@ -125,7 +130,7 @@ function getChannel(channel) { /* {{{ */
         };
     }
     return channels[channel];
-} /* }}} */
+}
 
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
@@ -138,6 +143,7 @@ export class Chat extends React.Component<ChatProperties, any> {
     refs: {
         input;
         chat_log;
+        elt;
     };
 
     received_messages = {};
@@ -176,21 +182,21 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    updateGroups = (groups) => {{{
+    updateGroups = (groups) => {
         this.setState({group_channels: groups});
         groups.map((g) => {
             getChannel("group-" + g.id).name = g.name;
         });
-    }}}
+    }
 
-    updateTournaments = (tournaments) => {{{
+    updateTournaments = (tournaments) => {
         this.setState({tournament_channels: tournaments});
         tournaments.map((t) => {
             getChannel("tournament-" + t.id).name = t.name;
         });
-    }}}
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.groups, this.updateGroups);
         data.watch(cached.active_tournaments, this.updateTournaments);
 
@@ -205,7 +211,6 @@ export class Chat extends React.Component<ChatProperties, any> {
         }
         this.autoscroll();
         $(window).on("focus", this.onDocumentFocus);
-
 
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
@@ -226,11 +231,11 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
         I = setInterval(resizeSeekgraph, 50);
         resizeSeekgraph();
-    }}}
-    componentDidUpdate() {{{
+    }
+    componentDidUpdate() {
         this.autoscroll();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         data.unwatch(cached.groups, this.updateGroups);
         data.unwatch(cached.active_tournaments, this.updateTournaments);
         this.disconnect();
@@ -241,9 +246,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             window.document.title = "OGS";
         }
         this.seekgraph.destroy();
-    }}}
+    }
 
-    connect = () => {{{
+    connect = () => {
         channels = {};
         global_channels.map((chan) => getChannel(chan.id).name = chan.name);
         this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
@@ -263,8 +268,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             this.join(channel);
         }
         this.setActiveChannel(this.state.active_channel);
-    }}}
-    disconnect = () => {{{
+    }
+    disconnect = () => {
         channels = {};
         comm_socket.off("chat-message", this.onChatMessage);
         comm_socket.off("chat-join", this.onChatJoin);
@@ -275,15 +280,15 @@ export class Chat extends React.Component<ChatProperties, any> {
             this.part(channel, true, true);
         }
         clearInterval(this.online_count_interval);
-    }}}
-    onDocumentFocus = () => {{{
+    }
+    onDocumentFocus = () => {
         this.unread_ct = 0;
         if (this.props.updateTitle) {
             window.document.title = _("Chat");
         }
-    }}}
+    }
 
-    onChatMessageRemoved = (obj) => {{{
+    onChatMessageRemoved = (obj) => {
         console.log("Chat message removed: ", obj);
         let c = getChannel(obj.channel);
         c.chat_ids[obj.uuid] = true;
@@ -294,8 +299,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             }
         }
         this.syncStateSoon();
-    }}}
-    onChatMessage = (obj) => {{{
+    }
+    onChatMessage = (obj) => {
         let mentioned = false;
         try {
             if (typeof(obj.message.m) === "string") {
@@ -355,8 +360,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 window.document.title = `(${this.unread_ct}) ` + _("Chat");
             }
         }
-    }}}
-    onChatJoin = (joins) => {{{
+    }
+    onChatJoin = (joins) => {
         let c = getChannel(joins.channel);
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
@@ -368,8 +373,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         //if (this.state.active_channel === joins.channel) {
         this.syncStateSoon();
         //}
-    }}}
-    onChatPart = (part) => {{{
+    }
+    onChatPart = (part) => {
         let c = getChannel(part.channel);
         if ((part.user.id in c.user_list)) {
             c.user_count--;
@@ -379,8 +384,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         //if (this.state.active_channel === part.channel) {
             this.syncStateSoon();
         //}
-    }}}
-    systemMessage(text, type) {{{
+    }
+    systemMessage(text, type) {
         let c = getChannel(this.state.active_channel);
         c.chat_log.push({
             message: {
@@ -391,8 +396,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             "body": text,
         });
         this.syncStateSoon();
-    }}}
-    clearSystemMessages(type) {{{
+    }
+    clearSystemMessages(type) {
         for (let channel in channels) {
             let c = getChannel(channel);
             for (let i = 0; i < c.chat_log.length; ++i) {
@@ -403,9 +408,9 @@ export class Chat extends React.Component<ChatProperties, any> {
             }
         }
         this.syncStateSoon();
-    }}}
+    }
 
-    join(channel) {{{
+    join(channel) {
         if (!channel) {
             throw new Error(`Attempted to join invalid channel: ${channel}`);
         }
@@ -424,8 +429,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 joined_channels: data.get("chat.joined")
             });
         }
-    }}}
-    part(channel, dont_autoset_active, dont_clear_joined) {{{
+    }
+    part = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
         if (comm_socket.connected) {
             comm_socket.send("chat/part", {"channel": channel});
         }
@@ -449,8 +454,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 this.setActiveChannel("global-english");
             }
         }
-    }}}
-    syncStateSoon() {{{
+    }
+    syncStateSoon() {
         if (!this.defered_state_update) {
             this.defered_state_update = setTimeout(() => {
                 this.defered_state_update = null;
@@ -461,8 +466,8 @@ export class Chat extends React.Component<ChatProperties, any> {
                 });
             }, 20);
         }
-    }}}
-    setActiveChannel = (channel_or_ev) => { /* {{{ */
+    }
+    setActiveChannel = (channel_or_ev) => {
         let channel = channel_or_ev;
         if (channel_or_ev.target) {
             channel = $(channel_or_ev.target).attr("data-channel");
@@ -514,8 +519,8 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.should_scroll_chatlog = true;
         this.scrollChats();
         */
-    } /* }}} */
-    sortedUserList(): Array<any> {{{
+    }
+    sortedUserList(): Array<any> {
         let lst = [];
         for (let id in this.state.user_list) {
             lst.push(this.state.user_list[id]);
@@ -529,15 +534,15 @@ export class Chat extends React.Component<ChatProperties, any> {
             });
         }
         return lst;
-    }}}
-    toggleSortOrder = () => {{{
+    }
+    toggleSortOrder = () => {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }}}
+    }
 
 
-    onKeyPress = (event) => {{{
+    onKeyPress = (event) => {
         if (event.charCode === 13) {
             let input = event.target as HTMLInputElement;
             if (!comm_socket.connected) {
@@ -550,8 +555,8 @@ export class Chat extends React.Component<ChatProperties, any> {
             input.value = "";
             return false;
         }
-    }}}
-    sendChat(txt, channel) {{{
+    }
+    sendChat(txt, channel) {
         let actually_send = (txt, channel) => {
             if (this.flood_protection) {
                 return;
@@ -610,23 +615,23 @@ export class Chat extends React.Component<ChatProperties, any> {
         for (let str of string_splitter(txt, 300)) {
             actually_send(str, channel);
         }
-    }}}
-    focusInput = () => {{{
+    }
+    focusInput = () => {
         let sel = window.getSelection();
 
         if (!sel || sel.isCollapsed) {
             $(this.refs.input.refs.input).focus();
         }
-    }}}
-    updateScrollPosition = () => {{{
+    }
+    updateScrollPosition = () => {
         let tf = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
             this.refs.chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
         this.scrolled_to_bottom = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
-    }}}
-    autoscroll() {{{
+    }
+    autoscroll() {
         if (this.scrolled_to_bottom) {
             this.refs.chat_log.scrollTop = this.refs.chat_log.scrollHeight;
             setTimeout(() => {
@@ -636,28 +641,28 @@ export class Chat extends React.Component<ChatProperties, any> {
                 }
             } , 100);
         }
-    }}}
+    }
 
     toggleChannelList = () => this.setState({force_show_channels: !this.state.force_show_channels});
     toggleUserList = () => this.setState({force_show_users: !this.state.force_show_users});
 
-    leaveActiveChannel = () => {{{
+    leaveActiveChannel = () => {
         this.part(this.state.active_channel, false, false);
-    }}}
-    toggleShowAllGlobalChannels = () => {{{
+    }
+    toggleShowAllGlobalChannels = () => {
         preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels),
         this.setState({show_all_global_channels: !this.state.show_all_global_channels});
-    }}}
-    toggleShowAllGroupChannels = () => {{{
+    }
+    toggleShowAllGroupChannels = () => {
         preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels),
         this.setState({show_all_group_channels: !this.state.show_all_group_channels});
-    }}}
-    toggleShowAllTournamentChannels = () => {{{
+    }
+    toggleShowAllTournamentChannels = () => {
         preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels),
         this.setState({show_all_tournament_channels: !this.state.show_all_tournament_channels});
-    }}}
+    }
 
-    render() {{{
+    render() {
         let sorted_user_list = this.sortedUserList();
         let last_line = null;
 
@@ -668,12 +673,11 @@ export class Chat extends React.Component<ChatProperties, any> {
         };
 
         let user_count = (channel: string) => {
-            let leave_text = pgettext("Leave chat room", "leave");
             let c = getChannel(channel);
             if (c.unread_ct) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             } else if (channel in this.state.joined_channels) {
-                return <span className="unread-count" data-count="" data-leave={leave_text} onClick={this.part.bind(this, channel, false, false)} />;
+                return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             }
             /*
             if (c.user_count) {
@@ -813,9 +817,36 @@ export class Chat extends React.Component<ChatProperties, any> {
                 }
             </div>
         );
-    }}}
-}
+    }
 
+    display_details = (event) => {
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get the popup warnings */
+            return;
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        let channel = event.currentTarget.getAttribute('data-channel');
+        if (shouldOpenNewTab(event)) {
+            let uri = "";
+            if (channel.startsWith('group')) {
+                uri += '/group/' + channel.slice(6);
+            }
+            if (channel.startsWith("tournament")) {
+                uri += "/tournament/" + channel.slice(11);
+            }
+            window.open(uri, "_blank");
+        }
+
+        popover({
+            elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
+            below: event.currentTarget,
+            minWidth: 130,
+        });
+    }
+}
 
 function searchString(site, parameters) {
     if (parameters.length === 1) {
@@ -842,7 +873,7 @@ function generateChatSearchLine(urlString, command, body) {
     }
 }
 
-function ChatLine(props) {{{
+function ChatLine(props) {
     let line = props.line;
     let lastline = props.lastline;
     let user = line;
@@ -909,20 +940,107 @@ function ChatLine(props) {{{
             <span className="body">{chat_markup(body)}</span>
         </div>
     );
-}}}
-export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {{{
+}
+export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
     let replacements = [
-        {split: /(https?:\/\/[^<> ]+)/gi, pattern: /(https?:\/\/[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
-        {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
+        // Match github
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{"GH-" + m[2]}</a>)},
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{"GH-" + m[2]}</a>)},
+        {split: /\b((?:gh|pr|issue)[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b((?:gh|pr|issue))[- ]?(?:#)?([0-9]+)\b/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1] + '-' + m[2]}</a>)},
+        // links to the wiki
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/(?:[^\/<> ]+)(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/([^\/<> ]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={m[1]}>{"wiki: " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</Link>)},
+        // Match forum links
+        {split: /\b(https?:\/\/forums\.online-go\.com\/t\/[a-zA-z0-9-]+\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-z0-9-]+)\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{(m[2]).replace(/(\-)/gi, " ")}</a>)},
+        // Match online-go links
+        // user profiles
+        {split: /\b((?:player|user) ?(?:#)?[0-9]+)\b/gi, pattern: /\b(player|user) ?(?:#)?([0-9]+)\b/gi, replacement: (m, idx) => (<Player key={idx} user={{id: Number(m[2])}} rank={false} noextracontrols />)},
+        {split: /\b((?:player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/[0-9]+(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
+            pattern: /\b((player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/([0-9]+)(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Player key={idx} user={{id: Number(m[3])}} rank={false} noextracontrols />)},
+        {split: /\b((?:player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/(?:[^\/<> ]+)(?:\/|\b))/gi,
+            pattern: /\b((player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/([^\/<> ]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Player key={idx} user={{"id": -1, username: m[3]}} rank={false} noextracontrols />)},
+        {split: /(@"[^"\/]+(?:\/[0-9]+)?")/gi,
+            pattern: /(@"([^"\/]+)(?:\/([0-9]+))?")/gi,
+            replacement: (m, idx) => (<Player key={idx} user={(m[3] ? {id: Number(m[3])} : {username: m[2]})} rank={false} noextracontrols />)},
+        {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])}/>)},
+        // games
+        {split: /\b((?:game)[- ]?(?:#)?[0-9]{3,})/gi, pattern: /(\bgame)[- ]?(?:#)?([0-9]{3,})/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:game )?https?:\/\/online-go\.com\/game(?:\/view)?\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/game/${m[3]}`}>{(m[2] ? m[2] : "game ") + m[3]}</Link>)},
+        // reviews
         {split: /(^##[0-9]{3,}|[ ]##[0-9]{3,})/gi, pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}##${m[2] || ""}${m[4] || ""}`}</Link>)},
-        {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
-            replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}#${m[2] || ""}${m[4] || ""}`}</Link>)},
-        {split: /(player [0-9]+)/gi, pattern: /(player ([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/user/view/${m[2]}`}>{m[1]}</Link>)},
-        {split: /(issue [0-9]+)/gi, pattern: /(issue ([0-9]+))/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>{m[1]}</a>)},
-        {split: /(pr [0-9]+)/gi, pattern: /(pr ([0-9]+))/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>{m[1]}</a>)},
-        {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-    ];
+            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}review ${m[2] || ""}${m[4] || ""}`}</Link>)},
+        {split: /\b(review[- ]?(?:#)?[0-9]{3,})/gi, pattern: /\b(review)[- ]?(?:#)?([0-9]{3,})/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:review )?https?:\/\/online-go\.com\/review(?:\/view)?\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((review )?https?:\/\/online-go\.com\/review(?:\/view)?\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/review/${m[3]}`}>{(m[2] ? m[2] : "review ") + m[3]}</Link>)},
+        // demos
+        {split: /\b((?:demo )?https?:\/\/online-go\.com\/demo(?:\/view)?\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((demo )?https?:\/\/online-go\.com\/demo(?:\/view)?\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/demo/${m[3]}`}>{(m[2] ? m[2] : "demo ") + m[3]}</Link>)},
+        {split: /\b(demo[- ]?(?:#)?[0-9]{3,})/gi, pattern: /\b(demo)[- ]?(?:#)?([0-9]{3,})/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/demo/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        // joseki
+        {split: /\b(joseki[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b(joseki)[- ]?(?:#)?([0-9]+)/gi, replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:joseki )?https?:\/\/online-go\.com\/joseki\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((?:joseki )?https?:\/\/online-go\.com\/joseki\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/joseki/${m[2]}`}>{"joseki " + m[2]}</Link>)},
+        // library
+        {split: /\b((?:library )?https?:\/\/online-go\.com\/library\/[0-9]+(?:\/[0-9]+)?(?:\/|\b))/gi,
+            pattern: /\b((joseki )?https?:\/\/online-go\.com\/library\/([0-9]+)(?:\/([0-9]+))?(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/library/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{"library" + (m[4] ? " " + m[4] : "") + " of player " + m[3]}</Link>)},
+        // groups
+        {split: /\b(group[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b(group)[- ]?(?:#)?([0-9]+)/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:group )?https?:\/\/online-go\.com\/group\/[0-9]+(?:\/[^\/<> ]+)*)/gi,
+            pattern: /\b((group )?https?:\/\/online-go\.com\/group\/([0-9]+)(?:\/[^\/<> ]+)*)/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/group/${m[3]}`}>{(m[2] ? m[2] : "group ") + m[3]}</Link>)},
+        // tournaments
+        {split: /\b(tournament[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b(tournament)[- ]?(?:#)?([0-9]+)/gi, replacement: (m, idx) => (<Link key={idx} to={`/tournament/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:tournament )?https?:\/\/online-go\.com\/tournaments?\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((tournament )?https?:\/\/online-go\.com\/tournaments?\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/tournament/${m[3]}`}>{(m[2] ? m[2] : "tournament ") + m[3]}</Link>)},
+        {split: /\b((?:tournament |tournament-record )?https?:\/\/online-go\.com\/tournament-records?\/[0-9]+(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
+            pattern: /\b((tournament |tournament-record )?https?:\/\/online-go\.com\/tournament-records?\/([0-9]+)(?:\/[^\/<> ]+)*(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/tournament-records/${m[3]}`}>{(m[2] ? m[2] : "tournament-record ") + m[3]}</Link>)},
+        // ladders
+        {split: /\b(ladder[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b(ladder)[- ]?(?:#)?([0-9]+)/gi, replacement: (m, idx) => (<Link key={idx} to={`/ladder/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:ladder )?https?:\/\/online-go\.com\/ladder\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((ladder )?https?:\/\/online-go\.com\/ladder\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/ladder/${m[3]}`}>{(m[2] ? m[2] : "ladder") + '-' + m[3]}</Link>)},
+        // puzzles
+        {split: /\b(puzzle[- ]?(?:#)?[0-9]+)\b/gi, pattern: /\b(puzzle)[- ]?(?:#)?([0-9]+)/gi, replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)},
+        {split: /\b((?:puzzle )?https?:\/\/online-go\.com\/puzzle\/[0-9]+(?:\/|\b))/gi,
+            pattern: /\b((puzzle )?https?:\/\/online-go\.com\/puzzle\/([0-9]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/puzzle/${m[3]}`}>{(m[2] ? m[2] : "puzzle ") + m[3]}</Link>)},
+        // learning-hub
+        {split: /\b((?:tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/[-a-z]+(?:\/[0-9]+)?(?:\/|\b))/gi,
+            pattern: /\b((tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/([-a-z]+)(?:\/([0-9]+))?(?:\/|\b))/gi,
+            replacement: (m, idx) => (<Link key={idx} to={`/learn-to-play-go/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>{(m[2] ? m[2] : "tutorial ") + m[3] + (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}</Link>)},
+        // links to senseis
+        {split: /\b(https?:\/\/senseis\.xmp\.net\/\?(?:[^\/<> ]+)*(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([^\/<> ]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} target='_blank' href={m[1]}>{"senseis: " + m[2]}</a>)},
+        // mails
+        {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
+        // general urls
+        // replaces any url not matched above
+        {split: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, pattern: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
+        {split: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019|api\/[^<> ]+|termination-api\/[^<> ]+)(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/online-go\.com\/(?:sign-in|register|overview|play|chat|observe-games|joseki(?!\/[0-9])|player\/settings|player\/supporter|settings|user\/(?:settings|supporter|verifyEmail)|supporter|support|donate|groups|group\/create|tournament\/new(?:\/[0-9]+)?|tournaments(?!\/[0-9])|ladders|puzzles|leaderboards?|developer|admin(?:\/merchant_log)?|announcement-center|moderator|learning-hub(?!\/[-a-z])|(?:docs\/)?learn-to-play-go(?!\/[-a-z])|(?:docs\/)?crash-course-learn-to-play-go(?:\/[0-9]+)?|dev\/(?:styling|goban-test)|docs\/(?:about|privacy-policy|terms-of-service|contact-information|refund-policy|go-rules-comparison-matrix|team|other-go-resources)|2019usgc|usgc2019|api\/[^<> ]+|termination-api\/[^<> ]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)}
+];
 
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
@@ -952,4 +1070,4 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
     }
 
     return ret;
-}}}
+}

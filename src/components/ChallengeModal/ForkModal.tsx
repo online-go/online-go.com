@@ -32,7 +32,7 @@ interface ForkModalProperties {
 }
 
 export class ForkModal extends Modal<Events, ForkModalProperties, any> {
-    constructor(props) { /* {{{ */
+    constructor(props) {
         super(props);
 
 
@@ -55,18 +55,18 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
                 "game_name": goban.engine.name,
             }
         };
-    } /* }}} */
+    }
 
-    openChallengeModal = () => {{{
+    openChallengeModal = () => {
         this.close();
         challenge(this.state.player.id, this.state.fork_preview);
-    }}}
+    }
 
     setPlayer = (player) => {
         this.setState({player: player});
     }
 
-    render() {{{
+    render() {
 
 
         return (
@@ -83,7 +83,7 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
               </div>
           </div>
         );
-    }}}
+    }
 }
 
 

@@ -163,7 +163,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.josekipedia.com/">Josekipedia</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://eidogo.com/#search">Eidogo's Pattern Search</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://ps.waltheri.net/">Waltheri's Pattern Search</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://alphagoteach.deepmind.com/">AlphaGo Teaching Tool</a></span>
+                <span><Flag country={en}/> <a rel="noopener" href="https://alphagoteach.deepmind.com/">AlphaGo Teaching Tool</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://learn-go.net">Interactive Tutorial for Beginners</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
@@ -198,7 +199,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/KNMeepsie">Jonathan Markowitz</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/nicksibicky/">Nick Sibicky</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA">Andrew Jackson</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/dwyrin/">Dwyrin</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/battsgo">Dwyrin Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/dwyrin/">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/tokinonagare27/">Shusaku Games</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCTji1kQNoWIH85dB_Vxka9g">Haylee</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/littlelambgo">Littlelambgo</a></span>,
@@ -210,11 +211,14 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>,
                 <span><Flag country={ar}/> <a rel="noopener" href="https://www.youtube.com/user/lucho4668 ">Luciano Zinni</a></span>,
                 <span><Flag country={it}/> <a rel="noopener" href="https://www.youtube.com/user/jejosamurai ">Diego Laurenti</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a> </span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a> </span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos">New York Institute of Go</a> </span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98 Twitch</a> / <a rel="noopener" href="https://www.youtube.com/channel/UCohURdr4oSzrXL49qOQQpwg">YouTube</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos">New York Institute of Go</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w">Go Pro Yeonwoo</a> / <Flag country={kr}/> <a rel="noopener" href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ">프로연우</a></span>,
+                <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
+                <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
@@ -224,6 +228,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Sites")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="WhereToPlayGo.com">WhereToPlayGo.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://openstudyroom.org">Open Study Room</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://gobase.org/">GoBase.org</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="http://rfg.jeudego.org/">Revue Française de Go</a></span>,
@@ -234,7 +239,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://senseis.xmp.net/">Sensei's Library</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.shawnsgogroup.com/">Shawn Ray's Go Group</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://gogameguru.com/">GoGameGuru</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://avavt.github.io/gotstats/">Got Stats - OGS Statistics</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://avavt.github.io/gotstats/">Got Stats? - OGS Statistics</a></span>,
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
@@ -242,6 +247,8 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Blogs")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="https://blog.seferi.org/">Seferi's Blog</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://write.as/fraze/">A Baduk Blog</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://twitter.com/yikego_en">Yike Weiqi</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="https://artdugo.fr">Art du Go</a></span>,
                 <span><Flag country={es}/> <a rel="noopener" href="http://badukaires.com/">Badukaires</a></span>,
@@ -254,6 +261,14 @@ export let GoResources = (props) => {
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
+            </dl>
+
+            <dl>
+                <dt>{_("Podcasts")}</dt>
+                {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="http://podcast.baduk.club/">We Heart Baduk Podcast</a></span>
+                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
+                }
             </dl>
 
             <dl>
@@ -315,6 +330,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Club Support")}</dt>
                 {scramble(
+                <span><Flag country={us}/> <a rel="noopener" href="https://baduk.club/">Baduk Club</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="https://www.goclubs.org/">GoClubsOnline</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
@@ -341,7 +357,8 @@ export let GoResources = (props) => {
                 <span><Flag country={us}/> <a rel="noopener" href="http://agfgo.org/pages/store-playing.php">AGF Store</a></span>,
                 <span><Flag country={us}/> <a rel="noopener" href="http://www.algorithmicartisan.com/gostones/">Exotic Go Stones</a></span>,
                 <span><Flag country={jp}/> <a rel="noopener" href="http://www.kurokigoishi.co.jp/english/">Kurokigoishi</a></span>,
-                <span><Flag country={"se"}/> <a rel="noopener" href="http://gobutiken.se">Gobutiken</a></span>
+                <span><Flag country={"se"}/> <a rel="noopener" href="http://gobutiken.se">Gobutiken</a></span>,
+                <span><Flag country={"au"}/> <a rel="noopener" href="https://facebook.com/pacifigoshop">PacifiGo</a> / <a rel="noopener" href="https://ebay.com.au/str/pacifigogocompany">ebay</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>

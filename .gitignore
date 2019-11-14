@@ -5,16 +5,18 @@ typings
 *.swo
 webpack-stats.json
 analyze.json
+stats.json
 src/components/base
 .vscode
 todo
 yarn-error.log
 deployment-staging-area
-Makefile.production
+Makefile.passwords
 how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
 package-lock.json
+report.*.json
 
 
 

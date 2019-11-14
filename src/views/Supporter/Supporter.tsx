@@ -25,8 +25,6 @@ import {LineText} from "misc-ui";
 import {openBecomeASiteSupporterModal} from "./BecomeASiteSupporter";
 import {PrettyTransactionInfo} from './PrettyTransactionInfo';
 import {PersistentElement} from 'PersistentElement';
-//import { default as ReactNumberFormat } from 'react-number-format';
-//import NumberFormat from 'react-number-format';
 import * as NumberFormat from 'react-number-format';
 import { SupporterGoals } from 'SupporterGoals';
 import { SiteSupporterText } from './SiteSupporterText';
@@ -37,23 +35,16 @@ import * as preferences from "preferences";
 declare var swal;
 declare var ogs_release;
 declare var StripeCheckout;
-declare var amex_express_checkout_callback;
 declare var MODE;
 const ReactNumberFormat:any = NumberFormat;
 
 interface SupporterProperties {
 }
 
-let amex_express_checkout_button = document.getElementById('amex-express-checkout');
-
 let amount_steps = {
     'month': [
-        1.0,
-        2.0,
         3.0,
-        4.0,
         5.0,
-        7.5,
         10.0,
         15.0,
         20.0,
@@ -170,8 +161,8 @@ function filterCurrencyOption(currency:any, text:string):boolean {
     return false;
 }
 
-function isPaypalEnabled(iso:string) {
-    return currency_list.filter(x => x.iso === iso)[0].paypal;
+function isPaypalEnabled(iso:string):boolean {
+    return currency_list.filter(x => x.iso === iso)[0].paypal !== 0;
 }
 
 function getCurrencyScale(iso:string) {
@@ -207,18 +198,21 @@ function guessCurrency() {
 
 
 
-let amex_express_js_promise;
+let DEPRECATED_stripe_checkout_js_promise;
 let stripe_checkout_js_promise;
-let stripe_js_promise;
 let checkout = null;
+
+declare var Stripe;
+let stripe;
 
 /* TODO: Delete this code after we're sure we don't need it anymore. This allows anoek
  * to do some easy testing with the deprecated braintree system though, so we're keeping
- * it for awhile. Should be safe to remove by 2018-06-01 if not before. */
+ * it for awhile. (Honestly probably until the last braintree credit card expires) */
 /**** DEPRECATED BRAINTREE CODE ****/
 let braintree_js_promise;
 let braintree;
 declare var Braintree;
+
 
 try {
 
@@ -270,9 +264,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 processing: false,
                 disable_payment_buttons: false,
                 show_update_cc: false,
-                amount: amount_steps[preferences.get('supporter.interval')][4],
+                amount_step: 2,
+                amount: amount_steps[preferences.get('supporter.interval')][2],
                 custom_amount: 50.0,
-                amount_step: 4,
                 currency: guessCurrency(),
                 interval: preferences.get('supporter.interval'),
                 last_transaction: null,
@@ -281,52 +275,34 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
     }
 
-    componentWillUnmount() {{{
-        $("body").append(amex_express_checkout_button);
-    }}}
+    componentWillUnmount() {
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         window.document.title = _("Support OGS");
-        amex_express_checkout_callback = (response) => {
-                post("me/process_stripe", {
-                    'interval': this.state.interval,
-                    'currency': this.state.currency,
-                    'amount': this.getAmount(),
-                    'stripe_amount': this.getStripeAmount(),
-                    'payment_method_token': {"id": response.token}
-                })
-                .then(() => {
-                    this.setState({processing: false});
-                    window.location.reload();
-                })
-                .catch(errorAlerter);
-        };
 
-        if (!amex_express_js_promise) {
-            amex_express_js_promise = new Promise((resolve, reject) => {
+        if (!DEPRECATED_stripe_checkout_js_promise) {
+            DEPRECATED_stripe_checkout_js_promise = new Promise((resolve, reject) => {
                 let script = document.createElement("script");
-                script.src = "https://icm.aexp-static.com/Internet/IMDC/US_en/RegisteredCard/AmexExpressCheckout/js/AmexExpressCheckout.js";
+                script.src = "https://checkout.stripe.com/checkout.js";
                 script.async = true;
                 script.charset = "utf-8";
                 script.onload = () => {
                     resolve();
                 };
                 script.onerror = () => {
-                    reject("Unable to load stripe checkout");
+                    reject("Unable to load old stripe checkout");
                 };
                 document.head.appendChild(script);
             });
-        }
 
-
-
-        if (!stripe_checkout_js_promise) {
             stripe_checkout_js_promise = new Promise((resolve, reject) => {
                 let script = document.createElement("script");
-                script.src = "https://checkout.stripe.com/checkout.js";
+                script.src = "https://js.stripe.com/v3";
                 script.async = true;
                 script.charset = "utf-8";
                 script.onload = () => {
+                    window['stripe'] = stripe = new Stripe(data.get('config').stripe_pk);
                     resolve();
                 };
                 script.onerror = () => {
@@ -339,7 +315,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
 
         if (!data.get('user').anonymous) {
-            stripe_checkout_js_promise.then(() => {
+            DEPRECATED_stripe_checkout_js_promise.then(() => {
                 get("me/supporter")
                 .then((supporter) => {
                     this.setState(Object.assign({loading: false}, supporter));
@@ -357,9 +333,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(errorAlerter);
         }
 
-    }}}
+    }
 
-    setAmountByStep = (ev) => {{{
+    setAmountByStep = (ev) => {
         let step = parseInt(ev.target.value);
         let amount = amount_steps[this.state.interval][parseInt(ev.target.value)];
 
@@ -368,8 +344,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             amount: amount,
             custom_amount: amount ? this.state.custom_amount : amount_steps[this.state.interval][amount_steps[this.state.interval].length - 2] * 2 * getCurrencyScale(this.state.currency)
         });
-    }}}
-    setCurrency = (currency) => {{{
+    }
+    setCurrency = (currency) => {
         let custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
 
         if (currency) {
@@ -379,8 +355,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
             preferences.set("supporter.currency", currency);
         }
-    }}}
-    setInterval = (interval) => {{{
+    }
+    setInterval = (interval) => {
         if (interval) {
             let step = this.state.amount_step;
 
@@ -391,30 +367,30 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
             preferences.set("supporter.interval", interval);
         }
-    }}}
-    updateCustomAmount = (values) => {{{
+    }
+    updateCustomAmount = (values) => {
         console.log(values);
         this.setState({
             custom_amount: values.floatValue || 0.0
         });
-    }}}
-    isValueAllowed = (values) => {{{
+    }
+    isValueAllowed = (values) => {
         return (values.floatValue || 0) >= 0;
-    }}}
-    getAmount() {{{
+    }
+    getAmount() {
         if (this.state.amount) {
             return this.state.amount * getCurrencyScale(this.state.currency);
         }
         return this.state.custom_amount;
-    }}}
-    getStripeAmount() {{{
+    }
+    getStripeAmount() {
         /* Stripe wants amount values in whole number units of the smallest currency fraction, which
          * is to say, $5.00 => 500 */
         return this.getAmount() * Math.pow(10, getCurrencyDecimals(this.state.currency));
-    }}}
+    }
 
 
-    cancelRecurringDonation(id) {{{
+    cancelRecurringDonation(id) {
         swal({
             text: _("Are you sure you want to cancel your support for OGS?"),
             showCancelButton: true,
@@ -433,10 +409,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     /**** DEPRECATED BRAINTREE CODE ****/
-    DEPRECATEDprocessCC = () => {{{
+    DEPRECATEDprocessBraintreeCC = () => {
         let amount = this.getAmount();
 
         if (amount < 1.0) {
@@ -472,10 +448,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
+    }
 
     /*
-    DEPRECATEDupdateCC = () => {{{
+    DEPRECATEDupdateCC = () => {
         if (!this.validateCC()) {
             return;
         }
@@ -506,11 +482,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             window.location.reload();
         })
         .catch(errorAlerter);
-    }}}
+    }
     */
     /**** END DEPRECATED BRAINTREE CODE ****/
 
-    processPaypal = () => {{{
+    processPaypal = () => {
         if (this.state.disable_payment_buttons) {
             return;
         }
@@ -536,14 +512,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(ignore); /* we already alert in this case */
         })
         .catch(errorAlerter);
-    }}}
-    cancelPaypal = () => {{{
+    }
+    cancelPaypal = () => {
         swal({
             html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please log in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
         });
-    }}}
+    }
 
-    createPaymentAccountAndMethod(vendor, details) {{{
+    createPaymentAccountAndMethod(vendor, details) {
         let obj = {
             "payment_vendor": vendor,
         };
@@ -559,8 +535,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         console.log("Creating payment account for vendor ", vendor, details);
         return post("me/payment_accounts", obj);
-    }}}
-    processSupporterSignup(vendor, payment_method, amount, currency, interval) {{{
+    }
+    processSupporterSignup(vendor, payment_method, amount, currency, interval) {
         let promise = post("me/supporter", {
             "vendor": vendor,
             "payment_method": payment_method,
@@ -587,7 +563,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         .catch(errorAlerter);
 
         return promise;
-    }}}
+    }
 
     /* Returns the aggregate descaled support amount per month */
     getSupportLevel():number {
@@ -732,9 +708,24 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             }
                         </div>
                         <div className='supporter-payment-buttons'>
-                            <button className="primary" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
-                                {_("Donate with Card")}
-                            </button>
+                            {/*
+                                <button className="primary" onClick={this.processStripeDEPRECATED} disabled={this.state.disable_payment_buttons || this.state.processing}>
+                                    {_("Donate with Card")}
+                                </button#67478A>#67478A
+                            */}
+
+                            <div className='stripe'>
+
+                                <button className="stripe-button" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
+                                    {_("Donate with Card")}
+                                </button>
+
+                                <div className='powered-by-stripe'>
+                                    <a href='https://stripe.com/'>
+                                        <img src={`${cdn_release}/img/powered_by_stripe.svg`} />
+                                    </a>
+                                </div>
+                            </div>
 
                             <div className="paypal">
                                 <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
@@ -754,21 +745,18 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <input type="hidden" name="modify" value="0" />
                                     <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
                                 </form>
-                                <img className={"paypal-button " + (isPaypalEnabled(this.state.currency) ? "" : "grayed-out-image")} src={`${cdn_release}/img/paypal.png`}
-                                  onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} />
+                                <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)}
+                                    onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} >
+                                        {_("Donate with")} <img src={`${cdn_release}/img/new_paypal.png`} />
+                                </button>
                             </div>
                         </div>
 
                         {false && data.get('user').id === 1 &&
-                            <button className="danger" onClick={this.DEPRECATEDprocessCC}>
+                            <button className="danger" onClick={this.DEPRECATEDprocessBraintreeCC}>
                               {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
                             </button>
                         }
-                        {/*
-                        <div className='other-payment-options'>
-                            <PersistentElement elt={amex_express_checkout_button} />
-                        </div>
-                        */}
                     </div>
                 </div>
             </div>
@@ -812,9 +800,16 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     </p>
 
                                     {
-                                        <button className="btn" style={{marginTop: "3em"}} onClick={() => this.cancelRecurringDonation(recurring_donation.id)} disabled={this.state.processing}>
-                                            {_("Cancel this support")}
-                                        </button>
+                                        <React.Fragment>
+                                            {recurring_donation.order_id &&
+                                                <button className="btn" style={{marginTop: "3em"}} onClick={() => this.updateStripePaymentMethod(recurring_donation.order_id)} disabled={this.state.processing}>
+                                                    {_("Update payment method")}
+                                                </button>
+                                            }
+                                            <button className="btn" style={{marginTop: "3em"}} onClick={() => this.cancelRecurringDonation(recurring_donation.id)} disabled={this.state.processing}>
+                                                {_("Cancel this support")}
+                                            </button>
+                                        </React.Fragment>
                                     }
                                 </div>
                             }
@@ -908,8 +903,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         );
     }
 
-
-    processStripe = () => {
+    processStripeDEPRECATED = () => {
         this.setState({disable_payment_buttons: true});
 
 
@@ -955,23 +949,69 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         });
     }
 
+    updateStripePaymentMethod = (order_id:string) => {
+        this.setState({disable_payment_buttons: true});
 
-}
+        post("me/update_stripe_session", {
+            //'interval': this.state.interval,
+            //'currency': this.state.currency,
+            //'amount': this.getAmount(),
+            //'stripe_amount': this.getStripeAmount(),
+            'order_id': order_id,
+            'redirect_url': window.location.href,
+            'name': _("Supporter"),
+            'description': _("Supporter")
+        })
+        .then((session) => {
+            stripe.redirectToCheckout({
+                sessionId: session.session_id
+            });
+            /*
+            let item = this.state.interval === 'one time'
+                ? {sku: rate_plan.plan_id, quantity: 1}
+                : {plan: rate_plan.plan_id, quantity: 1};
 
 
-
-// https://gist.github.com/2134376
-// Phil Green (ShirtlessKirk)
-function luhnChk(luhn: string): boolean {
-    let len = luhn.length;
-    let mul = 0;
-    let prodArr = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 2, 4, 6, 8, 1, 3, 5, 7, 9]];
-    let sum = 0;
-
-    while (len--) {
-        sum += prodArr[mul][parseInt(luhn.charAt(len), 10)];
-        mul ^= 1;
+            stripe.redirectToCheckout({
+                clientReferenceId: "" + data.get('user').id,
+                items: [item],
+                successUrl: window.location.href,
+                cancelUrl: window.location.href
+            });
+            */
+        })
+        .catch(errorAlerter);
     }
+    processStripe = () => {
+        this.setState({disable_payment_buttons: true});
 
-    return sum % 10 === 0 && sum > 0;
+        post("me/stripe_session", {
+            'interval': this.state.interval,
+            'currency': this.state.currency,
+            'amount': this.getAmount(),
+            'stripe_amount': this.getStripeAmount(),
+            'redirect_url': window.location.href,
+            'name': _("Supporter"),
+            'description': _("Supporter")
+        })
+        .then((session) => {
+            stripe.redirectToCheckout({
+                sessionId: session.session_id
+            });
+            /*
+            let item = this.state.interval === 'one time'
+                ? {sku: rate_plan.plan_id, quantity: 1}
+                : {plan: rate_plan.plan_id, quantity: 1};
+
+
+            stripe.redirectToCheckout({
+                clientReferenceId: "" + data.get('user').id,
+                items: [item],
+                successUrl: window.location.href,
+                cancelUrl: window.location.href
+            });
+            */
+        })
+        .catch(errorAlerter);
+    }
 }

@@ -20,7 +20,11 @@
     themed color user
     cursor: pointer;
     white-space: nowrap;
-    
+    display: inline-flex;
+    max-width: 100%;
+    align-items: baseline; /* needed for Game info modal */
+
+
     //themed color primary
     &:hover {
         text-decoration: underline;
@@ -66,7 +70,7 @@
         content: fa-wrench-content;
     }
 
-    
+
     &.timeout{
         //color: @ogs-player-timeout  !important;
     }
@@ -124,19 +128,22 @@
     &.online:before {
         color: #33FF33;
     }
+
+    .Player-username {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .Player-rank {
+        flex: 0;
+        font-size: 0.7em;
+        padding-left: 0.35em;
+        align-self: center;
+    }
 }
 
-.Player[data-rank]:after {
-    content: attr(data-rank)
-    font-size: 0.7em;
-    padding-left: 0.15em;
-    padding-top: 0.2em;
-}
 
 .Player-with-icon {
-    display: inline-flex;
-    align-items: center; /* needed for Game info modal */
-
     .PlayerIcon {
         margin-right: 0.5em;
     }

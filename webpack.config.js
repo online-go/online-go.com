@@ -5,7 +5,7 @@ let fs = require('fs');
 var webpack = require('webpack');
 const pkg = require('./package.json');
 
-const production = process.env.PRODUCTION ? true : false;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
 let plugins = [];
@@ -27,90 +27,129 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `));
 
+
+module.exports = (env, argv) => {
+    const production = argv.mode === 'production';
+
+    if (production) {
+        console.log("Production build");
+    }
+
+
     /*
-plugins.push(
-    new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        minChunks: function (module) {
-            return module.context && module.context.indexOf('node_modules') !== -1;
-        }
-    })
-);
-*/
-
-let defines = {
-    PRODUCTION: production,
-    CLIENT: true,
-    SERVER: false,
-};
-
-
-plugins.push(new webpack.DefinePlugin(defines));
-
-
-module.exports = {
-    mode: production ? 'production' : 'development',
-    entry: {
-        'ogs': './src/main.tsx',
-    },
-    resolve: {
-        modules: [
-            'src/lib',
-            'src/lib/goban',
-            'src/components',
-            'src/views',
-            'src/data',
-            'src/compatibility',
-            'src',
-            'node_modules'
-        ],
-        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
-    },
-    output: {
-        path: __dirname + '/dist',
-        filename: production ? '[name].min.js' : '[name].js'
-    },
-    module: {
-        rules: [
-            // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
-            {
-                test: /\.tsx?$/,
-                loader: "ts-loader",
-                exclude: /node_modules/,
+    plugins.push(
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: function (module) {
+                return module.context && module.context.indexOf('node_modules') !== -1;
             }
-        ]
-    },
+        })
+    );
+    */
 
-    performance: {
-        maxAssetSize: 1024 * 1024 * 2.5,
-        maxEntrypointSize: 1024 * 1024 * 2.5,
-    },
+    plugins.push(new webpack.EnvironmentPlugin({
+        NODE_ENV: production ? 'production' : 'development',
+        DEBUG: false
+    }));
 
-    optimization: {
-        splitChunks: {
-            cacheGroups: {   
-                "vendor": {
-                    test: /[\\/]node_modules[\\/]/,   // <-- use the test property to specify which deps go here
-                    name: "vendor",
-                    chunks: "all",
-                    priority: -10
+    let defines = {
+        CLIENT: true,
+        SERVER: false,
+    };
+
+    plugins.push(new webpack.DefinePlugin(defines));
+
+
+    if (process.env.ANALYZE) {
+        plugins.push(new BundleAnalyzerPlugin());
+    }
+
+
+    const config = {
+        mode: production ? 'production' : 'development',
+        entry: {
+            'ogs': './src/main.tsx',
+        },
+        resolve: {
+            modules: [
+                'src/lib',
+                'src/components',
+                'src/views',
+                'src',
+                'node_modules'
+            ],
+            extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
+        },
+        output: {
+            path: __dirname + '/dist',
+            filename: production ? '[name].min.js' : '[name].js'
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    use: ["source-map-loader"],
+                    enforce: "pre"
+                },
+                // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
+                {
+                    test: /\.tsx?$/,
+                    loader: "ts-loader",
+                    exclude: /node_modules/,
+                }
+            ]
+        },
+
+        performance: {
+            maxAssetSize: 1024 * 1024 * 2.5,
+            maxEntrypointSize: 1024 * 1024 * 2.5,
+        },
+
+        optimization: {
+            splitChunks: {
+                cacheGroups: {   
+                    "vendor": {
+                        test: /[\\/]node_modules[\\/]/,   // <-- use the test property to specify which deps go here
+                        name: "vendor",
+                        chunks: "all",
+                        priority: -10
+                    }
                 }
             }
-        }
-    },
+        },
 
 
-    plugins: plugins,
 
-    //devtool: production ? 'source-map' : 'eval-source-map',
-    /* NOTE: The default needs to be source-map for the i18n translation stuff to work. Specifically, using eval-source-map makes it impossible for our xgettext-js parser to parse the embedded source. */
-    devtool: 'source-map',
+        plugins: plugins,
 
-    // When importing a module whose path matches one of the following, just
-    // assume a corresponding global variable exists and use that instead.
-    // This is important because it allows us to avoid bundling all of our
-    // dependencies, which allows browsers to cache those libraries between builds.
-    externals: {
-        "swal": "swal", // can't seem to import anyways
-    },
+        //devtool: production ? 'source-map' : 'eval-source-map',
+        /* NOTE: The default needs to be source-map for the i18n translation stuff to work. Specifically, using eval-source-map makes it impossible for our xgettext-js parser to parse the embedded source. */
+        devtool: 'source-map',
+
+        // When importing a module whose path matches one of the following, just
+        // assume a corresponding global variable exists and use that instead.
+        // This is important because it allows us to avoid bundling all of our
+        // dependencies, which allows browsers to cache those libraries between builds.
+        externals: {
+            "goban": "goban",
+            "swal": "swal", // can't seem to import anyways
+        },
+
+
+        devServer: {
+            stats: {
+                assets: true,
+                children: false,
+                chunks: true,
+                hash: true,
+                modules: true,
+                publicPath: true,
+                timings: true,
+                version: true,
+                warnings: true,
+            }
+        },
+    };
+
+    return config;
 };

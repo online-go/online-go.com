@@ -17,9 +17,8 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {GoMath} from 'ogs-goban/GoMath';
+import {GoMath, sfx} from 'goban';
 import {InstructionalGoban} from "./InstructionalGoban";
-import {sfx} from "ogs-goban/SFXManager";
 import {browserHistory} from "ogsHistory";
 import {setSectionPageCompleted, getSectionPageCompleted} from './util';
 
@@ -56,7 +55,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             show_next: false,
         };
     }
-    next = () => {{{
+    next = () => {
         setSectionPageCompleted(this.props.section, this.props.curpage);
 
         this.correct_answer_triggered = false;
@@ -68,23 +67,23 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         } else {
             browserHistory.push('/learn-to-play-go/' + this.props.nextSection);
         }
-    }}}
-    reset = () => {{{
+    }
+    reset = () => {
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
         this.refs.igoban.reset();
         this.forceUpdate();
-    }}}
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.setState({show_next: this.complete()});
         //sfx.play("tutorial-ping");
-    }}}
-    showReset():boolean {{{
+    }
+    showReset():boolean {
         return false;
-    }}}
-    onUpdate = () => {{{
+    }
+    onUpdate = () => {
         if (this.complete()) {
             sfx.play("tutorial-pass");
             setTimeout(this.next, 1000);
@@ -100,10 +99,10 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             show_reset: this.showReset(),
             show_next: this.complete(),
         });
-    }}}
-    pagehref(i:number):string {{{
+    }
+    pagehref(i:number):string {
         return window.location.pathname.replace(/\/[0-9]*$/, "") + "/" + i;
-    }}}
+    }
 
     onCorrectAnswer = () => {
         this.correct_answer_triggered = true;

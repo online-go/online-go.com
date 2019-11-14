@@ -124,7 +124,11 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     render() {
         return (
             <div className="LeaderBoard page-width">
-                <h2><span>{_("Site Wide")}</span> <i className="fa fa-list-ol"></i> {_("Leaderboards")} </h2>
+                <h2>
+                    <i className="fa fa-trophy"></i>{" "}
+                    {_("Site Wide Tournament Leaderboards")}{" "}
+                    <i className="fa fa-list-ol"></i>
+                </h2>
                 <Card>
                     {this.state.leaderboards.map((row, ridx) => (
                         <div key={ridx} className="row">
@@ -146,11 +150,11 @@ export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any>
     }
 }
 
-function points(n) {{{
+function points(n) {
     n = parseFloat(n);
     if (n < 1) {
         return n.toPrecision(3);
     }
     return n.toPrecision(4);
-}}}
+}
 

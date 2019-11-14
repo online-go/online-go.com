@@ -129,6 +129,40 @@ function matchName(input, nicknames) {
     return { value: "", matches: matches };
 }
 
+function matchFullName(input, nicknames) {
+    let matches = [];
+    let i = 0;
+    let letter;
+    let letters = "";
+    $.each(nicknames, (index, value) => {
+        if (input.lastIndexOf(value) === input.length - value.length) {
+            matches.push(value);
+        }
+    });
+
+    if (matches.length === 1) {
+        return { value: matches[0], matches: matches };
+    } else if (matches.length > 1) {
+        for (; i < matches[0].length - length; i = i + 1) {
+            letter = matches[0].toLowerCase().substr(length + i, 1);
+
+            $.each(matches, (index, value) => {
+                if (value.toLowerCase().substr(length + i, 1) !== letter) {
+                     letter = "";
+                     return false;
+                }
+            });
+            if (letter) {
+                letters += letter;
+            } else {
+                break;
+            }
+        }
+        return { value: input + letters, matches: matches };
+    }
+    return { value: "", matches: matches };
+}
+
 /* tslint:disable */
 function onKeyPress(e, options) {
     if (e.which === 9) {
@@ -179,6 +213,34 @@ function onKeyPress(e, options) {
                  // Part of a crazy hack for Opera
                  this.lastKey = 9;
             }
+            else if (/( |: )$/.test(text)) {
+                let space = text.match(/( |: )$/)[1];
+                text = text.substring(0, text.length - space.length);
+                if (typeof(options.nicknames) === "function") {
+                    match = matchFullName(text, options.nicknames());
+                } else {
+                    match = matchFullName(text, options.nicknames);
+                }
+
+                completed_event = $.Event("nickname-complete");
+                $.extend(completed_event, match);
+                completed_event.caret = sel.start;
+                $this.trigger(completed_event);
+
+                if ((match.value && !completed_event.isDefaultPrevented()) || true) {
+                    first = val.substr(0, sel.start - match.value.length - space.length);
+                    last    = val.substr(sel.start);
+                    /* Space should not be added when there is only 1 match
+                           or if there is already a space following the caret position */
+                    $this.val(first + '@"' + match.value + '/' + player_cache.lookup_by_username(match.value).id + '"' + space + last);
+                    setCaretToPos(this, sel.start - match.value + match.value.length + space.length);
+                }
+
+                e.preventDefault();
+
+                // Part of a crazy hack for Opera
+                this.lastKey = 9;
+            }
         }
     }
 };
@@ -209,7 +271,7 @@ $.fn.nicknameTabComplete = function(options) {
 
 $.fn.nicknameTabComplete.defaults = {
   nicknames: () => player_cache.nicknames,
-  nick_match: /([-_a-z0-9]*)$/i,
+  nick_match: /([-_a-z0-9]+)$/i,
   on_complete: null // Pass in a function as an alternate way of binding to this event
 };
 

@@ -47,11 +47,11 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         };
     }
 
-    doSubscribe = () => {{{
+    doSubscribe = () => {
         comm_socket.send("gamelist/count/subscribe");
-    }}}
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         window.document.title = _("Games");
         comm_socket.on("gamelist-count", this.updateCounts);
         comm_socket.on("connect", this.doSubscribe);
@@ -60,8 +60,8 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         }
         this.refresh();
         //this.auto_refresh = setInterval(this.refresh, 500);
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         comm_socket.off("gamelist-count", this.updateCounts);
         comm_socket.off("connect", this.doSubscribe);
         if (comm_socket.connected) {
@@ -70,22 +70,22 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         if (this.auto_refresh) {
             clearInterval(this.auto_refresh);
         }
-    }}}
-    updateCounts = (counts) => {{{
+    }
+    updateCounts = (counts) => {
         console.log(counts);
         this.setState({
             live_game_count: counts.live,
             corr_game_count: counts.correspondence,
         });
-    }}}
-    setPageSize = (ev) => {{{
+    }
+    setPageSize = (ev) => {
         let ct: number = parseInt(ev.target.value);
         preferences.set("observed-games-page-size", ct);
         this.setState({page_size: ct});
         this.setPage(1);
         setTimeout(this.refresh, 1);
-    }}}
-    refresh = () => {{{
+    }
+    refresh = () => {
         let now = Date.now();
         //if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
         if (this.last_refresh != null && (now - this.last_refresh < 1.0)) {
@@ -114,18 +114,18 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                 });
             }
         );
-    }}}
-    prevPage = () => {{{
+    }
+    prevPage = () => {
         this.setPage(this.state.page - 1);
-    }}}
-    nextPage = () => {{{
+    }
+    nextPage = () => {
         if (typeof(this.state.page) === "number") {
             this.setPage(this.state.page + 1);
         } else {
             this.setPage(1);
         }
-    }}}
-    setPage = (ev_or_page) => {{{
+    }
+    setPage = (ev_or_page) => {
         let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value);
         if (isNaN(page)) {
             this.setState({page: ""});
@@ -136,7 +136,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                 / this.state.page_size), page));
         this.setState({page: page});
         setTimeout(this.refresh, 1);
-    }}}
+    }
 
     viewLive = () => {
         this.setState({viewing: "live", page: 0});

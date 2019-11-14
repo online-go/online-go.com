@@ -48,18 +48,18 @@ export class FriendList extends React.PureComponent<{}, any> {
         });
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.friends, this.updateFriends); /* this is managed by our FriendIndicator */
         online_status.event_emitter.on("users-online-updated", this.resortFriends);
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         data.unwatch(cached.friends, this.updateFriends);
         online_status.event_emitter.off("users-online-updated", this.resortFriends);
-    }}}
+    }
     resortFriends = () => {
         this.setState({"friends": this.sortFriends(this.state.friends)});
     }
-    sortFriends(lst) {{{
+    sortFriends(lst) {
         let ret = [].concat(lst);
         ret.sort((a, b) => {
             let a_online = online_status.is_player_online(a.id);
@@ -73,18 +73,18 @@ export class FriendList extends React.PureComponent<{}, any> {
             return a.username.localeCompare(b.username);
         });
         return ret;
-    }}}
-    setShowOfflineFriends = (ev) => {{{
+    }
+    setShowOfflineFriends = (ev) => {
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
         ev.stopPropagation();
-    }}}
-    clickShowOfflineFriends = (ev) => {{{
+    }
+    clickShowOfflineFriends = (ev) => {
         ev.stopPropagation();
-    }}}
-    eat = (ev) => {{{
+    }
+    eat = (ev) => {
         ev.stopPropagation();
-    }}}
+    }
     render() {
         return (
             <div className="FriendList">

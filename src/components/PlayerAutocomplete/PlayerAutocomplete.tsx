@@ -54,19 +54,19 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         }
     }
 
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.playerId !== next_props.player_id) {
             let user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {
                 this.setState({value: user.username});
             }
         }
-    }}}
+    }
 
     clear() {
         this.setState({value: "", suggestions: []});
     }
-    complete(username) {{{
+    complete(username) {
         if (player_cache.lookup_by_username(username)) {
             if (this.last_on_complete_username !== username) {
                 this.props.onComplete(player_cache.lookup_by_username(username));
@@ -76,14 +76,14 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
             this.props.onComplete(null);
             this.last_on_complete_username = null;
         }
-    }}}
-    onChange = (event, { newValue }) => {{{
+    }
+    onChange = (event, { newValue }) => {
         this.setState({
             value: newValue
         });
         this.complete(newValue);
-    }}}
-    onSuggestionsFetchRequested = ({ value }) => {{{
+    }
+    onSuggestionsFetchRequested = ({ value }) => {
         if (this.current_search === value) {
             return;
         }
@@ -127,28 +127,28 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                 suggestions: []
             });
         }
-    }}}
-    onSuggestionsClearRequested = () => {{{
+    }
+    onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: []
         });
-    }}}
-    //onBlur = (ev, {focusedSuggestion}) => {{{
-    onBlur = (ev, {highlightedSuggestion}) => {{{
+    }
+    //onBlur = (ev, {focusedSuggestion}) => {
+    onBlur = (ev, {highlightedSuggestion}) => {
         if (this.tabbed_out) {
             if (highlightedSuggestion) {
                 this.setState({value: getSuggestionValue(highlightedSuggestion)});
                 this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
-    }}}
-    onKeyDown = (ev) => {{{
+    }
+    onKeyDown = (ev) => {
         if (ev.keyCode === 9) {
             this.tabbed_out = true;
         } else {
             this.tabbed_out = false;
         }
-    }}}
+    }
 
     render() {
         let { suggestions, value } = this.state;

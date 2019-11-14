@@ -122,7 +122,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         termination_socket.on('automatch/cancel', this.onAutomatchCancel);
     }
 
-    private onAutomatchEntry = (entry:AutomatchPreferences) => {{{
+    private onAutomatchEntry = (entry:AutomatchPreferences) => {
         if (!entry.timestamp) {
             entry.timestamp = Date.now();
         }
@@ -136,8 +136,8 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
 
         this.emit('entry', entry);
-    }}}
-    private onAutomatchStart = (entry) => {{{
+    }
+    private onAutomatchStart = (entry) => {
         this.remove(entry.uuid);
 
         if (entry.uuid === this.last_find_match_uuid) {
@@ -150,8 +150,8 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
 
         this.emit('start', entry);
-    }}}
-    private onAutomatchCancel = (entry) => {{{
+    }
+    private onAutomatchCancel = (entry) => {
         if (!entry)  {
             if (this.active_live_automatcher) {
                 entry = this.active_live_automatcher;
@@ -161,7 +161,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
         this.remove(entry.uuid);
         this.emit('cancel', entry);
-    }}}
+    }
     private remove(uuid:string) {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
             this.active_live_automatcher = null;
@@ -176,7 +176,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         delete this.active_correspondence_automatchers[uuid];
     }
-    private clearState() {{{
+    private clearState() {
         this.active_live_automatcher = null;
         this.active_correspondence_automatchers = {};
         this.last_find_match_uuid = null;
@@ -184,9 +184,9 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             this.active_toast.close();
             this.active_toast = null;
         }
-    }}}
+    }
 
-    public findMatch(preferences:AutomatchPreferences) {{{
+    public findMatch(preferences:AutomatchPreferences) {
         termination_socket.emit('automatch/find_match', preferences);
 
         /* live game? track it, and pop up our searching toast */
@@ -198,11 +198,11 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             }
             this.active_toast = toast(<AutomatchToast />);
         }
-    }}}
-    public cancel(uuid?:string) {{{
+    }
+    public cancel(uuid?:string) {
         this.remove(uuid);
         termination_socket.emit('automatch/cancel', uuid);
-    }}}
+    }
 }
 
 export const automatch_manager = new AutomatchManager();

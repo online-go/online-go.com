@@ -32,7 +32,7 @@
     padding: 0.1rem;
     justify-content: space-around;
 
-    .player-container { /* {{{ */
+    .player-container {
         position: relative;
         display: flex;
         flex-direction: column;
@@ -55,6 +55,9 @@
             position: relative;
             background-image: none;
             font-size: 1.1rem;
+        }
+        .hidden {
+            visibility: hidden;
         }
 
         .auto-resign-overlay {
@@ -137,9 +140,9 @@
         font-size: 1.1em;
     }
 
-    .player-flag { 
+    .player-flag {
         position: absolute;
-        display: inline-block; 
+        display: inline-block;
         left: 3rem;
         top: 3rem;
 
@@ -178,11 +181,11 @@
         font-size: 1.1em;
         margin-top: 0.2em;
     }
-    /* }}} */
 
-    .ChatPresenceIndicator { /* {{{ */
+
+    .ChatPresenceIndicator {
         position: absolute;
-        display: inline-block; 
+        display: inline-block;
         left: 0.25em;
         top: 0.25em;
         font-size: 0.50em !important;
@@ -199,90 +202,7 @@
             color: #00ff00;
         }
     }
-    /* }}} */
 
-    div.in-game-clock { /* {{{ */
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        align-items: center;
-
-        .main-time {
-            flex-grow: 1;
-            display: inline-block;
-            font-size: 14pt;
-        }
-
-        &.paused .main-time {
-            animation-name: pulsate-paused-clock;
-            animation-duration: 1s;
-            animation-timing-function: step-end;
-            animation-iteration-count: infinite
-        }
-
-        .overtime-container {
-            flex-grow: 1;
-            display: inline-block;
-        }
-        .periods-container {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            align-content: stretch;
-
-            div {
-                //margin: auto;
-                margin-left: 0.5em;
-                margin-right: 0.5em;
-            }
-        }
-
-        .periods {
-            display: inline-block;
-            font-size: 10pt;
-        }
-        .period-time {
-            display: inline-block;
-            font-size: 10pt;
-        }
-        .byo-yomi-periods {
-            display: inline-block;
-            font-size: 10pt;
-            margin-left: 0.5rem;
-
-            &.sudden-death {
-                color: red;
-            }
-        }
-        .overtime {
-            font-size: 6pt;
-            text-align: center;
-        }
-
-        .pause-text {
-            width: 100%;
-            text-align: right;
-            font-size: font-size-small;
-            display: block;
-        }
-
-        .boxed {
-            text-align: right;
-        }
-    }
-
-    .in-overtime {
-        .overtime {
-            font-weight: bold;
-            color: #a55 !important;
-        }
-        .boxed {
-            border-color: #a55 !important;
-        }
-    }
-    
     #game-black-clock{
         themed color player-black-clock
     }
@@ -306,22 +226,17 @@
         font-size: 0.7em;
     }
 
-    #game-black-clock .start_clock, #game-white-clock .start_clock {
-        color: #147AFF !important;
-    }
-
     #game-black-clock .low_time, #game-white-clock .low_time {
         color: #f44 !important;
         font-weight: bold;
     }
 
-
     #black_score, #white_score, .clock-container {
         font-weight: bold;
     }
-    /* }}} */
 
-    .score-container { /* {{{ */
+
+    .score-container {
         margin-top: 0.5em;
         display: flex;
         flex-direction: row;
@@ -349,13 +264,13 @@
         }
     }
 
-    .score_breakdown { 
-        font-size: .8em; 
-        text-align: right; 
-        padding-right: .3em; 
+    .score_breakdown {
+        font-size: .8em;
+        text-align: right;
+        padding-right: .3em;
     }
-    .score_breakdown div div { 
-        display: inline-block; 
+    .score_breakdown div div {
+        display: inline-block;
         width: 3em;
     }
 
@@ -365,8 +280,12 @@
         padding-bottom: 1em;
     }
 
-    /* }}} */
+    .Clock {
+        .main-time {
+            font-size: 14pt;
 
+        }
+    }
 }
 
 
@@ -393,7 +312,8 @@
     .score-container {
         margin-top: 0;
     }
-    div.in-game-clock {
+
+    .Clock {
         .main-time {
             font-size: font-size-small;
         }

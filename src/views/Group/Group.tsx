@@ -88,24 +88,24 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     }
 
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {
         setExtraActionCallback(this.renderExtraPlayerActions);
-    }}}
-    componentDidMount() {{{
+    }
+    componentDidMount() {
         window.document.title = _("Group");
         this.resolve(parseInt(this.props.match.params.group_id));
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         setExtraActionCallback(null);
-    }}}
-    componentWillReceiveProps(next_props) {{{
+    }
+    UNSAFE_componentWillReceiveProps(next_props) {
         let group_id = parseInt(next_props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({group_id: group_id});
         }
-    }}}
-    resolve(group_id: number) {{{
+    }
+    resolve(group_id: number) {
         let user = data.get("user");
 
         get("groups/%%", group_id).then((group) => {
@@ -129,8 +129,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         get("groups/%%/news/", group_id).then((news) => {
             this.setState({news: news.results});
         }).catch(errorAlerter);
-    }}}
-    isAdmin(player_id: number): boolean {{{
+    }
+    isAdmin(player_id: number): boolean {
         if (!this.state.group) {
             return false;
         }
@@ -142,14 +142,14 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         }
 
         return false;
-    }}}
+    }
 
-    leaveGroup = () => {{{
+    leaveGroup = () => {
         post("groups/%%/members", this.state.group_id, {"delete": true})
         .then((res) => { this.resolve(this.state.group_id); })
         .catch(errorAlerter);
-    }}}
-    joinGroup = () => {{{
+    }
+    joinGroup = () => {
         post("groups/%%/members", this.state.group_id, {})
         .then((res) => {
             if (res.success) {
@@ -159,30 +159,30 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         })
         .catch(errorAlerter);
-    }}}
+    }
 
-    refreshGroup = () => {{{
+    refreshGroup = () => {
         this.resolve(this.state.group_id);
-    }}}
-    refreshPlayerList = () => {{{
+    }
+    refreshPlayerList = () => {
         this.refs.members.update();
-    }}}
+    }
 
-    toggleEdit = () => {{{
+    toggleEdit = () => {
         if (this.state.editing) {
             this.saveEditChanges();
             this.setState({editing: false});
         } else {
             this.setState({editing: true});
         }
-    }}}
-    saveEditChanges() {{{
+    }
+    saveEditChanges() {
         put(`groups/${this.state.group_id}`, this.state.group)
         .then((res) => {
             console.log(res);
         }).catch(errorAlerter);
-    }}}
-    updateIcon = (files) => {{{
+    }
+    updateIcon = (files) => {
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
             put("group/%%/icon", this.state.group_id, file)
@@ -192,8 +192,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
-    updateBanner = (files) => {{{
+    }
+    updateBanner = (files) => {
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
             put("group/%%/banner", this.state.group_id, file)
@@ -203,12 +203,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
+    }
 
-    createTournament = () => {{{
+    createTournament = () => {
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
-    }}}
-    createTournamentRecord = () => {{{
+    }
+    createTournamentRecord = () => {
         swal({
             text: _("Tournament Name"),
             input: "text",
@@ -229,41 +229,41 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }}}
-    setGroupName = (ev) => {{{
+    }
+    setGroupName = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {name: ev.target.value})});
-    }}}
-    setShortDescription = (ev) => {{{
+    }
+    setShortDescription = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {short_description: ev.target.value})});
-    }}}
-    setDescription = (ev) => {{{
+    }
+    setDescription = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {description: ev.target.value})});
-    }}}
-    setWebsite = (ev) => {{{
+    }
+    setWebsite = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {website: ev.target.value})});
-    }}}
-    setLocation = (ev) => {{{
+    }
+    setLocation = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {location: ev.target.value})});
-    }}}
-    setBulletin = (ev) => {{{
+    }
+    setBulletin = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {bulletin: ev.target.value})});
-    }}}
-    setOpenToThePublic = (ev) => {{{
+    }
+    setOpenToThePublic = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {is_public: ev.target.checked})});
-    }}}
-    setHideDetails = (ev) => {{{
+    }
+    setHideDetails = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {hide_details: ev.target.checked})});
-    }}}
-    setDisableInvitationRequests = (ev) => {{{
+    }
+    setDisableInvitationRequests = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {require_invitation: ev.target.checked})});
-    }}}
-    setNewNewsTitle = (ev) => {{{
+    }
+    setNewNewsTitle = (ev) => {
         this.setState({new_news_title: ev.target.value});
-    }}}
-    setNewNewsBody = (ev) => {{{
+    }
+    setNewNewsBody = (ev) => {
         this.setState({new_news_body: ev.target.value});
-    }}}
-    postNewNews = (ev) => {{{
+    }
+    postNewNews = (ev) => {
         if (this.state.new_news_title.trim().length < 5) {
             swal({"title": _("Please provide a title")})
             .then(() => this.refs.new_news_title.focus())
@@ -292,16 +292,16 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         })
         .catch(errorAlerter);
-    }}}
-    toggleNewNewsPost = () => {{{
+    }
+    toggleNewNewsPost = () => {
         this.setState({show_new_news_post: !this.state.show_new_news_post});
         setTimeout(() => {
             if (this.refs.new_news_title) {
                 this.refs.new_news_title.focus();
             }
         }, 1);
-    }}}
-    deleteNewsPost(entry) {{{
+    }
+    deleteNewsPost(entry) {
         swal({
             "text": _("Delete this news post?"),
             "showCancelButton": true,
@@ -323,12 +323,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }}}
-    editNewsPost(entry) {{{
+    }
+    editNewsPost(entry) {
         this.setState({editing_news: entry});
         this.refs.news.forceUpdate();
-    }}}
-    updateNewsPost = () => {{{
+    }
+    updateNewsPost = () => {
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
         .then(() => {
             this.setState({editing_news: null});
@@ -340,8 +340,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         })
         .catch(errorAlerter);
-    }}}
-    updateNewsContent = (ev) => {{{
+    }
+    updateNewsContent = (ev) => {
         this.setState({
             editing_news: Object.assign(
                 {},
@@ -350,8 +350,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             )
         });
         this.refs.news.forceUpdate();
-    }}}
-    updateNewsTitle = (ev) => {{{
+    }
+    updateNewsTitle = (ev) => {
         this.setState({
             editing_news: Object.assign(
                 {},
@@ -360,9 +360,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             )
         });
         this.refs.news.forceUpdate();
-    }}}
+    }
 
-    inviteUser = (ev) => {{{
+    inviteUser = (ev) => {
         post("group/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
@@ -380,13 +380,13 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         });
 
-    }}}
-    setUserToInvite = (user) => {{{
+    }
+    setUserToInvite = (user) => {
         this.setState({user_to_invite: user});
-    }}}
+    }
 
 
-    render() {{{
+    render() {
         let user = data.get("user");
         let group = this.state.group;
         let news = this.state.news;
@@ -413,7 +413,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
             <div className="row">
                 <div className="col-sm-9">
-                    <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card {{{ */}
+                    <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card  */}
                         {(this.state.is_admin || user.is_moderator || null) &&
                             <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit}/>
                         }
@@ -552,7 +552,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             </div>
                         }
                     </Card>
-                    {/* }}} */}
+
 
                     {((!editing && group.bulletin) || null) && <Card><Markdown source={group.bulletin}/></Card>}
                     {(editing || null) &&
@@ -670,7 +670,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                     </Card>
 
                 </div>
-                <div className="col-sm-3">{/* Right column {{{ */}
+                <div className="col-sm-3">{/* Right column  */}
                     <Card style={{minHeight: "12rem"}}>
                         {this.state.is_admin &&
                             <div className="invite-input">
@@ -709,15 +709,15 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     ))}
                 </div>
-                {/* }}} */}
+
 
 
             </div>
 
         </div>
         );
-    }}}
-    renderExtraPlayerActions = (player_id: number, user: any) => {{{
+    }
+    renderExtraPlayerActions = (player_id: number, user: any) => {
         if (!this.state.is_admin && !data.get("user").is_moderator) {
             return null;
         }
@@ -736,7 +736,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 </div>
             );
         }
-    }}}
+    }
 
     deleteGroup = () => {
         swal({
@@ -754,7 +754,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         .catch(ignore);
     }
 
-    makeAdmin(player_id: number) {{{
+    makeAdmin(player_id: number) {
         swal({text: _("Are you sure you wish to make this user an administrator of the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
             put("groups/%%/members", this.state.group_id, {
@@ -766,8 +766,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         })
         .catch(() => 0);
         close_all_popovers();
-    }}}
-    unAdmin(player_id: number) {{{
+    }
+    unAdmin(player_id: number) {
         swal({text: _("Are you sure you wish to remove administrator privileges from this user?"), showCancelButton: true, focusCancel: true})
         .then(() => {
             put("groups/%%/members", this.state.group_id, {
@@ -779,8 +779,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         })
         .catch(() => 0);
         close_all_popovers();
-    }}}
-    kick(player_id: number) {{{
+    }
+    kick(player_id: number) {
         swal({text: _("Are you sure you wish to remove this user from the group?"), showCancelButton: true, focusCancel: true})
         .then(() => {
             post("groups/%%/members", this.state.group_id, {"delete": true, player_id: player_id})
@@ -789,7 +789,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         })
         .catch(() => 0);
         close_all_popovers();
-    }}}
+    }
 
 
 }

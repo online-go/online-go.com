@@ -34,6 +34,7 @@ declare let Notification: any;
 
 interface Events {
     "turn-count": number;
+    "total-count": number;
     "notification": any;
     "notification-list-updated": never;
     "notification-count": number;
@@ -48,7 +49,7 @@ function getCurrentGameId() {
     return null;
 }
 
-function formatTime(seconds) { /* {{{ */
+function formatTime(seconds) {
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
@@ -79,7 +80,7 @@ function formatTime(seconds) { /* {{{ */
         return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
     return _("no time left");
-} /* }}} */
+}
 
 let boot_time = Date.now();
 let already_asked_for_permission = false;
@@ -97,7 +98,7 @@ $(window).on("storage", (event) => {
     }
 });
 
-export function emitNotification(title, body, cb?) {{{
+export function emitNotification(title, body, cb?) {
     try {
         if (!preferences.get('desktop-notifications')) {
             return;
@@ -197,10 +198,10 @@ export function emitNotification(title, body, cb?) {{{
     } catch (e) {
         console.log("Error emitting notification: ", e);
     }
-}}}
-function silenceNotificationsFor5Seconds() {{{
+}
+function silenceNotificationsFor5Seconds() {
     boot_time = Date.now();
-}}}
+}
 
 
 class NotificationManager {
@@ -209,11 +210,12 @@ class NotificationManager {
     ordered_notifications;
     unread_notification_count;
     boards_to_move_on;
+    active_boards;
     turn_offset;
     auth;
     event_emitter: TypedEventEmitter<Events>;
 
-    constructor() {{{
+    constructor() {
         window["notification_manager"] = this;
         this.event_emitter = new TypedEventEmitter<Events>();
 
@@ -221,10 +223,11 @@ class NotificationManager {
         this.ordered_notifications = [];
 
         this.boards_to_move_on = {};
+        this.active_boards = {};
         this.turn_offset = 0;
         browserHistory.listen(this.onNavigate);
-    }}}
-    setUser(user) {{{
+    }
+    setUser(user) {
         if (this.user && (user.id === this.user.id)) {
             return;
         }
@@ -234,21 +237,31 @@ class NotificationManager {
         this.user = user;
         this.auth = data.get("config.notification_auth");
         this.connect();
-    }}}
-    advanceToNextBoard(ev?) {{{
+    }
+    advanceToNextBoard(ev?) {
         let game_id = getCurrentGameId() || 0;
         let board_ids = [];
         //notificationPermissionRequest();
         for (let k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
         }
-        board_ids.sort((a, b) => { return a - b; });
+
+        if (board_ids.length === 0) {
+            for (let k in this.active_boards) {
+                board_ids.push(parseInt(this.active_boards[k].id));
+            }
+        }
 
         if (board_ids.length === 0) {
             return;
         }
 
+
+        board_ids.sort((a, b) => { return a - b; });
+
+
         let idx = -1;
+
         for (let i = 0; i < board_ids.length; ++i) {
             if (game_id === board_ids[i]) {
                 idx = i;
@@ -270,15 +283,15 @@ class NotificationManager {
                 browserHistory.push("/game/" + board_ids[idx]);
             }
         }
-    }}}
-    deleteNotification(notification, dont_rebuild?: boolean) {{{
+    }
+    deleteNotification(notification, dont_rebuild?: boolean) {
         comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
         delete this.notifications[notification.id];
         if (!dont_rebuild) {
             this.rebuildNotificationList();
         }
-    }}}
-    clearAllNonActionableNotifications() {{{
+    }
+    clearAllNonActionableNotifications() {
         for (let id in this.notifications) {
             let notification = this.notifications[id];
             switch (notification.type) {
@@ -294,8 +307,8 @@ class NotificationManager {
             comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
         }
         this.rebuildNotificationList();
-    }}}
-    connect() {{{
+    }
+    connect() {
         comm_socket.on("connect", () => {
             comm_socket.send("notification/connect", {"player_id": this.user.id, "auth": this.auth});
         });
@@ -304,6 +317,9 @@ class NotificationManager {
         });
         comm_socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
+            if (game.phase === "finished") {
+                delete this.active_boards[game.id];
+            }
 
             if (game.phase === "stone removal") {
                 if ((game.black.id === data.get("user").id && !game.black.accepted)
@@ -316,6 +332,10 @@ class NotificationManager {
                 if (game.player_to_move === data.get("user").id) {
                     this.boards_to_move_on[game.id] = game;
                 }
+            }
+
+            if (game.phase !== "finished") {
+                this.active_boards[game.id] = game;
             }
 
             if (this.boards_to_move_on[game.id]) {
@@ -334,6 +354,7 @@ class NotificationManager {
             }
 
             this.event_emitter.emit("turn-count", Object.keys(this.boards_to_move_on).length);
+            this.event_emitter.emit("total-count", Object.keys(this.active_boards).length);
         });
 
         comm_socket.on("notification", (notification) => {
@@ -411,8 +432,8 @@ class NotificationManager {
         });
 
         return comm_socket;
-    }}}
-    onNavigate = (location) => {{{
+    }
+    onNavigate = (location) => {
         let current_game_id = getCurrentGameId();
         if (current_game_id) {
             let found = false;
@@ -427,8 +448,8 @@ class NotificationManager {
                 this.rebuildNotificationList();
             }
         }
-    }}}
-    rebuildNotificationList() {{{
+    }
+    rebuildNotificationList() {
         this.ordered_notifications = [];
 
         this.unread_notification_count = 0;
@@ -443,24 +464,35 @@ class NotificationManager {
 
         this.event_emitter.emit("notification-count", this.unread_notification_count);
         this.event_emitter.emit("notification-list-updated");
-    }}}
+    }
+    anyYourMove() {
+        if (Object.keys(this.boards_to_move_on).length === 0) {
+            return false;
+        }
+        return true;
+    }
 }
 
 
 
 export let notification_manager: NotificationManager = new NotificationManager();
 
-export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
+export class TurnIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            count: Object.keys(notification_manager.boards_to_move_on).length
+            count: Object.keys(notification_manager.boards_to_move_on).length,
+            total: Object.keys(notification_manager.active_boards).length,
         };
 
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
 
         notification_manager.event_emitter.on("turn-count", (ct) => {
             this.setState({count: ct});
+        });
+
+        notification_manager.event_emitter.on("total-count", (tt) => {
+            this.setState({total: tt});
         });
     }
 
@@ -471,13 +503,13 @@ export class TurnIndicator extends React.Component<{}, any> { /* {{{ */
     render() {
         return (
             <span className="turn-indicator" onClick={this.advanceToNextBoard}>
-                <span className={this.state.count > 0 ? "active count" : "count"}><span>{this.state.count}</span></span>
+                <span className={this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"}><span>{this.state.count}</span></span>
             </span>
        );
     }
-} /* }}} */
+}
 
-export class NotificationIndicator extends React.Component<{}, any> { /* {{{ */
+export class NotificationIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -505,9 +537,9 @@ export class NotificationIndicator extends React.Component<{}, any> { /* {{{ */
             </span>
         );
     }
-} /* }}} */
+}
 
-export class NotificationList extends React.Component<{}, any> { /* {{{ */
+export class NotificationList extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -557,9 +589,9 @@ export class NotificationList extends React.Component<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
+}
 
-class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
+class NotificationEntry extends React.Component<{notification}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -877,7 +909,7 @@ class NotificationEntry extends React.Component<{notification}, any> { /* {{{ */
                 break;
         }
     }
-} /* }}} */
+}
 
 
 data.watch("config.user", (user) => notification_manager.setUser(user));

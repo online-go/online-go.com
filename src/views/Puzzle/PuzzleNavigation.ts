@@ -25,46 +25,46 @@ export class PuzzleNavigation {
 
     set goban(newValue: Goban) { this._goban = newValue; }
 
-    nav_up = () => {{{
+    nav_up = () => {
         this.checkAndEnterAnalysis();
         this._goban.prevSibling();
-    }}}
-    nav_down = () => {{{
+    }
+    nav_down = () => {
         this.checkAndEnterAnalysis();
         this._goban.nextSibling();
-    }}}
-    nav_first = () => {{{
+    }
+    nav_first = () => {
         this.checkAndEnterAnalysis();
         this._goban.showFirst();
-    }}}
-    nav_prev_10 = () => {{{
+    }
+    nav_prev_10 = () => {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
             this._goban.showPrevious( i < 9 );
         }
-    }}}
-    nav_prev = () => {{{
+    }
+    nav_prev = () => {
         this.checkAndEnterAnalysis();
         this._goban.showPrevious();
-    }}}
-    nav_next = (event?: React.MouseEvent<any>) => {{{
+    }
+    nav_next = (event?: React.MouseEvent<any>) => {
         this.checkAndEnterAnalysis();
         this._goban.showNext();
-    }}}
-    nav_next_10 = () => {{{
+    }
+    nav_next_10 = () => {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
             this._goban.showNext( i < 9 );
         }
-    }}}
-    nav_last = () => {{{
+    }
+    nav_last = () => {
         this.checkAndEnterAnalysis();
         this._goban.jumpToLastOfficialMove();
-    }}}
+    }
 
-    checkAndEnterAnalysis() {{{
+    checkAndEnterAnalysis() {
         if (this._goban.mode === "puzzle") {
             this._goban.setMode("analyze", true);
             return true;
@@ -73,14 +73,14 @@ export class PuzzleNavigation {
             return true;
         }
         return false;
-    }}}
+    }
 
-    checkAndEnterPuzzleMode() {{{
+    checkAndEnterPuzzleMode() {
         if (this._goban.mode !== "puzzle") {
             this._goban.setAnalyzeTool("stone", "alternate");
             this._goban.setMode("puzzle", true);
         }
         return true;
-    }}}
+    }
 
 }

@@ -24,7 +24,7 @@ import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
 import {bounded_rank, longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
-import {timeControlDescription, computeAverageMoveTime} from "TimeControl";
+import {timeControlDescription} from "TimeControl";
 import {Markdown} from "Markdown";
 import {Player, setExtraActionCallback} from "Player";
 import * as moment from "moment";
@@ -41,7 +41,9 @@ import * as player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
+import {computeAverageMoveTime} from 'goban';
 import * as d3 from "d3";
+
 
 declare var swal;
 
@@ -85,7 +87,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     elimination_tree_container = $(`<div class="tournament-elimination-container">`);
     elimination_tree = $(`<svg xmlns="http://www.w3.org/2000/svg">`);
 
-    constructor(props) { /* {{{ */
+    constructor(props) {
         super(props);
 
         let tournament_id = parseInt(this.props.match.params.tournament_id) || 0;
@@ -145,12 +147,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         };
 
         this.elimination_tree_container.append(this.elimination_tree);
-    } /* }}} */
+    }
 
-    componentWillMount() {{{
+    UNSAFE_componentWillMount() {
         setExtraActionCallback(this.renderExtraPlayerActions);
-    }}}
-    componentDidMount() {{{
+    }
+    componentDidMount() {
         window.document.title = _("Tournament");
         if (this.state.tournament_id) {
             this.resolve(this.state.tournament_id);
@@ -162,23 +164,23 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             })
             .catch(errorAlerter);
         }
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.abort_requests();
         setExtraActionCallback(null);
-    }}}
-    componentWillReceiveProps(next_props) {{{
+    }
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
             this.setState({tournament_id: parseInt(next_props.match.params.tournament_id)});
             this.resolve(parseInt(next_props.match.params.tournament_id));
         }
-    }}}
-    abort_requests() {{{
+    }
+    abort_requests() {
         abort_requests_in_flight(`tournaments/${this.state.tournament_id}`);
         abort_requests_in_flight(`tournaments/${this.state.tournament_id}/rounds`);
         abort_requests_in_flight(`tournaments/${this.state.tournament_id}/players/all`);
-    }}}
-    resolve(tournament_id: number) {{{
+    }
+    resolve(tournament_id: number) {
         this.abort_requests();
 
         Promise.all([
@@ -217,11 +219,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    reloadTournament = () => {{{
+    }
+    reloadTournament = () => {
         this.resolve(this.state.tournament_id);
-    }}}
-    refreshPlayerList = (tournament_id?) => {{{
+    }
+    refreshPlayerList = (tournament_id?) => {
         if (typeof(tournament_id) !== "number") {
             tournament_id = this.state.tournament_id;
         }
@@ -270,8 +272,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         })
         .catch(errorAlerter);
         return ret;
-    }}}
-    linkPlayersToRoundMatches(rounds, players) {{{
+    }
+    linkPlayersToRoundMatches(rounds, players) {
         for (let round of rounds) {
             if (!round.groupify) {
                 for (let match of round.matches) {
@@ -279,8 +281,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 }
             }
         }
-    }}}
-    compareUserRank = (a, b) => { /* {{{ */
+    }
+    compareUserRank = (a, b) => {
         if (!a && !b) { return 0; }
         if (!a) { return -1; }
         if (!b) { return 1; }
@@ -299,7 +301,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         if (pa.username < pb.username) { return 1; }
         if (pa.username > pb.username) { return -1; }
         return 0;
-    } /* }}} */
+    }
 
     startTournament = () => {
         swal({
@@ -329,10 +331,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         })
         .catch(ignore);
     }
-    setUserToInvite = (user) => {{{
+    setUserToInvite = (user) => {
         this.setState({user_to_invite: user});
-    }}}
-    inviteUser = () => {{{
+    }
+    inviteUser = () => {
         post("tournaments/%%/players", this.state.tournament_id, {"username": this.state.user_to_invite.username })
         .then((res) => {
             console.log(res);
@@ -349,22 +351,22 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 console.error(e);
             }
         });
-    }}}
-    joinTournament = () => {{{
+    }
+    joinTournament = () => {
         post("tournaments/%%/players", this.state.tournament_id, {})
         .then((res) => {
             this.setState({is_joined: true});
         })
         .catch(errorAlerter);
-    }}}
-    partTournament = () => {{{
+    }
+    partTournament = () => {
         post("tournaments/%%/players", this.state.tournament_id, {"delete": true})
         .then((res) => {
             this.setState({is_joined: false});
         })
         .catch(errorAlerter);
-    }}}
-    resign = () => {{{
+    }
+    resign = () => {
         swal({
             text: _("Are you sure you want to resign from the tournament? This will also resign you from all games you are playing in this tournament."),
             showCancelButton: true,
@@ -372,8 +374,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         })
         .then(this.partTournament)
         .catch(errorAlerter);
-    }}}
-    updateEliminationTrees() {{{
+    }
+    updateEliminationTrees() {
         let tournament = this.state.tournament;
         let rounds = this.state.rounds;
         let players = this.state.players;
@@ -400,7 +402,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             let h = em2_5 + minspace;
             let w = namewidth + $("#em10").width() * 4.0 / 10.0;
 
-            let bindHovers = (div, id) => { /* {{{ */
+            let bindHovers = (div, id) => {
                 if (typeof(id) !== 'number') {
                     try {
                         console.warn("ID = ", id);
@@ -419,10 +421,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 div.mouseout(() => {
                     $(".elimination-player-hover").removeClass("elimination-player-hover");
                 });
-            }; /* }}} */
+            };
 
             let all_objects = [];
-            for (let round_num = 0; round_num < rounds.length; ++round_num) { /* {{{ */
+            for (let round_num = 0; round_num < rounds.length; ++round_num) {
                 let round = rounds[round_num];
 
                 for (let match_num = 0; match_num < round.matches.length; ++match_num) {
@@ -501,12 +503,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 }
                 lastcurbucket = curbucket;
                 curbucket = {};
-            } /* }}} */
+            }
 
             let lastcurbucket_arr = [];
             for (let k in lastcurbucket) { lastcurbucket_arr.push(lastcurbucket[k]); }
 
-            let playerWon = (obj, player_id) => { /* {{{ */
+            let playerWon = (obj, player_id) => {
                 if (!obj.match) {
                     return true;
                 }
@@ -520,9 +522,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     return true;
                 }
                 return false;
-            }; /* }}} */
+            };
 
-            for (let i = 0; i < all_objects.length; ++i) { /* {{{ */
+            for (let i = 0; i < all_objects.length; ++i) {
                 let obj = all_objects[i];
                 if (obj.round === 0) { continue; }
                 if (obj.bye_src) {
@@ -545,14 +547,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 if (obj.second_bracket) {
                     //obj.div.css({"background-color": "red", "opacity": 0.5});
                 }
-            } /* }}} */
+            }
 
 
             let svg_extents = {x: 0, y: 0};
 
             let last_visit_order = 0;
-            let layout = (collection) => { /* {{{ */
-                let computeVisitOrder = (obj) => { /* {{{ */
+            let layout = (collection) => {
+                let computeVisitOrder = (obj) => {
                     if (obj.visit_order) { return; }
 
                     if (!obj.second_bracket && obj.black_src && obj.black_src.second_bracket) {
@@ -568,7 +570,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
                     obj.visit_order = ++last_visit_order;
 
-                }; /* }}} */
+                };
 
                 let arr = [];
                 for (let k in collection) {
@@ -629,7 +631,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
 
                 //computeVisitOrder(obj);
-                all_objects.sort((a, b) => { /* {{{ */
+                all_objects.sort((a, b) => {
                     if (!a.visit_order) { a.visit_order = ++last_visit_order; }
                     if (!b.visit_order) { b.visit_order = ++last_visit_order; }
 
@@ -640,7 +642,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         return (a.round - b.round);
                     }
                     return (a.visit_order - b.visit_order);
-                }); /* }}} */
+                });
 
 
                 let y = {0: 0};
@@ -707,7 +709,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         base_y = Math.max(base_y, obj.bottom + h + 10);
                     }
                 }
-            }; /* }}} */
+            };
 
             //for (let k in lastcurbucket) {
                 layout(lastcurbucket);
@@ -733,7 +735,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             //let line_style = "step-before";
             let line_style = "monotone";
 
-            let drawLine = (path) => { /* {{{ */
+            let drawLine = (path) => {
                 let line_function = d3.line()
                                         .curve(d3.curveMonotoneX)
                                         .x((xy: any) => xy.x)
@@ -744,19 +746,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     .attr("stroke", "#888")
                     .attr("stroke-width", 1.0)
                     .attr("fill", "none");
-            }; /* }}} */
+            };
 
             let bottom_padding = 3.0;
             let left_padding = 5.0;
 
-            let getWinnerBottom = (obj) => { /* {{{ */
+            let getWinnerBottom = (obj) => {
                 if (obj.black_won) {
                     return Math.round((obj.top + obj.bottom) / 2.0);
                 }
                 return Math.round(obj.bottom + bottom_padding);
-            }; /* }}} */
+            };
 
-            let drawLines = (obj) => { /* {{{ */
+            let drawLines = (obj) => {
                 if (obj.black_src) {
                     drawLines(obj.black_src);
                     if (!obj.second_bracket || obj.second_bracket === obj.black_src.second_bracket) {
@@ -789,15 +791,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         ]);
                     }
                 }
-            }; /* }}} */
+            };
 
             for (let k in lastcurbucket) {
                 //drawLines(lastcurbucket[k], rounds.length-1);
                 drawLines(lastcurbucket[k]);
             }
         }
-    }}}
-    groupify(round, players) { /* {{{ */
+    }
+    groupify(round, players) {
         try {
         let match_map = {};
         let result_map = {};
@@ -926,10 +928,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         } catch (e) {
             setTimeout(() => {throw e; }, 1);
         }
-    } /* }}} */
-    setSelectedRound = (selected_round: number) => {{{
+    }
+    setSelectedRound = (selected_round: number) => {
         this.setState({selected_round: selected_round});
-    }}}
+    }
 
     startEditing = () => this.setState({editing: true});
     save = () => {
@@ -1030,7 +1032,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({tournament: Object.assign({}, this.state.tournament, {time_control_parameters: tc})});
     }
 
-    render() {{{
+    render() {
         try {
         let editing = this.state.editing;
         let loading = this.state.loading;
@@ -1140,7 +1142,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
             <UIPush event="reload-tournament" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
 
-            <div className="top-details">{/* {{{ */}
+            <div className="top-details">
                 <div >
                     {!editing
                         ? <h2><i className="fa fa-trophy"></i> {tournament.name}</h2>
@@ -1448,7 +1450,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 </div>
 
             </div>
-            {/* }}} */}
+
 
             {editing &&
                 <div style={{textAlign: "center", "marginTop": "3rem"}}>
@@ -1460,7 +1462,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
 
 
-            {!loading && !tournament.started && /* {{{ */
+            {!loading && !tournament.started &&
                 <div className={"bottom-details not-started"}>
                     <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
@@ -1524,8 +1526,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     </div>
                 </div>
             }
-            {/* }}} */}
-            {!loading && tournament.started && /* {{{ */
+
+            {!loading && tournament.started &&
                 <div className="bottom-details">
                     <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
@@ -1755,7 +1757,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     </div>
                 </div>
             }
-            {/* }}} */}
+
 
         </div>
         );
@@ -1764,9 +1766,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             setTimeout(() => {throw e; }, 1);
             return null;
         }
-    }}}
+    }
 
-    kick(player_id: number) {{{
+    kick(player_id: number) {
         let user = player_cache.lookup(player_id);
 
         swal({
@@ -1785,8 +1787,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         .catch(ignore);
 
         close_all_popovers();
-    }}}
-    adjustPoints(player_id: number) {{{
+    }
+    adjustPoints(player_id: number) {
         let user = player_cache.lookup(player_id);
 
         swal({
@@ -1812,8 +1814,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         })
         .catch(ignore);
         close_all_popovers();
-    }}}
-    disqualify(player_id: number) {{{
+    }
+    disqualify(player_id: number) {
         let user = player_cache.lookup(player_id);
 
         swal({
@@ -1831,10 +1833,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         .catch(ignore);
 
         close_all_popovers();
-    }}}
+    }
 
 
-    renderExtraPlayerActions = (player_id: number, user: any) => {{{
+    renderExtraPlayerActions = (player_id: number, ignored: any) => {
         let user = data.get("user");
         if (!(user.is_tournament_moderator || (this.state.tournament.director && this.state.tournament.director.id === user.id))) {
             return null;
@@ -1855,13 +1857,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 </div>
             );
         }
-    }}}
+    }
 
 }
 
 
-
-export function rankRestrictionText(min_ranking, max_ranking) {{{
+export function rankRestrictionText(min_ranking, max_ranking) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
             return _("None");
@@ -1875,8 +1876,8 @@ export function rankRestrictionText(min_ranking, max_ranking) {{{
             return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s - %s"), [longRankString(min_ranking), longRankString(max_ranking)]);
         }
     }
-}}}
-export function shortRankRestrictionText(min_ranking, max_ranking) {{{
+}
+export function shortRankRestrictionText(min_ranking, max_ranking) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
             return _("All");
@@ -1890,8 +1891,8 @@ export function shortRankRestrictionText(min_ranking, max_ranking) {{{
             return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [rankString(min_ranking), rankString(max_ranking)]);
         }
     }
-}}}
-export const TOURNAMENT_TYPE_NAMES = { /* {{{ */
+}
+export const TOURNAMENT_TYPE_NAMES = {
     "s_mcmahon": _("Simultaneous McMahon"),
     "mcmahon": _("McMahon"),
     "roundrobin": _("Round Robin"),
@@ -1900,13 +1901,13 @@ export const TOURNAMENT_TYPE_NAMES = { /* {{{ */
     "swiss": _("Swiss"),
     "elimination": _("Single Elimination"),
     "double_elimination": _("Double Elimination"),
-}; /* }}} */
-export const  TOURNAMENT_PAIRING_METHODS = { /* {{{ */
+};
+export const  TOURNAMENT_PAIRING_METHODS = {
     "random": pgettext("Tournament type", "Random"),
     "slaughter": pgettext("Tournament type", "Slaughter"),
     "strength": pgettext("Tournament type", "Strength"),
     "slide": pgettext("Tournament type", "Slide"),
-}; /* }}} */
+};
 
 function fromNow(t) {
     let d = new Date(t).getTime();

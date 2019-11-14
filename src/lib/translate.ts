@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { setGobanTranslations } from 'goban';
+
 export let current_language = window["ogs_current_language"] || 'en';
 export let languages = window["ogs_languages"] || {'en': 'English'};
 export let countries = window["ogs_countries"] || {'en': {'us': 'United States'}};
 export let locales = window["ogs_locales"] || {'en': {}};
 export let sorted_locale_countries = [];
-
 
 
 let catalog;
@@ -193,9 +194,6 @@ export function cc_to_country_name(country_code) {
     }
 }
 
-export function _setCurrentLanguage(language_code) {
-    current_language = language_code;
-}
 
 
 languages["auto"] = gettext("Automatic");
@@ -258,6 +256,56 @@ export function getCountryFlagClass(country_code) {
     return country_code;
 }
 
+export function setCurrentLanguage(language_code) {
+    current_language = language_code;
+
+    setGobanTranslations({
+        'Your move': _('Your move'),
+        'White': _('White'),
+        'Black': _('Black'),
+        'Illegal Ko Move': _('Illegal Ko Move'),
+        'Move is suicidal': _('Move is suicidal'),
+        'Loading...': _('Loading...'),
+        'Processing...': _('Processing...'),
+        'Submitting...': _('Submitting...'),
+        'A stone has already been placed here': _('A stone has already been placed here'),
+        'Illegal board repetition': _('Illegal board repetition'),
+        'Error submitting move': _('Error submitting move'),
+        'Game Finished': _('Game Finished'),
+        'Black to move': _('Black to move'),
+        'White to move': _('White to move'),
+        'Your move - opponent passed': _('Your move - opponent passed'),
+        'Review': _('Review'),
+        'Control passed to %s': _('Control passed to %s'),
+        'Synchronization error, reloading': _('Synchronization error, reloading'),
+        'Stone Removal': _('Stone Removal'),
+        'Stone Removal Phase': _('Stone Removal Phase'),
+        'Enter the label you want to add to the board': _('Enter the label you want to add to the board'),
+
+        'Black Walnut': _('Black Walnut'),
+        'Book': _('Book'),
+        'Glass': _('Glass'),
+        'Granite': _('Granite'),
+        'HNG Night': _('HNG Night'),
+        'HNG': _('HNG'),
+        'Kaya': _('Kaya'),
+        'Night Play': _('Night Play'),
+        'Night': _('Night'),
+        'Persimmon': _('Persimmon'),
+        'Plain': _('Plain'),
+        'Red Oak': _('Red Oak'),
+        'Shell': _('Shell'),
+        'Slate': _('Slate'),
+        'Worn Glass': _('Worn Glass'),
+
+        '%swk': pgettext("Short time (weeks)", "%swk"),
+        '%sd': pgettext("Short time (days)", "%sd"),
+        '%sh': pgettext("Short time (hours)", "%sh"),
+        '%sm': pgettext("Short time (minutes)", "%sm"),
+        '%ss': pgettext("Short time (seconds)", "%ss"),
+    });
+}
+setCurrentLanguage(current_language);
 
 
 export default {
@@ -277,7 +325,7 @@ export default {
 };
 
 
-
 /* Extra translation strings */
 _("Not allowed to access this game");
 _("Not allowed to access this review");
+

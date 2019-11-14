@@ -28,6 +28,7 @@ import {profanity_filter} from "profanity_filter";
 import {Game} from './Game';
 import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {TabCompleteInput} from "TabCompleteInput";
+import * as Chat from "Chat";
 
 let active_game_view:Game = null;
 
@@ -49,14 +50,14 @@ interface GameChatLineProperties {
     gameview: Game;
 }
 
-/* Chat {{{ */
+/* Chat  */
 export class GameChat extends React.PureComponent<GameChatProperties, any> {
     ref_chat_log;
     qc_editableMsgs = null;
 
     scrolled_to_bottom: boolean = true;
 
-    constructor(props) { /* {{{ */
+    constructor(props) {
         super(props);
         this.state = {
             chat_log: "main",
@@ -68,12 +69,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.onKeyPress = this.onKeyPress.bind(this);
         this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
-    } /* }}} */
+    }
 
-    chat_log_filter(line) {{{
+    chat_log_filter(line) {
         return true;
-    }}}
-    onKeyPress(event) {{{
+    }
+    onKeyPress(event) {
         if (event.charCode === 13) {
             if (event.target.className === "qc-option") {
                 this.saveEdit();
@@ -86,31 +87,31 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 return false;
             }
         }
-    }}}
+    }
 
-    onFocus(event) {{{
+    onFocus(event) {
         this.hideQCOptions();
-    }}}
+    }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.autoscroll();
-    }}}
-    componentDidUpdate() {{{
+    }
+    componentDidUpdate() {
         this.autoscroll();
         if (this.qc_editableMsgs !== null && this.qc_editableMsgs[0] !== null) {
             this.qc_editableMsgs[0].focus();
         }
-    }}}
+    }
 
-    updateScrollPosition() {{{
+    updateScrollPosition() {
         let tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
             this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
         this.scrolled_to_bottom = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
-    }}}
-    autoscroll() {{{
+    }
+    autoscroll() {
         if (this.scrolled_to_bottom) {
             this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
             setTimeout(() => {
@@ -119,8 +120,8 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 }
             }, 100);
         }
-    }}}
-    toggleChatLog = () => {{{
+    }
+    toggleChatLog = () => {
         let new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
         this.setState({
             chat_log: new_chat_log,
@@ -128,8 +129,8 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
-    }}}
-    toggleModeratorChatLog = () => {{{
+    }
+    toggleModeratorChatLog = () => {
         let new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
         this.setState({
             chat_log: new_chat_log,
@@ -137,56 +138,56 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
-    }}}
-    togglePlayerList = () => {{{
+    }
+    togglePlayerList = () => {
         this.setState({
             show_player_list: !this.state.show_player_list
         });
-    }}}
-    togglePlayerListSortOrder = () => {{{
-    }}}
+    }
+    togglePlayerListSortOrder = () => {
+    }
 
-    sendQuickChat = (msg: string) => {{{
+    sendQuickChat = (msg: string) => {
         this.props.gameview.goban.sendChat(msg, this.state.chat_log);
         this.hideQCOptions();
-    }}}
+    }
 
-    showQCOptions = () => {{{
+    showQCOptions = () => {
         this.setState({
             qc_visible: true
         });
-    }}}
+    }
 
-    hideQCOptions = () => {{{
+    hideQCOptions = () => {
         this.setState({
             qc_visible: false,
             qc_editing: false
         });
-    }}}
+    }
 
-    startEdit = () => {{{
+    startEdit = () => {
         this.setState({
             qc_editing: true
         });
-    }}}
+    }
 
-    saveEdit = () => {{{
+    saveEdit = () => {
         let user = data.get("user");
         this.qc_editableMsgs.map((li, index) => {
             user.qc_phrases[index] = li.innerText.trim();
         });
         localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
         this.finishEdit();
-    }}}
+    }
 
-    finishEdit = () => {{{
+    finishEdit = () => {
         this.qc_editableMsgs = null;
         this.setState({
             qc_editing: false
         });
-    }}}
+    }
 
-    render() {{{
+    render() {
         let last_line = null;
         let user = data.get("user");
         let channel = this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`;
@@ -251,9 +252,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 </div>
             </div>
         );
-    }}}
+    }
 
-    renderQC = (user) => {{{
+    renderQC = (user) => {
         let quick_chat: JSX.Element = null;
 
         if (this.state.qc_visible) {
@@ -311,11 +312,11 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             </div>;
         }
         return quick_chat;
-    }}}
+    }
 }
 
 
-function parsePosition(position: string) {{{
+function parsePosition(position: string) {
     if (!active_game_view || !position) {
         return {
             i: -1,
@@ -335,8 +336,8 @@ function parsePosition(position: string) {{{
         j = -1;
     }
     return {i: i, j: j};
-}}}
-function highlight_position(event) {{{
+}
+function highlight_position(event) {
     if (!active_game_view) { return; }
 
     let pos = parsePosition(event.target.innerText);
@@ -344,8 +345,8 @@ function highlight_position(event) {{{
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = true;
         active_game_view.goban.drawSquare(pos.i, pos.j);
     }
-}}}
-function unhighlight_position(event) {{{
+}
+function unhighlight_position(event) {
     if (!active_game_view) { return; }
 
     let pos = parsePosition(event.target.innerText);
@@ -353,7 +354,7 @@ function unhighlight_position(event) {{{
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = false;
         active_game_view.goban.drawSquare(pos.i, pos.j);
     }
-}}}
+}
 
 export class GameChatLine extends React.Component<GameChatLineProperties, any> {
     //scrolled_to_bottom:any = {"malkovich": true, "main": true};
@@ -362,52 +363,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
         super(props);
     }
 
-    chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {{{
-        let replacements = [
-            {split: /(https?:\/\/[^<> ]+)/gi, pattern: /(https?:\/\/[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
-            {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
-            {split: /(^##[0-9]{3,}|[ ]##[0-9]{3,})/gi, pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
-                replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}##${m[2] || ""}${m[4] || ""}`}</Link>)},
-            {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
-                replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}#${m[2] || ""}${m[4] || ""}`}</Link>)},
-            {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-            {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-            {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])}/>)},
-        ];
-
-        if (extra_pattern_replacements) {
-            replacements = replacements.concat(extra_pattern_replacements);
-        }
-
-        let ret = [profanity_filter(body)];
-        for (let r of replacements) {
-            ret = [].concat.apply([], ret.map((text_fragment) => {
-                return text_fragment.split(r.split);
-            }));
-        }
-
-        for (let i = 0; i < ret.length; ++i) {
-            let fragment = ret[i];
-            let matched = false;
-            for (let r of replacements) {
-                let m = r.pattern.exec(fragment);
-                if (m) {
-                    ret[i] = r.replacement(m, i);
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                ret[i] = <span key={i}>{ret[i]}</span>;
-            }
-        }
-
-        return ret;
-    }}}
-
-    markup(body): JSX.Element|Array<JSX.Element> {{{
+    markup(body): JSX.Element|Array<JSX.Element> {
         if (typeof(body) === "string") {
-            return this.chat_markup(body, [
+            return Chat.chat_markup(body, [
                 {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
                     replacement: (m, idx) => {
                         let pos = m[1];
@@ -450,7 +408,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                     orig_move.marks = orig_marks;
                                     goban.pen_marks = stashed_pen_marks;
                                     if (goban.pen_marks.length === 0) {
-                                        goban.detachPenCanvas();
+                                        goban.disablePen();
                                     }
                                     goban.redraw();
                                 }
@@ -514,13 +472,13 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 return <span>[error loading chat line]</span>;
             }
         }
-    }}}
+    }
 
-    shouldComponentUpdate(next_props, _next_state) {{{
+    shouldComponentUpdate(next_props, _next_state) {
         return this.props.line.chat_id !== next_props.line.chat_id;
-    }}}
+    }
 
-    jumpToMove = () => {{{
+    jumpToMove = () => {
        this.props.gameview.stopEstimatingScore();
        let line = this.props.line;
        let goban = this.props.gameview.goban;
@@ -559,9 +517,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             //last_moves[type] = line.moves;
        }
 
-    }}}
+    }
 
-    render() {{{
+    render() {
         let line = this.props.line;
         let lastline = this.props.lastline;
         let ts = line.date ? new Date(line.date * 1000) : null;
@@ -605,7 +563,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                 </div>
             </div>
         );
-    }}}
+    }
 }
 
-/* }}} */
+

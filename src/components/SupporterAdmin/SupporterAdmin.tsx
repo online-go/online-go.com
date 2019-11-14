@@ -45,10 +45,15 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             supporter_expiration: null,
             rough_monthly_support: null,
             payment_accounts: [],
+            num_months: '',
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
+        this.refresh();
+    }
+
+    refresh() {
         get("supporter_center/player/%%", this.props.playerId)
         .then((res) => {
 
@@ -81,6 +86,24 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
         .catch(errorAlerter);
     }
 
+    setNumMonths = (ev:React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({num_months: ev.target.value});
+    }
+
+    makeSupporter = () => {
+        let num_months = parseInt(this.state.num_months);
+
+        swal({
+            "text": (`Grant ${num_months} month supporter status to player?`),
+            showCancelButton: true
+        }).then(() => {
+            post("supporter_center/player/%%", this.props.playerId, {months: num_months})
+            .then((res) => this.refresh())
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+
     render() {
         let user = this.state;
 
@@ -101,6 +124,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                 </div>
                 {(this.state.loading === false || null) &&
                     <div className="body">
+
                         <PrettyTransactionInfo transaction={this.state.last_transaction} />
                         <hr/>
 
@@ -211,6 +235,10 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                 }
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
+                    <span>
+                        <button className='btn btn-primary' onClick={this.makeSupporter}>Make supporter</button>
+                        <input type='number' style={{width: '5rem'}} value={this.state.num_months} onChange={this.setNumMonths} placeholder='Months'/>
+                    </span>
                 </div>
             </div>
         );

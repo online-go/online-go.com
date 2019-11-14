@@ -81,7 +81,7 @@ goban-view-bar-width=400px
 
     // .players is handled in Players.styl
 
-    .play-controls { /* {{{ */
+    .play-controls {
         flex-grow: 0;
         flex-shrink: 0;
         display: block;
@@ -194,9 +194,9 @@ goban-view-bar-width=400px
             //justify-content: center;
         }
     }
-    /* }}} */
 
-    .conditional-move-planner { /* {{{ */
+
+    .conditional-move-planner {
         text-align: center;
         .buttons {
             display: flex;
@@ -204,9 +204,9 @@ goban-view-bar-width=400px
         }
     }
 
-    /* }}} */
 
-    .game-analyze-button-bar { /* {{{ */
+
+    .game-analyze-button-bar {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -231,9 +231,9 @@ goban-view-bar-width=400px
 
     }
 
-    /* }}} */
 
-    .chat-container { /* {{{ */
+
+    .chat-container {
         flex-shrink: 1;
         flex-grow: 1;
     }
@@ -254,7 +254,7 @@ goban-view-bar-width=400px
 
     /* }}}*/
 
-    .ad-container { /* {{{ */
+    .ad-container {
         flex-grow: 0;
         flex-shrink: 0;
         display: flex;
@@ -289,9 +289,9 @@ goban-view-bar-width=400px
         }
     }
 
-    /* }}} */
 
-    .goban-container { /* {{{ */
+
+    .goban-container {
         flex-grow: 1;
         //flex-shrink: 1;
         flex-basis: 100%;
@@ -304,9 +304,9 @@ goban-view-bar-width=400px
             top: 0;
             left: 0;
         }
-    } /* }}} */
+    }
 
-    .action-bar { /* {{{ */
+    .action-bar {
         display: flex;
         min-height: 2rem;
         //justify-content: space-between;
@@ -359,9 +359,9 @@ goban-view-bar-width=400px
         .move-number {
         }
     }
-    /* }}} */
 
-    .tab-icon { /* {{{ */
+
+    .tab-icon {
         position: fixed;
         right: 0;
         bottom: 0;
@@ -374,9 +374,9 @@ goban-view-bar-width=400px
     .tab-icon:hover {
         themed color fg
     }
-    /* }}} */
 
-    .leave-zen-mode-button { /* {{{ */
+
+    .leave-zen-mode-button {
         display: none;
         position: fixed;
         top: 0.5rem;
@@ -399,9 +399,9 @@ goban-view-bar-width=400px
         .leave-zen-mode-button {
             display: inline-block;
         }
-    } /* }}} */
+    }
 
-    .center-col { /* {{{ */
+    .center-col {
         flex-grow: 1;
         flex-shrink: 1;
         flex-basis: 50%;
@@ -423,9 +423,9 @@ goban-view-bar-width=400px
         }
     }
 
-    /* }}} */
 
-    .left-col, .right-col { /* {{{ */
+
+    .left-col, .right-col {
         display: flex;
         width: goban-view-bar-width
         overflow-y: auto;
@@ -481,9 +481,9 @@ goban-view-bar-width=400px
         }
     }
 
-    /* }}} */
 
-    &.portrait { /* .Dock {{{ */
+
+    &.portrait { /* .Dock  */
         .Dock {
             //flex: 1;
             flex-shrink: 0;
@@ -509,23 +509,23 @@ goban-view-bar-width=400px
 
 
 
-    /* }}} */
 
-    &.zen { /* {{{ */
+
+    &.zen {
         .action-bar, .chat-container {
             display: none;
         }
     }
-    /* }}} */
+
 
     .review-list {
         text-align: center;
     }
 
 
-    #game-move-node-text { /* {{{ */
+    #game-move-node-text {
         width: 100%;
-    } /* }}} */
+    }
 
     .Dock {
         a.disabled {
@@ -585,7 +585,7 @@ goban-view-bar-width=400px
 /*****************************/
 /*** Conditional Move tree ***/
 /*****************************/
-/* {{{ */
+
 
 .ctrl-conditional-tree {
     text-align: left;
@@ -687,4 +687,4 @@ goban-view-bar-width=400px
     }
 }
 
-/* }}} */
+

@@ -21,6 +21,7 @@ import * as sanitizeHtml from 'sanitize-html';
 
 interface MarkdownProps {
     source: string;
+    className?: string;
 }
 
 const md = markdownit({
@@ -79,22 +80,27 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
         };
     }
 
+    // This 'massage' appears to be allowing headers to be defined without whitespace after the #.
+    // Possibly 'massage' is a rather generic name for that!?
     massage(source: string): string {
         source = source.split('\n').map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
         return source;
     }
 
-    componentWillReceiveProps(next_props) {{{
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (next_props.source !== this.props.source) {
             this.setState({
                 html: next_props.source ? sanitize(md.render(this.massage(next_props.source))) : ""
             });
         }
-    }}}
+    }
 
     render() {
         return (
-            <div dangerouslySetInnerHTML={ {__html: this.state.html } } />
+            <div
+                className={this.props.className ? this.props.className : ""}
+                dangerouslySetInnerHTML={ {__html: this.state.html } }
+            />
         );
     }
 }

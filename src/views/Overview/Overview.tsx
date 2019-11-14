@@ -126,7 +126,6 @@ export class Overview extends React.Component<{}, any> {
                     <ActiveAnnouncements  />
                     <ChallengesList onAccept={() => this.refresh()} />
 
-
                     {((user && user.provisional) || null) &&
                         <DismissableNotification
                             className="learn-how-to-play"
@@ -201,7 +200,7 @@ export class Overview extends React.Component<{}, any> {
     }
 }
 
-export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
+export class GroupList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -211,32 +210,32 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.groups, this.updateGroups);
         data.watch(cached.group_invitations, this.updateGroupInvitations);
-    }}}
+    }
 
-    updateGroups = (groups) => {{{
+    updateGroups = (groups) => {
         this.setState({"groups": groups});
-    }}}
-    updateGroupInvitations = (invitations) => {{{
+    }
+    updateGroupInvitations = (invitations) => {
         this.setState({"invitations": invitations});
-    }}}
+    }
 
-    componentWillUnmount() {{{
+    componentWillUnmount() {
         data.unwatch(cached.groups, this.updateGroups);
         data.unwatch(cached.group_invitations, this.updateGroupInvitations);
-    }}}
-    acceptInvite(invite) {{{
+    }
+    acceptInvite(invite) {
         post("me/groups/invitations", {"request_id": invite.id})
         .then(() => 0)
         .catch(() => 0);
-    }}}
-    rejectInvite(invite) {{{
+    }
+    rejectInvite(invite) {
         post("me/groups/invitations", {"request_id": invite.id, "delete": true})
         .then(() => 0)
         .catch(() => 0);
-    }}}
+    }
     render() {
         return (
             <div className="Overview-GroupList">
@@ -251,8 +250,8 @@ export class GroupList extends React.PureComponent<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
-export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
+}
+export class TournamentList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -262,7 +261,7 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
         /*
         get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
@@ -272,15 +271,15 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
             console.info("Caught", err);
         });
         */
-    }}}
-    update = (tournaments) => {{{
+    }
+    update = (tournaments) => {
         this.setState({"my_tournaments": tournaments});
-    }}}
+    }
 
-    componentWillUnmount() {{{
+    componentWillUnmount() {
         abort_requests_in_flight("me/tournaments");
         data.unwatch(cached.active_tournaments, this.update);
-    }}}
+    }
     render() {
         return (
             <div className="Overview-TournamentList">
@@ -293,8 +292,8 @@ export class TournamentList extends React.PureComponent<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
-export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
+}
+export class LadderList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -303,18 +302,18 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
         };
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         data.watch(cached.ladders, this.update);
-    }}}
+    }
 
-    update = (ladders) => {{{
+    update = (ladders) => {
         this.setState({"ladders": ladders});
-    }}}
+    }
 
-    componentWillUnmount() {{{
+    componentWillUnmount() {
         abort_requests_in_flight("me/ladders");
         data.unwatch(cached.ladders, this.update);
-    }}}
+    }
     render() {
         return (
             <div className="Overview-LadderList">
@@ -329,4 +328,4 @@ export class LadderList extends React.PureComponent<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
+}

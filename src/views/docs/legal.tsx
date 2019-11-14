@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-export let TermsOfService = (props) => ( /* {{{ */
+export let TermsOfService = (props) => (
 <div className="container">
   <div className="column well">
 
@@ -59,7 +59,6 @@ export let TermsOfService = (props) => ( /* {{{ */
         <li>Impersonate any person or entity</li>
         <li>Disrupt the normal flow of dialog or otherwise act in a manner that negatively affects other users' ability to communicate through or use Services provided by Online-Go.com</li>
         <li>Intentionally or unintentionally violate any applicable local, state, national, or international law</li>
-        <li>Solicit or advertise for any competing Go services</li>
     </ul>
     </div>
 
@@ -357,9 +356,9 @@ export let TermsOfService = (props) => ( /* {{{ */
 
   </div>
 </div>
-); /* }}} */
+);
 
-export let PrivacyPolicy = (props) => ( /* {{{ */
+export let PrivacyPolicy = (props) => (
 <div className="container">
   <div className="column well">
     <div className="legal-paragraph">
@@ -528,8 +527,8 @@ export let PrivacyPolicy = (props) => ( /* {{{ */
 
   </div>
 </div>
-); /* }}} */
-export let ContactInformation = (props) => ( /* {{{ */
+);
+export let ContactInformation = (props) => (
 <div style={{textAlign: "center", padding: "4em"}}>
     <h3>For <span style={{fontWeight: "bold",  textDecoration: "underline"}}>non-support</span> related contact, please drop us an email at:</h3>
 
@@ -537,8 +536,8 @@ export let ContactInformation = (props) => ( /* {{{ */
 
     <br/>For support, please use the forums: <a href="http://forums.online-go.com">http://forums.online-go.com</a>.
 </div>
-); /* }}} */
-export let RefundPolicy = (props) => ( /* {{{ */
+);
+export let RefundPolicy = (props) => (
 <div className="container">
     <div className="column well">
         <h1>Refund Policy</h1>
@@ -550,4 +549,4 @@ export let RefundPolicy = (props) => ( /* {{{ */
         </div>
     </div>
 </div>
-); /* }}} */
+);

@@ -56,22 +56,22 @@ export class Styling extends React.PureComponent<{}, any> {
         };
     }
 
-    setStarRating(idx, v) {{{
+    setStarRating(idx, v) {
         let cpy = this.state.star_ratings.slice();
         cpy[idx] = v;
         this.setState({star_ratings: cpy});
-    }}}
+    }
 
-    updateAutocompletedPlayer = (user) => {{{
+    updateAutocompletedPlayer = (user) => {
         this.setState({autocompleted_player: user});
-    }}}
-    updateAutocompletedGroup = (group) => {{{
+    }
+    updateAutocompletedGroup = (group) => {
         this.setState({autocompleted_group: group});
-    }}}
+    }
 
-    setMarkdown = (ev) => {{{
+    setMarkdown = (ev) => {
         this.setState({markdown_source: ev.target.value});
-    }}}
+    }
 
     render() { return (
     <div className="Styling container">

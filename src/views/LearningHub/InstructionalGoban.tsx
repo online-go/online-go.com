@@ -19,7 +19,7 @@
 import * as React from "react";
 import {post, get} from "requests";
 import {Goban} from "goban";
-import {sfx} from "ogs-goban/SFXManager";
+import {sfx} from "goban";
 import {PersistentElement} from "PersistentElement";
 
 interface InstructionalGobanProps {
@@ -32,7 +32,7 @@ interface InstructionalGobanProps {
 }
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
-    goban_div;
+    goban_div:HTMLDivElement;
     goban;
 
     constructor(props) {
@@ -40,28 +40,29 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         this.state = {
         };
 
-        this.goban_div = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.destroy();
-    }}}
-    componentDidUpdate(prev_props) {{{
+    }
+    componentDidUpdate(prev_props) {
         if (prev_props.config !== this.props.config) {
             this.destroy();
             this.initialize();
         }
-    }}}
+    }
 
     reset() {
         this.destroy();
         this.initialize();
     }
 
-    initialize() {{{
+    initialize() {
         this.goban = new Goban({
             "board_div": this.goban_div,
             "initial_player": "black",
@@ -119,9 +120,11 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         if (this.props.config['onError']) {
             this.goban.on("error", this.props.config.onError);
         }
-    }}}
+    }
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            this.goban.destroy();
+        }
     }
     render() {
         return (

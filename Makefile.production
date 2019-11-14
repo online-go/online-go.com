@@ -1,0 +1,102 @@
+-include Makefile.passwords
+
+RELEASE=$(shell git describe --long | sed 's@\([0-9.]\{1,\}\).*@\1@')
+VERSION=$(shell git describe --long)
+OGS_HASH=$(shell md5sum dist/ogs.min.js | awk '{print $$1}')
+VENDOR_HASH=$(shell md5sum dist/vendor.min.js | awk '{print $$1}')
+OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
+
+
+stats:
+	npm run webpack -- --mode production --optimize-minimize --devtool=source-map --display-modules --output-filename 'ogs.min.js' --json > webpack-stats.json
+	cat webpack-stats.json
+
+todo:
+	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | sort | grep --color -E '^[^:]*:'
+	cd src; grep -r 'TODO: Implement' views components lib | grep -v gen.py | wc -l
+todo-all:
+	cd src; grep -r TODO views components lib | grep --color -E '^[^:]*:'
+	cd src; grep -r TODO views components lib | wc -l
+
+
+
+
+LANGUAGE_VERSION=`md5sum i18n/locale/*.js | sort | md5sum | awk '{print $$1}'`
+SUPPORTED_LANGUAGES=`python -c 'import json; print(json.dumps(json.loads(open("i18n/languages.json", "r").read())))'`
+GOBAN_VERSION=`python -c 'import json; print(json.loads(open("package.json", "r").read())["devDependencies"]["goban"][1:])'`
+
+INDEX_HEADERS=-H "Content-Type: text/plain" \
+	-H "X-OGS-Index-Auth: $(SUPER_SECURE_INDEX_AUTH)" \
+	-H "X-OGS-Index-Release: $(RELEASE)"  \
+	-H "X-OGS-Index-Version: $(VERSION)"  \
+	-H "X-OGS-Supported-Languages: $(SUPPORTED_LANGUAGES)"  \
+	-H "X-OGS-Goban-Js: https://cdn.online-go.com/goban/$(GOBAN_VERSION)/goban.min.js"  \
+	-H "X-OGS-Language-Version: $(LANGUAGE_VERSION)"  \
+
+dev-put: push-cdn
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- http://localhost:1080/_index
+dev-del:
+	curl -X DELETE $(INDEX_HEADERS)  http://localhost:1080/_index
+
+beta-put: push-cdn audit-translations
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://beta.online-go.com/_index
+
+live-put: confirm-go-live push-cdn
+	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://online-go.com/_index
+
+live-maint: confirm-go-live 
+	curl -X PUT $(INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
+
+confirm-go-live:
+	@read -p "Go live? " yesno; \
+	test $$yesno == 'yes';
+
+
+push: push-cdn
+
+push-cdn: prepare-cdn-files
+	gsutil -m rsync -r deployment-staging-area/$(RELEASE) gs://ogs-site-files/$(RELEASE)/
+
+sync-translations:
+	cd i18n/locale/; ssh pootle@45.76.254.197 "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
+
+audit-translations:
+	cd i18n; node audit-translations.js
+
+prepare-cdn-files: purge-cdn-files sync-translations dist/ogs.min.js dist/vendor.min.js dist/ogs.$(VERSION).css
+	mkdir -p deployment-staging-area/$(RELEASE)/
+	mkdir -p deployment-staging-area/$(RELEASE)/locale
+	cat dist/ogs.min.js | sed 's/ogs.min.js.map/ogs.$(OGS_VERSION_HASH).js.map/' > deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js
+	cat dist/vendor.min.js | sed 's/vendor.min.js.map/vendor.$(VENDOR_HASH).js.map/' > deployment-staging-area/$(RELEASE)/vendor.$(VENDOR_HASH).js
+	cp -p dist/ogs.min.js.map deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js.map
+	cp -p dist/vendor.min.js.map deployment-staging-area/$(RELEASE)/vendor.$(VENDOR_HASH).js.map
+	cp -p dist/ogs.$(VERSION).css deployment-staging-area/$(RELEASE)/
+	cp -p dist/ogs.$(VERSION).css.map deployment-staging-area/$(RELEASE)/
+	cp -Rp assets/img deployment-staging-area/$(RELEASE)/
+	cp -Rp assets/sound deployment-staging-area/$(RELEASE)/
+	ls i18n/locale/*.js | sed 's@i18n/locale/\([^\.]\+\).js@\1@' | xargs -n1 -I {} cp i18n/locale/{}.js deployment-staging-area/$(RELEASE)/locale/{}.$(LANGUAGE_VERSION).js
+	# cleanup
+	find deployment-staging-area/ | grep \\.swp$$ | xargs rm -f
+	find deployment-staging-area/ | grep "~" | xargs rm -f
+	find deployment-staging-area/ | grep /backup/ | xargs rm -f
+	find deployment-staging-area/ | grep \\.bak$$ | xargs rm -f
+	find deployment-staging-area/ | grep \\.xcf$$ | xargs rm -f
+	find deployment-staging-area/ | grep \\.dat$$ | xargs rm -f
+
+purge-cdn-files:
+	rm -Rf deployment-staging-area
+
+dist/ogs.min.js: dist/ogs.js
+	npm run webpack -- --mode=production --optimize-minimize --devtool=source-map
+
+dist/vendor.min.js: dist/vendor.js
+	npm run webpack -- --mode=production --optimize-minimize --devtool=source-map
+
+dist/ogs.$(VERSION).css: 
+	npm run gulp min_styl
+
+
+
+
+.PHONY: dev stats todo update install default min server dist push-cdn sync-translations
+

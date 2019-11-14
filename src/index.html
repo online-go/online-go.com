@@ -4,6 +4,8 @@
       <meta charset="utf-8">
       <title>OGS</title>
 
+      <meta http-equiv="Cache-control" content="no-cache">
+      <meta http-equiv="Expires" content="-1">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="apple-mobile-web-app-capable" content="yes">
       <meta name="format-detection" content="telephone=no">
@@ -73,21 +75,6 @@
       {{EXTRA_CONFIG}}
   </head>
   <body>
-      <amex:init client_id="{{AMEX_CLIENT_ID}}" env="{{AMEX_ENV}}" callback="amexExpressCheckout"></amex:init>
-      <div id='amex-express-checkout'></div>
-      <script>
-          var amex_express_checkout_callback = null;
-          function amexExpressCheckout(response) {
-              if (amex_express_checkout_callback) {
-                  console.log("Amex express checkout completed, routing details to server.");
-                  amex_express_checkout_callback(response);
-              } else {
-                  console.error("No Amex express checkout callback registered, your card has not been charged.");
-              }
-          }
-      </script>
-
-
       <script>
         try {
             document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');
@@ -133,6 +120,7 @@
 
       <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
+      <script defer src="{{GOBAN_JS}}"></script>
       <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
       <script defer src="https://cdn.online-go.com/lib/socket.io/2.0.3/socket.io{{MIN}}.js"></script>
       <script defer src="https://cdn.online-go.com/lib/limonte-sweetalert2/6.0.1/sweetalert2{{MIN}}.js"></script>
@@ -145,7 +133,7 @@
         var ogs_language_version='{{LANGUAGE_VERSION}}';
         var cdn_service = '{{CDN_SERVICE}}';
 
-        /* Detect preferred language {{{ */
+        /* Detect preferred language  */
 
         function isSupportedLanguage(lang) {
             if (!lang) {
@@ -231,11 +219,13 @@
         try {
             var script = document.createElement('script');
             script.id = "ogs_score_estimator_script";
-            if (typeof WebAssembly === "object")  {
-                console.log("WASM support detected, score estimator will be fast"); 
+            try {
+                new WebAssembly.Memory({ initial: 0 });
+                console.log("WASM support detected, score estimator will be fast");
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
-            } else {
-                console.log("No WASM support detected, score estimator falling back to ASM.js mode"); 
+            } catch (error) {
+                console.warn(error);
+                console.log("No WASM support detected, score estimator falling back to ASM.js mode");
                 script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
             }
             document.head.appendChild(script);
@@ -272,7 +262,7 @@
           function version_print_setters() {
               var ret = "\n\n";
 
-              var scripts = $("script"); 
+              var scripts = $("script");
               for (var idx = 0; idx < scripts.length; ++idx) {
                   var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
                   if (m) {
@@ -281,7 +271,7 @@
                   }
               }
 
-              var stylesheets = $("link"); 
+              var stylesheets = $("link");
               for (var idx = 0; idx < stylesheets.length; ++idx) {
                   if (stylesheets[idx].rel === "stylesheet") {
                       var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)

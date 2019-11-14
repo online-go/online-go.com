@@ -30,31 +30,32 @@ interface InstructionalGobanProps {
 }
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
-    goban_div;
-    goban;
+    goban_div:HTMLDivElement;
+    goban:Goban;
 
     constructor(props) {
         super(props);
         this.state = {
         };
 
-        this.goban_div = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         this.initialize();
-    }}}
-    componentWillUnmount() {{{
+    }
+    componentWillUnmount() {
         this.destroy();
-    }}}
-    componentDidUpdate(prev_props) {{{
+    }
+    componentDidUpdate(prev_props) {
         if (prev_props.config !== this.props.config) {
             this.destroy();
             this.initialize();
         }
-    }}}
+    }
 
-    onResize = (no_debounce?: boolean) => {{{
+    onResize = (no_debounce?: boolean) => {
         /*
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
@@ -91,10 +92,10 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
 
         this.recenterGoban();
         */
-    }}}
+    }
 
 
-    initialize() {{{
+    initialize() {
         this.goban = new Goban({
             "board_div": this.goban_div,
             "initial_player": "black",
@@ -149,10 +150,12 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             }, 500);
         }
         */
-    }}}
+    }
 
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            this.goban.destroy();
+        }
     }
 
 

@@ -112,7 +112,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleDebug = this.toggleDebug.bind(this);
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         data.watch("config.user", (user) => this.setState({"user": user}));
 
         browserHistory.listen(location => {
@@ -281,6 +281,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 <Link to="/observe-games">{_("Games")}</Link>
                 <Link to="/chat">{_("Chat")}</Link>
                 <Link to="/puzzles">{_("Puzzles")}</Link>
+                <Link to="/joseki">{_("Joseki")}</Link>
                 <Link to="/tournaments">{_("Tournaments")}</Link>
                 <Link to="/ladders">{_("Ladders")}</Link>
                 <Link to="/groups">{_("Groups")}</Link>
@@ -369,7 +370,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                            value={this.state.omnisearch_string}
                            onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
                 </div>
-                {(!omnisearch_searching || null) && /* {{{ */
+                {(!omnisearch_searching || null) &&
                     <ul id="items">
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
                         {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i> {_("Sign In")}</Link></li>}
@@ -389,6 +390,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
                         <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
                         <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</Link></li>
+                        <li><Link to="/joseki"><i className="fa fa-sitemap"></i> {_("Joseki")}</Link></li>
                         {/* <li><Link to='/library'><i className='fa fa-university'></i> {_("Server Library")}</Link></li> */}
                         {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i> {_("SGF Library")}</Link></li>}
                         {/* {user && <li><Link to='/library/game-history'><i className='fa fa-archive'></i> {_("Game History")}</Link></li>} */}
@@ -467,8 +469,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                             </ul>
                         }
                     </ul>
-                /* }}} */}
-                {(omnisearch_searching || null) && /* {{{ */
+                }
+                {(omnisearch_searching || null) &&
                     <div className="OmniSearch-results">
                         {(this.state.omnisearch_sitemap.length || null) &&
                             <div>
@@ -524,7 +526,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                         }
 
                     </div>
-                /* }}} */}
+                }
             </div>
         </div>
         );

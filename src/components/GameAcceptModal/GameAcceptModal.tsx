@@ -42,7 +42,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         super(props);
     }
 
-    accept = () => {{{
+    accept = () => {
         swal({
             text: "Accepting...",
             type: "info",
@@ -61,7 +61,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
             swal.close();
             errorAlerter(err);
         });
-    }}}
+    }
 
     render() {
         let challenge = this.props.challenge;
@@ -127,12 +127,12 @@ export function openGameAcceptModal(challenge): Promise<any> {
     });
 }
 
-export function handicapText(handicap) { /* {{{ */
+export function handicapText(handicap) {
     if (handicap < 0)   { return _("Auto"); }
     if (handicap === 0) { return _("None"); }
     return handicap;
-} /* }}} */
-function yesno(tf: boolean) {{{
+}
+function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
-}}}
+}
 

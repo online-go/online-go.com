@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -45,7 +46,7 @@ interface PlayProperties {
 
 export class Play extends React.Component<PlayProperties, any> {
     ref_container: HTMLDivElement;
-    canvas: any;
+    canvas: HTMLCanvasElement;
 
     seekgraph: SeekGraph;
     resize_check_interval;
@@ -63,25 +64,23 @@ export class Play extends React.Component<PlayProperties, any> {
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
         };
-        this.canvas = $("<canvas>")[0];
+        this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
     }
 
-    componentDidMount() {{{
+    componentDidMount() {
         window.document.title = _("Play");
         this.seekgraph = new SeekGraph({
             canvas: this.canvas
         });
-        this.resize();
+        this.onResize();
         this.seekgraph.on("challenges", this.updateChallenges);
         automatch_manager.on('entry', this.onAutomatchEntry);
         automatch_manager.on('start', this.onAutomatchStart);
         automatch_manager.on('cancel', this.onAutomatchCancel);
-        $(window).on("resize", this.resize);
-    }}}
+    }
 
-    componentWillUnmount() {{{
-        $(window).off("resize", this.resize);
+    componentWillUnmount() {
         automatch_manager.off('entry', this.onAutomatchEntry);
         automatch_manager.off('start', this.onAutomatchStart);
         automatch_manager.off('cancel', this.onAutomatchCancel);
@@ -90,16 +89,16 @@ export class Play extends React.Component<PlayProperties, any> {
             clearTimeout(this.list_freeze_timeout);
             this.list_freeze_timeout = null;
         }
-    }}}
+    }
 
-    componentDidUpdate(prevProps, prevState) {{{
+    componentDidUpdate(prevProps, prevState) {
         if (prevState.freeze_challenge_list && !this.state.freeze_challenge_list &&
             this.state.pending_challenges.length !== 0) {
             this.updateChallenges(this.state.pending_challenges);
         }
-    }}}
+    }
 
-    resize = () => {{{
+    onResize = () => {
         if (!this.ref_container) {
             return;
         }
@@ -110,11 +109,11 @@ export class Play extends React.Component<PlayProperties, any> {
             this.seekgraph.resize(w, h);
         }
         if (w === 0 || h === 0) { // Wait for positive size
-            setTimeout(this.resize, 500);
+            setTimeout(this.onResize, 500);
         }
-    }}}
+    }
 
-    updateChallenges = (challenges) => {{{
+    updateChallenges = (challenges) => {
         if (this.state.freeze_challenge_list) {
             let live = this.state.live_list;
             let corr = this.state.correspondence_list;
@@ -169,52 +168,52 @@ export class Play extends React.Component<PlayProperties, any> {
             correspondence_list: corr,
             pending_challenges: []
         });
-    }}}
+    }
 
-    acceptOpenChallenge(challenge) {{{
+    acceptOpenChallenge(challenge) {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
             this.unfreezeChallenges();
         }).catch(errorAlerter);
-    }}}
+    }
 
-    cancelOpenChallenge(challenge) {{{
+    cancelOpenChallenge(challenge) {
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
         this.unfreezeChallenges();
-    }}}
+    }
 
-    cancelActiveLiveChallenges = () => {{{
+    cancelActiveLiveChallenges = () => {
         // In theory there should only be one, but cancel them all anyhow...
         this.state.live_list.forEach((c) => {
            if (c.user_challenge) {
                this.cancelOpenChallenge(c);
            }
         });
-    }}}
+    }
 
-    extractUser(challenge) {{{
+    extractUser(challenge) {
         return {
             id: challenge.user_id,
             username: challenge.username,
             rank: challenge.rank,
             professional: challenge.pro,
         };
-    }}}
+    }
 
-    onAutomatchEntry = (entry) => {{{
+    onAutomatchEntry = (entry) => {
         this.forceUpdate();
-    }}}
+    }
 
-    onAutomatchStart = (entry) => {{{
+    onAutomatchStart = (entry) => {
         this.forceUpdate();
-    }}}
+    }
 
-    onAutomatchCancel = (entry) => {{{
+    onAutomatchCancel = (entry) => {
         this.forceUpdate();
-    }}}
+    }
 
-    findMatch = (speed: 'blitz' | 'live' | 'correspondence') => {{{
+    findMatch = (speed: 'blitz' | 'live' | 'correspondence') => {
         let settings = getAutomatchSettings(speed);
         let preferences: AutomatchPreferences = {
             uuid: uuid(),
@@ -246,33 +245,33 @@ export class Play extends React.Component<PlayProperties, any> {
         if (speed === 'correspondence') {
             this.setState({showLoadingSpinnerForCorrespondence: true});
         }
-    }}}
+    }
 
 
     dismissCorrespondenceSpinner = () => {
         this.setState({showLoadingSpinnerForCorrespondence: false});
     }
 
-    cancelActiveAutomatch = () => {{{
+    cancelActiveAutomatch = () => {
         if (automatch_manager.active_live_automatcher) {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
-    }}}
+    }
 
-    newComputerGame = () => {{{
+    newComputerGame = () => {
         if (bot_count() === 0) {
             swal(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();
-    }}}
+    }
 
-    newCustomGame = () => {{{
+    newCustomGame = () => {
         challenge(null);
-    }}}
+    }
 
-    toggleSize(size) {{{
+    toggleSize(size) {
         let size_options = dup(this.state.automatch_size_options);
         if (size_options.indexOf(size) >= 0) {
             size_options = size_options.filter((x) => x !== size);
@@ -285,27 +284,27 @@ export class Play extends React.Component<PlayProperties, any> {
         }
         data.set('automatch.size_options', size_options);
         this.setState({automatch_size_options: size_options});
-    }}}
+    }
 
-    toggleShowAllChallenges = () => {{{
+    toggleShowAllChallenges = () => {
         preferences.set("show-all-challenges", !this.state.show_all_challenges);
         this.setState({show_all_challenges: !this.state.show_all_challenges});
-    }}}
+    }
 
-    anyChallengesToShow = (live) => {{{
+    anyChallengesToShow = (live) => {
         let challengeList = live ? this.state.live_list : this.state.correspondence_list;
 
         return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
-    }}}
+    }
 
-    liveOwnChallengePending = () => {{{
+    liveOwnChallengePending = () => {
         let locp = this.state.live_list.some((c) => (c.user_challenge));
         return locp;
-    }}}
+    }
 
-    freezeChallenges = () => {{{
+    freezeChallenges = () => {
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
         }
@@ -314,16 +313,16 @@ export class Play extends React.Component<PlayProperties, any> {
             this.setState({freeze_challenge_list: true});
         }
         this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
-    }}}
+    }
 
-    unfreezeChallenges = () => {{{
+    unfreezeChallenges = () => {
         //console.log("Unfreeze challenges...");
         this.setState({freeze_challenge_list: false});
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
             this.list_freeze_timeout = null;
         }
-    }}}
+    }
 
     render() {
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
@@ -342,6 +341,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='col-sm-6'>
                         <Card>
                             <div ref={el => this.ref_container = el} className="seek-graph-container">
+                                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                                 <PersistentElement elt={this.canvas}/>
                             </div>
                         </Card>
@@ -452,7 +452,7 @@ export class Play extends React.Component<PlayProperties, any> {
         );
     }
 
-    automatchContainer() {{{
+    automatchContainer() {
         let size_enabled = (size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
@@ -564,9 +564,9 @@ export class Play extends React.Component<PlayProperties, any> {
                 </div>
             );
         }
-    }}}
+    }
 
-    challengeList(isLive: boolean) {{{
+    challengeList(isLive: boolean) {
         let user = data.get("user");
 
         let timeControlClassName = (config) => {
@@ -651,16 +651,16 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div> :
                     null
             )));
-    }}}
+    }
 
-    cellBreaks(amount) {{{
+    cellBreaks(amount) {
         let result = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
         }
         return result;
-    }}}
-    challengeListHeaders() {{{
+    }
+    challengeListHeaders() {
         return <div className="challenge-row">
             <span className="head"></span>
             <span className="head">{_("Player")}</span>
@@ -672,7 +672,7 @@ export class Play extends React.Component<PlayProperties, any> {
             <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
             <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
         </div>;
-    }}}
+    }
 
 }
 

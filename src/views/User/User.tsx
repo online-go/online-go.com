@@ -29,7 +29,7 @@ import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
-import {durationString} from "TimeControl";
+import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
@@ -130,7 +130,27 @@ export class User extends React.PureComponent<UserProperties, any> {
         clearInterval(this.vacation_update_interval);
     }
 
-    componentWillReceiveProps(nextProps) {
+    isSpecialUser() {
+        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superUser) {
+            return true;
+        }
+        return false;
+    }
+
+    vacationAccrued() {
+        if (this.state.user) {
+            let vacation_time_accrued = this.state.user.vacation_left;
+            if (this.isSpecialUser()) {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
+            }
+            else {
+                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
+            }
+        }
+        return "User not Found";
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.match.params.user_id !== this.props.match.params.user_id) {
             this.setState({"user": null, resolved: false});
             this.resolve(nextProps);
@@ -201,10 +221,10 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
 
-         if (data.get("config.user").is_moderator) /* aliases {{{ */ {
+         if (data.get("config.user").is_moderator) /* aliases  */ {
             state.ip = null;
             state.host_ip_settings = null;
-         } /* }}} */
+         }
 
         this.setState(state);
         this.updateHostIpSettings();
@@ -226,7 +246,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 "chatban_affects_all": true
             }});
         })
-        .catch(errorAlerter);
+        .catch(ignore);
     }
 
     saveHostIpSettings() {
@@ -255,12 +275,12 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
     }
 
-    addFriend(id) { /* {{{ */
+    addFriend(id) {
         post("me/friends", { "player_id": id })
         .then(() => this.setState({friend_request_sent: true}))
         .catch(errorAlerter);
-    } /* }}} */
-    removeFriend(id) { /* {{{ */
+    }
+    removeFriend(id) {
         swal({
             text: _("Are you sure you wish to remove this friend?"),
             showCancelButton: true,
@@ -274,8 +294,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    } /* }}} */
-    acceptFriend(id) { /* {{{ */
+    }
+    acceptFriend(id) {
         post("me/friends/invitations", { "from_user": id })
         .then(() => this.setState({
             friend_request_sent: false,
@@ -283,8 +303,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             is_friend: true
         }))
         .catch(errorAlerter);
-    } /* }}} */
-    generateAPIKey() { /* {{{ */
+    }
+    generateAPIKey() {
         if (!confirm("Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?")) {
             return;
         }
@@ -293,19 +313,19 @@ export class User extends React.PureComponent<UserProperties, any> {
             bot_apikey: res.bot_apikey
         }))
         .catch(errorAlerter);
-    } /* }}} */
-    saveBot() { /* {{{ */
+    }
+    saveBot() {
         put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
             swal("Bot Engine updated");
             this.resolve(this.props);
         })
         .catch(errorAlerter);
-    } /* }}} */
-    pm() { /* {{{ */
+    }
+    pm() {
         getPrivateChat(this.user_id).open();
-    } /* }}} */
-    saveSuperUserStuff() { /* {{{ */
+    }
+    saveSuperUserStuff() {
         let moderation_note = null;
         do {
             moderation_note = prompt("Moderator note:");
@@ -347,9 +367,9 @@ export class User extends React.PureComponent<UserProperties, any> {
         //.then(()=>$("#user-su-controls").modal('toggle'))
         .then(() => alert("Should be toggling modal")) // TODO
         .catch(errorAlerter);
-    } /* }}} */
+    }
 
-    updateIcon = (files) => {{{
+    updateIcon = (files) => {
         console.log(files);
         this.setState({new_icon: files[0]});
         image_resizer(files[0], 512, 512).then((file: Blob) => {
@@ -364,8 +384,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }}}
-    clearIcon = () => {{{
+    }
+    clearIcon = () => {
         this.setState({new_icon: null});
         del("players/%%/icon", this.user_id)
         .then((res) => {
@@ -376,42 +396,42 @@ export class User extends React.PureComponent<UserProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }}}
-    toggleEdit = () => {{{
+    }
+    toggleEdit = () => {
         if (this.state.editing) {
             this.saveEditChanges();
         } else {
             this.setState({editing: true});
         }
-    }}}
-    saveCountry = (ev) => {{{
+    }
+    saveCountry = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {country: ev.target.value})});
-    }}}
-    saveAbout = (ev) => {{{
+    }
+    saveAbout = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {about: ev.target.value})});
-    }}}
-    saveUsername = (ev) => {{{
+    }
+    saveUsername = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {username: ev.target.value})});
-    }}}
-    saveWebsite = (ev) => {{{
+    }
+    saveWebsite = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {website: ev.target.value})});
-    }}}
-    saveRealFirstName = (ev) => {{{
+    }
+    saveRealFirstName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             first_name: ev.target.value,
             name: ev.target.value + " " + (this.state.user.last_name || ""),
         })});
-    }}}
-    saveRealLastName = (ev) => {{{
+    }
+    saveRealLastName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             last_name: ev.target.value,
             name: (this.state.user.first_name || "") + " " + ev.target.value,
         })});
-    }}}
-    saveRealNameIsPrivate = (ev) => {{{
+    }
+    saveRealNameIsPrivate = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
-    }}}
-    saveEditChanges() {{{
+    }
+    saveEditChanges() {
         let username = this.state.user.username.trim();
         let promise: Promise<void>;
         if (!data.get('user').is_moderator && (this.original_username !== username)) {
@@ -440,30 +460,30 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }}}
-    openModerateUser = () => {{{
+    }
+    openModerateUser = () => {
         let modal = openModerateUserModal(this.state.user);
         modal.on("close", () => {
             this.resolve(this.props);
         });
-    }}}
+    }
 
-    updateGameSearch = (player) => {{{
+    updateGameSearch = (player) => {
         if (player) {
             this.refs.game_table.filter.alt_player = player.id;
         } else {
             delete this.refs.game_table.filter.alt_player;
         }
         this.refs.game_table.filter_updated();
-    }}}
-    updateReviewSearch = (player) => {{{
+    }
+    updateReviewSearch = (player) => {
         if (player) {
             this.refs.review_table.filter.alt_player = player.id;
         } else {
             delete this.refs.review_table.filter.alt_player;
         }
         this.refs.review_table.filter_updated();
-    }}}
+    }
 
 
     addModeratorNote = () => {
@@ -491,14 +511,14 @@ export class User extends React.PureComponent<UserProperties, any> {
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
         let domWorkScaleback = 1;
-        let doDomWork = () => { /* {{{ */
+        let doDomWork = () => {
             try {
                 $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
             } catch (e) {
                 console.log(e.stack);
             }
-        }; /* }}} */
-        setTimeout(doDomWork, 0); /* }}} */
+        };
+        setTimeout(doDomWork, 0);
 
         const rows = [
             ["a1", "b1", "c1"],
@@ -525,12 +545,55 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white = r.players.white;
                 item.white_won = !r.white_lost && r.black_lost;
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
-                item.result_class = (item.white_won && (item.white.id === this.user_id)) || (item.black_won && (item.black.id === this.user_id)) ? "library-won-result" : "library-lost-result";
                 item.historical = r.historical_ratings;
 
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost)) {
-                    item.result_class = "";
+                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
+                    item.result_class = "library-tie-result";
+                } else if (item.white_won) {
+                  if (item.white.id === this.user_id && r.ranked) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                  } else if (r.ranked) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                  } else {
+                    item.result_class = item.white.id === this.user_id ? "library-won-result-unranked" : "library-lost-result-unranked";
+                  }
+                } else {
+                  if (item.white.id === this.user_id && r.ranked) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                  } else if (r.ranked) {
+                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                  } else {
+                    item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
+                  }
                 }
+
+                if ("time_control_parameters" in r) {
+                    let tcp = JSON.parse(r.time_control_parameters);
+                    if ("speed" in tcp) {
+                        item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
+                    }
+                }
+                if (!item.speed) { // fallback
+                    if (r.time_per_move >= 3600 || r.time_per_move === 0) {
+                        item.speed = "Correspondence";
+                    } else if (r.time_per_move < 10 && r.time_per_move > 0) {
+                        item.speed = "Blitz";
+                    } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
+                        item.speed = "Live";
+                    } else {
+                        console.log("time_per_move < 0");
+                    }
+                }
+                if (item.speed === "Correspondence") {
+                    item.speed_icon_class = "speed-icon ogs-turtle";
+                } else if (item.speed === "Blitz") {
+                    item.speed_icon_class = "speed-icon fa fa-bolt";
+                } else if (item.speed === "Live") {
+                    item.speed_icon_class = "speed-icon fa fa-clock-o";
+                } else {
+                    console.log("unsupported speed setting: " + item.speed);
+                }
+
                 item.name = r.name;
 
                 if (item.name && item.name.trim() === "") {
@@ -591,10 +654,10 @@ export class User extends React.PureComponent<UserProperties, any> {
 
         return (
           <div className="User container">
-            <div>{/* Profile card {{{ */}
+            <div>{/* Profile card  */}
                 <div className="profile-card">
                     <div className="avatar-and-ratings-row">
-                        <div className="avatar-container">{/* Avatar container{{{ */}
+                        <div className="avatar-container">{/* Avatar container */}
                             {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
                                 : <span className='username'><Player user={user}/></span>
@@ -680,19 +743,19 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
                             </div>
                         </div>
-                        {/* }}} */}
-                        {/* }}} */}
+
+
                         {(!user.professional || global_user.id === user.id) &&
-                            <div className='ratings-container'>{/* Ratings {{{ */}
+                            <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>{_("Ratings")}</h3>
                                 {this.renderRatingGrid()}
                             </div>
                         }
-                        {/* }}} */}
+
                     </div>
                 </div>
             </div>
-            {/* }}} */}
+
 
             {(!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
@@ -703,8 +766,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
 
             <div className="row">
-                <div className='col-sm-8'>{/* {{{ */}
-                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff {{{ */}
+                <div className='col-sm-8'>
+                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
                         <b>Users with the same IP or Browser ID</b>
                         <PaginatedTable
                             className="aliases"
@@ -758,7 +821,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             ]}
                         />
                     </Card>
-                    /* }}} */}
+                    }
 
                 {(user.about || editing || null) &&
                     <Card>
@@ -773,7 +836,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 <GameList list={this.state.active_games} player={user}/>
 
 
-                    <div className="row">{/* Game History {{{ */}
+                    <div className="row">{/* Game History  */}
                         <div className="col-sm-12">
                             <h2>{_("Game History")}</h2>
                             <Card>
@@ -795,6 +858,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
                                     columns={[
+                                        {header: _(""),       className: () => "speed",                           render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
@@ -807,8 +871,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </Card>
                         </div>
                     </div>
-                    {/* }}} */}
-                    <div className="row">{/* Reviews and Demos{{{ */}
+
+                    <div className="row">{/* Reviews and Demos */}
                         <div className="col-sm-12">
                             <h2>{_("Reviews and Demos")}</h2>
                             <Card>
@@ -839,11 +903,11 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </Card>
                         </div>
                     </div>
-                    {/* }}} */}
-                </div>
-                {/* }}} */}
 
-                <div className="col-sm-4">{/* {{{ */}
+                </div>
+
+
+                <div className="col-sm-4">
                     {(!(user.professional)) &&
                         <div >
 
@@ -956,6 +1020,9 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                     <h2>{_("Activity")}</h2>
                     <Card className="activity-card">
+                        <h4>{_("Vacation Accrued:")} {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}</h4>
+                        {!user.on_vacation && <div >{this.vacationAccrued()}</div>}
+                        {user.on_vacation && <div >{_("User On Vacation")}</div>}
                         <h4>{_("Ladders")}</h4>
                         {(this.state.ladders.length > 0) && <div >
                             <dl className="activity-dl">
@@ -1000,7 +1067,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>}
                     </Card>
                 </div>
-                {/* end right col }}} */}
+                {/* end right col  */}
             </div>
           </div>
         );

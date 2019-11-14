@@ -50,7 +50,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
     clear() {
         this.setState({value: ""});
     }
-    complete(groupname) {{{
+    complete(groupname) {
         if (groupname in groups_by_name) {
             if (this.last_on_complete_username !== groupname) {
                 this.props.onComplete(groups_by_name[groupname]);
@@ -60,14 +60,14 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             this.props.onComplete(null);
             this.last_on_complete_username = null;
         }
-    }}}
-    onChange = (event, { newValue }) => {{{
+    }
+    onChange = (event, { newValue }) => {
         this.setState({
             value: newValue
         });
         this.complete(newValue);
-    }}}
-    onSuggestionsFetchRequested = ({ value }) => {{{
+    }
+    onSuggestionsFetchRequested = ({ value }) => {
         if (this.current_search === value) {
             return;
         }
@@ -98,28 +98,28 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
                 suggestions: []
             });
         }
-    }}}
-    onSuggestionsClearRequested = () => {{{
+    }
+    onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: []
         });
-    }}}
-    //onBlur = (ev, {focusedSuggestion}) => {{{
-    onBlur = (ev, {highlightedSuggestion}) => {{{
+    }
+    //onBlur = (ev, {focusedSuggestion}) => {
+    onBlur = (ev, {highlightedSuggestion}) => {
         if (this.tabbed_out) {
             if (highlightedSuggestion) {
                 this.setState({value: getSuggestionValue(highlightedSuggestion)});
                 this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
-    }}}
-    onKeyDown = (ev) => {{{
+    }
+    onKeyDown = (ev) => {
         if (ev.keyCode === 9) {
             this.tabbed_out = true;
         } else {
             this.tabbed_out = false;
         }
-    }}}
+    }
 
     render() {
         let { suggestions, value } = this.state;

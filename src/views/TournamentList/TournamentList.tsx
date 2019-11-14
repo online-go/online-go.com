@@ -23,7 +23,8 @@ import {post, get} from "requests";
 import {Card} from "material";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
-import {shortTimeControl, shortShortTimeControl, computeAverageMoveTime} from "TimeControl";
+import {shortTimeControl, shortShortTimeControl} from "TimeControl";
+import {computeAverageMoveTime} from 'goban';
 import {PaginatedTable} from "PaginatedTable";
 import * as moment from "moment";
 import {TOURNAMENT_TYPE_NAMES, TOURNAMENT_PAIRING_METHODS, rankRestrictionText, shortRankRestrictionText} from "Tournament";
@@ -35,7 +36,7 @@ interface TournamentListProperties {
     filter: any;
 }
 
-export class TournamentListMainView extends React.PureComponent<TournamentListProperties, any> { /* {{{ */
+export class TournamentListMainView extends React.PureComponent<TournamentListProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -137,9 +138,9 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
             </div>
         );
     }
-} /* }}} */
+}
 
-class Schedule extends React.PureComponent<{}, any> { /* {{{ */
+class Schedule extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -201,8 +202,8 @@ class Schedule extends React.PureComponent<{}, any> { /* {{{ */
             </div>
         );
     }
-} /* }}} */
-export class TournamentList extends React.PureComponent<TournamentListProperties, any> { /* {{{ */
+}
+export class TournamentList extends React.PureComponent<TournamentListProperties, any> {
     refs: {
         table
     };
@@ -264,12 +265,12 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
             </div>
         );
     }
-} /* }}} */
+}
 
-function mk32icon(path) {{{
+function mk32icon(path) {
     return path.replace(/-[0-9]+.png/, "-32.png");
-}}}
-function speedIcon(e) {{{
+}
+function speedIcon(e) {
     let tpm = computeAverageMoveTime(e.time_control_parameters);
     if (tpm === 0 || tpm > 3600) {
         return "ogs-turtle";
@@ -278,8 +279,8 @@ function speedIcon(e) {{{
         return "fa fa-bolt";
     }
     return "fa fa-clock-o";
-}}}
-function timeIcon(time_per_move) {{{
+}
+function timeIcon(time_per_move) {
     if (time_per_move === 0) {
     }
     else if (time_per_move < 20) {
@@ -289,9 +290,9 @@ function timeIcon(time_per_move) {{{
         return "fa fa-clock-o";
     }
     return "ogs-turtle";
-}}}
+}
 
-function rrule_description(entry) {{{
+function rrule_description(entry) {
     let m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
 
     let rrule = entry.rrule;
@@ -330,32 +331,32 @@ function rrule_description(entry) {{{
         }
     }
     console.log("Failed: ", unit, interval);
-}}}
-function typeDescription(e) {{{
+}
+function typeDescription(e) {
     return TOURNAMENT_TYPE_NAMES[e.tournament_type];
-}}}
-function datefmt(d, offset?) {{{
+}
+function datefmt(d, offset?) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").format("llll");
-}}}
-function timeControlDescription(e) {{{
+}
+function timeControlDescription(e) {
     return shortTimeControl(e.time_control_parameters);
-}}}
-function calendar(d, offset?) {{{
+}
+function calendar(d, offset?) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").calendar();
-}}}
-function fromNow(d, offset?) {{{
+}
+function fromNow(d, offset?) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").fromNow();
-}}}
-function when(t) {{{
+}
+function when(t) {
     if (t) {
         let d = new Date(t);
         let diff = Math.round((d.getTime() - Date.now()) / 1000.0);
@@ -369,4 +370,4 @@ function when(t) {{{
     } else {
         return "";
     }
-}}}
+}

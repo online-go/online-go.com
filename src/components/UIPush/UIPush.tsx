@@ -97,7 +97,7 @@ class UIPushManager {
     }
     unsubscribe(channel) {
         if (this.subscriptions[channel] > 1) {
-            this.subscriptions[channel] = 0;
+            this.subscriptions[channel]--;
         } else {
             delete this.subscriptions[channel];
             if ((comm_socket as any).connected) {

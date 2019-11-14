@@ -19,7 +19,8 @@ import * as React from "react";
 import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
-import {time_options, computeAverageMoveTime, makeTimeControlParameters} from "./util";
+import {time_options, makeTimeControlParameters} from "./util";
+import {computeAverageMoveTime} from 'goban';
 //import {errorAlerter} from 'misc';
 
 
@@ -31,7 +32,7 @@ interface TimeControlPickerProperties {
 export class TimeControlPicker extends React.PureComponent<TimeControlPickerProperties, any> {
     time_control: TimeControl;
 
-    constructor(props) { /* {{{ */
+    constructor(props) {
         super(props);
 
         let speed = data.get("time_control.speed", "correspondence");
@@ -43,8 +44,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         }
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state));
         this.time_control = makeTimeControlParameters(this.state);
-    } /* }}} */
-    componentWillReceiveProps(next_props: TimeControlPickerProperties) {{{
+    }
+    UNSAFE_componentWillReceiveProps(next_props: TimeControlPickerProperties) {
         let update: any = {};
         if (this.props.value !== next_props.value) {
             update = Object.assign(update, makeTimeControlParameters(next_props.value));
@@ -53,8 +54,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
             this.time_control = makeTimeControlParameters(update);
             this.setState(update);
         }
-    }}}
-    syncTimeControl(update: any) { /* {{{  */
+    }
+    syncTimeControl(update: any) { /* {  */
         let tc = Object.assign({}, this.state, update);
 
         let speed = tc.speed;
@@ -128,22 +129,22 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         if (this.props.onChange) {
             this.props.onChange(this.time_control);
         }
-    } /* }}} */
+    }
 
-    setSpeedBracket = (bracket) => {{{
+    setSpeedBracket = (bracket) => {
         this.syncTimeControl(Object.assign(
             { },
             recallTimeControlSettings(bracket, this.state.system),
             { speed: bracket, },
         ));
-    }}}
-    setTimeControlSystem = (time_control_system) => {{{
+    }
+    setTimeControlSystem = (time_control_system) => {
         this.syncTimeControl(Object.assign(
             {},
             recallTimeControlSettings(this.state.speed, time_control_system),
             { speed: this.state.speed },
         ));
-    }}}
+    }
     update_speed_bracket        = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
     update_time_control_system  = (ev) => this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
     update_initial_time         = (ev) => this.syncTimeControl({initial_time: parseInt(ev.target.value)});
@@ -159,15 +160,15 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
     update_total_time           = (ev) => this.syncTimeControl({total_time: parseInt(ev.target.value)});
     update_pause_on_weekends    = (ev) => this.syncTimeControl({pause_on_weekends: ev.target.checked});
 
-    saveSettings() {{{
+    saveSettings() {
         let speed = this.state.speed;
         let system = this.state.system;
         data.set(`time_control.speed`, speed);
         data.set(`time_control.system`, system);
         data.set(`time_control.${speed}.${system}`, makeTimeControlParameters(this.state));
-    }}}
+    }
 
-    render() {{{
+    render() {
         let speed = this.state.speed;
 
         return (
@@ -384,11 +385,11 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
 
         </div>
         );
-    }}}
+    }
 }
 
 
-const default_time_options = { /* {{{ */
+const default_time_options = {
     "blitz": {
         "system"                : "byoyomi",
 
@@ -481,8 +482,8 @@ const default_time_options = { /* {{{ */
             "pause_on_weekends" : false,
         },
     }
-}; /* }}} */
-function recallTimeControlSettings(speed, time_control_system) {{{
+};
+function recallTimeControlSettings(speed, time_control_system) {
     if (speed !== "blitz" && speed !== "live" && speed !== "correspondence") {
         throw new Error(`Invalid speed: ${speed}`);
     }
@@ -494,4 +495,4 @@ function recallTimeControlSettings(speed, time_control_system) {{{
         {speed: speed},
         {system: time_control_system},
     ));
-}}}
+}

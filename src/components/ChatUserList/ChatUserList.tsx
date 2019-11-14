@@ -41,10 +41,10 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
         super(props);
         this.state = {tick: 0};
     }
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.init(this.props.channel, this.props.display_name);
     }
-    componentWillReceiveProps(next_props) {
+    UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.channel !== next_props.channel) {
             this.deinit();
             this.init(next_props.channel, next_props.display_name);
@@ -72,11 +72,11 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
         (this.state as any).user_sort_order = preferences.get("chat.user-sort-order");
     }
 
-    toggleSortOrder = () => {{{
+    toggleSortOrder = () => {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }}}
+    }
 
 
     render() {

@@ -19,6 +19,7 @@
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
+import ReactResizeDetector from 'react-resize-detector';
 import * as data from "data";
 import {Player} from "Player";
 import {UIPush} from "UIPush";
@@ -30,7 +31,7 @@ import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
-import {GoMath, MoveTree, ColoredCircle} from 'ogs-goban';
+import {GoMath, MoveTree, ColoredCircle} from 'goban';
 import Select from 'react-select';
 import {close_all_popovers, popover} from "popover";
 
@@ -105,7 +106,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     componentDidUpdate(prevProps, prevState) {
         this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
-        this.resize();
+        this.onResize();
     }
     componentWillUnmount() {
         this.deinitialize();
@@ -278,8 +279,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         this.plot();
 
-        $(window).on("resize", this.resize as () => void);
-        this.resize();
+        this.onResize();
     }
     plot() {
         if (this.props.entries.length <= 0) {
@@ -302,7 +302,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     deinitialize() {
         this.destroyed = true;
-        $(window).off("resize", this.resize as () => void);
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
@@ -310,7 +309,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.svg.remove();
         this.container = null;
     }
-    resize = (no_debounce:boolean = false) => {
+    onResize = (no_debounce:boolean = false) => {
         if (this.destroyed) {
             return;
         }
@@ -321,7 +320,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         }
 
         if (!no_debounce) {
-            this.resize_debounce = setTimeout(() => this.resize(true), 10);
+            this.resize_debounce = setTimeout(() => this.onResize(true), 10);
             return;
         }
 
@@ -351,12 +350,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let need_resize = this.container === null;
         this.container = e;
         if (need_resize) {
-            this.resize();
+            this.onResize();
         }
     }
     render() {
         return (
             <div ref={this.setContainer} className="AIReviewChart">
+                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
                 <PersistentElement elt={this.chart_div}/>
             </div>
         );
@@ -498,6 +498,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         .catch(err => console.error(err));
     }
 
+    moveNumOffset = this.handicapOffset() > 0 ? 1 : 0;
+
     handicapOffset():number {
         if (this.props.game
             && this.props.game.goban
@@ -575,6 +577,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                 let blunder_threshold = 0.1;
                 let blunders_black = 0;
                 let blunders_white = 0;
+
                 let last_player_to_move = null;
                 for (let i = 1; i < last_move.move_number; ++i) {
                     let entry = ai_review[`full-${i - this.handicapOffset()}`];
@@ -587,6 +590,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             else if (last_player_to_move === "black") {
                                 fac = +1.0;
                             }
+
                             let delta = fac * (entry.win_rate - last_win_rate);
                             deltas.push(delta);
                             if (delta < -blunder_threshold) {
@@ -597,6 +601,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                     blunders_black += 1;
                                 }
                             }
+
                         }
                         last_win_rate = entry.win_rate;
                         last_player_to_move = entry.player_to_move;
@@ -909,7 +914,20 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                     let visits = move_ai_review.max_visits[0];
 
+                    heatmap = [];
+                    for (let y = 0; y < this.props.game.goban.engine.height; y++) {
+                        let r = [];
+                        for (let x = 0; x < this.props.game.goban.engine.width; x++) {
+                            r.push(0);
+                        }
+                        heatmap.push(r);
+                    }
+
                     for (let i = 0 ; i < variations.length; ++i) {
+
+                        let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
+                        heatmap[mv.y][mv.x] = variations[i].visits / visits;
+
                         if (variations[i].moves.length > 2 || variations[i].move === next_move_pretty_coords) {
                             let delta = 0;
 
@@ -941,7 +959,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             if (key === "0.0" || key === "-0.0") {
                                 key = "0";
                             }
-                            let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
                             // only show numbers for well explored moves
                             // show number for AI choice and played move as well
                             if (mv && ((i === 0) ||
@@ -984,7 +1001,6 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
                     }
                     */
-                    heatmap = this.normalizeHeatmap(move_ai_review.heatmap);
                 }
             }
             else { // !cur_move.trunk
@@ -1156,8 +1172,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         </div>
 
                         {this.state.top3.map((move, idx) =>
-                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset())}>
-                                {move + 1}
+                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset() + this.moveNumOffset)}>
+                                {move + 1 + this.handicapOffset() + this.moveNumOffset}
                             </span>
                         )}
                     </div>
@@ -1214,7 +1230,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.orig_move.marks = this.orig_marks;
             goban.pen_marks = this.stashed_pen_marks;
             if (goban.pen_marks.length === 0) {
-                goban.detachPenCanvas();
+                goban.disablePen();
             }
             goban.setHeatmap(this.stashed_heatmap);
             this.stashed_heatmap = null;
