@@ -33,7 +33,7 @@ interface JosekiStatsModalProperties {
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
     render() {
-        console.log(this.props.daily_page_visits);
+        //console.log(this.props.daily_page_visits);
         const visits = this.props.daily_page_visits.map((day, index) => (
             <div className="daily-result" key={index}>
                 <div className="result-date">{moment(day.date).format("ddd MMM Do")}:</div>
