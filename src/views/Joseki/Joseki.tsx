@@ -41,7 +41,7 @@ import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
-const position_url = (node_id, variation_filter) => {
+const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter !== null) {
         if (variation_filter.contributor !== null) {
@@ -53,6 +53,9 @@ const position_url = (node_id, variation_filter) => {
         if (variation_filter.source !== null) {
             position_url += "&sfilterid=" + variation_filter.source;
         }
+    }
+    if (mode !== null) {
+        position_url += "&mode=" + mode;
     }
     return position_url;
 };
@@ -375,7 +378,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         else {
             // console.log("fetching position for node", node_id);
-            fetch(position_url(node_id, variation_filter), {
+            fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers
             })
