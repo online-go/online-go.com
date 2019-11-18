@@ -1275,12 +1275,15 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
-            this.setState({extra_throb: false});
             // console.log("Server response: ", body);
             this.extractAuditLog(body);
         }).catch((r) => {
             console.log("Audits GET failed:", r);
+        // tslint:disable-next-line:no-floating-promises
+        }).finally(() => {
+            this.setState({extra_throb: false});
         });
+
         this.setState({ extra_info_selected: "audit-log" });
     }
 
