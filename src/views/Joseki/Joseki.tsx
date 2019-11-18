@@ -838,7 +838,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(body => {
             // console.log("Tags Count GET:", body);
             let tags = [];
-            if (body.tags !== null) {
+            if (body.tags != null) {
                 tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
             }
             let counts = [];
@@ -876,7 +876,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             </React.Fragment>
             : "";
 
-        const tags = this.state.tags === null ? "" :
+        const tags = this.state.tags == null ? "" :
             this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
             <div className="position-tag" key={idx}>
                 <span>{tag['description']}</span>
