@@ -682,7 +682,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
                                 <div><i>
-                                {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
+                                {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
                                 </i></div>
                             </dd>
                             <dt><label htmlFor="dynamic-title">{_("Dynamic title")}</label></dt>
