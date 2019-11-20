@@ -21,76 +21,78 @@ import * as moment from "moment";
 import * as React from "react";
 import ReactResizeDetector from 'react-resize-detector';
 import * as data from "data";
-import {Player} from "Player";
 import {UIPush} from "UIPush";
 import {openBecomeASiteSupporterModal} from "Supporter";
 import {deepCompare, dup} from 'misc';
 import {get, post} from 'requests';
-import {Link} from "react-router-dom";
-import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {Game} from './Game';
-import {GoMath, MoveTree, ColoredCircle} from 'goban';
+import {
+    GoMath,
+    MoveTree,
+    JGOFAIReview,
+    JGOFAIReviewMove,
+    JGOFIntersection,
+    ColoredCircle,
+} from 'goban';
 import Select from 'react-select';
 import {close_all_popovers, popover} from "popover";
 
 declare var swal;
 
-export class AIReviewEntry {
-    move: number;
-    fast_prediction: number;
-    full_prediction: number;
-
-    constructor(obj) {
-        this.move = parseInt(obj.move);
-        this.fast_prediction = parseFloat(obj.fast_prediction);
-        this.full_prediction = parseFloat(obj.full_prediction);
-    }
+export interface AIReviewEntry {
+    move_number: number;
+    win_rate: number;
+    num_variations: number;
 }
 
 interface AIReviewChartProperties {
     entries     : Array<AIReviewEntry>;
+    ai_review   : JGOFAIReview;
     updatecount : number;
     move        : number;
     setmove     : (move_number:number) => void;
 }
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const bisector = d3.bisector((d:AIReviewEntry) => { return d.move; }).left;
-let svgWidth = 600;
-let svgHeight = 100;
-let margin = { top: 15, right: 20, bottom: 30, left: 50 };
-let width = svgWidth - margin.left - margin.right;
-let height = svgHeight - margin.top - margin.bottom;
+const bisector = d3.bisector((d:AIReviewEntry) => { return d.move_number; }).left;
+//let margin = { top: 15, right: 20, bottom: 30, left: 20 };
+const MARGIN = { top: 15, right: 5, bottom: 30, left: 5 };
+const INITIAL_WIDTH = 600 - MARGIN.left - MARGIN.right;
+const INITIAL_HEIGHT = 100 - MARGIN.top - MARGIN.bottom;
 
 export class AIReviewChart extends React.Component<AIReviewChartProperties, any> {
-    container = null;
-    chart_div;
-    svg;
+    container?:HTMLElement;
+    chart_div:HTMLElement;
+    svg?:d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    //svg?:number;
     destroyed = false;
-    chart;
-    graph;
-    resize_debounce;
-    prediction_graph;
-    //fast_chart;
-    full_chart;
-    width;
-    height;
-    //fast_line;
-    full_line;
-    x_axis;
-    mouse;
-    mouse_rect;
-    move_crosshair;
-    cursor_crosshair;
-    full_crosshair;
-    //fast_crosshair;
-    x;
-    y;
+    chart?:number;
+    graph?:number;
+    resize_debounce?:any; // timeout
+    prediction_graph?:d3.Selection<SVGGElement, unknown, null, undefined>;
+    width?:number;
+    height?:number;
+    win_rate_line_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
+    win_rate_area_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
+    win_rate_line?: d3.Line<AIReviewEntry>;
+    win_rate_area?: d3.Area<AIReviewEntry>;
+    x_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
+    mouse?:number;
+    mouse_rect?:d3.Selection<SVGRectElement, unknown, null, undefined>;
+    move_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
+    cursor_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
+    full_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
+    x:d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
+    y:d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
+    highlighted_move_circle_container:d3.Selection<SVGElement, unknown, null, undefined>;
+    highlighted_move_circles:d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+
+    //circles_path?:d3.Selection<SVGPathElement, unknown, null, undefined>;
+    //circles?: d3.Symbol<any, AIReviewEntry>;
 
 
-    constructor(props) {
+    constructor(props:AIReviewChartProperties) {
         super(props);
         this.state = {
             loading: false,
@@ -99,75 +101,101 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             hovered_month: null,
             date_extents: [],
         };
-        this.chart_div = $("<div>")[0];
+        this.chart_div = document.createElement('div');
     }
     componentDidMount() {
         this.initialize();
     }
-    componentDidUpdate(prevProps, prevState) {
-        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
+    componentDidUpdate(prevProps:AIReviewChartProperties, prevState:any) {
+        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
         this.onResize();
     }
     componentWillUnmount() {
         this.deinitialize();
     }
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps:AIReviewChartProperties, nextState:any) {
         return !deepCompare(nextProps.entries, this.props.entries) || this.props.move !== nextProps.move;
     }
 
     initialize() {
         let self = this;
 
-        this.width = 600;
+        this.width = INITIAL_WIDTH;
+        this.height = INITIAL_HEIGHT;
         this.svg = d3.select(this.chart_div)
             .append('svg')
             .attr('class', 'chart')
-            .attr('width', this.width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom + 0);
+            .attr('width', this.width + MARGIN.left + MARGIN.right)
+            .attr('height', this.height + MARGIN.top + MARGIN.bottom + 0);
+
+        if (!this.svg) {
+            throw new Error(`AI SVG creation failed`);
+        }
 
         this.prediction_graph = this.svg.append('g')
-            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+            .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')');
 
-        this.full_chart = this.prediction_graph.append('path')
-            .attr('class', 'full-prediction line');
+        if (!this.prediction_graph) {
+            throw new Error(`AI Review graph creation failed`);
+        }
 
-        this.x = d3.scaleLinear().rangeRound([0, width]);
-        this.y = d3.scaleLinear().rangeRound([height, 0]);
 
-        this.full_line = d3.line()
+        this.win_rate_area_container = this.prediction_graph.append('path')
+            .attr('class', 'win-rate-area');
+
+/*
+        this.win_rate_line_container = this.prediction_graph.append('path')
+            .attr('class', 'win-rate-line');
+            */
+
+        this.x = d3.scaleLinear().rangeRound([0, this.width]);
+        this.y = d3.scaleLinear().rangeRound([this.height, 0]);
+
+        this.svg.append("linearGradient")
+            .attr("id", "win-rate-area-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", 0).attr("y1", 0)
+            .attr("x2", 0).attr("y2", this.height)
+            .selectAll("stop")
+            .data([
+                {offset: "0%", color: "#222222"},
+                {offset: "49%", color: "#444444"},
+                {offset: "50%", color: "#888888"},
+                {offset: "51%", color: "#cccccc"},
+                {offset: "100%", color: "#eeeeee"}
+            ])
+            .enter()
+            .append("stop")
+            .attr("offset", d => d.offset)
+            .attr("stop-color", d => d.color)
+            ;
+
+
+        this.win_rate_area = d3.area<AIReviewEntry>()
             .curve(d3.curveMonotoneX)
-             .x(d => this.x((d as any) .move))
-             .y(d => this.y((d as any) .full_prediction * 100.0));
-        this.y.domain(d3.extent([0.0, 100.0]));
+            .x1(d => this.x(d.move_number))
+            .y1(d => this.y(d.win_rate * 100.0))
+            .x0(d => this.x(d.move_number))
+            .y0(d => this.y(50))
+            ;
+
+        this.win_rate_line = d3.line<AIReviewEntry>()
+            .curve(d3.curveMonotoneX)
+            .x(d => this.x(d.move_number))
+            .y(d => this.y(d.win_rate * 100.0));
+
+        this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
 
         this.x_axis = this.prediction_graph.append("g");
 
         this.x_axis
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", "translate(0," + this.height + ")")
             .call(d3.axisBottom(this.x))
             .select(".domain")
             .remove();
 
-        let g = this.prediction_graph.append("g");
 
-        g.call(d3.axisLeft(this.y).ticks(3))
-           .append("text")
-           .attr("fill", "#000")
-           .attr("transform", "rotate(-90)")
-           .attr("y", 6)
-           .attr("dy", "0.71em")
-           .attr("text-anchor", "end")
-           .text(_("Black")) ;
-
-        g.call(d3.axisLeft(this.y).ticks(3))
-           .append("text")
-           .attr("fill", "#000")
-           .attr("transform", "rotate(-90)")
-           .attr("x", - height)
-           .attr("y", 6)
-           .attr("dy", "0.71em")
-           .attr("text-anchor", "start")
-           .text(_("White"));
+        this.highlighted_move_circle_container = this.prediction_graph.append("g");
 
         this.move_crosshair = this.prediction_graph.append('g')
             .attr('class', 'move crosshairs')
@@ -175,7 +203,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x0', 0)
             .attr('y0', 0)
             .attr('x1', 0)
-            .attr('y1', height);
+            .attr('y1', this.height);
 
         this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
 
@@ -186,18 +214,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x0', 0)
             .attr('y0', 0)
             .attr('x1', 0)
-            .attr('y1', height);
-
-        /*
-        this.fast_crosshair = this.prediction_graph.append('g')
-            .attr('class', 'fast crosshairs')
-            .append('line')
-            .style('display', 'none')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('y1', 0)
-            .attr('x1', width);
-        */
+            .attr('y1', this.height);
 
         this.full_crosshair = this.prediction_graph.append('g')
             .attr('class', 'full crosshairs')
@@ -206,26 +223,24 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x0', 0)
             .attr('y0', 0)
             .attr('y1', 0)
-            .attr('x1', width);
+            .attr('x1', this.width);
 
         let mouse_down = false;
         let last_move = -1;
         this.mouse_rect = this.svg.append('g').append('rect');
         this.mouse_rect
             .attr('class', 'overlay')
-            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-            .attr('width', width)
-            .attr('height', height)
+            .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
+            .attr('width', this.width)
+            .attr('height', this.height)
             .on('mouseover', () => {
-                this.cursor_crosshair.style('display', null);
-                this.full_crosshair.style('display', null);
-                //this.fast_crosshair.style('display', null);
+                this.cursor_crosshair?.style('display', null);
+                this.full_crosshair?.style('display', null);
             })
             .on('mouseout', () => {
                 mouse_down = false;
-                this.cursor_crosshair.style('display', 'none');
-                this.full_crosshair.style('display', 'none');
-                //this.fast_crosshair.style('display', 'none');
+                this.cursor_crosshair?.style('display', 'none');
+                this.full_crosshair?.style('display', 'none');
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -240,15 +255,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                     return;
                 }
 
-                let d = x0 - d0.move > d1.move - x0 ? d1 : d0;
-                self.cursor_crosshair.attr('transform', 'translate(' + self.x(d.move) + ', 0)');
-                //self.fast_crosshair.attr('transform', 'translate(0, ' + self.y(d.fast_prediction * 100.0) + ')');
-                self.full_crosshair.attr('transform', 'translate(0, ' + self.y(d.full_prediction * 100.0) + ')');
+                let d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
+                self.cursor_crosshair?.attr('transform', 'translate(' + self.x(d.move_number) + ', 0)');
+                self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(d.win_rate * 100.0) + ')');
 
                 if (mouse_down) {
-                    if (d.move !== last_move) {
-                        last_move = d.move;
-                        self.props.setmove(d.move);
+                    if (d.move_number !== last_move) {
+                        last_move = d.move_number;
+                        self.props.setmove(d.move_number);
                     }
                 }
             })
@@ -268,9 +282,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                     return;
                 }
 
-                let d = x0 - d0.move > d1.move - x0 ? d1 : d0;
-                last_move = d.move;
-                self.props.setmove(d.move);
+                let d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
+                last_move = d.move_number;
+                self.props.setmove(d.move_number);
             })
             .on('mouseup', () => {
                 mouse_down = false;
@@ -293,21 +307,57 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             });
         }
 
-        this.x.domain(d3.extent([1, this.props.entries[this.props.entries.length - 1].move]));
-        this.y.domain(d3.extent([0.0, 100.0]));
+        this.x.domain(d3.extent([0, this.props.entries[this.props.entries.length - 1].move_number]) as [number, number]);
+        this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
 
-        this.full_chart
-            .datum(this.props.entries)
-            .attr('d', this.full_line as any);
+        let entries = this.props.entries.map(x => x);
+        entries.unshift({win_rate: 0.5, move_number: 0, num_variations: 0});
+        entries.push({win_rate: 0.5, move_number: this.props.entries[this.props.entries.length - 1].move_number, num_variations: 0});
+
+        this.win_rate_area_container
+            ?.datum(entries)
+            .attr('d', this.win_rate_area as any);
+
+        this.win_rate_line_container
+            ?.datum(entries)
+            .attr('d', this.win_rate_line as any);
+
+        let show_all = Object.keys(this.props.ai_review.moves).length <= 3;
+        let circle_coords = this.props.entries.filter((x) => {
+            if (this.props.ai_review.moves[x.move_number]
+                && (show_all || !this.props.ai_review.moves[x.move_number + 1])
+            ) {
+                return true;
+            }
+
+            return false;
+        });
+
+        this.highlighted_move_circles =
+            this.highlighted_move_circle_container
+                .selectAll('circle')
+                .data(circle_coords) as d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+        // remove any data points that were removed
+        this.highlighted_move_circles.exit().remove();
+        // add circles that were added
+        this.highlighted_move_circles .enter() .append('circle');
+        // update positions for our circles
+        this.highlighted_move_circles
+            .transition()
+            .duration(200)
+            .attr('cx', d => this.x(d.move_number))
+            .attr('cy', d => this.y(d.win_rate * 100))
+            .attr('r', d => 3)
+            .attr('fill', d => '#ff0000');
     }
     deinitialize() {
         this.destroyed = true;
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            delete this.resize_debounce;
         }
-        this.svg.remove();
-        this.container = null;
+        this.svg?.remove();
+        delete this.container;
     }
     onResize = (no_debounce:boolean = false) => {
         if (this.destroyed) {
@@ -316,7 +366,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            delete this.resize_debounce;
         }
 
         if (!no_debounce) {
@@ -324,31 +374,47 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             return;
         }
 
-        this.width = Math.max(100, $(this.container).width()  - margin.left - margin.right);
+        this.width = Math.max(100, (this.container?.clientWidth || 0)  - MARGIN.left - MARGIN.right);
 
-        this.svg.attr('width', this.width + margin.left + margin.right);
+        this.svg?.attr('width', this.width + MARGIN.left + MARGIN.right);
 
         this.x.range([0, this.width]);
-        this.full_chart
-            .datum(this.props.entries)
-            .attr('d', this.full_line as any);
+
+        let entries = this.props.entries.map(x => x);
+        entries.unshift({win_rate: 0.5, move_number: 0, num_variations: 0});
+        entries.push({win_rate: 0.5, move_number: this.props.entries[this.props.entries.length - 1].move_number, num_variations: 0});
+
+        this.win_rate_area_container
+            ?.datum(entries)
+            .attr('d', this.win_rate_area as any);
+
+        this.win_rate_line_container
+            ?.datum(entries)
+            .attr('d', this.win_rate_line as any);
 
         this.x_axis
-            .attr("transform", "translate(0," + height + ")")
+            ?.attr("transform", "translate(0," + this.height + ")")
             .call(d3.axisBottom(this.x))
             .select(".domain")
             .remove();
 
         this.mouse_rect
-            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            ?.attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
             .attr('width', this.width);
 
-        this.full_crosshair.attr('x1', this.width);
+        this.full_crosshair?.attr('x1', this.width);
 
+        this.plot();
     }
-    setContainer = (e) => {
-        let need_resize = this.container === null;
-        this.container = e;
+    setContainer = (e:HTMLElement | null) => {
+        let need_resize = !this.container;
+
+        if (e) {
+            this.container = e;
+        } else {
+            delete this.container;
+        }
+
         if (need_resize) {
             this.onResize();
         }
@@ -369,27 +435,35 @@ interface AIReviewProperties {
     hidden: boolean;
 }
 
-export class AIReview extends React.Component<AIReviewProperties, any> {
-    ai_review;
+interface AIReviewState {
+    loading: boolean;
+    reviewing: boolean;
+    ai_reviews: Array<JGOFAIReview>;
+    selected_ai_review?: JGOFAIReview;
+    updatecount: number;
+    top_moves: Array<JGOFAIReviewMove>;
+}
 
-    constructor(props) {
+export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
+    ai_review?:JGOFAIReview;
+
+    constructor(props:AIReviewProperties) {
         super(props);
-        this.state = {
+        let state:AIReviewState = {
             loading: true,
             reviewing: false,
             ai_reviews: [],
-            selected_ai_review: null,
-            full: null,
-            fast: null,
-            update_count: 0,
+            updatecount: 0,
+            top_moves: [],
         };
+        this.state = state;
     }
 
     componentDidMount() {
         this.getAIReviewList();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps:AIReviewProperties, prevState:any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
@@ -398,7 +472,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     componentWillUnmount() {
     }
 
-    getGameId(props?) {
+    getGameId(props?:AIReviewProperties) {
         if (!props) {
             props = this.props;
         }
@@ -417,9 +491,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             return;
         }
 
-        //get(`/termination-api/ai_review/${game_id}`)
         get(`games/${game_id}/ai_reviews`)
-        .then(lst => {
+        .then((lst:Array<JGOFAIReview>) => {
             this.setState({
                 loading: false,
                 ai_reviews: lst,
@@ -428,11 +501,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             if (lst.length) {
                 /* Select the best AI review */
                 lst = lst.sort((a, b) => {
-                    if (a.full && !b.full) {
-                        return -1;
-                    }
-                    if (b.full && !a.full) {
-                        return 1;
+                    if (a.type !== b.type) {
+                        return a.type === 'full' ? -1 : 1;
                     }
 
                     if (a.network_size < b.network_size) {
@@ -442,26 +512,11 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         return -1;
                     }
 
-                    if (a.playouts - b.playouts !== 0) {
-                        return b.playouts - a.playouts;
+                    if (a.strength - b.strength !== 0) {
+                        return b.strength - a.strength;
                     }
 
-                    if (a.visits - b.visits !== 0) {
-                        return b.visits - a.visits;
-                    }
-
-                    if (a.finished && !b.finished) {
-                        return -1;
-                    }
-                    if (b.finished && !a.finished) {
-                        return 1;
-                    }
-
-                    if (a.finished && b.finished) {
-                        return (new Date(a.finished)).getTime() - (new Date(b.finished)).getTime();
-                    }
-
-                    return (new Date(a.created)).getTime() - (new Date(b.created)).getTime();
+                    return a.date - b.date;
                 });
                 //console.log("List: ", lst);
                 this.setSelectedAIReview(lst[0]);
@@ -487,11 +542,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             return;
         }
 
-        this.ai_review = null;
+        delete this.ai_review;
         this.syncAIReview();
 
         get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
-        .then(ai_review => {
+        .then((ai_review:JGOFAIReview) => {
+            console.log("AI Review", ai_review);
             this.ai_review = ai_review;
             this.syncAIReview();
         })
@@ -515,156 +571,49 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     syncAIReview() {
         if (!this.ai_review || !this.state.selected_ai_review) {
             this.setState({
-                //loading: true,
-                full: null,
-                fast: null,
                 updatecount: this.state.updatecount + 1,
             });
             return;
         }
 
-        let ai_review = this.ai_review;
+        let ai_review:JGOFAIReview = this.ai_review;
 
-        try {
-            let last_move = this.props.game.goban.engine.last_official_move;
-            if (last_move.x === -1 && last_move.parent.x === -1) {
-                // leela doesn't give an analysis for the last move if
-                // the game was over from passing, so just use the same
-                // results it got from the move before the final two passes.
-                if (`full-${last_move.move_number - 2}` in ai_review) {
-                    ai_review[`full-${last_move.move_number}`] = dup(ai_review[`full-${last_move.move_number - 2}`]);
-                    ai_review[`full-${last_move.move_number}`].move_number = last_move.move_number;
-                }
+        if (!ai_review.win_rates) {
+            ai_review.win_rates = [];
+        }
 
+        for (let k in ai_review.moves) {
+            let move = ai_review.moves[k];
+            ai_review.win_rates[move.move_number] = move.pre_move_win_rate;
+
+            let next_move = ai_review.moves[parseInt(k) + 1];
+            if (next_move) {
+                move.post_move_win_rate = next_move.pre_move_win_rate;
             }
-        } catch (e) {
-            console.warn(e);
         }
 
-        let blunders = null;
-        if ('blunders' in this.ai_review) {
-            blunders = this.ai_review['blunders'];
-        }
+        /* TODO: Blunder count & top3 move array */
 
-        if ('full-network-fastmap' in ai_review) {
-            let data:Array<AIReviewEntry> = [];
-            let last_full_prediction = 0.5;
-            data = ai_review['full-network-fastmap'].map(d => {
-                let full_prediction = last_full_prediction;
-
-                if (`full-${d.move}` in ai_review) {
-                    if (ai_review[`full-${d.move}`].variations.length) {
-                        full_prediction = ai_review[`full-${d.move}`].win_rate;
-                    }
-                }
-
-                last_full_prediction = full_prediction;
-
-                return new AIReviewEntry({
-                    move: d.move + this.handicapOffset(),
-                    fast_prediction: d.prediction,
-                    full_prediction: full_prediction
-                });
-            });
-
-            let top3:Array<number> = [];
-
-            try {
-                let last_move = this.props.game.goban.engine.last_official_move;
-                //let last_win_rate = `full-${1 - this.handicapOffset()}` in ai_review
-                let last_win_rate = null;
-                let deltas:Array<number> = [];
-                let blunder_threshold = 0.1;
-                let blunders_black = 0;
-                let blunders_white = 0;
-
-                let last_player_to_move = null;
-                for (let i = 1; i < last_move.move_number; ++i) {
-                    let entry = ai_review[`full-${i - this.handicapOffset()}`];
-                    if (entry) {
-                        if (last_win_rate !== null) {
-                            let fac = null;
-                            if (last_player_to_move === "white") {
-                                fac = -1.0;
-                            }
-                            else if (last_player_to_move === "black") {
-                                fac = +1.0;
-                            }
-
-                            let delta = fac * (entry.win_rate - last_win_rate);
-                            deltas.push(delta);
-                            if (delta < -blunder_threshold) {
-                                if (last_player_to_move === "white") {
-                                    blunders_white += 1;
-                                }
-                                else if (last_player_to_move === "black") {
-                                    blunders_black += 1;
-                                }
-                            }
-
-                        }
-                        last_win_rate = entry.win_rate;
-                        last_player_to_move = entry.player_to_move;
-                    }
-                }
-                let top3_win_rates = dup(deltas).sort((a, b) => a - b).slice(0, 3);
-                top3 = top3_win_rates.map(p => deltas.indexOf(p) + 1);
-
-                if (blunders === null) {
-                    blunders = {threshold: blunder_threshold,
-                                black: blunders_black,
-                                white: blunders_white};
-                }
-            } catch (e) {
-                console.error(e);
-            }
-
-            this.setState({
-                loading: false,
-                full: data,
-                fast: null,
-                top3: top3,
-                blunders: blunders,
-                updatecount: this.state.updatecount + 1,
-            });
-        }
-        else if ('key-moves' in ai_review) {
-            for (let mv of ai_review['key-moves']) {
-                ai_review[`full-${mv.move}`] = mv;
-            }
-            this.setState({
-                loading: false,
-                full: null,
-                fast: ai_review['key-moves'],
-                top3: null,
-                blunders: blunders,
-                updatecount: this.state.updatecount + 1,
-            });
-        }
-        else {
-            this.setState({
-                loading: false,
-                full: null,
-                fast: null,
-                top3: null,
-                blunders: blunders,
-                queue_position: this.state.selected_ai_review.queue.position,
-                queue_pending: this.state.selected_ai_review.queue.pending,
-                updatecount: this.state.updatecount + 1,
-            });
-        }
+        this.setState({
+            loading: false,
+            //top3: null,
+            //blunders: blunders,
+            //queue_position: this.state.selected_ai_review.queue.position,
+            //queue_pending: this.state.selected_ai_review.queue.pending,
+            updatecount: this.state.updatecount + 1,
+        });
     }
 
     clearAIReview() {
         this.props.game.goban.setMode("play");
         this.setState({
-            full: null,
-            fast: null,
+            //full: null,
+            //fast: null,
             updatecount: this.state.updatecount + 1,
         });
     }
 
-    setSelectedAIReview = (ai_review) => {
+    setSelectedAIReview = (ai_review:JGOFAIReview) => {
         close_all_popovers();
         this.setState({
             selected_ai_review: ai_review,
@@ -697,7 +646,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         return ret;
     }
 
-    ai_review_update = (data) => {
+    ai_review_update = (data:any) => {
         if ('ai_review_id' in data) {
             this.getAIReview(data.ai_review_id);
         }
@@ -705,9 +654,17 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.getAIReviewList();
         }
     }
-    ai_review_update_key = (data) => {
+    ai_review_update_key = (data:any) => {
         if (this.ai_review) {
-            this.ai_review[data.key] = data.body;
+            if (data.key === 'metadata') {
+                console.log("TODO: Need to update metadata");
+            }
+            if (/move-[0-9]+/.test(data.key)) {
+                let m = data.key.match(/move-([0-9]+)/);
+                let move_number = parseInt(m[1]);
+
+                this.ai_review.moves[move_number] = data.body;
+            }
             this.setState({
                 updatecount: this.state.updatecount + 1,
             });
@@ -715,23 +672,23 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
         }
     }
 
-    openAIReviewList = (ev) => {
+    openAIReviewList = (ev:React.MouseEvent<HTMLElement>) => {
         close_all_popovers();
         popover({
             elt: (<div className='ai-review-list' >
                     {this.state.ai_reviews.map((ai_review, idx) => {
                         let params = {
-                            strength: ai_review.playouts,
+                            strength: ai_review.strength,
                             network_size: ai_review.network_size,
-                            num_moves: ai_review.total_moves_to_analyze,
+                            num_moves: Object.keys(ai_review.moves).length,
                         };
                         return (
                             <div className={'ai-review-item ' +
-                                    (ai_review.id === this.state.selected_ai_review.id ? 'selected' : '')}
+                                    (ai_review.id === this.state.selected_ai_review?.id ? 'selected' : '')}
                                 key={idx}
-                                title={moment(ai_review.created).format('LL')}
+                                title={moment(ai_review.date).format('LL')}
                                 onClick={() => this.setSelectedAIReview(ai_review)}>
-                                { ai_review.full
+                                { ai_review.type === 'full'
                                     ? interpolate(_("Full {{network_size}} review by Leela Zero"), params)
                                     : interpolate(_("Top {{num_moves}} moves according to Leela Zero"), params)
                                 }
@@ -740,13 +697,13 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     })}
                   </div>
                  ),
-            below: ev.target,
+            below: ev.target as HTMLElement,
             minWidth: 240,
             minHeight: 250,
         });
     }
 
-    showMoreInfo = (ev) => {
+    showMoreInfo = (ev:React.MouseEvent<HTMLElement>) => {
         close_all_popovers();
         console.log(this.state.selected_ai_review);
         popover({
@@ -756,7 +713,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         <tbody>
                             <tr>
                                 <th>{_("Date")}</th>
-                                <td>{moment(this.state.selected_ai_review.modified).format('LL')}</td>
+                                <td>{moment(this.state.selected_ai_review?.date).format('LL')}</td>
                             </tr>
                             <tr>
                                 <th>{pgettext("AI Review Engine", "Engine")}</th>
@@ -764,41 +721,31 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </tr>
                             <tr>
                                 <th>{pgettext("AI Review engine version", "Version")}</th>
-                                <td>{this.state.selected_ai_review.version}</td>
+                                <td>{this.state.selected_ai_review?.engine_version}</td>
                             </tr>
                             <tr>
                                 <th>{pgettext("AI Review engine network used", "Network")}</th>
-                                <td title={this.state.selected_ai_review.network}>{this.state.selected_ai_review.network.substr(0, 8)}</td>
+                                <td title={this.state.selected_ai_review?.network}>{this.state.selected_ai_review?.network.substr(0, 8)}</td>
                             </tr>
                             <tr>
                                 <th>{pgettext("Size of neural network", "Network Size")}</th>
-                                <td>{this.state.selected_ai_review.network_size}</td>
+                                <td>{this.state.selected_ai_review?.network_size}</td>
                             </tr>
                             <tr>
-                                <th>{pgettext("AI review engine playouts (strength)", "Playouts")}</th>
-                                <td>{this.state.selected_ai_review.playouts}</td>
+                                <th>{pgettext("AI review engine playouts strength", "Strength")}</th>
+                                <td>{this.state.selected_ai_review?.strength}</td>
                             </tr>
-                            <tr>
-                                <th>{pgettext("AI review engine node visits (strength)", "Visits")}</th>
-                                <td>{this.state.selected_ai_review.visits}</td>
-                            </tr>
-                            {(data.get('user').is_superuser || null) &&
-                                <tr>
-                                    <th>{_("Creator")}</th>
-                                    <td><Player user={this.state.selected_ai_review.player_id}/></td>
-                                </tr>
-                            }
                         </tbody>
                     </table>
                 </div>
             ),
-            below: ev.target,
+            below: ev.target as HTMLElement,
             minWidth: 300,
             minHeight: 250,
         });
     }
 
-    render() {
+    public render() {
         if (this.state.loading) {
             return null;
         }
@@ -826,22 +773,26 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             );
         }
 
-        let move_ai_review = null;
-        let next_move_ai_review = null;
+        let move_ai_review:JGOFAIReviewMove | null = null;
+        let next_move_ai_review:JGOFAIReviewMove | null = null;
         let win_rate = 0.0;
         let next_win_rate = -1.0;
         let next_move = null;
-        let next_move_pretty_coords = "";
         let move_relative_delta = null;
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
         let show_full_ai_review_button = null;
         let user = data.get('user');
+        let next_move_pretty_coords:string = '';
+
+        /*
+        if (next_move) {
+            next_move_ai_review = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+        }
+        */
+
         try {
-            if (user.is_moderator) {
-                show_full_ai_review_button = true;
-            }
             if (
                 user.id === this.props.game.goban.engine.players.black.id ||
                 user.id === this.props.game.goban.engine.players.white.id ||
@@ -849,18 +800,33 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             ) {
                 show_full_ai_review_button = true;
             }
+            if (user.is_moderator) {
+                show_full_ai_review_button = true;
+            }
         } catch {
             // no problem, just a loaded sgf or something
         }
 
-        if ( `full-${move_number - this.handicapOffset()}` in this.ai_review) {
-            move_ai_review = this.ai_review[`full-${move_number - this.handicapOffset()}`];
+        if (this.ai_review.moves[move_number]) {
+            /* TODO: do we need handicap offset here still? */
+            /*
+            if ( `full-${move_number - this.handicapOffset()}` in this.ai_review) {
+                move_ai_review = this.ai_review[`full-${move_number - this.handicapOffset()}`];
+            }
+            */
+            move_ai_review = this.ai_review.moves[move_number];
         }
 
         if (move_ai_review) {
-            //win_rate = move_ai_review.win_rate;
-            win_rate = move_ai_review.win_rate;
-            //next_win_rate = move_ai_review.win_rate;
+            win_rate = move_ai_review.pre_move_win_rate;
+
+            /* TODO: Do we need handicap offset here still? */
+            next_move_ai_review = this.ai_review.moves[move_ai_review.move_number + 1];
+            if (next_move_ai_review) {
+                next_win_rate = next_move_ai_review.post_move_win_rate || -1;
+                next_win_rate *= 100.0;
+            }
+            /*
             if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
                 next_move_ai_review = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`];
                 next_win_rate = next_move_ai_review.win_rate;
@@ -876,22 +842,16 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     }
                 }
             }
-            //next_win_rate *= 100.0;
+            */
         }
 
 
-        let marks = {};
+        let marks:any = {};
         let colored_circles = [];
-        let heatmap = null;
+        let heatmap:Array<Array<number>> | null = null;
         try {
             if (cur_move.trunk) {
                 next_move = cur_move.trunk_next;
-                if (next_move) {
-                    next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
-                    if (next_move.x === -1) {
-                        next_move_pretty_coords = _("Pass");
-                    }
-                }
 
                 if (move_ai_review) {
                     //let variations = move_ai_review.variations.slice(0, 6);
@@ -899,20 +859,21 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                     let found_next_move = false;
                     for (let v of variations) {
-                        if (v.move === next_move_pretty_coords) {
+                        if (next_move && isEqualMoveIntersection(v.move, next_move)) {
                             found_next_move = true;
                             break;
                         }
                     }
-                    if (!found_next_move && next_move_ai_review) {
+                    if (!found_next_move && next_move) {
                         variations.push({
-                            move: next_move_pretty_coords,
-                            win_rate: next_win_rate,
-                            moves: "",
+                            move: next_move,
+                            post_move_win_rate: next_win_rate,
+                            followup_moves: [],
+                            visits: 0,
                         });
                     }
 
-                    let visits = move_ai_review.max_visits[0];
+                    let strength = this.ai_review.strength;
 
                     heatmap = [];
                     for (let y = 0; y < this.props.game.goban.engine.height; y++) {
@@ -925,32 +886,38 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
                     for (let i = 0 ; i < variations.length; ++i) {
 
-                        let mv = this.props.game.goban.engine.decodeMoves(variations[i].move)[0];
-                        heatmap[mv.y][mv.x] = variations[i].visits / visits;
+                        let mv = variations[i].move;
+                        heatmap[mv.y][mv.x] = variations[i].visits / strength;
 
-                        if (variations[i].moves.length > 2 || variations[i].move === next_move_pretty_coords) {
+                        //if (variations[i].followup_moves.length > 2 || variations[i].move === next_move_pretty_coords) {
+                        console.log(variations[i]);
+                        if (variations[i].followup_moves?.length || (next_move && isEqualMoveIntersection(variations[i].move, next_move))) {
                             let delta = 0;
 
-                            /*
-                            if (move_ai_review.player_to_move === 'white') {
-                                delta = -1.0 * ((1.0 - variations[i].win_rate) - (move_ai_review.win_rate));
-                            } else {
-                                delta = (variations[i].win_rate) - (move_ai_review.win_rate);
-                            }
-                            */
+                            //if (move_ai_review.player_to_move === 'white') {
+                            //    delta = -1.0 * ((1.0 - variations[i].win_rate) - (move_ai_review.win_rate));
+                            //} else {
+                            //    delta = (variations[i].win_rate) - (move_ai_review.win_rate);
+                            //}
 
-
+/*
                             if (move_ai_review.player_to_move === 'white') {
                                 delta = -1 * ((1.0 - (variations[i].win_rate)) - (move_ai_review.win_rate));
                             } else {
                                 delta = (variations[i].win_rate) - (move_ai_review.win_rate);
                             }
+*/
 
-                            if (variations[i].move === next_move_pretty_coords && next_win_rate >= 0) {
-                                delta = ((move_ai_review.win_rate) - next_win_rate);
+                            delta = (variations[i].post_move_win_rate) - (move_ai_review.pre_move_win_rate);
+
+
+                            if (next_move && isEqualMoveIntersection(variations[i].move, next_move) && next_win_rate >= 0) {
+                                delta = ((move_ai_review.pre_move_win_rate) - next_win_rate);
+                                /*
                                 if (move_ai_review.player_to_move === 'black') {
                                     delta *= -1.0;
                                 }
+                                */
                             }
 
                             delta *= 100.0;
@@ -962,8 +929,8 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             // only show numbers for well explored moves
                             // show number for AI choice and played move as well
                             if (mv && ((i === 0) ||
-                                       (variations[i].move === next_move_pretty_coords) ||
-                                       (variations[i].visits >= Math.min(50, 0.1 * visits)))) {
+                                       (next_move && isEqualMoveIntersection(variations[i].move, next_move)) ||
+                                       (variations[i].visits >= Math.min(50, 0.1 * strength)))) {
                                 if (parseFloat(key).toPrecision(2).length < key.length) {
                                     key = parseFloat(key).toPrecision(2);
                                 }
@@ -975,7 +942,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 color: 'rgba(0,0,0,0)',
                             };
 
-                            if (variations[i].move === next_move_pretty_coords) {
+                            if (next_move && isEqualMoveIntersection(variations[i].move, next_move)) {
                                 this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
 
                                 circle.border_width = 0.1;
@@ -987,7 +954,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                                 }
                                 colored_circles.push(circle);
                             }
-                            else if (i === 0) { /* top move == blue move */
+                            else if (i === 0) { //
                                 circle.border_width = 0.2;
                                 circle.border_color = 'rgb(0, 130, 255)';
                                 circle.color = 'rgba(0, 130, 255, 0.7)';
@@ -996,6 +963,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         }
 
                     }
+
                     /*
                     if (next_move) {
                         marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
@@ -1010,8 +978,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     let next_moves = null;
 
                     for (let v of move_ai_review.variations) {
-                        if ((trunk_move_string + v.moves).startsWith(cur_move_string)) {
-                            next_moves = (trunk_move_string + v.moves).slice(cur_move_string.length, Infinity);
+                        let move_str:string = trunk_move_string + GoMath.encodeMoves(v.followup_moves);
+                        if (move_str.startsWith(cur_move_string)) {
+                            next_moves = move_str.slice(cur_move_string.length, Infinity);
                             break;
                         }
                     }
@@ -1046,7 +1015,9 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         try {
             this.props.game.goban.setMarks(marks, true);
-            this.props.game.goban.setHeatmap(heatmap, true);
+            if (heatmap) {
+                this.props.game.goban.setHeatmap(heatmap, true);
+            }
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             // ignore
@@ -1061,19 +1032,24 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             move_relative_delta *= 100.0;
         }
 
-
-        let have_prediction = false;
-        if (move_ai_review && move_ai_review.variations.length > 0) {
+        let have_prediction = true;
+        if (move_ai_review) {
             have_prediction = true;
-        } else if (
-            'final-move-analysis' in this.ai_review &&
-            (this.props.move.move_number - this.handicapOffset()) === this.ai_review['final-move-analysis']['move']
-        ) {
-            have_prediction = true;
-            win_rate = this.ai_review['final-move-analysis'].prediction;
+            win_rate = move_ai_review.pre_move_win_rate;
         }
 
+        //let have_prediction = true;
+        //win_rate = this.ai_review.win_rate;
+
         win_rate *= 100.0;
+
+        let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
+            return {
+                move_number: idx,
+                win_rate: x,
+                num_variations: this.ai_review?.moves[idx]?.variations.length || 0,
+            };
+        }) || [];
 
         return (
             <div className='AIReview'>
@@ -1084,7 +1060,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     <Select
                         value={this.state.selected_ai_review}
                         options={this.state.ai_reviews}
-                        onChange={this.setSelectedAIReview}
+                        onChange={this.setSelectedAIReview as any}
                         clearable={true}
                         autoBlur={true}
                         placeholder={_("Select AI AIReview")}
@@ -1094,42 +1070,75 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                         />
                 }
 
-                <div className='prediction'>
-                    <div className='ai-review-list-container'>
-                        <span className='btn xs' onClick={this.openAIReviewList}>
-                            <i className='fa fa-list-ul' />
-                        </span>
-                    </div>
-                    {(this.state.selected_ai_review || null) &&
-                        <div className='ai-review-more-info-container'>
-                            <span className='btn xs' onClick={this.showMoreInfo}>
-                                <i className='fa fa-info' />
+                { true && (this.state.ai_reviews.length >= 1 || null) &&
+                    <Select
+                        value={this.state.selected_ai_review}
+                        options={this.state.ai_reviews}
+                        onChange={this.setSelectedAIReview as any}
+                        clearable={false}
+                        autoBlur={true}
+                        placeholder={_("Select AI AIReview")}
+                        noResultsText={_("No results found")}
+                        optionRenderer={(A) =>
+                            <span className='ai-review-option-container'>
+                                {A.engine} {A.engine_version}
                             </span>
-                        </div>
-                    }
-                    <div className={"progress " + (!have_prediction ? "invisible" : "")}>
-                        <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
-                        <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
-                    </div>
-                    {((this.state.selected_ai_review && this.state.full) || null) &&
-                        <div className='ai-review-network-size-container'>
-                            <span >
-                                {this.state.selected_ai_review.network_size}
-                            </span>
-                        </div>
-                    }
-                </div>
+                        }
+                        valueRenderer={(A) =>
+                            <span className='ai-review-win-rate-container'>
+                                <i className='fa fa-crown'/>
+                                <div className={"progress " + (!have_prediction ? "invisible" : "")}>
+                                    <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
+                                    <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                                </div>
 
-                {((this.state.full && this.state.full.length > 0) || null) &&
+                            </span>
+                        }
+                        />
+                }
+
+                { false &&
+
+                    <div className='prediction'>
+                        <div className='ai-review-list-container'>
+                            <span className='btn xs' onClick={this.openAIReviewList}>
+                                <i className='fa fa-list-ul' />
+                            </span>
+                        </div>
+                        {(this.state.selected_ai_review || null) &&
+                            <div className='ai-review-more-info-container'>
+                                <span className='btn xs' onClick={this.showMoreInfo}>
+                                    <i className='fa fa-info' />
+                                </span>
+                            </div>
+                        }
+                        <div className={"progress " + (!have_prediction ? "invisible" : "")}>
+                            <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
+                            <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                        </div>
+                        {(this.ai_review || null) &&
+                            <div className='ai-review-network-size-container'>
+                                <span >
+                                    {this.ai_review.network_size}
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                {((this.ai_review && this.ai_review.win_rates) || null) &&
                     <AIReviewChart
-                        entries={this.state.full}
+                        ai_review={this.ai_review}
+                        entries={ai_review_chart_entries}
                         updatecount={this.state.updatecount}
                         move={this.props.move.move_number}
                         setmove={this.props.game.nav_goto_move} />
                 }
 
-                {((this.state.fast && this.state.fast.length > 0) || null) &&
+                {((this.ai_review?.type === 'fast') || null) &&
                     <div className='key-moves'>
+                    TODO: Top moves
+                        {/*
                         {this.state.blunders &&
                             <div>
                                 {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
@@ -1147,6 +1156,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </span>
                         )}
 
+                    */}
                         {show_full_ai_review_button &&
                             <div>
                                 <button
@@ -1159,7 +1169,10 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                     </div>
                 }
 
-                {((this.state.top3 && this.state.top3.length > 0) || null) &&
+                {(this.state.top_moves.length > 0 || null) &&
+                    <div>TODO: TOP moves
+                    {/*
+
                     <div className='key-moves'>
                         {this.state.blunders &&
                             <div>
@@ -1177,9 +1190,12 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
                             </span>
                         )}
                     </div>
+
+                    */}
+                    </div>
                 }
 
-                {((!this.state.full && !this.state.fast) || null) &&
+                {(!this.ai_review || null) &&
                     <div className='pending'>
                         {_("AI review has been queued for processing.")}
                         <i className='fa fa-desktop slowstrobe'></i>
@@ -1219,13 +1235,14 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     stashed_pen_marks: any;
     stashed_heatmap: any;
 
+    /*
     leaveVariation() {
         let game = this.props.game;
         let goban = this.props.game.goban;
 
         if (game.in_pushed_analysis) {
             game.in_pushed_analysis = false;
-            game.leave_pushed_analysis = null;
+            delete game.leave_pushed_analysis;
             goban.engine.jumpTo(this.orig_move);
             this.orig_move.marks = this.orig_marks;
             goban.pen_marks = this.stashed_pen_marks;
@@ -1236,7 +1253,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
             this.stashed_heatmap = null;
         }
     }
-    enterVariation(move_number, v) {
+    enterVariation(move_number:number, v) {
         let game = this.props.game;
         let goban = this.props.game.goban;
 
@@ -1257,6 +1274,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
 
         this.stashed_heatmap = goban.setHeatmap(null);
     }
+    */
     performFullAIReview = () => {
         let user = data.get('user');
 
@@ -1272,6 +1290,7 @@ export class AIReview extends React.Component<AIReviewProperties, any> {
     }
 }
 
+/*
 function winRateDelta(start_or_delta, end?) {
     let delta = end ? end - start_or_delta : start_or_delta;
     if (delta > 0) {
@@ -1279,4 +1298,9 @@ function winRateDelta(start_or_delta, end?) {
     } else {
         return <span className='decreased-win-rate'>{Math.round(delta * 100)}</span>;
     }
+}
+*/
+
+function isEqualMoveIntersection(a:JGOFIntersection, b:JGOFIntersection):boolean {
+    return a.x === b.x && a.y === b.y;
 }

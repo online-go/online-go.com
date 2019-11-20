@@ -24,7 +24,18 @@
                 "src/lib/requests"
             ]
         },
+
+        "forceConsistentCasingInFileNames": true,
+        
         "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": false,
+        "strictBindCallApply": false,
+        "strictFunctionTypes": false,
+        "strictNullChecks": false,
+        "strictPropertyInitialization": false,
+        "noUnusedLocals": false,
+
         "sourceMap": true,
         "jsx": "react"
     },

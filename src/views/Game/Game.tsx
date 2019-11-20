@@ -594,18 +594,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         this.goban.on("auto-resign", (data) => {
-            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
                 this.setState({ black_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift() ) });
             }
-            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.white.id) {
                 this.setState({ white_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift()) });
             }
         });
         this.goban.on("clear-auto-resign", (data) => {
-            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
                 this.setState({ black_auto_resign_expiration: null });
             }
-            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.white.id) {
                 this.setState({ white_auto_resign_expiration:null });
             }
         });
@@ -1318,7 +1318,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.official_move_number = engine.last_official_move ? engine.last_official_move.move_number : -1;
             new_state.strict_seki_mode = engine.strict_seki_mode;
             new_state.rules = engine.rules;
-            new_state.paused = goban.engine.pause_control && !!goban.engine.pause_control.paused;
+            new_state.paused = goban.pause_control && !!goban.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
 
@@ -2069,7 +2069,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             {state.winner
                                 ?
                                 (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
-                                    "color": (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
+                                    "color": (state.winner === this.goban.engine.players.black.id || state.winner === "black" ? _("Black") : _("White")),
                                     "outcome": getOutcomeTranslation(this.goban.engine.outcome)
                                 }))
                                 :
@@ -2082,8 +2082,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {( state.phase === "play"
                     && state.mode === "play"
                     && this.state.paused
-                    && this.goban.engine.pause_control
-                    && this.goban.engine.pause_control.paused
+                    && this.goban.pause_control
+                    && this.goban.pause_control.paused
                     || null) &&  /* { */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
@@ -2093,15 +2093,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             </button>
                         }
                         <div>{
-                            this.goban.engine.black_player_id === this.goban.engine.pause_control.paused.pausing_player_id
-                                ? interpolate(_("{{pauses_left}} pauses left for Black"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
-                                : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
+                            this.goban.engine.players.black.id === this.goban.pause_control.paused.pausing_player_id
+                                ? interpolate(_("{{pauses_left}} pauses left for Black"), {pauses_left: this.goban.pause_control.paused.pauses_left})
+                                : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.pause_control.paused.pauses_left})
                         }</div>
                     </div>
                 }
 
-                {(( this.goban.engine.pause_control
-                    && this.goban.engine.pause_control.moderator_paused
+                {(( this.goban.pause_control
+                    && this.goban.pause_control.moderator_paused
                     && user.is_moderator
                     ) || null) &&  /* { */
                     <div className="pause-controls">

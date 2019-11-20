@@ -20,7 +20,9 @@ analysis-prediction-chart-height=100px;
 .AIReviewChart {
     height: analysis-prediction-chart-height;
     margin-bottom: 1rem;
-    max-width: calc(100vw - 2em);
+    //max-width: calc(100vw - 2em);
+    max-width: calc(100vw);
+    //max-width: 100%;
     user-select: none;
 
     svg {
@@ -71,11 +73,17 @@ analysis-prediction-chart-height=100px;
             themed stroke chart-line
         }
         */
-        .full-prediction.line {
+        .win-rate-area {
             stroke-width: 1px
-            //stroke: #C442EB;
             themed stroke chart-line
             shape-rendering: crispEdges;
+            fill: url(#win-rate-area-gradient);
+        }
+        .win-rate-line {
+            stroke-width: 1px
+            themed stroke chart-line
+            shape-rendering: crispEdges;
+            fill: none;
         }
         .overlay {
             opacity: 0
@@ -184,10 +192,18 @@ analysis-prediction-chart-height=100px;
     .decreased-win-rate {
         color: red;
     }
+    .ai-review-win-rate-container {
+        display: inline-flex;
+        width: 100%;
+        padding-right: 1rem;
+
+    }
     .prediction {
+        display: flex;
+    }
+    .prediction, .ai-review-win-rate-container {
         text-align: center;
 
-        display: flex;
         align-items: center;
         .ai-review-list-container {
             flex-grow: 0;
@@ -196,6 +212,7 @@ analysis-prediction-chart-height=100px;
 
         }
         .progress {
+            display: inline-flex;
             flex-grow: 1;
             flex-shrink: 1;
             overflow: hidden;
