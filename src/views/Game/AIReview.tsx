@@ -890,7 +890,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         heatmap[mv.y][mv.x] = variations[i].visits / strength;
 
                         //if (variations[i].followup_moves.length > 2 || variations[i].move === next_move_pretty_coords) {
-                        console.log(variations[i]);
+                        //console.log(variations[i]);
                         if (variations[i].followup_moves?.length || (next_move && isEqualMoveIntersection(variations[i].move, next_move))) {
                             let delta = 0;
 
@@ -1042,6 +1042,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         //win_rate = this.ai_review.win_rate;
 
         win_rate *= 100.0;
+        console.log(win_rate);
 
         let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
@@ -1056,44 +1057,35 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
                 <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
 
-                { false && (this.state.ai_reviews.length > 1 || null) &&
-                    <Select
-                        value={this.state.selected_ai_review}
-                        options={this.state.ai_reviews}
-                        onChange={this.setSelectedAIReview as any}
-                        clearable={true}
-                        autoBlur={true}
-                        placeholder={_("Select AI AIReview")}
-                        noResultsText={_("No results found")}
-                        optionRenderer={(A) => <span className='ai_review-option'>{A.engine} {A.engine_version}</span>}
-                        valueRenderer={(A) => <span className='ai_review-option'>{A.engine} {A.engine_version}</span>}
-                        />
-                }
-
                 { true && (this.state.ai_reviews.length >= 1 || null) &&
                     <Select
                         value={this.state.selected_ai_review}
                         options={this.state.ai_reviews}
                         onChange={this.setSelectedAIReview as any}
-                        clearable={false}
+                        isClearable={false}
                         autoBlur={true}
-                        placeholder={_("Select AI AIReview")}
-                        noResultsText={_("No results found")}
-                        optionRenderer={(A) =>
-                            <span className='ai-review-option-container'>
-                                {A.engine} {A.engine_version}
-                            </span>
-                        }
-                        valueRenderer={(A) =>
-                            <span className='ai-review-win-rate-container'>
-                                <i className='fa fa-crown'/>
-                                <div className={"progress " + (!have_prediction ? "invisible" : "")}>
-                                    <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
-                                    <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                        isSearchable={false}
+                        components = {{
+                            Option: ({innerRef, innerProps, data}) => (
+                                <div ref={innerRef} {...innerProps} className='ai-review-option-container'>
+                                    {data.engine} {data.engine_version}
                                 </div>
-
-                            </span>
-                        }
+                            ),
+                            SingleValue: ({data}) => (
+                                <React.Fragment>
+                                    <ReviewStrengthIcon review={data} />
+                                    <div className={"progress " + (!have_prediction ? "invisible" : "")}>
+                                        <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
+                                        <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                                    </div>
+                                </React.Fragment>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='ai-review-win-rate-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
                         />
                 }
 
@@ -1303,4 +1295,8 @@ function winRateDelta(start_or_delta, end?) {
 
 function isEqualMoveIntersection(a:JGOFIntersection, b:JGOFIntersection):boolean {
     return a.x === b.x && a.y === b.y;
+}
+
+function ReviewStrengthIcon({review}:{review:JGOFAIReview}):JSX.Element {
+    return <span>T</span>;
 }

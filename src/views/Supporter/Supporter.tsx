@@ -103,6 +103,11 @@ let currency_list = [
     {'name': 'United Arab Emirates Dirham' , 'iso': 'AED' ,  'flag': 'ae', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['AE']} ,
 ];
 
+let currency_map = {};
+for (let x of currency_list) {
+    currency_map[x.iso] = x;
+}
+
 data.watch('config.supporter_currency_scale', (scales) => {
     for (let i = 0; i < currency_list.length; ++i) {
         let iso = currency_list[i].iso;
@@ -120,6 +125,10 @@ let interval_list = [
     {'name': _('year'),     'interval': 'year'},
     {'name': _('one time'), 'interval': 'one time'},
 ];
+let interval_map = {};
+for (let x of interval_list) {
+    interval_map[x.interval] = x;
+}
 
 let interval_description = {
     'month': _('Monthly donation'),
@@ -150,8 +159,13 @@ function formatMoney(currency: string, n:number, no_fraction_digits:boolean = fa
     return ret;
 }
 
-function filterCurrencyOption(currency:any, text:string):boolean {
+function filterCurrencyOption({label, value, data}, text:string):boolean {
+    if (!text) {
+        text = "";
+    }
     text = text.toLowerCase();
+    let currency = data;
+
     if (currency.iso.toLowerCase().indexOf(text) >= 0) {
         return true;
     }
@@ -345,7 +359,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             custom_amount: amount ? this.state.custom_amount : amount_steps[this.state.interval][amount_steps[this.state.interval].length - 2] * 2 * getCurrencyScale(this.state.currency)
         });
     }
-    setCurrency = (currency) => {
+    setCurrency = (currency_option) => {
+        console.log(currency_option);
+        const currency = currency_option.iso;
         let custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
 
         if (currency) {
@@ -356,8 +372,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             preferences.set("supporter.currency", currency);
         }
     }
-    setInterval = (interval) => {
-        if (interval) {
+    setInterval = (interval_option) => {
+        if (interval_option) {
+            let interval = interval_option.interval;
             let step = this.state.amount_step;
 
             this.setState({
@@ -870,18 +887,34 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return (
             <Select
                 className='currency-select'
-                value={this.state.currency}
+                value={currency_map[this.state.currency]}
                 onChange={this.setCurrency}
                 options={currency_list}
-                simpleValue={true}
-                valueKey='iso'
-                clearable={false}
-                searchable={true}
-                autoBlur={true}
+                isClearable={false}
+                isSearchable={true}
+                blurInputOnSelect={true}
                 noResultsText={_("No results found")}
                 filterOption={filterCurrencyOption}
-                optionRenderer={(C) => <span className='currency-option'><span className='iso'>{C.iso}</span><Flag country={C.flag} /> </span>}
-                valueRenderer={(C) => <span className='currency-option'><span className='iso'>{C.iso}</span><Flag country={C.flag} /> </span>}
+                getOptionLabel={C => C.iso}
+                getOptionValue={C => C.iso}
+                components={{
+                    Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                        <div ref={innerRef} {...innerProps}
+                            className={'currency-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                            <span className='iso'>{data.iso}</span><Flag country={data.flag} />
+                        </div>
+                    ),
+                    SingleValue: ({innerProps, data}) => (
+                        <span {...innerProps} className='currency-option'>
+                            <span className='iso'>{data.iso}</span><Flag country={data.flag} />
+                        </span>
+                    ),
+                    ValueContainer: ({children}) => (
+                        <div className='currency-option-container'>
+                            {children}
+                        </div>
+                    ),
+                }}
             />
         );
     }
@@ -890,15 +923,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return (
             <Select
                 className='interval-select'
-                value={this.state.interval}
+                value={interval_map[this.state.interval]}
                 onChange={this.setInterval}
                 options={interval_list}
-                simpleValue={true}
-                valueKey='interval'
-                clearable={false}
-                searchable={false}
-                optionRenderer={(C) => <span>{C.name}</span>}
-                valueRenderer={(C) => <span>{C.name}</span>}
+                blurInputOnSelect={true}
+                isClearable={false}
+                isSearchable={false}
+                getOptionLabel={C => C.name}
+                getOptionValue={C => C.interval}
             />
         );
     }

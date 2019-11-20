@@ -164,9 +164,16 @@ supporter-page-width=60rem;
     .currency-select {
         display: inline-block;
         font-size: 1.0rem;
-        width: 6rem;
+        width: 8rem;
         margin-right: 0.5rem;
         text-align: left;
+
+        /*
+        input {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        */
     }
 
     .currency-option {
@@ -175,7 +182,25 @@ supporter-page-width=60rem;
             width: 2.6rem;
         }
 
+        &.focused {
+            themed background-color react-select-focused-bg
+            themed color react-select-focused-fg
+        }
+        &.selected {
+            themed background-color react-select-selected-bg
+            themed color react-select-selected-fg
+        }
     }
+
+    .currency-option-container {
+        //display: inline-flex;
+        //align-items: center;
+        padding-left: 0.5rem;
+        > div {
+            display: inline-block;
+        }
+    }
+
 
     .supporter-amount {
         width: 9rem;
@@ -185,7 +210,7 @@ supporter-page-width=60rem;
     }
 
     .interval-select {
-        width: 8rem;
+        width: 10rem;
         text-align: left;
         margin-left: 0.5rem;
         font-weight: bold;
