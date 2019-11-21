@@ -151,6 +151,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
             ai_review_enabled: preferences.get('ai-review-enabled'),
+            show_score_breakdown: false
         };
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
@@ -182,12 +183,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             draw: () => { this.setAnalyzeTool("draw", this.state.analyze_pencil_color); },
             clear_and_sync: () => { this.goban.syncReviewMove({"clearpen": true}); this.goban.clearAnalysisDrawing(); },
             delete_branch: () => { this.goban_deleteBranch(); },
-        };
-        this.score_popups = {
-            popup_black: this.popupScores.bind(this, "black"),
-            popup_white: this.popupScores.bind(this, "white"),
-            hide_black: this.hideScores.bind(this, "black"),
-            hide_white: this.hideScores.bind(this, "white"),
         };
 
         this.handleEscapeKey = this.handleEscapeKey.bind(this);
@@ -1186,7 +1181,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         openACLModal(this.game_id, this.review_id, this.goban.engine);
     }
 
-    popupScores(color) {
+    popupScores() {
         let goban = this.goban;
 
         if (goban.engine.cur_move) {
@@ -1195,6 +1190,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             this.orig_marks = null;
         }
+
+        this._popupScores('black');
+        this._popupScores('white');
+    }
+    _popupScores(color) {
+        let goban = this.goban;
 
         let only_prisoners = false;
         let scores = goban.engine.computeScore(only_prisoners);
@@ -1236,8 +1237,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         $("#" + color + "-score-details").html(html);
+        this.setState({
+            show_score_breakdown: true
+        });
     }
-    hideScores(color) {
+    hideScores() {
         let goban = this.goban;
 
         if (!this.showing_scores) {
@@ -1247,7 +1251,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
             goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
         }
         goban.redraw();
-        $("#" + color + "-score-details").children().remove();
+
+        $("#black-score-details").children().remove();
+        $("#white-score-details").children().remove();
+
+        this.setState({
+            show_score_breakdown: false
+        });
     }
 
     /*** Game stuff ***/
@@ -2490,7 +2500,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       }
 
 
-                      <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
+                      <div className={"score-container " + (this.state.show_score_breakdown ? 'show-score-breakdown' : '')}
+                          onClick={() => this.state.show_score_breakdown ? this.hideScores() : this.popupScores()}
+                          >
                           {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
                             goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
                               <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
