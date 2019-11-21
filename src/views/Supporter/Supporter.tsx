@@ -887,6 +887,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return (
             <Select
                 className='currency-select'
+                classNamePrefix='ogs-react-select'
                 value={currency_map[this.state.currency]}
                 onChange={this.setCurrency}
                 options={currency_list}
@@ -923,6 +924,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return (
             <Select
                 className='interval-select'
+                classNamePrefix='ogs-react-select'
                 value={interval_map[this.state.interval]}
                 onChange={this.setInterval}
                 options={interval_list}
@@ -931,6 +933,14 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 isSearchable={false}
                 getOptionLabel={C => C.name}
                 getOptionValue={C => C.interval}
+                components={{
+                    Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                        <div ref={innerRef} {...innerProps}
+                            className={(isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                            {data.name}
+                        </div>
+                    ),
+                }}
             />
         );
     }

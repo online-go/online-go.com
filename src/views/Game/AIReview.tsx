@@ -157,13 +157,23 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr("x1", 0).attr("y1", 0)
             .attr("x2", 0).attr("y2", this.height)
             .selectAll("stop")
-            .data([
-                {offset: "0%", color: "#222222"},
-                {offset: "49%", color: "#444444"},
-                {offset: "50%", color: "#888888"},
-                {offset: "51%", color: "#cccccc"},
-                {offset: "100%", color: "#eeeeee"}
-            ])
+            .data(
+                data.get('theme') === 'dark'
+                    ? [
+                        {offset: "0%", color: "#000000"},
+                        {offset: "49%", color: "#333333"},
+                        {offset: "50%", color: "#888888"},
+                        {offset: "51%", color: "#909090"},
+                        {offset: "100%", color: "#999999"}
+                      ]
+                    : [
+                        {offset: "0%", color: "#222222"},
+                        {offset: "49%", color: "#444444"},
+                        {offset: "50%", color: "#888888"},
+                        {offset: "51%", color: "#cccccc"},
+                        {offset: "100%", color: "#eeeeee"}
+                      ]
+            )
             .enter()
             .append("stop")
             .attr("offset", d => d.offset)
@@ -1059,6 +1069,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                 { true && (this.state.ai_reviews.length >= 1 || null) &&
                     <Select
+                        classNamePrefix='ogs-react-select'
                         value={this.state.selected_ai_review}
                         options={this.state.ai_reviews}
                         onChange={this.setSelectedAIReview as any}
@@ -1066,9 +1077,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         autoBlur={true}
                         isSearchable={false}
                         components = {{
-                            Option: ({innerRef, innerProps, data}) => (
-                                <div ref={innerRef} {...innerProps} className='ai-review-option-container'>
-                                    {data.engine} {data.engine_version}
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'ai-review-option-container '
+                                        + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}
+                                    >
+                                    <ReviewStrengthIcon review={data} />
+                                    <div className='ai-review-information'>
+                                        <div>
+                                            {interpolate(
+                                                pgettext("AI Review technical information",
+                                                    "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."),
+                                                data)
+                                            }
+                                        </div>
+                                        <div className='date'>
+                                            {moment(new Date(data.date)).format('lll')}
+                                        </div>
+                                    </div>
                                 </div>
                             ),
                             SingleValue: ({data}) => (
@@ -1298,5 +1324,38 @@ function isEqualMoveIntersection(a:JGOFIntersection, b:JGOFIntersection):boolean
 }
 
 function ReviewStrengthIcon({review}:{review:JGOFAIReview}):JSX.Element {
-    return <span>T</span>;
+    let strength:string;
+    let content:string = '';
+    if (review.type === 'fast') {
+        strength = 'ai-review-fast';
+        content = '';
+    } else {
+        if (review.strength >= 1600) {
+            strength = 'ai-review-strength-3';
+            content = 'III';
+        }
+        else if (review.strength >= 800) {
+            strength = 'ai-review-strength-2';
+            content = 'II';
+        }
+        else if (review.strength >= 300) {
+            strength = 'ai-review-strength-1';
+            content = 'I';
+        } else {
+            strength = 'ai-review-strength-0';
+            content = '';
+        }
+    }
+
+    return <span className={'ai-review-strength-icon ' + strength}>{content}</span>;
+}
+
+function engineName(engine:string) {
+    switch (engine) {
+        case 'leela_zero':
+            return "Leela Zero";
+        case 'katago':
+            return "KataGo";
+    }
+    return "AI";
 }

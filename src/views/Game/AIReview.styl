@@ -192,11 +192,34 @@ analysis-prediction-chart-height=100px;
     .decreased-win-rate {
         color: red;
     }
+    .ai-review-option-container {
+        display: flex;
+        //width: calc(100% - 3rem);
+        //width: 100%;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        //padding-left: 0.5rem;
+
+        .ai-review-strength-icon {
+            flex: 0;
+            width: 1.1rem;
+            flex-basis: 1.1rem;
+            margin-left: 0.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .ai-review-information {
+            flex: 1;
+        }
+
+        .date {
+            font-style: italic;
+        }
+    }
     .ai-review-win-rate-container {
         display: inline-flex;
         width: calc(100% - 3rem);
         padding-left: 0.5rem;
-
     }
     .prediction {
         display: flex;
@@ -305,3 +328,40 @@ analysis-prediction-chart-height=100px;
 }
 
 
+.ai-review-fast,
+.ai-review-strength-0,
+.ai-review-strength-1,
+.ai-review-strength-2,
+.ai-review-strength-3,
+{
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1rem;
+    margin-right: 0.3rem;
+    margin-left: 0.2rem;
+    themed color supporter;
+    border: 2px solid #000;
+    themed border-color supporter;
+    border-radius: 50%;
+
+    font-family: "Times New Roman", Times, serif;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+
+
+    /*
+    background-size: cover;
+    background-repeat: no-repeat;
+    shape-rendering: optimizeQuality;
+    */
+}
+.ai-review-fast { color: #888; }
+/*
+.ai-review-fast { background-image: svg-load("../assets/ai-review-fast.svg"); }
+.ai-review-strength-0 { background-image: svg-load("../assets/ai-review-strength-3.svg"); }
+.ai-review-strength-1 { background-image: svg-load("../assets/ai-review-strength-1.svg"); }
+.ai-review-strength-2 { background-image: svg-load("../assets/ai-review-strength-2.svg"); }
+.ai-review-strength-3 { background-image: svg-load("../assets/ai-review-strength-3.svg"); }
+*/

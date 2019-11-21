@@ -72,7 +72,9 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
         // console.log("Tags list: ", this.state.tag_list);
 
         return (
-            <Select className="joseki-tag-selector"
+            <Select
+                className="joseki-tag-selector"
+                classNamePrefix="ogs-react-select"
                 value={this.props.selected_tags}
                 options={this.state.tag_list}
                 isMulti={true}
@@ -80,21 +82,14 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
                 getOptionLabel={o => o.label}
                 getOptionValue={o => o.value}
                 components={{
-                    //MultiValue: ({innerProps, children, data}) => (<span {...innerProps} key={data} className="tag-value">{data} {children}</span>),
-                    //MultiValueLabel: ({innerProps, data}) => (<span {...innerProps} className="tag-value">{data.label}</span>),
-                    /*
-                    MultiValueLabel: ({innerProps, data}) => {
-                        console.log(data);
-                        let tag = this.state.tag_map[data];
-                        if (tag) {
-                            return <span {...innerProps} key={data}>{this.state.tag_map[data].label}</span>;
-                        }
-                        return <span {...innerProps}  key={data}/>;
-                    },
-                    //MultiValue: ({innerProps, children, data}) => (<span {...innerProps} className="tag-value">{data.label} {children}</span>),
-                    Option: ({innerRef, innerProps, data}) => (<div ref={innerRef} {...innerProps} className="tag-option">{data.label}</div>)
-                    */
+                    Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                        <div ref={innerRef} {...innerProps}
+                            className={(isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                            {data.label}
+                        </div>
+                    ),
                 }}
+
             />
         );
     }
@@ -103,3 +98,4 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
 const MultiValue = (props) => {
     return <components.MultiValue {...props} key={props.data} />;
 };
+

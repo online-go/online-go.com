@@ -163,6 +163,8 @@ light.joseki-mistake                    = #b3001e
 
 /** React Select colors **/
 
+light.react-select-bg                   = light.bg
+light.react-select-border               = light.shade3
 light.react-select-selected-bg          = #2684FF
 light.react-select-selected-fg          = #FFFFFF
 light.react-select-focused-bg           = #DEEBFF
@@ -286,10 +288,12 @@ dark.weak-l-text                        = dark.fg
 
 /** React Select colors **/
 
+dark.react-select-bg                   = dark.shade4
+dark.react-select-border               = dark.shade5
 dark.react-select-selected-bg          = #2684FF
 dark.react-select-selected-fg          = #FFFFFF
 dark.react-select-focused-bg           = #435B80
-dark.react-select-focused-fg           = dark.fg
+dark.react-select-focused-fg           = #ffffff
 
 /** Navbar **/
 
@@ -367,6 +371,7 @@ nowrap()
 
 @require "lib/popover.styl";
 @require "lib/toast.styl";
+@require "lib/ogs-react-select.styl";
 
 @require "./components/material/*.styl";
 @require "./components/[A-Z]*/*.styl";
