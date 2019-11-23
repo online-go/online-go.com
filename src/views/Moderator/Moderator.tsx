@@ -101,6 +101,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: _("Country")  , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.geoip.country} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
                         {header: _("Timezone") , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.last_timezone_offset / 60}</span>} ,
                         {header: "BID"         , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.last_browser_id}</span>} ,
+                        {header: "Email"       , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.email}</span>} ,
                     ]}
                 />
             </Card>
