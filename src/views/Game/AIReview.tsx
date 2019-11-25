@@ -23,7 +23,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import * as data from "data";
 import {UIPush} from "UIPush";
 import {openBecomeASiteSupporterModal} from "Supporter";
-import {deepCompare, dup} from 'misc';
+import {deepCompare, dup, errorLogger} from 'misc';
 import {get, post} from 'requests';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
@@ -65,7 +65,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     container?:HTMLElement;
     chart_div:HTMLElement;
     svg?:d3.Selection<SVGSVGElement, unknown, null, undefined>;
-    //svg?:number;
     destroyed = false;
     chart?:number;
     graph?:number;
@@ -87,10 +86,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     y:d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
     highlighted_move_circle_container:d3.Selection<SVGElement, unknown, null, undefined>;
     highlighted_move_circles:d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
-
-    //circles_path?:d3.Selection<SVGPathElement, unknown, null, undefined>;
-    //circles?: d3.Symbol<any, AIReviewEntry>;
-
 
     constructor(props:AIReviewChartProperties) {
         super(props);
@@ -335,7 +330,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let show_all = Object.keys(this.props.ai_review.moves).length <= 3;
         let circle_coords = this.props.entries.filter((x) => {
             if (this.props.ai_review.moves[x.move_number]
-                && (show_all || !this.props.ai_review.moves[x.move_number + 1])
+                && (show_all || (
+                        !this.props.ai_review.moves[x.move_number + 1]
+                        && x.move_number !== this.props.ai_review.win_rates.length - 1)
+                   )
             ) {
                 return true;
             }
@@ -358,7 +356,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('cx', d => this.x(d.move_number))
             .attr('cy', d => this.y(d.win_rate * 100))
             .attr('r', d => 3)
-            .attr('fill', d => '#ff0000');
+            .attr('fill', d => '#FF0000');
     }
     deinitialize() {
         this.destroyed = true;
@@ -540,10 +538,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         this.setState({reviewing: true});
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(errorLogger);
             }
         })
-        .catch(err => console.error(err));
+        .catch(errorLogger);
     }
 
     getAIReview(ai_review_id:string) {
@@ -561,7 +559,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.ai_review = ai_review;
             this.syncAIReview();
         })
-        .catch(err => console.error(err));
+        .catch(errorLogger);
     }
 
     moveNumOffset = this.handicapOffset() > 0 ? 1 : 0;
@@ -623,6 +621,20 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         });
     }
 
+    startFullReview = () => {
+        let user = data.get('user');
+
+        if (user.anonymous) {
+            swal(_("Please login first"));
+        } else {
+            if (user.supporter || user.professional || user.is_moderator) {
+                this.props.game.force_ai_review("full");
+            } else {
+                openBecomeASiteSupporterModal();
+            }
+        }
+    }
+
     setSelectedAIReview = (ai_review:JGOFAIReview) => {
         close_all_popovers();
         this.setState({
@@ -635,26 +647,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-    normalizeHeatmap(heatmap:Array<Array<number>>):Array<Array<number>> {
-        let m = 0;
-        let ret:Array<Array<number>> = [];
-        for (let row of heatmap) {
-            let r = [];
-            for (let v of row) {
-                m = Math.max(m, v);
-                r.push(v);
-            }
-            ret.push(r);
-        }
-
-        for (let row of ret) {
-            for (let i = 0; i < row.length; ++i) {
-                row[i] /= m;
-            }
-        }
-
-        return ret;
-    }
 
     ai_review_update = (data:any) => {
         if ('ai_review_id' in data) {
@@ -680,79 +672,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             });
             this.syncAIReview();
         }
-    }
-
-    openAIReviewList = (ev:React.MouseEvent<HTMLElement>) => {
-        close_all_popovers();
-        popover({
-            elt: (<div className='ai-review-list' >
-                    {this.state.ai_reviews.map((ai_review, idx) => {
-                        let params = {
-                            strength: ai_review.strength,
-                            network_size: ai_review.network_size,
-                            num_moves: Object.keys(ai_review.moves).length,
-                        };
-                        return (
-                            <div className={'ai-review-item ' +
-                                    (ai_review.id === this.state.selected_ai_review?.id ? 'selected' : '')}
-                                key={idx}
-                                title={moment(ai_review.date).format('LL')}
-                                onClick={() => this.setSelectedAIReview(ai_review)}>
-                                { ai_review.type === 'full'
-                                    ? interpolate(_("Full {{network_size}} review by Leela Zero"), params)
-                                    : interpolate(_("Top {{num_moves}} moves according to Leela Zero"), params)
-                                }
-                            </div>
-                       );
-                    })}
-                  </div>
-                 ),
-            below: ev.target as HTMLElement,
-            minWidth: 240,
-            minHeight: 250,
-        });
-    }
-
-    showMoreInfo = (ev:React.MouseEvent<HTMLElement>) => {
-        close_all_popovers();
-        console.log(this.state.selected_ai_review);
-        popover({
-            elt: (
-                <div className='ai-review-more-info' >
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>{_("Date")}</th>
-                                <td>{moment(this.state.selected_ai_review?.date).format('LL')}</td>
-                            </tr>
-                            <tr>
-                                <th>{pgettext("AI Review Engine", "Engine")}</th>
-                                <td>{"Leela Zero"}</td>
-                            </tr>
-                            <tr>
-                                <th>{pgettext("AI Review engine version", "Version")}</th>
-                                <td>{this.state.selected_ai_review?.engine_version}</td>
-                            </tr>
-                            <tr>
-                                <th>{pgettext("AI Review engine network used", "Network")}</th>
-                                <td title={this.state.selected_ai_review?.network}>{this.state.selected_ai_review?.network.substr(0, 8)}</td>
-                            </tr>
-                            <tr>
-                                <th>{pgettext("Size of neural network", "Network Size")}</th>
-                                <td>{this.state.selected_ai_review?.network_size}</td>
-                            </tr>
-                            <tr>
-                                <th>{pgettext("AI review engine playouts strength", "Strength")}</th>
-                                <td>{this.state.selected_ai_review?.strength}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            ),
-            below: ev.target as HTMLElement,
-            minWidth: 300,
-            minHeight: 250,
-        });
     }
 
     public render() {
@@ -804,9 +723,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         try {
             if (
+                user.id === this.props.game.creator_id ||
                 user.id === this.props.game.goban.engine.players.black.id ||
-                user.id === this.props.game.goban.engine.players.white.id ||
-                user.id === this.props.game.creator_id
+                user.id === this.props.game.goban.engine.players.white.id
             ) {
                 show_full_ai_review_button = true;
             }
@@ -834,7 +753,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_move_ai_review = this.ai_review.moves[move_ai_review.move_number + 1];
             if (next_move_ai_review) {
                 next_win_rate = next_move_ai_review.post_move_win_rate || -1;
-                next_win_rate *= 100.0;
             }
             /*
             if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
@@ -896,32 +814,33 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                     for (let i = 0 ; i < variations.length; ++i) {
 
-                        let mv = variations[i].move;
-                        heatmap[mv.y][mv.x] = variations[i].visits / strength;
+                        let variation = variations[i];
+                        let mv = variation.move;
+                        heatmap[mv.y][mv.x] = variation.visits / strength;
 
-                        //if (variations[i].followup_moves.length > 2 || variations[i].move === next_move_pretty_coords) {
-                        //console.log(variations[i]);
-                        if (variations[i].followup_moves?.length || (next_move && isEqualMoveIntersection(variations[i].move, next_move))) {
+                        //if (variation.followup_moves.length > 2 || variation.move === next_move_pretty_coords) {
+                        //console.log(variation);
+                        if (variation.followup_moves?.length || (next_move && isEqualMoveIntersection(variation.move, next_move))) {
                             let delta = 0;
 
                             //if (move_ai_review.player_to_move === 'white') {
-                            //    delta = -1.0 * ((1.0 - variations[i].win_rate) - (move_ai_review.win_rate));
+                            //    delta = -1.0 * ((1.0 - variation.win_rate) - (move_ai_review.win_rate));
                             //} else {
-                            //    delta = (variations[i].win_rate) - (move_ai_review.win_rate);
+                            //    delta = (variation.win_rate) - (move_ai_review.win_rate);
                             //}
 
 /*
                             if (move_ai_review.player_to_move === 'white') {
-                                delta = -1 * ((1.0 - (variations[i].win_rate)) - (move_ai_review.win_rate));
+                                delta = -1 * ((1.0 - (variation.win_rate)) - (move_ai_review.win_rate));
                             } else {
-                                delta = (variations[i].win_rate) - (move_ai_review.win_rate);
+                                delta = (variation.win_rate) - (move_ai_review.win_rate);
                             }
 */
 
-                            delta = (variations[i].post_move_win_rate) - (move_ai_review.pre_move_win_rate);
+                            delta = (variation.post_move_win_rate) - (move_ai_review.pre_move_win_rate);
 
 
-                            if (next_move && isEqualMoveIntersection(variations[i].move, next_move) && next_win_rate >= 0) {
+                            if (next_move && isEqualMoveIntersection(variation.move, next_move) && next_win_rate >= 0) {
                                 delta = ((move_ai_review.pre_move_win_rate) - next_win_rate);
                                 /*
                                 if (move_ai_review.player_to_move === 'black') {
@@ -930,17 +849,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 */
                             }
 
-                            delta *= 100.0;
-
-                            let key = delta.toFixed(1);
+                            let key = (delta * 100).toFixed(1);
                             if (key === "0.0" || key === "-0.0") {
                                 key = "0";
                             }
                             // only show numbers for well explored moves
                             // show number for AI choice and played move as well
                             if (mv && ((i === 0) ||
-                                       (next_move && isEqualMoveIntersection(variations[i].move, next_move)) ||
-                                       (variations[i].visits >= Math.min(50, 0.1 * strength)))) {
+                                       (next_move && isEqualMoveIntersection(variation.move, next_move)) ||
+                                       (variation.visits >= Math.min(50, 0.1 * strength)))) {
                                 if (parseFloat(key).toPrecision(2).length < key.length) {
                                     key = parseFloat(key).toPrecision(2);
                                 }
@@ -948,11 +865,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             }
 
                             let circle:ColoredCircle = {
-                                move: variations[i].move,
+                                move: variation.move,
                                 color: 'rgba(0,0,0,0)',
                             };
 
-                            if (next_move && isEqualMoveIntersection(variations[i].move, next_move)) {
+                            if (next_move && isEqualMoveIntersection(variation.move, next_move)) {
                                 this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
 
                                 circle.border_width = 0.1;
@@ -973,12 +890,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         }
 
                     }
-
-                    /*
-                    if (next_move) {
-                        marks["sub_triangle"] = GoMath.encodeMove(next_move.x, next_move.y);
-                    }
-                    */
                 }
             }
             else { // !cur_move.trunk
@@ -1020,14 +931,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
             }
         } catch (e) {
-            console.error(e);
+            errorLogger(e);
         }
 
         try {
             this.props.game.goban.setMarks(marks, true);
-            if (heatmap) {
-                this.props.game.goban.setHeatmap(heatmap, true);
-            }
+            this.props.game.goban.setHeatmap(heatmap, true);
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             // ignore
@@ -1035,11 +944,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (next_win_rate >= 0) {
             move_relative_delta = next_win_rate - win_rate;
-            //console.log(move_ai_review.move, this.props.game.goban.engine.colorToMove(), move_ai_review.player_to_move, win_rate, next_win_rate);
             if (this.props.game.goban.engine.colorToMove() === "white") {
                 move_relative_delta = -move_relative_delta;
             }
-            move_relative_delta *= 100.0;
         }
 
         let have_prediction = true;
@@ -1047,12 +954,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             have_prediction = true;
             win_rate = move_ai_review.pre_move_win_rate;
         }
-
-        //let have_prediction = true;
-        //win_rate = this.ai_review.win_rate;
-
-        win_rate *= 100.0;
-        console.log(win_rate);
 
         let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
@@ -1062,12 +963,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         }) || [];
 
+        let win_rate_p = win_rate * 100.0;
+        let move_relative_delta_p = move_relative_delta * 100.0;
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
                 <UIPush event="ai-review-key" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_key} />
 
-                { true && (this.state.ai_reviews.length >= 1 || null) &&
+                { (this.state.ai_reviews.length >= 1 || null) &&
                     <Select
                         classNamePrefix='ogs-react-select'
                         value={this.state.selected_ai_review}
@@ -1101,8 +1005,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
                                     <div className={"progress " + (!have_prediction ? "invisible" : "")}>
-                                        <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
-                                        <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
+                                        <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
+                                        <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
                                     </div>
                                 </React.Fragment>
                             ),
@@ -1113,35 +1017,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             ),
                         }}
                         />
-                }
-
-                { false &&
-
-                    <div className='prediction'>
-                        <div className='ai-review-list-container'>
-                            <span className='btn xs' onClick={this.openAIReviewList}>
-                                <i className='fa fa-list-ul' />
-                            </span>
-                        </div>
-                        {(this.state.selected_ai_review || null) &&
-                            <div className='ai-review-more-info-container'>
-                                <span className='btn xs' onClick={this.showMoreInfo}>
-                                    <i className='fa fa-info' />
-                                </span>
-                            </div>
-                        }
-                        <div className={"progress " + (!have_prediction ? "invisible" : "")}>
-                            <div className="progress-bar black-background" style={{width: win_rate + "%"}}>{win_rate.toFixed(1)}%</div>
-                            <div className="progress-bar white-background" style={{width: (100.0 - win_rate) + "%"}}>{(100 - win_rate).toFixed(1)}%</div>
-                        </div>
-                        {(this.ai_review || null) &&
-                            <div className='ai-review-network-size-container'>
-                                <span >
-                                    {this.ai_review.network_size}
-                                </span>
-                            </div>
-                        }
-                    </div>
                 }
 
                 {((this.ai_review && this.ai_review.win_rates) || null) &&
@@ -1155,61 +1030,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                 {((this.ai_review?.type === 'fast') || null) &&
                     <div className='key-moves'>
-                    TODO: Top moves
-                        {/*
-                        {this.state.blunders &&
-                            <div>
-                                {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
-                                    { black_blunders: this.state.blunders.black, white_blunders: this.state.blunders.white, })}
-                            </div>
-                        }
-
-                        <div>
-                            <b>{_("Top game changing moves")}</b>
-                        </div>
-
-                        {this.state.fast.map((move, idx) =>
-                            <span key={move.move} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move.move + this.handicapOffset())}>
-                                {move.move + 1 + this.handicapOffset()}
-                            </span>
-                        )}
-
-                    */}
                         {show_full_ai_review_button &&
                             <div>
                                 <button
                                     className='primary'
-                                    onClick={this.performFullAIReview}>
+                                    onClick={this.startFullReview}>
                                     {_("Full AI Review")}
                                 </button>
                             </div>
                         }
-                    </div>
-                }
-
-                {(this.state.top_moves.length > 0 || null) &&
-                    <div>TODO: TOP moves
-                    {/*
-
-                    <div className='key-moves'>
-                        {this.state.blunders &&
-                            <div>
-                                {interpolate(_("10+% moves: {{black_blunders}} by black, {{white_blunders}} by white"),
-                                    { black_blunders: this.state.blunders.black, white_blunders: this.state.blunders.white, })}
-                            </div>
-                        }
-                        <div>
-                            <b>{_("Top game changing moves")}</b>
-                        </div>
-
-                        {this.state.top3.map((move, idx) =>
-                            <span key={idx} className='key-move clickable' onClick={(ev) => this.props.game.nav_goto_move(move + this.handicapOffset() + this.moveNumOffset)}>
-                                {move + 1 + this.handicapOffset() + this.moveNumOffset}
-                            </span>
-                        )}
-                    </div>
-
-                    */}
                     </div>
                 }
 
@@ -1219,7 +1048,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         <i className='fa fa-desktop slowstrobe'></i>
                     </div>
                 }
-
 
                 {move_ai_review && next_move && move_relative_delta !== null &&
                     <div className='next-move-delta-container'>
@@ -1235,10 +1063,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                         */}
                         <span className={"next-move-delta " +
-                            (move_relative_delta <= -0.1 ? 'negative' : (move_relative_delta >= 0.1 ? 'positive' : ''))}>
-                            {move_relative_delta <= -0.1 ? <span>&minus;</span> :
-                                (move_relative_delta >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
-                            } {Math.abs(move_relative_delta).toFixed(1)}pp
+                            (move_relative_delta_p <= -0.1 ? 'negative' : (move_relative_delta_p >= 0.1 ? 'positive' : ''))}>
+                            {move_relative_delta_p <= -0.1 ? <span>&minus;</span> :
+                                (move_relative_delta_p >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
+                            } {Math.abs(move_relative_delta_p).toFixed(1)}pp
                         </span>
                     </div>
                 }
@@ -1248,12 +1076,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         );
     }
 
+
+    /*
     orig_move: any;
     orig_marks: any;
     stashed_pen_marks: any;
     stashed_heatmap: any;
 
-    /*
     leaveVariation() {
         let game = this.props.game;
         let goban = this.props.game.goban;
@@ -1292,32 +1121,30 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         this.stashed_heatmap = goban.setHeatmap(null);
     }
-    */
-    performFullAIReview = () => {
-        let user = data.get('user');
 
-        if (user.anonymous) {
-            swal(_("Please login first"));
-        } else {
-            if (user.supporter || user.professional || user.is_moderator) {
-                this.props.game.force_ai_review("full");
-            } else {
-                openBecomeASiteSupporterModal();
+    normalizeHeatmap(heatmap:Array<Array<number>>):Array<Array<number>> {
+        let m = 0;
+        let ret:Array<Array<number>> = [];
+        for (let row of heatmap) {
+            let r = [];
+            for (let v of row) {
+                m = Math.max(m, v);
+                r.push(v);
+            }
+            ret.push(r);
+        }
+
+        for (let row of ret) {
+            for (let i = 0; i < row.length; ++i) {
+                row[i] /= m;
             }
         }
+
+        return ret;
     }
+    */
 }
 
-/*
-function winRateDelta(start_or_delta, end?) {
-    let delta = end ? end - start_or_delta : start_or_delta;
-    if (delta > 0) {
-        return <span className='increased-win-rate'>+{Math.round(delta * 100)}</span>;
-    } else {
-        return <span className='decreased-win-rate'>{Math.round(delta * 100)}</span>;
-    }
-}
-*/
 
 function isEqualMoveIntersection(a:JGOFIntersection, b:JGOFIntersection):boolean {
     return a.x === b.x && a.y === b.y;
