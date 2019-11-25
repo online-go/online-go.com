@@ -576,9 +576,9 @@ export class User extends React.PureComponent<UserProperties, any> {
                 if (!item.speed) { // fallback
                     if (r.time_per_move >= 3600 || r.time_per_move === 0) {
                         item.speed = "Correspondence";
-                    } else if (r.time_per_move < 10 && r.time_per_move > 0) {
+                    } else if (r.time_per_move < 15 && r.time_per_move > 0) {
                         item.speed = "Blitz";
-                    } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
+                    } else if (r.time_per_move < 3600 && r.time_per_move >= 15) {
                         item.speed = "Live";
                     } else {
                         console.log("time_per_move < 0");
