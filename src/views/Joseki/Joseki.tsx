@@ -152,7 +152,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             position_description: "",
             variation_label: '_',
             current_move_category: "",
-            pass_available: false,   // Whether pass is one of the joseki moves or not
+            pass_available: false,   // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
             contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
 
@@ -505,7 +505,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         next_moves.forEach((option) => {
             new_options = {};
             if (option['placement'] === 'pass') {
-                pass_available = true;
+                pass_available = option["category"].toLowerCase(); // this is used as a css style for the button
             }
             else {
                 const label = option['variation_label'];
@@ -865,7 +865,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
-        const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
+        const tenuki_type = (this.state.pass_available && this.state.mode !== PageMode.Play && this.state.move_string !== "") ?
+            this.state.pass_available : "";
 
         const count_details = this.state.count_details_open ?
             <React.Fragment>
@@ -900,9 +901,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
                             <button
-                                className={"pass-button" + (show_pass_available ? " pass-available" : "")}
+                                className={"pass-button " + tenuki_type}
                                 onClick={this.doPass}>
-                                Pass
+                                Tenuki
                             </button>
                             <div className="throbber-spacer">
                                 <Throbber throb={this.state.throb}/>
