@@ -654,7 +654,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
                 this.next_moves = [];
                 this.setState({
-                    position_description: "## Joseki",
+                    position_description: "", // Blank default description
                     current_move_category: "new",
                     child_count: 0,
                     tag_counts: [],
