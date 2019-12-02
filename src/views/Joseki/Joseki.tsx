@@ -41,7 +41,7 @@ import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
-const position_url = (node_id, variation_filter) => {
+const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter !== null) {
         if (variation_filter.contributor !== null) {
@@ -53,6 +53,9 @@ const position_url = (node_id, variation_filter) => {
         if (variation_filter.source !== null) {
             position_url += "&sfilterid=" + variation_filter.source;
         }
+    }
+    if (mode !== null) {
+        position_url += "&mode=" + mode;
     }
     return position_url;
 };
@@ -149,7 +152,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             position_description: "",
             variation_label: '_',
             current_move_category: "",
-            pass_available: false,   // Whether pass is one of the joseki moves or not
+            pass_available: false,   // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
             contributor_id: -1,     // the person who created the node that we are displaying
             child_count: null,
 
@@ -375,7 +378,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         else {
             // console.log("fetching position for node", node_id);
-            fetch(position_url(node_id, variation_filter), {
+            fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers
             })
@@ -502,7 +505,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         next_moves.forEach((option) => {
             new_options = {};
             if (option['placement'] === 'pass') {
-                pass_available = true;
+                pass_available = option["category"].toLowerCase(); // this is used as a css style for the button
             }
             else {
                 const label = option['variation_label'];
@@ -835,7 +838,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         .then(body => {
             // console.log("Tags Count GET:", body);
             let tags = [];
-            if (body.tags !== null) {
+            if (body.tags != null) {
                 tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
             }
             let counts = [];
@@ -862,7 +865,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
-        const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
+        const tenuki_type = (this.state.pass_available && this.state.mode !== PageMode.Play && this.state.move_string !== "") ?
+            this.state.pass_available : "";
 
         const count_details = this.state.count_details_open ?
             <React.Fragment>
@@ -873,7 +877,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             </React.Fragment>
             : "";
 
-        const tags = this.state.tags === null ? "" :
+        const tags = this.state.tags == null ? "" :
             this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
             <div className="position-tag" key={idx}>
                 <span>{tag['description']}</span>
@@ -897,9 +901,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
                             <button
-                                className={"pass-button" + (show_pass_available ? " pass-available" : "")}
+                                className={"pass-button " + tenuki_type}
                                 onClick={this.doPass}>
-                                Pass
+                                Tenuki
                             </button>
                             <div className="throbber-spacer">
                                 <Throbber throb={this.state.throb}/>
@@ -1272,12 +1276,15 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
-            this.setState({extra_throb: false});
             // console.log("Server response: ", body);
             this.extractAuditLog(body);
         }).catch((r) => {
             console.log("Audits GET failed:", r);
+        // tslint:disable-next-line:no-floating-promises
+        }).finally(() => {
+            this.setState({extra_throb: false});
         });
+
         this.setState({ extra_info_selected: "audit-log" });
     }
 

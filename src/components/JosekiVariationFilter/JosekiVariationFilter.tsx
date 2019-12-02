@@ -84,7 +84,9 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         .then(res => res.json())
         .then(body => {
             // console.log("Server response to source GET:", body);
-            this.setState({source_list: body.sources});
+            if (body.sources != undefined) { // Sentry reports that we somehow receive a body with undefined source_list!?
+                this.setState({source_list: body.sources});
+            }
         }).catch((r) => {
             console.log("Sources GET failed:", r);
         });

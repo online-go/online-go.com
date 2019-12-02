@@ -146,6 +146,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }
         else {
             // There are no more reversions to be done, so reload the audit log to show the ones that were done
+            //console.log("...reversions done.")
             this.reloadData();
             this.props.loadPositionToBoard("root"); // and reset the board, incase the status of what is displayed changed
         }
@@ -271,6 +272,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
          audit_type_selections.unshift(<option key={-1} value=""></option>);
 
+        const reversions = Array.from(this.state.reversions.values());
+
         return (
             <div className="audit-container">
                 {this.props.user_can_edit &&
@@ -299,8 +302,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     }
                 </div>
                 }
-                {this.state.reversions.size > 0 &&
-                    [...this.state.reversions.values()].map((reversion, idx) => (<div key={idx}>{reversion}</div>))
+                {reversions.length > 0 &&
+                    reversions.map((reversion, idx) => (<div key={idx}>{reversion}</div>))
                 }
                 <AuditTable
                     showPaginationBottom

@@ -27,21 +27,33 @@ interface Events {
 }
 
 interface JosekiStatsModalProperties {
-    daily_page_visits: Array<{date: string, pageVisits: number}>;
+    daily_page_visits: Array<{date: string, pageVisits: number,
+        explorePageVisits: number, playPageVisits: number, guestPageVisits: number}>;
 }
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
     render() {
+        //console.log(this.props.daily_page_visits);
         const visits = this.props.daily_page_visits.map((day, index) => (
             <div className="daily-result" key={index}>
                 <div className="result-date">{moment(day.date).format("ddd MMM Do")}:</div>
                 <div className="result-count">{day.pageVisits}</div>
+                <div className="result-count">{day.explorePageVisits}</div>
+                <div className="result-count">{day.playPageVisits}</div>
+                <div className="result-count">{day.guestPageVisits}</div>
             </div>
         ));
 
         return (
             <div className="Modal JosekiStatsModal" ref="modal">
-                <div className="header">{_("Joseki Explorer Stats - Daily Page Visits")}</div>
+                <div className="header">{_("Joseki Explorer Stats - Daily Position Loads")}</div>
+                <div className="daily-result">
+                    <div className="result-date"></div>
+                    <div className="result-count">Total</div>
+                    <div className="result-count">Explore</div>
+                    <div className="result-count">Play</div>
+                    <div className="result-count">Guests</div>
+                </div>
                 {visits}
             </div>
         );
