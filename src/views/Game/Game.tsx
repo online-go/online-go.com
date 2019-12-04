@@ -1778,12 +1778,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }
     clearAnalysisDrawing() {
-        swal({"text": _("Clear all pen marks?"), showCancelButton: true})
-        .then(() => {
-            this.goban.syncReviewMove({"clearpen": true});
-            this.goban.clearAnalysisDrawing();
-        })
-        .catch(() => 0);
+        this.goban.syncReviewMove({"clearpen": true});
+        this.goban.clearAnalysisDrawing();
     }
     setChatLog = (chat_log) => {
         this.setState({chat_log: chat_log});
