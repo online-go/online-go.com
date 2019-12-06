@@ -103,7 +103,7 @@ export function makeRatingEntry(d:any):RatingEntry {
         if (played_black) {
             effective_rating += get_handicap_adjustment(effective_rating, handicap);
         } else {
-            effective_opponent_rating += get_handicap_adjustment(effective_opponent_rating, d.handicap);
+            effective_opponent_rating += get_handicap_adjustment(effective_opponent_rating, handicap);
         }
     }
 
