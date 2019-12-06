@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {get_handicap_adjustment} from 'rank_utils';
+import {get_handicap_adjustment, effective_outcome, EffectiveOutcome} from 'rank_utils';
 
 export class RatingEntry {
     ended: Date;
@@ -88,8 +88,8 @@ export class RatingEntry {
 
 export function makeRatingEntry(d:any):RatingEntry {
     let played_black = parseInt(d.played_black) === 1;
-    let effective_rating = parseFloat(d.rating);
-    let effective_opponent_rating = parseFloat(d.opponent_rating);
+    let rating = parseFloat(d.rating);
+    let opponent_rating = parseFloat(d.opponent_rating);
     let handicap = parseInt(d.handicap);
     let won = parseInt(d.outcome) === 2 ? 1 : 0;
     let lost = 1 - won;
@@ -99,14 +99,13 @@ export function makeRatingEntry(d:any):RatingEntry {
         lost = 0;
     }
 
-    if (handicap > 0) {
-        if (played_black) {
-            effective_rating += get_handicap_adjustment(effective_rating, handicap);
-        } else {
-            effective_opponent_rating += get_handicap_adjustment(effective_opponent_rating, d.handicap);
-        }
+    let outcome: EffectiveOutcome;
+    if (played_black) {
+        outcome = effective_outcome(rating, opponent_rating, handicap);
     }
-
+    else {
+        outcome = effective_outcome(opponent_rating, rating, handicap);
+    }
 
     return new RatingEntry({
         ended              : new Date(parseInt(d.ended) * 1000),
@@ -126,9 +125,9 @@ export function makeRatingEntry(d:any):RatingEntry {
         count              : d.opponent_id > 0 ? 1 : 0,
         wins               : won,
         losses             : lost,
-        strong_wins        : effective_rating < effective_opponent_rating ? won : 0,
-        strong_losses      : effective_rating < effective_opponent_rating ? lost : 0,
-        weak_wins          : effective_rating >= effective_opponent_rating ? won : 0,
-        weak_losses        : effective_rating >= effective_opponent_rating ? lost : 0,
+        strong_wins        : (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? won : 0,
+        strong_losses      : (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? lost : 0,
+        weak_wins          : (played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger) ? won : 0,
+        weak_losses        : (played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger) ? lost : 0,
     });
 }
