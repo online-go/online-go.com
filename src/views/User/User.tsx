@@ -28,7 +28,7 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
+import {longRankString, rankString, getUserRating, humble_rating, effective_outcome} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
@@ -547,24 +547,25 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
+                let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
                 if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
                     item.result_class = "library-tie-result";
                 } else if (item.white_won) {
-                  if (item.white.id === this.user_id && r.ranked) {
-                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
-                  } else if (r.ranked) {
-                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
-                  } else {
-                    item.result_class = item.white.id === this.user_id ? "library-won-result-unranked" : "library-lost-result-unranked";
-                  }
+                    if (item.white.id === this.user_id && r.ranked) {
+                        item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                    } else if (r.ranked) {
+                        item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-stronger" : "library-lost-result-vs-weaker";
+                    } else {
+                        item.result_class = item.white.id === this.user_id ? "library-won-result-unranked" : "library-lost-result-unranked";
+                    }
                 } else {
-                  if (item.white.id === this.user_id && r.ranked) {
-                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
-                  } else if (r.ranked) {
-                    item.result_class = item.historical.white.ratings.overall.rating > item.historical.black.ratings.overall.rating ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
-                  } else {
-                    item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
-                  }
+                    if (item.white.id === this.user_id && r.ranked) {
+                        item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                    } else if (r.ranked) {
+                        item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-stronger" : "library-won-result-vs-weaker";
+                    } else {
+                        item.result_class = item.white.id === this.user_id ? "library-lost-result-unranked" : "library-won-result-unranked";
+                    }
                 }
 
                 if ("time_control_parameters" in r) {
