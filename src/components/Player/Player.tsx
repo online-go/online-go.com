@@ -27,6 +27,7 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
+import * as preferences from "preferences";
 import online_status from "online_status";
 import {pgettext} from "translate";
 
@@ -241,7 +242,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 rank_text = rating.bounded_rank_label;
             }
 
-            rank = <span className='Player-rank'>[{rank_text}]</span>;
+            if (!preferences.get("hide-ranks")) {
+                rank = <span className='Player-rank'>[{rank_text}]</span>;
+            }
         }
 
         if (props.flare) {

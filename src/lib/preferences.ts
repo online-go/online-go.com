@@ -59,6 +59,7 @@ let defaults = {
     "show-all-challenges": false,
     "show-move-numbers": true,
     "show-offline-friends": true,
+    "hide-ranks": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
     "sound-enabled": true,
