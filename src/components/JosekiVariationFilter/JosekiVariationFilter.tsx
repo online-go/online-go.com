@@ -58,9 +58,9 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             body.forEach((id, idx) => {
                 // console.log("Looking up player", id, idx);
                 const player = player_cache.lookup(id);
-                contributor_list[idx] = {resolved: player !== null, player: player === null ? id : player};
+                contributor_list[idx] = {resolved: player != null, player: player == null ? id : player};
 
-                if (player === null) {
+                if (player == null) {
                     // console.log("fetching player", id, idx);
                     player_cache.fetch(id).then((p) => {
                         // console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
@@ -94,7 +94,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
     onTagChange = (e) => {
         // console.log("Variation filter update:", e);
-        const tags = (e === null || e.length === 0) ? null : e.map(t => t.value);
+        const tags = (e == null || e.length === 0) ? null : e.map(t => t.value);
 
         const new_filter = {...this.state.selected_filter, tags: tags};
 
@@ -138,10 +138,10 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         let sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
         sources.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
 
-        const current_contributor = (this.state.selected_filter.contributor === null) ?
+        const current_contributor = (this.state.selected_filter.contributor == null) ?
              'none' :this.state.selected_filter.contributor;
 
-        const current_source = (this.state.selected_filter.source === null) ?
+        const current_source = (this.state.selected_filter.source == null) ?
              'none' :this.state.selected_filter.source;
 
         return (

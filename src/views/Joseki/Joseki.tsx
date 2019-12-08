@@ -43,18 +43,18 @@ const server_url = data.get("joseki-url", "/godojo/");
 
 const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
-    if (variation_filter !== null) {
-        if (variation_filter.contributor !== null) {
+    if (variation_filter != null) {
+        if (variation_filter.contributor != null) {
             position_url += "&cfilterid=" + variation_filter.contributor;
         }
-        if (variation_filter.tags !== null && variation_filter.tags.length !== 0) {
+        if (variation_filter.tags != null && variation_filter.tags.length !== 0) {
             position_url += "&tfilterid=" + variation_filter.tags;
         }
-        if (variation_filter.source !== null) {
+        if (variation_filter.source != null) {
             position_url += "&sfilterid=" + variation_filter.source;
         }
     }
-    if (mode !== null) {
+    if (mode != null) {
         position_url += "&mode=" + mode;
     }
     return position_url;
@@ -582,7 +582,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move !== null ?
+        const placement = move != null ?
             move.x !== -1 ?
                 GoMath.prettyCoords(move.x, move.y, this.goban.height) :
                 'pass' :
@@ -924,11 +924,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             {this.state.position_type !== "new" &&
                             <div className="position-other-info">
                                 {tags}
-                                {this.state.joseki_source !== null && this.state.joseki_source.url.length > 0 &&
+                                {this.state.joseki_source != null && this.state.joseki_source.url.length > 0 &&
                                 <div className="position-joseki-source">
                                     <span>{_("Source")}:</span><a href={this.state.joseki_source.url}>{this.state.joseki_source.description}</a>
                                 </div>}
-                                {this.state.joseki_source !== null && this.state.joseki_source.url.length === 0 &&
+                                {this.state.joseki_source != null && this.state.joseki_source.url.length === 0 &&
                                 <div className="position-joseki-source">
                                     <span>{_("Source")}:</span><span>{this.state.joseki_source.description}</span>
                                 </div>}
@@ -955,7 +955,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             </div>
                         </div>
                         <div className="continuations-pane">
-                            {(this.state.child_count !== null && this.state.child_count !== 0) &&
+                            {(this.state.child_count != null && this.state.child_count !== 0) &&
                             <React.Fragment>
                                 <button className="position-child-count" onClick={this.toggleContinuationCountDetail}>
                                     {interpolate(_("This position leads to {{count}} others"), {count: this.state.child_count})}
@@ -977,7 +977,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                                 </div>
                             </React.Fragment>
                             }
-                            {(this.state.child_count === null || this.state.child_count === 0) &&
+                            {(this.state.child_count == null || this.state.child_count === 0) &&
                                 <React.Fragment>
                                 <div className="position-child-count">
                                     {_("This position has no continuations") + "."}
@@ -1060,7 +1060,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
-                    joseki_source_id={this.state.joseki_source !== null ? this.state.joseki_source.id : 'none'}
+                    joseki_source_id={this.state.joseki_source != null ? this.state.joseki_source.id : 'none'}
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
@@ -1216,7 +1216,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             });
         }
         else {
-            if (this.props.position_id !== null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
+            if (this.props.position_id != null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
                 this.showComments();
             }
         }
@@ -1253,7 +1253,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 comment: comment.comment
             }
         ));
-        const forum_thread_url = commentary_dto.forum_thread_id === null ? "" :
+        const forum_thread_url = commentary_dto.forum_thread_id == null ? "" :
             ("https://forums.online-go.com/t/" + commentary_dto.forum_thread_id);
 
         this.setState({
@@ -1325,9 +1325,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     render = () => {
         const filter_active =
-            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
-            this.props.current_filter.contributor !== null ||
-            this.props.current_filter.source !== null);
+            ((this.props.current_filter.tags != null && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor != null ||
+            this.props.current_filter.source != null);
 
         let description = applyJosekiMarkdown(this.props.description);
 
@@ -1445,9 +1445,9 @@ class PlayPane extends React.Component<PlayProps, any> {
     }
 
     componentDidMount = () => {
-        if (this.props.current_filter.contributor === null &&
-            this.props.current_filter.tags === null &&
-            this.props.current_filter.source === null) {
+        if (this.props.current_filter.contributor == null &&
+            this.props.current_filter.tags == null &&
+            this.props.current_filter.source == null) {
             // Set up a Joseki filter by default
             this.props.set_variation_filter({
                 tags:[this.props.joseki_tag_id],
@@ -1490,9 +1490,9 @@ class PlayPane extends React.Component<PlayProps, any> {
         // console.log("Play render", this.props.move_type_sequence);
 
         const filter_active =
-            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
-            this.props.current_filter.contributor !== null ||
-            this.props.current_filter.source !== null);
+            ((this.props.current_filter.tags != null && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor != null ||
+            this.props.current_filter.source != null);
 
         return (
             <div className="play-columns">
@@ -1529,10 +1529,10 @@ class PlayPane extends React.Component<PlayProps, any> {
                                 <h4>{_("This Sequence:")}</h4>
                                 <div>{_("Mistakes so far")}: {this.props.joseki_errors}</div>
 
-                                {this.props.joseki_successes !== null &&
+                                {this.props.joseki_successes != null &&
                                     <div>{_("Correct plays of this position")}: {this.props.joseki_successes}</div>
                                 }
-                                {this.props.joseki_best_attempt !== null && this.props.joseki_best_attempt !== 0 &&
+                                {this.props.joseki_best_attempt != null && this.props.joseki_best_attempt !== 0 &&
                                     <div>
                                     {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
                                      + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
@@ -1589,7 +1589,7 @@ class EditPane extends React.Component<EditProps, any> {
             available_tag_list: [],
             // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
             // ('valueKey' and 'labelKey' aren't working for me)
-            tags: (this.props.tags === null) ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
+            tags: (this.props.tags == null) ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
             variation_label: this.props.variation_label || '1'
         };
 
@@ -1617,7 +1617,7 @@ class EditPane extends React.Component<EditProps, any> {
                 move_type: nextProps.category === "new" ? Object.keys(MoveCategory)[0] : nextProps.category,
                 new_description: nextProps.description,
                 joseki_source: nextProps.joseki_source_id,
-                tags: nextProps.tags === null ? [] : nextProps.tags.map((t) => ({label: t.description, value: t.id})),
+                tags: nextProps.tags == null ? [] : nextProps.tags.map((t) => ({label: t.description, value: t.id})),
                 variation_label: nextProps.variation_label || '1'
             };
         }
@@ -1661,7 +1661,7 @@ class EditPane extends React.Component<EditProps, any> {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
 
-        if (description === null) { // I don't see how, but Sentry logs seem to imply there is a way!
+        if (description == null) { // I don't see how, but Sentry logs seem to imply there is a way!
             return [];
         }
 
