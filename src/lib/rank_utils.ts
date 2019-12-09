@@ -16,6 +16,7 @@
  */
 
 import {_, interpolate, pgettext} from "translate";
+import { Interface } from "readline";
 
 interface IRankInfo {
     rank: number;
@@ -269,3 +270,33 @@ export function allRanks() { return rankList().concat( proRankList()); }
 export function humble_rating(rating:number, deviation:number):number {
     return rating - ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) - PROVISIONAL_RATING_CUTOFF) / (350 - PROVISIONAL_RATING_CUTOFF)) * deviation;
 }
+
+export interface EffectiveOutcome {
+    black_real_rating: number;
+    white_real_rating: number;
+    black_real_stronger: boolean;
+    white_real_stronger: boolean;
+    handicap: number;
+    black_effective_rating: number;
+    white_effective_rating: number;
+    black_effective_stronger: boolean;
+    white_effective_stronger: boolean;
+}
+
+export function effective_outcome(black_rating: number, white_rating: number, handicap: number):EffectiveOutcome {
+    //let res: EffectiveOutcome = new EffectiveOutcome;
+    let black_effective_rating: number = black_rating + get_handicap_adjustment(black_rating, handicap);
+    let white_effective_rating: number = white_rating;
+    return {
+        black_real_rating: black_rating,
+        white_real_rating: white_rating,
+        handicap: handicap,
+        black_effective_rating: black_effective_rating,
+        white_effective_rating: white_effective_rating,
+        black_real_stronger: black_rating > white_rating,
+        black_effective_stronger: black_effective_rating > white_effective_rating,
+        white_real_stronger: white_rating >= black_rating,
+        white_effective_stronger: white_effective_rating >= black_effective_rating
+    };
+}
+
