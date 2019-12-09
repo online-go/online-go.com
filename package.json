@@ -49,7 +49,7 @@
     "webpack-bundle-analyzer": "^3.5.2",
     "webpack-cli": "^3.3.9",
     "xgettext-js": "^1.1.0",
-    "yarn": "^1.19.1"
+    "yarn": "^1.21.0"
   },
   "dependencies": {
     "@sentry/browser": "^5.7.1",
