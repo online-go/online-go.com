@@ -83,12 +83,18 @@ const applyJosekiMarkdown = (markdown: string): string => {
     return result;
 };
 
+const getOGSJWT = (): string => {
+    return data.get('config').user_jwt;
+};
+
 // Headers needed to talk to the godojo server.
-let godojo_headers = {        // note: user JWT is added to this later
+const godojo_headers = (): {} => ({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Godojo-Auth-Token': 'foofer'
-};
+    'X-Godojo-Auth-Token': 'foofer',
+    'X-User-Info' : getOGSJWT()       // re-load this every time, in case they change identity via login/logout
+    }
+);
 
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
@@ -213,8 +219,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     componentDidMount = () => {
-        godojo_headers["X-User-Info"] = this.getOGSJWT();
-
         this.getUserJosekiPermissions();
 
         // When we go into Play mode we need to know what tag is the Joseki one
@@ -261,7 +265,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
             mode: 'cors',
-            headers: godojo_headers   // server gets user id from here
+            headers: godojo_headers()   // server gets user id from here
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -281,7 +285,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
         fetch(server_url + "tag?group=0&seq=0", {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -293,10 +297,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }).catch((r) => {
             console.log("Joseki tag GET failed:", r);
         });
-    }
-
-    getOGSJWT = () => {
-        return data.get('config').user_jwt;
     }
 
     resetJosekiSequence = (pos: String) => {
@@ -328,7 +328,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         fetch(server_url + "playrecord/", {
             method: 'put',
             mode: 'cors',
-            headers: godojo_headers,
+            headers: godojo_headers(),
             body: JSON.stringify({
                 position_id: node_id,
                 errors: this.state.joseki_errors
@@ -380,7 +380,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // console.log("fetching position for node", node_id);
             fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
-                headers: godojo_headers
+                headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
@@ -759,7 +759,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({extra_throb: true});
         fetch(results_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -832,7 +832,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         fetch(tagscount_url(node_id), {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(res => res.json())
         .then(body => {
@@ -1024,7 +1024,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
-                    godojo_headers={godojo_headers}
+                    godojo_headers={godojo_headers()}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
@@ -1097,7 +1097,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             fetch(position_url(this.state.current_node_id, null), {
                 method: 'put',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: JSON.stringify({
                     description: description,
                     variation_label: variation_label,
@@ -1122,7 +1122,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             fetch(server_url + "positions/", {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
                     category: move_type })
@@ -1137,7 +1137,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 fetch(position_url(this.state.current_node_id, null), {
                     method: 'put',
                     mode: 'cors',
-                    headers: godojo_headers,
+                    headers: godojo_headers(),
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
@@ -1231,7 +1231,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
         fetch(comments_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -1272,7 +1272,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.setState({extra_throb: true});
         fetch(audits_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -1305,7 +1305,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             fetch(comment_url, {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: this.state.next_comment
             })
             .then(res => res.json())
@@ -1400,7 +1400,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
+                                    godojo_headers={godojo_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1548,7 +1548,7 @@ class PlayPane extends React.Component<PlayProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
+                                    godojo_headers={godojo_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1596,7 +1596,7 @@ class EditPane extends React.Component<EditProps, any> {
         // Get the list of joseki sources
         fetch(joseki_sources_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(res => res.json())
         .then(body => {
@@ -1695,7 +1695,7 @@ class EditPane extends React.Component<EditProps, any> {
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
-            headers: godojo_headers,
+            headers: godojo_headers(),
             body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
         })
         .then(res => res.json())
@@ -1770,7 +1770,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <div className="tag-edit">
                         <div>{_("Tags")}:</div>
                         <JosekiTagSelector
-                            godojo_headers={godojo_headers}
+                            godojo_headers={godojo_headers()}
                             tag_list_url = {server_url + "tags"}
                             selected_tags= {this.state.tags}
                             on_tag_update={this.onTagChange}
