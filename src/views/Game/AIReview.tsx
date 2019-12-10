@@ -255,11 +255,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-    startNewAIReview(analysis_type:"fast" | "full" = "full") {
-    console.log('starting new ai review');
+    startNewAIReview(analysis_type:"fast" | "full", engine:"leela_zero" | "katago") {
         post(`games/${this.getGameId()}/ai_reviews`, {
-            "engine": "leela_zero",
             "type": analysis_type,
+            "engine": engine,
         })
         .then((res) => swal("Analysis started"))
         .catch(errorAlerter);
@@ -612,8 +611,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         autoBlur={true}
                         isSearchable={false}
                         components = {{
-                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                                <div ref={innerRef} {...innerProps}
+                            Option: ({innerRef, innerProps, isFocused, data, getValue}) => {
+                                let value = getValue();
+                                let isSelected = value && value[0].id === data.id;
+
+                                return <div ref={innerRef} {...innerProps}
                                     className={'ai-review-option-container '
                                         + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}
                                     >
@@ -630,8 +632,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                             {moment(new Date(data.date)).format('lll')}
                                         </div>
                                     </div>
-                                </div>
-                            ),
+                                </div>;
+                            },
                             SingleValue: ({data}) => (
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
@@ -659,7 +661,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <components.MenuList {...props}>
                                     {props.children}
                                     <div className='ai-review-new-review'>
-                                        <button onClick={() => this.startNewAIReview()} className='primary'>{_("Start new AI review")}</button>
+                                        <button onClick={() => this.startNewAIReview("full", "katago")}>
+                                            <i className='fa fa-plus' /> KataGo
+                                        </button>
+                                        <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
+                                            <i className='fa fa-plus' /> Leela Zero
+                                        </button>
                                     </div>
                                 </components.MenuList>
                             ),
