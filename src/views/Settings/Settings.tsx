@@ -99,6 +99,7 @@ export class Settings extends React.PureComponent<{}, any> {
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
             dock_delay: preferences.get("dock-delay"),
             show_tournament_indicator: preferences.get("show-tournament-indicator"),
+            hide_ranks: preferences.get("hide-ranks"),
             disable_ai_review: !preferences.get("ai-review-enabled"),
             disable_variations_in_chat: !preferences.get("variations-in-chat-enabled"),
         };
@@ -314,6 +315,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setShowTournamentIndicator = (ev) => {
         preferences.set("show-tournament-indicator", ev.target.checked),
         this.setState({show_tournament_indicator: preferences.get("show-tournament-indicator")});
+    }
+    setHideRanks = (ev) => {
+        preferences.set("hide-ranks", ev.target.checked),
+        this.setState({hide_ranks: preferences.get("hide-ranks")});
     }
     setUnicodeFilterUsernames = (ev) => {
         preferences.set("unicode-filter", ev.target.checked),
@@ -572,6 +577,11 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="show-tournament-indicator" type="checkbox" checked={this.state.show_tournament_indicator} onChange={this.setShowTournamentIndicator} />
                             </dd>
+                            <dt><label htmlFor="hide-ranks">{_("Hide ranks and ratings")}</label></dt>
+                            <dd>
+                                <input id="hide-ranks" type="checkbox" checked={this.state.hide_ranks} onChange={this.setHideRanks} />
+                            </dd>
+
 
                             {(user.is_moderator || null) &&
                                 <dt><label htmlFor="incident-report-notifications">{_("Notify me when an incident is submitted for moderation")}</label></dt>

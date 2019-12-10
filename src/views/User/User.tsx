@@ -27,6 +27,7 @@ import {Card} from 'material';
 import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
+import * as preferences from "preferences";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating, effective_outcome} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
@@ -107,6 +108,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             selected_speed: 'overall',
             selected_size: 0,
             resolved: false,
+            temporary_show_ratings: false,
         };
     }
 
@@ -225,6 +227,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             state.ip = null;
             state.host_ip_settings = null;
          }
+        state.temporary_show_ratings = false;
 
         this.setState(state);
         this.updateHostIpSettings();
@@ -404,6 +407,9 @@ export class User extends React.PureComponent<UserProperties, any> {
             this.setState({editing: true});
         }
     }
+    toggleRatings = () => {
+        this.setState((state) => ({temporary_show_ratings: !state.temporary_show_ratings}));
+    }
     saveCountry = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {country: ev.target.value})});
     }
@@ -507,6 +513,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
         let editing = this.state.editing;
+        let showRatings = this.state.temporary_show_ratings;
 
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
@@ -664,6 +671,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 : <span className='username'><Player user={user}/></span>
                             }
 
+                            {preferences.get("hide-ranks") && this.state.temporary_show_ratings &&
+                                 <span className='Player-rank'>{'[' + getUserRating(user).bounded_rank_label + ']'}</span>
+                            }
+
                             {editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
@@ -746,7 +757,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>
 
 
-                        {(!user.professional || global_user.id === user.id) &&
+                        {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                             <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>{_("Ratings")}</h3>
                                 {this.renderRatingGrid()}
@@ -758,12 +769,16 @@ export class User extends React.PureComponent<UserProperties, any> {
             </div>
 
 
-            {(!user.professional || global_user.id === user.id) &&
+            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
                         <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
                     </div>
                 </div>
+            }
+
+            { (preferences.get("hide-ranks")) &&
+                <button className="danger toggle-ratings" onClick={this.toggleRatings}>{showRatings ? _("Hide ratings") : _("Show ratings")}</button>
             }
 
             <div className="row">
