@@ -69,6 +69,7 @@
     "@types/sweetalert": "^1.1.27",
     "d3": "^5.12.0",
     "eventemitter3": "^4.0.0",
+    "js-noise": "^0.1.3",
     "jsonwebtoken": "^8.5.1",
     "markdown-it": "^8.4.2",
     "moment": "^2.24.0",

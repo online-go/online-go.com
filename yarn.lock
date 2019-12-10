@@ -792,6 +792,11 @@ ajv@^6.1.0, ajv@^6.10.2:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
+alea@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/alea/-/alea-0.0.9.tgz#f738cb45f83430069f45cf69ccbf312dd57a9e1a"
+  integrity sha1-9zjLRfg0MAafRc9pzL8xLdV6nho=
+
 align-text@^0.1.1, align-text@^0.1.3:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/align-text/-/align-text-0.1.4.tgz#0cd90a561093f35d0a99256c22b7069433fad117"
@@ -4087,6 +4092,13 @@ isomorphic-fetch@^2.1.1:
   dependencies:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
+
+js-noise@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/js-noise/-/js-noise-0.1.3.tgz#ff9075ab83618771bde27b3ac85a0038ac07aa97"
+  integrity sha1-/5B1q4Nhh3G94ns6yFoAOKwHqpc=
+  dependencies:
+    alea "0.0.9"
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
