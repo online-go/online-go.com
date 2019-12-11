@@ -138,7 +138,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 this.setSelectedAIReview(lst[0]);
             } else {
                 post(`games/${game_id}/ai_reviews`, {
-                    'engine': 'leela_zero',
+                    'engine': 'katago',
                     'type': 'auto',
                 })
                 .then(res => {
@@ -624,8 +624,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         <div>
                                             {interpolate(
                                                 pgettext("AI Review technical information",
-                                                    "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."),
-                                                data)
+                                                    "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."), {
+                                                        engine: engineName(data.engine),
+                                                        engine_version: data.engine_version,
+                                                        network_size: data.network_size,
+                                                        network: data.network,
+                                                    }
+                                                )
                                             }
                                         </div>
                                         <div className='date'>
@@ -657,19 +662,25 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     {children}
                                 </div>
                             ),
-                            MenuList: (props) => (
-                                <components.MenuList {...props}>
-                                    {props.children}
-                                    <div className='ai-review-new-review'>
-                                        <button onClick={() => this.startNewAIReview("full", "katago")}>
-                                            <i className='fa fa-plus' /> KataGo
-                                        </button>
-                                        <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
-                                            <i className='fa fa-plus' /> Leela Zero
-                                        </button>
-                                    </div>
-                                </components.MenuList>
-                            ),
+                            MenuList: (props) => {
+                                let goban = this.props.game.goban;
+
+                                return (
+                                    <components.MenuList {...props}>
+                                        {props.children}
+                                        <div className='ai-review-new-review'>
+                                            <button onClick={() => this.startNewAIReview("full", "katago")}>
+                                                <i className='fa fa-plus' /> KataGo
+                                            </button>
+                                            {((goban.width === 19 && goban.height == 19) || null) &&
+                                                <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
+                                                    <i className='fa fa-plus' /> Leela Zero
+                                                </button>
+                                            }
+                                        </div>
+                                    </components.MenuList>
+                                );
+                            },
                         }}
                         />
                 }

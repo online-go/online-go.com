@@ -1838,7 +1838,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     force_ai_review(analysis_type:"fast" | "full") {
         post(`games/${this.game_id}/ai_reviews`, {
-            "engine": "leela_zero",
+            "engine": "katago",
             "type": analysis_type,
         })
         .then((res) => swal("Analysis started"))
@@ -2441,8 +2441,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.goban
             && this.goban.engine
             && this.goban.engine.phase === "finished"
-            && this.goban.engine.width === 19
-            && this.goban.engine.height === 19
+            && (
+                (this.goban.engine.width === 19 && this.goban.engine.height === 19)
+                || (this.goban.engine.width === 13 && this.goban.engine.height === 13)
+                || (this.goban.engine.width === 9 && this.goban.engine.height === 9)
+            )
         ) {
             return <AIReview game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
         }
@@ -2600,8 +2603,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         let sgf_url = null;
         let sgf_with_comments_url = null;
+        let sgf_with_ai_review_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
+            sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=716`);
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
             sgf_with_comments_url = api1(`reviews/${this.review_id}/sgf`);
@@ -2673,6 +2678,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                     : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
+                {(sgf_download_enabled && sgf_with_ai_review_url)
+                    && <a href={sgf_with_ai_review_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with AI Review")}</a>
                 }
                 {(sgf_download_enabled && sgf_with_comments_url)
                     && <a href={sgf_with_comments_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with comments")}</a>
