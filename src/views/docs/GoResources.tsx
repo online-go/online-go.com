@@ -138,7 +138,7 @@ export let GoResources = (props) => {
                         </span>
                     </span>,
 
-                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
+                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up_v1.2.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Seong-June Kim</span>
                     </span>
