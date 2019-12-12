@@ -48,6 +48,7 @@ interface AIReviewProperties {
     game: Game;
     move: MoveTree;
     hidden: boolean;
+    onAIReviewSelected: (ai_review:JGOFAIReview) => void;
 }
 
 interface AIReviewState {
@@ -60,6 +61,9 @@ interface AIReviewState {
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
+    // this will be the full ai review we are working with, as opposed to
+    // selected_ai_review which will just contain some metadata from the
+    // postgres database
     ai_review?:JGOFAIReview;
 
     constructor(props:AIReviewProperties) {
@@ -163,8 +167,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
         .then((ai_review:JGOFAIReview) => {
-            console.log("AI Review", ai_review);
             this.ai_review = ai_review;
+            this.props.onAIReviewSelected(ai_review);
             this.syncAIReview();
         })
         .catch(errorLogger);
@@ -253,6 +257,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else {
             this.clearAIReview();
         }
+        this.props.onAIReviewSelected(ai_review);
     }
 
     startNewAIReview(analysis_type:"fast" | "full", engine:"leela_zero" | "katago") {
@@ -672,7 +677,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                             <button onClick={() => this.startNewAIReview("full", "katago")}>
                                                 <i className='fa fa-plus' /> KataGo
                                             </button>
-                                            {((goban.width === 19 && goban.height == 19) || null) &&
+                                            {((goban.width === 19 && goban.height === 19) || null) &&
                                                 <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
                                                     <i className='fa fa-plus' /> Leela Zero
                                                 </button>

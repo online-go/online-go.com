@@ -88,6 +88,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     creator_id: number;
     ladder_id: number;
     tournament_id: number;
+    ai_review_selected: string | null = null;
     review_id: number;
     goban_div: HTMLDivElement;
     goban: Goban;
@@ -151,7 +152,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
             ai_review_enabled: preferences.get('ai-review-enabled'),
-            show_score_breakdown: false
+            show_score_breakdown: false,
+            selected_ai_review_id: null,
         };
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
@@ -2447,7 +2449,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 || (this.goban.engine.width === 9 && this.goban.engine.height === 9)
             )
         ) {
-            return <AIReview game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
+            return <AIReview
+                onAIReviewSelected={r => this.setState({selected_ai_review_id: r?.id})}
+                game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
         }
         return null;
     }
@@ -2606,7 +2610,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let sgf_with_ai_review_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
-            sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=716`);
+            if (this.state.selected_ai_review_id) {
+                sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=${this.state.selected_ai_review_id}`);
+            }
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
             sgf_with_comments_url = api1(`reviews/${this.review_id}/sgf`);
