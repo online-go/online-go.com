@@ -33,6 +33,7 @@ import {
     JGOFAIReview,
     JGOFAIReviewMove,
     JGOFIntersection,
+    JGOFNumericPlayerColor,
     ColoredCircle,
 } from 'goban';
 
@@ -168,6 +169,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
         .then((ai_review:JGOFAIReview) => {
             this.ai_review = ai_review;
+            sanityCheck(this.ai_review);
             this.props.onAIReviewSelected(ai_review);
             this.syncAIReview();
         })
@@ -204,12 +206,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         for (let k in ai_review.moves) {
             let move = ai_review.moves[k];
-            ai_review.win_rates[move.move_number] = move.pre_move_win_rate;
-
-            let next_move = ai_review.moves[parseInt(k) + 1];
-            if (next_move) {
-                move.post_move_win_rate = next_move.pre_move_win_rate;
-            }
+            ai_review.win_rates[move.move_number] = move.win_rate;
         }
 
         /* TODO: Blunder count & top3 move array */
@@ -271,6 +268,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     ai_review_update_metadata = (data:any) => {
         this.ai_review = data.body as JGOFAIReview;
+        sanityCheck(this.ai_review);
         this.setState({
             updatecount: this.state.updatecount + 1,
         });
@@ -282,6 +280,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let move_number = parseInt(m[1]);
 
             this.ai_review.moves[move_number] = data.body;
+            sanityCheck(this.ai_review);
             this.setState({
                 updatecount: this.state.updatecount + 1,
             });
@@ -299,106 +298,33 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-    public render() {
-        if (this.state.loading) {
-            return null;
-        }
-
-        if (!this.props.game || !this.props.game.goban || !this.props.game.goban.engine) {
-            return null;
-        }
-
-        if (!this.props.move) {
-            return null;
-        }
-
-        if (!this.ai_review || this.props.hidden) {
-            return (
-                <div className='AIReview'>
-                    <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
-                    <UIPush event="ai-review-metadata" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_metadata} />
-                    <UIPush event="ai-review-move" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_move} />
-                    { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
-                        <div className='reviewing'>
-                            <span>{_("Queing AI review")}</span>
-                            <i className='fa fa-desktop slowstrobe'></i>
-                        </div>
-                    }
-                </div>
-            );
-        }
-
-        let move_ai_review:JGOFAIReviewMove | null = null;
-        let next_move_ai_review:JGOFAIReviewMove | null = null;
-        let win_rate = this.ai_review.win_rate;
-        let next_win_rate = -1.0;
+    public updateHighlightsMarksAndHeatmaps() {
+        let ai_review_move:JGOFAIReviewMove;
+        let next_ai_review_move:JGOFAIReviewMove;
+        let win_rate:number = this.ai_review.win_rate;
+        let next_win_rate:number;
         let next_move = null;
-        let move_relative_delta = null;
+        let next_move_delta = null;
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
-        let show_full_ai_review_button = null;
-        let user = data.get('user');
         let next_move_pretty_coords:string = '';
 
-        /*
-        if (next_move) {
-            next_move_ai_review = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
-        }
-        */
-
-        try {
-            if (
-                user.id === this.props.game.creator_id ||
-                user.id === this.props.game.goban.engine.players.black.id ||
-                user.id === this.props.game.goban.engine.players.white.id
-            ) {
-                show_full_ai_review_button = true;
-            }
-            if (user.is_moderator) {
-                show_full_ai_review_button = true;
-            }
-        } catch {
-            // no problem, just a loaded sgf or something
-        }
-
         if (this.ai_review.moves[move_number]) {
-            /* TODO: do we need handicap offset here still? */
-            /*
-            if ( `full-${move_number - this.handicapOffset()}` in this.ai_review) {
-                move_ai_review = this.ai_review[`full-${move_number - this.handicapOffset()}`];
-            }
-            */
-            move_ai_review = this.ai_review.moves[move_number];
+            ai_review_move = this.ai_review.moves[move_number];
+        }
+        if (this.ai_review.moves[move_number + 1]) {
+            next_ai_review_move = this.ai_review.moves[move_number + 1];
         }
 
-        if (move_ai_review) {
-            win_rate = move_ai_review.pre_move_win_rate;
-
-            /* TODO: Do we need handicap offset here still? */
-            next_move_ai_review = this.ai_review.moves[move_ai_review.move_number + 1];
-            if (next_move_ai_review) {
-                next_win_rate = next_move_ai_review.post_move_win_rate || -1;
-            }
-            /*
-            if (`full-${move_number + 1 - this.handicapOffset()}` in this.ai_review) {
-                next_move_ai_review = this.ai_review[`full-${move_number + 1 - this.handicapOffset()}`];
-                next_win_rate = next_move_ai_review.win_rate;
-            }
-            else {
-                next_move = cur_move.trunk_next;
-                if (next_move) {
-                    next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
-                    for (let v of move_ai_review.variations) {
-                        if (v.move === next_move_pretty_coords) {
-                            next_win_rate = v['win_rate'];
-                        }
-                    }
-                }
-            }
-            */
+        if (ai_review_move) {
+            win_rate = ai_review_move.win_rate;
         }
-
+        if (next_ai_review_move) {
+            next_win_rate = next_ai_review_move.win_rate;
+        } else {
+            next_win_rate = win_rate;
+        }
 
         let marks:any = {};
         let colored_circles = [];
@@ -407,28 +333,30 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             if (cur_move.trunk) {
                 next_move = cur_move.trunk_next;
 
-                if (move_ai_review) {
-                    //let variations = move_ai_review.variations.slice(0, 6);
-                    let variations = move_ai_review.variations;
+                if (ai_review_move) {
+                    //let branches = ai_review_move.branches.slice(0, 6);
+                    let branches = ai_review_move.branches;
 
+                    /* Ensure we have an entry in branches for our next move,
+                     * as we always want to show what move was made and how
+                     * that affected the game */
                     let found_next_move = false;
-                    for (let v of variations) {
-                        if (next_move && isEqualMoveIntersection(v.move, next_move)) {
+                    for (let branch of branches) {
+                        if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                             found_next_move = true;
                             break;
                         }
                     }
                     if (!found_next_move && next_move) {
-                        variations.push({
-                            move: next_move,
-                            post_move_win_rate: next_win_rate,
-                            followup_moves: [],
+                        branches.push({
+                            moves: [next_move],
+                            win_rate: next_win_rate,
                             visits: 0,
                         });
                     }
 
+                    /* Generate the heatmap, blue move, and triangle move */
                     let strength = this.ai_review.strength;
-
                     heatmap = [];
                     for (let y = 0; y < this.props.game.goban.engine.height; y++) {
                         let r = [];
@@ -438,98 +366,71 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         heatmap.push(r);
                     }
 
-                    for (let i = 0 ; i < variations.length; ++i) {
-                        let variation = variations[i];
-                        let mv = variation.move;
+                    for (let i = 0 ; i < branches.length; ++i) {
+                        let branch = branches[i];
+                        let mv = branch.moves[0];
 
                         if (mv.x === -1) {
                             continue;
                         }
 
-                        heatmap[mv.y][mv.x] = variation.visits / strength;
+                        heatmap[mv.y][mv.x] = branch.visits / strength;
 
-                        //if (variation.followup_moves.length > 2 || variation.move === next_move_pretty_coords) {
-                        //console.log(variation);
-                        if (variation.followup_moves?.length || (next_move && isEqualMoveIntersection(variation.move, next_move))) {
-                            let delta = 0;
+                        let delta:number = cur_move.player === JGOFNumericPlayerColor.BLACK
+                            ? (ai_review_move.win_rate) - (branch.win_rate)
+                            : (branch.win_rate) - (ai_review_move.win_rate);
 
-                            //if (move_ai_review.player_to_move === 'white') {
-                            //    delta = -1.0 * ((1.0 - variation.win_rate) - (move_ai_review.win_rate));
-                            //} else {
-                            //    delta = (variation.win_rate) - (move_ai_review.win_rate);
-                            //}
-
-/*
-                            if (move_ai_review.player_to_move === 'white') {
-                                delta = -1 * ((1.0 - (variation.win_rate)) - (move_ai_review.win_rate));
-                            } else {
-                                delta = (variation.win_rate) - (move_ai_review.win_rate);
+                        let key = (delta * 100).toFixed(1);
+                        if (key === "0.0" || key === "-0.0") {
+                            key = "0";
+                        }
+                        // only show numbers for well explored moves
+                        // show number for AI choice and played moves[0] as well
+                        if (mv && ((i === 0) ||
+                                   (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
+                                   (branch.visits >= Math.min(50, 0.1 * strength)))) {
+                            if (parseFloat(key).toPrecision(2).length < key.length) {
+                                key = parseFloat(key).toPrecision(2);
                             }
-*/
-
-                            delta = (variation.post_move_win_rate) - (move_ai_review.pre_move_win_rate);
-
-
-                            if (next_move && isEqualMoveIntersection(variation.move, next_move) && next_win_rate >= 0) {
-                                delta = ((move_ai_review.pre_move_win_rate) - next_win_rate);
-                                /*
-                                if (move_ai_review.player_to_move === 'black') {
-                                    delta *= -1.0;
-                                }
-                                */
-                            }
-
-                            let key = (delta * 100).toFixed(1);
-                            if (key === "0.0" || key === "-0.0") {
-                                key = "0";
-                            }
-                            // only show numbers for well explored moves
-                            // show number for AI choice and played move as well
-                            if (mv && ((i === 0) ||
-                                       (next_move && isEqualMoveIntersection(variation.move, next_move)) ||
-                                       (variation.visits >= Math.min(50, 0.1 * strength)))) {
-                                if (parseFloat(key).toPrecision(2).length < key.length) {
-                                    key = parseFloat(key).toPrecision(2);
-                                }
-                                this.props.game.goban.setMark(mv.x, mv.y, key, true);
-                            }
-
-                            let circle:ColoredCircle = {
-                                move: variation.move,
-                                color: 'rgba(0,0,0,0)',
-                            };
-
-                            if (next_move && isEqualMoveIntersection(variation.move, next_move)) {
-                                this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
-
-                                circle.border_width = 0.1;
-                                circle.border_color = 'rgb(0, 0, 0)';
-                                if (i === 0) {
-                                    circle.color = 'rgba(0, 130, 255, 0.7)';
-                                } else {
-                                    circle.color = 'rgba(255, 255, 255, 0.3)';
-                                }
-                                colored_circles.push(circle);
-                            }
-                            else if (i === 0) { //
-                                circle.border_width = 0.2;
-                                circle.border_color = 'rgb(0, 130, 255)';
-                                circle.color = 'rgba(0, 130, 255, 0.7)';
-                                colored_circles.push(circle);
-                            }
+                            this.props.game.goban.setMark(mv.x, mv.y, key, true);
                         }
 
+                        let circle:ColoredCircle = {
+                            move: branch.moves[0],
+                            color: 'rgba(0,0,0,0)',
+                        };
+
+                        if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                            this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
+
+                            circle.border_width = 0.1;
+                            circle.border_color = 'rgb(0, 0, 0)';
+                            if (i === 0) {
+                                circle.color = 'rgba(0, 130, 255, 0.7)';
+                            } else {
+                                circle.color = 'rgba(255, 255, 255, 0.3)';
+                            }
+                            colored_circles.push(circle);
+                        }
+                        else if (i === 0) { //
+                            circle.border_width = 0.2;
+                            circle.border_color = 'rgb(0, 130, 255)';
+                            circle.color = 'rgba(0, 130, 255, 0.7)';
+                            colored_circles.push(circle);
+                        }
                     }
                 }
             }
             else { // !cur_move.trunk
-                if (move_ai_review) {
+                /* If we're not on the trunk, but rather exploring a branch, we want to provide
+                 * ghost stones for the moves that the AI was thinking would be played */
+                if (ai_review_move) {
                     let trunk_move_string = trunk_move.getMoveStringToThisPoint();
                     let cur_move_string = cur_move.getMoveStringToThisPoint();
                     let next_moves = null;
 
-                    for (let v of move_ai_review.variations) {
-                        let move_str:string = trunk_move_string + GoMath.encodeMoves(v.followup_moves);
+                    for (let branch of ai_review_move.branches) {
+                        let move_str:string = trunk_move_string + GoMath.encodeMoves(branch.moves);
                         if (move_str.startsWith(cur_move_string)) {
                             next_moves = move_str.slice(cur_move_string.length, Infinity);
                             break;
@@ -569,36 +470,94 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.props.game.goban.setHeatmap(heatmap, true);
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
-            // ignore
+            errorLogger(e);
         }
 
         if (next_win_rate >= 0) {
-            move_relative_delta = next_win_rate - win_rate;
+            next_move_delta = next_win_rate - win_rate;
             if (this.props.game.goban.engine.colorToMove() === "white") {
-                move_relative_delta = -move_relative_delta;
+                next_move_delta = -next_move_delta;
             }
         }
 
-        let have_prediction = true;
-        if (move_ai_review) {
-            have_prediction = true;
-            win_rate = move_ai_review.pre_move_win_rate;
+        if (next_move) {
+            next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
         }
+
+        return [
+            win_rate,
+            next_move_delta,
+            next_move_pretty_coords,
+        ];
+    }
+
+    public render() {
+        if (this.state.loading) {
+            return null;
+        }
+
+        if (!this.props.game || !this.props.game.goban || !this.props.game.goban.engine) {
+            return null;
+        }
+
+        if (!this.props.move) {
+            return null;
+        }
+
+        if (!this.ai_review || this.props.hidden) {
+            return (
+                <div className='AIReview'>
+                    <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+                    <UIPush event="ai-review-metadata" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_metadata} />
+                    <UIPush event="ai-review-move" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_move} />
+                    { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
+                        <div className='reviewing'>
+                            <span>{_("Queing AI review")}</span>
+                            <i className='fa fa-desktop slowstrobe'></i>
+                        </div>
+                    }
+                </div>
+            );
+        }
+
+        let show_full_ai_review_button: null | true = null;
+
+        try {
+            let user = data.get('user');
+            if (
+                user.id === this.props.game.creator_id ||
+                user.id === this.props.game.goban.engine.players.black.id ||
+                user.id === this.props.game.goban.engine.players.white.id
+            ) {
+                show_full_ai_review_button = true;
+            }
+            else if (user.is_moderator) {
+                show_full_ai_review_button = true;
+            } else {
+                show_full_ai_review_button = null;
+            }
+        } catch {
+            // no problem, just someone else's sgf or something
+            show_full_ai_review_button = null;
+        }
+
+
+        let [
+            win_rate,
+            next_move_delta,
+            next_move_pretty_coords,
+        ] = this.updateHighlightsMarksAndHeatmaps();
+
+        let win_rate_p = win_rate * 100.0;
+        let next_move_delta_p = next_move_delta * 100.0;
 
         let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
                 move_number: idx,
                 win_rate: x,
-                num_variations: this.ai_review?.moves[idx]?.variations.length || 0,
+                num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
             };
         }) || [];
-
-        if (win_rate === -1) {
-            have_prediction = false;
-        }
-
-        let win_rate_p = win_rate * 100.0;
-        let move_relative_delta_p = move_relative_delta * 100.0;
 
         return (
             <div className='AIReview'>
@@ -647,17 +606,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             SingleValue: ({data}) => (
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
-                                    {have_prediction &&
-                                        <div className="progress">
-                                            <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
-                                            <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
-                                        </div>
-                                    }
-                                    {!have_prediction &&
-                                        <div className="pending">
-                                            <i className='fa fa-desktop slowstrobe'></i>
-                                            {_("Processing")}
-                                        </div>
+                                    {(win_rate >= 0 && win_rate <= 1.0)
+                                        ? <div className="progress">
+                                              <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
+                                              <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
+                                          </div>
+                                        : <div className="pending">
+                                              <i className='fa fa-desktop slowstrobe'></i>
+                                              {_("Processing")}
+                                          </div>
                                     }
 
                                 </React.Fragment>
@@ -720,31 +677,33 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     </div>
                 }
 
-                {move_ai_review && next_move && move_relative_delta !== null &&
+                {null && next_move_pretty_coords && next_move_delta !== null &&
                     <div className='next-move-delta-container'>
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
                             <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
                         </span>
 
-                        {/*
-                        <span className={"next-move-coordinates "
-                            + (move_relative_delta <= -2 ? 'negative' : (move_relative_delta < 0 ? 'neutral' : 'positive')) }>
-                            {next_move_pretty_coords}
-                        </span>
-                        */}
                         <span className={"next-move-delta " +
-                            (move_relative_delta_p <= -0.1 ? 'negative' : (move_relative_delta_p >= 0.1 ? 'positive' : ''))}>
-                            {move_relative_delta_p <= -0.1 ? <span>&minus;</span> :
-                                (move_relative_delta_p >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
-                            } {Math.abs(move_relative_delta_p).toFixed(1)}pp
+                            (next_move_delta_p <= -0.1 ? 'negative' : (next_move_delta_p >= 0.1 ? 'positive' : ''))}>
+                            {next_move_delta_p <= -0.1 ? <span>&minus;</span> :
+                                (next_move_delta_p >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
+                            } {Math.abs(next_move_delta_p).toFixed(1)}pp
                         </span>
                     </div>
                 }
-
-
             </div>
         );
+    }
+}
+
+function sanityCheck(ai_review:JGOFAIReview) {
+    if (ai_review.moves['0']) {
+        console.error("Review for move zero should probably not be set");
+
+        if (ai_review.moves['0'].move.x !== -1) {
+            console.error("AI Review move '0' is not a pass move");
+        }
     }
 }
 
