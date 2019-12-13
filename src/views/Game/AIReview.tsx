@@ -374,6 +374,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             continue;
                         }
 
+                        if (this.props.game.goban.engine.board[mv.y][mv.x]) {
+                            console.error("ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.");
+                            console.info("AIReview: ", this.ai_review);
+                        }
+
                         heatmap[mv.y][mv.x] = branch.visits / strength;
 
                         let delta:number = cur_move.player === JGOFNumericPlayerColor.BLACK
@@ -387,6 +392,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         // only show numbers for well explored moves
                         // show number for AI choice and played moves[0] as well
                         if (mv && ((i === 0) ||
+                                   //true || // debugging
                                    (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
                                    (branch.visits >= Math.min(50, 0.1 * strength)))) {
                             if (parseFloat(key).toPrecision(2).length < key.length) {
@@ -699,8 +705,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
 function sanityCheck(ai_review:JGOFAIReview) {
     if (ai_review.moves['0']) {
-        console.error("Review for move zero should probably not be set");
-
         if (ai_review.moves['0'].move.x !== -1) {
             console.error("AI Review move '0' is not a pass move");
         }
