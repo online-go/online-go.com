@@ -83,13 +83,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     componentDidMount() {
         this.getAIReviewList();
     }
-
     componentDidUpdate(prevProps:AIReviewProperties, prevState:any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
     }
-
     componentWillUnmount() {
     }
 
@@ -105,7 +103,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
         return null;
     }
-
     getAIReviewList() {
         let game_id = this.getGameId();
         if (!game_id) {
@@ -156,7 +153,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         })
         .catch(errorLogger);
     }
-
     getAIReview(ai_review_id:string) {
         let game_id = this.getGameId();
         if (!game_id) {
@@ -175,8 +171,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         })
         .catch(errorLogger);
     }
-
-    moveNumOffset = this.handicapOffset() > 0 ? 1 : 0;
 
     handicapOffset():number {
         if (this.props.game
@@ -220,7 +214,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             updatecount: this.state.updatecount + 1,
         });
     }
-
     clearAIReview() {
         this.props.game.goban.setMode("play");
         this.setState({
@@ -228,20 +221,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //fast: null,
             updatecount: this.state.updatecount + 1,
         });
-    }
-
-    startFullReview = () => {
-        let user = data.get('user');
-
-        if (user.anonymous) {
-            swal(_("Please login first"));
-        } else {
-            if (user.supporter || user.professional || user.is_moderator) {
-                this.props.game.force_ai_review("full");
-            } else {
-                openBecomeASiteSupporterModal();
-            }
-        }
     }
 
     setSelectedAIReview = (ai_review:JGOFAIReview) => {
@@ -256,14 +235,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
         this.props.onAIReviewSelected(ai_review);
     }
-
     startNewAIReview(analysis_type:"fast" | "full", engine:"leela_zero" | "katago") {
-        post(`games/${this.getGameId()}/ai_reviews`, {
-            "type": analysis_type,
-            "engine": engine,
-        })
-        .then((res) => swal("Analysis started"))
-        .catch(errorAlerter);
+        let user = data.get('user');
+
+        if (user.anonymous) {
+            swal(_("Please login first"));
+        } else {
+
+            if (user.supporter || user.professional || user.is_moderator) {
+                post(`games/${this.getGameId()}/ai_reviews`, {
+                    "type": analysis_type,
+                    "engine": engine,
+                })
+                .then((res) => swal("Analysis started"))
+                .catch(errorAlerter);
+            } else {
+                openBecomeASiteSupporterModal();
+            }
+        }
     }
 
     ai_review_update_metadata = (data:any) => {
@@ -337,13 +326,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     //let branches = ai_review_move.branches.slice(0, 6);
                     let branches = ai_review_move.branches;
 
-                    /* Ensure we have an entry in branches for our next move,
-                     * as we always want to show what move was made and how
-                     * that affected the game */
+                    // Ensure we have an entry in branches for our next move,
+                    // as we always want to show what move was made and how
+                    // that affected the game. Also, if we do have an entry,
+                    // make sure it's win rate aligns with what we determined
+                    // it was upon further analysis (use next move's win rate)
                     let found_next_move = false;
                     for (let branch of branches) {
                         if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                             found_next_move = true;
+                            branch.win_rate = next_win_rate;
                             break;
                         }
                     }
@@ -381,7 +373,19 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                         heatmap[mv.y][mv.x] = branch.visits / strength;
 
-                        let delta:number = cur_move.player === JGOFNumericPlayerColor.BLACK
+
+                        let next_player:JGOFNumericPlayerColor;
+
+                        if (next_move) {
+                            next_player = next_move.player;
+                        } else {
+                            // we don't always use this because when we are looking at handicap stones, it doesn't flip.
+                            next_player = cur_move.player === JGOFNumericPlayerColor.BLACK
+                                ? JGOFNumericPlayerColor.WHITE
+                                : JGOFNumericPlayerColor.BLACK;
+                        }
+
+                        let delta:number = next_player === JGOFNumericPlayerColor.WHITE
                             ? (ai_review_move.win_rate) - (branch.win_rate)
                             : (branch.win_rate) - (ai_review_move.win_rate);
 
@@ -496,7 +500,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_move_pretty_coords,
         ];
     }
-
     public render() {
         if (this.state.loading) {
             return null;
@@ -668,7 +671,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             <div>
                                 <button
                                     className='primary'
-                                    onClick={this.startFullReview}>
+                                    onClick={() => this.startNewAIReview("full", "katago")}>
                                     {_("Full AI Review")}
                                 </button>
                             </div>
@@ -706,16 +709,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 function sanityCheck(ai_review:JGOFAIReview) {
     if (ai_review.moves['0']) {
         if (ai_review.moves['0'].move.x !== -1) {
-            console.error("AI Review move '0' is not a pass move");
+            console.error("AI Review move '0' is not a pass move, was ", ai_review.moves['0'].move);
         }
     }
 }
 
-
 function isEqualMoveIntersection(a:JGOFIntersection, b:JGOFIntersection):boolean {
     return a.x === b.x && a.y === b.y;
 }
-
 function ReviewStrengthIcon({review}:{review:JGOFAIReview}):JSX.Element {
     let strength:string;
     let content:string = '';
@@ -742,7 +743,6 @@ function ReviewStrengthIcon({review}:{review:JGOFAIReview}):JSX.Element {
 
     return <span className={'ai-review-strength-icon ' + strength}>{content}</span>;
 }
-
 function engineName(engine:string) {
     switch (engine) {
         case 'leela_zero':
