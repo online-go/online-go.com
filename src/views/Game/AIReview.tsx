@@ -601,7 +601,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                         engine: engineName(data.engine),
                                                         engine_version: data.engine_version,
                                                         network_size: data.network_size,
-                                                        network: data.network,
+                                                        network: extractShortNetworkVersion(data.network),
                                                     }
                                                 )
                                             }
@@ -751,4 +751,12 @@ function engineName(engine:string) {
             return "KataGo";
     }
     return "AI";
+}
+function extractShortNetworkVersion(network:string):string {
+    // the first part of the katago version describes the network size,
+    // second/third is hash I think
+    if (network.indexOf('-') > 0) {
+        network = network.match(/[^-]*[-]([^-]*)/)[1];
+    }
+    return network.substr(0,6);
 }
