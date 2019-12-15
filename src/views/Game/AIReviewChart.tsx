@@ -30,7 +30,7 @@ interface AIReviewChartProperties {
     entries     : Array<AIReviewEntry>;
     ai_review   : JGOFAIReview;
     updatecount : number;
-    move        : number;
+    move_number : number;
     setmove     : (move_number:number) => void;
 }
 
@@ -83,14 +83,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.initialize();
     }
     componentDidUpdate(prevProps:AIReviewChartProperties, prevState:any) {
-        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
+        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
         this.onResize();
     }
     componentWillUnmount() {
         this.deinitialize();
     }
     shouldComponentUpdate(nextProps:AIReviewChartProperties, nextState:any) {
-        return !deepCompare(nextProps.entries, this.props.entries) || this.props.move !== nextProps.move;
+        return !deepCompare(nextProps.entries, this.props.entries) || this.props.move_number !== nextProps.move_number;
     }
 
     initialize() {
@@ -191,7 +191,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x1', 0)
             .attr('y1', this.height);
 
-        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move) + ', 0)');
+        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
 
         this.cursor_crosshair = this.prediction_graph.append('g')
             .attr('class', 'cursor crosshairs')

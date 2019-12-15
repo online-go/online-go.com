@@ -796,13 +796,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.startAutoplay();
         }
     }
-    nav_goto_move = (mv:number) => {
+    nav_goto_move = (move_number:number) => {
         let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
-        this.goban.showFirst(true);
-        for (let i = 0; i < mv; ++i) {
-            this.goban.showNext(i !== mv - 1);
+        this.goban.showFirst(move_number > 0);
+        for (let i = 0; i < move_number; ++i) {
+            this.goban.showNext(i !== move_number - 1);
         }
         this.goban.syncReviewMove();
     }

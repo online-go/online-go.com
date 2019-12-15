@@ -661,7 +661,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         ai_review={this.ai_review}
                         entries={ai_review_chart_entries}
                         updatecount={this.state.updatecount}
-                        move={this.props.move.move_number}
+                        move_number={this.props.move.move_number}
                         setmove={this.props.game.nav_goto_move} />
                 }
 
@@ -758,5 +758,5 @@ function extractShortNetworkVersion(network:string):string {
     if (network.indexOf('-') > 0) {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
-    return network.substr(0,6);
+    return network.substr(0, 6);
 }
