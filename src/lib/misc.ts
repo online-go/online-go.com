@@ -407,6 +407,10 @@ export function ignore() {
     /* do nothing */
 }
 export function unicodeFilter(str:string):string {
+    if (!str) {
+        return str;
+    }
+
     if (preferences.get('unicode-filter')) {
         return (str
             .replace(/(?:[\uD800-\uDBFF][\uDC00-\uDFFF])/g, "") /* 4 byte unicode */
@@ -747,4 +751,17 @@ export function slugify(str:string) {
         .replace(/[-\s]+/g, '-');
 
     return slug.toLowerCase();
+}
+
+export function unitify(num: number): string {
+    if (num > 1000000000) {
+        return (num / 1000000000.0).toFixed(1) + "B";
+    }
+    if (num > 1000000) {
+        return (num / 1000000.0).toFixed(1) + "M";
+    }
+    if (num > 1000) {
+        return (num / 1000.0).toFixed(1) + "K";
+    }
+    return num.toString();
 }

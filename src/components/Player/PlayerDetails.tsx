@@ -34,6 +34,7 @@ import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
+import * as preferences from "preferences";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 
@@ -228,7 +229,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     render() {
         let user = data.get("user");
 
-        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
+        let rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
 
         return (
             <div className="PlayerDetails">

@@ -27,8 +27,9 @@ import {Card} from 'material';
 import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
+import * as preferences from "preferences";
 import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
-import {longRankString, rankString, getUserRating, humble_rating} from "rank_utils";
+import {longRankString, rankString, getUserRating, humble_rating, effective_outcome} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {openSupporterAdminModal} from "SupporterAdmin";
@@ -107,6 +108,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             selected_speed: 'overall',
             selected_size: 0,
             resolved: false,
+            temporary_show_ratings: false,
         };
     }
 
@@ -225,6 +227,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             state.ip = null;
             state.host_ip_settings = null;
          }
+        state.temporary_show_ratings = false;
 
         this.setState(state);
         this.updateHostIpSettings();
@@ -404,6 +407,9 @@ export class User extends React.PureComponent<UserProperties, any> {
             this.setState({editing: true});
         }
     }
+    toggleRatings = () => {
+        this.setState((state) => ({temporary_show_ratings: !state.temporary_show_ratings}));
+    }
     saveCountry = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {country: ev.target.value})});
     }
@@ -507,6 +513,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
         let editing = this.state.editing;
+        let showRatings = this.state.temporary_show_ratings;
 
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
@@ -539,18 +546,68 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.width = r.width;
                 item.height = r.height;
                 item.date = r.ended ? new Date(r.ended) : null;
+                item.ranked = r.ranked;
+                item.handicap = r.handicap;
                 item.black = r.players.black;
                 item.black_won = !r.black_lost && r.white_lost;
                 item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.white = r.players.white;
                 item.white_won = !r.white_lost && r.black_lost;
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
-                item.result_class = (item.white_won && (item.white.id === this.user_id)) || (item.black_won && (item.black.id === this.user_id)) ? "library-won-result" : "library-lost-result";
                 item.historical = r.historical_ratings;
 
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost)) {
-                    item.result_class = "";
+                let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
+                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
+                    item.result_class = "library-tie-result";
+                } else if (item.white.id === this.user_id) /* played white */ {
+                    if (item.ranked) {
+                        if (item.white_won) /* player won */ {
+                            item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                        } else if (item.black_won) /* player lost */ {
+                            item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                        }
+                    } else {
+                        item.result_class = item.white_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
+                    }
+                } else if (item.black.id === this.user_id) /* played black */ {
+                    if (item.ranked) {
+                        if (item.black_won) /* player won */ {
+                            item.result_class = outcome.black_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                        } else if (item.white_won) /* player black */ {
+                            item.result_class = outcome.black_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                        }
+                    } else {
+                        item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
+                    }
                 }
+
+                if ("time_control_parameters" in r) {
+                    let tcp = JSON.parse(r.time_control_parameters);
+                    if ("speed" in tcp) {
+                        item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
+                    }
+                }
+                if (!item.speed) { // fallback
+                    if (r.time_per_move >= 3600 || r.time_per_move === 0) {
+                        item.speed = "Correspondence";
+                    } else if (r.time_per_move < 10 && r.time_per_move > 0) {
+                        item.speed = "Blitz";
+                    } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
+                        item.speed = "Live";
+                    } else {
+                        console.log("time_per_move < 0");
+                    }
+                }
+                if (item.speed === "Correspondence") {
+                    item.speed_icon_class = "speed-icon ogs-turtle";
+                } else if (item.speed === "Blitz") {
+                    item.speed_icon_class = "speed-icon fa fa-bolt";
+                } else if (item.speed === "Live") {
+                    item.speed_icon_class = "speed-icon fa fa-clock-o";
+                } else {
+                    console.log("unsupported speed setting: " + item.speed);
+                }
+
                 item.name = r.name;
 
                 if (item.name && item.name.trim() === "") {
@@ -618,6 +675,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                             {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
                                 : <span className='username'><Player user={user}/></span>
+                            }
+
+                            {preferences.get("hide-ranks") && this.state.temporary_show_ratings &&
+                                 <span className='Player-rank'>{'[' + getUserRating(user).bounded_rank_label + ']'}</span>
                             }
 
                             {editing
@@ -702,7 +763,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                         </div>
 
 
-                        {(!user.professional || global_user.id === user.id) &&
+                        {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                             <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>{_("Ratings")}</h3>
                                 {this.renderRatingGrid()}
@@ -714,12 +775,16 @@ export class User extends React.PureComponent<UserProperties, any> {
             </div>
 
 
-            {(!user.professional || global_user.id === user.id) &&
+            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
                         <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
                     </div>
                 </div>
+            }
+
+            { (preferences.get("hide-ranks")) &&
+                <button className="danger toggle-ratings" onClick={this.toggleRatings}>{showRatings ? _("Hide ratings") : _("Show ratings")}</button>
             }
 
             <div className="row">
@@ -815,6 +880,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
                                     columns={[
+                                        {header: _(""),       className: () => "speed",                           render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Size"),   className: () => "board_size",                      render: (X) => `${X.width}x${X.height}`},
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},

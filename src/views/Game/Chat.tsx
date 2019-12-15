@@ -28,6 +28,7 @@ import {profanity_filter} from "profanity_filter";
 import {Game} from './Game';
 import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {TabCompleteInput} from "TabCompleteInput";
+import * as Chat from "Chat";
 
 let active_game_view:Game = null;
 
@@ -362,52 +363,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
         super(props);
     }
 
-    chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
-        let replacements = [
-            {split: /(https?:\/\/[^<> ]+)/gi, pattern: /(https?:\/\/[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
-            {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
-            {split: /(^##[0-9]{3,}|[ ]##[0-9]{3,})/gi, pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi,
-                replacement: (m, idx) => (<Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}##${m[2] || ""}${m[4] || ""}`}</Link>)},
-            {split: /(^#[0-9]{3,}|[ ]#[0-9]{3,})/gi, pattern: /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi,
-                replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}#${m[2] || ""}${m[4] || ""}`}</Link>)},
-            {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-            {split: /(#group-[0-9]+)/gi, pattern: /(#group-([0-9]+))/gi, replacement: (m, idx) => (<Link key={idx} to={`/group/${m[2]}`}>{m[1]}</Link>)},
-            {split: /(%%%PLAYER-[0-9]+%%%)/g, pattern: /(%%%PLAYER-([0-9]+)%%%)/g, replacement: (m, idx) => (<Player key={idx} user={parseInt(m[2])}/>)},
-        ];
-
-        if (extra_pattern_replacements) {
-            replacements = replacements.concat(extra_pattern_replacements);
-        }
-
-        let ret = [profanity_filter(body)];
-        for (let r of replacements) {
-            ret = [].concat.apply([], ret.map((text_fragment) => {
-                return text_fragment.split(r.split);
-            }));
-        }
-
-        for (let i = 0; i < ret.length; ++i) {
-            let fragment = ret[i];
-            let matched = false;
-            for (let r of replacements) {
-                let m = r.pattern.exec(fragment);
-                if (m) {
-                    ret[i] = r.replacement(m, i);
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                ret[i] = <span key={i}>{ret[i]}</span>;
-            }
-        }
-
-        return ret;
-    }
-
     markup(body): JSX.Element|Array<JSX.Element> {
         if (typeof(body) === "string") {
-            return this.chat_markup(body, [
+            return Chat.chat_markup(body, [
                 {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
                     replacement: (m, idx) => {
                         let pos = m[1];
@@ -450,7 +408,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                                     orig_move.marks = orig_marks;
                                     goban.pen_marks = stashed_pen_marks;
                                     if (goban.pen_marks.length === 0) {
-                                        goban.detachPenCanvas();
+                                        goban.disablePen();
                                     }
                                     goban.redraw();
                                 }
@@ -598,7 +556,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             <div className={`chat-line-container`} data-chat-id={chat_id}>
                 {move_number}
                 {show_date}
-                <div className={`chat-line ${line.channel} ${third_person}`}>
+                <div className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
                     {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>

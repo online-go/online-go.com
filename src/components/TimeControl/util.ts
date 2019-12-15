@@ -16,6 +16,7 @@
  */
 
 import * as data from "data";
+import { computeAverageMoveTime } from 'goban';
 import {_, pgettext, ngettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 
@@ -493,43 +494,6 @@ export function validateTimeControl(tc: TimeControl): boolean {
             return !error;
         case "none":
             return !error;
-    }
-}
-export function computeAverageMoveTime(time_control, old_time_per_move?) {
-    if (old_time_per_move) {
-        return old_time_per_move;
-    }
-    if (typeof(time_control) !== "object") {
-        return time_control;
-    }
-
-    try {
-        let t;
-        switch (time_control.system || time_control.time_control) {
-            case "fischer":
-                t = time_control.initial_time / 90 + time_control.time_increment;
-                break;
-            case "byoyomi":
-                t = time_control.main_time / 90 + time_control.period_time;
-                break;
-            case "simple":
-                t = time_control.per_move;
-                break;
-            case "canadian":
-                t = time_control.main_time / 90 + time_control.period_time / time_control.stones_per_period;
-                break;
-            case "absolute":
-                t = time_control.total_time / 90;
-                break;
-            case "none":
-                t = 0;
-                break;
-        }
-        return Math.round(t);
-    } catch (err) {
-        console.log("Error computing avergate move time for time control: ", time_control, old_time_per_move);
-        console.log(err);
-        return 60;
     }
 }
 export function isLiveGame(time_control) {

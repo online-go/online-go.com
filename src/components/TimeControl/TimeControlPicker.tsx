@@ -19,7 +19,8 @@ import * as React from "react";
 import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
-import {time_options, computeAverageMoveTime, makeTimeControlParameters} from "./util";
+import {time_options, makeTimeControlParameters} from "./util";
+import {computeAverageMoveTime} from 'goban';
 //import {errorAlerter} from 'misc';
 
 

@@ -138,7 +138,7 @@ export let GoResources = (props) => {
                         </span>
                     </span>,
 
-                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
+                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up_v1.2.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Seong-June Kim</span>
                     </span>
@@ -216,6 +216,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos">New York Institute of Go</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w">Go Pro Yeonwoo</a> / <Flag country={kr}/> <a rel="noopener" href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ">프로연우</a></span>,
+                <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
                 <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }

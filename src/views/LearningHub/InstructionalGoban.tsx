@@ -32,7 +32,7 @@ interface InstructionalGobanProps {
 }
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
-    goban_div;
+    goban_div:HTMLDivElement;
     goban;
 
     constructor(props) {
@@ -40,7 +40,8 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         this.state = {
         };
 
-        this.goban_div = $("<div class='Goban'>");
+        this.goban_div = document.createElement('div');
+        this.goban_div.className = 'Goban';
     }
 
     componentDidMount() {
@@ -121,7 +122,9 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
         }
     }
     destroy() {
-        this.goban.destroy();
+        if (this.goban) {
+            this.goban.destroy();
+        }
     }
     render() {
         return (

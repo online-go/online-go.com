@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {_, _setCurrentLanguage, current_language, languages} from "translate";
+import {_, setCurrentLanguage, current_language, languages} from "translate";
 import {Modal, openModal} from "Modal";
 import * as preferences from "preferences";
 
@@ -58,7 +58,7 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
 
     setLanguage(language_code) {
         preferences.set("language", language_code);
-        _setCurrentLanguage(language_code);
+        setCurrentLanguage(language_code);
         this.close();
         window.location.reload();
     }

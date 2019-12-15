@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,6 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.JosekiStatsModal {
+    width: 40rem;
+    max-width: 100%;
 
-export * from "./Chat";
-export * from "./ChatDetails";
+    max-height: 100%;
+
+    .daily-result {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .header {
+        margin-bottom: 5px;
+    }
+
+    .result-date {
+        min-width: 7em;
+        padding-left: 3px;
+        padding-right: 2px;
+    }
+
+    .result-count {
+        min-width: 7em;
+    }
+}

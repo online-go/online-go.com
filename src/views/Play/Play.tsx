@@ -46,7 +46,7 @@ interface PlayProperties {
 
 export class Play extends React.Component<PlayProperties, any> {
     ref_container: HTMLDivElement;
-    canvas: any;
+    canvas: HTMLCanvasElement;
 
     seekgraph: SeekGraph;
     resize_check_interval;
@@ -64,7 +64,7 @@ export class Play extends React.Component<PlayProperties, any> {
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
         };
-        this.canvas = $("<canvas>")[0];
+        this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
     }
 

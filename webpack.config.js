@@ -27,38 +27,43 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 `));
 
-    /*
-plugins.push(
-    new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        minChunks: function (module) {
-            return module.context && module.context.indexOf('node_modules') !== -1;
-        }
-    })
-);
-*/
-
-plugins.push(new webpack.EnvironmentPlugin({
-    NODE_ENV: 'development', // use 'development' unless process.env.NODE_ENV is defined
-    DEBUG: false
-}));
-
-let defines = {
-    CLIENT: true,
-    SERVER: false,
-};
-
-plugins.push(new webpack.DefinePlugin(defines));
-
-
-if (process.env.ANALYZE) {
-    plugins.push(new BundleAnalyzerPlugin());
-}
-
-
 
 module.exports = (env, argv) => {
     const production = argv.mode === 'production';
+
+    if (production) {
+        console.log("Production build");
+    }
+
+
+    /*
+    plugins.push(
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: function (module) {
+                return module.context && module.context.indexOf('node_modules') !== -1;
+            }
+        })
+    );
+    */
+
+    plugins.push(new webpack.EnvironmentPlugin({
+        NODE_ENV: production ? 'production' : 'development',
+        DEBUG: false
+    }));
+
+    let defines = {
+        CLIENT: true,
+        SERVER: false,
+    };
+
+    plugins.push(new webpack.DefinePlugin(defines));
+
+
+    if (process.env.ANALYZE) {
+        plugins.push(new BundleAnalyzerPlugin());
+    }
+
 
     const config = {
         mode: production ? 'production' : 'development',
@@ -126,6 +131,7 @@ module.exports = (env, argv) => {
         // This is important because it allows us to avoid bundling all of our
         // dependencies, which allows browsers to cache those libraries between builds.
         externals: {
+            "goban": "goban",
             "swal": "swal", // can't seem to import anyways
         },
 

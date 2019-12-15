@@ -401,21 +401,49 @@
     }
 
     .game-history-table, .review-history-table {
-        .name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result {
+        .name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked {
             white-space: nowrap;
         }
 
-         .library-lost-result, .library-won-result, .library-tie-result {
+         .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked {
             overflow: hidden;
         }
 
+        .library-lost-result-vs-weaker {
+          themed background-color weak-loss
+          themed color weak-l-text
+        }
+
+        .library-lost-result-vs-stronger {
+          themed background-color strong-loss
+          themed color strong-l-text
+        }
+
+        .library-won-result-vs-stronger {
+          themed background-color strong-win
+          themed color strong-w-text
+        }
+
+        .library-won-result-vs-weaker {
+          themed background-color weak-win
+          themed color weak-w-text
+        }
+
+        .library-won-result-unranked {
+          themed color strong-win
+        }
+
+        .library-lost-result-unranked {
+          themed color strong-loss
+        }
+
         .name {
-            max-width: 15rem;
+            max-width: 12rem;
             overflow: hidden;
         }
 
         .player {
-            max-width: 10rem;
+            max-width: 9rem;
             overflow: hidden;
         }
     }
@@ -443,5 +471,10 @@
                 padding-right: 1rem;
             }
         }
+    }
+
+    button.toggle-ratings {
+        display: block;
+        margin: 10px auto;
     }
 }

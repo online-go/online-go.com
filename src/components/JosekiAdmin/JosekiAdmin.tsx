@@ -22,16 +22,21 @@ import ReactTable from 'react-table';
 
 import selectTableHOC from "react-table/lib/hoc/selectTable";
 
+import {openModal} from 'Modal';
 import { Player } from "Player";
 
 import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
+import { JosekiStatsModal } from "JosekiStatsModal";
+
 
 interface JosekiAdminProps {
     godojo_headers: any;
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean;       // allows them to filter
+    db_locked_down: boolean;
     loadPositionToBoard(pos: string);
+    updateDBLockStatus(value: boolean);
 }
 
 const AuditTypes = [
@@ -66,7 +71,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             schema_version: "",
             filter_user_id: "",
             filter_position_id: "",
-            filter_audit_type: ""
+            filter_audit_type: "",
+            page_visits: null,
+            daily_visits: []
         };
     }
 
@@ -77,7 +84,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         })
         .then(res => res.json())
         .then(body => {
-            this.setState({schema_version: body.schema_version});
+            this.setState({
+                schema_version: body.schema_version,
+                page_visits: body.page_visits,
+                daily_visits: body.daily_visits
+            });
         }).catch((r) => {
             console.log("Appinfo GET failed:", r);
         });
@@ -135,6 +146,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }
         else {
             // There are no more reversions to be done, so reload the audit log to show the ones that were done
+            //console.log("...reversions done.")
             this.reloadData();
             this.props.loadPositionToBoard("root"); // and reset the board, incase the status of what is displayed changed
         }
@@ -227,6 +239,26 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         );
     }
 
+    showVisitStats = () => {
+        openModal(<JosekiStatsModal fastDismiss daily_page_visits={this.state.daily_visits}/>);
+    }
+
+    toggleLockdown = () => {
+        const lockdown_url = this.props.server_url + 'lockdown?lockdown=' + !(this.props.db_locked_down);
+
+        fetch(lockdown_url, {
+            method: 'put',
+            mode: 'cors',
+            headers: this.props.godojo_headers
+        })
+        .then(() => {
+            this.props.updateDBLockStatus(!this.props.db_locked_down);
+        })
+        .catch((r) => {
+            console.log("Toggle lockdown failed:", r);
+        });
+    }
+
     render = () => {
         // console.log("Joseki Admin render");
 
@@ -239,6 +271,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         ));
 
          audit_type_selections.unshift(<option key={-1} value=""></option>);
+
+        const reversions = Array.from(this.state.reversions.values());
 
         return (
             <div className="audit-container">
@@ -268,8 +302,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     }
                 </div>
                 }
-                {this.state.reversions.size > 0 &&
-                    [...this.state.reversions.values()].map((reversion, idx) => (<div key={idx}>{reversion}</div>))
+                {reversions.length > 0 &&
+                    reversions.map((reversion, idx) => (<div key={idx}>{reversion}</div>))
                 }
                 <AuditTable
                     showPaginationBottom
@@ -340,6 +374,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                         }
                     ]}
                 />
+                <div className="explorer-stats">
+                    <span>Page visits: {this.state.page_visits || "..."}</span>
+                    <button className="btn s" onClick={this.showVisitStats}>
+                        details
+                    </button>
+                </div>
+
                 {this.props.user_can_administer &&
                 <div className="bottom-admin-stuff">
                     <div className="user-admin">
@@ -349,8 +390,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             server_url={this.props.server_url}
                         />
                     </div>
-                    <div className="admin-info">
-                        {_("Schema version")}: {this.state.schema_version}
+                    <div className="misc-admin">
+                        <button className={"btn"} onClick={this.toggleLockdown}>
+                            {this.props.db_locked_down ? _("Unlock") : _("Lockdown")}
+                        </button>
+                        <span>{_("Schema version")}: {this.state.schema_version}</span>
                     </div>
                 </div>
                 }

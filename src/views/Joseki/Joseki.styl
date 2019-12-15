@@ -157,18 +157,51 @@
                     box-shadow: none;
                     line-height: unset;
                     height: fit-content;
-
                 }
+
+                // get rid of ugly selected-border on button
+                // not accessibility friendly, but OGS isn't anyhow
+                .pass-button:focus {
+                    outline: 0;
+                }
+
                 .pass-button:hover {
                     themed background-color shade5
                 }
 
-                .pass-available {
-                    themed border-color supporter  // the only available yellowish color :)
+                // can't theme box-shadow, so just using "light" version, and chose
+                // a colour for that that looks OK in both themes
+                .ideal {
+                    border-color light.joseki-ideal;
                     border-width: 2px;
-                    box-shadow: 0 0 0.8rem gold; // can't theme box shadow, gold works in both themes
+                    box-shadow: 0 0 0.8rem light.joseki-ideal;
+                }
+
+                .good {
+                    border-color light.joseki-good;
+                    border-width: 2px;
+                    box-shadow: 0 0 0.8rem light.joseki-good;
+                }
+
+                .trick {
+                    border-color light.joseki-trick;
+                    border-width: 2px;
+                    box-shadow: 0 0 0.8rem light.joseki-trick;
+                }
+
+                .question {
+                    border-color light.joseki-question;
+                    border-width: 2px;
+                    box-shadow: 0 0 0.8rem light.joseki-question;
+                }
+
+                .mistake {
+                    border-color light.joseki-mistake;
+                    border-width: 2px;
+                    box-shadow: 0 0 0.8rem light.joseki-mistake;
                 }
             }
+
 
             .move-controls.highlight {
                 .fa {

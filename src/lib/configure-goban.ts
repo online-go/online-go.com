@@ -18,7 +18,7 @@
 import * as preferences from "preferences";
 import * as data from "data";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
-import {current_language} from "translate";
+import {_, interpolate, pgettext, current_language} from "translate";
 import {Goban, GoEngine, sfx, GoThemes} from 'goban';
 
 window['Goban'] = Goban;
@@ -81,7 +81,7 @@ export function configure_goban() {
         getLocation: ():string => window.location.pathname,
         getShowMoveNumbers: ():boolean => !!preferences.get("show-move-numbers"),
         getShowVariationMoveNumbers: ():boolean => preferences.get("show-variation-move-numbers"),
-        getMoveTreeNumbering: ():string => preferences.get("move-tree-numbering"),
+        getMoveTreeNumbering: ():"none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
         getCDNReleaseBase: ():string => data.get('config.cdn_release'),
         getSoundEnabled: ():boolean => !!preferences.get('sound-enabled'),
         getSoundVolume: ():number => preferences.get('sound-volume') as number,
@@ -95,5 +95,20 @@ export function configure_goban() {
         discWhiteTextColor: ():string => data.get("custom.black"),
         plainBoardColor: ():string => data.get("custom.board"),
         plainBoardLineColor: ():string => data.get("custom.line"),
+
+        addCoordinatesToChatInput: (coordinates:string):void => {
+            let chat_input = $(".chat-input");
+
+            if (!chat_input.attr("disabled")) {
+                let txt = (chat_input.val().trim() + " " + coordinates).trim();
+                chat_input.val(txt);
+            }
+        },
+
+        updateScoreEstimation: (est_winning_color:"black"|"white", number_of_points:number):void => {
+            let color = est_winning_color === "black" ? _("Black") : _("White");
+            $("#score-estimation").text(interpolate(pgettext("Score estimation result", "Estimation: %s by %s"), [color, number_of_points.toFixed(1)]));
+        },
+
     });
 }

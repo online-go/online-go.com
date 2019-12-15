@@ -27,6 +27,7 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
+import * as preferences from "preferences";
 import online_status from "online_status";
 import {pgettext} from "translate";
 
@@ -72,13 +73,30 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
 
             let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+            let username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
+            }
+            else if (player_id && player_id <= 0) {
+                // do nothing
+            }
+            else if (username) {
+                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (username === user.username) {
+                        this.setState({user: user});
+                    }
+                }).catch((user) => {
+                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
         }
 
@@ -114,6 +132,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
         if (!new_props.disableCacheUpdate) {
             let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+            let username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
 
             if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
@@ -125,7 +144,23 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
-                }).catch(errorLogger);
+                }).catch((user) => {
+                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
+            }
+            else if (player_id && player_id <= 0) {
+                // do nothing
+            }
+            else if (username) {
+                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (username === user.username) {
+                        this.setState({user: user});
+                    }
+                }).catch((user) => {
+                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
+                    errorLogger(user);
+                });
             }
         }
 
@@ -151,6 +186,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         let player = this.state.user;
         let player_id = player.id || player.player_id;
         let nolink = !!this.props.nolink;
+        let rank:JSX.Element = null;
 
 
         let main_attrs: any = {
@@ -206,7 +242,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 rank_text = rating.bounded_rank_label;
             }
 
-            main_attrs["data-rank"] = " [" + rank_text + "]";
+            if (!preferences.get("hide-ranks")) {
+                rank = <span className='Player-rank'>[{rank_text}]</span>;
+            }
         }
 
         if (props.flare) {
@@ -217,7 +255,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
-        let username = unicodeFilter(player.username || player.name);
+        let username_string = unicodeFilter(player.username || player.name);
+        let username = <span className='Player-username'>{username_string}</span>;
 
 
         if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
@@ -225,18 +264,18 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}
+                    {username}{rank}
                 </span>
             );
         } else {
             let player_id = this.state.user.id || this.state.user.player_id;
-            let uri = `/player/${player_id}/${encodeURIComponent(username)}`;
+            let uri:string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
                 <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}
+                    {username}{rank}
                 </a>
             );
         }
@@ -244,6 +283,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     display_details = (event) => {
         if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return;
+        }
+
+        if ( ("buttons" in event && (event.buttons & 2)) ||
+             ("button" in event && event.button === 2) ) {
+            /* on click with right mouse button do nothing.
+               buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
+               buttons isn't supported in all browsers, so we have to check button as fallback. */
             return;
         }
 
