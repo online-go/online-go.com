@@ -59,6 +59,14 @@ interface AIReviewState {
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
     top_moves: Array<JGOFAIReviewMove>;
+    worst_move_delta_filter: number;
+}
+
+interface DeltaEntry {
+    player:JGOFNumericPlayerColor;
+    delta:number;
+    move_number:number;
+    move:JGOFIntersection;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -75,6 +83,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             ai_reviews: [],
             updatecount: 0,
             top_moves: [],
+            worst_move_delta_filter: 0.1,
         };
         this.state = state;
         window['aireview'] = this;
@@ -286,6 +295,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.getAIReviewList();
         }
     }
+
 
     public updateHighlightsMarksAndHeatmaps() {
         let ai_review_move:JGOFAIReviewMove;
@@ -500,7 +510,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_move_pretty_coords,
         ];
     }
-    public render() {
+    public render():JSX.Element {
         if (this.state.loading) {
             return null;
         }
@@ -657,12 +667,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
 
                 {((this.ai_review && this.ai_review.win_rates) || null) &&
-                    <AIReviewChart
-                        ai_review={this.ai_review}
-                        entries={ai_review_chart_entries}
-                        updatecount={this.state.updatecount}
-                        move_number={this.props.move.move_number}
-                        setmove={this.props.game.nav_goto_move} />
+                    <React.Fragment>
+                        <AIReviewChart
+                            ai_review={this.ai_review}
+                            entries={ai_review_chart_entries}
+                            updatecount={this.state.updatecount}
+                            move_number={this.props.move.move_number}
+                            setmove={this.props.game.nav_goto_move} />
+                        {this.renderWorstMoveList()}
+                    </React.Fragment>
                 }
 
                 {((this.ai_review?.type === 'fast') || null) &&
@@ -703,6 +716,57 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
             </div>
         );
+    }
+    public renderWorstMoveList():JSX.Element {
+        if (!this.props.game.goban?.engine?.move_tree || !this.ai_review) {
+            return null;
+        }
+
+        let lst = computeDeltaMap(this.props.game.goban.engine.move_tree, this.ai_review);
+        let more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
+
+        return (
+            <div className='worst-move-list-container'>
+                <div className='move-list'>
+                    {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}:
+                    {lst.slice(0, 3).map(de => {
+                        let pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
+                        return (
+                            <span
+                                key={de.move_number}
+                                className={de.player === JGOFNumericPlayerColor.BLACK ? 'move black-background' : 'move white-background'}
+                                onClick={() => this.props.game.nav_goto_move(de.move_number - 1)}
+                            >
+                                {pretty_coords}
+                            </span>
+                        );
+                    })}
+                    {(more_ct > 0 || null) &&
+                        <span>
+                            {interpolate(pgettext("Number of big mistake moves not listed", "+ {{more_ct}} more"), {more_ct})}
+                        </span>
+                    }
+                </div>
+
+                {/*
+                <span className='filter'>
+                    <select
+                        value={this.state.worst_move_delta_filter}
+                        onChange={this.setWorstMoveDeltaFilter}
+                        >
+                        <option value={0.1}>10</option>
+                        <option value={0.4}>40</option>
+                        <option value={0.5}>50</option>
+                    </select>
+                </span>
+                */}
+
+            </div>
+        );
+    }
+
+    setWorstMoveDeltaFilter = (ev) => {
+        this.setState({worst_move_delta_filter: parseFloat(ev.target.value)});
     }
 }
 
@@ -759,4 +823,42 @@ function extractShortNetworkVersion(network:string):string {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
     return network.substr(0, 6);
+}
+
+/**
+ * Returns a delta map of all moves in the game, sorted by the negative change
+ * in winrate for the player that made the move. So the first entry will be the
+ * worst move in the game, and so forth.
+ */
+function computeDeltaMap(starting_move:MoveTree, ai_review:JGOFAIReview):Array<DeltaEntry> {
+    let ret:Array<DeltaEntry> = [];
+    let cur_move = starting_move;
+
+    while (cur_move.trunk_next) {
+        let next_move = cur_move.trunk_next;
+        let next_player = next_move.player;
+
+        let cur_win_rate = ai_review.win_rates[cur_move.move_number] || 0.5;
+        let next_win_rate = ai_review.win_rates[next_move.move_number] || 0.5;
+
+        let delta:number = next_move.player === JGOFNumericPlayerColor.WHITE
+            ? (cur_win_rate) - (next_win_rate)
+            : (next_win_rate) - (cur_win_rate);
+
+        ret.push({
+            player: next_move.player,
+            delta: delta,
+            move_number: next_move.move_number,
+            move: {
+                x: next_move.x,
+                y: next_move.y
+            }
+        });
+
+        cur_move = next_move;
+    }
+
+    ret.sort((a, b) => a.delta - b.delta);
+
+    return ret;
 }
