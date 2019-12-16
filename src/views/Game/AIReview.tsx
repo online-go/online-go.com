@@ -148,6 +148,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     'type': 'auto',
                 })
                 .then(res => {
+                    sanityCheck(res);
                     if (res.id) {
                         this.setState({reviewing: true});
                     }
@@ -168,8 +169,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
         .then((ai_review:JGOFAIReview) => {
+            sanityCheck(ai_review);
             this.ai_review = ai_review;
-            sanityCheck(this.ai_review);
             this.props.onAIReviewSelected(ai_review);
             this.syncAIReview();
         })
@@ -251,7 +252,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     "type": analysis_type,
                     "engine": engine,
                 })
-                .then((res) => swal("Analysis started"))
+                .then((res) => {
+                    sanityCheck(res);
+                    swal("Analysis started");
+                })
                 .catch(errorAlerter);
             } else {
                 openBecomeASiteSupporterModal();
@@ -311,16 +315,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_ai_review_move = this.ai_review.moves[move_number + 1];
         }
 
+        let win_rates = this.ai_review?.win_rates || [];
+
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
         } else {
-            win_rate = this.ai_review.win_rates[move_number] || this.ai_review.win_rate;
+            win_rate = win_rates[move_number] || this.ai_review.win_rate;
         }
 
         if (next_ai_review_move) {
             next_win_rate = next_ai_review_move.win_rate;
         } else {
-            next_win_rate = this.ai_review.win_rates[move_number + 1] || win_rate;
+            next_win_rate = win_rates[move_number + 1] || win_rate;
         }
 
         let marks:any = {};
@@ -331,8 +337,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 next_move = cur_move.trunk_next;
 
                 if (ai_review_move) {
-                    //let branches = ai_review_move.branches.slice(0, 6);
-                    let branches = ai_review_move.branches;
+                    let branches = ai_review_move.branches.slice(0, 6);
+                    //let branches = ai_review_move.branches;
 
                     // Ensure we have an entry in branches for our next move,
                     // as we always want to show what move was made and how
@@ -773,6 +779,9 @@ function sanityCheck(ai_review:JGOFAIReview) {
         if (ai_review.moves['0'].move.x !== -1) {
             console.error("AI Review move '0' is not a pass move, was ", ai_review.moves['0'].move);
         }
+    }
+    if ((typeof(ai_review.moves) !== "object")) {
+        console.error("AI Review moves was not an object", JSON.stringify(ai_review.moves));
     }
 }
 

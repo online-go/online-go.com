@@ -308,11 +308,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             this.replot_timeout = setTimeout(() => this.plot(), 50);
         }
 
-
-
         this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
         this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
-
 
         this.win_rate_area_container
             ?.datum(entries)
