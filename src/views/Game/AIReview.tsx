@@ -35,6 +35,8 @@ import {
     JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
+    computeWorstMoves,
+    AIReviewWorstMoveEntry,
 } from 'goban';
 
 declare var swal;
@@ -60,13 +62,6 @@ interface AIReviewState {
     updatecount: number;
     top_moves: Array<JGOFAIReviewMove>;
     worst_move_delta_filter: number;
-}
-
-interface DeltaEntry {
-    player:JGOFNumericPlayerColor;
-    delta:number;
-    move_number:number;
-    move:JGOFIntersection;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -318,11 +313,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
+        } else {
+            win_rate = this.ai_review.win_rates[move_number] || this.ai_review.win_rate;
         }
+
         if (next_ai_review_move) {
             next_win_rate = next_ai_review_move.win_rate;
         } else {
-            next_win_rate = win_rate;
+            next_win_rate = this.ai_review.win_rates[move_number + 1] || win_rate;
         }
 
         let marks:any = {};
@@ -722,7 +720,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return null;
         }
 
-        let lst = computeDeltaMap(this.props.game.goban.engine.move_tree, this.ai_review);
+        let lst = computeWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
         let more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
 
         return (
@@ -823,42 +821,4 @@ function extractShortNetworkVersion(network:string):string {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
     return network.substr(0, 6);
-}
-
-/**
- * Returns a delta map of all moves in the game, sorted by the negative change
- * in winrate for the player that made the move. So the first entry will be the
- * worst move in the game, and so forth.
- */
-function computeDeltaMap(starting_move:MoveTree, ai_review:JGOFAIReview):Array<DeltaEntry> {
-    let ret:Array<DeltaEntry> = [];
-    let cur_move = starting_move;
-
-    while (cur_move.trunk_next) {
-        let next_move = cur_move.trunk_next;
-        let next_player = next_move.player;
-
-        let cur_win_rate = ai_review.win_rates[cur_move.move_number] || 0.5;
-        let next_win_rate = ai_review.win_rates[next_move.move_number] || 0.5;
-
-        let delta:number = next_move.player === JGOFNumericPlayerColor.WHITE
-            ? (cur_win_rate) - (next_win_rate)
-            : (next_win_rate) - (cur_win_rate);
-
-        ret.push({
-            player: next_move.player,
-            delta: delta,
-            move_number: next_move.move_number,
-            move: {
-                x: next_move.x,
-                y: next_move.y
-            }
-        });
-
-        cur_move = next_move;
-    }
-
-    ret.sort((a, b) => a.delta - b.delta);
-
-    return ret;
 }
