@@ -400,7 +400,6 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://pachi.or.cz/">Pachi</a></span>,
                 <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://gogui.sourceforge.net/">GoGui</a></span>,
                 <span><i className="fa fa-linux"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a rel="noopener" href="https://github.com/SabakiHQ/Sabaki">Sabaki</a></span>,
-                <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=net.lrstudios.android.pachi">Pachi for Android</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=nl.tengen.gridmaster">Go GridMaster</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=org.ligi.gobandroid_hd">Gobandroid HD</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/developer?id=Lauri+Paatero">Hactar Go</a></span>,
