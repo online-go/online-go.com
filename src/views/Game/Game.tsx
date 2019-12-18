@@ -2453,16 +2453,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return (
           <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
               <div className="main-time boxed"></div>
-              {(this.goban.engine.time_control.time_control === "byoyomi" || null) &&
+              {(this.goban.engine.time_control.system === "byoyomi" || null) &&
                   <span className="byo-yomi-periods" />
               }
-              {(this.goban.engine.time_control.time_control === "canadian" || null) &&
+              {(this.goban.engine.time_control === "canadian" || null) &&
                   <span className="canadian-periods"> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
               }
               {(this.state[`${color}_pause_text`] || null) &&
                   <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
               }
-              {null && (this.goban.engine.time_control.time_control === "byoyomi" || this.goban.engine.time_control.time_control === "canadian" || null) &&
+              {null && (this.goban.engine.time_control.system === "byoyomi" || this.goban.engine.time_control.system === "canadian" || null) &&
 
                   <div className="overtime-container">
                       <div className="overtime">{_("OVERTIME")}</div>
