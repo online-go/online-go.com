@@ -336,24 +336,26 @@ body.dark .MainGobanView.zen .players {
 		&.player-container {
 			background: none;
 			background-color: #383838;
-			border: 1px solid #484848;
+			border: 1px solid #181818;
+			color: #DDD;
 		}
 	}
 	#game-white-clock,
 	.white .score-container {
-		color: #BBB;
+		color: #DDD;
 	}
 
 	.black {
 		&.player-container {
 			background: none;
 			background-color: #111111;
-			border: 1px solid #222;
+			border: 1px solid #181818;
+			color: #BBB;
 		}
 	}
 	#game-black-clock,
 	.black .score-container {
-		color: #AAA;
+		color: #BBB;
 	}
 }
 body.light .MainGobanView.zen .players {
@@ -361,6 +363,11 @@ body.light .MainGobanView.zen .players {
 	}
 	.black.player-container {
 		background: linear-gradient(#666 0%, #181818 100%);
+	}
+}
+.MainGobanView.zen .play-controls{
+	.game-state {
+		display: none;
 	}
 }
 .MainGobanView.zen .players {
@@ -375,7 +382,7 @@ body.light .MainGobanView.zen .players {
 		width: auto;
 		flex-grow: 1;
 	}
-	div.in-game-clock {
+	.Clock {
 		min-height: 80px;
 		.byo-yomi-periods,
 		.canadian-periods,
@@ -384,7 +391,7 @@ body.light .MainGobanView.zen .players {
 		}
 		.main-time {
 			line-height: 50px;
-			font-size: 30pt;
+			font-size: 26pt;
 		}
 		.boxed {
 			text-align: center;
@@ -424,15 +431,4 @@ body.light .MainGobanView.zen .players {
 		display: none;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
 

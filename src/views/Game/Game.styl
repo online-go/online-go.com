@@ -510,8 +510,13 @@ goban-view-bar-width=400px
             display: none;
         }
 		.right-col {
-			.chat-container, .play-controls {
+			.chat-container,
+			.game-analyze-button-bar,
+			#move-tree-container {
 				display: none;
+			}
+			.play-controls {
+				flex-grow: 0;
 			}
 			justify-content: center;
 			min-width: auto;

@@ -1879,8 +1879,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     }
 
-                    {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
-
                     {this.frag_below_board_controls()}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
@@ -1914,15 +1912,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(this.state.view_mode !== "portrait" || null) &&
                     <div className="right-col">
-                        {(this.state.view_mode === "zen" || null) &&
+                        {(this.state.zen_mode || null) &&
                             <div className="align-col-start"></div>
                         }
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" ||
-                            this.state.view_mode === "zen"  || null) && this.frag_players()}
+                            this.state.zen_mode || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && this.frag_ai_review()}
+                            this.state.view_mode === "wide" || null) && 
+							!this.state.zen_mode && this.frag_ai_review()}
 
                         {review
                             ? this.frag_review_controls()
@@ -1937,7 +1936,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
                         {this.frag_dock()}
-                        {(this.state.view_mode === "zen" || null) &&
+                        {(this.state.zen_mode || null) &&
                             <div className="align-col-end"></div>
                         }
                     </div>
@@ -2477,28 +2476,24 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_num_captures_text(color) {
-        let all_prisoner_colors = this.state.view_mode === "zen" ? ["black", "white"] : [color];
+		let num_prisoners = this.state.score[color].prisoners;
+		let prisoner_color = color === "black" ? "white" : "black";
+		let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
         return (
           <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
-            {all_prisoner_colors.map((prisoner_color, id) => {
-                let num_prisoners = this.state.score[prisoner_color].prisoners;
-                let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
-                return (
-                    <span className="num-captures-container">
-                        <span className="num-captures-count">{num_prisoners}</span>
-                        {(this.state.view_mode !== "zen" || null) &&
-                            <span className="num-captures-units">
-                                {` ${ngettext("capture", "captures", num_prisoners)}`}
-                            </span>
-                        }
-                        {(this.state.view_mode === "zen" || null) &&
-                            <span className="num-captures-stone">
-                                <img className="stone-image" src={prisoner_img_src} />
-                            </span>
-                        }
-                    </span>
-                );
-            })}
+			<span className="num-captures-container">
+				<span className="num-captures-count">{num_prisoners}</span>
+				{(!this.state.zen_mode || null) &&
+					<span className="num-captures-units">
+						{` ${ngettext("capture", "captures", num_prisoners)}`}
+					</span>
+				}
+				{(this.state.zen_mode || null) &&
+					<span className="num-captures-stone">
+						<img className="stone-image" src={prisoner_img_src} />
+					</span>
+				}
+			</span>
           </div>
         );
     }
@@ -2518,10 +2513,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                       player_bg.backgroundImage = `url("${icon}")`;
                   }
-                  if (this.state.view_mode === "zen" && !(goban.mode === "play" && goban.player_id === engine.players[color].id)) {
-                      return null;
-                  }
-
                   return (
                   <div key={idx} className={`${color} player-container`}>
                       {this.state[`${color}_auto_resign_expiration`] &&
