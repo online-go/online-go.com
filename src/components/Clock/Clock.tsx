@@ -83,17 +83,17 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
                 }
 
                 {time_control.system === 'byoyomi' &&
-                    <div>
+                    <div className='byo-yomi-container'>
                         {(!compact || player_clock.main_time <= 0) &&
                             <React.Fragment>
-                                {player_clock.main_time > 0 && <span> + </span>}
+                                {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
                                 <span className={'period-time boxed' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
                                     {prettyTime(player_clock.period_time_left)}
                                 </span>
                             </React.Fragment>
                         }
-                        <span className={'byo-yomi-periods ' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}
-                            > ({
+                        <span className={'byo-yomi-periods ' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
+                            ({
                                 player_clock.periods_left === 1
                                     ?  pgettext("Final byo-yomi period (Sudden Death)", "SD")
                                     : `${player_clock.periods_left}`
@@ -104,11 +104,11 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
                 {time_control.system === 'canadian' &&
                  (!compact || player_clock.main_time <= 0) &&
                     <React.Fragment>
-                        <span>
-                            {player_clock.main_time > 0 && <span> + </span>}
+                        <span className='canadian-clock-container'>
+                            {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
                             <span className='period-time boxed'>{prettyTime(player_clock.block_time_left)}</span>
-                            /
-                            <span className='periods boxed'>{player_clock.moves_left}</span>
+                            <span className='periods-delimiter'>/</span>
+                            <span className='period-moves boxed'>{player_clock.moves_left}</span>
                         </span>
                     </React.Fragment>
                 }

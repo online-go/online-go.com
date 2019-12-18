@@ -325,7 +325,7 @@
         .main-time {
             font-size: font-size-small;
         }
-        .periods, .period-time {
+        .period-moves, .period-time {
             font-size: font-size-extra-small;
         }
     }
@@ -334,8 +334,7 @@
 body.dark .MainGobanView.zen .players {
 	.white {
 		&.player-container {
-			background: none;
-			background-color: #383838;
+			background: linear-gradient(#2C2C2C 0%, #383838 100%);
 			border: 1px solid #181818;
 			color: #DDD;
 		}
@@ -347,7 +346,8 @@ body.dark .MainGobanView.zen .players {
 
 	.black {
 		&.player-container {
-			background: none;
+			background: linear-gradient(#111111 0%, #1A1A1A 100%);
+			// background: none;
 			background-color: #111111;
 			border: 1px solid #181818;
 			color: #BBB;
@@ -386,15 +386,27 @@ body.light .MainGobanView.zen .players {
 		min-height: 80px;
 		.byo-yomi-periods,
 		.canadian-periods,
+		.periods-delimiter,
+		.moves-left,
 		.pause-text {
 			display: none;
 		}
-		.main-time {
+		.main-time,
+		.period-time {
 			line-height: 50px;
 			font-size: 26pt;
-		}
-		.boxed {
 			text-align: center;
+		}
+		.byo-yomi-container,
+		.canadian-clock-container {
+			display: block;
+			flex-grow: 1;
+		}
+	}
+	.Clock:not(.in-overtime) {
+		.byo-yomi-container,
+		.canadian-clock-container {
+			display: none;
 		}
 	}
 	.captures {
@@ -426,7 +438,6 @@ body.light .MainGobanView.zen .players {
 	.player-name-container,
 	.player-name-plain,
 	.score-details,
-	.period-time,
 	.komi {
 		display: none;
 	}

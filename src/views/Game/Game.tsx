@@ -2436,6 +2436,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         </div>
         );
     }
+
     frag_ai_review() {
         if (this.goban
             && this.goban.engine
@@ -2448,33 +2449,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return null;
     }
 
-    frag_clock(color) {
-                  //<span> + <div className="periods boxed"/> x <div className="period-time boxed"/></span>
-        return (
-          <div id={`game-${color}-clock`} className={(color + " clock in-game-clock") + (this.state[`${color}_pause_text`] ? " paused" : "")}>
-              <div className="main-time boxed"></div>
-              {(this.goban.engine.time_control.system === "byoyomi" || null) &&
-                  <span className="byo-yomi-periods" />
-              }
-              {(this.goban.engine.time_control === "canadian" || null) &&
-                  <span className="canadian-periods"> + <div className="period-time boxed"/> / <div className="periods boxed"/></span>
-              }
-              {(this.state[`${color}_pause_text`] || null) &&
-                  <div className="pause-text">{this.state[`${color}_pause_text`]}</div>
-              }
-              {null && (this.goban.engine.time_control.system === "byoyomi" || this.goban.engine.time_control.system === "canadian" || null) &&
-
-                  <div className="overtime-container">
-                      <div className="overtime">{_("OVERTIME")}</div>
-                      <div className="periods-container">
-                          <div className="periods boxed">&nbsp;</div>
-                          <div className="period-time boxed">&nbsp;</div>
-                      </div>
-                  </div>
-              }
-          </div>
-        );
-    }
     frag_num_captures_text(color) {
         let num_prisoners = this.state.score[color].prisoners;
         let prisoner_color = color === "black" ? "white" : "black";
@@ -2490,7 +2464,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
                 {(this.state.zen_mode || null) &&
                     <span className="num-captures-stone">
-                        <img className="stone-image" src={prisoner_img_src} />
+                        {' '}<img className="stone-image" src={prisoner_img_src} />
                     </span>
                 }
             </span>
