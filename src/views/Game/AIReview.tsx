@@ -295,7 +295,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-
     public updateHighlightsMarksAndHeatmaps() {
         let ai_review_move:JGOFAIReviewMove;
         let next_ai_review_move:JGOFAIReviewMove;
@@ -602,29 +601,31 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 let value = getValue();
                                 let isSelected = value && value[0].id === data.id;
 
-                                return <div ref={innerRef} {...innerProps}
-                                    className={'ai-review-option-container '
-                                        + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}
+                                return (
+                                    <div ref={innerRef} {...innerProps}
+                                        className={'ai-review-option-container '
+                                            + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}
                                     >
-                                    <ReviewStrengthIcon review={data} />
-                                    <div className='ai-review-information'>
-                                        <div>
-                                            {interpolate(
-                                                pgettext("AI Review technical information",
-                                                    "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."), {
-                                                        engine: engineName(data.engine),
-                                                        engine_version: data.engine_version,
-                                                        network_size: data.network_size,
-                                                        network: extractShortNetworkVersion(data.network),
-                                                    }
-                                                )
-                                            }
-                                        </div>
-                                        <div className='date'>
-                                            {moment(new Date(data.date)).format('lll')}
+                                        <ReviewStrengthIcon review={data} />
+                                        <div className='ai-review-information'>
+                                            <div>
+                                                {interpolate(
+                                                    pgettext("AI Review technical information",
+                                                        "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."), {
+                                                            engine: engineName(data.engine),
+                                                            engine_version: data.engine_version,
+                                                            network_size: data.network_size,
+                                                            network: extractShortNetworkVersion(data.network),
+                                                        }
+                                                    )
+                                                }
+                                            </div>
+                                            <div className='date'>
+                                                {moment(new Date(data.date)).format('lll')}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>;
+                                );
                             },
                             SingleValue: ({data}) => (
                                 <React.Fragment>
