@@ -1920,8 +1920,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             this.state.zen_mode || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && 
-							!this.state.zen_mode && this.frag_ai_review()}
+                            this.state.view_mode === "wide" || null) &&
+                            !this.state.zen_mode && this.frag_ai_review()}
 
                         {review
                             ? this.frag_review_controls()
@@ -2476,24 +2476,24 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_num_captures_text(color) {
-		let num_prisoners = this.state.score[color].prisoners;
-		let prisoner_color = color === "black" ? "white" : "black";
-		let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
+        let num_prisoners = this.state.score[color].prisoners;
+        let prisoner_color = color === "black" ? "white" : "black";
+        let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
         return (
           <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
-			<span className="num-captures-container">
-				<span className="num-captures-count">{num_prisoners}</span>
-				{(!this.state.zen_mode || null) &&
-					<span className="num-captures-units">
-						{` ${ngettext("capture", "captures", num_prisoners)}`}
-					</span>
-				}
-				{(this.state.zen_mode || null) &&
-					<span className="num-captures-stone">
-						<img className="stone-image" src={prisoner_img_src} />
-					</span>
-				}
-			</span>
+            <span className="num-captures-container">
+                <span className="num-captures-count">{num_prisoners}</span>
+                {(!this.state.zen_mode || null) &&
+                    <span className="num-captures-units">
+                        {` ${ngettext("capture", "captures", num_prisoners)}`}
+                    </span>
+                }
+                {(this.state.zen_mode || null) &&
+                    <span className="num-captures-stone">
+                        <img className="stone-image" src={prisoner_img_src} />
+                    </span>
+                }
+            </span>
           </div>
         );
     }
