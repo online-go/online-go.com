@@ -48,7 +48,7 @@ const position_url = (node_id: string, variation_filter?: any, mode?: string) =>
             position_url += "&cfilterid=" + variation_filter.contributor;
         }
         if (variation_filter.tags && variation_filter.tags.length !== 0) {
-            position_url += "&tfilterid=" + variation_filter.tags;
+            position_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
         }
         if (variation_filter.source) {
             position_url += "&sfilterid=" + variation_filter.source;
@@ -1635,7 +1635,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     onTagChange = (e) => {
-        // console.log("changing tags", e);
+        //console.log("changing tags", e);
         this.setState({ tags: e });
     }
 

@@ -50,7 +50,7 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
-        let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
+        let player_id:number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
 
         let clock_className = 'Clock ' + color;
         if (clock.pause_state) {

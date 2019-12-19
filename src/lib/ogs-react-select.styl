@@ -1,0 +1,52 @@
+/*
+ * Copyright (C) 2012-2019  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.ogs-react-select__control, .ogs-react-select__menu {
+    themed background-color react-select-bg
+    themed border-color react-select-border
+    themed color fg
+
+    .selected {
+        themed background-color react-select-selected-bg
+        themed color react-select-selected-fg
+    }
+    .focused {
+        themed background-color react-select-focused-bg
+        themed color react-select-focused-fg
+    }
+}
+
+.ogs-react-select__single-value {
+    themed color fg
+}
+
+.ogs-react-select__multi-value {
+    themed background-color shade5
+    themed color fg
+}
+
+.ogs-react-select__multi-value__label {
+    themed color fg
+}
+
+.ogs-react-select__menu  {
+    > div > div {
+        padding: 0.5rem;
+        user-select: none;
+        cursor: pointer;
+    }
+}

@@ -18,7 +18,6 @@
 import {
     Goban,
     GobanCanvasConfig,
-    NumericPlayerColor,
     GoMath,
     PuzzleConfig,
     PuzzlePlacementSetting,

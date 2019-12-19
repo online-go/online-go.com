@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 
 import { _, pgettext, interpolate } from "translate";
 
@@ -33,6 +33,7 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
         super(props);
         this.state = {
             tag_list: [],
+            tag_map: {},
         };
     }
 
@@ -47,7 +48,14 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
             const available_tags = body.tags.map((tag, i) => (
                 { label: tag.description, value: tag.id }
             ));
-            this.setState({tag_list: available_tags});
+            let tag_map = {};
+            for (let tag of available_tags) {
+                tag_map[tag.value] = tag;
+            }
+            this.setState({
+                tag_list: available_tags,
+                tag_map: tag_map,
+            });
         }).catch((r) => {
             console.log("Tags GET failed:", r);
         });
@@ -60,17 +68,34 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
     render() {
         // console.log("Tag selector render");
         // console.log("tags", this.state.tag_list);
+        // console.log("Selected tags: ", this.props.selected_tags);
+        // console.log("Tags list: ", this.state.tag_list);
 
         return (
-            <Select className="joseki-tag-selector"
+            <Select
+                className="joseki-tag-selector"
+                classNamePrefix="ogs-react-select"
                 value={this.props.selected_tags}
                 options={this.state.tag_list}
-                multi={true}
+                isMulti={true}
                 onChange={this.onTagChange}
-                valueRenderer={(v) => <span className="tag-value">{v.label}</span>}
-                optionRenderer={(o) => <span className="tag-option">{o.label}</span>}
+                getOptionLabel={o => o.label}
+                getOptionValue={o => o.value}
+                components={{
+                    Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                        <div ref={innerRef} {...innerProps}
+                            className={(isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                            {data.label}
+                        </div>
+                    ),
+                }}
+
             />
         );
     }
 }
+
+const MultiValue = (props) => {
+    return <components.MultiValue {...props} key={props.data} />;
+};
 
