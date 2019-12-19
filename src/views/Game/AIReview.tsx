@@ -208,6 +208,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             ai_review.win_rates[move.move_number] = move.win_rate;
         }
 
+        /* For old reviews, we might not have all win rates, so fill in the missing entries */
+        let last_win_rate = 0.5;
+        for (let move_number = 0; move_number < ai_review.win_rates.length; ++move_number) {
+            if (ai_review.win_rates[move_number] === undefined) {
+                ai_review.win_rates[move_number] = last_win_rate;
+            }
+            last_win_rate = ai_review.win_rates[move_number];
+        }
+
+
         /* TODO: Blunder count & top3 move array */
 
         this.setState({
