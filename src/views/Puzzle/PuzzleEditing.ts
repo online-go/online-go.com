@@ -287,8 +287,8 @@ export class PuzzleEditor {
             }
         };
 
-        process(GoMath.decodeMoves(puzzle.initial_state.black), width, height);
-        process(GoMath.decodeMoves(puzzle.initial_state.white), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state.black, width, height), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state.white, width, height), width, height);
         process(puzzle.move_tree, width, height);
 
         if (ret.top > ret.bottom) {
