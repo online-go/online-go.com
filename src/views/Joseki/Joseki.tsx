@@ -835,6 +835,25 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
+
+    forwardOneMove = () => {
+        // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
+        console.log("step forwards...");
+        if (this.move_trace.length < 2 || this.trace_index > this.move_trace.length - 2) {
+            // we don't have a move to step forwards to
+            // we could try to step them fowards into the best joseki choice at this position... tbd
+            console.log("dont have move to step fowards to:", this.move_trace, this.trace_index);
+            return;
+        }
+
+        const target_forward_move = this.move_trace[this.trace_index + 1];
+        if (this.cached_positions.hasOwnProperty(target_forward_move)) {
+            const location = this.goban.engine.decodeMoves(this.cached_positions[target_forward_move].placement)[0];
+            this.goban.engine.place(location.x, location.y);
+            this.onBoardUpdate();
+        }
+    }
+
     doPass = () => {
         this.goban.pass();
         this.goban.engine.cur_move.clearMarks();
@@ -930,6 +949,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             <div className={"Joseki"}>
                 <KBShortcut shortcut="home" action={this.resetBoard} />
                 <KBShortcut shortcut="left" action={this.backOneMove} />
+                <KBShortcut shortcut="right" action={this.forwardOneMove} />
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref={(e) => this.goban_container = e} className="goban-container">
