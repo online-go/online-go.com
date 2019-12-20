@@ -840,9 +840,20 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
         // console.log("step forwards...");
         if (this.move_trace.length < 2 || this.trace_index > this.move_trace.length - 2) {
-            // we don't have a move to step forwards to
-            // we could try to step them fowards into the best joseki choice at this position... tbd
-            // console.log("dont have move to step fowards to:", this.move_trace, this.trace_index);
+            // We don't have a saved move to step forwards to
+
+            // Try to step them fowards into the best joseki choice at this position...
+            // (but don't do passes, cause that's wierd for arrow keys, and more complicated to achieve :) )
+
+            if (this.next_moves.length > 0) {
+                const best_move = this.next_moves.reduce((prev_move, next_move) => (
+                    ((prev_move.variation_label > next_move.variation_label) && next_move.placement !== "pass") ? next_move : prev_move
+                ));
+                // console.log("best move", best_move);
+                const location = this.goban.engine.decodeMoves(best_move.placement)[0];
+                this.goban.engine.place(location.x, location.y);
+                this.onBoardUpdate();
+            }
             return;
         }
 
@@ -962,7 +973,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
-                            <i className={"fa fa-step-forward" + ((this.state.mode !== PageMode.Play && this.move_trace.length > 1 && this.trace_index < this.move_trace.length - 1) ? "" : " hide")} onClick={this.forwardOneMove}></i>
+                            <i className={"fa fa-step-forward" + ((this.state.mode !== PageMode.Play && ((this.move_trace.length > 1 && this.trace_index < this.move_trace.length - 1) || this.next_moves.length > 0)) ? "" : " hide")}
+                                onClick={this.forwardOneMove}></i>
                             <button
                                 className={"pass-button " + tenuki_type}
                                 onClick={this.doPass}>
