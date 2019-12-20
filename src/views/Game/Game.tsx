@@ -1870,7 +1870,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 </div>
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_players()}
+                    {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
@@ -1882,7 +1882,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {this.frag_below_board_controls()}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
-
 
                     {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
@@ -1916,8 +1915,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             <div className="align-col-start"></div>
                         }
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" ||
-                            this.state.zen_mode || null) && this.frag_players()}
+                            this.state.view_mode === "wide" || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" || null) &&
