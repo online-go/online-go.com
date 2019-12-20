@@ -63,7 +63,7 @@ const position_url = (node_id: string, variation_filter?: any, mode?: string) =>
 const joseki_sources_url = server_url + "josekisources";
 const tags_url = server_url + "tags";
 
-const tag_count_url = (node_id: number, tag_id:number): string => (
+const tag_count_url = (node_id: number, tag_id: number): string => (
     server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id
 );
 
@@ -146,7 +146,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
     played_mistake = false;
     computer_turn = false;  // when we are placing the computer's stone in Play mode
     filter_change = false;  // set to true when a position is being reloaded due to filter change
-    cached_positions = {};
+    cached_positions = {};  // a hash by node-ide of position information we've received from the server
+    move_trace = [];   // the list of moves that we know the person clicked on to maximum depth, so we can forward-step
+    trace_index = -1;  // index into move_trace of the current node that we are on
 
     constructor(props) {
         super(props);
@@ -242,6 +244,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
     initializeBoard = (target_position: string = "root") => {
         // console.log("Resetting board...");
         this.next_moves = [];
+        this.move_trace = [target_position];
+        this.trace_index = 0;
+
         this.played_mistake = false;
         this.computer_turn = false;
 
@@ -322,6 +327,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     loadPosition = (node_id) => {
         this.load_sequence_to_board = true;
         this.fetchNextMovesFor(node_id);
+        this.move_trace = [];
+        this.trace_index = -1;
     }
 
     updatePlayerJosekiRecord = (node_id) => {
@@ -366,7 +373,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log("cache:", this.cached_positions);
+        console.log("Fetch next moves for ", node_id);
+        console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, only
         // explore mode works with this caching ... the others need processNewMoves to happen after completion
@@ -394,10 +402,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     // Handle the per-move processing of getting to the new node.
+    // node_id is a string because it can be either "root" or a node id number
     // The data is in dto - it is a BoardPositionDTO from the server, but may have been
     // cached locally.
 
     processNewMoves = (node_id: string, dto) => {
+        console.log("Process new moves...");
         this.setState({throb: false});
 
         if (this.load_sequence_to_board) {
@@ -447,10 +457,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
             }
         }
-        if (this.backstepping) {
-            // console.log("finishing backstep");
-            this.backstepping = false;
-        }
+
         this.goban.enableStonePlacement();
     }
 
@@ -474,7 +481,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
             current_move_category: position.category,
-            current_node_id: position.node_id,
+            current_node_id: position.node_id + '',  // make sure it's a string - we don't care whether the server thinks its a number
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
             tags: position.tags,
@@ -588,12 +595,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 'pass' :
             "root";
 
-        // console.log("Processing placement at:", placement, move_string);
+        console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, '.');
-            // console.log("backstep to ", play);
-
+            console.log("finishing backstep to ", play);
+            //console.log("with category", this.state.current_move_category);
+            this.backstepping = false;
             if (this.state.mode === PageMode.Play) {
                 // in theory can only happen when backstepping out of a mistake
                 // in this case, all the data for the position we arrived at should be valid (not reset exploratory)
@@ -602,11 +610,22 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.goban.enableStonePlacement();
             }
             else if (this.state.current_move_category !== "new") {
-                this.fetchNextMovesFor(this.previous_position.node_id);
-                this.setState({ current_move_category: this.previous_position.category });
+                const stepping_back_to = this.previous_position.node_id;
+                this.fetchNextMovesFor(stepping_back_to);
+                this.trace_index--;
+                if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
+                    this.trace_index = 0;
+                    this.move_trace = [stepping_back_to];
+                }
+                else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
+                    console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
+                    this.trace_index = 0;
+                    this.move_trace = [stepping_back_to];
+                }
+                // this.setState({ current_move_category: this.previous_position.category }); redundant, done in processNewJosekiPosition?
             }
             else if (play === this.last_server_position) {
-                // console.log("Arriving back at known moves...");
+                console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
             }
@@ -615,6 +634,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.goban.enableStonePlacement();
                 // console.log("backstepped exploratory");
             }
+
+            console.log("trace:", this.move_trace, this.trace_index);
         }
         else if (this.load_sequence_to_board) {
             // console.log("loaded sequence: nothing to do in process placement");
@@ -636,7 +657,29 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
-                this.fetchNextMovesFor(chosen_move.node_id);
+                const node_id = chosen_move.node_id + '';
+                this.fetchNextMovesFor(node_id);
+
+                if (this.trace_index === this.move_trace.length - 1) {
+                    this.move_trace.push(node_id);
+                    this.trace_index++;
+                }
+                else {
+                    if (node_id === this.move_trace[this.trace_index + 1]) {
+                        // we're going forwards the same way we went last time
+                        this.trace_index++;
+                    }
+                    else {
+                        // we must have back-stepped and are now going a different way
+                        // dump old move trace past this point
+                        this.move_trace.length = this.trace_index + 1;
+                        // and add this one instead
+                        this.move_trace.push(node_id);
+                        this.trace_index++;
+                    }
+                }
+
+                console.log("trace:", this.move_trace, this.trace_index);
 
             } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
@@ -685,9 +728,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.renderMistakeResult();
                 // Note: we have not called fetchNextMoves or enablePlacement, so placement is turned off now!
             }
-
-            // console.log("pp exit");
         }
+        console.log("pp exit");
     }
 
     renderMistakeResult = () => {
