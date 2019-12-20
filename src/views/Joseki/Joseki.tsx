@@ -962,6 +962,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
+                            <i className={"fa fa-step-forward" + ((this.state.mode !== PageMode.Play && this.move_trace.length > 1 && this.trace_index < this.move_trace.length - 1) ? "" : " hide")} onClick={this.forwardOneMove}></i>
                             <button
                                 className={"pass-button " + tenuki_type}
                                 onClick={this.doPass}>
