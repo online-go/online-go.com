@@ -343,7 +343,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to play record PUT:", body);
+            // console.log("Server response to play record PUT:", body);
             this.extractPlayResults(body);
         }).catch((r) => {
             console.log("Play record PUT failed:", r);
@@ -373,15 +373,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        console.log("Fetch next moves for ", node_id);
-        console.log("... cache: ", this.cached_positions);
+        // console.log("Fetch next moves for ", node_id);
+        // console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, only
         // explore mode works with this caching ... the others need processNewMoves to happen after completion
         // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
         // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            console.log("cached position:", node_id);
+            // console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
@@ -407,7 +407,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // cached locally.
 
     processNewMoves = (node_id: string, dto) => {
-        console.log("Process new moves...");
+        // console.log("Process new moves...");
         this.setState({throb: false});
 
         if (this.load_sequence_to_board) {
@@ -595,11 +595,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 'pass' :
             "root";
 
-        console.log("Processing placement at:", placement, move_string);
+        //console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, '.');
-            console.log("finishing backstep to ", play);
+            //console.log("finishing backstep to ", play);
             //console.log("with category", this.state.current_move_category);
             this.backstepping = false;
             if (this.state.mode === PageMode.Play) {
@@ -625,7 +625,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 // this.setState({ current_move_category: this.previous_position.category }); redundant, done in processNewJosekiPosition?
             }
             else if (play === this.last_server_position) {
-                console.log("Arriving back at known moves...");
+                //console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
             }
@@ -635,7 +635,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 // console.log("backstepped exploratory");
             }
 
-            console.log("trace:", this.move_trace, this.trace_index);
+            //console.log("trace:", this.move_trace, this.trace_index);
         }
         else if (this.load_sequence_to_board) {
             // console.log("loaded sequence: nothing to do in process placement");
@@ -679,7 +679,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     }
                 }
 
-                console.log("trace:", this.move_trace, this.trace_index);
+                //console.log("trace:", this.move_trace, this.trace_index);
 
             } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
@@ -729,7 +729,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 // Note: we have not called fetchNextMoves or enablePlacement, so placement is turned off now!
             }
         }
-        console.log("pp exit");
+        // console.log("pp exit");
     }
 
     renderMistakeResult = () => {
@@ -838,11 +838,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     forwardOneMove = () => {
         // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
-        console.log("step forwards...");
+        // console.log("step forwards...");
         if (this.move_trace.length < 2 || this.trace_index > this.move_trace.length - 2) {
             // we don't have a move to step forwards to
             // we could try to step them fowards into the best joseki choice at this position... tbd
-            console.log("dont have move to step fowards to:", this.move_trace, this.trace_index);
+            // console.log("dont have move to step fowards to:", this.move_trace, this.trace_index);
             return;
         }
 
