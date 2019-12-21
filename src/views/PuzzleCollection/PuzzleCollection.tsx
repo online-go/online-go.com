@@ -17,15 +17,11 @@
 
 import * as React from "react";
 import * as data from "data";
-import * as moment from "moment";
 import { _ } from 'translate';
 import {ignore, errorAlerter, navigateTo, unitify } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
-import { PaginatedTable } from "PaginatedTable";
-import { longRankString, rankString } from "rank_utils";
-import { StarRating } from "StarRating";
-import { Player } from "Player";
-import { MiniGoban } from "MiniGoban";
+import { SortablePuzzleList } from './SortablePuzzleList';
+
 
 declare var swal;
 
@@ -67,55 +63,17 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
                         <input type='checkbox' id='private' checked={puzzle_is_private} onChange={ev => setPrivate(ev.target.checked)} />
                     </dd>
                 </dl>
+
                 <button className='btn reject' onClick={remove}>{_("Delete")}</button>
                 <button className='btn primary' onClick={save}>{_("Save")}</button>
 
+                <div className='center'>
+                    <div style={{'textAlign': 'center', 'margin': '1rem'}}>
+                        <button className='btn primary' onClick={() => navigateTo("/puzzle/new?collection_id=" + collection_id)}>{_("New puzzle")}</button>
+                    </div>
 
-                <div style={{'textAlign': 'center', 'margin': '1rem'}}>
-                    <button className='btn primary' onClick={() => navigateTo("/puzzle/new?collection_id=" + collection_id)}>{_("New puzzle")}</button>
+                    <SortablePuzzleList collection={collection_id} />
                 </div>
-
-                <PaginatedTable
-                    className=""
-                    source={`puzzles/full`}
-                    orderBy={[
-                        "id",
-                    ]}
-                    filter={{
-                        "collection": collection_id,
-                    }}
-                    groom={
-                        (arr) => {
-                            for (let e of arr) {
-                                e.rank_string = longRankString(e.rank);
-                            }
-                            return arr;
-                        }
-                    }
-                    onRowClick={(row, ev) => navigateTo(`/puzzle/${row.id}`, ev)}
-                    columns={[
-                        {header: "",  className: () => "icon",
-                         render: (X) => (
-                            <MiniGoban noLink id={null} json={X.puzzle} displayWidth={64} white={null} black={null} />
-                         )
-                        },
-
-                        {header: _("Name"), className: () => "", orderBy: ["-name"], render: (X) => X.name},
-
-                        {header: _("Difficulty"), className: () => "difficulty center", orderBy: ["rank"],
-                         render: (X) => ( <span>{X.rank_string}</span>)
-                        },
-
-                        {header: _("Rating"), className: () => "rating", orderBy: ["-rating", "-rating_count"], render: (X) =>
-                            <span><StarRating value={X.rating}/> <span className="rating-count">({unitify(X.rating_count)})</span></span>
-                        },
-                        {header: _("Views"), className: () => "view-count right", orderBy: ["-view_count"], render: (X) => unitify(X.view_count)},
-                        {header: _("Solved"), className: () => "solved-count right", orderBy: ["-solved_count"], render: (X) => unitify(X.solved_count)},
-                        {header: _("Created"), className: () => "date center", render: (X) => moment(new Date(X.created)).format("l"), orderBy: ["-created"]},
-                    ]}
-                />
-
-
             </div>
         </div>
     );

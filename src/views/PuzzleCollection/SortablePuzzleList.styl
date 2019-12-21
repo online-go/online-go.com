@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2012-2019  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.SortablePuzzleList {
+    width: 35rem;
+    padding: 0;
+}
+
+// this has to be outside, the drag/drop stuff creates a wandering <li> node
+.SortablePuzzleListEntry {
+    list-style: none;
+    user-select: none;
+    cursor: grab;
+    border: 1px solid transparent;
+    themed border-color shade4
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem;
+
+    &:hover {
+        themed border-color shade4
+    }
+
+    .minigoban, .name, .difficulty {
+        display: inline-block;
+        .MiniGoban {
+            width: 64px;
+            height: 64px;
+        }
+    }
+    .minigoban {
+        width: 5rem;
+    }
+    .name {
+        width: 19rem;
+        overflow: hidden;
+    }
+    .difficulty {
+        width: 5rem;
+        overflow: hidden;
+    }
+}
