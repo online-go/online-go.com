@@ -1877,11 +1877,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
+                <div className="align-row-start"></div>
                 <div className="left-col">
                 </div>
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_players()}
+                    {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
@@ -1890,12 +1891,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     }
 
-                    {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
-
                     {this.frag_below_board_controls()}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
-
 
                     {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
@@ -1925,11 +1923,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(this.state.view_mode !== "portrait" || null) &&
                     <div className="right-col">
+                        {(this.state.zen_mode || null) &&
+                            <div className="align-col-start"></div>
+                        }
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && this.frag_ai_review()}
+                            this.state.view_mode === "wide" || null) &&
+                            !this.state.zen_mode && this.frag_ai_review()}
 
                         {review
                             ? this.frag_review_controls()
@@ -1944,8 +1946,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
                         {this.frag_dock()}
+                        {(this.state.zen_mode || null) &&
+                            <div className="align-col-end"></div>
+                        }
                     </div>
                 }
+
+                <div className="align-row-end"></div>
 
              </div>
             </div>
@@ -2439,6 +2446,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         </div>
         );
     }
+
     frag_ai_review() {
         if (this.goban
             && this.goban.engine
@@ -2456,14 +2464,35 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return null;
     }
 
+    frag_num_captures_text(color) {
+        let num_prisoners = this.state.score[color].prisoners;
+        let prisoner_color = color === "black" ? "white" : "black";
+        let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
+        return (
+          <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
+            <span className="num-captures-container">
+                <span className="num-captures-count">{num_prisoners}</span>
+                {(!this.state.zen_mode || null) &&
+                    <span className="num-captures-units">
+                        {` ${ngettext("capture", "captures", num_prisoners)}`}
+                    </span>
+                }
+                {(this.state.zen_mode || null) &&
+                    <span className="num-captures-stone">
+                        {' '}<img className="stone-image" src={prisoner_img_src} />
+                    </span>
+                }
+            </span>
+          </div>
+        );
+    }
+
     frag_players() {
         let goban = this.goban;
         if (!goban) {
             return null;
         }
         let engine = goban.engine;
-        let portrait_game_mode = this.state.view_mode === "portrait" && this.state.portrait_tab === "game";
-
 
         return (
             <div ref={el => this.ref_players = el} className="players">
@@ -2473,7 +2502,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                       let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                       player_bg.backgroundImage = `url("${icon}")`;
                   }
-
                   return (
                   <div key={idx} className={`${color} player-container`}>
                       {this.state[`${color}_auto_resign_expiration`] &&
@@ -2518,9 +2546,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
-                                  {interpolate(_("{{captures}} {{unit}}"), {"captures": this.state.score[color].prisoners, "unit": ngettext("capture", "captures", this.state.score[color].prisoners)})}
-                              </div>
+                                this.frag_num_captures_text(color)
                           }
                           {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                             goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
