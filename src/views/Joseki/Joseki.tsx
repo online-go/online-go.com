@@ -850,16 +850,27 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     ((prev_move.variation_label > next_move.variation_label) && next_move.placement !== "pass") ? next_move : prev_move
                 ));
                 // console.log("best move", best_move);
-                const location = this.goban.engine.decodeMoves(best_move.placement)[0];
-                this.goban.engine.place(location.x, location.y);
-                this.onBoardUpdate();
+                this.doPlacement(best_move.placement);
             }
             return;
         }
 
         const target_forward_move = this.move_trace[this.trace_index + 1];
         if (this.cached_positions.hasOwnProperty(target_forward_move)) {
-            const location = this.goban.engine.decodeMoves(this.cached_positions[target_forward_move].placement)[0];
+            // we should of course have it cached, since they visited it already
+            // which is handy, because we need the placement from the node id - available in the cache
+            const step_to = this.cached_positions[target_forward_move].placement;
+            // console.log("going forwards back to:", step_to);
+            this.doPlacement(step_to);
+        }
+    }
+
+    doPlacement = (placement: string): void => {
+        if (placement === "pass") {
+            this.doPass();
+        }
+        else {
+            const location = this.goban.engine.decodeMoves(placement)[0];
             this.goban.engine.place(location.x, location.y);
             this.onBoardUpdate();
         }
