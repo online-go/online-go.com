@@ -101,6 +101,11 @@ const PuzzleEntry = SortableElement(({puzzle}) => (
                 ev.preventDefault();
                 navigateTo(`/puzzle/${puzzle.id}`, ev);
             }}
+            onAuxClick={(ev) => {
+                ev.stopPropagation();
+                ev.preventDefault();
+                navigateTo(`/puzzle/${puzzle.id}`, ev);
+            }}
         >{_("Edit")}</button>
     </li>
 ));
