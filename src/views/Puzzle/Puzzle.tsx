@@ -571,6 +571,13 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             }
         }
 
+        const have_content:boolean =
+            this.state.show_correct
+            || this.state.show_wrong
+            || !!goban.engine.cur_move.text
+            || (goban.engine.cur_move.parent && !!goban.engine.puzzle_description)
+            ;
+
         return (
         <div className={`Puzzle ${view_mode} ${squashed}`}>
             <KBShortcut shortcut="escape" action={this.doReset} />
@@ -643,36 +650,41 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     </div>
                 }
 
-                {(goban.engine.cur_move.parent == null || null) &&
-                    <Markdown source={goban.engine.puzzle_description} />
-                }
-                {(goban.engine.cur_move.text || null) &&
-                    <Markdown source={goban.engine.cur_move.text} />
-                }
-                {(this.state.show_correct || null) &&
-                    <div>
-                        {(!goban.engine.cur_move.text || null) &&
-                            <div>
-                                <h1><i className="fa fa-check-circle-o success-text"></i> {_("Correct!")}</h1>
+                {(have_content || null) &&
+                    <div className='puzzle-node-content'>
+                        {(this.state.show_correct || null) &&
+                            <div className='success'>
+                                <i className="fa fa-check-circle-o"></i> {_("Correct!")}
                             </div>
                         }
 
-                        {(next_id !== 0 && next_id !== puzzle.id || null) &&
-                            <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
-                        }
-                        {(next_id === 0 || null) &&
-                            <div>
-                                <h3>{_("You have reached the end of this collection")}</h3>
-                                <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
+                        {(this.state.show_wrong || null) &&
+                            <div className='incorrect'>
+                                <i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}
                             </div>
                         }
-                    </div>
-                }
 
-                {(this.state.show_wrong || null) &&
-                    <div>
-                        {(!goban.engine.cur_move.text || null) &&
-                            <div><h1><i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}</h1></div>
+                        <div className='content'>
+                            {(goban.engine.cur_move.parent == null || null) &&
+                                <Markdown source={goban.engine.puzzle_description} />
+                            }
+                            {(goban.engine.cur_move.text || null) &&
+                                <Markdown source={goban.engine.cur_move.text} />
+                            }
+                        </div>
+
+                        {(this.state.show_correct || null) &&
+                            <div className='actions'>
+                                {(next_id !== 0 && next_id !== puzzle.id || null) &&
+                                    <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
+                                }
+                                {(next_id === 0 || null) &&
+                                    <div>
+                                        <h3>{_("You have reached the end of this collection")}</h3>
+                                        <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
+                                    </div>
+                                }
+                            </div>
                         }
                     </div>
                 }
