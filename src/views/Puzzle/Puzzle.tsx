@@ -575,7 +575,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             this.state.show_correct
             || this.state.show_wrong
             || !!goban.engine.cur_move.text
-            || (goban.engine.cur_move.parent && !!goban.engine.puzzle_description)
+            || (!goban.engine.cur_move.parent && !!goban.engine.puzzle_description)
             ;
 
         return (
