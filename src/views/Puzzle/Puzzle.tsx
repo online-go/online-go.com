@@ -24,7 +24,7 @@ import {abort_requests_in_flight, post, get, put, del} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {goban_view_mode, goban_view_squashed} from "Game";
 import {PersistentElement} from "PersistentElement";
-import {errorAlerter, dup, ignore} from "misc";
+import {errorAlerter, errorLogger, dup, ignore} from "misc";
 import {longRankString, rankList} from "rank_utils";
 import {
     Goban,
@@ -71,6 +71,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
+    solve_time_start: number = Date.now();
+    attempts: number = 1;
 
     transform = new PuzzleTransform(new TransformSettings());
     navigation = new PuzzleNavigation();
@@ -204,6 +206,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 this.setState(state);
                 this.onResize(true);
                 window.document.title = state.collection.name + ": " + state.name;
+                this.solve_time_start = Date.now();
+                this.attempts = 1;
             }
         );
     }
@@ -269,8 +273,20 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             show_correct: false,
             show_wrong: true,
         });
+        this.attempts++;
     }
     onCorrectAnswer = () => {
+        post(`puzzles/${this.props.match.params.puzzle_id}/solutions`, {
+            'time_elapsed': Date.now() - this.solve_time_start,
+            'flipped_horizontally': this.transform.settings.transform_h,
+            'flipped_vertically':this.transform.settings.transform_v,
+            'transposed': this.transform.settings.transform_x,
+            'colors_swapped':this.transform.settings.transform_color,
+            'attempts': this.attempts,
+            'solution': this.goban.engine.cur_move.getMoveStringToThisPoint(),
+        })
+        .then(response => console.log(response))
+        .catch(errorLogger);
         this.setState({
             show_correct: true,
             show_wrong: false,
