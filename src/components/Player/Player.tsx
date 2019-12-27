@@ -57,6 +57,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     };
 
     online_subscription_user_id = null;
+    unmounted: boolean = false;
 
     constructor(props) {
         super(props);
@@ -77,6 +78,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
@@ -90,6 +94,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (username === user.username) {
                         this.setState({user: user});
                     }
@@ -104,6 +111,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     updateOnline = (_player_id, tf) => {
+        if (this.unmounted) {
+            return;
+        }
         this.setState({is_online: tf});
     }
 
@@ -141,6 +151,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
@@ -154,6 +167,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (username === user.username) {
                         this.setState({user: user});
                     }
@@ -170,6 +186,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.syncUpdateOnline(this.props.user);
     }
     componentWillUnmount() {
+        this.unmounted = true;
         this.syncUpdateOnline(null);
     }
 
