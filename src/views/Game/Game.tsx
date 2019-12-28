@@ -45,7 +45,7 @@ import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
-import {openACLModal} from "./ACLModal";
+import {openACLModal} from "ACLModal";
 import {sfx} from "goban";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
@@ -1180,7 +1180,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     openACL = () => {
-        openACLModal(this.game_id, this.review_id, this.goban.engine);
+        if (this.game_id) {
+            openACLModal({ game_id: this.game_id });
+        }
+        else if (this.review_id) {
+            openACLModal({ review_id: this.review_id });
+        }
     }
 
     popupScores() {

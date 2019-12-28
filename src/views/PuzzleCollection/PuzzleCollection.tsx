@@ -17,10 +17,11 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _ } from 'translate';
+import { _, pgettext } from 'translate';
 import {ignore, errorAlerter, navigateTo, unitify } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from './SortablePuzzleList';
+import { openACLModal } from 'ACLModal';
 
 
 declare var swal;
@@ -62,6 +63,11 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
                     <dd>
                         <input type='checkbox' id='private' checked={puzzle_is_private} onChange={ev => setPrivate(ev.target.checked)} />
                     </dd>
+                    {puzzle_is_private &&
+                        <dd>
+                            <button className='success' onClick={() => openACLModal({puzzle_collection_id: collection_id})}>{pgettext("Control who can access the game or review", "Access settings")}</button>
+                        </dd>
+                    }
                 </dl>
 
                 <button className='btn reject' onClick={remove}>{_("Delete")}</button>

@@ -32,11 +32,11 @@ import {handicapText} from "GameAcceptModal";
 interface Events {
 }
 
-interface ACLModalProperties {
-    gameId?: number;
-    reviewId?: number;
-    engine: GoEngine;
-}
+type ACLModalProperties =
+    { game_id: number; }
+    | { review_id: number; }
+    | { puzzle_collection_id?: number; }
+;
 
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
@@ -45,6 +45,9 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         group_autocomplete;
     };
 
+    url:string;
+    del_url:string;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -52,6 +55,22 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
             selected_player: null,
             selected_group: null,
         };
+
+        if ('game_id' in props) {
+            this.url = `games/${props.game_id}/acl`;
+            this.del_url = `games/acl/%%`;
+        }
+        else if ('review_id' in props) {
+            this.url = `reviews/${props.review_id}/acl`;
+            this.del_url = `reviews/acl/%%`;
+        }
+        else if ('puzzle_collection_id' in props) {
+            this.url = `puzzles/collections/${props.puzzle_collection_id}/acl`;
+            this.del_url = `puzzles/collections/acl/%%`;
+        }
+        else {
+            throw new Error(`ACLModal created with invalid parameters`);
+        }
     }
 
     UNSAFE_componentWillMount() {
@@ -60,9 +79,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     componentWillUnmount() {
     }
     refresh = () => {
-        let url = this.props.gameId ? "games/%%/acl" : "reviews/%%/acl";
-        let id = this.props.gameId ? this.props.gameId : this.props.reviewId;
-        get(url, id)
+        get(this.url)
         .then((acl) => this.setState({acl: acl}))
         .catch(errorAlerter);
     }
@@ -77,7 +94,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         }
         this.setState({acl: new_acl});
 
-        del((this.props.gameId ? "games/acl/%%" : "reviews/acl/%%"), obj.id)
+        del(this.del_url, obj.id)
         .then(this.refresh)
         .catch((e) => { this.refresh(); errorAlerter(e); });
     }
@@ -103,7 +120,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         if (group_id) {
             obj.group_id = group_id;
         }
-        post(this.props.gameId ? `games/${this.props.gameId}/acl` : `reviews/${this.props.reviewId}/acl`, obj)
+        post(this.url, obj)
         .then(this.refresh)
         .catch(errorAlerter);
 
@@ -148,13 +165,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     }
 }
 
-
-export function openACLModal(game_id?: number, review_id?: number, engine?: GoEngine): void {
-    if (game_id) {
-        openModal(<ACLModal gameId={game_id} engine={engine} />);
-    } else {
-        openModal(<ACLModal reviewId={review_id} engine={engine} />);
-    }
+export function openACLModal(props:ACLModalProperties): void {
+    openModal(<ACLModal {...props} />);
 }
 
 function yesno(tf: boolean) {

@@ -16,8 +16,8 @@
  */
 
 .ACLModal.Modal {
-    width: 100%;
-    max-width: 30rem;
+    width: 35rem;
+    max-width: 100vw;
     min-height: 25rem;
 
     .fa-remove {
@@ -33,6 +33,7 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+        padding: 1rem;
 
     }
 
@@ -46,6 +47,11 @@
         margin: 1rem;
         .PlayerAutocomplete, .GroupAutocomplete {
             margin-right: 1rem;
+        }
+
+        button {
+            flex: 0;
+            flex-basis: 8rem;
         }
 
         div {
