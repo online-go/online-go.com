@@ -29,6 +29,7 @@ import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
 import * as player_cache from "player_cache";
+import { PlayerCacheEntry } from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
@@ -38,21 +39,13 @@ import cached from 'cached';
 import {popover} from "popover";
 import {ChatDetails} from './ChatDetails';
 import {shouldOpenNewTab} from 'misc';
+import { ActiveTournamentList, GroupList } from 'types';
 
 
 declare let swal;
 
 
 data.setDefault("chat.joined", {});
-
-interface ChatProperties {
-    channel?: string;
-    autofocus?: boolean;
-    showChannels?: boolean;
-    showUserList?: boolean;
-    updateTitle: boolean;
-    fakelink?: boolean;
-}
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
@@ -133,13 +126,53 @@ function getChannel(channel) {
 }
 
 
-export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
-    render() {
-        return <Card className="Card EmbeddedChat"><Chat {...this.props} /></Card>;
-    }
+interface ChatMessage {
+    channel: string;
+    username: string;
+    id: number;
+    ranking: number;
+    professional: boolean;
+    ui_class: string;
+    message: {
+        i: string; // uuid;
+        t: number; // epoch in seconds
+        m: string; // the text
+    };
 }
 
-export class Chat extends React.Component<ChatProperties, any> {
+interface ChatUser extends PlayerCacheEntry {
+    professional: boolean;
+}
+
+interface ChatProperties {
+    channel?: string;
+    autofocus?: boolean;
+    showChannels?: boolean;
+    showUserList?: boolean;
+    updateTitle: boolean;
+    fakelink?: boolean;
+}
+
+
+interface ChatState {
+    online_count: number;
+    chat_log: Array<ChatMessage>;
+    user_list: Array<ChatUser>;
+    joined_channels: Array<string>;
+    active_channel: string;
+    group_channels: GroupList;
+    tournament_channels: ActiveTournamentList;
+    show_all_global_channels: boolean;
+    show_all_group_channels: boolean;
+    show_all_tournament_channels: boolean;
+    user_sort_order: 'alpha' | 'rank';
+    force_show_channels: boolean;
+    force_show_users: boolean;
+    show_say_hi_placeholder: boolean;
+    rtl_mode: boolean;
+}
+
+export class Chat extends React.Component<ChatProperties, ChatState> {
     refs: {
         input;
         chat_log;
@@ -177,19 +210,20 @@ export class Chat extends React.Component<ChatProperties, any> {
             force_show_channels: false,
             force_show_users: false,
             show_say_hi_placeholder: true,
+            rtl_mode: false,
         };
 
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    updateGroups = (groups) => {
+    updateGroups = (groups:GroupList) => {
         this.setState({group_channels: groups});
         groups.map((g) => {
             getChannel("group-" + g.id).name = g.name;
         });
     }
 
-    updateTournaments = (tournaments) => {
+    updateTournaments = (tournaments:ActiveTournamentList) => {
         this.setState({tournament_channels: tournaments});
         tournaments.map((t) => {
             getChannel("tournament-" + t.id).name = t.name;
@@ -536,7 +570,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         return lst;
     }
     toggleSortOrder = () => {
-        let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        let new_sort_order:'rank' | 'alpha' = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
     }
@@ -845,6 +879,12 @@ export class Chat extends React.Component<ChatProperties, any> {
             below: event.currentTarget,
             minWidth: 130,
         });
+    }
+}
+
+export class EmbeddedChat extends React.PureComponent<ChatProperties, {}> {
+    render() {
+        return <Card className="Card EmbeddedChat"><Chat {...this.props} /></Card>;
     }
 }
 
