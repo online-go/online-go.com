@@ -102,12 +102,26 @@ data.watch("config.ogs", (settings) => {
 });
 
 
-let rtl_mode = {};
+let rtl_mode:{[channel: string]: boolean} = {};
 for (let chan of global_channels) {
     rtl_mode[chan.id] = !!chan.rtl;
 }
 
-let channels = { };
+interface Channel {
+    name: string;
+    chat_log: Array<ChatMessage>;
+    chat_ids: {
+        [uuid:string]: boolean
+    };
+    unread_ct: number;
+    mentioned: boolean;
+    user_list: {
+        [player_id:string]: ChatUser
+    };
+    user_count: number;
+    rtl_mode: boolean;
+}
+let channels:{[channel:string]: Channel} = {};
 
 function getChannel(channel) {
     if (!(channel in channels)) {
@@ -125,7 +139,6 @@ function getChannel(channel) {
     return channels[channel];
 }
 
-
 interface ChatMessage {
     channel: string;
     username: string;
@@ -138,12 +151,12 @@ interface ChatMessage {
         t: number; // epoch in seconds
         m: string; // the text
     };
+    system_message_type?:'flood';
+    system?:boolean; // true if it's a system message
 }
-
 interface ChatUser extends PlayerCacheEntry {
     professional: boolean;
 }
-
 interface ChatProperties {
     channel?: string;
     autofocus?: boolean;
@@ -153,11 +166,10 @@ interface ChatProperties {
     fakelink?: boolean;
 }
 
-
 interface ChatState {
     online_count: number;
     chat_log: Array<ChatMessage>;
-    user_list: Array<ChatUser>;
+    user_list: {[player_id:string]: ChatUser};
     joined_channels: Array<string>;
     active_channel: string;
     group_channels: GroupList;
@@ -198,7 +210,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.state = {
             online_count: 0,
             chat_log: [],
-            user_list: [],
+            user_list: {},
             joined_channels: this.props.channel ? [this.props.channel] : data.get("chat.joined"),
             active_channel: this.props.channel ? this.props.channel : data.get("chat.active_channel", "global-english"),
             group_channels: [],
@@ -379,10 +391,6 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
 
         this.syncStateSoon();
 
-        if (c.channel !== this.state.active_channel) {
-
-        }
-
         if (document.hasFocus()) {
             this.unread_ct = 0;
             if (this.props.updateTitle) {
@@ -416,26 +424,33 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         delete c.user_list[part.user.id];
 
         //if (this.state.active_channel === part.channel) {
-            this.syncStateSoon();
+        this.syncStateSoon();
         //}
     }
-    systemMessage(text, type) {
+    systemMessage(text:string, system_message_type:'flood') {
         let c = getChannel(this.state.active_channel);
         c.chat_log.push({
+            channel: this.state.active_channel,
+            username: 'system',
+            id: -1,
+            ranking: 99,
+            professional: false,
+            ui_class: '',
             message: {
-                "i": n2s(Date.now()),
+                i: n2s(Date.now()),
+                t: Date.now() / 1000,
+                m: text,
             },
-            "system": true,
-            "type": type,
-            "body": text,
+            system: true,
+            system_message_type: system_message_type,
         });
         this.syncStateSoon();
     }
-    clearSystemMessages(type) {
+    clearSystemMessages(system_message_type: 'flood') {
         for (let channel in channels) {
             let c = getChannel(channel);
             for (let i = 0; i < c.chat_log.length; ++i) {
-                if (c.chat_log[i].system && type === c.chat_log[i].type) {
+                if (c.chat_log[i].system && system_message_type === c.chat_log[i].system_message_type) {
                     c.chat_log.splice(i, 1);
                     --i;
                 }
@@ -919,7 +934,7 @@ function ChatLine(props) {
     let user = line;
 
     if (line.system) {
-        return ( <div className="chat-line system">{chat_markup(line.body)}</div>);
+        return ( <div className="chat-line system">{chat_markup(line.message.m)}</div>);
     }
 
     let message = line.message;
