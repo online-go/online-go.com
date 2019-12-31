@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
-import {errorAlerter, ignore} from "misc";
+import {errorAlerter, errorLogger, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
 import {sfx} from "goban";
@@ -50,6 +50,37 @@ function logoutOtherDevices() {
         }).catch(ignore);
     //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
 }
+function logoutAndClearLocalData() {
+    try {
+        get("/api/v0/logout")
+        .then((config) => {
+            window.location.href = '/';
+        })
+        .catch(errorLogger);
+    } catch (e) {
+        console.warn(e);
+    }
+
+    try {
+        let cookies = document.cookie.split(";");
+
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i];
+            let eqPos = cookie.indexOf("=");
+            let name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+
+    try {
+        localStorage.clear();
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
 
 export class Settings extends React.PureComponent<{}, any> {
     vacation_base_time = Date.now();
@@ -839,6 +870,10 @@ export class Settings extends React.PureComponent<{}, any> {
                         <div className="logout-all-devices-container">
                             <div>
                                 <button onClick={logoutOtherDevices} className="danger">Logout other devices</button>
+                            </div>
+
+                            <div>
+                                <button onClick={logoutAndClearLocalData} className="danger">{_("Logout and clear all settings")}</button>
                             </div>
                         </div>
                     </Card>
