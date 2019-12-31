@@ -16,16 +16,29 @@
  */
 
 import * as React from "react";
-import {cc_to_country_name, getCountryFlagClass} from "translate";
+import * as data from "data";
+import {cc_to_country_name, getCountryFlagClass, getLanguageFlag} from "translate";
 
 interface FlagProperties {
     country: string;
+    user_country?: string;
+    language?: string;
     big?: boolean;
 }
 
 
-export let Flag = (props: FlagProperties) => (
-    <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>
-        <span className={"flag " + getCountryFlagClass(props.country)} />
-    </span>
-);
+export function Flag(props: FlagProperties):JSX.Element {
+    if (props.language && props.user_country) {
+        return (
+            <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>
+                <span className={"flag " + getLanguageFlag(props.language, props.user_country, props.country)} />
+            </span>
+        );
+    }  else {
+        return (
+            <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>
+                <span className={"flag " + getCountryFlagClass(props.country)} />
+            </span>
+        );
+    }
+}

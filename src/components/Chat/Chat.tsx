@@ -57,13 +57,14 @@ data.watch("config.user", (user) => {
         , "i");
 });
 
+/* Any modifications to this must also be mirrored on the server */
 let global_channels: Array<any> = [
-    {"id": "global-english" , "name": "English", "country": "us"},
+    {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
-    {"id": "global-japanese", "name": "日本語 ", "country": "jp"},
-    {"id": "global-chinese" , "name": "中文"   , "country": "cn"},
-    {"id": "global-korean"  , "name": "한국어" , "country": "kr"},
+    {"id": "global-japanese", "name": "日本語 ", "country": "jp", "language": "japanese"},
+    {"id": "global-chinese" , "name": "中文"   , "country": "cn", "language": "chinese"},
+    {"id": "global-korean"  , "name": "한국어" , "country": "kr", "language": "korean"},
     {"id": "global-russian"  , "name": "Русский" , "country": "ru"},
     {"id": "global-polish"  , "name": "Polski" , "country": "pl"},
     {"id": "global-arabic", "name": "العَرَبِيَّةُ", "country": "_Arab_League", "rtl": true},
@@ -71,9 +72,9 @@ let global_channels: Array<any> = [
     {"id": "global-catalan"  , "name": "Català" , "country": "es"},
     {"id": "global-czech"  , "name": "Čeština" , "country": "cz"},
     {"id": "global-esperanto"  , "name": "Esperanto" , "country": "_Esperanto"},
-    {"id": "global-german"  , "name": "Deutsch" , "country": "de"},
-    {"id": "global-spanish"  , "name": "Español" , "country": "es"},
-    {"id": "global-french"  , "name": "Français" , "country": "fr"},
+    {"id": "global-german"  , "name": "Deutsch" , "country": "de", "language": "german"},
+    {"id": "global-spanish"  , "name": "Español" , "country": "es", "language": "spanish"},
+    {"id": "global-french"  , "name": "Français" , "country": "fr", "language": "french"},
     {"id": "global-filipino"  , "name": "Filipino" , "country": "ph"},
     {"id": "global-indonesian", "name": "Indonesian", "country": "id"},
     {"id": "global-hebrew", "name": "עִבְרִית", "country": "il", "rtl": true},
@@ -82,10 +83,10 @@ let global_channels: Array<any> = [
     {"id": "global-bangla"  , "name": "বাংলা" , "country": "bd"},
     {"id": "global-lithuanian", "name": "Lietuvių", "country": "lt"},
     {"id": "global-hungarian"  , "name": "Magyar" , "country": "hu"},
-    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl"},
+    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl", "language": "dutch"},
     {"id": "global-norwegian"  , "name": "Norsk" , "country": "no"},
-    {"id": "global-italian"  , "name": "Italiano" , "country": "it"},
-    {"id": "global-portuguese"  , "name": "Português" , "country": "pt"},
+    {"id": "global-italian"  , "name": "Italiano" , "country": "it", "language": "italian"},
+    {"id": "global-portuguese"  , "name": "Português" , "country": "pt", "language": "portuguese"},
     {"id": "global-romanian"  , "name": "Română" , "country": "ro"},
     {"id": "global-swedish"  , "name": "Svenska" , "country": "se"},
     {"id": "global-finnish"  , "name": "Suomi" , "country": "fi"},
@@ -714,6 +715,8 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
     render() {
         let sorted_user_list = this.sortedUserList();
         let last_line = null;
+        let user = data.get('user');
+        let user_country = user.country || 'un';
 
         let chan_class = (chan: string): string => {
             return (chan in this.state.joined_channels ? " joined" : " unjoined") +
@@ -802,7 +805,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
                                         }
                                     >
                                         <span className="channel-name" data-channel={chan.id} onClick={this.setActiveChannel}>
-                                            <Flag country={chan.country}/> {chan.name}
+                                            <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
                                         </span>
                                         {user_count(chan.id)}
                                     </div>

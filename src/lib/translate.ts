@@ -239,9 +239,6 @@ export function getLanguageFlag(language, user_country, default_flag) {
     if (language === "dutch" && ["nl", "be"].indexOf(user_country) >= 0) {
         return user_country;
     }
-    if (language === "german" && ["de", "be"].indexOf(user_country) >= 0) {
-        return user_country;
-    }
 
     return getCountryFlagClass(default_flag);
 }
