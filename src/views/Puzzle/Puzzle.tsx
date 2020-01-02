@@ -587,8 +587,18 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             }
         }
 
+
+        let show_correct = this.state.show_correct;
+        if (this.goban.engine.move_tree.findBranchesWithCorrectAnswer().length === 0) {
+            /* Some puzzles just have descriptions and there is no "correct" branch,
+             * in this case just let the user know visually that there's nothing to
+             * do, here's the next puzzle */
+            show_correct = true;
+        }
+
+
         const have_content:boolean =
-            this.state.show_correct
+            show_correct
             || this.state.show_wrong
             || !!goban.engine.cur_move.text
             || (!goban.engine.cur_move.parent && !!goban.engine.puzzle_description)
@@ -668,7 +678,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
                 {(have_content || null) &&
                     <div className='puzzle-node-content'>
-                        {(this.state.show_correct || null) &&
+                        {(show_correct || null) &&
                             <div className='success'>
                                 <i className="fa fa-check-circle-o"></i> {_("Correct!")}
                             </div>
@@ -689,7 +699,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                             }
                         </div>
 
-                        {(this.state.show_correct || null) &&
+                        {(show_correct || null) &&
                             <div className='actions'>
                                 {(next_id !== 0 && next_id !== puzzle.id || null) &&
                                     <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
