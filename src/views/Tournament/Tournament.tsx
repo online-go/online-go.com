@@ -47,6 +47,8 @@ import * as d3 from "d3";
 
 declare var swal;
 
+let logspam_debounce:any;
+
 let ranks = amateurRanks();
 
 interface TournamentProperties {
@@ -1622,7 +1624,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                         {selected_round.matches.map((m, idx) => {
                                             let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
                                             if (pxo === "error-invalid-player-or-opponent") {
-                                                console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                                if (!logspam_debounce) {
+                                                    logspam_debounce = setTimeout(() => {
+                                                        console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                                        logspam_debounce = undefined;
+                                                    }, 10);
+                                                }
                                             }
 
                                             return (
