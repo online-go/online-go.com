@@ -49,6 +49,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             onCorrectAnswer: this.onCorrectAnswer,
             onWrongAnswer: this.onWrongAnswer,
             onError: this.onError,
+            puzzle_opponent_move_mode: 'automatic',
+            puzzle_player_move_mode: 'free',
         }, this.config());
         this.state = {
             show_reset: false,
