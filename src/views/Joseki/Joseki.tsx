@@ -109,7 +109,7 @@ enum MoveCategory {
 const bad_moves = ["MISTAKE", "QUESTION"] as any;  // moves the player is not allowed to play in Play mode
 
 enum PageMode {
-    Explore, Play, Edit, Admin
+    Explore = "0", Play = "1", Edit = "2", Admin = "3"
 }
 
 const ColorMap = {
@@ -385,7 +385,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
-            // console.log("fetching position for node", node_id);
+            console.log("fetching position for node", node_id, this.state.mode);
             fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
@@ -1179,7 +1179,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
-
+            // console.log("saving position for node", node_id, this.state.mode);
             fetch(position_url(this.state.current_node_id), {
                 method: 'put',
                 mode: 'cors',
