@@ -54,7 +54,9 @@ export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, 
                     <div className="result-count">Play</div>
                     <div className="result-count">Guests</div>
                 </div>
-                {visits}
+                <div className="daily-visit-results">
+                    {visits}
+                </div>
             </div>
         );
     }
