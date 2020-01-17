@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import {LearningPage, DummyPage} from './LearningPage';
-import {_, pgettext, interpolate} from "translate";
-import {LearningHubSection} from './LearningHubSection';
+import { PuzzleConfig, GoEngineConfig } from 'goban';
+import { LearningPage, DummyPage } from './LearningPage';
+import { _, pgettext, interpolate } from "translate";
+import { LearningHubSection } from './LearningHubSection';
 
 export class EndingTheGame extends LearningHubSection {
     static pages():Array<typeof LearningPage> {
@@ -48,7 +49,7 @@ class Page1 extends LearningPage {
             <button className='primary' onClick={() => { this.pass_pressed = true; this.onUpdate(); }}>{_("Pass")}</button>
         </div>;
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
@@ -73,18 +74,19 @@ class Page2 extends LearningPage {
     text() {
         return _("After both players have passed, you enter a \"Stone Removal Phase\", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it's quicker. Remove the dead black stones by clicking them. ");
     }
-    config() {
+    config():PuzzleConfig | GoEngineConfig {
         return {
             mode: "play",
-            engine_phase: "stone removal",
+            phase: "stone removal",
             initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
-            onSetStoneRemoval: () => {
-                if (this.refs.igoban.goban.engine.getStoneRemovalString() === "fafbgbhb") {
-                    this.success = true;
-                    this.onUpdate();
-                }
-            }
         };
+    }
+
+    onStoneRemoval(stone_removal_string:string):void {
+        if (stone_removal_string === "fafbgbhb") {
+            this.success = true;
+            this.onUpdate();
+        }
     }
 
     complete() {

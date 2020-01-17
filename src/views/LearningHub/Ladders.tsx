@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { PuzzleConfig } from 'goban';
 import {LearningPage, DummyPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
@@ -47,7 +48,7 @@ class Page1 extends LearningPage {
     text() {
         return _("This zig zag pattern is called a \"ladder\". Capture the white stones by continuing the ladder.");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -75,7 +76,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the white stones using a ladder.");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -100,7 +101,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Stones in the path of a ladder break the ladder. Stay alive!");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
 

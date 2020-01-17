@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { PuzzleConfig } from 'goban';
 import {LearningPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
@@ -42,7 +43,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Capture the white stone");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -67,7 +68,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the group of white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -93,7 +94,7 @@ class Page3 extends LearningPage {
     text() {
         return _("You can capture on the side too, capture the white stones.");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -119,7 +120,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Surrounding isn't enough, you have to fill all the space around the stones. Capture the white stones.");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -146,7 +147,7 @@ class Page5 extends LearningPage {
     text() {
         return _("Capture the white stones before white can form two \"eyes\"");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
