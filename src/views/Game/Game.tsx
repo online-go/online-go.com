@@ -2509,16 +2509,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                     return (
                     <div key={idx} className={`${color} player-container`}>
-                        {this.state[`${color}_auto_resign_expiration`] &&
-                            <div className={`auto-resign-overlay`}>
-                                <i className='fa fa-bolt' />
-                                <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
-                            </div>
-                        }
 
                         <div className="player-icon-clock-row">
                             {((engine.players[color] && engine.players[color].id) || null) &&
                                 <div className="player-icon-container" style={player_bg}>
+                                    {this.state[`${color}_auto_resign_expiration`] &&
+                                        <div className={`auto-resign-overlay`}>
+                                            <i className='fa fa-bolt' />
+                                            <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
+                                        </div>
+                                    }
                                     <div className="player-flag"><Flag country={engine.players[color].country}/></div>
                                     <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
                                 </div>
