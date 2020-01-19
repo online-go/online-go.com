@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {GoMath, sfx} from 'goban';
+import {GoMath, PuzzleConfig, sfx} from 'goban';
 import {InstructionalGoban} from "./InstructionalGoban";
 import {browserHistory} from "ogsHistory";
 import {setSectionPageCompleted, getSectionPageCompleted} from './util';
@@ -31,9 +31,7 @@ interface LearningPageProperties {
 }
 
 export abstract class LearningPage extends React.Component<LearningPageProperties, any> {
-    refs: {
-        igoban;
-    };
+    instructional_goban?:InstructionalGoban;
     _config: any;
     correct_answer_triggered:boolean = false;
     wrong_answer_triggered:boolean = false;
@@ -51,6 +49,17 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             onError: this.onError,
             puzzle_opponent_move_mode: 'automatic',
             puzzle_player_move_mode: 'free',
+            players: {
+                black: {
+                    username: "black",
+                    id: 0,
+                },
+                white: {
+                    username: "white",
+                    id: 0,
+                }
+            },
+
         }, this.config());
         this.state = {
             show_reset: false,
@@ -74,7 +83,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
-        this.refs.igoban.reset();
+        this.instructional_goban.reset();
         this.forceUpdate();
     }
 
@@ -94,7 +103,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             sfx.play("tutorial-fail");
         }
         if (this.complete() || this.failed()) {
-            this.refs.igoban.goban.disableStonePlacement();
+            this.instructional_goban.goban.disableStonePlacement();
         }
 
         this.setState({
@@ -110,19 +119,19 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         setTimeout(this.next, 1000);
-        this.refs.igoban.goban.disableStonePlacement();
+        this.instructional_goban.goban.disableStonePlacement();
         this.forceUpdate();
     }
     onWrongAnswer = () => {
         this.wrong_answer_triggered = true;
         sfx.play("tutorial-fail");
-        this.refs.igoban.goban.disableStonePlacement();
+        this.instructional_goban.goban.disableStonePlacement();
         this.forceUpdate();
     }
     onError = () => {
         //this.error_triggered = true;
         sfx.play("tutorial-fail");
-        //this.refs.igoban.goban.disableStonePlacement();
+        //this.instructional_goban.goban.disableStonePlacement();
         //this.forceUpdate();
     }
 
@@ -178,13 +187,27 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     abstract text();
-    abstract config():{initial_state:{black?:string, white?:string}};
+    abstract config():PuzzleConfig;
     button():any { return null; }
     complete():boolean {
         return false;
     }
     failed():boolean {
         return false;
+    }
+
+    setGobanRef = (r) => {
+        this.instructional_goban = r;
+        if (this.instructional_goban) {
+            this.instructional_goban.goban.on('set-for-removal', () => {
+                this.onStoneRemoval(this.instructional_goban.goban.engine.getStoneRemovalString());
+            });
+            window['global_goban'] = r.goban;
+        }
+    }
+
+    onStoneRemoval(stone_removal_string:string):void {
+        // stub to be overridden
     }
 
     render() {
@@ -205,7 +228,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return (
                 <div className='LearningPage'>
                     <InstructionalGoban
-                        ref='igoban'
+                        ref={this.setGobanRef}
                         config={this._config}
                         onUpdate={this.onUpdate}
                     />
@@ -244,15 +267,15 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     at(coord:string):number {
-        if (this.refs.igoban && this.refs.igoban.goban) {
-            let obj = this.refs.igoban.goban.engine.decodeMoves(coord, 9, 9);
-            return this.refs.igoban.goban.engine.board[obj[0].y][obj[0].x];
+        if (this.instructional_goban && this.instructional_goban.goban) {
+            let obj = this.instructional_goban.goban.engine.decodeMoves(coord, 9, 9);
+            return this.instructional_goban.goban.engine.board[obj[0].y][obj[0].x];
         }
         return 0;
     }
     moveNumber():number {
-        if (this.refs.igoban && this.refs.igoban.goban) {
-            return this.refs.igoban.goban.engine.cur_move.move_number;
+        if (this.instructional_goban && this.instructional_goban.goban) {
+            return this.instructional_goban.goban.engine.cur_move.move_number;
         }
         return 0;
     }
@@ -265,7 +288,7 @@ export class DummyPage extends LearningPage {
     text() {
         return "Dummy page";
     }
-    config() {
+    config():PuzzleConfig {
         return {
             'initial_state': {
                 'black': 'd5e6f5',

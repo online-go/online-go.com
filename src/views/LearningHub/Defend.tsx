@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { PuzzleConfig } from 'goban';
 import {LearningPage, DummyPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
@@ -44,7 +45,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Create two eyes to keep your group alive!");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -73,7 +74,7 @@ class Page2 extends LearningPage {
     text() {
         return _("There is one critical move to make to keep this group alive");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -103,7 +104,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Create two eyes to keep your group alive!");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -140,7 +141,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Empty space that is completely surrounded by your stones is called \"territory\". Protect your territory from white.");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {black: "gagbgcgegfgghgig", white: "fafbfcgdfefffg"},
