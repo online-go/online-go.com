@@ -261,7 +261,7 @@ function dev_server(done) {
         console.info(`GET ${req.path}`);
 
         let _index = fs.readFileSync('src/index.html', {encoding: 'utf-8'});
-        let supported_langages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
+        let supported_languages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
         let _package_json = JSON.parse(fs.readFileSync('package.json', {encoding: 'utf-8'}));
 
         let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
@@ -270,11 +270,16 @@ function dev_server(done) {
                 case 'LIVE_RELOAD': return `<script async src="//${req.hostname}:35701/livereload.js"></script>`;
                 case 'MIN': return '';
 
+                case 'PAGE_TITLE': return 'Play Go at online-go.com!';
+                case 'PAGE_DESCRIPTION': return 'Online-Go.com is the best place to play the game of Go online. Our community supported site is friendly, easy to use, and free, so come join us and play some Go!';
+                case 'PAGE_KEYWORDS': return 'Go, Baduk, Weiqi, OGS, Online-Go.com';
+                case 'PAGE_LANGUAGE': return getPreferredLanguage(req, supported_languages);
+
                 case 'OG_TITLE': return '';
                 case 'OG_URL': return '';
                 case 'OG_IMAGE': return '';
                 case 'OG_DESCRIPTION': return '';
-                case 'SUPPORTED_LANGUAGES': return JSON.stringify(supported_langages);
+                case 'SUPPORTED_LANGUAGES': return JSON.stringify(supported_languages);
 
                 case 'AMEX_CLIENT_ID': return "kvEB9qXE6jpNUv3fPkdbWcPaZ7nQAXyg";
                 case 'AMEX_ENV': return "qa";
@@ -315,7 +320,6 @@ function dev_server(done) {
 
 function minify_index(done) {
     let _index = fs.readFileSync('src/index.html', {encoding: 'utf-8'});
-    let supported_langages = JSON.parse(fs.readFileSync('i18n/languages.json', {encoding: 'utf-8'}));
 
     let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_,parameter) => {
         switch (parameter) {
@@ -337,3 +341,44 @@ function minify_index(done) {
     done();
 }
 
+/* Detect preferred language  */
+function isSupportedLanguage(lang, supported_languages) {
+    if (!lang) {
+        return null;
+    }
+
+    lang = lang.toLowerCase();
+
+    if (lang in supported_languages) {
+        return lang;
+    }
+
+    lang = lang.replace(/-[a-z]+/, '');
+
+    if (lang in supported_languages) {
+        return lang;
+    }
+
+    return null;
+}
+
+function getPreferredLanguage(req, supported_languages) {
+    let languages = ['en'];
+    try {
+        languages = req.headers['accept-language'].split(',').map(s => s.replace(/;q=.*/, '').trim().toLowerCase());
+    } catch (e) {
+        trace.error(e);
+    }
+
+    try {
+        for (let i = 0; i < languages.length; ++i) {
+            let lang = isSupportedLanguage(languages[i], supported_languages);
+            if (lang) {
+                return lang;
+            }
+        }
+    } catch (e) {
+    }
+
+    return 'en';
+}
