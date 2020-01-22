@@ -147,7 +147,7 @@ export function lookup(player_id: number): PlayerCacheEntry {
     return null;
 }
 
-export function lookup_by_username(username: string): PlayerCacheEntry {
+export function lookup_by_username(username: string): PlayerCacheEntry | null {
     if (username in cache_by_username) {
         return cache_by_username[username];
     }

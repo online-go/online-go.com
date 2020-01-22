@@ -232,7 +232,7 @@ function onKeyPress(e, options) {
                     last    = val.substr(sel.start);
                     /* Space should not be added when there is only 1 match
                            or if there is already a space following the caret position */
-                    $this.val(first + '@"' + match.value + '/' + player_cache.lookup_by_username(match.value).id + '"' + space + last);
+                    $this.val(first + '@"' + match.value + '/' + (player_cache.lookup_by_username(match.value)?.id ?? 0) + '"' + space + last);
                     setCaretToPos(this, sel.start - match.value + match.value.length + space.length);
                 }
 
