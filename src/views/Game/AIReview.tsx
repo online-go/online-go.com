@@ -26,6 +26,7 @@ import { get, post } from 'requests';
 import { _, pgettext, interpolate } from "translate";
 import { Game } from './Game';
 import { close_all_popovers, popover } from "popover";
+import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
 import {
     GoMath,
@@ -276,6 +277,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     ai_review_update_metadata = (data:any) => {
         this.ai_review = data.body as JGOFAIReview;
         sanityCheck(this.ai_review);
+        this.setState({
+            updatecount: this.state.updatecount + 1,
+        });
+        this.syncAIReview();
+    }
+    ai_review_update_error = (data:any) => {
+        if (this.ai_review) {
+            this.ai_review.error = data.body;
+        } else {
+            console.error("Crap no ai review");
+        }
         this.setState({
             updatecount: this.state.updatecount + 1,
         });
@@ -601,6 +613,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
                 <UIPush event="ai-review-metadata" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_metadata} />
                 <UIPush event="ai-review-move" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_move} />
+                <UIPush event="ai-review-error" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_error} />
 
                 { (this.state.ai_reviews.length >= 1 || null) &&
                     <Select
@@ -686,30 +699,40 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         />
                 }
 
-                {((this.ai_review && this.ai_review.win_rates) || null) &&
+                {this.ai_review.error
+                    ?
                     <React.Fragment>
-                        <AIReviewChart
-                            ai_review={this.ai_review}
-                            entries={ai_review_chart_entries}
-                            updatecount={this.state.updatecount}
-                            move_number={this.props.move.move_number}
-                            setmove={this.props.game.nav_goto_move} />
-                        {this.renderWorstMoveList()}
+                        <h3>{_("Error")}</h3>
+                        <Errcode message={this.ai_review.error} />
                     </React.Fragment>
-                }
+                    :
+                    <React.Fragment>
+                        {((this.ai_review && this.ai_review.win_rates) || null) &&
+                            <React.Fragment>
+                                <AIReviewChart
+                                    ai_review={this.ai_review}
+                                    entries={ai_review_chart_entries}
+                                    updatecount={this.state.updatecount}
+                                    move_number={this.props.move.move_number}
+                                    setmove={this.props.game.nav_goto_move} />
+                                {this.renderWorstMoveList()}
+                            </React.Fragment>
+                        }
 
-                {((this.ai_review?.type === 'fast') || null) &&
-                    <div className='key-moves'>
-                        {show_full_ai_review_button &&
-                            <div>
-                                <button
-                                    className='primary'
-                                    onClick={() => this.startNewAIReview("full", "katago")}>
-                                    {_("Full AI Review")}
-                                </button>
+                        {((this.ai_review?.type === 'fast') || null) &&
+                            <div className='key-moves'>
+                                {show_full_ai_review_button &&
+                                    <div>
+                                        <button
+                                            className='primary'
+                                            onClick={() => this.startNewAIReview("full", "katago")}>
+                                            {_("Full AI Review")}
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         }
-                    </div>
+                    </React.Fragment>
                 }
 
                 {(!this.ai_review || null) &&
@@ -749,11 +772,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             <div className='worst-move-list-container'>
                 <div className='move-list'>
                     {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}:
-                    {lst.slice(0, 3).map(de => {
+                    {lst.slice(0, 3).map((de, idx) => {
                         let pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
                             <span
-                                key={de.move_number}
+                                key={`${idx}-${de.move_number}`}
                                 className={de.player === JGOFNumericPlayerColor.BLACK ? 'move black-background' : 'move white-background'}
                                 onClick={() => this.props.game.nav_goto_move(de.move_number - 1)}
                             >

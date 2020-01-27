@@ -18,6 +18,9 @@
 import * as React from "react";
 import {_, pgettext, interpolate} from 'translate';
 import {Modal, openModal} from "Modal";
+import {Errcode} from 'Errcode';
+import { MessageId } from 'messages';
+
 
 declare let swal;
 
@@ -25,8 +28,7 @@ interface Events {
 }
 
 interface ErrcodeModalProperties {
-    errcode: string;
-    errobj?: any;
+    message_id: MessageId;
 }
 
 export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
@@ -38,46 +40,13 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
         let header = null;
         let body = null;
 
-        switch (this.props.errcode) {
-            case 'username_invalid':
-                body = <div>{_("Sorry that username is not allowed, please use normal letters")}</div>;
-                break;
-
-            case 'username_offensive':
-            case 'gamename_offensive':
-            case 'groupname_offensive':
-            case 'tournamentname_offensive':
-            case 'puzzlename_offensive':
-            case 'puzzlecollectionname_offensive':
-                body = <div>{_("Sorry that name might be offensive to some players, please pick a different one")}</div>;
-                break;
-
-            case 'username_reserved':
-                body = <div>{_("Sorry that name has been reserved, please pick a different one")}</div>;
-                break;
-
-            case 'ai_review_must_be_site_supporter':
-                body = <div>{_("To begin an AI review, you must be a site supporter.")}</div>;
-                break;
-
-            case 'ai_review_must_be_player':
-                body = <div>{_("To begin an AI review, you must be a player in the game.")}</div>;
-                break;
-
+        switch (this.props.message_id) {
             case 'ai_review_queue_full':
                 header = <i className='fa fa-clock-o' />;
-                body = <div>{_("Please wait until your current reviews are completed before requesting more.")}</div>;
-                break;
-
-
-            case 'test':
-                body = <div>This is a test</div>;
-                break;
-
-            default:
-                body = <div>{this.props.errcode}</div>;
                 break;
         }
+
+        body = <Errcode message_id={this.props.message_id} />;
 
         return (
           <div className="Modal ErrcodeModal" ref="modal">
@@ -98,6 +67,6 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
 }
 
 
-export function errcodeAlerter(errobj:{errcode:string}):void {
-    openModal(<ErrcodeModal errcode={errobj.errcode} errobj={errobj} />);
+export function errcodeAlerter(errobj:{errcode: MessageId}):void {
+    openModal(<ErrcodeModal message_id={errobj.errcode} />);
 }
