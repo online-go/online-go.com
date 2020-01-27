@@ -74,7 +74,7 @@
             .fa-bolt {
                 font-size: 150%;
             }
-            padding: 2px;
+            padding-left: 2px;
             min-width: inherit;  // make sure we are as wide as the player avatar that contains us
         }
     }
@@ -305,7 +305,14 @@
             top: 0.5rem;
             left: 1rem;
         }
-
+        .auto-resign-overlay {
+            flex-direction: row;
+            font-size: inherit;
+            .fa-bolt {
+                font-size: inherit;
+                margin-right: 2px;
+            }
+        }
     }
     .player-name-container {
         font-size: font-size-small;
