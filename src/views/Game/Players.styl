@@ -75,6 +75,7 @@
                 font-size: 150%;
             }
             padding: 2px;
+            min-width: inherit;  // make sure we are as wide as the player avatar that contains us
         }
     }
 
@@ -299,7 +300,7 @@
     .player-icon-container {
         flex-basis: 1.5rem;
         min-height: 1.5rem;
-        min-width: 1.5rem;
+        min-width: 4rem; // need this width to accomodate diconnect timer
         .player-flag {
             top: 0.5rem;
             left: 1rem;
