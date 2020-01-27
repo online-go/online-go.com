@@ -1634,7 +1634,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
                                             return (
                                             <tr key={idx} >
-                                                {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
+                                                {(tournament.ended || null) && <td className="rank">{m.player?.rank}</td>}
                                                 {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
                                                 {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
 

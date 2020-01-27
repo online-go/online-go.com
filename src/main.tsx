@@ -78,6 +78,7 @@ try {
 }
 
 import * as data from "data";
+import * as preferences from "preferences";
 
 data.setDefault("theme", "light");
 data.setDefault("config", {
@@ -280,3 +281,7 @@ init_tabcomplete();
 
 /* Initialization done, render!! */
 ReactDOM.render(routes, document.getElementById("main-content"));
+
+window['data'] = data;
+window['preferences'] = preferences;
+window['player_cache'] = player_cache;

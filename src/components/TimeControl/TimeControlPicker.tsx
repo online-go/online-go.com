@@ -35,8 +35,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
     constructor(props) {
         super(props);
 
-        let speed = data.get("time_control.speed", "correspondence");
-        let system = data.get("time_control.system", "fischer");
+        let speed = data.get("time_control.speed", "correspondence") || "correspondence";
+        let system = data.get("time_control.system", "fischer") || "fischer";
 
         this.state = Object.assign(recallTimeControlSettings(speed, system), this.props.value || {});
         if (this.state.time_control) {

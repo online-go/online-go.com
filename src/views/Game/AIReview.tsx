@@ -282,6 +282,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.syncAIReview();
     }
     ai_review_update_move = (data:any) => {
+        if (!this.ai_review) {
+            console.warn("AI Review move received but ai review not initialized yet");
+            return;
+        }
+
         if (/move-[0-9]+/.test(data.key)) {
             let m = data.key.match(/move-([0-9]+)/);
             let move_number = parseInt(m[1]);
