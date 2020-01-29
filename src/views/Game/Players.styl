@@ -61,11 +61,6 @@
         }
 
         .auto-resign-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            left: 0;
-            bottom: 0;
             opacity: 0.9;
             z-index: z.goban.score-details;
             background-color #555;
@@ -77,8 +72,10 @@
             justify-content: center;
             font-size: font-size-big;
             .fa-bolt {
-                font-size: 200%;
+                font-size: 150%;
             }
+            padding-left: 2px;
+            min-width: inherit;  // make sure we are as wide as the player avatar that contains us
         }
     }
 
@@ -303,12 +300,19 @@
     .player-icon-container {
         flex-basis: 1.5rem;
         min-height: 1.5rem;
-        min-width: 1.5rem;
+        min-width: 4rem; // need this width to accomodate diconnect timer
         .player-flag {
             top: 0.5rem;
             left: 1rem;
         }
-
+        .auto-resign-overlay {
+            flex-direction: row;
+            font-size: inherit;
+            .fa-bolt {
+                font-size: inherit;
+                margin-right: 2px;
+            }
+        }
     }
     .player-name-container {
         font-size: font-size-small;

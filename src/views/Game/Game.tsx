@@ -2501,68 +2501,68 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         return (
             <div ref={el => this.ref_players = el} className="players">
-              {["black", "white"].map((color: 'black' | 'white', idx) => {
-                  let player_bg: any = {};
-                  if (this.state[`historical_${color}`]) {
-                      let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
-                      player_bg.backgroundImage = `url("${icon}")`;
-                  }
-                  return (
-                  <div key={idx} className={`${color} player-container`}>
-                      {this.state[`${color}_auto_resign_expiration`] &&
-                          <div className={`auto-resign-overlay`}>
-                              <i className='fa fa-bolt' />
-                              <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
-                          </div>
-                      }
+                {["black", "white"].map((color: 'black' | 'white', idx) => {
+                    let player_bg: any = {};
+                    if (this.state[`historical_${color}`]) {
+                        let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                        player_bg.backgroundImage = `url("${icon}")`;
+                    }
+                    return (
+                    <div key={idx} className={`${color} player-container`}>
 
-                      <div className="player-icon-clock-row">
-                          {((engine.players[color] && engine.players[color].id) || null) &&
-                              <div className="player-icon-container" style={player_bg}>
-                                 <div className="player-flag"><Flag country={engine.players[color].country}/></div>
-                                 <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
-                              </div>
-                          }
+                        <div className="player-icon-clock-row">
+                            {((engine.players[color] && engine.players[color].id) || null) &&
+                                <div className="player-icon-container" style={player_bg}>
+                                    {this.state[`${color}_auto_resign_expiration`] &&
+                                        <div className={`auto-resign-overlay`}>
+                                            <i className='fa fa-bolt' />
+                                            <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
+                                        </div>
+                                    }
+                                    <div className="player-flag"><Flag country={engine.players[color].country}/></div>
+                                    <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
+                                </div>
+                            }
 
-                          {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
-                              <Clock goban={this.goban} color={color} className="in-game-clock" />
-                          }
-                      </div>
+                            {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
+                                <Clock goban={this.goban} color={color} className="in-game-clock" />
+                            }
+                        </div>
 
-                      {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
-                          <div className={`${color} player-name-container`}>
-                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
-                          </div>
-                      }
+                        {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
+                            <div className={`${color} player-name-container`}>
+                                <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
+                            </div>
+                        }
 
-                      {((!goban.engine.players[color]) || null) &&
-                          <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>
-                      }
+                        {((!goban.engine.players[color]) || null) &&
+                            <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>
+                        }
 
 
-                      <div className={"score-container " + (this.state.show_score_breakdown ? 'show-score-breakdown' : '')}
-                          onClick={() => this.state.show_score_breakdown ? this.hideScores() : this.popupScores()}
-                          >
-                          {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
-                            goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
-                              <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
-                                  {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
-                              </div>
-                          }
-                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                                this.frag_num_captures_text(color)
-                          }
-                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className="komi">
-                                {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
-                              </div>
-                          }
-                          <div id={`${color}-score-details`} className="score-details"/>
-                      </div>
-                  </div>
-              ); })}
+                        <div className={"score-container " + (this.state.show_score_breakdown ? 'show-score-breakdown' : '')}
+                            onClick={() => this.state.show_score_breakdown ? this.hideScores() : this.popupScores()}
+                            >
+                            {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
+                                goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
+                                <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
+                                    {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
+                                </div>
+                            }
+                            {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                                    this.frag_num_captures_text(color)
+                            }
+                            {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                                <div className="komi">
+                                    {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
+                                </div>
+                            }
+                            <div id={`${color}-score-details`} className="score-details"/>
+                        </div>
+                    </div>
+                ); })}
             </div>
         );
     }
