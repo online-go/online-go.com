@@ -175,6 +175,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.goproblems.com">GoProblems.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://tsumego.tasuki.org/">[PDF] Tsumego Collection</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://sahwal.com">Sahwal.com</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://blacktoplay.com/">Black To Play</a></span>,
                 <span><Flag country={un}/> <a rel="noopener" href="http://gochild2009.appspot.com/?locale=en_US">GoChild</a></span>,
                 <span><Flag country={"cn"}/><Flag country={en}/> <a rel="noopener" href="http://www.weiqiok.com/asp/English.asp">Weiqiok</a></span>,
                 <span><Flag country={un}/> <a rel="noopener" href="http://321go.org/">3-2-1 Go</a></span>,
