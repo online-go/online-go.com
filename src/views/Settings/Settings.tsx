@@ -16,20 +16,22 @@
  */
 
 import * as React from "react";
+import * as preferences from "preferences";
+import * as data from "data";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
 import {errorAlerter, errorLogger, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
-import {sfx} from "goban";
+import {sfx, SpritePack, SpriteGroups, sprite_packs} from "sfx";
 import {LanguagePicker} from "LanguagePicker";
-import * as preferences from "preferences";
-import * as data from "data";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
 import {logout} from 'NavBar';
+import {Flag} from "Flag";
+import Select from 'react-select';
 import ITC from 'ITC';
 
 declare var swal;
@@ -192,49 +194,12 @@ export class Settings extends React.PureComponent<{}, any> {
         })
         .catch(errorAlerter);
     }
-    setVolume = (ev) => {
-        this._setVolume(parseFloat(ev.target.value));
-    }
-    _setVolume(volume) {
-        let enabled = volume > 0;
-
-        preferences.set("sound-volume", volume);
-        preferences.set("sound-enabled", enabled);
-
-        this.setState({
-            volume: volume,
-            sound_enabled: enabled,
-        });
-    }
-    setAutomatchAlertVolume = (ev) => {
-        this._setAutomatchAlertVolume(parseFloat(ev.target.value));
-    }
-    _setAutomatchAlertVolume(volume) {
-        preferences.set("automatch-alert-volume", volume);
-
-        this.setState({
-            automatch_alert_volume: volume,
-        });
-    }
     setDockDelay = (ev) => {
         let new_delay = parseFloat(ev.target.value);
         preferences.set("dock-delay", new_delay);
         this.setState({"dock_delay": new_delay});
     }
 
-    setVoiceCountdown = (ev) => {
-        preferences.set("sound-voice-countdown", ev.target.checked);
-        this.setState({"voice_countdown": ev.target.checked});
-    }
-
-    setVoiceCountdownMain = (ev) => {
-        preferences.set("sound-voice-countdown-main", ev.target.checked);
-        this.setState({"voice_countdown_main": ev.target.checked});
-    }
-
-    toggleVolume = (ev) => {
-        this._setVolume(this.state.volume > 0 ? 0 : 0.5);
-    }
     toggleAIReview = (ev) => {
         preferences.set("ai-review-enabled", this.state.disable_ai_review);
         this.setState({"disable_ai_review": !this.state.disable_ai_review});
@@ -242,19 +207,6 @@ export class Settings extends React.PureComponent<{}, any> {
     toggleVariationsInChat = (ev) => {
         preferences.set("variations-in-chat-enabled", this.state.disable_variations_in_chat);
         this.setState({"disable_variations_in_chat": !this.state.disable_variations_in_chat});
-    }
-    toggleAutomatchAlertVolume = (ev) => {
-        this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
-    }
-    playSampleSound = () => {
-        let num = Math.round(Math.random() * 10000) % 5;
-        sfx.play("stone-" + (num + 1));
-    }
-    playAutomatchAlert = () => {
-        let t = sfx.volume_override;
-        sfx.volume_override = preferences.get("automatch-alert-volume");
-        sfx.play(preferences.get("automatch-alert-sound"));
-        sfx.volume_override = t;
     }
     getSubmitMode(speed) {
         let single = preferences.get(`one-click-submit-${speed}` as any);
@@ -533,6 +485,8 @@ export class Settings extends React.PureComponent<{}, any> {
             <h2 className="page-title"><i className="fa fa-gear"></i>{_("Settings")}</h2>
             <div className="row">
                 <div className="col-sm-7">
+                    <SoundPreferences />
+
                     <Card>
                         <h3>{_("General Settings")}</h3>
                         <dl>
@@ -635,32 +589,6 @@ export class Settings extends React.PureComponent<{}, any> {
                     <Card>
                         <h3>{_("Game Preferences")}</h3>
                         <dl>
-                            <dt>{_("Sound")}</dt>
-                            <dd className="inline-flex">
-                                <i className={"fa volume-icon " +
-                                    (this.state.volume === 0 ? "fa-volume-off"
-                                        : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                                        onClick={this.toggleVolume}
-                                /> <input type="range"
-                                    onChange={this.setVolume}
-                                    value={this.state.volume} min={0} max={1.0} step={0.01}
-                                /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
-                                    {_("Test") /* translators: Play a test sound to test the current volume setting */ } <i className="fa fa-play" />
-                                </span>
-                            </dd>
-                            <dt>{_("Automatch Alert")}</dt> {/* translators: this is the volume control for the sound when an automatch starts */}
-                            <dd className="inline-flex">
-                                <i className={"fa volume-icon " +
-                                    (this.state.automatch_alert_volume === 0 ? "fa-volume-off"
-                                        : (this.state.automatch_alert_volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                                        onClick={this.toggleAutomatchAlertVolume}
-                                /> <input type="range"
-                                    onChange={this.setAutomatchAlertVolume}
-                                    value={this.state.automatch_alert_volume} min={0} max={1.0} step={0.01}
-                                /> <span onClick={this.playAutomatchAlert} style={{cursor: "pointer"}}>
-                                    {_("Test") /* translators: Play the automatch alert to test the volume */ } <i className="fa fa-play" />
-                                </span>
-                            </dd>
                             <dt>{_("Game-control-dock pop-out delay") /* translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...) */}</dt>
                             <dd className="inline-flex">
                                 <input type="range"
@@ -674,10 +602,6 @@ export class Settings extends React.PureComponent<{}, any> {
                                 }</span>
                             </dd>
 
-                            <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
-                            <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
-                            <dt><label htmlFor="voice-countdown-main">{_("Voice countdown on main time")}</label></dt>
-                            <dd><input type="checkbox" id="voice-countdown-main" checked={this.state.voice_countdown_main} onChange={this.setVoiceCountdownMain}/></dd>
 
                             <dt>{_("Board labeling")}</dt>
                             <dd>
@@ -883,3 +807,253 @@ export class Settings extends React.PureComponent<{}, any> {
         );
     }
 }
+
+
+function SoundPreferences():JSX.Element {
+    return (<Card className='Settings-Card'>
+        <h3>{_("Sound Preferences")}</h3>
+
+        <div>
+            <h4>{pgettext('Sound pack to use for things like "You have won" and "Undo requested" phrases', "Game Voice")}</h4>
+            <span>
+                <SoundPackSelect group='game_voice' options={SpriteGroups.game_voice} />
+            </span>
+            <span>
+                <Volume group='game_voice' sample='you_have_won' />
+            </span>
+        </div>
+
+        <div>
+            <h4>{pgettext('Sound pack to use for clock countdown, "3", "2", "1"', "Clock Countdown")}</h4>
+            <span>
+                <SoundPackSelect group='countdown' options={SpriteGroups.countdown} />
+            </span>
+            <span>
+                <Volume group='countdown' sample={['3', '2', '1']} />
+            </span>
+        </div>
+
+        <div>
+            <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
+            <span>
+                <SoundPackSelect group='effects' options={SpriteGroups.effects} />
+            </span>
+            <span>
+                <Volume group='effects' sample={['stone-place-1', 'stone-place-2', 'stone-place-3']} />
+            </span>
+        </div>
+
+    </Card>);
+}
+
+
+function SoundPackSelect(props:{group:string, options:Array<SpritePack>}):JSX.Element {
+    const [pack_id, __setPackId]:[string, (x:string) => void] = React.useState(sfx.getPackId(props.group));
+
+    function filter({label, value, data}, text:string):boolean {
+        if (!text) {
+            text = "";
+        }
+        text = text.toLowerCase();
+        let pack:SpritePack = data;
+
+        if (pack.name.toLowerCase().indexOf(text) >= 0) {
+            return true;
+        }
+        if (pack.pack_id.toLowerCase().indexOf(text) >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    function setPackId(pack:SpritePack):void {
+        __setPackId(pack.pack_id);
+        sfx.setPackId(props.group, pack.pack_id);
+    }
+
+    return (
+        <Select
+            className='sound-select'
+            classNamePrefix='ogs-react-select'
+            value={sprite_packs[pack_id]}
+            onChange={setPackId}
+            options={props.options}
+            isClearable={false}
+            isSearchable={false}
+            blurInputOnSelect={true}
+            noResultsText={_("No results found")}
+            filterOption={filter}
+            getOptionLabel={pack => pack.pack_id}
+            getOptionValue={pack => pack.pack_id}
+            components={{
+                Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                    <div ref={innerRef} {...innerProps}
+                        className={'sound-pack-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                        <Flag country={data.country} /> {data.name}
+                    </div>
+                ),
+                SingleValue: ({innerProps, data}) => (
+                    <span {...innerProps} className='sound-pack-option'>
+                        <Flag country={data.country} /> {data.name}
+                    </span>
+                ),
+                ValueContainer: ({children}) => (
+                    <div className='sound-pack-option-container'>
+                        {children}
+                    </div>
+                ),
+            }}
+        />
+    );
+}
+
+function Volume(props:{group: string, sample: string | Array<string>}):JSX.Element {
+    const [volume, __setVolume]:[number, (x:number) => void] = React.useState(sfx.getVolume(props.group));
+
+    let samples:Array<string> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
+
+    function setVolume(v:number):void {
+        __setVolume(v);
+        sfx.setVolume(props.group, v);
+    }
+
+    function setVolumeHandler(ev: React.ChangeEvent<HTMLInputElement>):void {
+        setVolume(parseFloat(ev.target.value));
+    }
+
+    function toggleVolumeHandler(ev: any):void {
+        if (volume > 0) {
+            setVolume(0);
+        } else {
+            setVolume(1);
+        }
+    }
+
+    function play(ev: any):void {
+        let _samples = samples.slice();
+
+        function process_next() {
+            if (_samples.length) {
+                let sample = _samples.shift();
+                sfx.play(sample).then(() => setTimeout(process_next, 500));
+            }
+        }
+
+        process_next();
+    }
+
+    return (
+        <span className='volume'>
+            <i className={"fa volume-icon " +
+                (volume === 0 ? "fa-volume-off"
+                    : (volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                    onClick={toggleVolumeHandler} />
+            <input type="range"
+                onChange={setVolumeHandler}
+                value={volume} min={0} max={1.0} step={0.05} />
+
+            <span onClick={play} style={{cursor: "pointer"}}>
+                <i className="fa fa-play" />
+            </span>
+        </span>
+    );
+}
+
+
+/*
+    <dt>{_("Sound")}</dt>
+    <dd className="inline-flex">
+        <i className={"fa volume-icon " +
+            (this.state.volume === 0 ? "fa-volume-off"
+                : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                onClick={this.toggleVolume}
+        /> <input type="range"
+            onChange={this.setVolume}
+            value={this.state.volume} min={0} max={1.0} step={0.01}
+        /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
+             <i className="fa fa-play" />
+        </span>
+    </dd>
+    <dt>{_("Automatch Alert")}</dt> {/* translators: this is the volume control for the sound when an automatch starts */   //}
+/*
+    <dd className="inline-flex">
+        <i className={"fa volume-icon " +
+            (this.state.automatch_alert_volume === 0 ? "fa-volume-off"
+                : (this.state.automatch_alert_volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
+                onClick={this.toggleAutomatchAlertVolume}
+        /> <input type="range"
+            onChange={this.setAutomatchAlertVolume}
+            value={this.state.automatch_alert_volume} min={0} max={1.0} step={0.01}
+        /> <span onClick={this.playAutomatchAlert} style={{cursor: "pointer"}}>
+             <i className="fa fa-play" />
+        </span>
+    </dd>
+
+
+
+    <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
+    <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
+    <dt><label htmlFor="voice-countdown-main">{_("Voice countdown on main time")}</label></dt>
+    <dd><input type="checkbox" id="voice-countdown-main" checked={this.state.voice_countdown_main} onChange={this.setVoiceCountdownMain}/></dd>
+    */
+
+    /*
+    setVolume = (ev) => {
+        this._setVolume(parseFloat(ev.target.value));
+    }
+    _setVolume(volume) {
+        let enabled = volume > 0;
+
+        preferences.set("sound-volume", volume);
+        preferences.set("sound-enabled", enabled);
+
+        this.setState({
+            volume: volume,
+            sound_enabled: enabled,
+        });
+    }
+    */
+    /*
+    setAutomatchAlertVolume = (ev) => {
+        this._setAutomatchAlertVolume(parseFloat(ev.target.value));
+    }
+    _setAutomatchAlertVolume(volume) {
+        preferences.set("automatch-alert-volume", volume);
+
+        this.setState({
+            automatch_alert_volume: volume,
+        });
+    }
+    */
+    /*
+    setVoiceCountdown = (ev) => {
+        preferences.set("sound-voice-countdown", ev.target.checked);
+        this.setState({"voice_countdown": ev.target.checked});
+    }
+
+    setVoiceCountdownMain = (ev) => {
+        preferences.set("sound-voice-countdown-main", ev.target.checked);
+        this.setState({"voice_countdown_main": ev.target.checked});
+    }
+
+    toggleVolume = (ev) => {
+        this._setVolume(this.state.volume > 0 ? 0 : 0.5);
+    }
+    */
+    /*
+    toggleAutomatchAlertVolume = (ev) => {
+        this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
+    }
+    */
+    /*
+    playSampleSound = () => {
+        let num = Math.round(Math.random() * 10000) % 5;
+        sfx.play("stone-" + (num + 1));
+    }
+    playAutomatchAlert = () => {
+        let t = sfx.volume_override;
+        sfx.volume_override = preferences.get("automatch-alert-volume");
+        sfx.play(preferences.get("automatch-alert-sound"));
+        sfx.volume_override = t;
+    }
+    */

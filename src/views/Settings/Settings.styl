@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 .Settings {
     // here
     user-select: none;
@@ -58,6 +57,49 @@
     .notification-option {
         padding: 0.5rem;
         padding-left: 1rem;
+    }
+
+    .Settings-Card {
+        > div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            > h4 {
+                display: inline-block;
+                width: 10rem;
+                max-width: 100vw;
+                flex: 0;
+                flex-basis: 10rem;
+            }
+
+            > span {
+                margin-left: 2rem;
+                flex: 1;
+                flex-basis: 10rem;
+            }
+
+            .flag {
+                margin-left: 0.3rem;
+            }
+
+            .volume {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+                input {
+                    flex: 1;
+                    display: inline-block;
+                }
+
+                i {
+                    flex: 0;
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                }
+            }
+        }
     }
 
     dt {

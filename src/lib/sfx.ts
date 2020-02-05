@@ -18,12 +18,12 @@ import {Howl, Howler} from 'howler';
 import * as preferences from './preferences';
 import * as data from './data';
 import { sprite_packs } from './sfx_sprites';
-
+import { current_language } from './translate';
 
 
 console.log('sprite_packs', sprite_packs);
 
-const GameSounds = [
+const GameVoiceSounds = [
     "1_period_left",
     "2_periods_left",
     "3_periods_left",
@@ -72,7 +72,7 @@ const CountdownSounds = [
     "60",
 ];
 
-const MiscSounds = [
+const EffectsSounds = [
     "stone-place-1",
     "stone-place-2",
     "stone-place-3",
@@ -81,14 +81,43 @@ const MiscSounds = [
 ];
 
 
+export const SpriteGroups = {
+    'game_voice': Object.keys(sprite_packs).filter(pack_id => {
+        for (let key in sprite_packs[pack_id].definitions) {
+            if (GameVoiceSounds.indexOf(key) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }).map(pack_id => sprite_packs[pack_id]),
+    'countdown': Object.keys(sprite_packs).filter(pack_id => {
+        for (let key in sprite_packs[pack_id].definitions) {
+            if (CountdownSounds.indexOf(key) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }).map(pack_id => sprite_packs[pack_id]),
+    'effects': Object.keys(sprite_packs).filter(pack_id => {
+        for (let key in sprite_packs[pack_id].definitions) {
+            if (EffectsSounds.indexOf(key) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }).map(pack_id => sprite_packs[pack_id]),
+};
 
 export class SFXSprite {
+    private id?:number;
     public readonly howl: Howl;
     public readonly name: string;
+    public readonly group_name: string;
     public volume: number;
 
-    constructor(howl: Howl, sprite_name: string) {
+    constructor(howl: Howl, group_name: string, sprite_name: string) {
         this.howl = howl;
+        this.group_name = group_name;
         this.name = sprite_name;
         this.volume = 1.0;
     }
@@ -96,6 +125,13 @@ export class SFXSprite {
     public play():void {
         let id = this.howl.play(this.name);
         this.howl.volume(this.volume, id);
+        this.id = id;
+        this.then(() => delete this.id);
+    }
+    public then(fn: () => void): void {
+        if (this.id) {
+            this.howl.once('end', fn, this.id);
+        }
     }
 }
 
@@ -113,12 +149,10 @@ export class SFXManager {
 
     constructor() {
     }
-
     public enable():void {
         this.enabled = true;
         this.sync();
     }
-
     public sync():void {
         if (!this.enabled || this.synced) {
             return;
@@ -128,19 +162,31 @@ export class SFXManager {
             this.synced = true;
             let release_base:string = data.get('config.cdn_release');
 
-            for (let k in sprite_packs) {
-                this.load(k);
-            }
+            this.load('game_voice');
+            this.load('countdown');
+            this.load('effects');
         }
     }
-
-
+    public play(sound_name:string):SFXSprite {
+        if (sound_name in this.sprites) {
+            let ret = this.sprites[sound_name];
+            ret.play();
+            return ret;
+        } else {
+            console.error("Unknown sound to play: ", sound_name);
+            throw new Error(`Unknown sound to play: ${sound_name}`);
+        }
+    }
     public load(group_name: string) {
+        let pack_id = this.getPackId(group_name);
+
+        /*
         if (group_name in this.howls) {
             return;
         }
+        */
 
-        let sprite_pack = sprite_packs[group_name];
+        let sprite_pack = sprite_packs[pack_id];
         let release_base:string = data.get('config.cdn_release');
         let howl = new Howl({
             src: [
@@ -152,16 +198,72 @@ export class SFXManager {
         });
         this.howls[group_name] = howl;
 
+        let sound_list =
+            group_name === 'game_voice' ? GameVoiceSounds :
+            group_name === 'countdown' ? CountdownSounds :
+            EffectsSounds;
         for (let sprite_name in sprite_pack.definitions) {
-            this.sprites[sprite_name] = new SFXSprite(howl, sprite_name);
+            if (sound_list.indexOf(sprite_name) >= 0) {
+                this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
+                this.sprites[sprite_name].volume = this.getVolume(group_name);
+            }
+        }
+    }
+    public getPackId(group_name: string):string {
+        let pack_id = data.get(`sound.pack.${group_name}`) || 'auto';
+
+        if (pack_id in sprite_packs) {
+            return pack_id;
+        }
+
+        // else, auto or our sprite packs changed, so auto
+        let lang = current_language;
+        let to_check:Array<string> = [];
+
+        try {
+            for (let navlang of navigator.languages) {
+                navlang = navlang.toLowerCase();
+                if (navlang.indexOf(lang) >= 0) {
+                    to_check.push(navlang);
+                }
+            }
+        } catch (e) {
+        }
+
+        to_check.push(lang);
+
+        for (let l of to_check) {
+            for (let pack of SpriteGroups[group_name]) {
+                let lang_code = pack.language + '-' + pack.country;
+                if (lang_code.indexOf(l) >= 0) {
+                    return pack.pack_id;
+                }
+            }
+        }
+
+        return SpriteGroups.effects[0].pack_id;
+    }
+    public setPackId(group_name: string, pack_id: string):void {
+        data.set(`sound.pack.${group_name}`, pack_id);
+        sfx.load(group_name);
+    }
+    public getVolume(group_name: string):number {
+        return data.get(`sound.volume.${group_name}`, 1.0);
+    }
+    public setVolume(group_name: string, volume: number) {
+        data.set(`sound.volume.${group_name}`, volume)
+        for (let sprite_name in this.sprites) {
+            if (this.sprites[sprite_name].group_name === group_name) {
+                this.sprites[sprite_name].volume = volume;
+            }
         }
     }
 }
 
 
+export { sprite_packs, SpritePack } from './sfx_sprites';
 export const sfx = new SFXManager();
-//(window as any)['sfx'] = sfx;
-(window as any)['S'] = sfx;
+(window as any)['sfx'] = sfx;
 
 let I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */
