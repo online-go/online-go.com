@@ -24,8 +24,6 @@ let defaults = {
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
-    "automatch-alert-sound": "tutorial-bling",
-    "automatch-alert-volume": 0.3, // Control this important alert separately from "goban sounds"
     "autoplay-delay": 10000,
     "board-labeling": 'automatic',
     "chat.show-all-global-channels": true,

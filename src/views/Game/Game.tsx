@@ -46,7 +46,7 @@ import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "ACLModal";
-import {sfx} from "goban";
+import {sfx} from "sfx";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
@@ -281,7 +281,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.onResize();
     }
     componentWillUnmount() {
-        sfx.volume_override = null;
+        sfx.clearVolumeOverride();
         this.deinitialize();
         setActiveGameView(null);
         setExtraActionCallback(null);
@@ -425,10 +425,21 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
 
-        this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
-        this.goban.on('audio-game-end', () => sfx.play("beepbeep"));
+        //this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
+        this.goban.on('audio-game-start', () => sfx.play("game_started"));
+        this.goban.on('audio-game-end', (winner:'black' | 'white' | 'tie') => {
+            if (winner === 'black') {
+                sfx.play('black_wins');
+            }
+            if (winner === 'white') {
+                sfx.play('black_wins');
+            }
+            if (winner === 'tie') {
+                sfx.play('tie');
+            }
+        });
         this.goban.on('audio-pass', () => sfx.play("pass"));
-        this.goban.on('audio-stone', (n) => sfx.play("stone-" + (n + 1)));
+        this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height));
         this.goban.on('audio-clock', (audio_clock_event) => {
             let user = data.get('user');
             if (user.anonymous) {
@@ -463,7 +474,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 return;
             }
 
-            sfx.play(audio_clock_event.countdown_seconds.toString());
+            sfx.play(audio_clock_event.countdown_seconds.toString() as any);
         });
 
         this.goban.on("clock", (clock:JGOFClock) => {
@@ -1812,7 +1823,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     _setVolume(volume) {
         let enabled = volume > 0;
 
-        sfx.volume_override = volume;
+        sfx.setVolumeOverride(volume);
 
         this.setState({
             volume: volume,
@@ -1824,7 +1835,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             clearTimeout(this.volume_sound_debounce);
         }
 
-        this.volume_sound_debounce = setTimeout(() => { sfx.play("stone-" + (idx + 1)); }, 250);
+        this.volume_sound_debounce = setTimeout(() => sfx.playStonePlacementSound(5, 5, 9, 9), 250);
 
         preferences.set("sound-volume", volume);
         preferences.set("sound-enabled", enabled);

@@ -105,7 +105,7 @@ export class Settings extends React.PureComponent<{}, any> {
             notifications: {},
             vacation_left: "",
             volume: preferences.get("sound-volume"),
-            automatch_alert_volume: preferences.get("automatch-alert-volume"),
+            //automatch_alert_volume: preferences.get("automatch-alert-volume"),
             voice_countdown: preferences.get("sound-voice-countdown"),
             voice_countdown_main: preferences.get("sound-voice-countdown-main"),
             sound_enabled: preferences.get("sound-enabled"),

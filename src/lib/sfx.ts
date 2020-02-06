@@ -73,6 +73,7 @@ const CountdownSounds = [
 ] as const;
 
 const EffectsSounds = [
+    "automatch-start",
     "stone-place-1",
     "stone-place-2",
     "stone-place-3",
@@ -298,6 +299,21 @@ export class SFXManager {
                 this.sprites[sprite_name].volume = volume;
             }
         }
+    }
+
+    public setVolumeOverride(volume:number) {
+        this.volume_override = volume;
+        // TODO
+    }
+    public clearVolumeOverride() {
+        delete this.volume_override;
+    }
+    public getVolumeOverride():number {
+        return this.volume_override;
+    }
+    public playStonePlacementSound(x: number, y: number, width: number, height: number):void {
+        // TODO
+        this.play('stone-place-1');
     }
 }
 

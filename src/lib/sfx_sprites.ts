@@ -16,7 +16,6 @@
 
 import { ValidSound } from './sfx';
 
-
 export interface SpritePack {
     pack_id: string;
     language: string;
@@ -940,6 +939,10 @@ sprite_packs["zz-un-effects"] = {
     "60": [
         6988.1875,
         90.0625
+    ],
+    "automatch-start": [
+        11997.708333333334,
+        626.9375
     ],
     "pass": [
         1157.7916666666667,
