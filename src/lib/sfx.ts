@@ -60,7 +60,7 @@ const GameVoiceSounds = [
     "you_have_lost",
     "you_have_won",
     "pass",
-];
+] as const;
 
 const CountdownSounds = [
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -70,7 +70,7 @@ const CountdownSounds = [
     "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
     "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
     "60",
-];
+] as const;
 
 const EffectsSounds = [
     "stone-place-1",
@@ -78,13 +78,27 @@ const EffectsSounds = [
     "stone-place-3",
     "stone-place-4",
     "stone-place-5",
-];
+    "error",
+    "beep",
+    "beepbeep",
+    "boop",
+    "tick",
+    "tock",
+    "tick-2left",
+    "tock-1left",
+    "tock-3left",
+    "tutorial-bling",
+    "tutorial-fail",
+    "tutorial-pass",
+    "tutorial-ping",
+] as const;
 
+export type ValidSound = (typeof GameVoiceSounds | typeof CountdownSounds | typeof EffectsSounds)[number];
 
 export const SpriteGroups = {
     'game_voice': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
-            if (GameVoiceSounds.indexOf(key) >= 0) {
+            if (GameVoiceSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
@@ -92,7 +106,7 @@ export const SpriteGroups = {
     }).map(pack_id => sprite_packs[pack_id]),
     'countdown': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
-            if (CountdownSounds.indexOf(key) >= 0) {
+            if (CountdownSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
@@ -100,7 +114,7 @@ export const SpriteGroups = {
     }).map(pack_id => sprite_packs[pack_id]),
     'effects': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
-            if (EffectsSounds.indexOf(key) >= 0) {
+            if (EffectsSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
@@ -113,18 +127,29 @@ export class SFXSprite {
     public readonly howl: Howl;
     public readonly name: string;
     public readonly group_name: string;
-    public volume: number;
+    private _volume: number;
 
     constructor(howl: Howl, group_name: string, sprite_name: string) {
         this.howl = howl;
         this.group_name = group_name;
         this.name = sprite_name;
-        this.volume = 1.0;
+        this._volume = 1.0;
+    }
+
+    get volume():number {
+        return this._volume;
+    }
+
+    set volume(v:number) {
+        this._volume = v;
+        if (this.id) {
+            this.howl.volume(this._volume, this.id);
+        }
     }
 
     public play():void {
         let id = this.howl.play(this.name);
-        this.howl.volume(this.volume, id);
+        this.howl.volume(this._volume, id);
         this.id = id;
         this.then(() => delete this.id);
     }
@@ -167,17 +192,33 @@ export class SFXManager {
             this.load('effects');
         }
     }
-    public play(sound_name:string):SFXSprite {
+    public play(sound_name: ValidSound):SFXSprite {
         if (sound_name in this.sprites) {
             let ret = this.sprites[sound_name];
             ret.play();
             return ret;
         } else {
             console.error("Unknown sound to play: ", sound_name);
+            if (sound_name !== 'error') {
+                this.play('error');
+            }
             throw new Error(`Unknown sound to play: ${sound_name}`);
         }
     }
-    public load(group_name: string) {
+    public stop(group_name?: string):void {
+        if (group_name) {
+            if (group_name in this.howls) {
+                this.howls[group_name].stop();
+            } else {
+                throw new Error(`Called sfx.stop with invalid group name: ${group_name}`);
+            }
+        } else {
+            for (let k in this.howls) {
+                this.howls[k].stop();
+            }
+        }
+    }
+    public load(group_name: string):void {
         let pack_id = this.getPackId(group_name);
 
         /*
@@ -198,12 +239,12 @@ export class SFXManager {
         });
         this.howls[group_name] = howl;
 
-        let sound_list =
-            group_name === 'game_voice' ? GameVoiceSounds :
-            group_name === 'countdown' ? CountdownSounds :
-            EffectsSounds;
+        let sound_list:Array<ValidSound> =
+            group_name === 'game_voice' ? GameVoiceSounds as unknown as Array<ValidSound> :
+            group_name === 'countdown' ? CountdownSounds as unknown as Array<ValidSound> :
+            EffectsSounds as unknown as Array<ValidSound>;
         for (let sprite_name in sprite_pack.definitions) {
-            if (sound_list.indexOf(sprite_name) >= 0) {
+            if (sound_list.indexOf(sprite_name as ValidSound) >= 0) {
                 this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
                 this.sprites[sprite_name].volume = this.getVolume(group_name);
             }
@@ -251,7 +292,7 @@ export class SFXManager {
         return data.get(`sound.volume.${group_name}`, 1.0);
     }
     public setVolume(group_name: string, volume: number) {
-        data.set(`sound.volume.${group_name}`, volume)
+        data.set(`sound.volume.${group_name}`, volume);
         for (let sprite_name in this.sprites) {
             if (this.sprites[sprite_name].group_name === group_name) {
                 this.sprites[sprite_name].volume = volume;

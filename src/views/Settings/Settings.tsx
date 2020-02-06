@@ -24,7 +24,7 @@ import {post, get, put, del} from "requests";
 import {errorAlerter, errorLogger, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
-import {sfx, SpritePack, SpriteGroups, sprite_packs} from "sfx";
+import {sfx, SpritePack, SpriteGroups, sprite_packs, ValidSound} from "sfx";
 import {LanguagePicker} from "LanguagePicker";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
@@ -907,10 +907,12 @@ function SoundPackSelect(props:{group:string, options:Array<SpritePack>}):JSX.El
     );
 }
 
-function Volume(props:{group: string, sample: string | Array<string>}):JSX.Element {
+let play_timeout:number | null = null;
+
+function Volume(props:{group: string, sample: ValidSound | Array<ValidSound>}):JSX.Element {
     const [volume, __setVolume]:[number, (x:number) => void] = React.useState(sfx.getVolume(props.group));
 
-    let samples:Array<string> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
+    let samples:Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
 
     function setVolume(v:number):void {
         __setVolume(v);
@@ -931,11 +933,16 @@ function Volume(props:{group: string, sample: string | Array<string>}):JSX.Eleme
 
     function play(ev: any):void {
         let _samples = samples.slice();
+        if (play_timeout) {
+            clearTimeout(play_timeout);
+        }
+        sfx.stop();
 
         function process_next() {
+            play_timeout = null;
             if (_samples.length) {
                 let sample = _samples.shift();
-                sfx.play(sample).then(() => setTimeout(process_next, 500));
+                sfx.play(sample).then(() => play_timeout = setTimeout(process_next, 500));
             }
         }
 
