@@ -24,7 +24,7 @@ import {post, get, put, del} from "requests";
 import {errorAlerter, errorLogger, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
-import {sfx, SpritePack, SpriteGroups, sprite_packs, ValidSound} from "sfx";
+import {sfx, SpritePack, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
 import {LanguagePicker} from "LanguagePicker";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
@@ -847,7 +847,7 @@ function SoundPreferences():JSX.Element {
 }
 
 
-function SoundPackSelect(props:{group:string, options:Array<SpritePack>}):JSX.Element {
+function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>}):JSX.Element {
     const [pack_id, __setPackId]:[string, (x:string) => void] = React.useState(sfx.getPackId(props.group));
 
     function filter({label, value, data}, text:string):boolean {
@@ -909,7 +909,7 @@ function SoundPackSelect(props:{group:string, options:Array<SpritePack>}):JSX.El
 
 let play_timeout:number | null = null;
 
-function Volume(props:{group: string, sample: ValidSound | Array<ValidSound>}):JSX.Element {
+function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidSound>}):JSX.Element {
     const [volume, __setVolume]:[number, (x:number) => void] = React.useState(sfx.getVolume(props.group));
 
     let samples:Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;

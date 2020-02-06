@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Howl, Howler} from 'howler';
-import * as preferences from './preferences';
 import * as data from './data';
-import { sprite_packs } from './sfx_sprites';
+import * as preferences from './preferences';
+import { Howl } from 'howler';
+import { sprite_packs, SpritePack } from './sfx_sprites';
 import { current_language } from './translate';
 
 
@@ -95,7 +95,8 @@ const EffectsSounds = [
 
 export type ValidSound = (typeof GameVoiceSounds | typeof CountdownSounds | typeof EffectsSounds)[number];
 
-export const SpriteGroups = {
+export type ValidSoundGroup = 'game_voice' | 'countdown' | 'effects';
+export const SpriteGroups:{[id in ValidSoundGroup]: Array<SpritePack>} = {
     'game_voice': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
             if (GameVoiceSounds.filter(s => s === key).length > 0) {
@@ -185,7 +186,6 @@ export class SFXManager {
 
         if (!!preferences.get('sound-enabled') || this.volume_override) {
             this.synced = true;
-            let release_base:string = data.get('config.cdn_release');
 
             this.load('game_voice');
             this.load('countdown');
@@ -218,7 +218,7 @@ export class SFXManager {
             }
         }
     }
-    public load(group_name: string):void {
+    public load(group_name: ValidSoundGroup):void {
         let pack_id = this.getPackId(group_name);
 
         /*
@@ -235,7 +235,7 @@ export class SFXManager {
                 `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
             ],
             autoplay: false,
-            sprite: sprite_pack.definitions,
+            sprite: sprite_pack.definitions as {[id:string]: [number, number]},
         });
         this.howls[group_name] = howl;
 
@@ -250,7 +250,7 @@ export class SFXManager {
             }
         }
     }
-    public getPackId(group_name: string):string {
+    public getPackId(group_name: ValidSoundGroup):string {
         let pack_id = data.get(`sound.pack.${group_name}`) || 'auto';
 
         if (pack_id in sprite_packs) {
@@ -284,14 +284,14 @@ export class SFXManager {
 
         return SpriteGroups.effects[0].pack_id;
     }
-    public setPackId(group_name: string, pack_id: string):void {
+    public setPackId(group_name: ValidSoundGroup, pack_id: string):void {
         data.set(`sound.pack.${group_name}`, pack_id);
         sfx.load(group_name);
     }
-    public getVolume(group_name: string):number {
+    public getVolume(group_name: ValidSoundGroup):number {
         return data.get(`sound.volume.${group_name}`, 1.0);
     }
-    public setVolume(group_name: string, volume: number) {
+    public setVolume(group_name: ValidSoundGroup, volume: number) {
         data.set(`sound.volume.${group_name}`, volume);
         for (let sprite_name in this.sprites) {
             if (this.sprites[sprite_name].group_name === group_name) {
