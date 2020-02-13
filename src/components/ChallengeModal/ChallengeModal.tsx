@@ -506,7 +506,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 function onGamedata() {
                     off();
                     swal.close();
-                    sfx.play("automatch-start");
+                    sfx.play("game_accepted");
                     browserHistory.push(`/game/${game_id}`);
                 }
 

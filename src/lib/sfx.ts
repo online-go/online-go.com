@@ -24,42 +24,58 @@ import { current_language } from './translate';
 console.log('sprite_packs', sprite_packs);
 
 const GameVoiceSounds = [
-    "1_period_left",
-    "2_periods_left",
-    "3_periods_left",
-    "4_periods_left",
-    "5_periods_left",
-    "begin",
-    "black_wins",
-    "byoyomi",
-    "disconnected",
-    "draw",
-    "entering_byoyomi",
-    "entering_overtime",
-    "game_over",
-    "game_paused",
-    "game_resumed",
-    "game_started",
-    "last_byoyomi",
-    "last_period",
-    "main_time",
-    "overtime",
-    "press_the_submit_button_to_place_the_stone",
-    "reconnected",
-    "remove_the_dead_stones",
-    "stone_removal",
-    "tie",
-    "time",
-    "timeout",
-    "undo_granted",
-    "undo_requested",
-    "white_wins",
-    "your_move",
-    "your_opponent_has_disconnected",
-    "your_opponent_has_reconnected",
-    "you_have_lost",
-    "you_have_won",
-    "pass",
+    "1_period_left",      //
+    "2_periods_left",     //
+    "3_periods_left",     //
+    "4_periods_left",     //
+    "5_periods_left",     //
+    "byoyomi",            //
+    "entering_byoyomi",   //
+    "entering_overtime",  //
+    "last_byoyomi",       //
+    "last_period",        //
+    "main_time",          //
+    "overtime",           //
+
+
+    "you_have_lost",       // DONE
+    "you_have_won",        // DONE
+    "black_wins",          // DONE
+    "white_wins",          // DONE
+    "tie",                 // DONE
+
+    "disconnected",        // DONE
+    "reconnected",         // DONE
+    "your_opponent_has_disconnected",  // DONE
+    "your_opponent_has_reconnected",   // DONE
+    "player_disconnected", // DONE
+    "player_reconnected",  // DONE
+    "undo_granted",        // DONE
+    "undo_requested",      // DONE
+    "game_paused",         // DONE
+    "game_resumed",        // DONE
+    "game_started",        // DONE
+
+    "remove_the_dead_stones", // DONE
+    "pass",               // DONE
+
+    "match_found",        // DONE
+    "game_accepted",      // DONE
+
+    /* ------- ignored and unused ------ */
+
+    "your_partner_has_disconnected",   // IGNORED
+    "your_partner_has_reconnected",    // IGNORED
+
+    "draw",               //
+    "time",               //
+    "stone_removal",      //
+    "begin",              //
+    "game_over",          //
+
+    "press_the_submit_button_to_place_the_stone", // ?
+    "timeout", // ?
+    "your_move", // ?
 ] as const;
 
 const CountdownSounds = [
@@ -73,7 +89,6 @@ const CountdownSounds = [
 ] as const;
 
 const EffectsSounds = [
-    "automatch-start",
     "stone-place-1",
     "stone-place-2",
     "stone-place-3",
@@ -150,6 +165,7 @@ export class SFXSprite {
     }
 
     public play():void {
+        console.log('Playing sound bite: ', this.name, ' at volume: ', this._volume);
         let id = this.howl.play(this.name);
         this.howl.volume(this._volume, id);
         this.id = id;
@@ -158,6 +174,11 @@ export class SFXSprite {
     public then(fn: () => void): void {
         if (this.id) {
             this.howl.once('end', fn, this.id);
+        }
+    }
+    public stop():void {
+        if (this.id) {
+            this.howl.stop(this.id);
         }
     }
 }

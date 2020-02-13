@@ -46,7 +46,7 @@ import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "ACLModal";
-import {sfx} from "sfx";
+import {sfx, SFXSprite} from "sfx";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
@@ -425,57 +425,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
 
-        //this.goban.on('audio-game-start', () => sfx.play("beepbeep", true));
-        this.goban.on('audio-game-start', () => sfx.play("game_started"));
-        this.goban.on('audio-game-end', (winner:'black' | 'white' | 'tie') => {
-            if (winner === 'black') {
-                sfx.play('black_wins');
-            }
-            if (winner === 'white') {
-                sfx.play('black_wins');
-            }
-            if (winner === 'tie') {
-                sfx.play('tie');
-            }
-        });
-        this.goban.on('audio-pass', () => sfx.play("pass"));
-        this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height));
-        this.goban.on('audio-clock', (audio_clock_event) => {
-            let user = data.get('user');
-            if (user.anonymous) {
-                return;
-            }
+        this.bindAudioEvents();
 
-            if (audio_clock_event.countdown_seconds > 10) {
-                return;
-            }
-
-            let audio_enabled = false;
-
-            if (preferences.get("sound-voice-countdown")) {
-                if (audio_clock_event.time_control_system === "byoyomi" || audio_clock_event.time_control_system === "canadian") {
-                    if (preferences.get("sound-voice-countdown-main") || audio_clock_event.in_overtime) {
-                        audio_enabled = true;
-                    }
-                } else {
-                    audio_enabled = true;
-                }
-            }
-
-            if (!audio_enabled) {
-                return;
-            }
-
-            if (this.state.paused) {
-                return;
-            }
-
-            if (!(user.id.toString() === audio_clock_event.player_id )) {
-                return;
-            }
-
-            sfx.play(audio_clock_event.countdown_seconds.toString() as any);
-        });
 
         this.goban.on("clock", (clock:JGOFClock) => {
             /* This is the code that draws the count down number on the "hover
@@ -740,6 +691,194 @@ export class Game extends React.PureComponent<GameProperties, any> {
             .catch(ignore);
         }
     }
+    private bindAudioEvents():void { // called by init
+        let user = data.get('user');
+        //this.goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));
+
+        this.goban.on('audio-enter-stone-removal', () => sfx.play('remove_the_dead_stones'));
+        //this.goban.on('audio-enter-stone-removal', () => sfx.play('stone_removal'));
+        this.goban.on('audio-resume-game-from-stone-removal', () => sfx.play('game_resumed'));
+
+        this.goban.on('audio-game-paused', () => sfx.play('game_paused'));
+        this.goban.on('audio-game-resumed', () => sfx.play('game_resumed'));
+        this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height));
+        this.goban.on('audio-pass', () => sfx.play("pass"));
+        this.goban.on('audio-undo-requested', () => sfx.play('undo_requested'));
+        this.goban.on('audio-undo-granted', () => sfx.play('undo_granted'));
+
+        { // Announce when *we* have disconnected / reconnected
+            let disconnected = false;
+            let debounce:number | null;
+            let cur_sound:SFXSprite;
+            let can_play_disconnected_sound = false;
+
+            setTimeout(() => can_play_disconnected_sound = true, 3000);
+
+            this.goban.on('audio-disconnected', () => {
+                if (!can_play_disconnected_sound) {
+                    return;
+                }
+                if (cur_sound) {
+                    cur_sound.stop();
+                }
+                if (debounce) {
+                    clearTimeout(debounce);
+                }
+                debounce = setTimeout(() => {
+                    cur_sound = sfx.play('disconnected');
+                    disconnected = true;
+                    debounce = null;
+                }, 5000);
+            });
+            this.goban.on('audio-reconnected', () => {
+                if (!can_play_disconnected_sound) {
+                    return;
+                }
+                if (cur_sound) {
+                    cur_sound.stop();
+                }
+                if (debounce) {
+                    clearTimeout(debounce);
+                    debounce = null;
+                    return;
+                }
+                if (!disconnected) {
+                    return;
+                }
+                disconnected = false;
+                cur_sound = sfx.play('reconnected');
+            });
+        }
+
+
+        { // Announce when other people disconnect / reconnect
+            let can_play_disconnected_sound = false;
+            let debounce:number | null;
+            let cur_sound:SFXSprite;
+
+            setTimeout(() => can_play_disconnected_sound = true, 3000);
+
+            this.goban.on('audio-other-player-disconnected', (who: { player_id: number }) => {
+                console.log("Player :", who.player_id, " disconnected");
+                if (!can_play_disconnected_sound) {
+                    return;
+                }
+                if (who.player_id === user.id) {
+                    // i don't *think* this should ever happen..
+                    return;
+                }
+
+                if (cur_sound) {
+                    cur_sound.stop();
+                }
+                if (debounce) {
+                    clearTimeout(debounce);
+                    debounce = null;
+                    return;
+                }
+
+                debounce = setTimeout(() => {
+                    if (this.goban.engine.playerColor(user?.id) === 'invalid') {
+                        // spectating? don't say opponent
+                        cur_sound = sfx.play('player_disconnected');
+                    } else {
+                        cur_sound = sfx.play('your_opponent_has_disconnected');
+                    }
+                    debounce = null;
+                }, 5000); // don't play "your opponent has disconnected" if they are just reloading the page
+            });
+            this.goban.on('audio-other-player-reconnected', (who: { player_id: number }) => {
+                console.log("Player :", who.player_id, " reconnected");
+                if (!can_play_disconnected_sound) {
+                    return;
+                }
+                if (who.player_id === user.id) {
+                    // i don't *think* this should ever happen..
+                    return;
+                }
+                if (cur_sound) {
+                    cur_sound.stop();
+                }
+
+                if (debounce) {
+                    clearTimeout(debounce);
+                    debounce = null;
+                    return;
+                }
+                if (this.goban.engine.playerColor(user?.id) === 'invalid') {
+                    // spectating? don't say opponent
+                    cur_sound = sfx.play('player_reconnected');
+                } else {
+                    cur_sound = sfx.play('your_opponent_has_reconnected');
+                }
+            });
+        }
+
+
+
+        this.goban.on('audio-game-ended', (winner:'black' | 'white' | 'tie') => {
+            let user = data.get('user');
+            let color = this.goban.engine.playerColor(user?.id);
+
+            if (winner === 'tie') {
+                sfx.play('tie');
+            } else {
+                if (color === 'invalid') {
+                    if (winner === 'black') {
+                        sfx.play('black_wins');
+                    }
+                    if (winner === 'white') {
+                        sfx.play('white_wins');
+                    }
+                } else {
+                    console.log("winner: ", winner, " color ", color);
+                    if (winner === color) {
+                        sfx.play('you_have_won');
+                    } else {
+                        sfx.play('you_have_lost');
+                    }
+                }
+            }
+        });
+
+        this.goban.on('audio-clock', (audio_clock_event) => {
+            let user = data.get('user');
+            if (user.anonymous) {
+                return;
+            }
+
+            if (audio_clock_event.countdown_seconds > 10) {
+                return;
+            }
+
+            let audio_enabled = false;
+
+            if (preferences.get("sound-voice-countdown")) {
+                if (audio_clock_event.time_control_system === "byoyomi" || audio_clock_event.time_control_system === "canadian") {
+                    if (preferences.get("sound-voice-countdown-main") || audio_clock_event.in_overtime) {
+                        audio_enabled = true;
+                    }
+                } else {
+                    audio_enabled = true;
+                }
+            }
+
+            if (!audio_enabled) {
+                return;
+            }
+
+            if (this.state.paused) {
+                return;
+            }
+
+            if (!(user.id.toString() === audio_clock_event.player_id )) {
+                return;
+            }
+
+            sfx.play(audio_clock_event.countdown_seconds.toString() as any);
+        });
+    }
+
 
     /*** Common stuff ***/
     nav_up() {

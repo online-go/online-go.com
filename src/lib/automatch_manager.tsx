@@ -142,7 +142,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         if (entry.uuid === this.last_find_match_uuid) {
             browserHistory.push(`/game/view/${entry.game_id}`);
-            sfx.play("automatch-start");
+            sfx.play("match_found");
         }
 
         this.emit('start', entry);
