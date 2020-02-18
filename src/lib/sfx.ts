@@ -29,6 +29,7 @@ const GameVoiceSounds = [
     "3_periods_left",     //
     "4_periods_left",     //
     "5_periods_left",     //
+    "period",             //
     "byoyomi",            //
     "entering_byoyomi",   //
     "entering_overtime",  //

@@ -829,7 +829,10 @@ function SoundPreferences():JSX.Element {
                 <SoundPackSelect group='countdown' options={SpriteGroups.countdown} />
             </span>
             <span>
-                <Volume group='countdown' sample={['3', '2', '1']} />
+                <Volume group='countdown' sample={
+                    /* ["60", "59", "58", "57", "56", "55", "54", "53", "52", "51", "50", "49", "48", "47", "46", "45", "44", "43", "42", "41", "40", "39", "38", "37", "36", "35", "34", "33", "32", "31", "30", "29", "28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"] */
+                    ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"]
+                } />
             </span>
         </div>
 
@@ -842,7 +845,6 @@ function SoundPreferences():JSX.Element {
                 <Volume group='effects' sample={['stone-place-1', 'stone-place-2', 'stone-place-3']} />
             </span>
         </div>
-
     </Card>);
 }
 
@@ -942,7 +944,8 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
             play_timeout = null;
             if (_samples.length) {
                 let sample = _samples.shift();
-                sfx.play(sample).then(() => play_timeout = setTimeout(process_next, 500));
+                let start = Date.now();
+                sfx.play(sample).then(() => play_timeout = setTimeout(process_next, Math.max(100, 1000 - (Date.now() - start))));
             }
         }
 

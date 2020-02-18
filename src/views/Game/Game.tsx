@@ -28,7 +28,7 @@ import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree} from "goban";
+import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree, AudioClockEvent} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -841,7 +841,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         });
 
-        this.goban.on('audio-clock', (audio_clock_event) => {
+
+
+
+        this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
             let user = data.get('user');
             if (user.anonymous) {
                 return;
