@@ -64,6 +64,7 @@
             display: flex;
             flex-direction: row;
             align-items: center;
+            flex-wrap: wrap;
 
             > h4 {
                 display: inline-block;
@@ -71,12 +72,27 @@
                 max-width: 100vw;
                 flex: 0;
                 flex-basis: 10rem;
+                margin-right: 2rem;
+            }
+            > h5 {
+                display: inline-block;
+                padding-left: 2rem;
+                flex: 0;
+                flex-basis: 15rem;
             }
 
             > span {
-                margin-left: 2rem;
-                flex: 1;
+                margin-left: 3rem;
+                flex: 0;
                 flex-basis: 10rem;
+            }
+
+            .sound-option-select {
+                text-wrap: nowrap;
+
+                .sound-option {
+                    padding-left: 0.5rem;
+                }
             }
 
             .flag {
@@ -87,6 +103,8 @@
                 display: flex;
                 flex-direction: row;
                 align-items: center;
+                margin-top: 1.0rem;
+                margin-bottom: 1.0rem;
 
                 input {
                     flex: 1;

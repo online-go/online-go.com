@@ -814,8 +814,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             });
         }
 
-
-
         this.goban.on('audio-game-ended', (winner:'black' | 'white' | 'tie') => {
             let user = data.get('user');
             let color = this.goban.engine.playerColor(user?.id);
@@ -840,9 +838,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
             }
         });
-
-
-
 
         this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
             let user = data.get('user');

@@ -31,6 +31,7 @@ import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
 import {logout} from 'NavBar';
 import {Flag} from "Flag";
+import {EventEmitter} from 'eventemitter3';
 import Select from 'react-select';
 import ITC from 'ITC';
 
@@ -484,7 +485,7 @@ export class Settings extends React.PureComponent<{}, any> {
         <div className="Settings container">
             <h2 className="page-title"><i className="fa fa-gear"></i>{_("Settings")}</h2>
             <div className="row">
-                <div className="col-sm-7">
+                <div className="col-sm-12">
                     <SoundPreferences />
 
                     <Card>
@@ -697,9 +698,6 @@ export class Settings extends React.PureComponent<{}, any> {
                         </Card>
                     }
 
-                </div>
-                <div className="col-sm-5">
-
                     <Card>
                         <h3>
                             {this.state.profile.on_vacation
@@ -810,6 +808,72 @@ export class Settings extends React.PureComponent<{}, any> {
 
 
 function SoundPreferences():JSX.Element {
+    const [tick_tock_start, __setTickTockStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.tick-tock.start'));
+    const [ten_seconds_start, __setTenSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.ten-seconds.start'));
+    const [five_seconds_start, __setFiveSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.five-seconds.start'));
+    const [every_second_start, __setEverySecondStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.every-second.start'));
+    const [count_direction, __setCountDirection]:[string, (x: string) => void] = React.useState(preferences.get('sound.countdown.direction'));
+    let count_direction_auto = 'down';
+
+    if (count_direction === 'auto') {
+        count_direction_auto =
+            (current_language === 'ja' || current_language === 'ko')
+            ? 'up' : 'down';
+    }
+
+    let count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
+
+    function setTickTockStart(opt):void {
+        preferences.set('sound.countdown.tick-tock.start', opt.value);
+        __setTickTockStart(opt.value);
+    }
+    function setTenSecondsStart(opt):void {
+        preferences.set('sound.countdown.ten-seconds.start', opt.value);
+        __setTenSecondsStart(opt.value);
+    }
+    function setFiveSecondsStart(opt):void {
+        preferences.set('sound.countdown.five-seconds.start', opt.value);
+        __setFiveSecondsStart(opt.value);
+    }
+    function setEverySecondStart(opt):void {
+        preferences.set('sound.countdown.every-second.start', opt.value);
+        __setEverySecondStart(opt.value);
+    }
+    function setCountDirection(opt):void {
+        preferences.set('sound.countdown.direction', opt.value);
+        __setCountDirection(opt.value);
+    }
+
+    const start_options = [
+        {value: 0,  label: pgettext("Never play the countdown sound", "Never")},
+        {value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds")},
+        {value: 45, label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds")},
+        {value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds")},
+        {value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds")},
+        {value: 15, label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds")},
+        {value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds")},
+    ];
+
+    const start_options_tens = [
+        {value: 0,  label: pgettext("Never play the countdown sound", "Never")},
+        {value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds")},
+        {value: 50, label: pgettext("Start playing the countdown sound at 50 seconds", "50 seconds")},
+        {value: 40, label: pgettext("Start playing the countdown sound at 40 seconds", "40 seconds")},
+        {value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds")},
+        {value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds")},
+        {value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds")},
+    ];
+
+    const counting_direction_options = [
+        {value: 'auto',  label: count_direction_auto === 'up'
+            ? pgettext("Let the system decide which way to announce seconds left on the clock (up)", "Auto (up)")
+            : pgettext("Let the system decide which way to announce seconds left on the clock (down)", "Auto (down)")
+        },
+        {value: 'down', label: pgettext("Announce seconds left counting down", "Down")},
+        {value: 'up', label: pgettext("Announce seconds left counting up", "Up")},
+    ];
+
+
     return (<Card className='Settings-Card'>
         <h3>{_("Sound Preferences")}</h3>
 
@@ -831,7 +895,208 @@ function SoundPreferences():JSX.Element {
             <span>
                 <Volume group='countdown' sample={
                     /* ["60", "59", "58", "57", "56", "55", "54", "53", "52", "51", "50", "49", "48", "47", "46", "45", "44", "43", "42", "41", "40", "39", "38", "37", "36", "35", "34", "33", "32", "31", "30", "29", "28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"] */
-                    ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"]
+                    ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]
+                } />
+            </span>
+        </div>
+        <div>
+            <h5>{pgettext('When we should start playing the soft clock tick-tock sound when the clock is running out', "Soft tick-tock every second starting at")}</h5>
+
+            <span>
+                <Select
+                    className='sound-option-select'
+                    classNamePrefix='ogs-react-select'
+                    value={start_options.filter(opt => opt.value === tick_tock_start)[0]}
+                    getOptionValue={data => data.value}
+                    onChange={setTickTockStart}
+                    options={start_options}
+                    isClearable={false}
+                    isSearchable={false}
+                    blurInputOnSelect={true}
+                    components={{
+                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                            <div ref={innerRef} {...innerProps}
+                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                {data.label}
+                            </div>
+                        ),
+                        SingleValue: ({innerProps, data}) => (
+                            <span {...innerProps} className='sound-option'>
+                                {data.label}
+                            </span>
+                        ),
+                        ValueContainer: ({children}) => (
+                            <div className='sound-option-container'>
+                                {children}
+                            </div>
+                        ),
+                    }}
+                />
+            </span>
+
+            <span>
+                <PlayButton sample={['tick', 'tock', 'tick', 'tock', 'tick', 'tock-3left', 'tick-2left', 'tock-1left']} />
+            </span>
+        </div>
+        <div>
+            <h5>{pgettext("When we should start counting down at 10 second intervals", "Count every 10 seconds starting at")}</h5>
+
+            <span>
+                <Select
+                    className='sound-option-select'
+                    classNamePrefix='ogs-react-select'
+                    value={start_options_tens.filter(opt => opt.value === ten_seconds_start)[0]}
+                    getOptionValue={data => data.value}
+                    onChange={setTenSecondsStart}
+                    options={start_options_tens}
+                    isClearable={false}
+                    isSearchable={false}
+                    blurInputOnSelect={true}
+                    components={{
+                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                            <div ref={innerRef} {...innerProps}
+                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                {data.label}
+                            </div>
+                        ),
+                        SingleValue: ({innerProps, data}) => (
+                            <span {...innerProps} className='sound-option'>
+                                {data.label}
+                            </span>
+                        ),
+                        ValueContainer: ({children}) => (
+                            <div className='sound-option-container'>
+                                {children}
+                            </div>
+                        ),
+                    }}
+                />
+            </span>
+
+            <span>
+                <PlayButton sample={['60', '50', '40', '30', '20', '10']} />
+            </span>
+        </div>
+        <div>
+            <h5>{pgettext("When we should start counting down at 5 second intervals", "Count every 5 seconds starting at")}</h5>
+
+            <span>
+                <Select
+                    className='sound-option-select'
+                    classNamePrefix='ogs-react-select'
+                    value={start_options.filter(opt => opt.value === five_seconds_start)[0]}
+                    getOptionValue={data => data.value}
+                    onChange={setFiveSecondsStart}
+                    options={start_options}
+                    isClearable={false}
+                    isSearchable={false}
+                    blurInputOnSelect={true}
+                    components={{
+                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                            <div ref={innerRef} {...innerProps}
+                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                {data.label}
+                            </div>
+                        ),
+                        SingleValue: ({innerProps, data}) => (
+                            <span {...innerProps} className='sound-option'>
+                                {data.label}
+                            </span>
+                        ),
+                        ValueContainer: ({children}) => (
+                            <div className='sound-option-container'>
+                                {children}
+                            </div>
+                        ),
+                    }}
+                />
+            </span>
+
+            <span>
+                <PlayButton sample={['30', '25', '20', '15', '10', '5']} />
+            </span>
+        </div>
+
+        <div>
+            <h5>{pgettext("When we should start announcing time left on the clock every second", "Count every second starting at")}</h5>
+
+            <span>
+                <Select
+                    className='sound-option-select'
+                    classNamePrefix='ogs-react-select'
+                    value={start_options.filter(opt => opt.value === every_second_start)[0]}
+                    getOptionValue={data => data.value}
+                    onChange={setEverySecondStart}
+                    options={start_options}
+                    isClearable={false}
+                    isSearchable={false}
+                    blurInputOnSelect={true}
+                    components={{
+                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                            <div ref={innerRef} {...innerProps}
+                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                {data.label}
+                            </div>
+                        ),
+                        SingleValue: ({innerProps, data}) => (
+                            <span {...innerProps} className='sound-option'>
+                                {data.label}
+                            </span>
+                        ),
+                        ValueContainer: ({children}) => (
+                            <div className='sound-option-container'>
+                                {children}
+                            </div>
+                        ),
+                    }}
+                />
+            </span>
+
+            <span>
+                <PlayButton sample={["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]} />
+            </span>
+        </div>
+
+        <div>
+            <h5>{pgettext("When announcing how long is left on the clock, should we count up or down?", "Count up or down?")}</h5>
+
+            <span>
+                <Select
+                    className='sound-option-select'
+                    classNamePrefix='ogs-react-select'
+                    value={counting_direction_options.filter(opt => opt.value === count_direction)[0]}
+                    getOptionValue={data => data.value}
+                    onChange={setCountDirection}
+                    options={counting_direction_options}
+                    isClearable={false}
+                    isSearchable={false}
+                    blurInputOnSelect={true}
+                    components={{
+                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                            <div ref={innerRef} {...innerProps}
+                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                {data.label}
+                            </div>
+                        ),
+                        SingleValue: ({innerProps, data}) => (
+                            <span {...innerProps} className='sound-option'>
+                                {data.label}
+                            </span>
+                        ),
+                        ValueContainer: ({children}) => (
+                            <div className='sound-option-container'>
+                                {children}
+                            </div>
+                        ),
+                    }}
+                />
+            </span>
+
+            <span>
+                <PlayButton sample={
+                    count_direction_computed === 'up'
+                    ? ["1", "2", "3", "4", "5"]
+                    : ["5", "4", "3", "2", "1"]
                 } />
             </span>
         </div>
@@ -909,12 +1174,8 @@ function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>
     );
 }
 
-let play_timeout:number | null = null;
-
 function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidSound>}):JSX.Element {
     const [volume, __setVolume]:[number, (x:number) => void] = React.useState(sfx.getVolume(props.group));
-
-    let samples:Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
 
     function setVolume(v:number):void {
         __setVolume(v);
@@ -933,24 +1194,6 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
         }
     }
 
-    function play(ev: any):void {
-        let _samples = samples.slice();
-        if (play_timeout) {
-            clearTimeout(play_timeout);
-        }
-        sfx.stop();
-
-        function process_next() {
-            play_timeout = null;
-            if (_samples.length) {
-                let sample = _samples.shift();
-                let start = Date.now();
-                sfx.play(sample).then(() => play_timeout = setTimeout(process_next, Math.max(100, 1000 - (Date.now() - start))));
-            }
-        }
-
-        process_next();
-    }
 
     return (
         <span className='volume'>
@@ -962,10 +1205,62 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
                 onChange={setVolumeHandler}
                 value={volume} min={0} max={1.0} step={0.05} />
 
+            <PlayButton sample={props.sample} />
+        </span>
+    );
+}
+
+
+let play_timeout:number | null = null;
+let play_emitter = new EventEmitter();
+
+function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element {
+    const [playing, setPlaying]:[boolean, any] = React.useState(false);
+    let samples:Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
+
+    function play(ev: any):void {
+        let _samples = samples.slice();
+        if (play_timeout) {
+            clearTimeout(play_timeout);
+        }
+        sfx.stop();
+        play_emitter.emit('stop');
+        play_emitter.once('stop', () => setPlaying(false));
+
+        function process_next() {
+            play_timeout = null;
+            if (_samples.length) {
+                let sample = _samples.shift();
+                let start = Date.now();
+                //sfx.play(sample).then(() => play_timeout = setTimeout(process_next, Math.max(100, 1000 - (Date.now() - start))));
+                play_timeout = setTimeout(process_next, 1000);
+                sfx.play(sample);
+            } else {
+                setPlaying(false);
+            }
+        }
+
+        process_next();
+        setPlaying(true);
+    }
+
+    function stop(ev: any):void {
+        play_emitter.emit('stop');
+        clearTimeout(play_timeout);
+        play_timeout = null;
+        sfx.stop();
+        setPlaying(false);
+    }
+
+    return (
+        playing ?
+            <span onClick={stop} style={{cursor: "pointer"}}>
+                <i className="fa fa-stop" />
+            </span>
+            :
             <span onClick={play} style={{cursor: "pointer"}}>
                 <i className="fa fa-play" />
             </span>
-        </span>
     );
 }
 
