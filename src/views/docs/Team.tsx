@@ -127,6 +127,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
                             </div>
                         ))}
+
                         <h3>{_("Github Contributors")}</h3>
                         {this.state.contributors.map((u, idx) => (
                             <div key={idx}>
@@ -138,6 +139,34 @@ export class Team extends React.PureComponent<{}, any> {
                                 </span>
                             </div>
                         ))}
+
+                        <h3>{_("Audio")}</h3>
+                        <div>
+                            <span style={{display: "inline-block", width: "3em"}}>
+                                <Flag country='gb'/>
+                            </span>
+                            <span style={{display: "inline-block", width: "8em"}}>
+                                <a href='https://voicebunny.com/voice-actor/claire-natalie-TK5C1B8'>Claire Natalie</a>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span style={{display: "inline-block", width: "3em"}}>
+                                <Flag country='us'/>
+                            </span>
+                            <span style={{display: "inline-block", width: "8em"}}>
+                                <a href='https://freesound.org/people/rhodesmas/'>Andy Rhode</a>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span style={{display: "inline-block", width: "3em"}}>
+                                <Flag country='us'/>
+                            </span>
+                            <span style={{display: "inline-block", width: "8em"}}>
+                                <a href='https://online-go.com/player/1/anoek'>Akita Noek</a>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
