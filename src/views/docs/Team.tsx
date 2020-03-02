@@ -161,6 +161,15 @@ export class Team extends React.PureComponent<{}, any> {
 
                         <div>
                             <span style={{display: "inline-block", width: "3em"}}>
+                                <Flag country='fr'/>
+                            </span>
+                            <span style={{display: "inline-block", width: "8em"}}>
+                                <a href='https://github.com/ornicar/lila/tree/master/public/sound'>Lichess</a>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span style={{display: "inline-block", width: "3em"}}>
                                 <Flag country='us'/>
                             </span>
                             <span style={{display: "inline-block", width: "8em"}}>
