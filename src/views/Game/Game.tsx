@@ -911,8 +911,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             const count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
             const time_control = this.goban.engine.time_control;
 
-            console.log(audio_clock_event, {tick_tock_start, ten_seconds_start, five_seconds_start, every_second_start, count_direction, time_control} );
-
             switch (time_control.system) {
                 case 'none':
                     return;
@@ -2953,13 +2951,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         (this.state.volume === 0 ? "fa-volume-off"
                             : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
                             onClick={this.toggleVolume}
-                    /> <input type="range"
+                    /> <input type="range" className='volume-slider'
                         onChange={this.setVolume}
                         value={this.state.volume} min={0} max={1.0} step={0.01}
-                    /> <i className={"fa volume-icon " +
-                        (this.state.volume === 0 ? "fa-volume-off"
-                            : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                            onClick={this.toggleVolume}
                     />
                 </a>
 

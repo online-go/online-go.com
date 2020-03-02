@@ -21,8 +21,6 @@ import { sprite_packs, SpritePack } from './sfx_sprites';
 import { current_language } from './translate';
 
 
-console.log('sprite_packs', sprite_packs);
-
 const GameVoiceSounds = [
     "2_periods_left",     // DONE
     "3_periods_left",     // DONE
@@ -209,7 +207,7 @@ export class SFXSprite {
     }
 
     public play():void {
-        console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
+        //console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
         let id = this.howl.play(this.name);
         this.howl.volume(this.volume, id);
         this.id = id;
