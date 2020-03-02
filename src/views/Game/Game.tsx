@@ -894,6 +894,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let overtime_announced:boolean = false;
         let last_period_announced = -1;
         let first_audio_event_received:boolean = false;
+        // this exists to prevent some early announcements when we reconnect
+        setTimeout(() => first_audio_event_received = true, 1000);
 
         this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
             let user = data.get('user');
@@ -935,6 +937,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 case 'byoyomi':
                     if (!audio_clock_event.in_overtime && !(time_control.system === 'byoyomi' && time_control.periods === 0)) {
                         // Don't count down main time for byoyomi and canadian clocks
+                        //console.log("not doing announcement");
                         return;
                     }
 
