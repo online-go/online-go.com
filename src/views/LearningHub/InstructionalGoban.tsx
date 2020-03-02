@@ -97,8 +97,8 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             }
         });
 
-        this.goban.on("puzzle-place", (o:{x: number, y: number, width: number, height: number}) => {
-            sfx.playStonePlacementSound(o.x, o.y, o.width, o.height);
+        this.goban.on("puzzle-place", (o:{x: number, y: number, width: number, height: number, color: 'black' | 'white'}) => {
+            sfx.playStonePlacementSound(o.x, o.y, o.width, o.height, o.color);
         });
         this.goban.on("set-for-removal", (obj:any) => {
             if (this.props.config.onSetStoneRemoval) {

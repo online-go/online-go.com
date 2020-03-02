@@ -24,26 +24,14 @@ import { current_language } from './translate';
 console.log('sprite_packs', sprite_packs);
 
 const GameVoiceSounds = [
-    "1_period_left",      //
-    "2_periods_left",     //
-    "3_periods_left",     //
-    "4_periods_left",     //
-    "5_periods_left",     //
-    "period",             //
-    "byoyomi",            //
-    "entering_byoyomi",   //
-    "entering_overtime",  //
-    "last_byoyomi",       //
-    "last_period",        //
-    "main_time",          //
-    "overtime",           //
-
-
-    "you_have_lost",       // DONE
-    "you_have_won",        // DONE
-    "black_wins",          // DONE
-    "white_wins",          // DONE
-    "tie",                 // DONE
+    "2_periods_left",     // DONE
+    "3_periods_left",     // DONE
+    "4_periods_left",     // DONE
+    "5_periods_left",     // DONE
+    "period",             // DONE
+    "byoyomi",            // DONE
+    "last_period",        // DONE
+    "overtime",           // DONE
 
     "disconnected",        // DONE
     "reconnected",         // DONE
@@ -55,29 +43,54 @@ const GameVoiceSounds = [
     "undo_requested",      // DONE
     "game_paused",         // DONE
     "game_resumed",        // DONE
-    "game_started",        // DONE
 
     "remove_the_dead_stones", // DONE
-    "pass",               // DONE
+    "pass",                // DONE
 
-    "match_found",        // DONE
-    "game_accepted",      // DONE
-
-    /* ------- ignored and unused ------ */
-
-    "your_partner_has_disconnected",   // IGNORED
-    "your_partner_has_reconnected",    // IGNORED
-
-    "draw",               //
-    "time",               //
-    "stone_removal",      //
-    "begin",              //
-    "game_over",          //
-
-    "press_the_submit_button_to_place_the_stone", // ?
-    "timeout", // ?
-    "your_move", // ?
+    "challenge_received",  // DONE
+    "review_started",      //
+    "tournament_starting", //
 ] as const;
+
+const UnusedSounds = [
+    /* ------- ignored and unused ------ */
+    "game_started",
+    "game_found",
+    "match_found",
+    "game_accepted",
+    "challenge_accepted",
+    "your_partner_has_disconnected",
+    "your_parnter_has_reconnected",
+    "your_opponent_has_passed",
+    "confirm_the_score",
+
+    "you_have_lost",
+    "you_have_won",
+    "black_wins",
+    "white_wins",
+    "tie",
+
+    "last_byoyomi",
+    "main_time",
+    "entering_byoyomi",
+    "entering_overtime",
+    "1_period_left",                   // we say "last period" instead
+
+    "your_partner_has_disconnected",   // will use when we do rengo
+    "your_partner_has_reconnected",    // will use when we do rengo
+
+    "draw",
+    "time",
+    "stone_removal",
+    "begin",
+    "game_over",
+
+    "press_the_submit_button_to_place_the_stone",
+    "timeout",
+    "your_move",
+];
+
+
 
 const CountdownSounds = [
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -90,13 +103,33 @@ const CountdownSounds = [
 ] as const;
 
 const EffectsSounds = [
-    "stone-place-1",
-    "stone-place-2",
-    "stone-place-3",
-    "stone-place-4",
-    "stone-place-5",
+    "black-1",
+    "black-2",
+    "black-3",
+    "black-4",
+    "black-5",
+
+    "white-1",
+    "white-2",
+    "white-3",
+    "white-4",
+    "white-5",
+
+    "capture-1",
+    "capture-2",
+    "capture-3",
+    "capture-4",
+    "capture-5",
+    "capture-1-pile",
+    "capture-2-pile",
+    "capture-3-pile",
+    "capture-4-pile",
+    "capture-handful",
+
+    "setup-bowl",
+    "put-lid-on",
+
     "error",
-    "beep",
     "beepbeep",
     "boop",
     "tick",
@@ -110,13 +143,17 @@ const EffectsSounds = [
     "tutorial-ping",
 ] as const;
 
-export type ValidSound = (typeof GameVoiceSounds | typeof CountdownSounds | typeof EffectsSounds)[number];
+export type ValidSound = (typeof GameVoiceSounds | typeof UnusedSounds |typeof CountdownSounds | typeof EffectsSounds)[number];
 
 export type ValidSoundGroup = 'game_voice' | 'countdown' | 'effects';
 export const SpriteGroups:{[id in ValidSoundGroup]: Array<SpritePack>} = {
     'game_voice': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
             if (GameVoiceSounds.filter(s => s === key).length > 0) {
+                return true;
+            }
+
+            if (UnusedSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
@@ -140,6 +177,8 @@ export const SpriteGroups:{[id in ValidSoundGroup]: Array<SpritePack>} = {
     }).map(pack_id => sprite_packs[pack_id]),
 };
 
+
+
 export class SFXSprite {
     private id?:number;
     public readonly howl: Howl;
@@ -155,20 +194,24 @@ export class SFXSprite {
     }
 
     get volume():number {
+        if (sfx.volume_override >= 0) {
+            return sfx.volume_override;
+        }
+
         return this._volume;
     }
 
     set volume(v:number) {
         this._volume = v;
         if (this.id) {
-            this.howl.volume(this._volume, this.id);
+            this.howl.volume(this.volume, this.id);
         }
     }
 
     public play():void {
-        console.log('Playing sound bite: ', this.name, ' at volume: ', this._volume);
+        console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
         let id = this.howl.play(this.name);
-        this.howl.volume(this._volume, id);
+        this.howl.volume(this.volume, id);
         this.id = id;
         this.then(() => delete this.id);
     }
@@ -180,6 +223,11 @@ export class SFXSprite {
     public stop():void {
         if (this.id) {
             this.howl.stop(this.id);
+        }
+    }
+    public stereo(pan:number):void {
+        if (this.id) {
+            this.howl.stereo(pan, this.id);
         }
     }
 }
@@ -221,11 +269,14 @@ export class SFXManager {
             ret.play();
             return ret;
         } else {
-            console.error("Unknown sound to play: ", sound_name);
-            if (sound_name !== 'error') {
-                this.play('error');
+            try {
+                console.trace("Unknown sound to play: ", sound_name);
+                if (sound_name !== 'error') {
+                    this.play('error');
+                }
+            } catch (e) {
+                //
             }
-            throw new Error(`Unknown sound to play: ${sound_name}`);
         }
     }
     public stop(group_name?: string):void {
@@ -325,7 +376,6 @@ export class SFXManager {
 
     public setVolumeOverride(volume:number) {
         this.volume_override = volume;
-        // TODO
     }
     public clearVolumeOverride() {
         delete this.volume_override;
@@ -333,9 +383,12 @@ export class SFXManager {
     public getVolumeOverride():number {
         return this.volume_override;
     }
-    public playStonePlacementSound(x: number, y: number, width: number, height: number):void {
-        // TODO
-        this.play('stone-place-1');
+    public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
+        let pan = ((x / width) - 0.5) * 0.3;
+        let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
+        let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
+
+        this.play(stone_sound).stereo(pan);
     }
 }
 
@@ -353,3 +406,13 @@ let I = setInterval(() => {
         sfx.enable();
     }
 }, 100);
+
+
+/* Check and warn if we don't have an effect mapping for every sound voice sound */
+window['sprite_packs'] = sprite_packs;
+const effects = sprite_packs['zz-un-effects'];
+for (let name of GameVoiceSounds) {
+    if (!(name in effects.definitions)) {
+        console.error("Non vocal sound effect not defined for ", name);
+    }
+}

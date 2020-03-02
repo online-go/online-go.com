@@ -812,7 +812,7 @@ function SoundPreferences():JSX.Element {
     const [ten_seconds_start, __setTenSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.ten-seconds.start'));
     const [five_seconds_start, __setFiveSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.five-seconds.start'));
     const [every_second_start, __setEverySecondStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.every-second.start'));
-    const [count_direction, __setCountDirection]:[string, (x: string) => void] = React.useState(preferences.get('sound.countdown.direction'));
+    const [count_direction, __setCountDirection]:[string, (x: string) => void] = React.useState(preferences.get('sound.countdown.byoyomi-direction'));
     let count_direction_auto = 'down';
 
     if (count_direction === 'auto') {
@@ -840,7 +840,7 @@ function SoundPreferences():JSX.Element {
         __setEverySecondStart(opt.value);
     }
     function setCountDirection(opt):void {
-        preferences.set('sound.countdown.direction', opt.value);
+        preferences.set('sound.countdown.byoyomi-direction', opt.value);
         __setCountDirection(opt.value);
     }
 
@@ -883,7 +883,7 @@ function SoundPreferences():JSX.Element {
                 <SoundPackSelect group='game_voice' options={SpriteGroups.game_voice} />
             </span>
             <span>
-                <Volume group='game_voice' sample='you_have_won' />
+                <Volume group='game_voice' sample={['byoyomi', '5_periods_left']} />
             </span>
         </div>
 
@@ -894,7 +894,6 @@ function SoundPreferences():JSX.Element {
             </span>
             <span>
                 <Volume group='countdown' sample={
-                    /* ["60", "59", "58", "57", "56", "55", "54", "53", "52", "51", "50", "49", "48", "47", "46", "45", "44", "43", "42", "41", "40", "39", "38", "37", "36", "35", "34", "33", "32", "31", "30", "29", "28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"] */
                     ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]
                 } />
             </span>
@@ -1058,7 +1057,7 @@ function SoundPreferences():JSX.Element {
         </div>
 
         <div>
-            <h5>{pgettext("When announcing how long is left on the clock, should we count up or down?", "Count up or down?")}</h5>
+            <h5>{pgettext("When announcing how long is left on the clock during a byo-yomi period, should we count up or down?", "Count up or down during a byo-yomi period?")}</h5>
 
             <span>
                 <Select
@@ -1104,10 +1103,10 @@ function SoundPreferences():JSX.Element {
         <div>
             <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
             <span>
-                <SoundPackSelect group='effects' options={SpriteGroups.effects} />
+                {/* <SoundPackSelect group='effects' options={SpriteGroups.effects} /> */}
             </span>
             <span>
-                <Volume group='effects' sample={['stone-place-1', 'stone-place-2', 'stone-place-3']} />
+                <Volume group='effects' sample={['black-1', 'white-1', 'capture-handful']} />
             </span>
         </div>
     </Card>);
@@ -1232,7 +1231,6 @@ function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element 
             if (_samples.length) {
                 let sample = _samples.shift();
                 let start = Date.now();
-                //sfx.play(sample).then(() => play_timeout = setTimeout(process_next, Math.max(100, 1000 - (Date.now() - start))));
                 play_timeout = setTimeout(process_next, 1000);
                 sfx.play(sample);
             } else {
@@ -1264,101 +1262,3 @@ function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element 
     );
 }
 
-
-/*
-    <dt>{_("Sound")}</dt>
-    <dd className="inline-flex">
-        <i className={"fa volume-icon " +
-            (this.state.volume === 0 ? "fa-volume-off"
-                : (this.state.volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                onClick={this.toggleVolume}
-        /> <input type="range"
-            onChange={this.setVolume}
-            value={this.state.volume} min={0} max={1.0} step={0.01}
-        /> <span onClick={this.playSampleSound} style={{cursor: "pointer"}}>
-             <i className="fa fa-play" />
-        </span>
-    </dd>
-    <dt>{_("Automatch Alert")}</dt> {/* translators: this is the volume control for the sound when an automatch starts */   //}
-/*
-    <dd className="inline-flex">
-        <i className={"fa volume-icon " +
-            (this.state.automatch_alert_volume === 0 ? "fa-volume-off"
-                : (this.state.automatch_alert_volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                onClick={this.toggleAutomatchAlertVolume}
-        /> <input type="range"
-            onChange={this.setAutomatchAlertVolume}
-            value={this.state.automatch_alert_volume} min={0} max={1.0} step={0.01}
-        /> <span onClick={this.playAutomatchAlert} style={{cursor: "pointer"}}>
-             <i className="fa fa-play" />
-        </span>
-    </dd>
-
-
-
-    <dt><label htmlFor="voice-countdown">{_("Voice countdown")}</label></dt>
-    <dd><input type="checkbox" id="voice-countdown" checked={this.state.voice_countdown} onChange={this.setVoiceCountdown}/></dd>
-    <dt><label htmlFor="voice-countdown-main">{_("Voice countdown on main time")}</label></dt>
-    <dd><input type="checkbox" id="voice-countdown-main" checked={this.state.voice_countdown_main} onChange={this.setVoiceCountdownMain}/></dd>
-    */
-
-    /*
-    setVolume = (ev) => {
-        this._setVolume(parseFloat(ev.target.value));
-    }
-    _setVolume(volume) {
-        let enabled = volume > 0;
-
-        preferences.set("sound-volume", volume);
-        preferences.set("sound-enabled", enabled);
-
-        this.setState({
-            volume: volume,
-            sound_enabled: enabled,
-        });
-    }
-    */
-    /*
-    setAutomatchAlertVolume = (ev) => {
-        this._setAutomatchAlertVolume(parseFloat(ev.target.value));
-    }
-    _setAutomatchAlertVolume(volume) {
-        preferences.set("automatch-alert-volume", volume);
-
-        this.setState({
-            automatch_alert_volume: volume,
-        });
-    }
-    */
-    /*
-    setVoiceCountdown = (ev) => {
-        preferences.set("sound-voice-countdown", ev.target.checked);
-        this.setState({"voice_countdown": ev.target.checked});
-    }
-
-    setVoiceCountdownMain = (ev) => {
-        preferences.set("sound-voice-countdown-main", ev.target.checked);
-        this.setState({"voice_countdown_main": ev.target.checked});
-    }
-
-    toggleVolume = (ev) => {
-        this._setVolume(this.state.volume > 0 ? 0 : 0.5);
-    }
-    */
-    /*
-    toggleAutomatchAlertVolume = (ev) => {
-        this._setAutomatchAlertVolume(this.state.automatch_alert_volume > 0 ? 0 : 0.5);
-    }
-    */
-    /*
-    playSampleSound = () => {
-        let num = Math.round(Math.random() * 10000) % 5;
-        sfx.play("stone-" + (num + 1));
-    }
-    playAutomatchAlert = () => {
-        let t = sfx.volume_override;
-        sfx.volume_override = preferences.get("automatch-alert-volume");
-        sfx.play(preferences.get("automatch-alert-sound"));
-        sfx.volume_override = t;
-    }
-    */

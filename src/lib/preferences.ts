@@ -68,11 +68,11 @@ let defaults = {
 
     "sound.volume.master": 1.0,
 
-    "sound.countdown.tick-tock.start": 60,
-    "sound.countdown.ten-seconds.start": 60,
-    "sound.countdown.five-seconds.start": 30,
+    "sound.countdown.tick-tock.start": 30,
+    "sound.countdown.ten-seconds.start": 10,
+    "sound.countdown.five-seconds.start": 10,
     "sound.countdown.every-second.start": 10,
-    "sound.countdown.direction": "auto",
+    "sound.countdown.byoyomi-direction": "auto",
 
     "supporter.currency": "auto",
     "supporter.interval": "month",

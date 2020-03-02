@@ -22,7 +22,7 @@ import * as React from "react";
 import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
-import {_, ngettext, pgettext, interpolate} from "translate";
+import {_, ngettext, pgettext, interpolate, current_language} from "translate";
 import {post, get, api1, del} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
@@ -46,7 +46,7 @@ import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "ACLModal";
-import {sfx, SFXSprite} from "sfx";
+import {sfx, SFXSprite, ValidSound} from "sfx";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
 import {setActiveGameView} from "./Chat";
@@ -298,7 +298,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
             /* if we just moved */
-            if (this.goban.engine.playerNotToMove() === user.id) {
+            if (this.goban && this.goban.engine && this.goban.engine.playerNotToMove() === user.id) {
                 if (!isLiveGame(this.goban.engine.time_control) && preferences.get("auto-advance-after-submit")) {
                     if (notification_manager.anyYourMove()) {
                         notification_manager.advanceToNextBoard();
@@ -701,10 +701,39 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.goban.on('audio-game-paused', () => sfx.play('game_paused'));
         this.goban.on('audio-game-resumed', () => sfx.play('game_resumed'));
-        this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height));
+        this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height, stone.color));
         this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-undo-requested', () => sfx.play('undo_requested'));
         this.goban.on('audio-undo-granted', () => sfx.play('undo_granted'));
+
+        this.goban.on('audio-capture-stones', (obj:{
+            count: number,
+            already_captured: number
+        }) => {
+            let sound:ValidSound = 'error';
+            if (obj.already_captured <= 2) {
+                switch (obj.count) {
+                    case 1: sound = 'capture-1'; break;
+                    case 2: sound = 'capture-2'; break;
+                    case 3: sound = 'capture-3'; break;
+                    case 4: sound = 'capture-4'; break;
+                    case 5: sound = 'capture-5'; break;
+                    default:
+                        sound = 'capture-handful'; break;
+                }
+            } else {
+                switch (obj.count) {
+                    case 1: sound = 'capture-1-pile'; break;
+                    case 2: sound = 'capture-2-pile'; break;
+                    case 3: sound = 'capture-3-pile'; break;
+                    case 4: sound = 'capture-4-pile'; break;
+                    default:
+                        sound = 'capture-handful'; break;
+                }
+            }
+
+            sfx.play(sound);
+        });
 
         { // Announce when *we* have disconnected / reconnected
             let disconnected = false;
@@ -815,8 +844,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.goban.on('audio-game-ended', (winner:'black' | 'white' | 'tie') => {
+            sfx.play('put-lid-on');
+            /*
+
             let user = data.get('user');
             let color = this.goban.engine.playerColor(user?.id);
+
 
             if (winner === 'tie') {
                 sfx.play('tie');
@@ -837,43 +870,149 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
                 }
             }
+
+            */
         });
+
+        let last_audio_played:ValidSound = 'error';
+        let overtime_announced:boolean = false;
+        let last_period_announced = -1;
+        let first_audio_event_received:boolean = false;
 
         this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
             let user = data.get('user');
             if (user.anonymous) {
-                return;
-            }
-
-            if (audio_clock_event.countdown_seconds > 10) {
-                return;
-            }
-
-            let audio_enabled = false;
-
-            if (preferences.get("sound-voice-countdown")) {
-                if (audio_clock_event.time_control_system === "byoyomi" || audio_clock_event.time_control_system === "canadian") {
-                    if (preferences.get("sound-voice-countdown-main") || audio_clock_event.in_overtime) {
-                        audio_enabled = true;
-                    }
-                } else {
-                    audio_enabled = true;
-                }
-            }
-
-            if (!audio_enabled) {
+                console.log("anon");
                 return;
             }
 
             if (this.state.paused) {
+                console.log("paused");
                 return;
             }
 
-            if (!(user.id.toString() === audio_clock_event.player_id )) {
+            if (user.id.toString() !== audio_clock_event.player_id.toString()) {
+                console.log("not user");
                 return;
             }
 
-            sfx.play(audio_clock_event.countdown_seconds.toString() as any);
+            const tick_tock_start = preferences.get('sound.countdown.tick-tock.start') as number;
+            const ten_seconds_start = preferences.get('sound.countdown.ten-seconds.start') as number;
+            const five_seconds_start = preferences.get('sound.countdown.five-seconds.start') as number;
+            const every_second_start = preferences.get('sound.countdown.every-second.start') as number;
+            const count_direction = preferences.get('sound.countdown.byoyomi-direction') as string;
+            let count_direction_auto = 'down';
+            if (count_direction === 'auto') {
+                count_direction_auto =
+                    (current_language === 'ja' || current_language === 'ko')
+                    ? 'up' : 'down';
+            }
+
+            const count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
+            const time_control = this.goban.engine.time_control;
+
+            console.log(audio_clock_event, {tick_tock_start, ten_seconds_start, five_seconds_start, every_second_start, count_direction, time_control} );
+
+            switch (time_control.system) {
+                case 'none':
+                    return;
+
+                case 'canadian':
+                case 'byoyomi':
+                    if (!audio_clock_event.in_overtime && !(time_control.system === 'byoyomi' && time_control.periods === 0)) {
+                        // Don't count down main time for byoyomi and canadian clocks
+                        return;
+                    }
+
+                case 'simple':
+                case 'absolute':
+                case 'fischer':
+                    break;
+            }
+
+
+
+            let audio_to_play:ValidSound;
+            let seconds_left:number = audio_clock_event.countdown_seconds;
+            let numeric_announcement:boolean = false;
+            let force_play:boolean = false;
+
+            if (audio_clock_event.in_overtime && !overtime_announced) {
+                force_play = true;
+                overtime_announced = true;
+                if (time_control.system === 'byoyomi') {
+                    audio_to_play = 'byoyomi';
+                    last_period_announced = audio_clock_event.clock.periods_left;
+                }
+                else {
+                    audio_to_play = 'overtime';
+                }
+            }
+            else if (audio_clock_event.in_overtime && time_control.system === 'byoyomi' && last_period_announced !== audio_clock_event.clock.periods_left) {
+                force_play = true;
+                last_period_announced = audio_clock_event.clock.periods_left;
+                audio_to_play = 'period';
+                if (audio_clock_event.clock.periods_left === 5) {
+                    audio_to_play = '5_periods_left';
+                }
+                if (audio_clock_event.clock.periods_left === 4) {
+                    audio_to_play = '4_periods_left';
+                }
+                if (audio_clock_event.clock.periods_left === 3) {
+                    audio_to_play = '3_periods_left';
+                }
+                if (audio_clock_event.clock.periods_left === 2) {
+                    audio_to_play = '2_periods_left';
+                }
+                if (audio_clock_event.clock.periods_left === 1) {
+                    audio_to_play = 'last_period';
+                }
+            }
+            else {
+                if (tick_tock_start > 0 && seconds_left <= tick_tock_start) {
+                    audio_to_play = seconds_left % 2 ? 'tick' : 'tock';
+                    if (seconds_left === 3) {
+                        audio_to_play = 'tock-3left';
+                    }
+                    if (seconds_left === 2) {
+                        audio_to_play = 'tick-2left';
+                    }
+                    if (seconds_left === 1) {
+                        audio_to_play = 'tock-1left';
+                    }
+                }
+
+                if (ten_seconds_start > 0 && seconds_left <= ten_seconds_start && seconds_left % 10 === 0) {
+                    audio_to_play = seconds_left.toString() as ValidSound;
+                    numeric_announcement = true;
+                }
+                if (five_seconds_start > 0 && seconds_left <= five_seconds_start && seconds_left % 5 === 0) {
+                    audio_to_play = seconds_left.toString() as ValidSound;
+                    numeric_announcement = true;
+                }
+                if (every_second_start > 0 && seconds_left <= every_second_start) {
+                    audio_to_play = seconds_left.toString() as ValidSound;
+                    numeric_announcement = true;
+                }
+
+                if (numeric_announcement && time_control.system === 'byoyomi' && count_direction_computed === 'up' && time_control.period_time <= 60) {
+                    // handle counting up
+                    audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
+                }
+            }
+
+            if (!first_audio_event_received) {
+                if (audio_to_play) {
+                    last_audio_played = audio_to_play;
+                }
+                first_audio_event_received = true;
+                return;
+            }
+
+            if (audio_to_play && last_audio_played !== audio_to_play) {
+                last_audio_played = audio_to_play;
+                sfx.play(audio_to_play);
+            }
         });
     }
 
@@ -1972,7 +2111,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             clearTimeout(this.volume_sound_debounce);
         }
 
-        this.volume_sound_debounce = setTimeout(() => sfx.playStonePlacementSound(5, 5, 9, 9), 250);
+        this.volume_sound_debounce = setTimeout(() => sfx.playStonePlacementSound(5, 5, 9, 9, 'white'), 250);
 
         preferences.set("sound-volume", volume);
         preferences.set("sound-enabled", enabled);
