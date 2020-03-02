@@ -695,12 +695,28 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let user = data.get('user');
         //this.goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));
 
-        this.goban.on('audio-enter-stone-removal', () => sfx.play('remove_the_dead_stones'));
+        this.goban.on('audio-enter-stone-removal', () => {
+            sfx.stop();
+            sfx.play('remove_the_dead_stones');
+        });
         //this.goban.on('audio-enter-stone-removal', () => sfx.play('stone_removal'));
-        this.goban.on('audio-resume-game-from-stone-removal', () => sfx.play('game_resumed'));
+        this.goban.on('audio-resume-game-from-stone-removal', () => {
+            sfx.stop();
+            sfx.play('game_resumed');
+        });
 
-        this.goban.on('audio-game-paused', () => sfx.play('game_paused'));
-        this.goban.on('audio-game-resumed', () => sfx.play('game_resumed'));
+        this.goban.on('audio-game-paused', () => {
+            console.log(this.goban.engine.phase);
+            if (this.goban.engine.phase === 'play') {
+                sfx.play('game_paused');
+            }
+        });
+        this.goban.on('audio-game-resumed', () => {
+            console.log(this.goban.engine.phase);
+            if (this.goban.engine.phase === 'play') {
+                sfx.play('game_resumed');
+            }
+        });
         this.goban.on('audio-stone', (stone) => sfx.playStonePlacementSound(stone.x, stone.y, stone.width, stone.height, stone.color));
         this.goban.on('audio-pass', () => sfx.play("pass"));
         this.goban.on('audio-undo-requested', () => sfx.play('undo_requested'));
@@ -882,17 +898,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
             let user = data.get('user');
             if (user.anonymous) {
-                console.log("anon");
+                //console.log("anon");
                 return;
             }
 
             if (this.state.paused) {
-                console.log("paused");
+                //console.log("paused");
                 return;
             }
 
             if (user.id.toString() !== audio_clock_event.player_id.toString()) {
-                console.log("not user");
+                //console.log("not user");
                 return;
             }
 
@@ -1566,6 +1582,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return a.owner.ranking - b.owner.ranking;
         });
         this.setState({review_list: review_list});
+        sfx.play('review_started');
     }
     handleEscapeKey() {
         if (this.state.zen_mode) {

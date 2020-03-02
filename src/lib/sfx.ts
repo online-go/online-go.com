@@ -22,32 +22,31 @@ import { current_language } from './translate';
 
 
 const GameVoiceSounds = [
-    "2_periods_left",     // DONE
-    "3_periods_left",     // DONE
-    "4_periods_left",     // DONE
-    "5_periods_left",     // DONE
-    "period",             // DONE
-    "byoyomi",            // DONE
-    "last_period",        // DONE
-    "overtime",           // DONE
+    "2_periods_left",
+    "3_periods_left",
+    "4_periods_left",
+    "5_periods_left",
+    "period",
+    "byoyomi",
+    "last_period",
+    "overtime",
 
-    "disconnected",        // DONE
-    "reconnected",         // DONE
-    "your_opponent_has_disconnected",  // DONE
-    "your_opponent_has_reconnected",   // DONE
-    "player_disconnected", // DONE
-    "player_reconnected",  // DONE
-    "undo_granted",        // DONE
-    "undo_requested",      // DONE
-    "game_paused",         // DONE
-    "game_resumed",        // DONE
+    "disconnected",
+    "reconnected",
+    "your_opponent_has_disconnected",
+    "your_opponent_has_reconnected",
+    "player_disconnected",
+    "player_reconnected",
+    "undo_requested",
+    "undo_granted",
+    "game_paused",
+    "game_resumed",
 
-    "remove_the_dead_stones", // DONE
-    "pass",                // DONE
+    "remove_the_dead_stones",
+    "pass",
 
-    "challenge_received",  // DONE
-    "review_started",      //
-    "tournament_starting", //
+    "challenge_received",
+    "review_started",
 ] as const;
 
 const UnusedSounds = [
@@ -82,6 +81,7 @@ const UnusedSounds = [
     "stone_removal",
     "begin",
     "game_over",
+    "tournament_starting",
 
     "press_the_submit_button_to_place_the_stone",
     "timeout",
@@ -91,7 +91,7 @@ const UnusedSounds = [
 
 
 const CountdownSounds = [
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "0" , "1" , "2" , "3" , "4" , "5" , "6" , "7" , "8" , "9" ,
     "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
     "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
     "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
@@ -128,8 +128,6 @@ const EffectsSounds = [
     "put-lid-on",
 
     "error",
-    "beepbeep",
-    "boop",
     "tick",
     "tock",
     "tick-2left",
@@ -207,7 +205,7 @@ export class SFXSprite {
     }
 
     public play():void {
-        //console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
+        console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
         let id = this.howl.play(this.name);
         this.howl.volume(this.volume, id);
         this.id = id;
@@ -312,7 +310,7 @@ export class SFXManager {
         this.howls[group_name] = howl;
 
         let sound_list:Array<ValidSound> =
-            group_name === 'game_voice' ? GameVoiceSounds as unknown as Array<ValidSound> :
+            group_name === 'game_voice' ? ((GameVoiceSounds as any).concat(UnusedSounds as any)) as unknown as Array<ValidSound> :
             group_name === 'countdown' ? CountdownSounds as unknown as Array<ValidSound> :
             EffectsSounds as unknown as Array<ValidSound>;
         for (let sprite_name in sprite_pack.definitions) {
@@ -409,8 +407,10 @@ let I = setInterval(() => {
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
 window['sprite_packs'] = sprite_packs;
 const effects = sprite_packs['zz-un-effects'];
-for (let name of GameVoiceSounds) {
-    if (!(name in effects.definitions)) {
-        console.error("Non vocal sound effect not defined for ", name);
+for (let pack of [GameVoiceSounds, CountdownSounds, EffectsSounds]) {
+    for (let name of pack) {
+        if (!(name in effects.definitions)) {
+            console.error("Non vocal sound effect not defined for ", name);
+        }
     }
 }
