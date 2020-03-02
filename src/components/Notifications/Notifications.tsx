@@ -29,6 +29,7 @@ import {Player} from "Player";
 import {FabX, FabCheck} from "material";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {toast} from 'toast';
+import {sfx} from 'sfx';
 
 declare let Notification: any;
 
@@ -374,6 +375,9 @@ class NotificationManager {
 
             if (notification.type === "challenge") {
                 emitNotification(_("Challenge Received"), interpolate("You have received a challenge from {{username}}", {'username':  notification.user.username}));
+                if ((Date.now()) - boot_time > 5000) {
+                    sfx.play("challenge_received");
+                }
             }
 
             if (notification.type === "gameDeclined") {
@@ -407,6 +411,10 @@ class NotificationManager {
                         if (notification.type === "gameStarted") {
                             title = _("Game Started");
                             body = _("Your game has started");
+                            if ((Date.now()) - boot_time > 5000) {
+                                //sfx.play("game_started");
+                                sfx.play("setup-bowl");
+                            }
                         } else if (notification.type === "gameEnded") {
                             title = _("Game Ended");
                             body = _("Your game has ended");

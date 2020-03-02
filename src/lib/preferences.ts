@@ -24,8 +24,6 @@ let defaults = {
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
-    "automatch-alert-sound": "tutorial-bling",
-    "automatch-alert-volume": 0.3, // Control this important alert separately from "goban sounds"
     "autoplay-delay": 10000,
     "board-labeling": 'automatic',
     "chat.show-all-global-channels": true,
@@ -62,10 +60,20 @@ let defaults = {
     "hide-ranks": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
+
     "sound-enabled": true,
     "sound-voice-countdown-main" : false,
     "sound-voice-countdown": true,
     "sound-volume": 0.5,
+
+    "sound.volume.master": 1.0,
+
+    "sound.countdown.tick-tock.start": 30,
+    "sound.countdown.ten-seconds.start": 10,
+    "sound.countdown.five-seconds.start": 10,
+    "sound.countdown.every-second.start": 10,
+    "sound.countdown.byoyomi-direction": "auto",
+
     "supporter.currency": "auto",
     "supporter.interval": "month",
     "tournaments-tab": "correspondence",

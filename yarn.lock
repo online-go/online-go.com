@@ -453,6 +453,11 @@
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.7.tgz#c8fa532b60a0042219cdf173ca21a975ef0666ad"
   integrity sha512-wE2v81i4C4Ol09RtsWFAqg3BUitWbHSpSlIo+bNdsCJijO9sjme+zm+73ZMCa/qMC8UEERxzGbvmr1cffo2SiQ==
 
+"@types/howler@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@types/howler/-/howler-2.1.2.tgz#318a9cac65eeb8ed7d453dd70c9367067d35137b"
+  integrity sha512-gK7snhJcWVvTdiE6cCBAjeZ9od9Q8LmB5lEyB/3n6jMJOLn7EQ8Zvmkz8XPhnN5xB+b7QzCiqxJY3YiHrM3Jpg==
+
 "@types/htmlparser2@*":
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/@types/htmlparser2/-/htmlparser2-3.10.1.tgz#1e65ba81401d53f425c1e2ba5a3d05c90ab742c7"
@@ -3334,10 +3339,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.5.10:
-  version "0.5.10"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.10.tgz#9eca95970f896cd3592758c50c55b6793fe6ad2a"
-  integrity sha512-oU4bLhjb3YDAf/A+u4BDm8wOzJqWV5c1+S+X3aKf8jiG91Vte5Ne8pIJc6Ehb5mr74QBE/QS97g0psvDUlammw==
+goban@=0.5.13:
+  version "0.5.13"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.13.tgz#b9fbe59f20f035df6f91e2478c75bfbb77619d0c"
+  integrity sha512-v+q+ifyGuPIAuy4170G8bYfbdWfRmUdCLSNcNycN7Hj+cYJgQSFnvS5hUkcsbdPonoS1JzXE3mN/8hutT0eSRg==
 
 graceful-fs@4.X, graceful-fs@^4.0.0, graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6:
   version "4.2.2"
@@ -3602,6 +3607,11 @@ hosted-git-info@^2.1.4:
   version "2.8.5"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.5.tgz#759cfcf2c4d156ade59b0b2dfabddc42a6b9c70c"
   integrity sha512-kssjab8CvdXfcXMXVcvsXum4Hwdq9XGtRD3TteMEvEbq0LXyiNQr6AprqKqfeaDXze7SxWvRxdpwE6ku7ikLkg==
+
+howler@^2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/howler/-/howler-2.1.3.tgz#07c88618f8767e879407a4d647fe2d6d5f15f121"
+  integrity sha512-PSGbOi1EYgw80C5UQbxtJM7TmzD+giJunIMBYyH3RVzHZx2fZLYBoes0SpVVHi/SFa1GoNtgXj/j6I7NOKYBxQ==
 
 hsl-regex@^1.0.0:
   version "1.0.0"
