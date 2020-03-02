@@ -260,32 +260,40 @@ export class SFXManager {
         }
     }
     public play(sound_name: ValidSound):SFXSprite {
-        if (sound_name in this.sprites) {
-            let ret = this.sprites[sound_name];
-            ret.play();
-            return ret;
-        } else {
-            try {
-                console.trace("Unknown sound to play: ", sound_name);
-                if (sound_name !== 'error') {
-                    this.play('error');
+        try {
+            if (sound_name in this.sprites) {
+                let ret = this.sprites[sound_name];
+                ret.play();
+                return ret;
+            } else {
+                try {
+                    console.trace("Unknown sound to play: ", sound_name);
+                    if (sound_name !== 'error') {
+                        this.play('error');
+                    }
+                } catch (e) {
+                    //
                 }
-            } catch (e) {
-                //
             }
+        } catch (e) {
+            console.error(e);
         }
     }
     public stop(group_name?: string):void {
-        if (group_name) {
-            if (group_name in this.howls) {
-                this.howls[group_name].stop();
+        try {
+            if (group_name) {
+                if (group_name in this.howls) {
+                    this.howls[group_name].stop();
+                } else {
+                    throw new Error(`Called sfx.stop with invalid group name: ${group_name}`);
+                }
             } else {
-                throw new Error(`Called sfx.stop with invalid group name: ${group_name}`);
+                for (let k in this.howls) {
+                    this.howls[k].stop();
+                }
             }
-        } else {
-            for (let k in this.howls) {
-                this.howls[k].stop();
-            }
+        } catch (e) {
+            console.error(e);
         }
     }
     public load(group_name: ValidSoundGroup):void {
@@ -380,11 +388,15 @@ export class SFXManager {
         return this.volume_override;
     }
     public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
-        let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.5;
-        let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
-        let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
+        try {
+            let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.5;
+            let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
+            let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
 
-        this.play(stone_sound).stereo(pan);
+            this.play(stone_sound).stereo(pan);
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
 
