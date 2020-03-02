@@ -380,7 +380,7 @@ export class SFXManager {
         return this.volume_override;
     }
     public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
-        let pan = ((x / (width-1)) - 0.5) * 0.5;
+        let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.5;
         let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
         let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
 
