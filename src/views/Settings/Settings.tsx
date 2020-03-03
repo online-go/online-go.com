@@ -852,6 +852,19 @@ function SoundPreferences():JSX.Element {
         {value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds")},
         {value: 15, label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds")},
         {value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds")},
+        {value: 5, label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds")},
+        {value: 3, label: pgettext("Start playing the countdown sound at 3 seconds", "3 seconds")},
+    ];
+
+    const start_options_fives = [
+        {value: 0,  label: pgettext("Never play the countdown sound", "Never")},
+        {value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds")},
+        {value: 45, label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds")},
+        {value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds")},
+        {value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds")},
+        {value: 15, label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds")},
+        {value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds")},
+        {value: 5, label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds")},
     ];
 
     const start_options_tens = [
@@ -983,10 +996,10 @@ function SoundPreferences():JSX.Element {
                 <Select
                     className='sound-option-select'
                     classNamePrefix='ogs-react-select'
-                    value={start_options.filter(opt => opt.value === five_seconds_start)[0]}
+                    value={start_options_fives.filter(opt => opt.value === five_seconds_start)[0]}
                     getOptionValue={data => data.value}
                     onChange={setFiveSecondsStart}
-                    options={start_options}
+                    options={start_options_fives}
                     isClearable={false}
                     isSearchable={false}
                     blurInputOnSelect={true}
@@ -1103,7 +1116,7 @@ function SoundPreferences():JSX.Element {
         <div>
             <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
             <span>
-                {/* <SoundPackSelect group='effects' options={SpriteGroups.effects} /> */}
+                <SoundPackSelect group='effects' options={SpriteGroups.effects} />
             </span>
             <span>
                 <Volume group='effects' sample={['black-1', 'white-1', 'capture-handful']} />
