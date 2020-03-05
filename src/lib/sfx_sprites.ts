@@ -43,7 +43,7 @@ sprite_packs["en-gb-claire-numbers"] = {
     filename_prefix: "en-gb-claire-numbers.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "26": [
@@ -301,7 +301,7 @@ sprite_packs["en-gb-claire"] = {
     filename_prefix: "en-gb-claire.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "1_period_left": [
@@ -511,7 +511,7 @@ sprite_packs["en-us-amy-numbers"] = {
     filename_prefix: "en-us-amy-numbers.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "1": [
@@ -1015,7 +1015,7 @@ sprite_packs["zz-un-effects"] = {
     filename_prefix: "zz-un-effects.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "capture-3": [
@@ -1525,7 +1525,7 @@ sprite_packs["zz-un-floor-goban-rich"] = {
     filename_prefix: "zz-un-floor-goban-rich.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "black-1": [
@@ -1579,7 +1579,7 @@ sprite_packs["zz-un-floor-goban"] = {
     filename_prefix: "zz-un-floor-goban.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "black-1": [
@@ -1633,7 +1633,7 @@ sprite_packs["zz-un-melamine"] = {
     filename_prefix: "zz-un-melamine.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "black-1": [
@@ -1687,7 +1687,7 @@ sprite_packs["zz-un-original-2013"] = {
     filename_prefix: "zz-un-original-2013.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "black-1": [
@@ -1741,7 +1741,7 @@ sprite_packs["zz-un-table-goban"] = {
     filename_prefix: "zz-un-table-goban.v2",
     definitions: {
     "silence": [
-        1000.0,
+        0,
         50
     ],
     "black-1": [

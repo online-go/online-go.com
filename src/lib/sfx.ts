@@ -16,10 +16,11 @@
 
 import * as data from './data';
 import * as preferences from './preferences';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { sprite_packs, SpritePack } from './sfx_sprites';
 import { current_language } from './translate';
 
+Howler.autoUnlock = true;
 
 const GameVoiceSounds = [
     "period",
@@ -286,10 +287,10 @@ export class SFXManager {
         if (!!preferences.get('sound-enabled') || this.volume_override) {
             this.synced = true;
 
-            this.load('game_voice');
-            this.load('countdown');
-            this.load('effects');
             this.load('stones');
+            this.load('countdown');
+            this.load('game_voice');
+            this.load('effects');
         }
     }
     public play(sound_name: ValidSound):SFXSprite | null {
@@ -378,6 +379,19 @@ export class SFXManager {
                 this.effectSprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
                 this.effectSprites[sprite_name].volume = this.getVolume(group_name);
             }
+        }
+
+        try {
+            howl.on('unlock', () => {
+                console.info("Audio group ", group_name, " unlocked successfully, sounds should now work");
+            });
+            let silence = new SFXSprite(howl, group_name, 'silence');
+            silence.play();
+            silence.then(() => {
+                console.log("Successfully played silence from ", group_name);
+            });
+        } catch (e) {
+            console.warn(e);
         }
     }
     public getPackId(group_name: ValidSoundGroup):string {
@@ -477,7 +491,7 @@ export class SFXManager {
     }
     public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
         try {
-            let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.5;
+            let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.3;
             let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
             let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
 
