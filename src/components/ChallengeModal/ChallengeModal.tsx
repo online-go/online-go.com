@@ -507,7 +507,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     off();
                     swal.close();
                     //sfx.play("game_accepted");
-                    sfx.play("setup-bowl");
+                    sfx.play("game_started");
+                    //sfx.play("setup-bowl");
                     browserHistory.push(`/game/${game_id}`);
                 }
 

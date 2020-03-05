@@ -412,8 +412,8 @@ class NotificationManager {
                             title = _("Game Started");
                             body = _("Your game has started");
                             if ((Date.now()) - boot_time > 5000) {
-                                //sfx.play("game_started");
-                                sfx.play("setup-bowl");
+                                sfx.play("game_started");
+                                //sfx.play("setup-bowl");
                             }
                         } else if (notification.type === "gameEnded") {
                             title = _("Game Ended");

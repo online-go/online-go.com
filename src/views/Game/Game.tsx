@@ -860,12 +860,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.goban.on('audio-game-ended', (winner:'black' | 'white' | 'tie') => {
-            sfx.play('put-lid-on');
-            /*
-
             let user = data.get('user');
             let color = this.goban.engine.playerColor(user?.id);
-
 
             if (winner === 'tie') {
                 sfx.play('tie');
@@ -882,12 +878,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     if (winner === color) {
                         sfx.play('you_have_won');
                     } else {
-                        sfx.play('you_have_lost');
+                        //sfx.play('you_have_lost');
+
+                        if (winner === 'black') {
+                            sfx.play('black_wins');
+                        }
+                        if (winner === 'white') {
+                            sfx.play('white_wins');
+                        }
                     }
                 }
             }
-
-            */
         });
 
         let last_audio_played:ValidSound = 'error';

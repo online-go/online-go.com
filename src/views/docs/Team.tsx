@@ -170,7 +170,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country='us'/>
                             </span>
                             <span className='name'>
-                                <a href='http://freesound.org/people/Corsica_S/sounds/82986/'>Amy Gedgaudas</a>
+                                <a href='https://freesound.org/people/tim.kahn/'>Amy Gedgaudas</a>
                             </span>
                             <span className='description'>
                                 - 2013 English 10 second count down
@@ -188,6 +188,19 @@ export class Team extends React.PureComponent<{}, any> {
                                 - Effects
                             </span>
                         </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/JonnyRuss01/'>JonnyRuss01</a>
+                            </span>
+                            <span className='description'>
+                                - Effects
+                            </span>
+                        </div>
+
 
                         <div>
                             <span className='flags'>

@@ -32,6 +32,8 @@ import {profanity_regex} from 'profanity_filter';
 import {logout} from 'NavBar';
 import {Flag} from "Flag";
 import {EventEmitter} from 'eventemitter3';
+import {LineText} from 'misc-ui';
+import {Toggle} from 'Toggle';
 import Select from 'react-select';
 import ITC from 'ITC';
 
@@ -887,8 +889,19 @@ function SoundPreferences():JSX.Element {
     ];
 
 
-    return (<Card className='Settings-Card'>
+    return (<Card>
         <h3>{_("Sound Preferences")}</h3>
+
+        <div  className='Settings-Card'>
+        <div>
+            <h4>{pgettext('Overall sound level', "Master Volume")}</h4>
+
+            <span>
+            </span>
+            <span>
+                <Volume group='master' sample={['black-1', 'white-2', 'capture-handful', '5_periods_left']} />
+            </span>
+        </div>
 
         <div>
             <h4>{pgettext('Sound pack to use for things like "You have won" and "Undo requested" phrases', "Game Voice")}</h4>
@@ -896,7 +909,7 @@ function SoundPreferences():JSX.Element {
                 <SoundPackSelect group='game_voice' options={SpriteGroups.game_voice} />
             </span>
             <span>
-                <Volume group='game_voice' sample={['byoyomi', '5_periods_left']} />
+                <Volume group='game_voice' sample={['byoyomi', 'you_have_won']} />
             </span>
         </div>
 
@@ -1116,15 +1129,114 @@ function SoundPreferences():JSX.Element {
         <div>
             <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
             <span>
+                <SoundPackSelect group='stones' options={SpriteGroups.stones} />
+            </span>
+            <span>
+                <Volume group='stones' sample={['black-1', 'white-2', 'black-3']} />
+            </span>
+        </div>
+
+        <div>
+            <h4>{pgettext('Sound pack to use for various effects', "Efffects")}</h4>
+            <span>
                 <SoundPackSelect group='effects' options={SpriteGroups.effects} />
             </span>
             <span>
-                <Volume group='effects' sample={['black-1', 'white-1', 'capture-handful']} />
+                <Volume group='effects' sample={['tutorial-bling', 'tutorial-pass']} />
             </span>
+        </div>
+        </div>
+
+        <LineText>{pgettext("Settings for individual sound options", "Individual sound options")}</LineText>
+
+        <div className="row">
+            <div className="col-md-6">
+                <SoundToggle name={pgettext('Sound sample option', '2 periods left')} sprite='2_periods_left' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', '3 periods left')} sprite='3_periods_left' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', '4 periods left')} sprite='4_periods_left' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', '5 periods left')} sprite='5_periods_left' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Black wins')} sprite='black_wins' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Byoyomi')} sprite='byoyomi' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Challenge received')} sprite='challenge_received' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Disconnected')} sprite='disconnected' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Game paused')} sprite='game_paused' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Game resumed')} sprite='game_resumed' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Game started')} sprite='game_started' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Last period')} sprite='last_period' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Overtime')} sprite='overtime' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Pass')} sprite='pass' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Period')} sprite='period' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Player disconnected')} sprite='player_disconnected' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Player reconnected')} sprite='player_reconnected' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Reconnected')} sprite='reconnected' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Remove the dead stones')} sprite='remove_the_dead_stones' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Review started')} sprite='review_started' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Tie')} sprite='tie' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Undo granted')} sprite='undo_granted' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Undo requested')} sprite='undo_requested' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'White wins')} sprite='white_wins' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'You have won')} sprite='you_have_won' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Your opponent has disconnected')} sprite='your_opponent_has_disconnected' voiceopt={true} />
+                <SoundToggle name={pgettext('Sound sample option', 'Your opponent has reconnected')} sprite='your_opponent_has_reconnected' voiceopt={true} />
+            </div>
+            <div className='col-md-6'>
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 1 stone')} sprite='capture-1' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 2 stones')} sprite='capture-2' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 3 stones')} sprite='capture-3' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 4 stones')} sprite='capture-4' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 5 stones')} sprite='capture-5' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 1 stone - pile')} sprite='capture-1-pile' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 2 stones - pile')} sprite='capture-2-pile' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 3 stones - pile')} sprite='capture-3-pile' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture 4 stones - pile')} sprite='capture-4-pile' />
+                <SoundToggle name={pgettext('Sound sample option', 'Capture lots of stones')} sprite='capture-handful' />
+
+                <SoundToggle name={pgettext('Sound sample option', 'Tutorial - bling')} sprite='tutorial-bling' />
+                <SoundToggle name={pgettext('Sound sample option', 'Tutorial - pass')} sprite='tutorial-pass' />
+                <SoundToggle name={pgettext('Sound sample option', 'Tutorial - fail')} sprite='tutorial-fail' />
+                <SoundToggle name={pgettext('Sound sample option', 'Tutorial - ping')} sprite='tutorial-ping' />
+            </div>
         </div>
     </Card>);
 }
 
+function SoundToggle(props:{name: string, sprite: ValidSound, voiceopt?: boolean}):JSX.Element {
+    const [on, __set]:[boolean, (x:boolean) => void] = React.useState(sfx.getSpriteEnabled(props.sprite));
+    const [voice, __setVoice]:[boolean, (x:boolean) => void] = React.useState(sfx.getSpriteVoiceEnabled(props.sprite));
+
+    function setSpriteEnabled(on:boolean):void {
+        sfx.setSpriteEnabled(props.sprite, on);
+        __set(on);
+    }
+
+    function setSpriteVoiceEnabled(on:boolean):void {
+        sfx.setSpriteVoiceEnabled(props.sprite, on);
+        __setVoice(on);
+    }
+    return (
+        <div className='SoundToggle'>
+            <label htmlFor={`sprite-enabled-${props.sprite}`}>
+                <span className='sound-toggle-name' >{props.name}</span>
+                <Toggle id={`sprite-enabled-${props.sprite}`} onChange={setSpriteEnabled} checked={on} />
+            </label>
+            {props.voiceopt &&
+                <label htmlFor={`sprite-enabled-${props.sprite}-voice`}>
+                    {voice
+                        ? <span className='voice-or-effect'>{pgettext('Use the spoken voice sound for this sound effect', 'Voice')}</span>
+                        : <span className='voice-or-effect'>{pgettext('Use a non verbal sound effect', 'Effect')}</span>
+                    }
+                    <Toggle
+                        disabled={!on}
+                        id={`sprite-enabled-${props.sprite}-voice`}
+                        onChange={setSpriteVoiceEnabled}
+                        checked={voice}
+                    />
+                </label>
+            }
+            <PlayButton sample={props.sprite} />
+        </div>
+    );
+}
 
 function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>}):JSX.Element {
     const [pack_id, __setPackId]:[string, (x:string) => void] = React.useState(sfx.getPackId(props.group));

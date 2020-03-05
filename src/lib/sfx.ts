@@ -22,15 +22,21 @@ import { current_language } from './translate';
 
 
 const GameVoiceSounds = [
-    "2_periods_left",
-    "3_periods_left",
-    "4_periods_left",
-    "5_periods_left",
     "period",
-    "byoyomi",
+    "5_periods_left",
+    "4_periods_left",
+    "3_periods_left",
+    "2_periods_left",
     "last_period",
+    "byoyomi",
     "overtime",
 
+    "you_have_won",
+    "black_wins",
+    "white_wins",
+    "tie",
+
+    "game_started",
     "disconnected",
     "reconnected",
     "your_opponent_has_disconnected",
@@ -51,7 +57,7 @@ const GameVoiceSounds = [
 
 const UnusedSounds = [
     /* ------- ignored and unused ------ */
-    "game_started",
+    "you_have_lost",
     "game_found",
     "match_found",
     "game_accepted",
@@ -60,12 +66,6 @@ const UnusedSounds = [
     "your_parnter_has_reconnected",
     "your_opponent_has_passed",
     "confirm_the_score",
-
-    "you_have_lost",
-    "you_have_won",
-    "black_wins",
-    "white_wins",
-    "tie",
 
     "last_byoyomi",
     "main_time",
@@ -100,7 +100,7 @@ const CountdownSounds = [
     "60",
 ] as const;
 
-const EffectsSounds = [
+const StoneSounds = [
     "black-1",
     "black-2",
     "black-3",
@@ -112,7 +112,9 @@ const EffectsSounds = [
     "white-3",
     "white-4",
     "white-5",
+] as const;
 
+const EffectsSounds = [
     "capture-1",
     "capture-2",
     "capture-3",
@@ -139,11 +141,17 @@ const EffectsSounds = [
     "tutorial-ping",
 ] as const;
 
-export type ValidSound = (typeof GameVoiceSounds | typeof UnusedSounds |typeof CountdownSounds | typeof EffectsSounds)[number];
+export type ValidSound = (typeof GameVoiceSounds | typeof UnusedSounds |typeof CountdownSounds | typeof StoneSounds | typeof EffectsSounds)[number];
 
-export type ValidSoundGroup = 'game_voice' | 'countdown' | 'effects';
+export type ValidSoundGroup = 'master' | 'game_voice' | 'countdown' | 'effects' | 'stones';
 export const SpriteGroups:{[id in ValidSoundGroup]: Array<SpritePack>} = {
+    'master': [],
+
     'game_voice': Object.keys(sprite_packs).filter(pack_id => {
+        if (pack_id.indexOf('effects-2012') > 0) {
+            return false;
+        }
+
         for (let key in sprite_packs[pack_id].definitions) {
             if (GameVoiceSounds.filter(s => s === key).length > 0) {
                 return true;
@@ -155,17 +163,33 @@ export const SpriteGroups:{[id in ValidSoundGroup]: Array<SpritePack>} = {
         }
         return false;
     }).map(pack_id => sprite_packs[pack_id]),
+
     'countdown': Object.keys(sprite_packs).filter(pack_id => {
+        if (pack_id.indexOf('effects-2012') > 0) {
+            return false;
+        }
+
         for (let key in sprite_packs[pack_id].definitions) {
+
             if (CountdownSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
         return false;
     }).map(pack_id => sprite_packs[pack_id]),
+
     'effects': Object.keys(sprite_packs).filter(pack_id => {
         for (let key in sprite_packs[pack_id].definitions) {
             if (EffectsSounds.filter(s => s === key).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }).map(pack_id => sprite_packs[pack_id]),
+
+    'stones': Object.keys(sprite_packs).filter(pack_id => {
+        for (let key in sprite_packs[pack_id].definitions) {
+            if (StoneSounds.filter(s => s === key).length > 0) {
                 return true;
             }
         }
@@ -190,11 +214,13 @@ export class SFXSprite {
     }
 
     get volume():number {
+        let master_volume = sfx.getVolume('master');
+
         if (sfx.volume_override >= 0) {
-            return sfx.volume_override;
+            master_volume = sfx.volume_override;
         }
 
-        return this._volume;
+        return this._volume * master_volume;
     }
 
     set volume(v:number) {
@@ -239,6 +265,12 @@ export class SFXManager {
     public sprites:{
         [id:string]: SFXSprite;
     } = {};
+    // our sound effects pack covers all possible sounds, we have them here
+    // so we can easily fall back to them based on settings or if there's
+    // a missing sound
+    public effectSprites:{
+        [id:string]: SFXSprite;
+    } = {};
 
     constructor() {
     }
@@ -257,15 +289,26 @@ export class SFXManager {
             this.load('game_voice');
             this.load('countdown');
             this.load('effects');
+            this.load('stones');
         }
     }
-    public play(sound_name: ValidSound):SFXSprite {
+    public play(sound_name: ValidSound):SFXSprite | null {
         try {
-            if (sound_name in this.sprites) {
+            if (!this.getSpriteEnabled(sound_name)) {
+                return null;
+            }
+
+            if (this.getSpriteVoiceEnabled(sound_name) && sound_name in this.sprites) {
                 let ret = this.sprites[sound_name];
                 ret.play();
                 return ret;
-            } else {
+            }
+            else if (sound_name in this.effectSprites) {
+                let ret = this.effectSprites[sound_name];
+                ret.play();
+                return ret;
+            }
+            else {
                 try {
                     console.trace("Unknown sound to play: ", sound_name);
                     if (sound_name !== 'error') {
@@ -320,11 +363,20 @@ export class SFXManager {
         let sound_list:Array<ValidSound> =
             group_name === 'game_voice' ? ((GameVoiceSounds as any).concat(UnusedSounds as any)) as unknown as Array<ValidSound> :
             group_name === 'countdown' ? CountdownSounds as unknown as Array<ValidSound> :
+            group_name === 'stones' ? StoneSounds as unknown as Array<ValidSound> :
             EffectsSounds as unknown as Array<ValidSound>;
         for (let sprite_name in sprite_pack.definitions) {
             if (sound_list.indexOf(sprite_name as ValidSound) >= 0) {
                 this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
                 this.sprites[sprite_name].volume = this.getVolume(group_name);
+            }
+        }
+
+        // For effects, everything also goes into effectSprites so we can fall back to them on demand or error
+        if (group_name === 'effects') {
+            for (let sprite_name in sprite_pack.definitions) {
+                this.effectSprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
+                this.effectSprites[sprite_name].volume = this.getVolume(group_name);
             }
         }
     }
@@ -335,7 +387,16 @@ export class SFXManager {
             return pack_id;
         }
 
-        // else, auto or our sprite packs changed, so auto
+        if (group_name === 'stones') {
+            return 'zz-un-floor-goban';
+        }
+
+        if (group_name === 'effects') {
+            return 'zz-un-effects';
+        }
+
+        // Otherwise, we're dealing with game voice or clock countdown - select
+        // a good default sprite pack based on the language being used for the site
         let lang = current_language;
         let to_check:Array<string> = [];
 
@@ -352,6 +413,14 @@ export class SFXManager {
         to_check.push(lang);
 
         for (let l of to_check) {
+            if (l.indexOf('en') === 0) {
+                /* Default to Claire, our old "Amy" is a valid option but we shouldn't be using
+                 * it by default even for US players because it doesn't have most numbers available */
+                if (group_name === 'countdown' && 'en-gb-claire-numbers' in sprite_packs) {
+                    return 'en-gb-claire-numbers';
+                }
+            }
+
             for (let pack of SpriteGroups[group_name]) {
                 let lang_code = pack.language + '-' + pack.country;
                 if (lang_code.indexOf(l) >= 0) {
@@ -367,7 +436,7 @@ export class SFXManager {
         sfx.load(group_name);
     }
     public getVolume(group_name: ValidSoundGroup):number {
-        return data.get(`sound.volume.${group_name}`, 1.0);
+        return data.get(`sound.volume.${group_name}`, 0.7);
     }
     public setVolume(group_name: ValidSoundGroup, volume: number) {
         data.set(`sound.volume.${group_name}`, volume);
@@ -376,6 +445,25 @@ export class SFXManager {
                 this.sprites[sprite_name].volume = volume;
             }
         }
+
+        if (group_name === 'effects') {
+            for (let sprite_name in this.effectSprites) {
+                this.effectSprites[sprite_name].volume = volume;
+            }
+        }
+    }
+
+    public setSpriteEnabled(sprite_name: ValidSound, enabled: boolean):void {
+        data.set(`sound.enabled.${sprite_name}`, enabled);
+    }
+    public getSpriteEnabled(sprite_name: ValidSound):boolean {
+        return data.get(`sound.enabled.${sprite_name}`, true);
+    }
+    public setSpriteVoiceEnabled(sprite_name: ValidSound, enabled: boolean):void {
+        data.set(`sound.voice-enabled.${sprite_name}`, enabled);
+    }
+    public getSpriteVoiceEnabled(sprite_name: ValidSound):boolean {
+        return data.get(`sound.voice-enabled.${sprite_name}`, true);
     }
 
     public setVolumeOverride(volume:number) {
@@ -419,7 +507,7 @@ let I = setInterval(() => {
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
 window['sprite_packs'] = sprite_packs;
 const effects = sprite_packs['zz-un-effects'];
-for (let pack of [GameVoiceSounds, CountdownSounds, EffectsSounds]) {
+for (let pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds]) {
     for (let name of pack) {
         if (!(name in effects.definitions)) {
             console.error("Non vocal sound effect not defined for ", name);
