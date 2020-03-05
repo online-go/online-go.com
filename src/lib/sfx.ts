@@ -443,14 +443,14 @@ export class SFXManager {
             }
         }
 
-        return SpriteGroups.effects[0].pack_id;
+        return 'zz-un-effects';
     }
     public setPackId(group_name: ValidSoundGroup, pack_id: string):void {
         data.set(`sound.pack.${group_name}`, pack_id);
         sfx.load(group_name);
     }
     public getVolume(group_name: ValidSoundGroup):number {
-        return data.get(`sound.volume.${group_name}`, 0.7);
+        return data.get(`sound.volume.${group_name}`, 0.8);
     }
     public setVolume(group_name: ValidSoundGroup, volume: number) {
         data.set(`sound.volume.${group_name}`, volume);
