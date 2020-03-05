@@ -1137,7 +1137,7 @@ function SoundPreferences():JSX.Element {
         </div>
 
         <div>
-            <h4>{pgettext('Sound pack to use for various effects', "Efffects")}</h4>
+            <h4>{pgettext('Sound pack to use for various effects', "Effects")}</h4>
             <span>
                 <SoundPackSelect group='effects' options={SpriteGroups.effects} />
             </span>
