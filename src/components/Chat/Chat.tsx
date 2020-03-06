@@ -1001,6 +1001,10 @@ function ChatLine(props) {
 }
 export function chat_markup(body, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
     let replacements = [
+        // spam mitigation
+        // replace tsumegodojo.worldpress.com urls with tsumegododo.worldpress.com as spam mitigation
+        {split: /(https?:\/\/\S*tsumegodojo\S*)/gi, pattern: /(https?:\/\/[^\s\/]*)(tsumegodojo)(\S*)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1] + "tsumegododo" + m[3]}>{m[1] + "tsumegododo" + m[3]}</a>)},
+        {split: /(\S*tsumegodojo\S*)/gi, pattern: /(\S*)(tsumegodojo)(\S*)/gi, replacement: (m, idx) => (m[1] + "tsumegododo" + m[3])},
         // Match github
         {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/gi,
             pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/([0-9]+)(?:\/|\b))/gi,
