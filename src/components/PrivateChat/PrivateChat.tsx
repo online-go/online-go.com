@@ -615,6 +615,9 @@ function chat_markup(body) {
         ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
         let group_matcher = /(#group-([0-9]+))/gi;
         ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
+        // try to migigate tsumegodojo spam
+        let tsumegodojo_matcher = /(tsumegodojo)/gi;
+        ret = ret.replace(tsumegodojo_matcher, "tsumegododo");
         return ret;
     } else {
         console.log("Attempted to markup non-text object: ", body);
