@@ -73,6 +73,7 @@ let defaults = {
     "sound.countdown.five-seconds.start": 10,
     "sound.countdown.every-second.start": 10,
     "sound.countdown.byoyomi-direction": "auto",
+    "sound.vibrate-on-stone-placement": true,
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
@@ -90,9 +91,9 @@ for (let k in defaults) {
     data.setDefault(`preferences.${k}`, defaults[k]);
 }
 
+export type ValidPreference = keyof typeof defaults;
 
-
-export function get(key: keyof typeof defaults): any {
+export function get(key: ValidPreference): any {
     if (!(key in defaults)) {
         throw new Error(`Undefined default: ${key}`);
     }

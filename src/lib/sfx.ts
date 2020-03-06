@@ -503,6 +503,14 @@ export class SFXManager {
         } catch (e) {
             console.error(e);
         }
+
+        try {
+            if (preferences.get('sound.vibrate-on-stone-placement') && navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
 
@@ -532,3 +540,5 @@ for (let pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds])
         }
     }
 }
+
+navigator.vibrate = navigator.vibrate || (navigator as any).webkitVibrate || (navigator as any).mozVibrate || (navigator as any).msVibrate;

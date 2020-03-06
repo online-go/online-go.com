@@ -18,6 +18,8 @@
 import * as React from "react";
 import * as preferences from "preferences";
 import * as data from "data";
+
+import {ValidPreference} from "preferences";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
@@ -1195,6 +1197,12 @@ function SoundPreferences():JSX.Element {
                 <SoundToggle name={pgettext('Sound sample option', 'Tutorial - pass')} sprite='tutorial-pass' />
                 <SoundToggle name={pgettext('Sound sample option', 'Tutorial - fail')} sprite='tutorial-fail' />
                 <SoundToggle name={pgettext('Sound sample option', 'Tutorial - ping')} sprite='tutorial-ping' />
+
+                {navigator.vibrate
+                    ?  <PreferenceToggle name={pgettext("On mobile devices, vibrate when a stone is placed?", "Vibrate when stone is placed")} preference="sound.vibrate-on-stone-placement" />
+                    : null
+                }
+
             </div>
         </div>
     </Card>);
@@ -1234,6 +1242,25 @@ function SoundToggle(props:{name: string, sprite: ValidSound, voiceopt?: boolean
                 </label>
             }
             <PlayButton sample={props.sprite} />
+        </div>
+    );
+}
+
+
+function PreferenceToggle(props:{name: string, preference: ValidPreference}):JSX.Element {
+    const [on, __set]:[boolean, (x:boolean) => void] = React.useState(preferences.get(props.preference));
+
+    function setPreference(on:boolean):void {
+        preferences.set(props.preference, on);
+        __set(on);
+    }
+
+    return (
+        <div className='PreferenceToggle'>
+            <label htmlFor={`preference-toggle-${props.preference}`}>
+                <span className='preference-toggle-name' >{props.name}</span>
+                <Toggle id={`preference-toggle-${props.preference}`} onChange={setPreference} checked={on} />
+            </label>
         </div>
     );
 }
@@ -1387,3 +1414,13 @@ function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element 
     );
 }
 
+
+preferences.watch('sound.vibrate-on-stone-placement', (tf) => {
+    try {
+        if (tf && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}, false, true);
