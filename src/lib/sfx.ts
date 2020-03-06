@@ -232,11 +232,15 @@ export class SFXSprite {
     }
 
     public play():void {
-        console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
-        let id = this.howl.play(this.name);
-        this.howl.volume(this.volume, id);
-        this.id = id;
-        this.then(() => delete this.id);
+        if (this.volume >= 0.01) {
+            console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
+            let id = this.howl.play(this.name);
+            this.howl.volume(this.volume, id);
+            this.id = id;
+            this.then(() => delete this.id);
+        } else {
+            console.log('*NOT* Playing sound bite: ', this.name, ', volume was ', this.volume);
+        }
     }
     public then(fn: () => void): void {
         if (this.id) {
