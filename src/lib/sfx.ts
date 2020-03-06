@@ -542,3 +542,10 @@ for (let pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds])
 }
 
 navigator.vibrate = navigator.vibrate || (navigator as any).webkitVibrate || (navigator as any).mozVibrate || (navigator as any).msVibrate;
+
+data.setDefault('sound.enabled.disconnected', false);
+data.setDefault('sound.enabled.reconnected', false);
+data.setDefault('sound.enabled.player_disconnected', false);
+data.setDefault('sound.enabled.player_reconnected', false);
+data.setDefault('sound.enabled.your_opponent_has_disconnected', false);
+data.setDefault('sound.enabled.your_opponent_has_reconnected', false);

@@ -81,8 +81,9 @@
                 flex-basis: 15rem;
             }
 
-            > span {
+            > span:first-of-type {
                 margin-left: 3rem;
+                margin-right: 1rem;
                 flex: 0;
                 flex-basis: 14rem;
             }
@@ -144,25 +145,28 @@
     }
 
     .SoundToggle {
-        margin-top: 0.2rem;
-        margin-bottom: 0.2rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
+        max-width: 95vw;
 
 
         label {
+            flex: 1;
             display: inline-flex;
             align-items: center;
             margin-right: 0.5rem;
+            flex-basis: 14rem;
 
             .sound-toggle-name {
-                width: 14rem;
+                flex: 1;
                 flex-basis: 14rem;
             }
 
             .voice-or-effect {
-                width: 7rem;
-                flex-basis: 7rem;
+                width: 3rem;
+                flex-basis: 3rem;
                 text-align: right;
             }
         }
@@ -172,6 +176,10 @@
             margin-left: 0.5rem;
         }
 
+        .SoundToggle-voice-label {
+            flex: 1;
+            //flex-grow: 1;
+        }
     }
 
     .PreferenceToggle {
@@ -198,7 +206,11 @@
         }
     }
 
-    .col-md-6 {
+    .sound-sample-left-column {
+
+    }
+
+    .col {
         display: flex;
         flex-direction: column;
         align-items: center;
