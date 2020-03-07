@@ -283,23 +283,33 @@ export class SFXManager {
         this.enabled = true;
         this.sync();
     }
-    public sync():void {
+    public sync():boolean {
         if (!this.enabled || this.synced) {
-            return;
+            return this.enabled && this.synced;
         }
 
-        if (!!preferences.get('sound-enabled') || this.volume_override) {
-            this.synced = true;
+        let vol = this.getVolume('master');
+        if (this.volume_override >= 0) {
+            vol = this.volume_override;
+        }
 
+        if (vol) {
+            this.synced = true;
             this.load('stones');
             this.load('countdown');
             this.load('game_voice');
             this.load('effects');
         }
+
+        return this.synced;
     }
     public play(sound_name: ValidSound):SFXSprite | null {
         try {
             if (!this.getSpriteEnabled(sound_name)) {
+                return null;
+            }
+
+            if (!this.sync()) {
                 return null;
             }
 
