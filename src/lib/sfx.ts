@@ -509,6 +509,10 @@ export class SFXManager {
             let rnum = (Math.round(Math.random() * 100000) % 5) + 1;
             let stone_sound:ValidSound = (color + '-' + rnum) as ValidSound;
 
+            if (!preferences.get('sound.positional-stone-placement-effect')) {
+                pan = 0;
+            }
+
             this.play(stone_sound).stereo(pan);
         } catch (e) {
             console.error(e);

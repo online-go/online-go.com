@@ -1214,13 +1214,14 @@ function SoundPreferences():JSX.Element {
                     <SoundToggle name={pgettext('Sound sample option', 'Tutorial - ping')} sprite='tutorial-ping' />
                 </Card>
 
+                <Card>
+                    <PreferenceToggle name={pgettext("Shift the audio to the left or right depending on where the stone was placed.", "Positional stone placement effect")} preference="sound.positional-stone-placement-effect" />
                 {navigator.vibrate
                     ?
-                    <Card>
                         <PreferenceToggle name={pgettext("On mobile devices, vibrate when a stone is placed?", "Vibrate when stone is placed")} preference="sound.vibrate-on-stone-placement" />
-                    </Card>
                     : null
                 }
+                </Card>
 
             </div>
         </div>

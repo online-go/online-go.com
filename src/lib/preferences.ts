@@ -74,6 +74,7 @@ let defaults = {
     "sound.countdown.every-second.start": 10,
     "sound.countdown.byoyomi-direction": "auto",
     "sound.vibrate-on-stone-placement": true,
+    "sound.positional-stone-placement-effect": true,
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
