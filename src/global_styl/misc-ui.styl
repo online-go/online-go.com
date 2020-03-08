@@ -223,3 +223,17 @@
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite
 }
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .flex-col {
+        flex: 1;
+        flex-basis: 1rem;
+        display: flex;
+        flex-direction: column;
+        max-width: 95vw;
+    }
+}

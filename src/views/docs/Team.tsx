@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {_, getLanguageFlag} from "translate";
+import {_, pgettext, getLanguageFlag} from "translate";
 import {get} from "requests";
 import {Flag} from "Flag";
 import {Player} from "Player";
@@ -94,7 +94,7 @@ export class Team extends React.PureComponent<{}, any> {
 
 
         return (
-            <div className="container page-width">
+            <div id='Team' className="container page-width">
                 <h2>{_("Team")}</h2>
                 <div style={{display: "inline-block", textAlign: "justify"}}>
                     {_('Online-Go.com is maintained by a small handful of dedicated volunteers, drop them a "Thank You!" message sometime!')}
@@ -104,7 +104,7 @@ export class Team extends React.PureComponent<{}, any> {
                         <h3>{_("Moderators")}</h3>
                         {moderators.map((u, idx) => (
                             <div key={u.id} >
-                                <span style={{display: "inline-block", width: "3em"}}>
+                                <span className='flags'>
                                     {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                                 </span>
                                 <span style={{display: "inline-block", width: "9em"}}>
@@ -118,7 +118,7 @@ export class Team extends React.PureComponent<{}, any> {
                         <h3>{_("Lead Developers")}</h3>
                         {developers.map((u, idx) => (
                             <div key={u.id}>
-                                <span style={{display: "inline-block", width: "3em"}}>
+                                <span className='flags'>
                                     {u.country.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
                                 </span>
                                 <span style={{display: "inline-block", width: "9em"}}>
@@ -127,17 +127,130 @@ export class Team extends React.PureComponent<{}, any> {
                                 {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>))}
                             </div>
                         ))}
+
                         <h3>{_("Github Contributors")}</h3>
                         {this.state.contributors.map((u, idx) => (
                             <div key={idx}>
-                                <span style={{display: "inline-block", width: "3em"}}>
+                                <span className='flags'>
                                     <img src={u.avatar_url} width={15} height={15}/>
                                 </span>
-                                <span style={{display: "inline-block", width: "8em"}}>
+                                <span className='name'>
                                     <a href={u.html_url || ('https://github.com/' + u.name)}>{u.login || u.name}</a>
                                 </span>
                             </div>
                         ))}
+
+                        <h3>{pgettext("Sound and graphics files", "Assets")}</h3>
+                        <div>
+                            <span className='flags'>
+                                <Flag country='gb'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://voicebunny.com/voice-actor/claire-natalie-TK5C1B8'>Claire Natalie</a>
+                            </span>
+                            <span className='description'>
+                                - GB English voiceover
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/rhodesmas/'>Andy Rhode</a>
+                            </span>
+                            <span className='description'>
+                                - Effects
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/tim.kahn/'>Amy Gedgaudas</a>
+                            </span>
+                            <span className='description'>
+                                - 2013 English 10 second count down
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/acclivity/'>acclivity</a>
+                            </span>
+                            <span className='description'>
+                                - Effects
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/JonnyRuss01/'>JonnyRuss01</a>
+                            </span>
+                            <span className='description'>
+                                - Effects
+                            </span>
+                        </div>
+
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://freesound.org/people/leviclaassen/'>leviclaassen</a>
+                            </span>
+                            <span className='description'>
+                                - Effects
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='http://seamless-pixels.blogspot.com/'>Seamless Texture Library</a>
+                            </span>
+                            <span className='description'>
+                                - Marble, Granite, and Rust Goban Textures
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='fr'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://github.com/ornicar/lila/tree/master/public/sound'>Lichess - Effects</a>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span className='flags'>
+                                <Flag country='ar'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://online-go.com/player/784/mlopezviedma'>Mariano López Minnucci</a>
+                            </span>
+                        </div>
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                <a href='https://online-go.com/player/1/anoek'>Akita Noek</a>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

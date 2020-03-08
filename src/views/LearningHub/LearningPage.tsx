@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {GoMath, PuzzleConfig, sfx} from 'goban';
+import {GoMath, PuzzleConfig} from 'goban';
+import {sfx} from 'sfx';
 import {InstructionalGoban} from "./InstructionalGoban";
 import {browserHistory} from "ogsHistory";
 import {setSectionPageCompleted, getSectionPageCompleted} from './util';
