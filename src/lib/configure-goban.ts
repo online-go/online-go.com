@@ -50,6 +50,8 @@ export function configure_goban() {
                         case 'ko':
                         case 'ja':
                         case 'zh-cn':
+                        case 'zh-hk':
+                        case 'zh-tw':
                             return '1-1';
                         default:
                             return 'A1';
