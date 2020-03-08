@@ -7,6 +7,7 @@
     "eo": "Esperanto",
     "es": "Español",
     "eu": "Euskara",
+    "et": "Eesti keel",
     "el": "ελληνικά",
     "fi": "Suomi",
     "fr": "Français",
@@ -24,5 +25,6 @@
     "sv": "Svenska",
     "uk": "Українська",
     "zh-cn": "中文",
+    "zh-tw": "漢語",
     "debug": "Debug"
 }
