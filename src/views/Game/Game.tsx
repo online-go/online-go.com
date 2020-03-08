@@ -462,8 +462,27 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             let seconds = Math.ceil((ms_left - 1) / 1000);
 
-            if (seconds > 0 && seconds < 10) {
-                this.goban.setByoYomiLabel(seconds.toString());
+            const every_second_start = preferences.get('sound.countdown.every-second.start') as number;
+
+            if (seconds > 0 && seconds < Math.max(10, every_second_start)) {
+                const count_direction = preferences.get('sound.countdown.byoyomi-direction') as string;
+                let count_direction_auto = 'down';
+                if (count_direction === 'auto') {
+                    count_direction_auto =
+                        (current_language === 'ja' || current_language === 'ko')
+                        ? 'up' : 'down';
+                }
+
+                const count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
+
+
+                if (count_direction_computed === 'up') {
+                    if (seconds < every_second_start) {
+                        this.goban.setByoYomiLabel((every_second_start - seconds).toString());
+                    }
+                } else {
+                    this.goban.setByoYomiLabel(seconds.toString());
+                }
             } else {
                 this.goban.setByoYomiLabel(null);
             }
@@ -1016,7 +1035,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 if (numeric_announcement && time_control.system === 'byoyomi' && count_direction_computed === 'up' && time_control.period_time <= 60) {
                     // handle counting up
-                    audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
+
+                    if (seconds_left < every_second_start) {
+                        audio_to_play = (every_second_start - seconds_left).toString() as ValidSound;
+                    }
+                    else {
+                        if (ten_seconds_start > 0 && seconds_left <= ten_seconds_start && seconds_left % 10 === 0 && seconds_left !== every_second_start) {
+                            audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
+                            //audio_to_play = seconds_left.toString() as ValidSound;
+                        }
+                        else if (five_seconds_start > 0 && seconds_left <= five_seconds_start && seconds_left % 5 === 0 && seconds_left !== every_second_start) {
+                            audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
+                            //audio_to_play = seconds_left.toString() as ValidSound;
+                        }
+                        else if (tick_tock_start > 0 && seconds_left <= tick_tock_start) {
+                            audio_to_play = seconds_left % 2 ? 'tick' : 'tock';
+                        } else {
+                            audio_to_play = undefined;
+                        }
+                    }
                 }
             }
 
