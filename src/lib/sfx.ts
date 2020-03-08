@@ -513,7 +513,11 @@ export class SFXManager {
                 pan = 0;
             }
 
-            this.play(stone_sound).stereo(pan);
+            let sprite = this.play(stone_sound);
+
+            if (sprite && pan) {
+                sprite.stereo(pan);
+            }
         } catch (e) {
             console.error(e);
         }

@@ -156,6 +156,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             selected_ai_review_id: null,
         };
 
+        sfx.setVolumeOverride(this.state.volume);
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = document.createElement('div');
         this.goban_div.className = 'Goban';
