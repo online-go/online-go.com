@@ -41,6 +41,25 @@ import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
+const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) => {
+    let prefetch_url = server_url + "positions?id=" + node_id;
+    if (variation_filter) {
+        if (variation_filter.contributor) {
+            prefetch_url += "&cfilterid=" + variation_filter.contributor;
+        }
+        if (variation_filter.tags && variation_filter.tags.length !== 0) {
+            prefetch_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
+        }
+        if (variation_filter.source) {
+            prefetch_url += "&sfilterid=" + variation_filter.source;
+        }
+    }
+    if (mode) {
+        prefetch_url += "&mode=" + mode;
+    }
+    return prefetch_url;
+};
+
 const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter) {
@@ -376,25 +395,42 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // console.log("Fetch next moves for ", node_id);
         // console.log("... cache: ", this.cached_positions);
 
-        // Because of tricky sequencing of state update from server responses, only
-        // explore mode works with this caching ... the others need processNewMoves to happen after completion
-        // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
+        // Because of tricky sequencing of state update from server responses, caching works only with
+        // explore mode  ... the other modes need processNewMoves to happen after completion
+        // of fetchNextFilteredMovesFor() (IE this procedure), which doesn't work with caching... needs some reorganisation
         // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            // console.log("cached position:", node_id);
-            this.processNewMoves(node_id, this.cached_positions[node_id]);
-        }
-        else {
-            console.log("fetching position for node", node_id, this.state.mode);
-            fetch(position_url(node_id, variation_filter, this.state.mode), {
+            console.log("cached position:", node_id);
+            console.log("prefetching next positions for node", node_id, this.state.mode);
+            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                // console.log("Server response:", body);
-                this.processNewMoves(node_id, body);
-                this.cached_positions = {[node_id]: body, ...this.cached_positions};
+                console.log("Prefetch Server response:", body);
+                body.forEach((move_info) => {
+                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                });
+            }).catch((r) => {
+                console.log("Node GET failed:", r);
+            });
+
+            this.processNewMoves(node_id, this.cached_positions[node_id]);
+        }
+        else {
+            console.log("fetching position for node", node_id, this.state.mode);
+            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
+                mode: 'cors',
+                headers: godojo_headers()
+            })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                console.log("Server response:", body);
+                this.processNewMoves(node_id, body[0]);
+                body.forEach((move_info) => {
+                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                });
             }).catch((r) => {
                 console.log("Node GET failed:", r);
             });
