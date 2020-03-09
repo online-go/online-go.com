@@ -147,6 +147,29 @@
                 return lang;
             }
 
+            lang = lang.replace(/_/, '-');
+
+            if (lang in supported_languages) {
+                return lang;
+            }
+
+            if (lang === 'zh') {
+                lang = 'zh-cn';
+            }
+            if (lang.indexOf('zh-hans') >= 0) {
+                lang = 'zh-cn';
+            }
+            if (lang.indexOf('zh-hant') >= 0) {
+                lang = 'zh-tw';
+            }
+            if (lang.indexOf('zh-hk') >= 0) {
+                lang = 'zh-tw';
+            }
+
+            if (lang in supported_languages) {
+                return lang;
+            }
+
             lang = lang.replace(/-[a-z]+/, '');
 
             if (lang in supported_languages) {
