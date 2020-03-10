@@ -400,15 +400,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // of fetchNextFilteredMovesFor() (IE this procedure), which doesn't work with caching... needs some reorganisation
         // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            console.log("cached position:", node_id);
-            console.log("prefetching next positions for node", node_id, this.state.mode);
+            // console.log("cached position:", node_id);
+            // console.log("prefetching next positions for node", node_id, this.state.mode);
             fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                console.log("Prefetch Server response:", body);
+                // console.log("Prefetch Server response:", body);
                 body.forEach((move_info) => {
                     this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
                 });
@@ -426,7 +426,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                console.log("Server response:", body);
+                // console.log("Server response:", body);
                 this.processNewMoves(node_id, body[0]);
                 body.forEach((move_info) => {
                     this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
