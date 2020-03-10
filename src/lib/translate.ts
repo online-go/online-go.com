@@ -61,6 +61,15 @@ export function ngettext(singular, plural, count) {
         return catalog[key][count === 1 ? 0 : 1];
     }
 
+    /* If we don't have a ngettext translation entry at all, but
+     * we do have some stand alone translations, use those */
+    if ((count !== 1 || !(singular in catalog)) && plural in catalog) {
+        return catalog[plural][0];
+    }
+    if (singular in catalog) {
+        return catalog[singular][0];
+    }
+
     return debug_wrap(count === 1 ? singular : plural);
 }
 
@@ -75,12 +84,18 @@ export function pgettext(context, msgid) {
 
 export function npgettext(context, singular, plural, count) {
     let key = context + "" + singular + "" + plural;
+    let skey = context + "" + singular;
+    let pkey = context + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
              * translation but we do happen to have the plural translation as a
              * stand alone translation, use that. */
             if (count !== 1) {
+                if (pkey in catalog) {
+                    return catalog[pkey][0];
+                }
+
                 if (plural in catalog) {
                     return catalog[plural][0];
                 }
@@ -90,6 +105,25 @@ export function npgettext(context, singular, plural, count) {
         }
         return catalog[key][count === 1 ? 0 : 1];
     }
+
+    /* If we don't have a npgettext translation entry at all, but
+     * we do have some stand alone translations, use those */
+    if (count !== 1 || !(singular in catalog || skey in catalog)) {
+        if (pkey in catalog) {
+            return catalog[pkey][0];
+        }
+        if (plural in catalog) {
+            return catalog[plural][0];
+        }
+    }
+    if (skey in catalog) {
+        return catalog[skey][0];
+    }
+    if (singular in catalog) {
+        return catalog[singular][0];
+    }
+
+
     return debug_wrap(count === 1 ? singular : plural);
 }
 
