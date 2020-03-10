@@ -46,11 +46,21 @@ export function ngettext(singular, plural, count) {
     let key = singular + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
+            /* If we don't have a plural translation in a multi-message-id
+             * translation but we do happen to have the plural translation as a
+             * stand alone translation, use that. */
+            if (count !== 1) {
+                if (plural in catalog) {
+                    return catalog[plural][0];
+                }
+            }
+
             count = 1;
         }
 
         return catalog[key][count === 1 ? 0 : 1];
     }
+
     return debug_wrap(count === 1 ? singular : plural);
 }
 
@@ -67,6 +77,15 @@ export function npgettext(context, singular, plural, count) {
     let key = context + "" + singular + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
+            /* If we don't have a plural translation in a multi-message-id
+             * translation but we do happen to have the plural translation as a
+             * stand alone translation, use that. */
+            if (count !== 1) {
+                if (plural in catalog) {
+                    return catalog[plural][0];
+                }
+            }
+
             count = 1;
         }
         return catalog[key][count === 1 ? 0 : 1];
@@ -326,3 +345,9 @@ export default {
 _("Not allowed to access this game");
 _("Not allowed to access this review");
 
+window['gettext'] = gettext;
+window['pgettext'] = pgettext;
+window['ngettext'] = ngettext;
+window['npgettext'] = npgettext;
+window['get_format'] = get_format;
+window['interpolate'] = interpolate;
