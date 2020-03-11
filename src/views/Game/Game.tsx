@@ -1033,25 +1033,37 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     numeric_announcement = true;
                 }
 
-                if (numeric_announcement && time_control.system === 'byoyomi' && count_direction_computed === 'up' && time_control.period_time <= 60) {
-                    // handle counting up
-
-                    if (seconds_left < every_second_start) {
-                        audio_to_play = (every_second_start - seconds_left).toString() as ValidSound;
+                if (numeric_announcement && time_control.system === 'byoyomi' && count_direction_computed === 'up') {
+                    if (seconds_left > 60) {
+                        audio_to_play = undefined;
                     }
                     else {
-                        if (ten_seconds_start > 0 && seconds_left <= ten_seconds_start && seconds_left % 10 === 0 && seconds_left !== every_second_start) {
-                            audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
-                            //audio_to_play = seconds_left.toString() as ValidSound;
+                        //let period_time = Math.min(60, time_control.period_time);
+
+                        // handle counting up
+
+                        if (seconds_left < every_second_start) {
+                            audio_to_play = (every_second_start - seconds_left).toString() as ValidSound;
                         }
-                        else if (five_seconds_start > 0 && seconds_left <= five_seconds_start && seconds_left % 5 === 0 && seconds_left !== every_second_start) {
-                            audio_to_play = (time_control.period_time - parseInt(audio_to_play)).toString() as ValidSound;
-                            //audio_to_play = seconds_left.toString() as ValidSound;
-                        }
-                        else if (tick_tock_start > 0 && seconds_left <= tick_tock_start) {
-                            audio_to_play = seconds_left % 2 ? 'tick' : 'tock';
-                        } else {
-                            audio_to_play = undefined;
+                        else {
+                            let count_from = Math.max(ten_seconds_start, five_seconds_start);
+
+                            if (ten_seconds_start > 0 && seconds_left <= ten_seconds_start && seconds_left % 10 === 0 && seconds_left !== every_second_start) {
+                                //audio_to_play = (period_time - parseInt(audio_to_play)).toString() as ValidSound;
+                                audio_to_play = (count_from - parseInt(audio_to_play)).toString() as ValidSound;
+                            }
+                            else if (five_seconds_start > 0 && seconds_left <= five_seconds_start && seconds_left % 5 === 0 && seconds_left !== every_second_start) {
+                                audio_to_play = (count_from - parseInt(audio_to_play)).toString() as ValidSound;
+                            }
+                            else if (tick_tock_start > 0 && seconds_left <= tick_tock_start) {
+                                audio_to_play = seconds_left % 2 ? 'tick' : 'tock';
+                            } else {
+                                audio_to_play = undefined;
+                            }
+
+                            if (audio_to_play === '0') {
+                                audio_to_play = undefined;
+                            }
                         }
                     }
                 }
