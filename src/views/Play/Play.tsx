@@ -60,6 +60,12 @@ export class Play extends React.Component<PlayProperties, any> {
             correspondence_list: [],
             showLoadingSpinnerForCorrespondence: false,
             show_all_challenges: preferences.get("show-all-challenges"),
+            show_ranked_challenges: preferences.get("show-ranked-challenges"),
+            show_unranked_challenges: preferences.get("show-unranked-challenges"),
+            show_19x19_challenges: preferences.get("show-19x19-challenges"),
+            show_13x13_challenges: preferences.get("show-13x13-challenges"),
+            show_9x9_challenges: preferences.get("show-9x9-challenges"),
+            show_other_boardsize_challenges: preferences.get("show-other-boardsize-challenges"),
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
@@ -291,6 +297,36 @@ export class Play extends React.Component<PlayProperties, any> {
         this.setState({show_all_challenges: !this.state.show_all_challenges});
     }
 
+    toggleShowUnrankedChallenges = () => {
+        preferences.set("show-unranked-challenges", !this.state.show_unranked_challenges);
+        this.setState({show_unranked_challenges: !this.state.show_unranked_challenges});
+    }
+
+    toggleShowRankedChallenges = () => {
+        preferences.set("show-ranked-challenges", !this.state.show_ranked_challenges);
+        this.setState({show_ranked_challenges: !this.state.show_ranked_challenges});
+    }
+
+    toggleShow19x19Challenges = () => {
+        preferences.set("show-19x19-challenges", !this.state.show_19x19_challenges);
+        this.setState({show_19x19_challenges: !this.state.show_19x19_challenges});
+    }
+
+    toggleShow13x13Challenges = () => {
+        preferences.set("show-13x13-challenges", !this.state.show_13x13_challenges);
+        this.setState({show_13x13_challenges: !this.state.show_13x13_challenges});
+    }
+
+    toggleShow9x9Challenges = () => {
+        preferences.set("show-9x9-challenges", !this.state.show_9x9_challenges);
+        this.setState({show_9x9_challenges: !this.state.show_9x9_challenges});
+    }
+
+    toggleShowOtherBoardsizeChallenges = () => {
+        preferences.set("show-other-boardsize-challenges", !this.state.show_other_boardsize_challenges);
+        this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
+    }
+
     anyChallengesToShow = (live) => {
         let challengeList = live ? this.state.live_list : this.state.correspondence_list;
 
@@ -440,13 +476,34 @@ export class Play extends React.Component<PlayProperties, any> {
                             {this.challengeList(false)}
 
                         </div>
-                        <div className="showall-selector">
-                            <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
-                                   onChange={this.toggleShowAllChallenges}/>
-                            <label htmlFor="show-all-challenges">{_("Show all challenges")}</label>
-                        </div>
                     </div>
                 </div>
+
+                        <div className="showall-selector">
+                            <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
+                                onChange={this.toggleShowAllChallenges}/>
+                            <label htmlFor="show-all-challenges">{_("Show uneligible challenges")}</label>
+                            <br></br>
+                            <input id="show-ranked-challenges" type="checkbox" checked={this.state.show_ranked_challenges}
+                                onChange={this.toggleShowRankedChallenges}/>
+                            <label htmlFor="show-ranked-challenges">{_("Ranked")}</label>
+                            <input id="show-unranked-challenges" type="checkbox" checked={this.state.show_unranked_challenges}
+                                onChange={this.toggleShowUnrankedChallenges}/>
+                            <label htmlFor="show-unranked-challenges">{_("Unranked")}</label>
+                            <br></br>
+                            <input id="show-19x19-challenges" type="checkbox" checked={this.state.show_19x19_challenges}
+                                onChange={this.toggleShow19x19Challenges}/>
+                            <label htmlFor="show-19x19-challenges">{_("19x19")}</label>
+                            <input id="show-13x13-challenges" type="checkbox" checked={this.state.show_13x13_challenges}
+                                onChange={this.toggleShow13x13Challenges}/>
+                            <label htmlFor="show-13x13-challenges">{_("13x13")}</label>
+                            <input id="show-9x9-challenges" type="checkbox" checked={this.state.show_9x9_challenges}
+                                onChange={this.toggleShow9x9Challenges}/>
+                            <label htmlFor="show-9x9-challenges">{_("9x9")}</label>
+                            <input id="show-other-boardsize-challenges" type="checkbox" checked={this.state.show_other_boardsize_challenges}
+                                onChange={this.toggleShowOtherBoardsizeChallenges}/>
+                            <label htmlFor="show-other-boardsize-challenges">{_("Other boardsizes")}</label>
+                        </div>
 
             </div>
         );
@@ -593,7 +650,9 @@ export class Play extends React.Component<PlayProperties, any> {
         let challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
 
         return challengeList.map((C) => (
-            (C.eligible || C.user_challenge || this.state.show_all_challenges ?
+            (((C.eligible || C.user_challenge || this.state.show_all_challenges)
+             && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
+             && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
                     <div key={C.challenge_id} className="challenge-row">
                         <span className="cell" style={{textAlign: "center"}}>
                             {user.is_moderator &&
