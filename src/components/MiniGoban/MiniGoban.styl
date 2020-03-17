@@ -39,8 +39,23 @@
     }
 
 
+    .player-rank {
+        float: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-shrink: 0;
+        flex-basis: auto;
+        margin-right: 0.5em;
+        margin-left: 0.5em
+    }
     .player-name {
         float: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex-shrink: 1;
+        flex-basis: auto;
     }
     .score {
         position: absolute;
@@ -48,7 +63,8 @@
 
     .title-white, .title-black {
         position: absolute;
-        display: inline-block;
+        display: flex;
+        flex-direction: row;
         font-size: 0.9em;
         left: 1rem;
         right: 1rem;
