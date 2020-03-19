@@ -146,7 +146,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country='us'/>
                             </span>
                             <span className='name'>
-                                Aiden
+                                <a href='https://online-go.com/user/view/740904/A-i'>Aiden</a>
                             </span>
                         </div>
 
