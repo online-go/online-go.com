@@ -269,28 +269,31 @@ sorted_locale_countries.sort((a, b) => {
 });
 
 
+function sanitize(language_or_country:string):string {
+    return language_or_country.replace(/[^a-zA-Z0-9_-]/g, '');
+}
 
 export function getLanguageFlag(language, user_country, default_flag) {
     if (language === "english" && ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "spanish" && ["mx", "co", "cl", "ar"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "french" && ["ca", "be", "cd", "ci", "ch"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "german" && ["at", "de", "be", "ch"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "italian" && ["it", "ch", "va", "sm"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "portuguese" && ["pt", "br", "mz", "ao"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "dutch" && ["nl", "be"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
 
     return getCountryFlagClass(default_flag);
@@ -302,8 +305,8 @@ export function getCountryFlagClass(country_code) {
     if (country_code === "eu")       { return "_European_Union"; }
     if (country_code === "un")       { return "_United_Nations"; }
     if (parseInt(country_code) > 0 ) { return "_United_Nations"; }
-    if (country_code.length > 2)     { return country_code; }
-    return country_code;
+    if (country_code.length > 2)     { return sanitize(country_code); }
+    return sanitize(country_code);
 }
 
 export function setCurrentLanguage(language_code) {
