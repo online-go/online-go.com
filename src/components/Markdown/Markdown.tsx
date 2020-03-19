@@ -32,7 +32,96 @@ const md = markdownit({
 
 function sanitize(src) {
     return sanitizeHtml(src, {
-        allowedTags: false, /* this means "all" */
+        allowedTags: [
+            'a',
+            'article',
+            'aside',
+            'body',
+            'br',
+            'details',
+            'div',
+
+            'header',
+            'hgroup',
+            'hr',
+            'footer',
+            'nav',
+            'p',
+            'section',
+            'span',
+            'summary',
+
+            'datalist',
+            'fieldset',
+            'label',
+            'legend',
+            'abbr',
+            'acronym',
+            'address',
+            'b',
+            'bdi',
+            'bdo',
+            'big',
+            'blockquote',
+            'center',
+            'cite',
+            'code',
+            'del',
+            'dfn',
+            'em',
+            'font',
+            'i',
+            'ins',
+            'mark',
+            'output',
+            'pre',
+            'progress',
+            'q',
+            'rp',
+            'rt',
+            'ruby',
+            's',
+            'samp',
+            'small',
+            'strike',
+            'strong',
+            'sub',
+            'sup',
+            'tt',
+            'u',
+            'dd',
+            'dir',
+            'dl',
+            'dt',
+            'li',
+            'ol',
+            'menu',
+            'ul',
+
+            'caption',
+            'col',
+            'colgroup',
+            'table',
+            'tbody',
+            'td',
+            'tfoot',
+            'thead',
+            'th',
+            'tr',
+
+            'area',
+            'audio',
+            'embed',
+            'flgcaption',
+            'figure',
+            'img',
+            'map',
+            'source',
+            'time',
+            'video',
+            'link',
+        ],
+
         allowedAttributes: {
             '*': ['href', 'align', 'style', 'bgcolor', 'alt', 'src', 'width', 'height', 'class', 'rel']
         },
@@ -61,13 +150,13 @@ function sanitize(src) {
             }
         },
         transformTags: {
-            'script': 'error',
-            'iframe': 'error',
-            'style': 'error',
+            //'script': kill,
+            //'iframe': kill,
+            //'style': kill,
             'a': (tagName, attribs) => {
                 attribs['rel'] = 'noopener';
                 return { tagName, attribs };
-            }
+            },
         }
     });
 }
