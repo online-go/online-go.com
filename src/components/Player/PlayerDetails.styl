@@ -30,6 +30,7 @@
         justify-content: space-between;
         .icon {
             display: inline-block;
+            flex-shrink: 0;
             position: relative;
             width: 64px;
             height: 64px;
@@ -45,6 +46,11 @@
                 width: 16px;
             }
 
+        }
+        .player-info {
+            flex-shrink: 1;
+            margin-left: 6px;
+            max-width: 170px;
         }
         .player-link {
             cursor: pointer !important;

@@ -237,7 +237,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                     <div className="icon" style={{backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")'}}>
                         <Flag country={this.state.country}/>
                     </div>
-                    <div>
+                    <div className="player-info">
                         <div>
                             <Player user={this.state} nodetails rank={false} />
                         </div>
