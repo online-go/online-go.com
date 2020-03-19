@@ -428,6 +428,8 @@ export class SFXManager {
         let lang = current_language;
         let to_check:Array<string> = [];
 
+        lang = lang.replace(/-[a-zA-Z].*/, '');
+
         try {
             for (let navlang of navigator.languages) {
                 navlang = navlang.toLowerCase();
@@ -447,10 +449,15 @@ export class SFXManager {
                 if (group_name === 'countdown' && 'en-gb-claire-numbers' in sprite_packs) {
                     return 'en-gb-claire-numbers';
                 }
+
+                if (group_name === 'game_voice' && 'en-gb-claire-phrases' in sprite_packs) {
+                    return 'en-gb-claire-phrases';
+                }
             }
 
             for (let pack of SpriteGroups[group_name]) {
                 let lang_code = pack.language + '-' + pack.country;
+                console.log(lang_code, l);
                 if (lang_code.indexOf(l) >= 0) {
                     return pack.pack_id;
                 }
