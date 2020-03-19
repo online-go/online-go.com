@@ -140,6 +140,16 @@ export class Team extends React.PureComponent<{}, any> {
                             </div>
                         ))}
 
+                        <h3>{_("Security Vulnerability Reporting")}</h3>
+                        <div>
+                            <span className='flags'>
+                                <Flag country='us'/>
+                            </span>
+                            <span className='name'>
+                                Aiden
+                            </span>
+                        </div>
+
                         <h3>{pgettext("Sound and graphics files", "Assets")}</h3>
                         <div>
                             <span className='flags'>
