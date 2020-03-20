@@ -59,7 +59,13 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             this.selectTheme[k] = {};
             for (let theme of GoThemesSorted[k]) {
                 this.canvases[k].push($("<canvas>").attr("width", this.state.size).attr("height", this.state.size));
-                theme.styles = Object.assign({height: this.state.size + "px", width: this.state.size + "px"}, theme.getReactStyles());
+                theme.styles = Object.assign(
+                    {
+                        height: this.state.size + "px",
+                        width: this.state.size + "px"
+                    },
+                    theme.getReactStyles()
+                ) as unknown as { [style_name: string]: string };
 
                 this.selectTheme[k][theme.theme_name] = () => {
                     preferences.set(`goban-theme-${k}`, theme.theme_name);

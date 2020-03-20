@@ -349,14 +349,14 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             accessor: "placement",
                             maxWidth: 60,
                             // Click the placement to see the position on the board
-                            getProps: (state, rowInfo, column) => (
+                            getProps: ((state, rowInfo, column) => (
                                 {
                                     onClick: (e, handleOriginal) => {
                                         this.props.loadPositionToBoard(rowInfo.original.node_id);
                                     },
                                     className: "position-link"
                                 }
-                            )
+                            )) as any
                         },
                         {
                             Header: _("User"), accessor: "user_id",
