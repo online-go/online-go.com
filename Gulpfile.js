@@ -193,7 +193,7 @@ function dev_server(done) {
 
     let beta_proxy = (prefix) => proxy('beta.online-go.com', {
         https: true,
-        forwardPath: function(req, res) {
+        proxyReqPathResolver: function(req) {
             let path = prefix + require('url').parse(req.url).path;
             console.log('-->', path);
             return path;
