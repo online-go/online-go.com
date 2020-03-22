@@ -902,7 +902,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
 
 export class EmbeddedChat extends React.PureComponent<ChatProperties, {}> {
     render() {
-        return <Card className="Card EmbeddedChat"><Chat {...this.props} /></Card>;
+        return <Card className="Card EmbeddedChat"><Chat key={this.props.channel} {...this.props} /></Card>;
     }
 }
 
