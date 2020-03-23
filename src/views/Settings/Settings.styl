@@ -19,11 +19,6 @@
     // here
     user-select: none;
 
-    display: flex;
-    flex-wrap: wrap;
-
-    justify-content: space-around;
-
     .Card {
         margin-bottom: 1rem;
     }
@@ -182,7 +177,7 @@
         }
     }
 
-    .PreferenceToggle {
+    .PreferenceToggle, .EmailNotificationToggle {
         margin-top: 0.2rem;
         margin-bottom: 0.2rem;
         display: flex;
@@ -206,6 +201,17 @@
         }
     }
 
+    .EmailNotificationToggle {
+        margin-top: 1rem;
+        margin-left: 1rem;
+        label {
+            .preference-toggle-name {
+                width: 20rem;
+                flex-basis: 20rem;
+            }
+        }
+    }
+
     .sound-sample-left-column {
 
     }
@@ -215,5 +221,92 @@
         flex-direction: column;
         align-items: center;
 
+    }
+
+    .LogoutButtons {
+        flex: 1;
+
+        > div { 
+            text-align: center;
+            margin-top: 3rem;
+        }
+    }
+}
+
+#SettingsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    //align-items: stretch;
+    align-items: flex-start;
+}
+
+#SettingsGroupSelector {
+    border: 1px solid black;
+    themed border-color shade3
+
+    .SettingsGroup {
+        cursor: pointer;
+        padding: 0.7rem;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &.selected {
+            themed background-color primary
+            themed color colored-background-fg
+        }
+
+        .spacer {
+            display: inline-block;
+            width: 1rem;
+        }
+
+        i {
+            display: inline-block;
+            width: 1rem;
+
+        }
+    }
+}
+
+#SelectedSettingsContainer {
+    flex: 1;
+    display: flex;
+}
+
+// Mobile
+@media (max-width: 767px) {
+    #SettingsGroupSelector {
+        display: none;
+    }
+    #SettingsContainer {
+        flex-direction: column;
+    }
+    #SelectedSettingsContainer {
+        padding-top: 1rem;
+    }
+
+
+    #SettingsGroupDropdown {
+        .settings-group-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    #SettingsContainer {
+        align-items: stretch;
+    }
+}
+
+// Desktop
+@media (min-width: 768px) {
+    #SettingsGroupDropdown {
+        display: none;
+    }
+    #SelectedSettingsContainer {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }
