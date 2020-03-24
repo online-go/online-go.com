@@ -661,13 +661,13 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Disable AI review")}
-                description={_("will enable or disable the artificial intelligence reviews at the end of a game.")}
+                description={_("This will enable or disable the artificial intelligence reviews at the end of a game.")}
                 >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Always disable analysis")}
-                description={_("will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
+                description={_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
                 >
                 <Toggle checked={always_disable_analysis} onChange={setAlwaysDisableAnalysis} />
             </PreferenceLine>
@@ -683,7 +683,7 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Disable clickable variations in chat")}
-                description={_("will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
+                description={_("This will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
                 >
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat}/>
             </PreferenceLine>
