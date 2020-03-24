@@ -144,13 +144,13 @@ export function Settings():JSX.Element {
 
 
     let groups:Array<{key:string, label:string}> = [
+        { key: 'general'  , label: _("General Preferences") },
         { key: 'sound'    , label: _("Sound Preferences") },
+        { key: 'game'     , label: _("Game Preferences") },
         { key: 'vacation' , label: _("Vacation") },
+        { key: 'email'    , label: _("Email Notifications") },
         { key: 'account'  , label: _("Account Settings") },
         { key: 'logout'   , label: _("Logout") },
-        { key: 'email'    , label: _("Email Notifications") },
-        { key: 'game'     , label: _("Game Preferences") },
-        { key: 'general'  , label: _("General Preferences") },
     ];
 
     let SelectedPage:(props:SettingGroupProps) => JSX.Element = () => <div>Error</div>;
@@ -225,6 +225,57 @@ export function Settings():JSX.Element {
     );
 }
 
+interface PreferenceDropdownProps {
+    value: any;
+    options: Array<{value: any, label: string}>;
+    onChange: (value:any) => void;
+}
+
+function PreferenceDropdown(props: PreferenceDropdownProps):JSX.Element {
+    return (
+        <Select
+            className='PreferenceDropdown'
+            classNamePrefix='ogs-react-select'
+            value={props.options.filter(opt => opt.value === props.value)[0]}
+            getOptionValue={data => data.value}
+            onChange={(data:any) => props.onChange(data.value)}
+            options={props.options}
+            isClearable={false}
+            isSearchable={false}
+            blurInputOnSelect={true}
+            components={{
+                Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                    <div ref={innerRef} {...innerProps}
+                        className={'PreferenceDropdown-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                        {data.label}
+                    </div>
+                ),
+                SingleValue: ({innerProps, data}) => (
+                    <span {...innerProps} className='PreferenceDropdown-value'>
+                        {data.label}
+                    </span>
+                ),
+                ValueContainer: ({children}) => (
+                    <div className='PreferenceDropdown-value-container'>
+                        {children}
+                    </div>
+                ),
+            }}
+        />
+    );
+}
+
+function PreferenceLine(props: {title: string, description?: string, children: React.ReactNode}):JSX.Element {
+    return (
+        <div className='PreferenceLine'>
+            <span className='PreferenceLineTitle'>
+                {props.title}
+                {props.description && <div className='PreferenceLineDescription'>{props.description}</div>}
+            </span>
+            <span className='PreferenceLineBody'>{props.children}</span>
+        </div>
+    );
+}
 
 
 function SettingsGroupSelector(props: {children: React.ReactNode}):JSX.Element {
@@ -477,29 +528,29 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
         preferences.set("dock-delay", new_delay);
         _setDockDelay(new_delay);
     }
-    function toggleAIReview(ev) {
-        preferences.set("ai-review-enabled", !ai_review_enabled);
-        _setAiReviewEnabled(!ai_review_enabled);
+    function toggleAIReview(checked) {
+        preferences.set("ai-review-enabled", !checked);
+        _setAiReviewEnabled(!checked);
     }
-    function toggleVariationsInChat(ev) {
-        preferences.set("variations-in-chat-enabled", !variations_in_chat);
-        _setVariationsInChat(!variations_in_chat);
+    function toggleVariationsInChat(checked) {
+        preferences.set("variations-in-chat-enabled", !checked);
+        _setVariationsInChat(!checked);
     }
 
-    function setAutoAdvance(ev) {
-        preferences.set("auto-advance-after-submit", ev.target.checked),
+    function setAutoAdvance(checked) {
+        preferences.set("auto-advance-after-submit", checked),
         _setAutoAdvance(preferences.get("auto-advance-after-submit"));
     }
-    function setAlwaysDisableAnalysis(ev) {
-        preferences.set("always-disable-analysis", ev.target.checked),
+    function setAlwaysDisableAnalysis(checked) {
+        preferences.set("always-disable-analysis", checked),
         _setAlwaysDisableAnalysis(preferences.get("always-disable-analysis"));
     }
-    function setDynamicTitle(ev) {
-        preferences.set("dynamic-title", ev.target.checked),
+    function setDynamicTitle(checked) {
+        preferences.set("dynamic-title", checked),
         _setDynamicTitle(preferences.get("dynamic-title"));
     }
-    function setFunctionKeysEnabled(ev) {
-        preferences.set("function-keys-enabled", ev.target.checked),
+    function setFunctionKeysEnabled(checked) {
+        preferences.set("function-keys-enabled", checked),
         _setFunctionKeysEnabled(preferences.get("function-keys-enabled"));
     }
 
@@ -530,11 +581,11 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
             _setCorrSubmitMode(getSubmitMode(speed));
         }
     }
-    function setLiveSubmitMode(ev) {
-        setSubmitMode("live", ev.target.value);
+    function setLiveSubmitMode(value) {
+        setSubmitMode("live", value);
     }
-    function setCorrSubmitMode(ev) {
-        setSubmitMode("correspondence", ev.target.value);
+    function setCorrSubmitMode(value) {
+        setSubmitMode("correspondence", value);
     }
     function setBoardLabeling(ev) {
         preferences.set('board-labeling', ev.target.value);
@@ -551,89 +602,91 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
 
     return (
         <div>
-            <dl>
-                <dt>{
-                    _("Game-control-dock pop-out delay") // translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
-                }</dt>
-                <dd className="inline-flex">
-                    <input type="range"
-                           onChange={setDockDelay}
-                              value={dock_delay} min={0} max={MAX_DOCK_DELAY} step={0.1}
-                    />
-                    <span>&nbsp;{
-                        dock_delay === MAX_DOCK_DELAY
-                            ?  _("Off") // translators: Indicates the dock slide out has been turned off
-                            : interpolate(_("{{number_of}} seconds"), { number_of:  dock_delay}) // translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page
-                    }</span>
-                </dd>
+            <PreferenceLine title={
+                _("Game-control-dock pop-out delay") // translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
+            }>
+                <input type="range"
+                       onChange={setDockDelay}
+                          value={dock_delay} min={0} max={MAX_DOCK_DELAY} step={0.1}
+                />
+                <span>&nbsp;{
+                    dock_delay === MAX_DOCK_DELAY
+                        ?  _("Off") // translators: Indicates the dock slide out has been turned off
+                        : interpolate(_("{{number_of}} seconds"), { number_of:  dock_delay}) // translators: Indicates the number of seconds to delay the slide out of the panel of game buttons on the right side of the game page
+                }</span>
+            </PreferenceLine>
 
+            <PreferenceLine title={_("Board labeling")}>
+                <PreferenceDropdown
+                    value={board_labeling}
+                    options={[
+                        { value: "automatic", label: _("Automatic")},
+                        { value: "A1", label: "A1"},
+                        { value: "1-1", label: "1-1"},
+                    ]}
+                    onChange={setBoardLabeling}
+                />
+            </PreferenceLine>
 
-                <dt>{_("Board labeling")}</dt>
-                <dd>
-                    <select value={board_labeling} onChange={setBoardLabeling}>
-                        <option value="automatic">{_("Automatic")}</option>
-                        <option value="A1">A1</option>
-                        <option value="1-1">1-1</option>
-                    </select>
-                </dd>
+            <PreferenceLine title={_("Live game submit mode")}>
+                <PreferenceDropdown
+                    value={getSubmitMode('live')}
+                    options={[
+                        { value: "single", label: _("One-click to move") },
+                        { value: "double", label: _("Double-click to move") },
+                        { value: "button", label: _("Submit-move button") },
+                    ]}
+                    onChange={setLiveSubmitMode}
+                />
+            </PreferenceLine>
 
-                <dt>{_("Live game submit mode")}</dt>
-                <dd>
-                    <select value={live_submit_mode} onChange={setLiveSubmitMode}>
-                        <option value="single">{_("One-click to move")}</option>
-                        <option value="double">{_("Double-click to move")}</option>
-                        <option value="button">{_("Submit-move button")}</option>
-                    </select>
-                </dd>
-                <dt>{_("Correspondence submit mode")}</dt>
-                <dd>
-                    <select value={corr_submit_mode} onChange={setCorrSubmitMode}>
-                        <option value="single">{_("One-click to move")}</option>
-                        <option value="double">{_("Double-click to move")}</option>
-                        <option value="button">{_("Submit-move button")}</option>
-                    </select>
-                </dd>
-                <dt><label htmlFor="autoadvance">{_("Auto-advance to next game after making a move")}</label></dt>
-                <dd>
-                    <input id="autoadvance" type="checkbox" checked={autoadvance} onChange={setAutoAdvance} />
-                </dd>
-                <dt>{_("Autoplay delay (in seconds)")}</dt>
-                <dd>
-                    <input type="number" step="0.1" min="0.1" onChange={updateAutoplayDelay} value={autoplay_delay} />
-                </dd>
-                <dt><label htmlFor="disable-ai-review">{_("Disable AI review")}</label></dt>
-                <dd>
-                    <input type="checkbox" id="disable-ai-review" checked={!ai_review_enabled} onChange={toggleAIReview}/>
-                    <div><i>
-                    {_("will enable or disable the artificial intelligence reviews at the end of a game.")}
-                    </i></div>
-                </dd>
-                <dt><label htmlFor="always-disable-analysis">{_("Always disable analysis")}</label></dt>
-                <dd>
-                    <input id="always-disable-analysis" type="checkbox" checked={always_disable_analysis} onChange={setAlwaysDisableAnalysis} />
-                    <div><i>
-                    {_("will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
-                    </i></div>
-                </dd>
-                <dt><label htmlFor="dynamic-title">{_("Dynamic title")}</label></dt>
-                <dd>
-                    <input id="dynamic-title" type="checkbox" checked={dynamic_title} onChange={setDynamicTitle} />
-                    <div><i>
-                    {_("Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)")}
-                    </i></div>
-                </dd>
-                <dt><label htmlFor="function-keys-enabled">{_("Enable function keys for game analysis shortcuts")}</label></dt>
-                <dd>
-                    <input id="function-keys-enabled" type="checkbox" checked={function_keys_enabled} onChange={setFunctionKeysEnabled} />
-                </dd>
-                <dt><label htmlFor="disable-varations-in-chat">{_("Disable clickable variations in chat")}</label></dt>
-                <dd>
-                    <input type="checkbox" id="disable-variations-in-chat" checked={!variations_in_chat} onChange={toggleVariationsInChat}/>
-                    <div><i>
-                    {_("will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
-                    </i></div>
-                </dd>
-            </dl>
+            <PreferenceLine title={_("Correspondence submit mode")}>
+                <PreferenceDropdown
+                    value={getSubmitMode('correspondence')}
+                    options={[
+                        { value: "single", label: _("One-click to move") },
+                        { value: "double", label: _("Double-click to move") },
+                        { value: "button", label: _("Submit-move button") },
+                    ]}
+                    onChange={setCorrSubmitMode}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Auto-advance to next game after making a move")}>
+                <Toggle checked={autoadvance} onChange={setAutoAdvance} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Autoplay delay (in seconds)")}>
+                <input type="number" step="0.1" min="0.1" onChange={updateAutoplayDelay} value={autoplay_delay} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Disable AI review")}
+                description={_("will enable or disable the artificial intelligence reviews at the end of a game.")}
+                >
+                <Toggle checked={!ai_review_enabled} onChange={toggleAIReview}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Always disable analysis")}
+                description={_("will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
+                >
+                <Toggle checked={always_disable_analysis} onChange={setAlwaysDisableAnalysis} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Dynamic title")}
+                description={_("Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)")}
+                >
+                <Toggle checked={dynamic_title} onChange={setDynamicTitle} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Enable function keys for game analysis shortcuts")}>
+                <Toggle checked={function_keys_enabled} onChange={setFunctionKeysEnabled} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Disable clickable variations in chat")}
+                description={_("will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
+                >
+                <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat}/>
+            </PreferenceLine>
         </div>
     );
 }
@@ -683,24 +736,22 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         _setGameListThreshold(preferences.get("game-list-threshold"));
     }
 
-    function setShowOfflineFriends(ev) {
-        preferences.set("show-offline-friends", ev.target.checked);
+    function setShowOfflineFriends(checked) {
+        preferences.set("show-offline-friends", checked);
         _setShowOfflineFriends(preferences.get("show-offline-friends"));
     }
 
-    function setUnicodeFilterUsernames(ev) {
-        preferences.set("unicode-filter", ev.target.checked);
+    function setUnicodeFilterUsernames(checked) {
+        preferences.set("unicode-filter", checked);
         _setUnicodeFilterUsernames(preferences.get("unicode-filter"));
     }
 
-    function setTranslationDialogNeverShow(ev) {
-        preferences.set("translation-dialog-never-show", ev.target.checked);
+    function setTranslationDialogNeverShow(checked) {
+        preferences.set("translation-dialog-never-show", checked);
         _setTranslationDialogNeverShow(preferences.get("translation-dialog-never-show"));
     }
 
-    function updateDesktopNotifications(ev) {
-        let enabled = ev.target.checked;
-
+    function updateDesktopNotifications(enabled) {
         if (!enabled) {
             //this.setState({'desktop_notifications_enabled': false});
         }
@@ -747,9 +798,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         }
     }
 
-    function updateHideUIClass(ev) {
-        let checked = ev.target.checked;
-
+    function updateHideUIClass(checked) {
         setHideUiClass(!checked);
         put(`me/settings`, {
             'site_preferences': {
@@ -759,116 +808,93 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         .catch(errorAlerter);
     }
 
-    function setShowTournamentIndicator(ev) {
-        preferences.set("show-tournament-indicator", ev.target.checked),
+    function setShowTournamentIndicator(checked) {
+        preferences.set("show-tournament-indicator", checked),
         _setShowTournamentIndicator(preferences.get("show-tournament-indicator"));
     }
 
-    function setHideRanks(ev) {
-        preferences.set("hide-ranks", ev.target.checked),
+    function setHideRanks(checked) {
+        preferences.set("hide-ranks", checked),
         _setHideRanks(preferences.get("hide-ranks"));
     }
 
-    function updateIncidentReportNotifications(ev) {
-        let checked = ev.target.checked;
+    function updateIncidentReportNotifications(checked) {
         preferences.set("notify-on-incident-report", checked);
         setIncidentReportNotifications(checked);
     }
 
     return (
         <div>
-            <dl>
-                <dt>{_("Language")}</dt>
-                <dd><LanguagePicker /></dd>
+            <PreferenceLine title={_("Language")}>
+                <LanguagePicker />
+            </PreferenceLine>
 
-                <dt>{_("Profanity filter")}</dt>
-                <dd>
-                    <select multiple onChange={updateProfanityFilter} value={profanity_filter} >
-                        {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
-                            <option key={lang} value={lang}>{languages[lang]}</option>
-                        ))}
-                    </select>
-                </dd>
+            <PreferenceLine title={_("Profanity filter")}>
+                <select multiple onChange={updateProfanityFilter} value={profanity_filter} >
+                    {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
+                        <option key={lang} value={lang}>{languages[lang]}</option>
+                    ))}
+                </select>
+            </PreferenceLine>
 
-                <dt>{_("Game thumbnail list threshold")}</dt>
-                <dd>
-                    <select onChange={updateGameListThreshold} value={game_list_threshold}>
-                        <option value={0}>{_("Always show list")}</option>
-                        {[3, 5, 10, 25, 50, 100, 200].map((value, idx) =>
-                            <option key={idx} value={value}>{value}</option>
-                        )}
-                    </select>
-                </dd>
-
-                <dt>{_("Desktop notifications")}</dt>
-                <dd>
-                    <input type="checkbox"
-                            checked={desktop_notifications_enabled}
-                            onChange={updateDesktopNotifications}
-                            disabled={!desktop_notifications_enableable}
-                            id="desktop_notifications"/>
-                    <label htmlFor="desktop_notifications">
-                        {desktop_notifications_enabled ? _("Enabled") : _("Disabled")}
-                    </label>
-                    {!desktop_notifications_enableable &&
-                        <div><i>
-                        {_("Desktop notifications are not supported by your browser")}
-                        </i></div>
+            <PreferenceLine title={_("Game thumbnail list threshold")}>
+                <PreferenceDropdown
+                    value={game_list_threshold}
+                    onChange={updateGameListThreshold}
+                    options={
+                        [0, 3, 5, 10, 25, 50, 100, 200].map((value, idx) => ({
+                            value: value,
+                            label: value ? value.toString() : _("Always show list")
+                        }))
                     }
-                </dd>
+                />
+            </PreferenceLine>
 
-                <dt><label htmlFor="show-offline-friends">{_("Show offline friends on list")}</label></dt>
-                <dd>
-                    <input id="show-offline-friends" type="checkbox" checked={show_offline_friends} onChange={setShowOfflineFriends} />
-                </dd>
+            <PreferenceLine title={_("Desktop notifications")}>
+                <Toggle
+                    checked={desktop_notifications_enabled}
+                    onChange={updateDesktopNotifications}
+                    disabled={!desktop_notifications_enableable}
+                />
 
-                <dt><label htmlFor="unicode-filter-usernames">{_("Hide special unicode symbols in usernames")}</label></dt>
-                <dd>
-                    <input id="unicode-filter-usernames" type="checkbox" checked={unicode_filter_usernames} onChange={setUnicodeFilterUsernames} />
-                </dd>
-
-                <dt><label htmlFor="translation-dialog-never-show">{_('Never show the "needs translation" message on the home page')}</label></dt>
-                <dd>
-                    <input id="translation-dialog-never-show" type="checkbox" checked={translation_dialog_never_show} onChange={setTranslationDialogNeverShow} />
-                </dd>
-
-                {(user.supporter || null) && <dt>{_("Golden supporter name")}</dt>}
-                {(user.supporter || null) &&
-                    <dd>
-                        <input type="checkbox" checked={!hide_ui_class} onChange={updateHideUIClass} id='hide_ui_class' />
-
-                        <label htmlFor="hide_ui_class">
-                            {!hide_ui_class ? _("Enabled") : _("Disabled")}
-                        </label>
-                    </dd>
+                {!desktop_notifications_enableable &&
+                    <div><i>
+                    {_("Desktop notifications are not supported by your browser")}
+                    </i></div>
                 }
+            </PreferenceLine>
 
-                <dt><label htmlFor="show-tournament-indicator">{_("Show tournament indicator")}</label></dt>
-                <dd>
-                    <input id="show-tournament-indicator" type="checkbox" checked={show_tournament_indicator} onChange={setShowTournamentIndicator} />
-                </dd>
-                <dt><label htmlFor="hide-ranks">{_("Hide ranks and ratings")}</label></dt>
-                <dd>
-                    <input id="hide-ranks" type="checkbox" checked={hide_ranks} onChange={setHideRanks} />
-                </dd>
+            <PreferenceLine title={_("Show offline friends on list")}>
+                <Toggle checked={show_offline_friends} onChange={setShowOfflineFriends} />
+            </PreferenceLine>
 
+            <PreferenceLine title={_("Hide special unicode symbols in usernames")}>
+                <Toggle checked={unicode_filter_usernames} onChange={setUnicodeFilterUsernames} />
+            </PreferenceLine>
 
-                {(user.is_moderator || null) &&
-                    <dt><label htmlFor="incident-report-notifications">{_("Notify me when an incident is submitted for moderation")}</label></dt>
-                }
-                {(user.is_moderator || null) &&
-                    <dd>
-                        <input type="checkbox"
-                                checked={incident_report_notifications}
-                                onChange={updateIncidentReportNotifications}
-                                id='incident_report_notifications'
-                                />
-                        <label htmlFor="incident_report_notifications">
-                            {incident_report_notifications ? _("Enabled") : _("Disabled")}
-                        </label>
-                    </dd>
-                }
-            </dl>
+            <PreferenceLine title={_('Never show the "needs translation" message on the home page')}>
+                <Toggle checked={translation_dialog_never_show} onChange={setTranslationDialogNeverShow} />
+            </PreferenceLine>
+
+            {(user.supporter || null) &&
+                <PreferenceLine title={_("Golden supporter name")}>
+                    <Toggle checked={!hide_ui_class} onChange={updateHideUIClass} id='hide_ui_class' />
+                </PreferenceLine>
+            }
+
+            <PreferenceLine title={_("Show tournament indicator")}>
+                <Toggle checked={show_tournament_indicator} onChange={setShowTournamentIndicator} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Hide ranks and ratings")}>
+                <Toggle checked={hide_ranks} onChange={setHideRanks} />
+            </PreferenceLine>
+
+            {(user.is_moderator || null) &&
+                <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
+                    <Toggle checked={incident_report_notifications} onChange={updateIncidentReportNotifications} />
+                </PreferenceLine>
+            }
         </div>
     );
 }

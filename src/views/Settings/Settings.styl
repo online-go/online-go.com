@@ -19,8 +19,50 @@
     // here
     user-select: none;
 
+    .PreferenceLine {
+        display: flex;
+        max-width: 100vw;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        align-items: center;
+
+        .PreferenceLineTitle {
+            display: inline-block;
+            width: 20rem;
+            min-width: 20rem;
+            font-size: large;
+            font-weight: bold;
+        }
+        .PreferenceLineDescription {
+            display: inline-block;
+            width: 20rem;
+            min-width: 20rem;
+            font-size: small;
+            font-weight: normal;
+            font-style: italic;
+        }
+        .PreferenceLineBody {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 1rem;
+            min-width: 10rem;
+        }
+    }
+
+    .PreferenceDropdown {
+        min-width: 10rem;
+        .PreferenceDropdown-value-container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+
     .Card {
         margin-bottom: 1rem;
+    }
+
+    .LanguagePicker {
+        themed color link-color
     }
 
     .fa-smile-o {
