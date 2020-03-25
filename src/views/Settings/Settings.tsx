@@ -724,9 +724,19 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         /* not all browsers support the Notification API */
     }
 
-    function updateProfanityFilter(ev) {
+    function updateProfanityFilter(lang, on) {
         let new_profanity_settings = {};
-        Array.prototype.filter.apply(ev.target.options, [x => x.selected]).map(opt => new_profanity_settings[opt.value] = true);
+
+        for (let l of profanity_filter) {
+            new_profanity_settings[l] = true;
+        }
+
+        if (on) {
+            new_profanity_settings[lang] = true;
+        } else {
+            delete new_profanity_settings[lang];
+        }
+
         preferences.set("profanity-filter", new_profanity_settings);
         _setProfanityFilter(Object.keys(new_profanity_settings));
     }
@@ -830,11 +840,14 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Profanity filter")}>
-                <select multiple onChange={updateProfanityFilter} value={profanity_filter} >
+                <Card className='ProfanityFilterCard'>
                     {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
-                        <option key={lang} value={lang}>{languages[lang]}</option>
+                        <div className='ProfanityFilterOption' key={lang}>
+                            <span className='ProfanityFilterOptionName'>{languages[lang]}</span>
+                            <Toggle onChange={on => updateProfanityFilter(lang, on)} checked={profanity_filter.indexOf(lang) >= 0} />
+                        </div>
                     ))}
-                </select>
+                </Card>
             </PreferenceLine>
 
             <PreferenceLine title={_("Game thumbnail list threshold")}>

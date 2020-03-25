@@ -33,6 +33,7 @@
             font-size: large;
             font-weight: bold;
         }
+
         .PreferenceLineDescription {
             display: inline-block;
             width: 20rem;
@@ -56,6 +57,24 @@
             padding-right: 0.5rem;
         }
     }
+    .ProfanityFilterCard {
+        display: inline-flex;
+        width: 20rem;
+        max-width: calc(100vw - 4rem);
+        flex-wrap: wrap;
+        margin: 0;
+
+        .ProfanityFilterOption {
+            display: inline-block;
+
+            .ProfanityFilterOptionName {
+                display: inline-block;
+                width: 5rem;
+                margin: 0.5rem;
+                text-align: right;
+            }
+        }
+    }
 
     .Card {
         margin-bottom: 1rem;
@@ -63,6 +82,12 @@
 
     .LanguagePicker {
         themed color link-color
+        font-size: large;
+        text-decoration: underline;
+
+        .fa {
+            themed color fg
+        }
     }
 
     .fa-smile-o {
