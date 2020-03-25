@@ -691,7 +691,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                             source={`groups/${group.id}/members`}
                             groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                             columns={[
-                                {header: _("Members"), className: "", render: (X) => <Player icon user={X}/>},
+                                {header: _("Members"), className: "", render: (X) => <Player icon user={X} online/>},
                             ]}
                         />
                     </Card>
