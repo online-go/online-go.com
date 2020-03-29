@@ -587,9 +587,9 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
     function setCorrSubmitMode(value) {
         setSubmitMode("correspondence", value);
     }
-    function setBoardLabeling(ev) {
-        preferences.set('board-labeling', ev.target.value);
-        setBoardLabeling(ev.target.value);
+    function setBoardLabeling(value) {
+        preferences.set('board-labeling', value);
+        _setBoardLabeling(value);
     }
     function updateAutoplayDelay(ev) {
         let delay = parseFloat(ev.target.value);
