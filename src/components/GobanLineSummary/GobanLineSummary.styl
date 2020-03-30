@@ -55,6 +55,10 @@
 
     .game-name, .player {
         text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 13em;
     }
 
     &.in-stone-removal-phase {
