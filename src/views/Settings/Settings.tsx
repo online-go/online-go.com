@@ -850,16 +850,13 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                 </Card>
             </PreferenceLine>
 
-            <PreferenceLine title={_("Game thumbnail list threshold")}>
-                <PreferenceDropdown
+            <PreferenceLine title={_("Game thumbnail list threshold")} description={_("Set to 0 to always show list.")}>
+                <input
                     value={game_list_threshold}
                     onChange={updateGameListThreshold}
-                    options={
-                        [0, 3, 5, 10, 25, 50, 100, 200].map((value, idx) => ({
-                            value: value,
-                            label: value ? value.toString() : _("Always show list")
-                        }))
-                    }
+                    type="number"
+                    min="0"
+                    step="1"
                 />
             </PreferenceLine>
 
