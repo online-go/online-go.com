@@ -741,9 +741,11 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         _setProfanityFilter(Object.keys(new_profanity_settings));
     }
 
-    function updateGameListThreshold(ev: number) {
-        preferences.set("game-list-threshold", ev);
-        _setGameListThreshold(preferences.get("game-list-threshold"));
+    function updateGameListThreshold(ev: React.ChangeEvent<HTMLInputElement>) {
+        if (ev.target.value && parseInt(ev.target.value)) {
+            preferences.set("game-list-threshold", Math.min(300, Math.max(0, parseInt(ev.target.value))));
+        }
+        _setGameListThreshold(ev.target.value as any);
     }
 
     function setShowOfflineFriends(checked) {
@@ -856,6 +858,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                     onChange={updateGameListThreshold}
                     type="number"
                     min="0"
+                    max="300"
                     step="1"
                 />
             </PreferenceLine>
