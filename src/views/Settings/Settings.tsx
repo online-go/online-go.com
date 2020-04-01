@@ -741,8 +741,8 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         _setProfanityFilter(Object.keys(new_profanity_settings));
     }
 
-    function updateGameListThreshold(ev) {
-        preferences.set("game-list-threshold", parseInt(ev.target.value));
+    function updateGameListThreshold(ev: number) {
+        preferences.set("game-list-threshold", ev);
         _setGameListThreshold(preferences.get("game-list-threshold"));
     }
 
