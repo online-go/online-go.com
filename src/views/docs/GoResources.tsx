@@ -219,7 +219,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w">Go Pro Yeonwoo</a> / <Flag country={kr}/> <a rel="noopener" href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ">프로연우</a></span>,
                 <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
-                <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>
+                <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>,
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
@@ -323,7 +324,8 @@ export let GoResources = (props) => {
                 <span><Flag country={"se"}/> <a rel="noopener" href="http://goforbundet.se">Svenska Goförbundet</a></span>,
                 <span><Flag country={"ru"}/> <a rel="noopener" href="http://gofederation.ru">Russian Go Federation</a></span>,
                 <span><Flag country={"pt"}/> <a rel="noopener" href="http://www.go-portugal.org">Associação Portuguesa de Go</a></span>,
-                <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>
+                <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Instanbul Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
