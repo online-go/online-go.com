@@ -40,6 +40,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
             page: 1,
             num_pages: 1,
             page_size: preferences.get("observed-games-page-size"),
+            page_size_text_input: preferences.get("observed-games-page-size"),
             viewing: preferences.get("observed-games-viewing"), /* live / correspondence */
             game_list: [],
             live_game_count: 0,
@@ -79,11 +80,18 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         });
     }
     setPageSize = (ev) => {
-        let ct: number = parseInt(ev.target.value);
-        preferences.set("observed-games-page-size", ct);
-        this.setState({page_size: ct});
-        this.setPage(1);
-        setTimeout(this.refresh, 1);
+        if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
+            let ct: number = parseInt(ev.target.value);
+            preferences.set("observed-games-page-size", ct);
+            this.setState({
+                page_size: ct,
+                page_size_text_input: ct
+            });
+            this.setPage(1);
+            setTimeout(this.refresh, 1);
+        } else {
+            this.setState({page_size_text_input: ev.target.value});
+        }
     }
     refresh = () => {
         let now = Date.now();
@@ -174,7 +182,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
                             </div>
                             <div className="right">
                                 <label className="labelshow">{_("Show") + ":"}</label>
-                                <input className="show" onChange={this.setPageSize} value={this.state.page_size} type="number" min="1" max="100" step="1" />
+                                <input className="show" onChange={this.setPageSize} value={this.state.page_size_text_input} type="number" min="3" max="100" step="1" />
                             </div>
                         </div>
                     </div>
