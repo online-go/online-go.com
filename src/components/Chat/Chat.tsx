@@ -261,7 +261,6 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.syncStateSoon();
 
         if (document.hasFocus()) {
-            c.markAsRead();
             if (this.props.updateTitle) {
                 window.document.title = _("Chat");
             }
