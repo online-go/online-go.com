@@ -30,8 +30,16 @@ interface Events {
     "chat-removed": any;
     "join": Array<any>;
     "part": any;
+    "unread-count-changed": any;
 }
 
+export interface UnreadChanged {
+    "channel": string;
+    "unread_ct": number;
+    "unread_delta": number;
+    "mentioned": Boolean;
+    "previous_mentioned": Boolean;
+}
 
 /* Any modifications to this must also be mirrored on the server */
 export let global_channels: Array<any> = [
@@ -169,9 +177,22 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     markAsRead() {
+        let unread_delta = - this.unread_ct;
+        let previous_mentioned = this.mentioned;
         this.unread_ct = 0;
         this.mentioned = false;
         data.set("chat_manager_last_seen." + this.channel, this.last_seen_timestamp);
+        try {
+            this.emit("unread-count-changed",
+                        {channel: this.channel,
+                        unread_ct: this.unread_ct,
+                        unread_delta: unread_delta,
+                        mentioned: this.mentioned,
+                        previous_mentioned: previous_mentioned
+                        });
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     _rejoin = () => {
@@ -206,6 +227,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.chat_ids[obj.message.i] = true;
         this.chat_log.push(obj);
 
+        let previous_mentioned = this.mentioned;
+        let unread_delta = 0;
+
         try {
             if (typeof(obj.message.m) === "string") {
                 if (name_match_regex.test(obj.message.m)) {
@@ -224,7 +248,22 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         if (obj.message.t > this.last_seen_timestamp) {
             this.unread_ct++;
+            unread_delta = 1;
             this.last_seen_timestamp = obj.message.t;
+        }
+
+        try {
+            if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
+                this.emit("unread-count-changed",
+                        {channel: this.channel,
+                        unread_ct: this.unread_ct,
+                        unread_delta: unread_delta,
+                        mentioned: this.mentioned,
+                        previous_mentioned: previous_mentioned
+                        });
+            }
+        } catch (e) {
+            console.log(e);
         }
 
         try {
@@ -323,6 +362,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this.channel.on("join", this._onJoin);
         this.channel.on("part", this._onPart);
         this.channel.on("chat-removed", this._onChatRemoved);
+        this.channel.on("unread-count-changed", this._onUnreadChanged);
     }
 
     part() {
@@ -341,11 +381,15 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     _onChatRemoved = (...args) => {
         this.emit.apply(this, ["chat-removed"].concat(args));
     }
+    _onUnreadChanged = (...args) => {
+        this.emit.apply(this, ["unread-count-changed"].concat(args));
+    }
     _destroy() {
         this.channel.off("chat", this._onChat);
         this.channel.off("join", this._onJoin);
         this.channel.off("part", this._onPart);
         this.channel.off("chat-removed", this._onChatRemoved);
+        this.channel.off("unread-count-changed", this._onUnreadChanged);
         this.removeAllListeners();
         this.channel.removeProxy(this);
     }
