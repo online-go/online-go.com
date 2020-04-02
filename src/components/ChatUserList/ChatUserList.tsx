@@ -26,7 +26,6 @@ import {GameChat} from "Game/Chat";
 
 interface ChatUserListProperties {
     channel: string;
-    display_name?: string;
 }
 
 interface ChatUserCountProperties extends ChatUserListProperties {
@@ -42,12 +41,12 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
         this.state = {tick: 0};
     }
     UNSAFE_componentWillMount() {
-        this.init(this.props.channel, this.props.display_name);
+        this.init(this.props.channel);
     }
     UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.channel !== next_props.channel) {
             this.deinit();
-            this.init(next_props.channel, next_props.display_name);
+            this.init(next_props.channel);
         }
     }
     //componentDidUpdate(old_props, old_state) { }
@@ -55,8 +54,8 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
         this.deinit();
     }
 
-    init(channel, display_name) {
-        this.proxy = chat_manager.join(channel, display_name);
+    init(channel) {
+        this.proxy = chat_manager.join(channel);
         this.proxy.on("join", () => this.setState({tick: this.state.tick + 1}));
         this.proxy.on("part", () => this.setState({tick: this.state.tick + 1}));
     }

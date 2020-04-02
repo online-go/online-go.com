@@ -343,8 +343,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     initialize() {
         this.chat_proxy = this.game_id
-            ? chat_manager.join(`game-${this.game_id}`, interpolate(_("Game {{number}}"), {"number": this.game_id}))
-            : chat_manager.join(`review-${this.review_id}`, interpolate(_("Review {{number}}"), {"number": this.review_id}));
+            ? chat_manager.join(`game-${this.game_id}`)
+            : chat_manager.join(`review-${this.review_id}`);
         $(document).on("keypress", this.setLabelHandler);
 
         let label_position = preferences.get("label-positioning");

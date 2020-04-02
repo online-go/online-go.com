@@ -18,28 +18,23 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
 import {Player} from "Player";
 import {profanity_filter} from "profanity_filter";
 import {comm_socket} from "sockets";
 import * as data from "data";
 import * as preferences from "preferences";
-import {emitNotification} from "Notifications";
 import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
-import * as player_cache from "player_cache";
 import { PlayerCacheEntry } from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
-import {users_by_rank} from 'chat_manager';
+import {chat_manager, users_by_rank, ChatChannelProxy, global_channels, group_channels, tournament_channels, resolveChannelDisplayName} from 'chat_manager';
 import * as moment from "moment";
-import cached from 'cached';
 import {popover} from "popover";
 import {ChatDetails} from './ChatDetails';
 import {shouldOpenNewTab} from 'misc';
-import { ActiveTournamentList, GroupList } from 'types';
 
 
 declare let swal;
@@ -56,52 +51,6 @@ data.watch("config.user", (user) => {
         + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
 });
-
-/* Any modifications to this must also be mirrored on the server */
-let global_channels: Array<any> = [
-    {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
-    {"id": "global-help" , "name": "Help", "country": "un"},
-    {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
-    {"id": "global-japanese", "name": "日本語 ", "country": "jp", "language": "japanese"},
-    {"id": "global-chinese" , "name": "中文"   , "country": "cn", "language": "chinese"},
-    {"id": "global-korean"  , "name": "한국어" , "country": "kr", "language": "korean"},
-    {"id": "global-russian"  , "name": "Русский" , "country": "ru"},
-    {"id": "global-polish"  , "name": "Polski" , "country": "pl"},
-    {"id": "global-arabic", "name": "العَرَبِيَّةُ", "country": "_Arab_League", "rtl": true},
-    {"id": "global-bulgarian"  , "name": "Български" , "country": "bg"},
-    {"id": "global-catalan"  , "name": "Català" , "country": "es"},
-    {"id": "global-czech"  , "name": "Čeština" , "country": "cz"},
-    {"id": "global-esperanto"  , "name": "Esperanto" , "country": "_Esperanto"},
-    {"id": "global-german"  , "name": "Deutsch" , "country": "de", "language": "german"},
-    {"id": "global-spanish"  , "name": "Español" , "country": "es", "language": "spanish"},
-    {"id": "global-french"  , "name": "Français" , "country": "fr", "language": "french"},
-    {"id": "global-filipino"  , "name": "Filipino" , "country": "ph"},
-    {"id": "global-indonesian", "name": "Indonesian", "country": "id"},
-    {"id": "global-hebrew", "name": "עִבְרִית", "country": "il", "rtl": true},
-    {"id": "global-hindi"  , "name": "हिन्दी" , "country": "in"},
-    {"id": "global-nepali" , "name": "नेपाली", "country": "np"},
-    {"id": "global-bangla"  , "name": "বাংলা" , "country": "bd"},
-    {"id": "global-lithuanian", "name": "Lietuvių", "country": "lt"},
-    {"id": "global-hungarian"  , "name": "Magyar" , "country": "hu"},
-    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl", "language": "dutch"},
-    {"id": "global-norwegian"  , "name": "Norsk" , "country": "no"},
-    {"id": "global-italian"  , "name": "Italiano" , "country": "it", "language": "italian"},
-    {"id": "global-portuguese"  , "name": "Português" , "country": "pt", "language": "portuguese"},
-    {"id": "global-romanian"  , "name": "Română" , "country": "ro"},
-    {"id": "global-swedish"  , "name": "Svenska" , "country": "se"},
-    {"id": "global-finnish"  , "name": "Suomi" , "country": "fi"},
-    {"id": "global-turkish"  , "name": "Türkçe" , "country": "tr"},
-    {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"},
-    {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
-    {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
-];
-
-data.watch("config.ogs", (settings) => {
-    if (settings && settings.channels) {
-        global_channels = settings.channels;
-    }
-});
-
 
 let rtl_mode:{[channel: string]: boolean} = {};
 for (let chan of global_channels) {
@@ -122,11 +71,11 @@ interface Channel {
     user_count: number;
     rtl_mode: boolean;
 }
-let channels:{[channel:string]: Channel} = {};
+let channels:{[channel:string]: ChatChannelProxy} = {};
 
 function getChannel(channel) {
     if (!(channel in channels)) {
-        channels[channel] = {
+        return {
             name: "<error>",
             chat_log: [],
             chat_ids: {},
@@ -135,9 +84,10 @@ function getChannel(channel) {
             user_list: {},
             user_count: 0,
             rtl_mode: rtl_mode[channel],
+            markAsRead() {}
         };
     }
-    return channels[channel];
+    return channels[channel].channel;
 }
 
 interface ChatMessage {
@@ -173,8 +123,6 @@ interface ChatState {
     user_list: {[player_id:string]: ChatUser};
     joined_channels: Array<string>;
     active_channel: string;
-    group_channels: GroupList;
-    tournament_channels: ActiveTournamentList;
     show_all_global_channels: boolean;
     show_all_group_channels: boolean;
     show_all_tournament_channels: boolean;
@@ -214,8 +162,6 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             user_list: {},
             joined_channels: this.props.channel ? [this.props.channel] : data.get("chat.joined"),
             active_channel: this.props.channel ? this.props.channel : data.get("chat.active_channel", "global-english"),
-            group_channels: [],
-            tournament_channels: [],
             show_all_global_channels: preferences.get("chat.show-all-global-channels"),
             show_all_group_channels: preferences.get("chat.show-all-group-channels"),
             show_all_tournament_channels: preferences.get("chat.show-all-tournament-channels"),
@@ -229,23 +175,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    updateGroups = (groups:GroupList) => {
-        this.setState({group_channels: groups});
-        groups.map((g) => {
-            getChannel("group-" + g.id).name = g.name;
-        });
-    }
-
-    updateTournaments = (tournaments:ActiveTournamentList) => {
-        this.setState({tournament_channels: tournaments});
-        tournaments.map((t) => {
-            getChannel("tournament-" + t.id).name = t.name;
-        });
-    }
-
     componentDidMount() {
-        data.watch(cached.groups, this.updateGroups);
-        data.watch(cached.active_tournaments, this.updateTournaments);
 
         comm_socket.on("connect", this.connect);
         comm_socket.on("disconnect", this.disconnect);
@@ -258,6 +188,13 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
         this.autoscroll();
         $(window).on("focus", this.onDocumentFocus);
+
+        let joined = data.get("chat.joined");
+
+        for (let channel in joined) {
+            this.join(channel);
+        }
+        this.setActiveChannel(this.state.active_channel);
 
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
@@ -283,9 +220,14 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.autoscroll();
     }
     componentWillUnmount() {
-        data.unwatch(cached.groups, this.updateGroups);
-        data.unwatch(cached.active_tournaments, this.updateTournaments);
+        let joined = data.get("chat.joined");
+        for (let channel in joined) {
+            this.part(channel, true, true);
+        }
         this.disconnect();
+        Object.keys(channels).forEach(key => {
+            channels[key].part();
+        });
         comm_socket.off("connect", this.connect);
         comm_socket.off("disconnect", this.disconnect);
         $(window).off("focus", this.onDocumentFocus);
@@ -296,36 +238,12 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
     }
 
     connect = () => {
-        channels = {};
-        global_channels.map((chan) => getChannel(chan.id).name = chan.name);
-        this.state.group_channels.map((g) => getChannel("group-" + g.id).name = g.name);
-        this.state.tournament_channels.map((t) => getChannel("tournament-" + t.id).name = t.name);
-        comm_socket.on("chat-message", this.onChatMessage);
-        comm_socket.on("chat-message-removed", this.onChatMessageRemoved);
-        comm_socket.on("chat-join", this.onChatJoin);
-        comm_socket.on("chat-part", this.onChatPart);
         this.online_count_interval = setInterval(() => {
             comm_socket.send("getOnlineCount", {interval: 1800}, (ct) => this.setState({online_count: ct}));
         }, 30000);
         comm_socket.send("getOnlineCount", {interval: 1800}, (ct) => this.setState({online_count: ct}));
-
-        let joined = data.get("chat.joined");
-
-        for (let channel in joined) {
-            this.join(channel);
-        }
-        this.setActiveChannel(this.state.active_channel);
     }
     disconnect = () => {
-        channels = {};
-        comm_socket.off("chat-message", this.onChatMessage);
-        comm_socket.off("chat-join", this.onChatJoin);
-        comm_socket.off("chat-part", this.onChatPart);
-
-        let joined = data.get("chat.joined");
-        for (let channel in joined) {
-            this.part(channel, true, true);
-        }
         clearInterval(this.online_count_interval);
     }
     onDocumentFocus = () => {
@@ -336,97 +254,28 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
     }
 
     onChatMessageRemoved = (obj) => {
-        console.log("Chat message removed: ", obj);
-        let c = getChannel(obj.channel);
-        c.chat_ids[obj.uuid] = true;
-        for (let idx = 0; idx < c.chat_log.length; ++idx) {
-            let entry = c.chat_log[idx];
-            if (entry.message.i === obj.uuid) {
-                c.chat_log.splice(idx, 1);
-            }
-        }
         this.syncStateSoon();
     }
     onChatMessage = (obj) => {
-        let mentioned = false;
-        try {
-            if (typeof(obj.message.m) === "string") {
-                if (name_match_regex.test(obj.message.m)) {
-                    if (!(obj.channel in this.joining_channel)) {
-                        mentioned = true;
-                        emitNotification("[" + getChannel(obj.channel).name + "]: " + obj.username,
-                                         "[" + getChannel(obj.channel).name + "] " + obj.username + ": " + obj.message.m);
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
         let c = getChannel(obj.channel);
-        if (obj.message.i in c.chat_ids) {
-            return;
-        }
-        c.chat_ids[obj.message.i] = true;
-
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
-
-        c.chat_log.push(obj);
-        if (this.state.active_channel === obj.channel) {
-            //this.syncStateSoon();
-        } else {
-            if (!(obj.channel in this.joining_channel)) {
-                c.unread_ct++;
-                if (mentioned) {
-                    c.mentioned = true;
-                }
-            }
-        }
-
         this.syncStateSoon();
 
         if (document.hasFocus()) {
-            this.unread_ct = 0;
+            c.markAsRead();
             if (this.props.updateTitle) {
                 window.document.title = _("Chat");
             }
         } else {
-            ++this.unread_ct;
             if (this.props.updateTitle) {
                 window.document.title = `(${this.unread_ct}) ` + _("Chat");
             }
         }
     }
     onChatJoin = (joins) => {
-        let c = getChannel(joins.channel);
-        for (let i = 0; i < joins.users.length; ++i) {
-            player_cache.update(joins.users[i]);
-            if (!(joins.users[i].id in c.user_list)) {
-                c.user_count++;
-            }
-            c.user_list[joins.users[i].id] = joins.users[i];
-        }
-        //if (this.state.active_channel === joins.channel) {
         this.syncStateSoon();
-        //}
     }
     onChatPart = (part) => {
-        let c = getChannel(part.channel);
-        if ((part.user.id in c.user_list)) {
-            c.user_count--;
-        }
-        delete c.user_list[part.user.id];
-
-        //if (this.state.active_channel === part.channel) {
         this.syncStateSoon();
-        //}
     }
     systemMessage(text:string, system_message_type:'flood') {
         let c = getChannel(this.state.active_channel);
@@ -460,7 +309,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.syncStateSoon();
     }
 
-    join(channel) {
+    join(channel: string) {
         if (!channel) {
             throw new Error(`Attempted to join invalid channel: ${channel}`);
         }
@@ -473,17 +322,17 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.joining_channel[channel] = true;
         setTimeout(() => {delete this.joining_channel[channel]; }, 10000); /* don't notify for name matches within 10s of joining a channel */
 
-        if (comm_socket.connected) {
-            comm_socket.send("chat/join", {"channel": channel});
-            this.setState({
-                joined_channels: data.get("chat.joined")
-            });
-        }
+        channels[channel] = chat_manager.join(channel);
+        channels[channel].on("chat", this.onChatMessage);
+        channels[channel].on("chat-removed", this.onChatMessageRemoved);
+        channels[channel].on("join", this.onChatJoin);
+        channels[channel].on("part", this.onChatPart);
+        this.setState({
+            joined_channels: data.get("chat.joined")
+        });
     }
     part = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
-        if (comm_socket.connected) {
-            comm_socket.send("chat/part", {"channel": channel});
-        }
+        channels[channel].part();
 
         if (!dont_clear_joined) {
             let joined = data.get("chat.joined");
@@ -510,8 +359,9 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             this.defered_state_update = setTimeout(() => {
                 this.defered_state_update = null;
                 let c = getChannel(this.state.active_channel);
+                c.markAsRead();
                 this.setState({
-                    chat_log: c.chat_log,
+                    chat_log: channels[this.state.active_channel].channel.chat_log,
                     user_list: c.user_list,
                 });
             }, 20);
@@ -539,8 +389,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
 
         let chan = getChannel(channel);
-        chan.unread_ct = 0;
-        chan.mentioned = false;
+        chan.markAsRead();
         if (!(channel in data.get("chat.joined"))) {
             this.join(channel);
         }
@@ -556,7 +405,6 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         if (!(channel in data.get("chat.joined"))) {
             this.join(channel);
         }
-
         /*
         this.last_date = "";
         for (let i=0; i < chan.log.length; ++i) {
@@ -659,7 +507,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             obj.professional = user.professional;
             obj.ui_class = user.ui_class;
             obj.message = {"i": obj.uuid, "t": Math.floor(Date.now() / 1000), "m": txt};
-            this.onChatMessage(obj);
+            channels[channel].channel.chat_log.push(obj);
         };
 
         for (let str of string_splitter(txt, 300)) {
@@ -749,13 +597,13 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
 
                         <div className="all-channels">
                             <div className={"channels" + (!this.state.show_all_group_channels ? " hide-unjoined" : "")}>
-                                {(this.state.group_channels.length > 0 || null) && (
+                                {(group_channels.length > 0 || null) && (
                                     <div className="channel-header">
                                         <span>{_("Group Channels")}</span>
                                         <i onClick={this.toggleShowAllGroupChannels} className={"channel-expand-toggle " + (this.state.show_all_group_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                                     </div>
                                 ) }
-                                {this.state.group_channels.map((chan) => (
+                                {group_channels.map((chan) => (
                                     <div key={chan.id}
                                         className={
                                             (this.state.active_channel === ("group-" + chan.id) ? "channel active" : "channel")
@@ -771,13 +619,13 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
                             </div>
 
                             <div className={"channels" + (!this.state.show_all_tournament_channels ? " hide-unjoined" : "")}>
-                                {(this.state.tournament_channels.length > 0 || null) && (
+                                {(tournament_channels.length > 0 || null) && (
                                     <div className="channel-header">
                                         <span>{_("Tournament Channels")}</span>
                                         <i onClick={this.toggleShowAllTournamentChannels} className={"channel-expand-toggle " + (this.state.show_all_tournament_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                                     </div>
                                 )}
-                                {this.state.tournament_channels.map((chan) => (
+                                {tournament_channels.map((chan) => (
                                     <div key={chan.id}
                                         className={
                                             (this.state.active_channel === ("tournament-" + chan.id) ? "channel active" : "channel")
