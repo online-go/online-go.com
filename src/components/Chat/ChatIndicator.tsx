@@ -20,102 +20,83 @@ import {Link} from "react-router-dom";
 import * as moment from "moment";
 import {chat_manager, ChatChannelProxy, UnreadChanged} from "chat_manager";
 import * as data from "data";
+import { KBShortcut } from "../KBShortcut";
+import { FriendList } from "../FriendList";
+import { ChatList } from "./ChatList";
 
 
 let chat_indicator_sinleton:ChatIndicator;
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
 
-    channels_watch_mentions: {[channel:string]: ChatChannelProxy} = {};
-    channels_watch_messages: {[channel:string]: ChatChannelProxy} = {};
+    channels: {[channel:string]: ChatChannelProxy} = {};
+    chat_subscriptions: {[channel:string]: {[channel:string]: Boolean}} = {};
 
     constructor(props) {
         super(props);
         this.state = {
             unread_ct: 0,
-            mentioned: false
+            mentioned: false,
+            show_friend_list: false,
         };
     }
 
     componentDidMount() {
-        data.watch("chat-indicator.notify_messages", this.onMessagesWatchListUpdate);
-        //this.onMessagesWatchListUpdate(data.get("chat-indicator.notify_messages", []));
-        data.watch("chat-indicator.notify_mentions", this.onMentionsWatchListUpdate);
-        //this.onMentionsWatchListUpdate(data.get("chat-indicator.notify_mentions", []));
+        data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
     }
 
-    onMentionsWatchListUpdate = (channels: Array<string>) => {
-        // Join new chats
-        channels.forEach(channel => {
-            if (!(channel in this.channels_watch_mentions)) {
-                let channelProxy = chat_manager.join(channel);
-                channelProxy.on("unread-count-changed", this.onMentionedChanged);
-                this.channels_watch_mentions[channel] = channelProxy;
-            }
-        });
-        // remove unsubscribed chats
-        Object.keys(this.channels_watch_mentions).forEach(channel => {
-            if (channels.indexOf(channel) < 0) {
-                this.channels_watch_mentions[channel].part();
-                delete this.channels_watch_mentions[channel];
-            }
-        });
-        this.updateMentions();
-    }
-
-    onMessagesWatchListUpdate = (channels: Array<string>) => {
-        // Join new chats
-        channels.forEach(channel => {
-            if (!(channel in this.channels_watch_messages)) {
-                let channelProxy = chat_manager.join(channel);
-                channelProxy.on("unread-count-changed", this.onUnreadCountChanged);
-                this.channels_watch_messages[channel] = channelProxy;
-            }
-        });
-        // remove unsubscribed chats
-        Object.keys(this.channels_watch_messages).forEach(channel => {
-            if (channels.indexOf(channel) < 0) {
-                this.channels_watch_messages[channel].part();
-                delete this.channels_watch_messages[channel];
-            }
-        });
-        this.updateUnread();
-    }
-
-    onMentionedChanged = (obj: UnreadChanged) => {
-        if (obj.mentioned) {
-            this.setState({mentioned: true});
-        } else {
-            this.updateMentions();
+    onChatSubscriptionUpdate = (subscriptions: {[channel:string]: {[channel:string]: Boolean}}) => {
+        if (subscriptions === undefined) {
+            subscriptions = {};
         }
-    }
-
-    onUnreadCountChanged = (obj: UnreadChanged) => {
-        this.updateUnread();
-
-    }
-
-    updateUnread() {
-        let unread_ct = 0;
-        Object.keys(this.channels_watch_messages).forEach(channel => {
-            unread_ct = unread_ct + this.channels_watch_messages[channel].channel.unread_ct;
-        });
-        this.setState({unread_ct: unread_ct});
-    }
-
-    updateMentions() {
-        Object.keys(this.channels_watch_mentions).forEach(channel => {
-            if (this.channels_watch_mentions[channel].channel.mentioned) {
-                this.setState({mentioned: true});
-                return;
+        // Join new chats
+        Object.keys(subscriptions).forEach(channel => {
+            if (!(channel in this.channels) &&
+                    ("unread" in subscriptions[channel] && subscriptions[channel].unread) ||
+                    ("mentioned" in subscriptions[channel] && subscriptions[channel].mentioned)) {
+                let channelProxy = chat_manager.join(channel);
+                channelProxy.on("unread-count-changed", this.onUnreadCountChange);
+                this.channels[channel] = channelProxy;
             }
         });
-        this.setState({mentioned: false});
+        // remove unsubscribed chats
+        Object.keys(this.channels).forEach(channel => {
+            if (!(channel in subscriptions) ||
+                    !(("unread" in subscriptions[channel] && subscriptions[channel].unread) ||
+                      ("mentioned" in subscriptions[channel] && subscriptions[channel].mentioned))) {
+                this.channels[channel].part();
+                delete this.channels[channel];
+            }
+        });
+        this.chat_subscriptions = subscriptions;
+        this.updateStats();
     }
+
+    onUnreadCountChange = (obj) => {
+        this.updateStats();
+    }
+
+    updateStats() {
+        let unread_ct = 0;
+        let mentioned = false;
+        Object.keys(this.chat_subscriptions).forEach(channel => {
+            if (channel in this.channels) {
+                if ("unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread) {
+                    unread_ct = unread_ct + this.channels[channel].channel.unread_ct;
+                }
+                if ("mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned) {
+                    mentioned = mentioned || this.channels[channel].channel.mentioned;
+                }
+            }
+        });
+        this.setState({unread_ct: unread_ct,
+                       mentioned: mentioned});
+    }
+
 
     render() {
         return (
-            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))} >
+            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))}>
                 <i className="fa fa-comment"/>
                 <span className="count">{this.state.unread_ct}</span>
             </span>

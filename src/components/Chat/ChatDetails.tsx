@@ -33,15 +33,31 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     constructor(props) {
         super(props);
         let channel = this.props.chatChannelId;
-        let notify_messages:Array<string> = data.get("chat-indicator.notify_messages", []);
-        let notify_mentions:Array<string> = data.get("chat-indicator.notify_mentions", []);
         if (channel) {
             this.state = {
                 channelId: channel,
-                notify_messages: notify_messages.indexOf(channel) >= 0,
-                notify_mentions: notify_mentions.indexOf(channel) >= 0
+                notify_unread: false,
+                notify_mentioned: false
             };
         }
+    }
+
+    componentDidMount() {
+        data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionChanged);
+    }
+
+    componentWillUnmount() {
+        data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionChanged);
+    }
+
+    onChatSubscriptionChanged = (obj) => {
+        if (obj === undefined) {
+            obj = {};
+        }
+        this.setState({
+            notify_unread: this.state.channelId in obj && "unread" in obj[this.state.channelId] && obj[this.state.channelId].unread,
+            notify_mentioned: this.state.channelId in obj && "mentioned" in obj[this.state.channelId] && obj[this.state.channelId].mentioned
+        });
     }
 
     close_all_modals_and_popovers = () => {
@@ -76,25 +92,29 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 
     toggleNewMessageNotification = (ev) => {
-        let n_list: Array<string> = data.get("chat-indicator.notify_messages", []);
-        if (this.state.notify_messages) {
-            n_list.splice(n_list.indexOf(this.state.channelId), 1);
-        } else {
-            n_list.push(this.state.channelId);
+        let n_list: {[channel:string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        if (!(this.state.channelId in n_list)) {
+            n_list[this.state.channelId] = {};
         }
-        data.set("chat-indicator.notify_messages", n_list);
-        this.close_all_modals_and_popovers();
+        if (this.state.notify_unread) {
+            n_list[this.state.channelId].unread = false;
+        } else {
+            n_list[this.state.channelId].unread = true;
+        }
+        data.set("chat-indicator.chat-subscriptions", n_list);
     }
 
     toggleMentionNotification = (ev) => {
-        let n_list: Array<string> = data.get("chat-indicator.notify_mentions", []);
-        if (this.state.notify_mentions) {
-            n_list.splice(n_list.indexOf(this.state.channelId), 1);
-        } else {
-            n_list.push(this.state.channelId);
+        let n_list: {[channel:string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        if (!(this.state.channelId in n_list)) {
+            n_list[this.state.channelId] = {};
         }
-        data.set("chat-indicator.notify_mentions", n_list);
-        this.close_all_modals_and_popovers();
+        if (this.state.notify_mentioned) {
+            n_list[this.state.channelId].mentioned = false;
+        } else {
+            n_list[this.state.channelId].mentioned = true;
+        }
+        data.set("chat-indicator.chat-subscriptions", n_list);
     }
 
     render() {
@@ -122,14 +142,14 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                         </button>
                     }
                     <button
-                        className={"xs noshadow " + this.state.notify_mentions ? "active" : "inactive"}
+                        className={"xs noshadow " + this.state.notify_mentioned ? "active" : "inactive"}
                         onClick={this.toggleMentionNotification}>
-                            <i className="fa fa-comment">{this.state.notify_mentions ? _("don't notify if mentioned") : _("notify if mentioned")}</i>
+                            <i className="fa fa-comment">{this.state.notify_mentioned ? _("don't notify if mentioned") : _("notify if mentioned")}</i>
                     </button>
                     <button
-                        className={"xs noshadow " + this.state.notify_messages ? "active" : "inactive"}
+                        className={"xs noshadow " + this.state.notify_unread ? "active" : "inactive"}
                         onClick={this.toggleNewMessageNotification}>
-                            <i className="fa fa-comment">{this.state.notify_messages ? _("don't notify if there are unread messages") : _("notify if there are unread")}</i>
+                            <i className="fa fa-comment">{this.state.notify_unread ? _("don't notify if there are unread messages") : _("notify if there are unread")}</i>
                     </button>
                     <button
                         className="xs noshadow reject"
