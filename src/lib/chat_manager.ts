@@ -173,7 +173,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
         setTimeout(() => this.joining = false, 10000); /* don't notify for name matches within 10s of joining a channel */
         comm_socket.on("connect", this._rejoin);
         this._rejoin();
-        this.last_seen_timestamp = data.get("chat_manager_last_seen." + this.channel, 0);
+        let last_seen = data.get("chat-manager.last-seen", {});
+        if (channel in last_seen) {
+            this.last_seen_timestamp = last_seen[channel];
+        } else {
+            this.last_seen_timestamp = 0;
+        }
     }
 
     markAsRead() {
@@ -181,7 +186,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
         let previous_mentioned = this.mentioned;
         this.unread_ct = 0;
         this.mentioned = false;
-        data.set("chat_manager_last_seen." + this.channel, this.last_seen_timestamp);
+        let last_seen = data.get("chat-manager.last-seen", {});
+        last_seen[this.channel] = this.last_seen_timestamp;
+        data.set("chat-manager.last-seen", last_seen);
         try {
             this.emit("unread-count-changed",
                         {channel: this.channel,
