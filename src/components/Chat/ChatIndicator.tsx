@@ -28,7 +28,6 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
 
     channels_watch_mentions: {[channel:string]: ChatChannelProxy} = {};
     channels_watch_messages: {[channel:string]: ChatChannelProxy} = {};
-    mentions: Array<string> = [];
 
     constructor(props) {
         super(props);
@@ -51,26 +50,17 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
             if (!(channel in this.channels_watch_mentions)) {
                 let channelProxy = chat_manager.join(channel);
                 channelProxy.on("unread-count-changed", this.onMentionedChanged);
-                if (channelProxy.channel.mentioned) {
-                    this.mentions.push(channel);
-                    this.setState({mentioned: true});
-                }
                 this.channels_watch_mentions[channel] = channelProxy;
             }
         });
         // remove unsubscribed chats
         Object.keys(this.channels_watch_mentions).forEach(channel => {
             if (channels.indexOf(channel) < 0) {
-                if (this.channels_watch_mentions[channel].channel.mentioned) {
-                    this.mentions.splice(this.mentions.indexOf(channel), 1);
-                    this.setState({
-                        mentioned: this.mentions.length > 0
-                    });
-                }
                 this.channels_watch_mentions[channel].part();
                 delete this.channels_watch_mentions[channel];
             }
         });
+        this.updateMentions();
     }
 
     onMessagesWatchListUpdate = (channels: Array<string>) => {
@@ -79,47 +69,48 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
             if (!(channel in this.channels_watch_messages)) {
                 let channelProxy = chat_manager.join(channel);
                 channelProxy.on("unread-count-changed", this.onUnreadCountChanged);
-                this.setState({
-                    unread_ct: this.state.unread_ct + channelProxy.channel.unread_ct
-                });
                 this.channels_watch_messages[channel] = channelProxy;
             }
         });
         // remove unsubscribed chats
         Object.keys(this.channels_watch_messages).forEach(channel => {
             if (channels.indexOf(channel) < 0) {
-                this.setState({
-                    unread_ct: this.state.unread_ct - this.channels_watch_messages[channel].channel.unread_ct
-                });
                 this.channels_watch_messages[channel].part();
                 delete this.channels_watch_messages[channel];
             }
         });
+        this.updateUnread();
     }
 
     onMentionedChanged = (obj: UnreadChanged) => {
         if (obj.mentioned) {
-            if (this.mentions.indexOf(obj.channel) < 0) {
-                this.mentions.push(obj.channel);
-                this.setState({mentioned: true});
-            }
+            this.setState({mentioned: true});
         } else {
-            if (this.mentions.indexOf(obj.channel) >= 0) {
-                this.mentions.splice(this.mentions.indexOf(obj.channel), 1);
-                this.setState({mentioned: this.mentions.length > 0})
-            }
+            this.updateMentions();
         }
     }
 
     onUnreadCountChanged = (obj: UnreadChanged) => {
-        this.setState({
-            unread_ct: this.state.unread_ct + obj.unread_delta
-        });
+        this.updateUnread();
 
     }
 
-    onMessage = (obj) => {
-        this.setState({notification_count: this.state.notification_count + 1});
+    updateUnread() {
+        let unread_ct = 0;
+        Object.keys(this.channels_watch_messages).forEach(channel => {
+            unread_ct = unread_ct + this.channels_watch_messages[channel].channel.unread_ct;
+        });
+        this.setState({unread_ct: unread_ct});
+    }
+
+    updateMentions() {
+        Object.keys(this.channels_watch_mentions).forEach(channel => {
+            if (this.channels_watch_mentions[channel].channel.mentioned) {
+                this.setState({mentioned: true});
+                return;
+            }
+        });
+        this.setState({mentioned: false});
     }
 
     render() {
