@@ -45,6 +45,14 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
     }
 
+    componentWillUnmount() {
+        data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
+        Object.keys(this.channels).forEach(channel => {
+            this.channels[channel].part();
+            delete this.channels[channel];
+        });
+    }
+
     onChatSubscriptionUpdate = (subscriptions: {[channel:string]: {[channel:string]: Boolean}}) => {
         if (subscriptions === undefined) {
             subscriptions = {};
@@ -93,12 +101,24 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                        mentioned: mentioned});
     }
 
+    toggleFriendList = () => {
+        this.setState({
+            show_friend_list: !this.state.show_friend_list
+        });
+    }
 
     render() {
         return (
-            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))}>
+            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))}  onClick={this.toggleFriendList} >
                 <i className="fa fa-comment"/>
                 <span className="count">{this.state.unread_ct}</span>
+                {(this.state.show_friend_list || null) &&
+                    <div>
+                        <KBShortcut shortcut="escape" action={this.toggleFriendList}/>
+                        <div className='FriendListBackdrop' onClick={this.toggleFriendList} />
+                        <ChatList show_subscribed_notifications/>
+                    </div>
+                }
             </span>
             );
     }

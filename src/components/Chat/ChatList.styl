@@ -1,0 +1,257 @@
+/*
+ * Copyright (C) 2012-2020  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.ChatList {
+    display: flex;
+    flex-direction: column;
+    height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
+    overflow-y: auto;
+    width: channel-width;
+
+    .channel-container {
+        flex-basis: channel-width;
+        flex-shrink: 1;
+        flex-grow: 1;
+        width: channel-width;
+
+        border-right: 1px solid transparent;
+        themed border-right-color shade3
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+    }
+    .channels {
+        flex-grow: 0;
+        flex-shrink: 0;
+        overflow-x: hidden;
+
+        .channel-header {
+            margin-top: 1.0rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: font-size-smaller;
+            margin-bottom: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-content: center;
+
+            .channel-expand-toggle {
+                padding: 0.2rem;
+                padding-right: 0.5rem;
+                cursor: pointer;
+
+            }
+        }
+        .channel-header:first-child {
+            margin-top: 0;
+        }
+
+        .channel {
+            padding-left: 0.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            &.active {
+                themed background-color primary
+                themed color colored-background-fg
+            }
+            &.unjoined {
+                themed color shade2
+            }
+            &.unread {
+                themed color primary
+            }
+            &.mentioned {
+                themed color chat-mentions
+            }
+        }
+
+        .channel-name {
+            flex-shrink: 1;
+            flex-grow: 1;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .unread-count {
+            flex-shrink: 0;
+            @extend .monospace
+            font-size: 0.8rem;
+            font-style: normal !important;
+            float: right;
+            padding-left: 0.5rem;
+            padding-top: 0.10rem;
+
+            &:before {
+                content: attr(data-count);
+            }
+        }
+        .channel:hover .unread-count:before {
+            cursor: pointer;
+            content: attr(data-menu);
+            border: 1px solid transparent
+            border-radius: 0.2rem;
+            themed background-color shade4
+            themed border-color shade3
+            padding-left: 0.3rem;
+            padding-right: 0.3rem;
+            themed color fg
+        }
+        .channel:hover .unread-count:hover:before {
+            themed background-color shade5
+            themed border-color shade4
+            themed color fg
+        }
+    }
+    .channels.hide-unjoined {
+        .unjoined {
+            display: none;
+        }
+    }
+    .seekgraph-container {
+        height: channel-utils-height;
+        .SeekGraph {
+            width: channel-width;
+            height: 8rem;
+        }
+    }
+    .channel-buttons {
+        display: flex;
+        //justify-content: space-between;
+    }
+
+    .users {
+        flex-basis: 12rem;
+        flex-shrink: 0;
+        flex-grow: 0;
+        overflow-y: auto;
+        user-select: none;
+
+        .user-header {
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: font-size-smaller;
+            margin-bottom: 0.2rem;
+            cursor: pointer;
+            .fa-sort-numeric-asc, .fa-sort-alpha-asc  {
+                margin-left: 0.2rem;
+                width: 0.8rem;
+            }
+        }
+
+    }
+    .Player {
+        themed color fg
+    }
+    .center-container {
+        flex-basis: 100%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid transparent;
+        themed border-right-color shade3
+
+        .chat-log {
+            flex-basis: 100%;
+            flex-grow: 1;
+            flex-shrink: 1;
+            max-width: "calc(100vw - %s * 2)" % channel-width;
+            border-bottom: 1px solid transparent;
+            themed border-bottom-color shade3
+            .Player {
+                themed color fg
+            }
+        }
+
+        input {
+            width: 100%;
+            border: none;
+            font-size: 1.0rem;
+            line-height: 1.5rem;
+            padding: 0.2rem;
+        }
+    }
+
+
+    .timestamp {
+        @extend .monospace
+        font-size: 0.8rem;
+        font-style: normal !important;
+    }
+
+    .third-person {
+        font-style: italic;
+    }
+
+    .mentions .body {
+        themed color chat-mentions
+        //font-weight: bold;
+    }
+    /body.light .mentions .body {
+        font-weight: bold;
+    }
+    .self .body {
+        themed color chat-self-message
+    }
+
+    .icon {
+        width: 15px;
+        height: 15px;
+    }
+
+    .system {
+        themed color chat-system
+        padding-left: 1rem;
+        border-top: 1px solid transparent;
+        themed border-top-color chat-system
+        padding-top: 0.5rem
+        padding-bottom: 0.5rem
+        margin-top: 0.5rem
+    }
+
+    .Player {
+        font-weight: bold;
+    }
+
+
+    .input-container {
+        display: flex;
+        align-items: center;
+        button {
+            margin: 0;
+            padding-bottom: 0;
+            padding-top: 0;
+            font-size: 0.85rem;
+        }
+        input {
+            flex: 1;
+            overflow: hidden;
+        }
+        .channel-toggle {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .users-toggle {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+}
