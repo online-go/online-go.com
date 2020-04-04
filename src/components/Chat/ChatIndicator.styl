@@ -17,18 +17,25 @@
 
 
 .ChatIndicator {
-    display: inline-flex;
-    flex-direction: column;
-    padding-right: 0.5rem;
-    padding-left: 0.5rem;
+    display: flex;
     align-items: center;
-    margin-bottom: -3px;
-    margin-top: 1px;
     cursor: pointer;
+    align-self: baseline;
+    font-size: 12pf;
 
+    .navbar-icon {
+        display: inline-flex;
+        flex-direction: column;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        align-items: center;
+        margin-bottom: -3px;
+        margin-top: 1px;
+        cursor: pointer;
+        width: max-content;
+    }
     .fa-comment {
         themed color shade3;
-        font-size: 0.9rem;
     }
     .count {
         font-size: font-size-smaller;

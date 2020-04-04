@@ -101,7 +101,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                        mentioned: mentioned});
     }
 
-    toggleFriendList = () => {
+    toggleChatList = () => {
         this.setState({
             show_friend_list: !this.state.show_friend_list
         });
@@ -109,14 +109,15 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
 
     render() {
         return (
-            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))}  onClick={this.toggleFriendList} >
-                <i className="fa fa-comment"/>
-                <span className="count">{this.state.unread_ct}</span>
+            <span className={"ChatIndicator " + (this.state.mentioned ? "mentioned " : (this.state.unread_ct > 0 ? "unread" : ""))}>
+                <span className={"navbar-icon"} onClick={this.toggleChatList} >
+                    <i className="fa fa-comment" />
+                    <span className="count" >{this.state.unread_ct} </span>
+                </span>
                 {(this.state.show_friend_list || null) &&
                     <div>
-                        <KBShortcut shortcut="escape" action={this.toggleFriendList}/>
-                        <div className='FriendListBackdrop' onClick={this.toggleFriendList} />
-                        <ChatList show_subscribed_notifications/>
+                        <KBShortcut shortcut="escape" action={this.toggleChatList}/>
+                        <ChatList show_subscribed_notifications closing_toggle={this.toggleChatList}/>
                     </div>
                 }
             </span>

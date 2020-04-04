@@ -24,6 +24,7 @@ import { Flag } from "Flag";
 import { setActiveChannel } from "Chat";
 import { shouldOpenNewTab } from "misc";
 import {browserHistory} from "ogsHistory";
+import * as preferences from "preferences";
 
 
 interface ChatListProperties {
@@ -32,13 +33,19 @@ interface ChatListProperties {
     show_subscribed_notifications?: boolean;
     join_subscriptions?: boolean;
     join_joined?: boolean;
+    closing_toggle?: () => void;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, any> {
     channels: {[channel:string]: ChatChannelProxy} = {};
     chat_subscriptions: {[channel:string]: {[subscription:string]: Boolean}} = {};
+    closing_toggle: () => void = () => null;
+
     constructor(props) {
         super(props);
+        if (props.closing_toggle) {
+            this.closing_toggle = props.closing_toggle;
+        }
         this.state = {
             show_all: props.show_all,
             show_read: props.show_read,
@@ -48,6 +55,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
             global_channels: [],
             group_channels: [],
             tournament_channels: [],
+            show_all_group_channels: props.show_all || preferences.get("chat.show-all-group-channels"),
+            show_all_tournament_channels: props.show_all || preferences.get("chat.show-all-tournament-channels"),
+            show_all_global_channels: props.show_all || preferences.get("chat.show-all-global-channels"),
         };
     }
 
@@ -150,6 +160,20 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                 browserHistory.push("/chat");
             }
         }
+        this.closing_toggle();
+    }
+
+    toggleShowAllGlobalChannels = () => {
+        preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels),
+        this.setState({show_all_global_channels: !this.state.show_all_global_channels});
+    }
+    toggleShowAllGroupChannels = () => {
+        preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels),
+        this.setState({show_all_group_channels: !this.state.show_all_group_channels});
+    }
+    toggleShowAllTournamentChannels = () => {
+        preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels),
+        this.setState({show_all_tournament_channels: !this.state.show_all_tournament_channels});
     }
 
     render() {
@@ -180,7 +204,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                     {(this.state.group_channels.length > 0 || null) && (
                         <div className="channel-header">
                             <span>{_("Group Channels")}</span>
-                            <i className={"channel-expand-toggle " + (this.state.show_all_group_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                            <i onClick={this.toggleShowAllGroupChannels} className={"channel-expand-toggle " + (this.state.show_all_group_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                         </div>
                     ) }
                     {this.state.group_channels.map((chan) => (
@@ -204,7 +228,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                     {(this.state.tournament_channels.length > 0 || null) && (
                         <div className="channel-header">
                             <span>{_("Tournament Channels")}</span>
-                            <i className={"channel-expand-toggle " + (this.state.show_all_tournament_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                            <i onClick={this.toggleShowAllTournamentChannels} className={"channel-expand-toggle " + (this.state.show_all_tournament_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                         </div>
                     )}
                     {this.state.tournament_channels.map((chan) => (
@@ -227,7 +251,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                 <div className={"channels" + (!this.state.show_all_global_channels ? " hide-unjoined" : "")}>
                     <div className="channel-header">
                         <span>{_("Global Channels")}</span>
-                        <i className={"channel-expand-toggle " + (this.state.show_all_global_channels ?  "fa fa-minus" : "fa fa-plus")}/>
+                        <i onClick={this.toggleShowAllGlobalChannels} className={"channel-expand-toggle " + (this.state.show_all_global_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                     </div>
                     {this.state.global_channels.map((chan) => (
                         <div key={chan.id}
