@@ -21,6 +21,9 @@ import { group_channels, tournament_channels, global_channels, ChatChannelProxy,
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { Flag } from "Flag";
+import { setActiveChannel } from "Chat";
+import { shouldOpenNewTab } from "misc";
+import {browserHistory} from "ogsHistory";
 
 
 interface ChatListProperties {
@@ -135,7 +138,18 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
             tournament_channels: tournaments,
             group_channels: groups
         });
-        console.warn(globals);
+    }
+
+    goToChannel = (ev) => {
+        setActiveChannel($(ev.target).attr("data-channel"));
+        if (ev && shouldOpenNewTab(ev)) {
+            window.open("/chat");
+        } else {
+            //window.open("/game/" + board_ids[idx]);
+            if (window.location.pathname !== "/chat") {
+                browserHistory.push("/chat");
+            }
+        }
     }
 
     render() {
@@ -175,6 +189,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                                 (this.state.active_channel === ("group-" + chan.id) ? "channel active" : "channel")
                                 + chan_class("group-" + chan.id)
                             }
+                            data-channel={"group-" + chan.id}
+                            onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={"group-" + chan.id}>
                                 <img className="icon" src={chan.icon}/> {chan.name}
@@ -197,6 +213,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                                 (this.state.active_channel === ("tournament-" + chan.id) ? "channel active" : "channel")
                                 + chan_class("tournament-" + chan.id)
                             }
+                            data-channel={"tournaments-" + chan.id}
+                            onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={"tournament-" + chan.id} >
                                 <i className="fa fa-trophy" /> {chan.name}
@@ -217,6 +235,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                                 (this.state.active_channel === chan.id ? "channel active" : "channel")
                                 + chan_class(chan.id)
                             }
+                            data-channel={chan.id}
+                            onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={chan.id}>
                                 <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
