@@ -35,6 +35,7 @@ import * as moment from "moment";
 import {popover} from "popover";
 import {ChatDetails} from './ChatDetails';
 import {shouldOpenNewTab} from 'misc';
+import { active } from "d3";
 
 
 declare let swal;
@@ -123,6 +124,7 @@ interface ChatState {
     user_list: {[player_id:string]: ChatUser};
     joined_channels: Array<string>;
     active_channel: string;
+    lock_active_channel: boolean;
     show_all_global_channels: boolean;
     show_all_group_channels: boolean;
     show_all_tournament_channels: boolean;
@@ -132,6 +134,15 @@ interface ChatState {
     show_say_hi_placeholder: boolean;
     rtl_mode: boolean;
 }
+
+
+export function setActiveChannel(channel: string) {
+    if (!channel) {
+        throw new Error(`Invalid channel ID: ${channel}`);
+    }
+    data.set("chat.active_channel", channel);
+}
+
 
 export class Chat extends React.Component<ChatProperties, ChatState> {
     refs: {
@@ -162,6 +173,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             user_list: {},
             joined_channels: this.props.channel ? [this.props.channel] : data.get("chat.joined"),
             active_channel: this.props.channel ? this.props.channel : data.get("chat.active_channel", "global-english"),
+            lock_active_channel: "channel" in this.props,
             show_all_global_channels: preferences.get("chat.show-all-global-channels"),
             show_all_group_channels: preferences.get("chat.show-all-group-channels"),
             show_all_tournament_channels: preferences.get("chat.show-all-tournament-channels"),
@@ -196,6 +208,8 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
         this.setActiveChannel(this.state.active_channel);
 
+        data.watch("chat.active_channel", this.onActiveChannelChanged, false, false);
+
         this.seekgraph = new SeekGraph({
             canvas: this.seekgraph_canvas,
             show_live_games: true,
@@ -220,6 +234,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.autoscroll();
     }
     componentWillUnmount() {
+        data.unwatch("chat.active_channel", this.onActiveChannelChanged);
         let joined = data.get("chat.joined");
         for (let channel in joined) {
             this.part(channel, true, true);
@@ -392,14 +407,14 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         if (!(channel in data.get("chat.joined"))) {
             this.join(channel);
         }
-        if (!this.props.channel) {
-            data.set("chat.active_channel", channel);
-        }
         state_update.user_list = chan.user_list;
         state_update.chat_log = chan.chat_log;
         state_update.rtl_mode = chan.rtl_mode;
         this.scrolled_to_bottom = true;
         this.setState(state_update);
+        if (!this.props.channel) {
+            data.set("chat.active_channel", channel);
+        }
 
         if (!(channel in data.get("chat.joined"))) {
             this.join(channel);
@@ -416,6 +431,17 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         this.should_scroll_chatlog = true;
         this.scrollChats();
         */
+    }
+    onActiveChannelChanged = (active_channel: string) => {
+        if (this.state.active_channel === active_channel) {
+            // channel is already active channel
+            return;
+        }
+        if (this.state.lock_active_channel) {
+            // don't change active channel
+            return;
+        }
+        this.setActiveChannel(active_channel);
     }
     sortedUserList(): Array<any> {
         let lst = [];
