@@ -147,8 +147,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                 return "";
             }
             return (this.channels[chan].channel.unread_ct > 0 ? " unread" : "") +
-                (this.channels[chan].channel.mentioned ? " mentioned" : "");
-//                (chan in this.state.joined_channels ? " joined" : " unjoined")+
+                   (this.channels[chan].channel.mentioned ? " mentioned" : "");
         };
 
         let user_count = (channel: string) => {
@@ -159,16 +158,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
             if (c.unread_ct > 0) {
                 return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} />;
             }
-            /*
-            if (c.user_count) {
-                return <span className='user-count' data-count={c.user_count} data-leave={_("leave")} onClick={this.part.bind(this, channel, false, false)} />;
-            }
-            */
             return null;
         };
-
-//        let showChannels = !!this.props.showChannels;
-//        let showUserList = !!this.props.showUserList;
         return (
             <div className="ChatList">
                 <div className={"channels" + (!this.state.show_all_group_channels ? " hide-unjoined" : "")}>
