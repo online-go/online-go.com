@@ -39,6 +39,7 @@ interface ChatListProperties {
 export class ChatList extends React.PureComponent<ChatListProperties, any> {
     channels: {[channel:string]: ChatChannelProxy} = {};
     chat_subscriptions: {[channel:string]: {[subscription:string]: Boolean}} = {};
+    joined_chats = {};
     closing_toggle: () => void = () => null;
 
     constructor(props) {
@@ -63,91 +64,77 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
 
     componentDidMount() {
         data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
+        data.watch("chat.joined", this.onJoinedChanged);
     }
 
     componentWillUnmount() {
         data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
+        data.unwatch("chat.joined", this.onJoinedChanged);
         Object.keys(this.channels).forEach(channel => {
             this.channels[channel].part();
             delete this.channels[channel];
         });
     }
 
+    onJoinedChanged = (joined: {[channel:string]: number}) => {
+        if (joined === undefined) {
+            joined = {};
+        }
+        this.joined_chats = joined;
+        this.updateConnectedChannels();
+    }
+
     onChatSubscriptionUpdate = (subscriptions: {[channel:string]: {[channel:string]: Boolean}}) => {
         if (subscriptions === undefined) {
             subscriptions = {};
         }
-        // Join new chats
-        Object.keys(subscriptions).forEach(channel => {
-            if (!(channel in this.channels) &&
-                    ("unread" in subscriptions[channel] && subscriptions[channel].unread) ||
-                    ("mentioned" in subscriptions[channel] && subscriptions[channel].mentioned)) {
-                let channelProxy = chat_manager.join(channel);
-                channelProxy.on("unread-count-changed", this.onUnreadCountChange);
-                this.channels[channel] = channelProxy;
-            }
-        });
-        // remove unsubscribed chats
-        Object.keys(this.channels).forEach(channel => {
-            if (!(channel in subscriptions) ||
-                    !(("unread" in subscriptions[channel] && subscriptions[channel].unread) ||
-                      ("mentioned" in subscriptions[channel] && subscriptions[channel].mentioned))) {
-                this.channels[channel].part();
-                delete this.channels[channel];
-            }
-        });
         this.chat_subscriptions = subscriptions;
-        this.updateChannelLists();
+        this.updateConnectedChannels();
+    }
+
+    _join(channel:string) {
+        if (this.state.join_subscriptions &&
+            channel in this.chat_subscriptions &&
+            (("unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread) ||
+             ("mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned))) {
+                if (!(channel in this.channels)) {
+                    let channelProxy = chat_manager.join(channel);
+                    channelProxy.on("unread-count-changed", this.onUnreadCountChange);
+                    this.channels[channel] = channelProxy;
+                }
+                return;
+        }
+        if (this.state.join_joined &&
+            channel in this.joined_chats &&
+            this.joined_chats[channel]) {
+                if (!(channel in this.channels)) {
+                    let channelProxy = chat_manager.join(channel);
+                    channelProxy.on("unread-count-changed", this.onUnreadCountChange);
+                    this.channels[channel] = channelProxy;
+                }
+                return;
+        }
+        if (channel in this.channels) {
+            this.channels[channel].part();
+            delete this.channels[channel];
+        }
+    }
+
+    updateConnectedChannels() {
+        for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
+            this._join(global_channels[idx].id);
+        }
+        for (let idx = 0; idx < tournament_channels.length; idx = idx + 1) {
+            this._join("tournament-" + tournament_channels[idx].id);
+        }
+        for (let idx = 0; idx < group_channels.length; idx = idx + 1) {
+            this._join("group-" + group_channels[idx].id);
+        }
+        this.forceUpdate();
     }
 
     onUnreadCountChange = (obj) => {
-        this.updateChannelLists();
-    }
-
-    updateChannelLists() {
-        let showChannel = (channel: string) => {
-            if (this.state.show_all) {
-                return true;
-            }
-            if (channel in this.channels) {
-                if (this.state.show_read) {
-                    return true;
-                }
-                if (this.state.show_subscribed_notifications) {
-                    if ("unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread && this.channels[channel].channel.unread_ct > 0) {
-                        return true;
-                    }
-                    if ("mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned && this.channels[channel].channel.mentioned) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
-        // global-channels
-        let globals = [];
-        let tournaments = [];
-        let groups = [];
-        for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
-            if (showChannel(global_channels[idx].id)) {
-                globals.push(global_channels[idx]);
-            }
-        }
-        for (let idx = 0; idx < tournament_channels.length; idx = idx + 1) {
-            if (showChannel("tournament-" + tournament_channels[idx].id)) {
-                tournaments.push(tournament_channels[idx]);
-            }
-        }
-        for (let idx = 0; idx < group_channels.length; idx = idx + 1) {
-            if (showChannel("group-" + group_channels[idx].id)) {
-                groups.push(group_channels[idx]);
-            }
-        }
-        this.setState({
-            global_channels: globals,
-            tournament_channels: tournaments,
-            group_channels: groups
-        });
+        this.forceUpdate();
     }
 
     goToChannel = (ev) => {
@@ -164,15 +151,21 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
     }
 
     toggleShowAllGlobalChannels = () => {
-        preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels),
+        if (this.state.show_all) {
+            preferences.set("chat.show-all-global-channels", !this.state.show_all_global_channels);
+        }
         this.setState({show_all_global_channels: !this.state.show_all_global_channels});
     }
     toggleShowAllGroupChannels = () => {
-        preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels),
+        if (this.state.show_all) {
+            preferences.set("chat.show-all-group-channels", !this.state.show_all_group_channels);
+        }
         this.setState({show_all_group_channels: !this.state.show_all_group_channels});
     }
     toggleShowAllTournamentChannels = () => {
-        preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels),
+        if (this.state.show_all) {
+            preferences.set("chat.show-all-tournament-channels", !this.state.show_all_tournament_channels);
+        }
         this.setState({show_all_tournament_channels: !this.state.show_all_tournament_channels});
     }
 
@@ -180,15 +173,23 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
         let user = data.get('user');
         let user_country = user.country || 'un';
 
-        let chan_class = (chan: string): string => {
-            if (!(chan in this.channels)) {
-                return "";
+        let chan_class = (channel: string) => {
+            let chan_class = "";
+            if (!(channel in this.joined_chats && this.joined_chats[channel])) {
+                chan_class = chan_class + " unjoined";
             }
-            return (this.channels[chan].channel.unread_ct > 0 ? " unread" : "") +
-                   (this.channels[chan].channel.mentioned ? " mentioned" : "");
+            if (channel in this.channels) {
+                if (channel in this.chat_subscriptions && "unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread && this.channels[channel].channel.unread_ct > 0) {
+                    chan_class = chan_class + " unread";
+                }
+                if (channel in this.chat_subscriptions && "mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned && this.channels[channel].channel.mentioned) {
+                    chan_class = chan_class + " mentioned";
+                }
+            }
+            return chan_class;
         };
 
-        let user_count = (channel: string) => {
+        let message_count = (channel: string) => {
             if (!(channel in this.channels)) {
                 return null;
             }
@@ -201,13 +202,13 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
         return (
             <div className="ChatList">
                 <div className={"channels" + (!this.state.show_all_group_channels ? " hide-unjoined" : "")}>
-                    {(this.state.group_channels.length > 0 || null) && (
+                    {(group_channels.length > 0 || null) && (
                         <div className="channel-header">
                             <span>{_("Group Channels")}</span>
                             <i onClick={this.toggleShowAllGroupChannels} className={"channel-expand-toggle " + (this.state.show_all_group_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                         </div>
                     ) }
-                    {this.state.group_channels.map((chan) => (
+                    {group_channels.map((chan) => (
                         <div key={chan.id}
                             className={
                                 (this.state.active_channel === ("group-" + chan.id) ? "channel active" : "channel")
@@ -219,19 +220,19 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                             <span className="channel-name" data-channel={"group-" + chan.id}>
                                 <img className="icon" src={chan.icon}/> {chan.name}
                             </span>
-                            {user_count("group-" + chan.id)}
+                            {message_count("group-" + chan.id)}
                         </div>
                     ))}
                 </div>
 
                 <div className={"channels" + (!this.state.show_all_tournament_channels ? " hide-unjoined" : "")}>
-                    {(this.state.tournament_channels.length > 0 || null) && (
+                    {(tournament_channels.length > 0 || null) && (
                         <div className="channel-header">
                             <span>{_("Tournament Channels")}</span>
                             <i onClick={this.toggleShowAllTournamentChannels} className={"channel-expand-toggle " + (this.state.show_all_tournament_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                         </div>
                     )}
-                    {this.state.tournament_channels.map((chan) => (
+                    {tournament_channels.map((chan) => (
                         <div key={chan.id}
                             className={
                                 (this.state.active_channel === ("tournament-" + chan.id) ? "channel active" : "channel")
@@ -243,7 +244,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                             <span className="channel-name" data-channel={"tournament-" + chan.id} >
                                 <i className="fa fa-trophy" /> {chan.name}
                             </span>
-                            {user_count("tournament-" + chan.id)}
+                            {message_count("tournament-" + chan.id)}
                         </div>
                     ))}
                 </div>
@@ -253,7 +254,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                         <span>{_("Global Channels")}</span>
                         <i onClick={this.toggleShowAllGlobalChannels} className={"channel-expand-toggle " + (this.state.show_all_global_channels ?  "fa fa-minus" : "fa fa-plus")}/>
                     </div>
-                    {this.state.global_channels.map((chan) => (
+                    {global_channels.map((chan) => (
                         <div key={chan.id}
                             className={
                                 (this.state.active_channel === chan.id ? "channel active" : "channel")
@@ -265,7 +266,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
                             <span className="channel-name" data-channel={chan.id}>
                                 <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
                             </span>
-                            {user_count(chan.id)}
+                            {message_count(chan.id)}
                         </div>
                     ))}
                 </div>
