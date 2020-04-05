@@ -33,10 +33,24 @@ interface ChatListProperties {
     show_subscribed_notifications?: boolean;
     join_subscriptions?: boolean;
     join_joined?: boolean;
+    highlight_active_channel?: boolean;
     closing_toggle?: () => void;
 }
 
-export class ChatList extends React.PureComponent<ChatListProperties, any> {
+interface ChatListState {
+    show_all: boolean;
+    show_read: boolean;
+    show_subscribed_notifications: boolean;
+    join_subscriptions: boolean;
+    join_joined: boolean;
+    show_all_group_channels: boolean;
+    show_all_tournament_channels: boolean;
+    show_all_global_channels: boolean;
+    highlight_active_channel: boolean;
+    active_channel: string;
+}
+
+export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
     channels: {[channel:string]: ChatChannelProxy} = {};
     chat_subscriptions: {[channel:string]: {[subscription:string]: Boolean}} = {};
     joined_chats = {};
@@ -53,26 +67,33 @@ export class ChatList extends React.PureComponent<ChatListProperties, any> {
             show_subscribed_notifications: props.show_subscribed_notifications,
             join_subscriptions: props.join_subscriptions,
             join_joined: props.join_joined,
-            global_channels: [],
-            group_channels: [],
-            tournament_channels: [],
             show_all_group_channels: props.show_all || preferences.get("chat.show-all-group-channels"),
             show_all_tournament_channels: props.show_all || preferences.get("chat.show-all-tournament-channels"),
             show_all_global_channels: props.show_all || preferences.get("chat.show-all-global-channels"),
+            highlight_active_channel: props.highlight_active_channel,
+            active_channel: data.get("chat.active_channel", ""),
         };
     }
 
     componentDidMount() {
+        data.watch("chat.active_channel", this.onActiveChannelChanged);
         data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
         data.watch("chat.joined", this.onJoinedChanged);
     }
 
     componentWillUnmount() {
+        data.unwatch("chat.active_channel", this.onActiveChannelChanged);
         data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
         data.unwatch("chat.joined", this.onJoinedChanged);
         Object.keys(this.channels).forEach(channel => {
             this.channels[channel].part();
             delete this.channels[channel];
+        });
+    }
+
+    onActiveChannelChanged = (channel) => {
+        this.setState({
+            active_channel: channel,
         });
     }
 
