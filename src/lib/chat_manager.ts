@@ -24,6 +24,7 @@ import {bounded_rank} from 'rank_utils';
 import cached from 'cached';
 import { ActiveTournamentList, GroupList } from 'types';
 import {_, interpolate} from "translate";
+import { shadowban } from "src/views/Moderator";
 
 interface Events {
     "chat": any;
@@ -87,6 +88,9 @@ data.watch("config.ogs", (settings) => {
 
 
 export function resolveChannelDisplayName(channel: string): string {
+    if (channel === "shadowban") {
+        return global_channels[channel];
+    }
     if (channel.startsWith("global-")) {
         global_channels.forEach(element => {
             if (channel === element.id) {
