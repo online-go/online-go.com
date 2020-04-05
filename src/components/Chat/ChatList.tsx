@@ -26,7 +26,7 @@ import { shouldOpenNewTab } from "misc";
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
 import {popover} from "popover";
-import { ChatDetails } from "Chat";
+import { ChatDetails, getUnreadChatPreference, getMentionedChatPreference, watchChatSubscriptionChanged, unwatchChatSubscriptionChanged } from "Chat";
 
 
 interface ChatListProperties {
@@ -62,7 +62,6 @@ interface ChatListState {
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
     channels: {[channel:string]: ChatChannelProxy} = {};
-    chat_subscriptions: {[channel:string]: {[subscription:string]: Boolean}} = {};
     joined_chats = {};
     closing_toggle: () => void = () => null;
 
@@ -93,15 +92,16 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             data.watch(this.state.collapse_state_store_name, this.onCollapseStoreChanged);
         }
         data.watch("chat.active_channel", this.onActiveChannelChanged);
-        data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
         data.watch("chat.joined", this.onJoinedChanged);
+        watchChatSubscriptionChanged(this.onChatSubscriptionUpdate);
+
     }
 
     componentWillUnmount() {
         data.unwatch(this.state.collapse_state_store_name, this.onCollapseStoreChanged);
         data.unwatch("chat.active_channel", this.onActiveChannelChanged);
-        data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionUpdate);
         data.unwatch("chat.joined", this.onJoinedChanged);
+        unwatchChatSubscriptionChanged(this.onChatSubscriptionUpdate);
         Object.keys(this.channels).forEach(channel => {
             this.channels[channel].part();
             delete this.channels[channel];
@@ -135,19 +135,14 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.updateConnectedChannels();
     }
 
-    onChatSubscriptionUpdate = (subscriptions: {[channel:string]: {[channel:string]: Boolean}}) => {
-        if (subscriptions === undefined) {
-            subscriptions = {};
-        }
-        this.chat_subscriptions = subscriptions;
+    onChatSubscriptionUpdate = (obj) => {
         this.updateConnectedChannels();
     }
 
-    _join(channel:string) {
+    _join_or_part(channel:string) {
         if (this.state.join_subscriptions &&
-            channel in this.chat_subscriptions &&
-            (("unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread) ||
-             ("mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned))) {
+            (getUnreadChatPreference(channel) ||
+             getMentionedChatPreference(channel))) {
                 if (!(channel in this.channels)) {
                     let channelProxy = chat_manager.join(channel);
                     channelProxy.on("unread-count-changed", this.onUnreadCountChange);
@@ -173,13 +168,13 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
 
     updateConnectedChannels() {
         for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
-            this._join(global_channels[idx].id);
+            this._join_or_part(global_channels[idx].id);
         }
         for (let idx = 0; idx < tournament_channels.length; idx = idx + 1) {
-            this._join("tournament-" + tournament_channels[idx].id);
+            this._join_or_part("tournament-" + tournament_channels[idx].id);
         }
         for (let idx = 0; idx < group_channels.length; idx = idx + 1) {
-            this._join("group-" + group_channels[idx].id);
+            this._join_or_part("group-" + group_channels[idx].id);
         }
         this.forceUpdate();
     }
@@ -266,11 +261,11 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             }
             if (channel in this.channels) {
                 chan_class = chan_class + " chat-subscribed";
-                if (channel in this.chat_subscriptions && "unread" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].unread && this.channels[channel].channel.unread_ct > 0) {
+                if (getUnreadChatPreference(channel) && this.channels[channel].channel.unread_ct > 0) {
                     chan_class = chan_class + " unread";
                     unread = true;
                 }
-                if (channel in this.chat_subscriptions && "mentioned" in this.chat_subscriptions[channel] && this.chat_subscriptions[channel].mentioned && this.channels[channel].channel.mentioned) {
+                if (getMentionedChatPreference(channel) && this.channels[channel].channel.mentioned) {
                     chan_class = chan_class + " mentioned";
                     unread = true;
                 }

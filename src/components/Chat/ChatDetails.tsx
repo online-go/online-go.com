@@ -22,6 +22,7 @@ import {shouldOpenNewTab} from "misc";
 import {close_all_popovers} from "popover";
 import {close_friend_list} from "FriendList/FriendIndicator";
 import * as data from "data";
+import { getUnreadChatPreference, getMentionedChatPreference, watchChatSubscriptionChanged, unwatchChatSubscriptionChanged } from "Chat";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
@@ -43,20 +44,17 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     }
 
     componentDidMount() {
-        data.watch("chat-indicator.chat-subscriptions", this.onChatSubscriptionChanged);
+        watchChatSubscriptionChanged(this.onChatSubscriptionChanged);
     }
 
     componentWillUnmount() {
-        data.unwatch("chat-indicator.chat-subscriptions", this.onChatSubscriptionChanged);
+        unwatchChatSubscriptionChanged(this.onChatSubscriptionChanged);
     }
 
     onChatSubscriptionChanged = (obj) => {
-        if (obj === undefined) {
-            obj = {};
-        }
         this.setState({
-            notify_unread: this.state.channelId in obj && "unread" in obj[this.state.channelId] && obj[this.state.channelId].unread,
-            notify_mentioned: this.state.channelId in obj && "mentioned" in obj[this.state.channelId] && obj[this.state.channelId].mentioned
+            notify_unread: getUnreadChatPreference(this.state.channelId),
+            notify_mentioned: getMentionedChatPreference(this.state.channelId)
         });
     }
 

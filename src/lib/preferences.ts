@@ -89,6 +89,13 @@ let defaults = {
     "translation-dialog-never-show": false,
     "unicode-filter": false,
     "variations-in-chat-enabled": true,
+
+    "show-empty-chat-notification": true,
+    "chat-subscribe-group-chat-unread": true,
+    "chat-subscribe-group-mentions": true,
+    "chat-subscribe-tournament-chat-unread": true,
+    "chat-subscribe-tournament-mentions": true,
+
 };
 
 defaults['profanity-filter'][current_language] = true;
