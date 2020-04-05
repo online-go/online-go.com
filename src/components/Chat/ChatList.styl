@@ -80,6 +80,21 @@
                 themed color chat-mentions
             }
         }
+        &.hide-unjoined {
+            .unjoined {
+                display: none;
+            }
+        }
+        &.hide-read {
+            .read {
+                display: none;
+            }
+        }
+        &.hide-unscubscribed {
+            .chat-unscubscribed {
+                display: none;
+            }
+        }
 
         .channel-name {
             flex-shrink: 1;
@@ -119,8 +134,18 @@
             themed color fg
         }
     }
-    .channels.hide-unjoined {
+    &.hide-unjoined {
         .unjoined {
+            display: none;
+        }
+    }
+    &.hide-read {
+        .read {
+            display: none;
+        }
+    }
+    &.hide-unscubscribed {
+        .chat-unscubscribed {
             display: none;
         }
     }

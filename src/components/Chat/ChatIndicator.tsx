@@ -117,7 +117,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                 {(this.state.show_friend_list || null) &&
                     <div>
                         <KBShortcut shortcut="escape" action={this.toggleChatList}/>
-                        <ChatList show_subscribed_notifications closing_toggle={this.toggleChatList}/>
+                        <ChatList join_subscriptions show_read collapse_read collapse_unjoined collapse_unsubscribed_chat collapse_state_store_name="chat-indicator.collapse-chat-group" closing_toggle={this.toggleChatList}/>
                     </div>
                 }
             </span>
