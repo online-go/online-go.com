@@ -25,6 +25,8 @@ import { setActiveChannel } from "Chat";
 import { shouldOpenNewTab } from "misc";
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
+import {popover} from "popover";
+import { ChatDetails } from "Chat";
 
 
 interface ChatListProperties {
@@ -39,6 +41,7 @@ interface ChatListProperties {
     highlight_active_channel?: boolean;
     closing_toggle?: () => void;
     collapse_state_store_name?: string;
+    fakelink?: boolean;
 }
 
 interface ChatListState {
@@ -54,6 +57,7 @@ interface ChatListState {
     collapse_state_store_name: string;
     highlight_active_channel: boolean;
     active_channel: string;
+    fakelink: boolean;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
@@ -80,6 +84,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             collapse_state_store_name: props.collapse_state_store_name,
             highlight_active_channel: props.highlight_active_channel,
             active_channel: data.get("chat.active_channel", ""),
+            fakelink: props.fakelink,
         };
     }
 
@@ -221,6 +226,34 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.forceUpdate();
     }
 
+    display_details = (event) => {
+        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+            /* let browser deal with opening the window so we don't get the popup warnings */
+            return;
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        let channel = event.currentTarget.getAttribute('data-channel');
+        if (shouldOpenNewTab(event)) {
+            let uri = "";
+            if (channel.startsWith('group')) {
+                uri += '/group/' + channel.slice(6);
+            }
+            if (channel.startsWith("tournament")) {
+                uri += "/tournament/" + channel.slice(11);
+            }
+            window.open(uri, "_blank");
+        }
+
+        popover({
+            elt: (<ChatDetails chatChannelId={channel} />),
+            below: event.currentTarget,
+            minWidth: 130,
+        });
+    }
+
     render() {
         let user = data.get('user');
         let user_country = user.country || 'un';
@@ -256,7 +289,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             }
             let c = this.channels[channel].channel;
             if (c.unread_ct > 0) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} />;
+                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
+            } else if (channel in this.joined_chats) {
+                return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
             }
             return null;
         };

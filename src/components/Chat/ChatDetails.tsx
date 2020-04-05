@@ -25,7 +25,7 @@ import * as data from "data";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
-    partFunc: any;
+    partFunc?: any;
 }
 
 
@@ -151,11 +151,11 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                         onClick={this.toggleNewMessageNotification}>
                             <i className="fa fa-comment">{this.state.notify_unread ? _("don't notify if there are unread messages") : _("notify if there are unread")}</i>
                     </button>
-                    <button
+                    {(this.props.partFunc ? <button
                         className="xs noshadow reject"
                         onClick={this.leave}>
                             <i className="fa fa-times"/>{" "}{leave_text}
-                    </button>
+                    </button> : null)}
                 </div>
             </div>
         );
