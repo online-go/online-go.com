@@ -393,44 +393,9 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             }
         }
 
-        if (!channel) {
-            throw new Error(`Invalid channel ID: ${channel}`);
-        }
-
-        let state_update: any = {};
-        if (channel !== this.state.active_channel) {
-            state_update.active_channel = channel;
-        }
-
-        let chan = getChannel(channel);
-        chan.markAsRead();
-        if (!(channel in data.get("chat.joined"))) {
-            this.join(channel);
-        }
-        state_update.user_list = chan.user_list;
-        state_update.chat_log = chan.chat_log;
-        state_update.rtl_mode = chan.rtl_mode;
-        this.scrolled_to_bottom = true;
-        this.setState(state_update);
         if (!this.props.channel) {
             data.set("chat.active_channel", channel);
         }
-
-        if (!(channel in data.get("chat.joined"))) {
-            this.join(channel);
-        }
-        /*
-        this.last_date = "";
-        for (let i=0; i < chan.log.length; ++i) {
-            this._appendChat(chan.log[i]);
-        }
-
-        if (!jQuery.browser.mobile && !jQuery.browser.ios) {
-            $(this.id_chat_input).focus();
-        }
-        this.should_scroll_chatlog = true;
-        this.scrollChats();
-        */
     }
     onActiveChannelChanged = (active_channel: string) => {
         if (this.state.active_channel === active_channel) {
@@ -441,8 +406,32 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             // don't change active channel
             return;
         }
-        this.setActiveChannel(active_channel);
+
+        if (!active_channel) {
+            throw new Error(`Invalid channel ID: ${active_channel}`);
+        }
+
+        let state_update: any = {};
+        if (active_channel !== this.state.active_channel) {
+            state_update.active_channel = active_channel;
+        }
+
+        let chan = getChannel(active_channel);
+        chan.markAsRead();
+        if (!(active_channel in data.get("chat.joined"))) {
+            this.join(active_channel);
+        }
+        state_update.user_list = chan.user_list;
+        state_update.chat_log = chan.chat_log;
+        state_update.rtl_mode = chan.rtl_mode;
+        this.scrolled_to_bottom = true;
+        this.setState(state_update);
+
+        if (!(active_channel in data.get("chat.joined"))) {
+            this.join(active_channel);
+        }
     }
+
     sortedUserList(): Array<any> {
         let lst = [];
         for (let id in this.state.user_list) {
