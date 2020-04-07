@@ -51,7 +51,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         unwatchChatSubscriptionChanged(this.onChatSubscriptionChanged);
     }
 
-    onChatSubscriptionChanged = (obj) => {
+    onChatSubscriptionChanged = () => {
         this.setState({
             notify_unread: getUnreadChatPreference(this.state.channelId),
             notify_mentioned: getMentionedChatPreference(this.state.channelId)

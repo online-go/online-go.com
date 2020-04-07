@@ -23,32 +23,43 @@ import * as data from "data";
 import { KBShortcut } from "../KBShortcut";
 import { ChatList } from "Chat";
 import * as preferences from "preferences";
-import * as EventEmitter from "eventemitter3";
+import { TypedEventEmitter } from "TypedEventEmitter";
+import { event } from "d3";
+
+interface Events {
+    "subscription_changed": void;
+}
+let event_emiter = new TypedEventEmitter<Events>();
 
 let chat_subscriptions = {};
 data.watch("chat-indicator.chat-subscriptions", onChatSubscriptionUpdate);
 function onChatSubscriptionUpdate(pref) {
     chat_subscriptions = pref;
+    event_emiter.emit("subscription_changed");
 }
 let chat_subscribe_new_group_chat_messages = false;
 preferences.watch("chat-subscribe-group-chat-unread", onChatSubscribeGroupMessageChange);
 function onChatSubscribeGroupMessageChange(pref) {
     chat_subscribe_new_group_chat_messages = pref;
+    event_emiter.emit("subscription_changed");
 }
 let chat_subscribe_new_group_chat_mentioned = false;
 preferences.watch("chat-subscribe-group-mentions", onChatSubscribeGroupMentionsChange);
 function onChatSubscribeGroupMentionsChange(pref) {
     chat_subscribe_new_group_chat_mentioned = pref;
+    event_emiter.emit("subscription_changed");
 }
 let chat_subscribe_new_tournament_chat_messages = false;
 preferences.watch("chat-subscribe-tournament-chat-unread", onChatSubscribeTournamentMessageChange);
 function onChatSubscribeTournamentMessageChange(pref) {
     chat_subscribe_new_tournament_chat_messages = pref;
+    event_emiter.emit("subscription_changed");
 }
 let chat_subscribe_new_tournament_chat_mentioned = false;
 preferences.watch("chat-subscribe-tournament-mentions", onChatSubscribeTournamentMentionsChange);
 function onChatSubscribeTournamentMentionsChange(pref) {
     chat_subscribe_new_tournament_chat_mentioned = pref;
+    event_emiter.emit("subscription_changed");
 }
 
 export function getUnreadChatPreference(channel:string): boolean {
@@ -75,19 +86,15 @@ export function getMentionedChatPreference(channel:string): boolean {
     }
     return false;
 }
-export function watchChatSubscriptionChanged(cb: (obj:any) => void):void { // Give a single place to subscribe to setting changes
-    preferences.watch("chat-subscribe-group-chat-unread", cb, true, false);
-    preferences.watch("chat-subscribe-group-mentions", cb), true, false;
-    preferences.watch("chat-subscribe-tournament-chat-unread", cb, true, false);
-    preferences.watch("chat-subscribe-tournament-mentions", cb, true, false);
-    data.watch("chat-indicator.chat-subscriptions", cb, true, true);
+
+export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediately?: boolean):void { // Give a single place to subscribe to setting changes
+    event_emiter.on("subscription_changed", cb);
+    if (!dont_call_imediately) {
+        cb();
+    }
 }
-export function unwatchChatSubscriptionChanged(cb: (obj:any) => void):void {
-    preferences.unwatch("chat-subscribe-group-chat-unread", cb);
-    preferences.unwatch("chat-subscribe-group-mentions", cb);
-    preferences.unwatch("chat-subscribe-tournament-chat-unread", cb);
-    preferences.unwatch("chat-subscribe-tournament-mentions", cb);
-    data.unwatch("chat-indicator.chat-subscriptions", cb);
+export function unwatchChatSubscriptionChanged(cb: () => void):void {
+    event_emiter.off("subscription_changed", cb);
 }
 
 let chat_indicator_sinleton:ChatIndicator;
@@ -124,7 +131,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         this.setState({show_empty_notification: pref});
     }
 
-    onChatSubscriptionUpdate = (obj) => {
+    onChatSubscriptionUpdate = () => {
         // Join new chats
         let join = (channel:string) => {
             if (!(channel in this.channels) &&

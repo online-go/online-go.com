@@ -135,7 +135,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.updateConnectedChannels();
     }
 
-    onChatSubscriptionUpdate = (obj) => {
+    onChatSubscriptionUpdate = () => {
         this.updateConnectedChannels();
     }
 
