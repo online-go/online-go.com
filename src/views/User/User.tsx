@@ -1050,7 +1050,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.ladders.map((ladder, idx) => (
                                 <dd key={idx}>
-                                    #{ladder.rank} <a href={`/ladder/${ladder.id}`}>{ladder.name}</a>
+                                    #{ladder.rank} <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
                                 </dd>
                                 ))}
                             </dl>
@@ -1065,7 +1065,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.tournaments.map((tournament, idx) => (
                                 <dd key={idx}>
-                                    <a href={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</a>
+                                    <Link to={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</Link>
                                 </dd>
                                 ))}
                             </dl>
@@ -1079,7 +1079,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.groups.map((group, idx) => (
                                 <dd key={idx}>
-                                    <a href={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</a>
+                                    <Link to={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</Link>
                                 </dd>
                                 ))}
                             </dl>
