@@ -142,12 +142,12 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                     <button
                         className={"xs noshadow "}// + this.state.notify_mentioned ? "active" : "inactive"}
                         onClick={this.toggleMentionNotification}>
-                            <i className="fa fa-comment">{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}</i>
+                            <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
                     </button>
                     <button
                         className={"xs noshadow "}// + this.state.notify_unread ? "active" : "inactive"}
                         onClick={this.toggleNewMessageNotification}>
-                            <i className="fa fa-comment">{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}</i>
+                            <i className="fa fa-comment" />{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
                     </button>
                     {(this.props.partFunc ? <button
                         className="xs noshadow reject"
