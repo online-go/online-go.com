@@ -180,16 +180,16 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                     mentioned = mentioned || this.channels[channel].channel.mentioned;
                 }
             }
-        }
+        };
         global_channels.forEach(element => {
             add_count(element.id);
         });
         group_channels.forEach(element => {
             add_count("group-" + element.id);
-        })
+        });
         tournament_channels.forEach(element => {
             add_count("tournament-" + element.id);
-        })
+        });
         this.setState({unread_ct: unread_ct,
                        mentioned: mentioned});
     }
