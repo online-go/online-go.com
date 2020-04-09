@@ -1,7 +1,6 @@
 NODE_PATH:=node_modules:$(NODE_PATH)
 PATH:=node_modules/.bin/:$(PATH)
 
-
 dev: node_modules
 	npm run dev
 
