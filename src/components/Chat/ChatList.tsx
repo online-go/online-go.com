@@ -256,7 +256,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         let chan_class = (channel: string) => {
             let chan_class = "";
             let unread = false;
-            if (!(channel in this.joined_chats && this.joined_chats[channel])) {
+            if (!(channel in this.joined_chats && this.joined_chats[channel]) && !(channel in this.channels)) {
                 chan_class = chan_class + " unjoined";
             }
             if (channel in this.channels) {
