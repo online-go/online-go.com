@@ -168,9 +168,10 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
     }
 
     updateStats() {
+        console.warn("updateStats");
         let unread_ct = 0;
         let mentioned = false;
-        Object.keys(chat_subscriptions).forEach(channel => {
+        let add_count = (channel: string) => {
             if (channel in this.channels) {
                 if (getUnreadChatPreference(channel)) {
                     unread_ct = unread_ct + this.channels[channel].channel.unread_ct;
@@ -179,7 +180,16 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                     mentioned = mentioned || this.channels[channel].channel.mentioned;
                 }
             }
+        }
+        global_channels.forEach(element => {
+            add_count(element.id);
         });
+        group_channels.forEach(element => {
+            add_count("group-" + element.id);
+        })
+        tournament_channels.forEach(element => {
+            add_count("tournament-" + element.id);
+        })
         this.setState({unread_ct: unread_ct,
                        mentioned: mentioned});
     }
