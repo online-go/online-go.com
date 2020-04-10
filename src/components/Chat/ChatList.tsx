@@ -48,6 +48,9 @@ interface ChatListState {
     show_unjoined: boolean;
     show_read: boolean;
     show_unsubscribed_chat: boolean;
+    visible_group_channels: boolean;
+    visible_global_channels: boolean;
+    visible_tournament_channels: boolean;
     collapse_unjoined: boolean;
     collapse_read: boolean;
     collapse_unsubscribed_chat: boolean;
@@ -74,6 +77,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             show_unjoined: props.show_unjoined,
             show_read: props.show_read,
             show_unsubscribed_chat: props.show_unsubscribed_chat,
+            visible_group_channels: false,
+            visible_global_channels: false,
+            visible_tournament_channels: false,
             collapse_unjoined: props.collapse_unjoined,
             collapse_read: props.collapse_read,
             collapse_unsubscribed_chat: props.collapse_unsubscribed_chat,
@@ -148,7 +154,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                     channelProxy.on("unread-count-changed", this.onUnreadCountChange);
                     this.channels[channel] = channelProxy;
                 }
-                return;
+                return true;
         }
         if (this.state.join_joined &&
             channel in this.joined_chats &&
@@ -158,24 +164,42 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                     channelProxy.on("unread-count-changed", this.onUnreadCountChange);
                     this.channels[channel] = channelProxy;
                 }
-                return;
+                return true;
         }
         if (channel in this.channels) {
             this.channels[channel].part();
             delete this.channels[channel];
         }
+        return false;
     }
 
     updateConnectedChannels() {
+        let visible_global_channels = this.state.show_unjoined && global_channels.length > 0;
+        let visible_group_channels = this.state.show_unjoined && group_channels.length > 0;
+        let visible_tournament_channels = this.state.show_unjoined && tournament_channels.length > 0;
         for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
-            this._join_or_part(global_channels[idx].id);
+            let watched = this._join_or_part(global_channels[idx].id);
+            if (watched) {
+                visible_global_channels = true;
+            }
         }
         for (let idx = 0; idx < tournament_channels.length; idx = idx + 1) {
-            this._join_or_part("tournament-" + tournament_channels[idx].id);
+            let watched = this._join_or_part("tournament-" + tournament_channels[idx].id);
+            if (watched) {
+                visible_tournament_channels = true;
+            }
         }
         for (let idx = 0; idx < group_channels.length; idx = idx + 1) {
-            this._join_or_part("group-" + group_channels[idx].id);
+            let watched = this._join_or_part("group-" + group_channels[idx].id);
+            if (watched) {
+                visible_group_channels = true;
+            }
         }
+        this.setState({
+            visible_global_channels: visible_global_channels,
+            visible_group_channels: visible_group_channels,
+            visible_tournament_channels: visible_tournament_channels
+        })
         this.forceUpdate();
     }
 
@@ -306,7 +330,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         return (
             <div className={"ChatList" + (!this.state.show_read ? " hide-read" : "") + (!this.state.show_unjoined ? " hide-unjoined" : "") + (!this.state.show_unsubscribed_chat ? " hide-unscubscribed" : "")}>
                 <div className={"channels" + (!this.state.collapsed_channel_groups["groups"] ? channel_visibility() : "")}>
-                    {(group_channels.length > 0 || null) && (
+                    {(this.state.visible_group_channels || null) && (
                         <div className="channel-header">
                             <span>{_("Group Channels")}</span>
                             <i onClick={this.toggleShowAllGroupChannels} className={"channel-expand-toggle " + (this.state.collapsed_channel_groups["groups"] ?  "fa fa-minus" : "fa fa-plus")}/>
@@ -330,7 +354,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                 </div>
 
                 <div className={"channels" + (!this.state.collapsed_channel_groups["tournaments"] ? channel_visibility() : "")}>
-                    {(tournament_channels.length > 0 || null) && (
+                    {(this.state.visible_tournament_channels || null) && (
                         <div className="channel-header">
                             <span>{_("Tournament Channels")}</span>
                             <i onClick={this.toggleShowAllTournamentChannels} className={"channel-expand-toggle " + (this.state.collapsed_channel_groups["tournaments"] ?  "fa fa-minus" : "fa fa-plus")}/>
@@ -354,10 +378,12 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                 </div>
 
                 <div className={"channels" + (!this.state.collapsed_channel_groups["global"] ? channel_visibility() : "")}>
-                    <div className="channel-header">
-                        <span>{_("Global Channels")}</span>
-                        <i onClick={this.toggleShowAllGlobalChannels} className={"channel-expand-toggle " + (this.state.collapsed_channel_groups["global"] ?  "fa fa-minus" : "fa fa-plus")}/>
-                    </div>
+                    {(this.state.visible_global_channels || null) && (
+                        <div className="channel-header">
+                            <span>{_("Global Channels")}</span>
+                            <i onClick={this.toggleShowAllGlobalChannels} className={"channel-expand-toggle " + (this.state.collapsed_channel_groups["global"] ?  "fa fa-minus" : "fa fa-plus")}/>
+                        </div>
+                    )}
                     {global_channels.map((chan) => (
                         <div key={chan.id}
                             className={
