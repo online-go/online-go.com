@@ -199,7 +199,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             visible_global_channels: visible_global_channels,
             visible_group_channels: visible_group_channels,
             visible_tournament_channels: visible_tournament_channels
-        })
+        });
         this.forceUpdate();
     }
 
@@ -267,7 +267,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         }
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} />),
+            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")}/>),
             below: event.currentTarget,
             minWidth: 130,
         });

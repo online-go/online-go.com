@@ -27,6 +27,7 @@ import { getUnreadChatPreference, getMentionedChatPreference, watchChatSubscript
 interface ChatDetailsProperties {
     chatChannelId: string;
     partFunc?: any;
+    subscribale?: boolean;
 }
 
 
@@ -37,6 +38,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         if (channel) {
             this.state = {
                 channelId: channel,
+                subscribale: props.subscribale,
                 notify_unread: false,
                 notify_mentioned: false
             };
@@ -139,16 +141,20 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                                 <i className="fa fa-trophy"/>{" "}{tournament_text}
                         </button>
                     }
-                    <button
-                        className={"xs noshadow "}// + this.state.notify_mentioned ? "active" : "inactive"}
-                        onClick={this.toggleMentionNotification}>
-                            <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
-                    </button>
-                    <button
-                        className={"xs noshadow "}// + this.state.notify_unread ? "active" : "inactive"}
-                        onClick={this.toggleNewMessageNotification}>
-                            <i className="fa fa-comment" />{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
-                    </button>
+                    {this.state.subscribale &&
+                        <button
+                            className={"xs noshadow "}// + this.state.notify_mentioned ? "active" : "inactive"}
+                            onClick={this.toggleMentionNotification}>
+                                <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
+                        </button>
+                    }
+                    {this.state.subscribale &&
+                        <button
+                            className={"xs noshadow "}// + this.state.notify_unread ? "active" : "inactive"}
+                            onClick={this.toggleNewMessageNotification}>
+                                <i className="fa fa-comment" />{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
+                        </button>
+                    }
                     {(this.props.partFunc ? <button
                         className="xs noshadow reject"
                         onClick={this.leave}>

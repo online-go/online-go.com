@@ -755,7 +755,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         }
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} partFunc={this.part} />),
+            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")} partFunc={this.part} />),
             below: event.currentTarget,
             minWidth: 130,
         });
