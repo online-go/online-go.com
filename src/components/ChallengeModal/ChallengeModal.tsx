@@ -469,7 +469,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             title: _("Waiting for opponent"),
                             html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
                             confirmButtonClass: "btn-danger",
-                            confirmButtonText: "Cancel",
+                            confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
                             allowOutsideClick: false,
                             allowEscapeKey: false,
                         })
