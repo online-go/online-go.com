@@ -1149,7 +1149,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     }
                     {!editing && !loading &&
                         <div>
-                            {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id || true)
+                            {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
                                && !tournament.started && !tournament.start_waiting) || null) &&
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
