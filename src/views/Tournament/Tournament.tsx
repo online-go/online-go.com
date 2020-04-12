@@ -150,11 +150,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
         this.elimination_tree_container.append(this.elimination_tree);
     }
-
-    UNSAFE_componentWillMount() {
-        setExtraActionCallback(this.renderExtraPlayerActions);
-    }
     componentDidMount() {
+        setExtraActionCallback(this.renderExtraPlayerActions);
         window.document.title = _("Tournament");
         if (this.state.tournament_id) {
             this.resolve(this.state.tournament_id);
