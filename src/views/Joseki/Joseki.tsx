@@ -1496,7 +1496,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         </div>
                                     )}
                                 </div>
-                                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                                <textarea className="comment-input"
+                                    hidden={!this.props.can_comment}
+                                    rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
                             </div>
                         }
 
