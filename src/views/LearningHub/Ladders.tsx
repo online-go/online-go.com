@@ -108,9 +108,29 @@ class Page3 extends LearningPage {
             initial_state: {black: "fcef", white: "eedfegfg"},
             move_tree: this.makePuzzleMoveTree(
                 [
-                    "f4g4f5f6g5h5g6e6"
+                    "f4g4f5f6g5h5g6e6g7",
+                    "f4g4f5f6g5h5g6e6g8",
+                    "f4g4f5f6g5h5g6e6h7h6g7",
+                    "f4g4f5f6g5h5g6e6h6g7h4",
+                    "f4g4f5f6g5h5g6e6h6g7h7",
+                    "f4g4f5f6g5h5g6e6h4g3h6j5j4j6j7",
+                    "f4g4f5f6g5h5g6e6h4g3h6j5j6j4j3",
+                    "f4g4f5f6g5h5g6e6h4g3g7",
+                    "f4g4f5f6g5h5g6e6h4g3h7h6g7",
+                    "f4g4f5f6g5h5g6e6g3h4g7",
+                    "f4g4f5f6g5h5g6e6g3h4h6g7h7g8h8f8h3",
+                    "f4g4f5f6g5h5g6e6g3h4h7h6g7"
                 ],
                 [
+                    "f4g4f5f6g5h5g6e6d3g7",
+                    "f4g4f5f6g5h5g6e6d5g7",
+                    "f4g4f5f6g5h5g6e6e7g7",
+                    "f4g4f5f6g5h5g6e6d6g7",
+                    "f4g4f5f6g5h5g6e6f8g7",
+                    "f4g4f5f6g5h5g6e6e8g7",
+                    "f4g4f5f6g5h5g6e6h8g7",
+                    "f4g4f5f6g5h5g6e6h3g7",
+                    "f4g4f5f6g5h5g6e6g3h4h6g7h7g8f8h8",
                     "f4g4f5f6g6g5",
                     "g4f4",
                     "f5f4",
@@ -120,4 +140,3 @@ class Page3 extends LearningPage {
         };
     }
 }
-

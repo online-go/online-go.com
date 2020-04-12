@@ -28,6 +28,7 @@ import {Ko} from './Ko';
 import {Ladders} from './Ladders';
 import {EndingTheGame} from './EndingTheGame';
 import {TheBoard} from './TheBoard';
+import {Intro} from './Intro';
 
 
 export class FalseEyes extends LearningHubSection {
@@ -85,7 +86,7 @@ export class Terminology extends LearningHubSection {
 
 export let sections = [
     [pgettext("Learning hub section title", "Fundamentals"),
-        [Capture, Defend, /*Territory, */ EndingTheGame]],
+        [Intro, Capture, Defend, /*Territory, */ EndingTheGame]],
     [pgettext("Learning hub section title", "Basics"),
         [TheBoard, Ladders, SnapBack, Seki, Ko ]],
     /*
