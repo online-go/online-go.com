@@ -66,7 +66,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                 // render them in a move pair per row
                 .map((move_pair, idx) => (
                     <React.Fragment key={idx}>
-                        <div>{idx * 2}</div>
+                        <div>{idx * 2 + 1}</div>
                         <div>{move_pair[0]}</div>
                         <div>{move_pair[1]}</div>
                     </React.Fragment>
