@@ -37,19 +37,19 @@ function StatsChart(props: JosekiStatsModalProperties) {
         [
             {
                 label: 'Total Page Visits',
-                data: props.daily_page_visits.map(day => ({x: new Date(day.date), y: day.pageVisits}))
+                data: props.daily_page_visits.map(day => ({x: new Date(day.date).setHours(0, 0, 0, 0), y: day.pageVisits}))
             },
             {
                 label: 'Explore Page Visits',
-                data: props.daily_page_visits.map(day => [new Date(day.date), day.explorePageVisits])
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.explorePageVisits])
             },
             {
                 label: 'Play Mode Visits',
-                data: props.daily_page_visits.map(day => [new Date(day.date), day.playPageVisits])
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.playPageVisits])
             },
             {
                 label: 'Guest Visits',
-                data: props.daily_page_visits.map(day => [new Date(day.date), day.guestPageVisits])
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.guestPageVisits])
             }
         ]), [props]);
 
