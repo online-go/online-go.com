@@ -773,7 +773,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         { // Announce when *we* have disconnected / reconnected
             let disconnected = false;
-            let debounce:number | null;
+            let debounce: ReturnType<typeof setTimeout> | null;
             let cur_sound:SFXSprite;
             let can_play_disconnected_sound = false;
 
@@ -818,7 +818,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         { // Announce when other people disconnect / reconnect
             let can_play_disconnected_sound = false;
-            let debounce:number | null;
+            let debounce: ReturnType<typeof setTimeout> | null;
             let cur_sound:SFXSprite;
 
             setTimeout(() => can_play_disconnected_sound = true, 3000);
