@@ -54,6 +54,7 @@ import {CountDown} from "./CountDown";
 import {toast} from "toast";
 import {Clock} from "Clock";
 import {JGOFClock} from "goban";
+import {GameTimings} from "./GameTimings";
 
 declare var swal;
 
@@ -154,6 +155,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             ai_review_enabled: preferences.get('ai-review-enabled'),
             show_score_breakdown: false,
             selected_ai_review_id: null,
+            show_game_timing: false,
         };
 
         sfx.setVolumeOverride(this.state.volume);
@@ -1356,6 +1358,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled, this.creator_id || this.goban.review_owner_id);
     }
+
+    toggleShowTiming = () => {
+        this.setState({show_game_timing: !this.state.show_game_timing});
+    }
+
     showLinkModal() {
         openGameLinkModal(this.goban);
     }
@@ -2225,7 +2232,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }
 
-
     render() {
         const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
                          gameview={this} userIsPlayer={this.state.user_is_player}
@@ -2293,6 +2299,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" || null) &&
                             !this.state.zen_mode && this.frag_ai_review()}
+
+                        {(this.state.view_mode === "square" ||
+                            this.state.view_mode === "wide" || null) &&
+                            this.state.show_game_timing && this.frag_timings()}
 
                         {review
                             ? this.frag_review_controls()
@@ -2825,6 +2835,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return null;
     }
 
+    frag_timings = () => {
+        if (this.goban &&
+            this.goban.engine) {
+            return <GameTimings moves={this.goban.engine.config.moves}></GameTimings>;
+        }
+        return null;
+    }
+
     frag_num_captures_text(color) {
         let num_prisoners = this.state.score[color].prisoners;
         let prisoner_color = color === "black" ? "white" : "black";
@@ -3078,8 +3096,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
+
                 {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
                 {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
+
+                {(mod || annul) && <hr/>}
+                {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}
 
                 {(supporter_ai_review_ready) && <hr/>}
                 {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI Review"}</a>}
