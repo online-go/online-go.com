@@ -1360,7 +1360,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     toggleShowTiming = () => {
-        console.log("Toggling timing ", this.state.show_game_timing);
         this.setState({show_game_timing: !this.state.show_game_timing});
     }
 
@@ -2837,7 +2836,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_timings = () => {
-        console.log("Frag timings...");
         if (this.goban &&
             this.goban.engine) {
             return <GameTimings moves={this.goban.engine.config.moves}></GameTimings>;

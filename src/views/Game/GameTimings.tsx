@@ -17,6 +17,7 @@
 
 
 import * as moment from "moment";
+import 'moment-duration-format';
 
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
@@ -32,10 +33,6 @@ interface GameTimingState {
 }
 
 export class GameTimings extends React.Component<GameTimingProperties> {
-    // this will be the full ai review we are working with, as opposed to
-    // selected_ai_review which will just contain some metadata from the
-    // postgres database
-
 
     constructor(props:GameTimingProperties) {
         super(props);
@@ -45,21 +42,29 @@ export class GameTimings extends React.Component<GameTimingProperties> {
     }
 
     public render():JSX.Element {
+        let game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
+        let game_elapseds: Array<ReturnType<typeof moment.duration>> = new Array(); // the time elapsed up to this move
+
         return (
             <div className='GameTimings'>
                 <div className='timings-header'>Game Timings</div>
-                <div>Move</div><div>Black</div><div>White</div>
+                <div>Move</div><div>Black</div><div>White</div><div>Elapsed Time</div>
                 {
-                // get the times from the moves in a nice format
-                this.props.moves.map(move => (
-                    move[2] < 60000 ?
-                    `${moment.duration(move[2]).asSeconds()}s` :
-                    moment.duration(move[2]).humanize()
-                ))
-                // pair them up into black and white move pairs
+                // get the times from the moves array in a nice format, compute ongoing elapsed times
+                this.props.moves.map(move => {
+                    const elapsed = move[2];
+                    game_elapsed.add(elapsed);
+                    game_elapseds.push(game_elapsed.clone());
+                    return(
+                        move[2] < 60000 ?
+                        `${moment.duration(elapsed).asSeconds()}s` :
+                        moment.duration(elapsed).format());
+                })
+                // pair them up into black and white move pairs, along with the elapsed time to that point
                 .reduce((acc, value, index, orig) => {
                     if (index % 2 === 0) {
-                        acc.push(orig.slice(index, index + 2));
+                        const elapsed = game_elapseds[index + 1] ? game_elapseds[index + 1] : game_elapseds[index];
+                        acc.push([orig[index], orig[index + 1] ? orig[index + 1]  : "-" , elapsed]);
                     }
                     return acc;
                 }, [])
@@ -69,6 +74,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         <div>{idx * 2 + 1}</div>
                         <div>{move_pair[0]}</div>
                         <div>{move_pair[1]}</div>
+                        <div>{`${move_pair[2].format()} s`}</div>
                     </React.Fragment>
                 ))}
             </div>
