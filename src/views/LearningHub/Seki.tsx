@@ -28,7 +28,7 @@ export class Seki extends LearningHubSection {
             Page2,
             Page3,
             Page4,
-            //Page5,
+            Page5,
             //Page6,
             //Page7,
         ];
@@ -38,7 +38,6 @@ export class Seki extends LearningHubSection {
     static title():string { return pgettext("Tutorial section on seki", "Seki!"); }
     static subtext():string { return pgettext("Tutorial section on seki", "Mutual life"); }
 }
-
 
 class Page1 extends LearningPage {
     constructor(props) {
@@ -63,7 +62,7 @@ class Page1 extends LearningPage {
                     "e2e1",
                     "e1e2",
                     "e5e1",
-                    "h1e1",
+                    "h1e1"
                 ]
             )
         };
@@ -71,6 +70,34 @@ class Page1 extends LearningPage {
 }
 
 class Page2 extends LearningPage {
+    constructor(props) {
+        super(props);
+    }
+
+    text() {
+        return _("Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!");
+    }
+    config():PuzzleConfig {
+        return {
+            mode: "puzzle",
+            initial_state: {
+                'black': 'a1a2a3b3c3d3e3f3g3h3j3j2j1d1f1',
+                'white': 'b1b2c2d2e2f2g2h2h1'
+            },
+            move_tree: this.makePuzzleMoveTree(
+                [
+                    "e1"
+                ],
+                [
+                    "c1e1",
+                    "g1e1"
+                ]
+            )
+        };
+    }
+}
+
+class Page3 extends LearningPage {
     constructor(props) {
         super(props);
     }
@@ -92,14 +119,14 @@ class Page2 extends LearningPage {
                 [
                     "j4j5",
                     "g2j5",
-                    "g5j5",
+                    "g5j5"
                 ]
             )
         };
     }
 }
 
-class Page3 extends LearningPage {
+class Page4 extends LearningPage {
     constructor(props) {
         super(props);
     }
@@ -124,14 +151,14 @@ class Page3 extends LearningPage {
                     "j1j2g1j3",
                     "j1j2j3g1",
                     "g5g1",
-                    "e3g1",
+                    "e3g1"
                 ]
             )
         };
     }
 }
 
-class Page4 extends LearningPage {
+class Page5 extends LearningPage {
     constructor(props) {
         super(props);
     }
@@ -154,7 +181,7 @@ class Page4 extends LearningPage {
                     "g5j4",
                     "j4h5",
                     "g2f2g1f1h1j1",
-                    "g2f2g1f1j1h1",
+                    "g2f2g1f1j1h1"
                 ]
             )
         };
