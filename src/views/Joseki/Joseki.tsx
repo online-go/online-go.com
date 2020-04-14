@@ -651,7 +651,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.trace_index--;
                 if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
                     this.trace_index = 0;
-                    this.move_trace = [stepping_back_to];
+                    this.move_trace.unshift(stepping_back_to);
                 }
                 else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
                     console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
