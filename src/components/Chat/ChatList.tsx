@@ -33,6 +33,7 @@ interface ChatListProperties {
     show_unjoined?: boolean;
     show_read?: boolean;
     show_unsubscribed_chat?: boolean;
+    hide_global?: boolean;
     collapse_unjoined?: boolean;
     collapse_read?: boolean;
     collapse_unsubscribed_chat?: boolean;
@@ -48,6 +49,7 @@ interface ChatListState {
     show_unjoined: boolean;
     show_read: boolean;
     show_unsubscribed_chat: boolean;
+    hide_global?: boolean;
     visible_group_channels: boolean;
     visible_global_channels: boolean;
     visible_tournament_channels: boolean;
@@ -77,6 +79,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             show_unjoined: props.show_unjoined,
             show_read: props.show_read,
             show_unsubscribed_chat: props.show_unsubscribed_chat,
+            hide_global: props.hide_global,
             visible_group_channels: false,
             visible_global_channels: false,
             visible_tournament_channels: false,
@@ -174,7 +177,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
     }
 
     updateConnectedChannels() {
-        let visible_global_channels = this.state.show_unjoined && global_channels.length > 0;
+        let visible_global_channels = !this.state.hide_global && this.state.show_unjoined && global_channels.length > 0;
         let visible_group_channels = this.state.show_unjoined && group_channels.length > 0;
         let visible_tournament_channels = this.state.show_unjoined && tournament_channels.length > 0;
         for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
