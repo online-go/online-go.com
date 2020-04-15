@@ -74,7 +74,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         <div>{idx * 2 + 1}</div>
                         <div>{move_pair[0]}</div>
                         <div>{move_pair[1]}</div>
-                        <div>{`${move_pair[2].format()} s`}</div>
+                        <div>{`${move_pair[2].format()}`}</div>
                     </React.Fragment>
                 ))}
             </div>

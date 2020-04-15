@@ -444,7 +444,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     processNewMoves = (node_id: string, dto) => {
         // console.log("Process new moves...");
-        this.setState({throb: false});
 
         if (this.load_sequence_to_board) {
             // when they clicked a position link, we have to load the whole sequence we recieved onto the board
@@ -494,6 +493,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
         }
 
+        this.setState({throb: false});
         this.goban.enableStonePlacement();
     }
 
@@ -861,7 +861,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
-        if (!this.backstepping) {
+        if (!this.backstepping && !this.state.throb) {
             // console.log("backstepping...");
             this.backstepping = true;  // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
