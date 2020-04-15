@@ -200,6 +200,14 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         });
     }
 
+    partFunc = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
+        chat_subscriptions[channel] = {
+            mentioned: false,
+            unread: false
+        };
+        data.set("chat-indicator.chat-subscriptions", chat_subscriptions);
+    }
+
     render() {
         return (
             <span className={"ChatIndicator" + (this.state.mentioned ? " mentioned" : (this.state.unread_ct > 0 ? " unread" : ""))}>
@@ -211,7 +219,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                 {(this.state.show_friend_list || null) &&
                     <div>
                         <KBShortcut shortcut="escape" action={this.toggleChatList}/>
-                        <ChatList join_subscriptions show_unjoined hide_global show_unsubscribed_chat show_read collapse_read collapse_unjoined collapse_unsubscribed_chat collapse_state_store_name="chat-indicator.collapse-chat-group" closing_toggle={this.toggleChatList}/>
+                        <ChatList join_subscriptions show_unjoined hide_global show_read collapse_read collapse_unjoined collapse_state_store_name="chat-indicator.collapse-chat-group" closing_toggle={this.toggleChatList} partFunc={this.partFunc} />
                     </div>
                 }
             </span>

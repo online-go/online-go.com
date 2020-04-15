@@ -43,6 +43,7 @@ interface ChatListProperties {
     closing_toggle?: () => void;
     collapse_state_store_name?: string;
     fakelink?: boolean;
+    partFunc?: (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => void;
 }
 
 interface ChatListState {
@@ -63,6 +64,7 @@ interface ChatListState {
     highlight_active_channel: boolean;
     active_channel: string;
     fakelink: boolean;
+    partFunc?: (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => void;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
@@ -93,6 +95,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             highlight_active_channel: props.highlight_active_channel,
             active_channel: data.get("chat.active_channel", ""),
             fakelink: props.fakelink,
+            partFunc: props.partFunc,
         };
     }
 
@@ -270,7 +273,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         }
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")}/>),
+            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")} partFunc={(channel in this.channels ? this.state.partFunc : undefined)}/>),
             below: event.currentTarget,
             minWidth: 130,
         });
