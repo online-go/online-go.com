@@ -32,11 +32,9 @@ import { ChatDetails, getUnreadChatPreference, getMentionedChatPreference, watch
 interface ChatListProperties {
     show_unjoined?: boolean;
     show_read?: boolean;
-    show_unsubscribed_chat?: boolean;
     hide_global?: boolean;
     collapse_unjoined?: boolean;
     collapse_read?: boolean;
-    collapse_unsubscribed_chat?: boolean;
     join_subscriptions?: boolean;
     join_joined?: boolean;
     highlight_active_channel?: boolean;
@@ -49,14 +47,12 @@ interface ChatListProperties {
 interface ChatListState {
     show_unjoined: boolean;
     show_read: boolean;
-    show_unsubscribed_chat: boolean;
     hide_global?: boolean;
     visible_group_channels: boolean;
     visible_global_channels: boolean;
     visible_tournament_channels: boolean;
     collapse_unjoined: boolean;
     collapse_read: boolean;
-    collapse_unsubscribed_chat: boolean;
     join_subscriptions: boolean;
     join_joined: boolean;
     collapsed_channel_groups: {[channel_group:string]: boolean};
@@ -80,14 +76,12 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.state = {
             show_unjoined: props.show_unjoined,
             show_read: props.show_read,
-            show_unsubscribed_chat: props.show_unsubscribed_chat,
             hide_global: props.hide_global,
             visible_group_channels: false,
             visible_global_channels: false,
             visible_tournament_channels: false,
             collapse_unjoined: props.collapse_unjoined,
             collapse_read: props.collapse_read,
-            collapse_unsubscribed_chat: props.collapse_unsubscribed_chat,
             join_subscriptions: props.join_subscriptions,
             join_joined: props.join_joined,
             collapsed_channel_groups: props.collapse_state_store_name ? {global: false, groups: false, tournaments: false} : undefined,
@@ -286,7 +280,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         let chan_class = (channel: string) => {
             let chan_class = "";
             let unread = false;
-            if (!(channel in this.joined_chats && this.joined_chats[channel]) && !(channel in this.channels)) {
+            if (!(channel in this.channels)) {
                 chan_class = chan_class + " unjoined";
             }
             if (channel in this.channels) {
@@ -299,8 +293,6 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                     chan_class = chan_class + " mentioned";
                     unread = true;
                 }
-            } else {
-                chan_class = chan_class + " chat-unsubscribed";
             }
             if (!unread) {
                 chan_class = chan_class + " read";
@@ -309,16 +301,13 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         };
 
         let message_count = (channel: string) => {
-            if (!(channel in this.channels)) {
-                return null;
+            if (channel in this.channels) {
+                let c = this.channels[channel].channel;
+                if (c.unread_ct > 0) {
+                    return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
+                }
             }
-            let c = this.channels[channel].channel;
-            if (c.unread_ct > 0) {
-                return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} data-menu="▼" data-channel={channel} onClick={this.display_details} />;
-            } else if (channel in this.joined_chats) {
-                return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
-            }
-            return null;
+            return <span className="unread-count" data-count="" data-menu="▼" data-channel={channel} onClick={this.display_details} />;
         };
         let channel_visibility = () => {
             let visibility = "";
@@ -328,13 +317,10 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             if (this.state.collapse_unjoined) {
                 visibility = visibility + " hide-unjoined";
             }
-            if (this.state.collapse_unsubscribed_chat) {
-                visibility = visibility + " hide-unsubscribed";
-            }
             return visibility;
         };
         return (
-            <div className={"ChatList" + (!this.state.show_read ? " hide-read" : "") + (!this.state.show_unjoined ? " hide-unjoined" : "") + (!this.state.show_unsubscribed_chat ? " hide-unscubscribed" : "")}>
+            <div className={"ChatList" + (!this.state.show_read ? " hide-read" : "") + (!this.state.show_unjoined ? " hide-unjoined" : "") }>
                 <div className={"channels" + (!this.state.collapsed_channel_groups["groups"] ? channel_visibility() : "")}>
                     {(this.state.visible_group_channels || null) && (
                         <div className="channel-header">
