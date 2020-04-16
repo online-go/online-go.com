@@ -57,7 +57,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                     game_elapseds.push(game_elapsed.clone());
                     return(
                         move[2] < 60000 ?
-                        `${moment.duration(elapsed).asSeconds()}s` :
+                        `${moment.duration(elapsed).asSeconds().toFixed(1)}s` :
                         moment.duration(elapsed).format());
                 })
                 // pair them up into black and white move pairs, along with the elapsed time to that point
@@ -74,7 +74,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         <div>{idx * 2 + 1}</div>
                         <div>{move_pair[0]}</div>
                         <div>{move_pair[1]}</div>
-                        <div>{`${move_pair[2].format()} s`}</div>
+                        <div>{`${move_pair[2].format()}`}</div>
                     </React.Fragment>
                 ))}
             </div>
