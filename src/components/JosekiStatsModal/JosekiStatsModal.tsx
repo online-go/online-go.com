@@ -19,6 +19,8 @@ import * as React from "react";
 import * as moment from "moment";
 import {Chart} from 'react-charts';
 
+import * as data from "data";
+
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
 
@@ -63,9 +65,11 @@ function StatsChart(props: JosekiStatsModalProperties) {
           showPoints: false
         };
 
+    const label_colour = data.get("theme") === "light" ? false : true;
+
     return (
         <Chart
-            data={stats_data} axes={axes} series={series} tooltip
+            data={stats_data} axes={axes} series={series} tooltip dark={label_colour}
         />
     );
 }
