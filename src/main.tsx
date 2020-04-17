@@ -282,6 +282,8 @@ browserHistory.listen(location => {
 init_tabcomplete();
 
 /* Initialization done, render!! */
+let svg_loader = document.getElementById('loading-svg-container');
+svg_loader.parentNode.removeChild(svg_loader);
 ReactDOM.render(routes, document.getElementById("main-content"));
 
 window['data'] = data;
