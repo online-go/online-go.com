@@ -44,6 +44,7 @@ class PrivateChat {
     last_date = new Date().toLocaleDateString();
     floating = false;
     superchat_enabled = false;
+    banner;
     body;
     input;
     superchat_modal;
@@ -89,6 +90,9 @@ class PrivateChat {
             this.player_dom.text(unicodeFilter(player.username));
             this.player_dom.addClass(player.ui_class);
             this.updateInputPlaceholder();
+            if (this.banner) {
+                this.updateModeratorBanner();
+            }
         })
         .catch((err) => {
             console.error(err);
@@ -224,6 +228,9 @@ class PrivateChat {
             }
         };
 
+        let banner = this.banner =  $("<div>").addClass("banner banner-inactive");
+        this.dom.append(banner);
+        this.updateModeratorBanner();
 
         let body = this.body = $("<div>").addClass("body");
         this.dom.append(body);
@@ -266,6 +273,15 @@ class PrivateChat {
             data.set("pm.read-" + this.user_id, this.last_uid);
         }
     }
+    updateModeratorBanner() {
+        if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
+            this.banner.removeClass("banner-inactive");
+            let line = $("<div>").addClass("banner-text");
+            line.text(_("(You are talking to an OGS Moderator)"));
+            this.banner.append(line);
+        }
+    }
+
     updateInputPlaceholder() {
         if (!this.input) {
             return;
