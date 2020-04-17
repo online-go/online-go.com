@@ -19,6 +19,8 @@ import * as React from "react";
 import * as moment from "moment";
 import {Chart} from 'react-charts';
 
+import * as data from "data";
+
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
 
@@ -63,9 +65,11 @@ function StatsChart(props: JosekiStatsModalProperties) {
           showPoints: false
         };
 
+    const label_colour = data.get("theme") === "light" ? false : true;
+
     return (
         <Chart
-            data={stats_data} axes={axes} series={series} tooltip
+            data={stats_data} axes={axes} series={series} tooltip dark={label_colour}
         />
     );
 }
@@ -74,11 +78,15 @@ export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, 
 
     render() {
         //console.log(this.props.daily_page_visits);
+
+        // strip out zero days, which theoretically shouldn't be there in the first place
+        const daily_page_visits = this.props.daily_page_visits.filter((day) => (day.pageVisits > 0));
+
         return (
             <div className="Modal JosekiStatsModal" ref="modal">
                 <div className="header">{_("Joseki Explorer Stats - Daily Position Loads")}</div>
                 <div className="daily-visit-results">
-                    <StatsChart daily_page_visits={this.props.daily_page_visits}/>
+                    <StatsChart daily_page_visits={daily_page_visits}/>
                 </div>
             </div>
         );
