@@ -79,8 +79,8 @@ export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, 
     render() {
         //console.log(this.props.daily_page_visits);
 
-        // strip out zero days, which theoretically shouldn't be there in the first place
-        const daily_page_visits = this.props.daily_page_visits.filter((day) => (day.pageVisits > 0));
+        // strip out tiny days, which theoretically shouldn't be there in the first place
+        const daily_page_visits = this.props.daily_page_visits.filter((day) => (day.pageVisits > 10));
 
         return (
             <div className="Modal JosekiStatsModal" ref="modal">
