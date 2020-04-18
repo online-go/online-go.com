@@ -556,28 +556,32 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
-                let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
-                    item.result_class = "library-tie-result";
-                } else if (item.white.id === this.user_id) /* played white */ {
-                    if (item.ranked) {
-                        if (item.white_won) /* player won */ {
-                            item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
-                        } else if (item.black_won) /* player lost */ {
-                            item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                if (preferences.get("hide-ranks")) {
+                    item.result_class = "library-hidden-result";
+                } else {
+                    let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
+                    if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
+                        item.result_class = "library-tie-result";
+                    } else if (item.white.id === this.user_id) /* played white */ {
+                        if (item.ranked) {
+                            if (item.white_won) /* player won */ {
+                                item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                            } else if (item.black_won) /* player lost */ {
+                                item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                            }
+                        } else {
+                            item.result_class = item.white_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                         }
-                    } else {
-                        item.result_class = item.white_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
-                    }
-                } else if (item.black.id === this.user_id) /* played black */ {
-                    if (item.ranked) {
-                        if (item.black_won) /* player won */ {
-                            item.result_class = outcome.black_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
-                        } else if (item.white_won) /* player black */ {
-                            item.result_class = outcome.black_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                    } else if (item.black.id === this.user_id) /* played black */ {
+                        if (item.ranked) {
+                            if (item.black_won) /* player won */ {
+                                item.result_class = outcome.black_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                            } else if (item.white_won) /* player black */ {
+                                item.result_class = outcome.black_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                            }
+                        } else {
+                            item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                         }
-                    } else {
-                        item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                     }
                 }
 
