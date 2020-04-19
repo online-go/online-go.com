@@ -276,6 +276,7 @@ class PrivateChat {
     updateModeratorBanner() {
         if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
             this.banner.removeClass("banner-inactive");
+            this.banner.empty();
             let line = $("<div>").addClass("banner-text");
             if (this.superchat_enabled) {
                 line.addClass("megaphone-banner");
@@ -400,6 +401,7 @@ class PrivateChat {
             }
         }
         this.updateInputPlaceholder();
+        this.updateModeratorBanner();
     }
     addSystem(message) {
         let line = $("<div>").addClass("chat-line system");
