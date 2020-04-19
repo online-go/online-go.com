@@ -71,13 +71,20 @@
               display: none;
           }
           @keyframes bounce {
-              0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
-              40% {transform: translateY(-30px);} 
-              60% {transform: translateY(-15px);} 
+              0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+              40% {transform: translateY(-30px);}
+              60% {transform: translateY(-15px);}
+          }
+
+          @keyframes fade-in {
+             0% {opacity: 0}
+             20% {opacity: 0}
+             100% {opacity: 1}
           }
           #svg-bouncer {
-              animation: bounce 1s infinite;
+             animation: bounce 1s infinite, fade-in 2s;
           }
+
           #loading-svg-container {
               width: 100vw;
               height: 100vh;
