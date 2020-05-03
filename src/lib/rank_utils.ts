@@ -42,7 +42,7 @@ class Rating {
     partial_bounded_rank_label:string;
 }
 
-export const MinRank: number = 5;
+export const MinRank: number = -5;
 export const MaxRank: number = 38;
 export const PROVISIONAL_RATING_CUTOFF = 160;
 
