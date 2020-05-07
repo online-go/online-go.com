@@ -20,7 +20,9 @@ import {challenge} from "ChallengeModal";
 import {_} from 'translate';
 import * as data from "data";
 import ITC from "ITC";
-import {splitOnBytes, unicodeFilter} from "misc";
+import {put} from "requests";
+import {browserHistory} from "ogsHistory";
+import {splitOnBytes, unicodeFilter, errorAlerter} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
@@ -142,12 +144,17 @@ class PrivateChat {
                 superchat.addClass("enabled");
             }
             title.append(superchat);
+
+            title.append($("<i>").addClass("fa fa-clipboard").click(() => {
+                this.createModeratorNote();
+            }));
+        }
+        else {
+            title.append($("<i>").addClass("ogs-goban").click(() => {
+                challenge(this.user_id);
+            }));
         }
 
-
-        title.append($("<i>").addClass("ogs-goban").click(() => {
-            challenge(this.user_id);
-        }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
             window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)), "_blank");
         }));
@@ -367,7 +374,6 @@ class PrivateChat {
             }
         }
 
-
         if (typeof(txt) === "string" && txt.substr(0, 4) === "/me ") {
             line.append("<span> ** </span>");
             line.append($("<span>").addClass("username").text(from)).append("<span> </span>");
@@ -376,7 +382,6 @@ class PrivateChat {
             line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
         }
         line.append($("<span>").html(chat_markup(profanity_filter(txt))));
-
 
         this.lines.push(line);
         if (this.body) {
@@ -414,6 +419,23 @@ class PrivateChat {
             }
         }
     }
+    createModeratorNote = () => {
+        if (this.lines.length < 1) { return; }
+
+        let moderator_note = "";
+        this.lines.forEach((line) => {
+            moderator_note += line[0].textContent + "\n";
+        });
+
+        put(`players/${this.user_id}/moderate`, {
+            moderation_note: moderator_note
+        })
+        .then(() => { })
+        .catch(errorAlerter);
+
+        browserHistory.push(`/user/view/${this.user_id}#leave-moderator-note`);
+    }
+
     hilight() {
         if (this.dom) {
             this.dom.addClass("highlighted");
