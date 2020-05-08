@@ -380,6 +380,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         */
         let conf = next.conf;
 
+        if (next.challenge.game.komi_auto === 'custom' && next.challenge.game.komi === null) {
+            swal(_("Invalid custom komi, please correct and try again"));
+            return;
+        }
+
         if (next.challenge.game.ranked) {
             next.challenge.game.komi_auto = "automatic";
         }
