@@ -21,6 +21,7 @@ import {Link} from "react-router-dom";
 import {openModal} from 'Modal';
 import {NotesModal} from 'NotesModal';
 import {post, get, put, del, patch} from "requests";
+import { parse } from 'query-string';
 import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
@@ -52,6 +53,7 @@ interface UserProperties {
     match: {
         params: any
     };
+    location?: any;
     // id?: any,
     // user?: any,
     // callback?: ()=>any,
@@ -88,6 +90,8 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_update_interval: any;
     moderator_note:any = null;
     moderator_log:any = null;
+    moderator_log_anchor: any = React.createRef();
+    show_mod_log: boolean;
 
     constructor(props) {
         super(props);
@@ -110,6 +114,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
         };
+
+        this.show_mod_log = parse(this.props.location.search)['show_mod_log'] === '1';
     }
 
     componentDidMount() {
@@ -128,6 +134,13 @@ export class User extends React.PureComponent<UserProperties, any> {
         }, 1000);
         this.resolve(this.props);
     }
+
+    componentDidUpdate() {
+        if (this.show_mod_log && this.moderator_log_anchor.current !== null) {
+            this.moderator_log_anchor.current.scrollIntoView();
+        }
+    }
+
     componentWillUnmount() {
         clearInterval(this.vacation_update_interval);
     }
@@ -812,7 +825,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                         <b>Mod log</b>
                         <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
-                        <div id='leave-moderator-note'>
+                        <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
                             <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
                             <button onClick={this.addModeratorNote}>Add note</button>
                         </div>
