@@ -1,0 +1,81 @@
+/*
+ * Copyright (C) 2012-2020  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.ModNoteModal {
+    width: 50rem;
+    max-width: 100%;
+
+    .challenge-pane-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: stretch;
+    }
+    .pane {
+        min-width: 49%;
+        box-sizing: border-box;
+
+        .control-label {
+            width: 10rem;
+            word-wrap: break-word;
+        }
+        .controls, .checkbox {
+            width: 10rem;
+            align-items: flex-start;
+        }
+        input, select {
+            width: 10rem;
+        }
+        input[type='checkbox'] {
+            width: 1rem;
+        }
+    }
+
+    label {
+        user-select: none;
+    }
+
+
+
+    .left-pane {
+        margin-right: 0.5rem;
+    }
+    .right-pane {
+        border-left: 1px solid transparent;
+        themed border-color shade3
+    }
+
+    @media only screen and (max-width: 768px) {
+        .pane {
+            width: 100%;
+            .control-label {
+                width: 50%;
+            }
+        }
+        .left-pane {
+            margin-right 0;
+        }
+        .right-pane {
+            border-left: 0;
+        }
+    }
+
+    .header-with-icon {
+        display: inline-flex;
+        align-items: middle;
+    }
+}

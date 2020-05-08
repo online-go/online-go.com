@@ -17,12 +17,11 @@
 
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
+import {createModeratorNote} from "ModNoteModal";
 import {_} from 'translate';
 import * as data from "data";
 import ITC from "ITC";
-import {put} from "requests";
-import {browserHistory} from "ogsHistory";
-import {splitOnBytes, unicodeFilter, errorAlerter} from "misc";
+import {splitOnBytes, unicodeFilter} from "misc";
 import {profanity_filter} from "profanity_filter";
 import {player_is_ignored} from "BlockPlayer";
 import {emitNotification} from "Notifications";
@@ -146,7 +145,7 @@ class PrivateChat {
             title.append(superchat);
 
             title.append($("<i>").addClass("fa fa-clipboard").click(() => {
-                this.createModeratorNote();
+                this.createModNote();
             }));
         }
         else {
@@ -301,6 +300,7 @@ class PrivateChat {
             this.input.removeAttr("disabled");
         }
     }
+
     minimize(send_itc?) {
         if (this.superchat_enabled) { return; }
         if (this.display_state === "minimized") { return; }
@@ -419,21 +419,14 @@ class PrivateChat {
             }
         }
     }
-    createModeratorNote = () => {
-        if (this.lines.length < 1) { return; }
 
+    createModNote = () => {
         let moderator_note = "";
         this.lines.forEach((line) => {
             moderator_note += line[0].textContent + "\n";
         });
 
-        put(`players/${this.user_id}/moderate`, {
-            moderation_note: moderator_note
-        })
-        .then(() => { })
-        .catch(errorAlerter);
-
-        browserHistory.push(`/user/view/${this.user_id}#leave-moderator-note`);
+        createModeratorNote(this.user_id, moderator_note);
     }
 
     hilight() {
