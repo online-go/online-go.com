@@ -82,7 +82,7 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
                             onChange={this.updateDraft}/>
 
               <div className="buttons">
-                 <button onClick={this.submitNote}>{_("Submit")}</button>
+                 <button className="primary" onClick={this.submitNote}>{_("Submit")}</button>
               </div>
           </div>
         );
