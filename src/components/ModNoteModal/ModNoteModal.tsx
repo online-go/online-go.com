@@ -65,8 +65,6 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
     }
 
     render() {
-        console.log(this.state.current_draft);
-
         const current_draft: [string] = this.state.current_draft.split('\n').map((line, idx) => (
             <div key={idx}>{line}</div>
         ));
@@ -91,6 +89,6 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
     }
 }
 export function createModeratorNote(player_id: number, draft: string) {
-    browserHistory.push(`/user/view/${player_id}`);
+    browserHistory.push(`/user/view/${player_id}?show_mod_log=1`);
     return openModal(<ModNoteModal player_id={player_id} draft={draft}/>);
 }
