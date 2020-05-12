@@ -108,11 +108,14 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                 {header: _("Collection"),  className: () => "name", orderBy: ["name"],
                                  render: (X) => (
                                     <div>
-                                        <div>{X.name}</div>
-                                        <Player user={X.owner}/>
+                                        <div className="puzzle-name">
+                                            <a href={`/puzzle/${X.starting_puzzle.id}`}>{X.name}</a>
+                                        </div>
+                                        <Player user={X.owner} />
                                     </div>
                                  )
                                 },
+
 
                                 {header: _("Difficulty"),  className: () => "difficulty center", orderBy: ["min_rank", "max_rank"],
                                  render: (X) => (
