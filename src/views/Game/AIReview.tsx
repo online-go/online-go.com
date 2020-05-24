@@ -45,6 +45,7 @@ declare var swal;
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
+    score: number;
     num_variations: number;
 }
 
@@ -604,6 +605,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return {
                 move_number: idx,
                 win_rate: x,
+                score: this.ai_review?.moves[idx]?.score || 0,
                 num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
             };
         }) || [];
