@@ -324,7 +324,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     resetJosekiSequence = (pos: string) => {
-        // ask the server for the moves from postion pos
+        // ask the server for the moves from position pos
+        this.goban.disableStonePlacement(); // prevents a bug where move is played before moves are fetched
         this.fetchNextMovesFor(pos);
     }
 
