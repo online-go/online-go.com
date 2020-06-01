@@ -77,10 +77,14 @@ function StatsChart(props: JosekiStatsModalProperties) {
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
 
     render() {
-        //console.log(this.props.daily_page_visits);
+        const start_graph = moment("2020-01-15");  // before this time the data is dodgy
+        const today = moment().startOf('day');
 
-        // strip out tiny days, which theoretically shouldn't be there in the first place
-        const daily_page_visits = this.props.daily_page_visits.filter((day) => (day.pageVisits > 10));
+        const daily_page_visits = this.props.daily_page_visits
+            .filter((day) => ((moment(day.date) > start_graph) && (moment(day.date) < today)))
+            // strip out tiny days, which theoretically shouldn't be there in the first place
+            // (I think they get there when two people simultaneously click on a position in the first visit of a day)
+            .filter((day) => (day.pageVisits > 10));
 
         return (
             <div className="Modal JosekiStatsModal" ref="modal">

@@ -351,22 +351,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     updatePlayerJosekiRecord = (node_id) => {
-        fetch(server_url + "playrecord/", {
-            method: 'put',
-            mode: 'cors',
-            headers: godojo_headers(),
-            body: JSON.stringify({
-                position_id: node_id,
-                errors: this.state.joseki_errors
+        if (!data.get("user").anonymous) {
+            fetch(server_url + "playrecord/", {
+                method: 'put',
+                mode: 'cors',
+                headers: godojo_headers(),
+                body: JSON.stringify({
+                    position_id: node_id,
+                    errors: this.state.joseki_errors
+                })
             })
-        })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to play record PUT:", body);
-            this.extractPlayResults(body);
-        }).catch((r) => {
-            console.log("Play record PUT failed:", r);
-        });
+            .then(res => res.json())
+            .then(body => {
+                // console.log("Server response to play record PUT:", body);
+                this.extractPlayResults(body);
+            }).catch((r) => {
+                console.log("Play record PUT failed:", r);
+            });
+        }
     }
 
    // Fetch the next moves based on the current filter
