@@ -97,7 +97,10 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                                     return arr;
                                 }
                             }
-                            onRowClick={(row, ev) => navigateTo(`/puzzle/${row.starting_puzzle.id}`, ev)}
+                            onRowClick={(row, ev) => {
+                                const id = data.get(`puzzle.collection.${row.id}.last-visited`, row.starting_puzzle.id);
+                                navigateTo(`/puzzle/${id}`, ev);
+                            }}
                             columns={[
                                 {header: "",  className: () => "icon",
                                  render: (X) => (

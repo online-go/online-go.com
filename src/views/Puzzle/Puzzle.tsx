@@ -206,6 +206,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 this.setState(state);
                 this.onResize(true);
                 window.document.title = state.collection.name + ": " + state.name;
+                data.set(`puzzle.collection.${state.collection.id}.last-visited`, state.id);
                 this.solve_time_start = Date.now();
                 this.attempts = 1;
             }
