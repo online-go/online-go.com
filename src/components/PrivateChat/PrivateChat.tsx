@@ -17,6 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
+import {createModeratorNote} from "ModNoteModal";
 import {_} from 'translate';
 import * as data from "data";
 import ITC from "ITC";
@@ -142,12 +143,17 @@ class PrivateChat {
                 superchat.addClass("enabled");
             }
             title.append(superchat);
+
+            title.append($("<i>").addClass("fa fa-clipboard").click(() => {
+                this.createModNote();
+            }));
+        }
+        else {
+            title.append($("<i>").addClass("ogs-goban").click(() => {
+                challenge(this.user_id);
+            }));
         }
 
-
-        title.append($("<i>").addClass("ogs-goban").click(() => {
-            challenge(this.user_id);
-        }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
             window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)), "_blank");
         }));
@@ -301,6 +307,7 @@ class PrivateChat {
             this.input.removeAttr("disabled");
         }
     }
+
     minimize(send_itc?) {
         if (this.superchat_enabled) { return; }
         if (this.display_state === "minimized") { return; }
@@ -374,7 +381,6 @@ class PrivateChat {
             }
         }
 
-
         if (typeof(txt) === "string" && txt.substr(0, 4) === "/me ") {
             line.append("<span> ** </span>");
             line.append($("<span>").addClass("username").text(from)).append("<span> </span>");
@@ -383,7 +389,6 @@ class PrivateChat {
             line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
         }
         line.append($("<span>").html(chat_markup(profanity_filter(txt))));
-
 
         this.lines.push(line);
         if (this.body) {
@@ -422,6 +427,16 @@ class PrivateChat {
             }
         }
     }
+
+    createModNote = () => {
+        let moderator_note = "";
+        this.lines.forEach((line) => {
+            moderator_note += line[0].textContent + "\n";
+        });
+
+        createModeratorNote(this.user_id, moderator_note);
+    }
+
     hilight() {
         if (this.dom) {
             this.dom.addClass("highlighted");
