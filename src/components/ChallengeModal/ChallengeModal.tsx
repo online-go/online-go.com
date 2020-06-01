@@ -380,6 +380,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         */
         let conf = next.conf;
 
+        if (next.challenge.game.komi_auto === 'custom' && next.challenge.game.komi === null) {
+            swal(_("Invalid custom komi, please correct and try again"));
+            return;
+        }
+
         if (next.challenge.game.ranked) {
             next.challenge.game.komi_auto = "automatic";
         }
@@ -902,7 +907,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         <label className="control-label"></label>
                         <div className="controls">
                             <div className="checkbox">
-                                <input type="number" value={this.state.challenge.game.komi} onChange={this.update_komi} className="form-control" style={{width: "4em"}} step="0.5"/>
+                                <input type="number" value={this.state.challenge.game.komi || 0} onChange={this.update_komi} className="form-control" style={{width: "4em"}} step="0.5"/>
                             </div>
                         </div>
                     </div>
