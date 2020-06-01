@@ -809,10 +809,14 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     }
 
     function updateGameListThreshold(ev: React.ChangeEvent<HTMLInputElement>) {
-        if (ev.target.value && parseInt(ev.target.value)) {
-            preferences.set("game-list-threshold", Math.min(300, Math.max(0, parseInt(ev.target.value))));
+        let threshold = parseInt(ev.target.value);
+        if (!isNaN(threshold)) {
+            threshold = Math.min(300, Math.max(0, threshold));
+            preferences.set("game-list-threshold", threshold);
+            _setGameListThreshold(threshold);
+        } else {
+            _setGameListThreshold(ev.target.value as any);
         }
-        _setGameListThreshold(ev.target.value as any);
     }
 
     function setShowOfflineFriends(checked) {
