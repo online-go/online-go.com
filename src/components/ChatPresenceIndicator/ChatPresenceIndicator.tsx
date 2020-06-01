@@ -52,7 +52,7 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
     }
 
     init(channel, user_id) {
-        this.proxy = chat_manager.join(channel, user_id);
+        this.proxy = chat_manager.join(channel);
         this.proxy.on("join", () => this.update(user_id));
         this.proxy.on("part", () => this.update(user_id));
         this.update(user_id);

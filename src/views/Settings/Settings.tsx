@@ -147,6 +147,7 @@ export function Settings():JSX.Element {
         { key: 'general'  , label: _("General Preferences") },
         { key: 'sound'    , label: _("Sound Preferences") },
         { key: 'game'     , label: _("Game Preferences") },
+        { key: 'chat'     , label: _("Chat Preferences")},
         { key: 'vacation' , label: _("Vacation") },
         { key: 'email'    , label: _("Email Notifications") },
         { key: 'account'  , label: _("Account Settings") },
@@ -163,6 +164,7 @@ export function Settings():JSX.Element {
         case 'email'    : SelectedPage = EmailPreferences   ; break;
         case 'game'     : SelectedPage = GamePreferences    ; break;
         case 'general'  : SelectedPage = GeneralPreferences ; break;
+        case 'chat'     : SelectedPage = ChatPreferences    ; break;
     }
 
     let props:SettingGroupProps = {
@@ -494,6 +496,71 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
             </dl>
 
             <i><Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link></i>
+        </div>
+    );
+}
+
+function ChatPreferences(props:SettingGroupProps):JSX.Element {
+    const [show_empty_chat_notification, _setEmptyChatNotification]:[boolean, (x: boolean) => void] = React.useState(preferences.get("show-empty-chat-notification"));
+    const [group_chat_unread, _setGroupChatUnread]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-chat-unread"));
+    const [group_chat_mentions, _setGroupChatMentions]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-mentions"));
+    const [tournament_chat_unread, _setTournamentChatUnread]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-chat-unread"));
+    const [tournament_chat_mentions, _setTournamentChatMentions]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-mentions"));
+
+    function toggleEmptyChatNotification(checked) {
+        preferences.set("show-empty-chat-notification", checked);
+        _setEmptyChatNotification(checked);
+    }
+
+    function toggleGroupChatMentions(checked) {
+        preferences.set("chat-subscribe-group-mentions", checked);
+        _setGroupChatMentions(checked);
+    }
+
+    function toggleGroupChatUnread(checked) {
+        preferences.set("chat-subscribe-group-chat-unread", checked);
+        _setGroupChatUnread(checked);
+    }
+
+    function toggleTournamentChatMentions(checked) {
+        preferences.set("chat-subscribe-tournament-mentions", checked);
+        _setTournamentChatMentions(checked);
+    }
+
+    function toggleTournamentChatUnread(checked) {
+        preferences.set("chat-subscribe-tournament-chat-unread", checked);
+        _setTournamentChatUnread(checked);
+    }
+
+    return (
+        <div>
+            <PreferenceLine title={_("Show chat notification icon when there are no unread messages.")}>
+                <Toggle checked={show_empty_chat_notification} onChange={toggleEmptyChatNotification}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Notify me when I'm mentioned in group chats I'm a member of.")}
+                description={_("This only applies to chats you haven't choosen a different setting.")}
+                >
+                <Toggle checked={group_chat_mentions} onChange={toggleGroupChatMentions}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Notify me about unread messages in group chats I'm a member of.")}
+                description={_("This only applies to chats you haven't choosen a different setting.")}
+                >
+                <Toggle checked={group_chat_unread} onChange={toggleGroupChatUnread}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Notify me when I'm mentioned in tournament chats I'm a member of.")}
+                description={_("This only applies to chats you haven't choosen a different setting.")}
+                >
+                <Toggle checked={tournament_chat_mentions} onChange={toggleTournamentChatMentions}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Notify me about unread messages in tournament chats I'm a member of.")}
+                description={_("This only applies to chats you haven't choosen a different setting.")}
+                >
+                <Toggle checked={tournament_chat_unread} onChange={toggleTournamentChatUnread}/>
+            </PreferenceLine>
         </div>
     );
 }
