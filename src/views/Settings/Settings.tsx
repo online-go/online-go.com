@@ -1328,6 +1328,7 @@ function SoundPreferences(props:SettingGroupProps):JSX.Element {
                 <Card>
                     <SoundToggle name={pgettext('Sound sample option', 'Byoyomi')} sprite='byoyomi' voiceopt={true} />
                     <SoundToggle name={pgettext('Sound sample option', 'Overtime')} sprite='overtime' voiceopt={true} />
+                    <SoundToggle name={pgettext('Sound sample option', 'Start Counting')} sprite='start_counting' voiceopt={true} />
                     <SoundToggle name={pgettext('Sound sample option', 'Period')} sprite='period' voiceopt={true} />
                     <SoundToggle name={pgettext('Sound sample option', '5 periods left')} sprite='5_periods_left' voiceopt={true} />
                     <SoundToggle name={pgettext('Sound sample option', '4 periods left')} sprite='4_periods_left' voiceopt={true} />

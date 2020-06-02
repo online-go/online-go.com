@@ -980,12 +980,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
             if (audio_clock_event.in_overtime && !overtime_announced) {
                 force_play = true;
                 overtime_announced = true;
-                if (time_control.system === 'byoyomi') {
-                    audio_to_play = 'byoyomi';
-                    last_period_announced = audio_clock_event.clock.periods_left;
-                }
-                else {
-                    audio_to_play = 'overtime';
+                if (sfx.hasSoundSample('start_counting')) {
+                    audio_to_play = 'start_counting';
+                } else {
+                    if (time_control.system === 'byoyomi') {
+                        audio_to_play = 'byoyomi';
+                        last_period_announced = audio_clock_event.clock.periods_left;
+                    }
+                    else {
+                        audio_to_play = 'overtime';
+                    }
                 }
             }
             else if (audio_clock_event.in_overtime && time_control.system === 'byoyomi' && last_period_announced !== audio_clock_event.clock.periods_left) {
@@ -1643,7 +1647,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return a.owner.ranking - b.owner.ranking;
         });
         this.setState({review_list: review_list});
-        if (this.goban?.engine?.phase === "finished"){
+        if (this.goban?.engine?.phase === "finished") {
             sfx.play('review_started');
         }
     }

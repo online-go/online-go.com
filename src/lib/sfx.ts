@@ -31,6 +31,7 @@ const GameVoiceSounds = [
     "last_period",
     "byoyomi",
     "overtime",
+    "start_counting",
 
     "you_have_won",
     "black_wins",
@@ -302,6 +303,18 @@ export class SFXManager {
         }
 
         return this.synced;
+    }
+    public hasSoundSample(sound_name: ValidSound):boolean {
+        try {
+            let pack_id = this.getPackId('game_voice');
+            let sprite_pack = sprite_packs[pack_id];
+            if (sprite_pack && sound_name in sprite_pack.definitions) {
+                return true;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
     }
     public play(sound_name: ValidSound):SFXSprite | null {
         try {
