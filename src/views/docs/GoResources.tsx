@@ -170,6 +170,16 @@ export let GoResources = (props) => {
             </dl>
 
             <dl>
+                <dt>{_("Online Lessons")}</dt>
+                {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="https://internetgoschool.com/index.vhtml.com">Guo Juans Internet Go School</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.yunguseng.com/">Yunguseng Dojang's Online Go School</a></span>,
+                <span><Flag country={"jp"}/> <a rel="noopener" href="https://www.hoenkikaku.co.jp/">Hoenkikaku Co, Ltd.</a></span>
+                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
+                }
+            </dl>
+
+            <dl>
                 <dt>{_("Tsumego")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.goproblems.com">GoProblems.com</a></span>,
@@ -231,7 +241,6 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Sites")}</dt>
                 {scramble(
-                <span><Flag country={en}/> <a rel="noopener" href="WhereToPlayGo.com">WhereToPlayGo.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://openstudyroom.org">Open Study Room</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://gobase.org/">GoBase.org</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="http://rfg.jeudego.org/">Revue Française de Go</a></span>,
@@ -264,14 +273,6 @@ export let GoResources = (props) => {
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
-            </dl>
-
-            <dl>
-                <dt>{_("Podcasts")}</dt>
-                {scramble(
-                <span><Flag country={en}/> <a rel="noopener" href="http://podcast.baduk.club/">We Heart Baduk Podcast</a></span>
-                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
-                }
             </dl>
 
             <dl>
