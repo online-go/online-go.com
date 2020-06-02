@@ -1643,7 +1643,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return a.owner.ranking - b.owner.ranking;
         });
         this.setState({review_list: review_list});
-        sfx.play('review_started');
+        if (this.goban?.engine?.phase === "finished"){
+            sfx.play('review_started');
+        }
     }
     handleEscapeKey() {
         if (this.state.zen_mode) {
