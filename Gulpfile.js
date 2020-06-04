@@ -161,7 +161,7 @@ function min_styl(done) {
 function background_webpack(done) {
     function spawn_webpack() {
         let env = process.env;
-        let webpack = spawn('npm', ['run', 'webpack-watch'], { stdio: 'inherit' })
+        let webpack = spawn('npm', ['run', 'webpack-watch'], { stdio: 'inherit', shell: true })
 
         webpack.on('exit', spawn_webpack);
     }
