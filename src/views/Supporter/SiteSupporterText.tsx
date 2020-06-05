@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -33,18 +33,11 @@ export function SiteSupporterText(props) {
             </p>
 
 
-            <p>
-                {_("Because of the computationally intensive nature of performing these reviews, there are different strength networks available. Roughly speaking, the larger the network, the better the review, but the harder the servers have to work on the review. Below is a table listing out the size of the networks used, and the approximate strength of the review:")}
-            </p>
-
             <div className='table-container'>
                 <table>
                     <thead>
                         <tr>
                             <th>
-                            </th>
-                            <th>
-                                {pgettext("Size of our artificial intelligence neural network", "19x19 network size")}
                             </th>
                             <th>
                                 {pgettext("Number of playouts our neural network does to review a game", "Playouts")}
@@ -57,25 +50,21 @@ export function SiteSupporterText(props) {
                     <tbody>
                         <tr>
                             <th>{_("Supporter")}</th>
-                            <td>15x192</td>
-                            <td>250</td>
-                            <td>{pgettext("How strong an AI engine is", "Strong Dan level player")}</td>
+                            <td>125</td>
+                            <td>{pgettext("How strong an AI engine is", "Amateur Dan level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Kyu Supporter")}</th>
-                            <td>15x192</td>
-                            <td>1000</td>
+                            <td>300</td>
                             <td>{pgettext("How strong an AI engine is", "Professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Dan Supporter")}</th>
-                            <td>40x256</td>
                             <td>800</td>
                             <td>{pgettext("How strong an AI engine is", "Strong professional level player")}</td>
                         </tr>
                         <tr>
                             <th>{_("Pro Supporter")}</th>
-                            <td>40x256</td>
                             <td>2000</td>
                             <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td>
                         </tr>
@@ -84,7 +73,7 @@ export function SiteSupporterText(props) {
             </div>
 
             <p className='fineprint'>
-                <sup>*</sup>{_("Only 19x19 games are currently supported for AI review. Support for 9x9 and 13x13 games is planned. There are no plans for supporting other sized games at this time.")}
+                <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
             </p>
         </div>
     );

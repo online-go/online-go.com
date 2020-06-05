@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -61,11 +61,6 @@
         }
 
         .auto-resign-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            left: 0;
-            bottom: 0;
             opacity: 0.9;
             z-index: z.goban.score-details;
             background-color #555;
@@ -77,8 +72,10 @@
             justify-content: center;
             font-size: font-size-big;
             .fa-bolt {
-                font-size: 200%;
+                font-size: 150%;
             }
+            padding-left: 2px;
+            min-width: inherit;  // make sure we are as wide as the player avatar that contains us
         }
     }
 
@@ -119,6 +116,10 @@
         box-shadow: 0 2px 5px rgba(50,50,50,.51);
         themed background player-white-background
         themed color player-white-fg
+
+        .paused-correspondence {
+            themed color player-white-paused-clock
+        }
     }
 
     .black.player-container {
@@ -126,6 +127,10 @@
         themed color player-black-fg
         border-top: 1px solid #202020;
         box-shadow: 0 2px 5px rgba(20,20,20,.71);
+
+        .paused-correspondence {
+            themed color player-black-paused-clock
+        }
 
         .player-name {
             color: #00B8FF;
@@ -243,6 +248,8 @@
         flex-wrap: wrap;
         justify-content: space-between;
         position: relative;
+        user-select: none;
+        cursor: help;
 
         .score-details {
             position: absolute;
@@ -257,7 +264,7 @@
             visibility: hidden;
         }
 
-        &:hover .score-details {
+        &.show-score-breakdown .score-details {
             z-index: z.goban.score-details;
             visibility: visible;
             font-size: 1.2rem;
@@ -293,12 +300,19 @@
     .player-icon-container {
         flex-basis: 1.5rem;
         min-height: 1.5rem;
-        min-width: 1.5rem;
+        min-width: 4rem; // need this width to accomodate diconnect timer
         .player-flag {
             top: 0.5rem;
             left: 1rem;
         }
-
+        .auto-resign-overlay {
+            flex-direction: row;
+            font-size: inherit;
+            .fa-bolt {
+                font-size: inherit;
+                margin-right: 2px;
+            }
+        }
     }
     .player-name-container {
         font-size: font-size-small;
@@ -317,8 +331,121 @@
         .main-time {
             font-size: font-size-small;
         }
-        .periods, .period-time {
+        .period-moves, .period-time {
             font-size: font-size-extra-small;
         }
     }
 }
+
+body.dark .MainGobanView.zen .players {
+	.white {
+		&.player-container {
+			background: linear-gradient(#2C2C2C 0%, #383838 100%);
+			border: 1px solid #181818;
+			color: #DDD;
+		}
+	}
+	#game-white-clock,
+	.white .score-container {
+		color: #DDD;
+	}
+
+	.black {
+		&.player-container {
+			background: linear-gradient(#111111 0%, #1A1A1A 100%);
+			// background: none;
+			background-color: #111111;
+			border: 1px solid #181818;
+			color: #BBB;
+		}
+	}
+	#game-black-clock,
+	.black .score-container {
+		color: #BBB;
+	}
+}
+body.light .MainGobanView.zen .players {
+	.white.player-container {
+	}
+	.black.player-container {
+		background: linear-gradient(#666 0%, #181818 100%);
+	}
+}
+.MainGobanView.zen .play-controls{
+	.game-state {
+		display: none;
+	}
+}
+.MainGobanView.zen .players {
+	.black.player-container {
+		border-top: none;
+	}
+	.player-container {
+		justify-content: center;
+		min-width: 150px;
+	}
+	.player-icon-clock-row {
+		width: auto;
+		flex-grow: 1;
+	}
+	.Clock {
+		min-height: 80px;
+		.byo-yomi-periods,
+		.canadian-periods,
+		.periods-delimiter,
+		.period-moves,
+		.pause-text {
+			display: none;
+		}
+		.main-time,
+		.period-time {
+			line-height: 50px;
+			font-size: 26pt;
+			text-align: center;
+		}
+		.byo-yomi-container,
+		.canadian-clock-container {
+			display: block;
+			flex-grow: 1;
+		}
+	}
+	.Clock:not(.in-overtime) {
+		.byo-yomi-container,
+		.canadian-clock-container {
+			display: none;
+		}
+	}
+	.captures {
+		display: flex;
+		justify-content: center;
+		flex-basis: 70%;
+	}
+	.score-container {
+		margin: 0px;
+		justify-content: center;
+		flex-grow: 0;
+	}
+	.num-captures-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: row;
+		flex-grow: 1;
+		.stone-image {
+			width: 14px;
+			height: 14px;
+		}
+		.num-captures-stone {
+			margin-left: 3px;
+			margin-right: 3px;
+		}
+	}
+	.player-icon-container,
+	.player-name-container,
+	.player-name-plain,
+	.score-details,
+	.komi {
+		display: none;
+	}
+}
+

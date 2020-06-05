@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -147,7 +147,7 @@ export function lookup(player_id: number): PlayerCacheEntry {
     return null;
 }
 
-export function lookup_by_username(username: string): PlayerCacheEntry {
+export function lookup_by_username(username: string): PlayerCacheEntry | null {
     if (username in cache_by_username) {
         return cache_by_username[username];
     }

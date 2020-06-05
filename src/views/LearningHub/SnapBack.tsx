@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { PuzzleConfig } from 'goban';
 import {LearningPage, DummyPage} from './LearningPage';
 import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
@@ -47,7 +48,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Capture the two white stones at e3 and e4");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -71,7 +72,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the two white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -95,7 +96,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Capture the three white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -120,7 +121,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Capture the five white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -144,7 +145,7 @@ class Page5 extends LearningPage {
     text() {
         return _("Save your group");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -170,7 +171,7 @@ class Page6 extends LearningPage {
     text() {
         return _("Capture the four white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -196,7 +197,7 @@ class Page7 extends LearningPage {
     text() {
         return _("Capture all of the white stones");
     }
-    config() {
+    config():PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {

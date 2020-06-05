@@ -84,17 +84,18 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         .then(res => res.json())
         .then(body => {
             // console.log("Server response to source GET:", body);
-            this.setState({source_list: body.sources});
+            if (body.sources != undefined) { // Sentry reports that we somehow receive a body with undefined source_list!?
+                this.setState({source_list: body.sources});
+            }
         }).catch((r) => {
             console.log("Sources GET failed:", r);
         });
     }
 
-    onTagChange = (e) => {
+    onTagChange = (tags) => {
         // console.log("Variation filter update:", e);
-        const tags = (e === null || e.length === 0) ? null : e.map(t => t.value);
-
-        const new_filter = {...this.state.selected_filter, tags: tags};
+        //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
+        const new_filter = {...this.state.selected_filter, tags};
 
         // console.log("new tag filter", new_filter);
         this.props.set_variation_filter(new_filter);

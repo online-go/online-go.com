@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ import {abort_requests_in_flight, post, get, put, del} from "requests";
 import {KBShortcut} from "KBShortcut";
 import {goban_view_mode, goban_view_squashed} from "Game";
 import {PersistentElement} from "PersistentElement";
-import {errorAlerter, dup, ignore} from "misc";
+import {errorAlerter, errorLogger, dup, ignore} from "misc";
 import {longRankString, rankList} from "rank_utils";
 import {
     Goban,
@@ -71,6 +71,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
+    solve_time_start: number = Date.now();
+    attempts: number = 1;
 
     transform = new PuzzleTransform(new TransformSettings());
     navigation = new PuzzleNavigation();
@@ -204,6 +206,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                 this.setState(state);
                 this.onResize(true);
                 window.document.title = state.collection.name + ": " + state.name;
+                this.solve_time_start = Date.now();
+                this.attempts = 1;
             }
         );
     }
@@ -269,8 +273,20 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             show_correct: false,
             show_wrong: true,
         });
+        this.attempts++;
     }
     onCorrectAnswer = () => {
+        post(`puzzles/${this.props.match.params.puzzle_id}/solutions`, {
+            'time_elapsed': Date.now() - this.solve_time_start,
+            'flipped_horizontally': this.transform.settings.transform_h,
+            'flipped_vertically':this.transform.settings.transform_v,
+            'transposed': this.transform.settings.transform_x,
+            'colors_swapped':this.transform.settings.transform_color,
+            'attempts': this.attempts,
+            'solution': this.goban.engine.cur_move.getMoveStringToThisPoint(),
+        })
+        .then(response => console.log(response))
+        .catch(errorLogger);
         this.setState({
             show_correct: true,
             show_wrong: false,
@@ -571,6 +587,23 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             }
         }
 
+
+        let show_correct = this.state.show_correct;
+        if (this.goban.engine.move_tree.findBranchesWithCorrectAnswer().length === 0) {
+            /* Some puzzles just have descriptions and there is no "correct" branch,
+             * in this case just let the user know visually that there's nothing to
+             * do, here's the next puzzle */
+            show_correct = true;
+        }
+
+
+        const have_content:boolean =
+            show_correct
+            || this.state.show_wrong
+            || !!goban.engine.cur_move.text
+            || (!goban.engine.cur_move.parent && !!goban.engine.puzzle_description)
+            ;
+
         return (
         <div className={`Puzzle ${view_mode} ${squashed}`}>
             <KBShortcut shortcut="escape" action={this.doReset} />
@@ -643,36 +676,41 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     </div>
                 }
 
-                {(goban.engine.cur_move.parent == null || null) &&
-                    <Markdown source={goban.engine.puzzle_description} />
-                }
-                {(goban.engine.cur_move.text || null) &&
-                    <Markdown source={goban.engine.cur_move.text} />
-                }
-                {(this.state.show_correct || null) &&
-                    <div>
-                        {(!goban.engine.cur_move.text || null) &&
-                            <div>
-                                <h1><i className="fa fa-check-circle-o success-text"></i> {_("Correct!")}</h1>
+                {(have_content || null) &&
+                    <div className='puzzle-node-content'>
+                        {(show_correct || null) &&
+                            <div className='success'>
+                                <i className="fa fa-check-circle-o"></i> {_("Correct!")}
                             </div>
                         }
 
-                        {(next_id !== 0 && next_id !== puzzle.id || null) &&
-                            <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
-                        }
-                        {(next_id === 0 || null) &&
-                            <div>
-                                <h3>{_("You have reached the end of this collection")}</h3>
-                                <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
+                        {(this.state.show_wrong || null) &&
+                            <div className='incorrect'>
+                                <i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}
                             </div>
                         }
-                    </div>
-                }
 
-                {(this.state.show_wrong || null) &&
-                    <div>
-                        {(!goban.engine.cur_move.text || null) &&
-                            <div><h1><i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}</h1></div>
+                        <div className='content'>
+                            {(goban.engine.cur_move.parent == null || null) &&
+                                <Markdown source={goban.engine.puzzle_description} />
+                            }
+                            {(goban.engine.cur_move.text || null) &&
+                                <Markdown source={goban.engine.cur_move.text} />
+                            }
+                        </div>
+
+                        {(show_correct || null) &&
+                            <div className='actions'>
+                                {(next_id !== 0 && next_id !== puzzle.id || null) &&
+                                    <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
+                                }
+                                {(next_id === 0 || null) &&
+                                    <div>
+                                        <h3>{_("You have reached the end of this collection")}</h3>
+                                        <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
+                                    </div>
+                                }
+                            </div>
                         }
                     </div>
                 }

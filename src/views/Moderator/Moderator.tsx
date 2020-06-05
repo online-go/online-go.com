@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -101,6 +101,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                         {header: _("Country")  , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.geoip.country} {X.geoip.subdivisions ? (" / " + X.geoip.subdivisions.join(", ")) : ""}</span>},
                         {header: _("Timezone") , render: (X) => <span className={X.should_ban ? 'should-ban' : ''}>{X.last_timezone_offset / 60}</span>} ,
                         {header: "BID"         , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.last_browser_id}</span>} ,
+                        {header: "Email"       , render: (X) => <span className={'monospace small clip ' + (X.should_ban ? 'should-ban' : '')}>{X.email}</span>} ,
                     ]}
                 />
             </Card>

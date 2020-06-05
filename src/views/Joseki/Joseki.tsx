@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -41,18 +41,21 @@ import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
-const position_url = (node_id, variation_filter) => {
+const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
-    if (variation_filter !== null) {
-        if (variation_filter.contributor !== null) {
+    if (variation_filter) {
+        if (variation_filter.contributor) {
             position_url += "&cfilterid=" + variation_filter.contributor;
         }
-        if (variation_filter.tags !== null && variation_filter.tags.length !== 0) {
-            position_url += "&tfilterid=" + variation_filter.tags;
+        if (variation_filter.tags && variation_filter.tags.length !== 0) {
+            position_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
         }
-        if (variation_filter.source !== null) {
+        if (variation_filter.source) {
             position_url += "&sfilterid=" + variation_filter.source;
         }
+    }
+    if (mode) {
+        position_url += "&mode=" + mode;
     }
     return position_url;
 };
@@ -60,11 +63,11 @@ const position_url = (node_id, variation_filter) => {
 const joseki_sources_url = server_url + "josekisources";
 const tags_url = server_url + "tags";
 
-const tag_count_url = (node_id: number, tag_id:number): string => (
+const tag_count_url = (node_id: number, tag_id: number): string => (
     server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id
 );
 
-const tagscount_url = (node_id: number): string => (
+const tagscount_url = (node_id: string): string => (
     server_url + "position/tagcounts?id=" + node_id
 );
 
@@ -80,12 +83,18 @@ const applyJosekiMarkdown = (markdown: string): string => {
     return result;
 };
 
+const getOGSJWT = (): string => {
+    return data.get('config').user_jwt;
+};
+
 // Headers needed to talk to the godojo server.
-let godojo_headers = {        // note: user JWT is added to this later
+const godojo_headers = (): {} => ({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Godojo-Auth-Token': 'foofer'
-};
+    'X-Godojo-Auth-Token': 'foofer',
+    'X-User-Info' : getOGSJWT()       // re-load this every time, in case they change identity via login/logout
+    }
+);
 
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
@@ -100,7 +109,7 @@ enum MoveCategory {
 const bad_moves = ["MISTAKE", "QUESTION"] as any;  // moves the player is not allowed to play in Play mode
 
 enum PageMode {
-    Explore, Play, Edit, Admin
+    Explore = "0", Play = "1", Edit = "2", Admin = "3"
 }
 
 const ColorMap = {
@@ -137,21 +146,23 @@ export class Joseki extends React.Component<JosekiProps, any> {
     played_mistake = false;
     computer_turn = false;  // when we are placing the computer's stone in Play mode
     filter_change = false;  // set to true when a position is being reloaded due to filter change
-    cached_positions = {};
+    cached_positions = {};  // a hash by node-ide of position information we've received from the server
+    move_trace = [];   // the list of moves that we know the person clicked on to maximum depth, so we can forward-step
+    trace_index = -1;  // index into move_trace of the current node that we are on
 
     constructor(props) {
         super(props);
 
         // console.log(props);
         this.state = {
-            move_string: "",         // This is used for making sure we know what the current move is. It is the display value also.
-            current_node_id: null,   // The server's ID for this node, so we can uniquely identify it and create our own route for it",
+            move_string: "",             // This is used for making sure we know what the current move is. It is the display value also.
+            current_node_id: undefined as string,    // The server's ID for this node, so we can uniquely identify it and create our own route for it,
             position_description: "",
             variation_label: '_',
             current_move_category: "",
-            pass_available: false,   // Whether pass is one of the joseki moves or not
+            pass_available: false,   // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
             contributor_id: -1,     // the person who created the node that we are displaying
-            child_count: null,
+            child_count: 0,
 
             throb: false,   // whether to show board-loading throbber
 
@@ -162,16 +173,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             move_type_sequence: [],   // This is the sequence of "move types" that is passed to the Play pane to display
             joseki_errors: 0,         // How many errors made by the player in the current sequence in Play mode.
-            josekis_played: null,
-            josekis_completed: null,
-            joseki_successes: null,
-            joseki_best_attempt: null,
-            joseki_tag_id: null,       // the id of the "This is Joseki" tag, for use in setting default
+            josekis_played: undefined as string,    // The player's joseki playing record...
+            josekis_completed: undefined as number,
+            joseki_successes: undefined as number,
+            joseki_best_attempt: undefined as number,
+            joseki_tag_id: undefined as number,       // the id of the "This is Joseki" tag, for use in setting default
 
-            joseki_source: null as {}, // the source of the current position
+            joseki_source: undefined as {url: string, description: string}, // the source of the current position
             tags: [],                  // the tags that are on the current position
 
-            variation_filter: {contributor: null, tags: null, source: null},
+            variation_filter: {} as {contributor: number, tags: number[], source: number},   // start with no filter defined
 
             count_details_open: false,
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
@@ -199,7 +210,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             "square_size": 20,
         };
 
-        if (initial_position !== undefined) {
+        if (initial_position) {
             opts["moves"] = initial_position;
         }
         this.goban_opts = opts;
@@ -210,8 +221,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     componentDidMount = () => {
-        godojo_headers["X-User-Info"] = this.getOGSJWT();
-
         this.getUserJosekiPermissions();
 
         // When we go into Play mode we need to know what tag is the Joseki one
@@ -235,6 +244,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
     initializeBoard = (target_position: string = "root") => {
         // console.log("Resetting board...");
         this.next_moves = [];
+        this.move_trace = [target_position];
+        this.trace_index = 0;
+
         this.played_mistake = false;
         this.computer_turn = false;
 
@@ -243,8 +255,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             current_move_category: "",
             move_type_sequence: [],
             joseki_errors: 0,
-            joseki_successes: null,
-            joseki_best_attempt: null
+            joseki_successes: undefined,
+            joseki_best_attempt: undefined
         });
         this.initializeGoban();
         this.onResize();
@@ -258,7 +270,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
             mode: 'cors',
-            headers: godojo_headers   // server gets user id from here
+            headers: godojo_headers()   // server gets user id from here
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -278,7 +290,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
         fetch(server_url + "tag?group=0&seq=0", {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -292,11 +304,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         });
     }
 
-    getOGSJWT = () => {
-        return data.get('config').user_jwt;
-    }
-
-    resetJosekiSequence = (pos: String) => {
+    resetJosekiSequence = (pos: string) => {
         // ask the server for the moves from postion pos
         this.fetchNextMovesFor(pos);
     }
@@ -319,13 +327,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
     loadPosition = (node_id) => {
         this.load_sequence_to_board = true;
         this.fetchNextMovesFor(node_id);
+        this.move_trace = [];
+        this.trace_index = -1;
     }
 
     updatePlayerJosekiRecord = (node_id) => {
         fetch(server_url + "playrecord/", {
             method: 'put',
             mode: 'cors',
-            headers: godojo_headers,
+            headers: godojo_headers(),
             body: JSON.stringify({
                 position_id: node_id,
                 errors: this.state.joseki_errors
@@ -333,7 +343,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         })
         .then(res => res.json())
         .then(body => {
-            console.log("Server response to play record PUT:", body);
+            // console.log("Server response to play record PUT:", body);
             this.extractPlayResults(body);
         }).catch((r) => {
             console.log("Play record PUT failed:", r);
@@ -341,7 +351,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
    // Fetch the next moves based on the current filter
-   fetchNextMovesFor = (node_id) => {
+   fetchNextMovesFor = (node_id: string) => {
         this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
     }
 
@@ -350,7 +360,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
     // in the processing of the result of the fectch for that position.
 
-    fetchNextFilteredMovesFor = (node_id, variation_filter) => {
+    fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
@@ -363,21 +373,22 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log("cache:", this.cached_positions);
+        // console.log("Fetch next moves for ", node_id);
+        // console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, only
         // explore mode works with this caching ... the others need processNewMoves to happen after completion
         // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
         // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            console.log("cached position:", node_id);
+            // console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
-            // console.log("fetching position for node", node_id);
-            fetch(position_url(node_id, variation_filter), {
+            console.log("fetching position for node", node_id, this.state.mode);
+            fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
-                headers: godojo_headers
+                headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
@@ -391,10 +402,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     // Handle the per-move processing of getting to the new node.
+    // node_id is a string because it can be either "root" or a node id number
     // The data is in dto - it is a BoardPositionDTO from the server, but may have been
     // cached locally.
 
-    processNewMoves = (node_id, dto) => {
+    processNewMoves = (node_id: string, dto) => {
+        // console.log("Process new moves...");
         this.setState({throb: false});
 
         if (this.load_sequence_to_board) {
@@ -444,10 +457,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
             }
         }
-        if (this.backstepping) {
-            // console.log("finishing backstep");
-            this.backstepping = false;
-        }
+
         this.goban.enableStonePlacement();
     }
 
@@ -471,7 +481,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
             current_move_category: position.category,
-            current_node_id: position.node_id,
+            current_node_id: position.node_id + '',  // make sure it's a string - we don't care whether the server thinks its a number
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
             tags: position.tags,
@@ -502,7 +512,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         next_moves.forEach((option) => {
             new_options = {};
             if (option['placement'] === 'pass') {
-                pass_available = true;
+                pass_available = option["category"].toLowerCase(); // this is used as a css style for the button
             }
             else {
                 const label = option['variation_label'];
@@ -556,7 +566,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         else {
             // console.log("empty board");
             move_string = "";
-            the_move = null;
+            the_move = undefined;
         }
         if (move_string !== this.state.move_string) {
             this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
@@ -569,7 +579,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    processPlacement(move: any, move_string: string) {
+    processPlacement(move: {x: number, y: number}, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
             or hit "back" to arrive at an old position,
@@ -579,18 +589,19 @@ export class Joseki extends React.Component<JosekiProps, any> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move !== null ?
+        const placement = move ?
             move.x !== -1 ?
                 GoMath.prettyCoords(move.x, move.y, this.goban.height) :
                 'pass' :
             "root";
 
-        // console.log("Processing placement at:", placement, move_string);
+        //console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, '.');
-            // console.log("backstep to ", play);
-
+            //console.log("finishing backstep to ", play);
+            //console.log("with category", this.state.current_move_category);
+            this.backstepping = false;
             if (this.state.mode === PageMode.Play) {
                 // in theory can only happen when backstepping out of a mistake
                 // in this case, all the data for the position we arrived at should be valid (not reset exploratory)
@@ -599,11 +610,22 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.goban.enableStonePlacement();
             }
             else if (this.state.current_move_category !== "new") {
-                this.fetchNextMovesFor(this.previous_position.node_id);
-                this.setState({ current_move_category: this.previous_position.category });
+                const stepping_back_to = this.previous_position.node_id;
+                this.fetchNextMovesFor(stepping_back_to);
+                this.trace_index--;
+                if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
+                    this.trace_index = 0;
+                    this.move_trace = [stepping_back_to];
+                }
+                else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
+                    console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
+                    this.trace_index = 0;
+                    this.move_trace = [stepping_back_to];
+                }
+                // this.setState({ current_move_category: this.previous_position.category }); redundant, done in processNewJosekiPosition?
             }
             else if (play === this.last_server_position) {
-                // console.log("Arriving back at known moves...");
+                //console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
             }
@@ -612,6 +634,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.goban.enableStonePlacement();
                 // console.log("backstepped exploratory");
             }
+
+            //console.log("trace:", this.move_trace, this.trace_index);
         }
         else if (this.load_sequence_to_board) {
             // console.log("loaded sequence: nothing to do in process placement");
@@ -633,7 +657,29 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
-                this.fetchNextMovesFor(chosen_move.node_id);
+                const node_id = chosen_move.node_id + '';
+                this.fetchNextMovesFor(node_id);
+
+                if (this.trace_index === this.move_trace.length - 1) {
+                    this.move_trace.push(node_id);
+                    this.trace_index++;
+                }
+                else {
+                    if (node_id === this.move_trace[this.trace_index + 1]) {
+                        // we're going forwards the same way we went last time
+                        this.trace_index++;
+                    }
+                    else {
+                        // we must have back-stepped and are now going a different way
+                        // dump old move trace past this point
+                        this.move_trace.length = this.trace_index + 1;
+                        // and add this one instead
+                        this.move_trace.push(node_id);
+                        this.trace_index++;
+                    }
+                }
+
+                //console.log("trace:", this.move_trace, this.trace_index);
 
             } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
@@ -651,12 +697,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
                 this.next_moves = [];
                 this.setState({
-                    position_description: "## Joseki",
+                    position_description: "", // Blank default description
                     current_move_category: "new",
                     child_count: 0,
                     tag_counts: [],
                     variation_label: next_variation_label,
-                    joseki_source: null,
+                    joseki_source: undefined,
                     tags: []
                 });
                 this.goban.enableStonePlacement();
@@ -682,9 +728,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.renderMistakeResult();
                 // Note: we have not called fetchNextMoves or enablePlacement, so placement is turned off now!
             }
-
-            // console.log("pp exit");
         }
+        // console.log("pp exit");
     }
 
     renderMistakeResult = () => {
@@ -735,8 +780,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_type_sequence: [],
             computer_turn: false,
             joseki_errors: 0,
-            joseki_successes: null,
-            joseki_best_attempt: null,
+            joseki_successes: undefined,
+            joseki_best_attempt: undefined,
             count_display_open: false
         });
         this.fetchPlayResults();
@@ -756,7 +801,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({extra_throb: true});
         fetch(results_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -773,7 +818,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             josekis_played: results_dto.josekis_played,
             josekis_completed: results_dto.josekis_completed,
-            joseki_best_attempt: results_dto.error_count || null,
+            joseki_best_attempt: results_dto.error_count,
             joseki_successes: results_dto.successes
         });
     }
@@ -787,6 +832,47 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
         else {
             // console.log("(ignoring back button click, still processing prior one)");
+        }
+    }
+
+
+    forwardOneMove = () => {
+        // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
+        // console.log("step forwards...");
+        if (this.move_trace.length < 2 || this.trace_index > this.move_trace.length - 2) {
+            // We don't have a saved move to step forwards to
+
+            // Try to step them fowards into the best joseki choice at this position...
+            // (but don't do passes, cause that's wierd for arrow keys, and more complicated to achieve :) )
+
+            if (this.next_moves.length > 0) {
+                const best_move = this.next_moves.reduce((prev_move, next_move) => (
+                    ((prev_move.variation_label > next_move.variation_label) && next_move.placement !== "pass") ? next_move : prev_move
+                ));
+                // console.log("best move", best_move);
+                this.doPlacement(best_move.placement);
+            }
+            return;
+        }
+
+        const target_forward_move = this.move_trace[this.trace_index + 1];
+        if (this.cached_positions.hasOwnProperty(target_forward_move)) {
+            // we should of course have it cached, since they visited it already
+            // which is handy, because we need the placement from the node id - available in the cache
+            const step_to = this.cached_positions[target_forward_move].placement;
+            // console.log("going forwards back to:", step_to);
+            this.doPlacement(step_to);
+        }
+    }
+
+    doPlacement = (placement: string): void => {
+        if (placement === "pass") {
+            this.doPass();
+        }
+        else {
+            const location = this.goban.engine.decodeMoves(placement)[0];
+            this.goban.engine.place(location.x, location.y);
+            this.onBoardUpdate();
         }
     }
 
@@ -820,7 +906,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    showVariationCounts = (node_id: number) => {
+    showVariationCounts = (node_id: string) => {
         this.setState({
             tag_counts: [],
             count_details_open: true,
@@ -829,13 +915,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         fetch(tagscount_url(node_id), {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(res => res.json())
         .then(body => {
             // console.log("Tags Count GET:", body);
             let tags = [];
-            if (body.tags !== null) {
+            if (body.tags) {
                 tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
             }
             let counts = [];
@@ -862,7 +948,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
-        const show_pass_available = this.state.pass_available && this.state.mode !== PageMode.Play;
+        const tenuki_type = (this.state.pass_available && this.state.mode !== PageMode.Play && this.state.move_string !== "") ?
+            this.state.pass_available : "";
 
         const count_details = this.state.count_details_open ?
             <React.Fragment>
@@ -873,7 +960,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             </React.Fragment>
             : "";
 
-        const tags = this.state.tags === null ? "" :
+        const tags = ! this.state.tags  ? "" :
             this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
             <div className="position-tag" key={idx}>
                 <span>{tag['description']}</span>
@@ -884,6 +971,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             <div className={"Joseki"}>
                 <KBShortcut shortcut="home" action={this.resetBoard} />
                 <KBShortcut shortcut="left" action={this.backOneMove} />
+                <KBShortcut shortcut="right" action={this.forwardOneMove} />
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref={(e) => this.goban_container = e} className="goban-container">
@@ -896,10 +984,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
                             <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
                             <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
+                            <i className={"fa fa-step-forward" + ((this.state.mode !== PageMode.Play && ((this.move_trace.length > 1 && this.trace_index < this.move_trace.length - 1) || this.next_moves.length > 0)) ? "" : " hide")}
+                                onClick={this.forwardOneMove}></i>
                             <button
-                                className={"pass-button" + (show_pass_available ? " pass-available" : "")}
+                                className={"pass-button " + tenuki_type}
                                 onClick={this.doPass}>
-                                Pass
+                                Tenuki
                             </button>
                             <div className="throbber-spacer">
                                 <Throbber throb={this.state.throb}/>
@@ -920,11 +1010,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             {this.state.position_type !== "new" &&
                             <div className="position-other-info">
                                 {tags}
-                                {this.state.joseki_source !== null && this.state.joseki_source.url.length > 0 &&
+                                {this.state.joseki_source && this.state.joseki_source.url.length > 0 &&
                                 <div className="position-joseki-source">
                                     <span>{_("Source")}:</span><a href={this.state.joseki_source.url}>{this.state.joseki_source.description}</a>
                                 </div>}
-                                {this.state.joseki_source !== null && this.state.joseki_source.url.length === 0 &&
+                                {this.state.joseki_source && this.state.joseki_source.url.length === 0 &&
                                 <div className="position-joseki-source">
                                     <span>{_("Source")}:</span><span>{this.state.joseki_source.description}</span>
                                 </div>}
@@ -951,7 +1041,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             </div>
                         </div>
                         <div className="continuations-pane">
-                            {(this.state.child_count !== null && this.state.child_count !== 0) &&
+                            {!!this.state.child_count &&
                             <React.Fragment>
                                 <button className="position-child-count" onClick={this.toggleContinuationCountDetail}>
                                     {interpolate(_("This position leads to {{count}} others"), {count: this.state.child_count})}
@@ -973,7 +1063,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                                 </div>
                             </React.Fragment>
                             }
-                            {(this.state.child_count === null || this.state.child_count === 0) &&
+                            {(!this.state.child_count) &&
                                 <React.Fragment>
                                 <div className="position-child-count">
                                     {_("This position has no continuations") + "."}
@@ -1020,7 +1110,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
-                    godojo_headers={godojo_headers}
+                    godojo_headers={godojo_headers()}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
@@ -1056,7 +1146,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
-                    joseki_source_id={this.state.joseki_source !== null ? this.state.joseki_source.id : 'none'}
+                    joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 'none'}
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
@@ -1089,11 +1179,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
-
-            fetch(position_url(this.state.current_node_id, null), {
+            // console.log("saving position for node", node_id, this.state.mode);
+            fetch(position_url(this.state.current_node_id), {
                 method: 'put',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: JSON.stringify({
                     description: description,
                     variation_label: variation_label,
@@ -1118,7 +1208,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             fetch(server_url + "positions/", {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
                     category: move_type })
@@ -1130,10 +1220,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                 // Now we can save the fields that apply only to the final position
 
-                fetch(position_url(this.state.current_node_id, null), {
+                fetch(position_url(this.state.current_node_id), {
                     method: 'put',
                     mode: 'cors',
-                    headers: godojo_headers,
+                    headers: godojo_headers(),
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
@@ -1212,7 +1302,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             });
         }
         else {
-            if (this.props.position_id !== null && this.props.show_comments && this.state.extra_info_selected === "none" ) {
+            if (this.props.position_id  && this.props.show_comments && this.state.extra_info_selected === "none" ) {
                 this.showComments();
             }
         }
@@ -1227,7 +1317,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
         fetch(comments_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -1268,16 +1358,19 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.setState({extra_throb: true});
         fetch(audits_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
-            this.setState({extra_throb: false});
             // console.log("Server response: ", body);
             this.extractAuditLog(body);
         }).catch((r) => {
             console.log("Audits GET failed:", r);
+        // tslint:disable-next-line:no-floating-promises
+        }).finally(() => {
+            this.setState({extra_throb: false});
         });
+
         this.setState({ extra_info_selected: "audit-log" });
     }
 
@@ -1298,7 +1391,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             fetch(comment_url, {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers,
+                headers: godojo_headers(),
                 body: this.state.next_comment
             })
             .then(res => res.json())
@@ -1318,9 +1411,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     render = () => {
         const filter_active =
-            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
-            this.props.current_filter.contributor !== null ||
-            this.props.current_filter.source !== null);
+            ((this.props.current_filter.tags && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor ||
+            this.props.current_filter.source);
 
         let description = applyJosekiMarkdown(this.props.description);
 
@@ -1393,7 +1486,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
+                                    godojo_headers={godojo_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1438,14 +1531,14 @@ class PlayPane extends React.Component<PlayProps, any> {
     }
 
     componentDidMount = () => {
-        if (this.props.current_filter.contributor === null &&
-            this.props.current_filter.tags === null &&
-            this.props.current_filter.source === null) {
+        if (this.props.current_filter.contributor  &&
+            this.props.current_filter.tags  &&
+            this.props.current_filter.source ) {
             // Set up a Joseki filter by default
             this.props.set_variation_filter({
                 tags:[this.props.joseki_tag_id],
-                contributor: null,
-                source: null
+                contributor: undefined,
+                source: undefined
             });
             this.showFilterSelector();
             this.setState({forced_filter: true});
@@ -1483,9 +1576,9 @@ class PlayPane extends React.Component<PlayProps, any> {
         // console.log("Play render", this.props.move_type_sequence);
 
         const filter_active =
-            ((this.props.current_filter.tags !== null && this.props.current_filter.tags.length !== 0) ||
-            this.props.current_filter.contributor !== null ||
-            this.props.current_filter.source !== null);
+            ((this.props.current_filter.tags && this.props.current_filter.tags.length !== 0) ||
+            this.props.current_filter.contributor ||
+            this.props.current_filter.source );
 
         return (
             <div className="play-columns">
@@ -1522,10 +1615,10 @@ class PlayPane extends React.Component<PlayProps, any> {
                                 <h4>{_("This Sequence:")}</h4>
                                 <div>{_("Mistakes so far")}: {this.props.joseki_errors}</div>
 
-                                {this.props.joseki_successes !== null &&
+                                {!!this.props.joseki_successes &&
                                     <div>{_("Correct plays of this position")}: {this.props.joseki_successes}</div>
                                 }
-                                {this.props.joseki_best_attempt !== null && this.props.joseki_best_attempt !== 0 &&
+                                {!!this.props.joseki_best_attempt &&
                                     <div>
                                     {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
                                      + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
@@ -1541,7 +1634,7 @@ class PlayPane extends React.Component<PlayProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers}
+                                    godojo_headers={godojo_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1589,7 +1682,7 @@ class EditPane extends React.Component<EditProps, any> {
         // Get the list of joseki sources
         fetch(joseki_sources_url, {
             mode: 'cors',
-            headers: godojo_headers
+            headers: godojo_headers()
         })
         .then(res => res.json())
         .then(body => {
@@ -1628,7 +1721,7 @@ class EditPane extends React.Component<EditProps, any> {
     }
 
     onTagChange = (e) => {
-        // console.log("changing tags", e);
+        //console.log("changing tags", e);
         this.setState({ tags: e });
     }
 
@@ -1646,7 +1739,7 @@ class EditPane extends React.Component<EditProps, any> {
             this.state.variation_label,
             this.state.tags.map((t) => (t.value)),
             this.state.new_description,
-            this.state.joseki_source  !== 'none' ? this.state.joseki_source : null,
+            this.state.joseki_source  !== 'none' ? this.state.joseki_source : undefined,
             this.currentMarksInDescription(this.state.new_description));
     }
 
@@ -1688,7 +1781,7 @@ class EditPane extends React.Component<EditProps, any> {
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
-            headers: godojo_headers,
+            headers: godojo_headers(),
             body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
         })
         .then(res => res.json())
@@ -1763,7 +1856,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <div className="tag-edit">
                         <div>{_("Tags")}:</div>
                         <JosekiTagSelector
-                            godojo_headers={godojo_headers}
+                            godojo_headers={godojo_headers()}
                             tag_list_url = {server_url + "tags"}
                             selected_tags= {this.state.tags}
                             on_tag_update={this.onTagChange}

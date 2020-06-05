@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -162,10 +162,10 @@ export class PuzzleTransform {
         let height = puzzle.height;
 
         if (puzzle.initial_state && puzzle.initial_state.black && puzzle.initial_state.black.length) {
-            puzzle.initial_state.black = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.black), width, height));
+            puzzle.initial_state.black = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.black, width, height), width, height));
         }
         if (puzzle.initial_state && puzzle.initial_state.white && puzzle.initial_state.white.length) {
-            puzzle.initial_state.white = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.white), width, height));
+            puzzle.initial_state.white = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.white, width, height), width, height));
         }
         if (puzzle.move_tree) {
             this.transformCoordinates(puzzle, puzzle.move_tree, width, height);

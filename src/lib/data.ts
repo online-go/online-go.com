@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {TypedEventEmitter} from 'TypedEventEmitter';
+import { TypedEventEmitter } from 'TypedEventEmitter';
+import { GroupList, ActiveTournamentList } from './types';
 
 interface Events {
     [name:string]: any;
@@ -101,7 +102,10 @@ export function removeAll(): void {
     }
 }
 
-export function get(key: string, default_value?: any): any | undefined {
+export function get(key: "cached.groups", default_value?: GroupList): GroupList;
+export function get(key: "cached.active_tournaments", default_value?: ActiveTournamentList): ActiveTournamentList;
+export function get(key: string, default_value?: any): any | undefined;
+export function get(key, default_value?): any | undefined {
     if (key in store) {
         return store[key];
     }
@@ -111,7 +115,10 @@ export function get(key: string, default_value?: any): any | undefined {
     return default_value;
 }
 
-export function watch(key: string, cb: (data: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+export function watch(key: "cached.groups", cb: (data: GroupList) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void;
+export function watch(key: "cached.active_tournaments", cb: (data: ActiveTournamentList) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void;
+export function watch(key: string, cb: (data: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void;
+export function watch(key, cb, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
     event_emitter.on(key, cb);
 
     let val = get(key);
@@ -120,7 +127,10 @@ export function watch(key: string, cb: (data: any) => void, call_on_undefined?: 
     }
 }
 
-export function unwatch(key: string, cb: (data: any) => void): void {
+export function unwatch(key: "cached.groups", cb: (data: GroupList) => void): void;
+export function unwatch(key: "cached.active_tournaments", cb: (data: ActiveTournamentList) => void): void;
+export function unwatch(key: string, cb: (data: any) => void): void;
+export function unwatch(key, cb): void {
     event_emitter.off(key, cb);
 }
 

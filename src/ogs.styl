@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -153,6 +153,23 @@ light.shade5                            = lighten(light.fg, 95%)
 
 light.search-highlight                  = #FFEA00
 
+// these are currently the same colour as painted on the board for positions of this type.
+// may need tweaking to look better...
+light.joseki-ideal                      = #008300
+light.joseki-good                       = #436600
+light.joseki-trick                      = #ffff00
+light.joseki-question                   = #00ccff
+light.joseki-mistake                    = #b3001e
+
+/** React Select colors **/
+
+light.react-select-bg                   = light.bg
+light.react-select-border               = light.shade3
+light.react-select-selected-bg          = #2684FF
+light.react-select-selected-fg          = #FFFFFF
+light.react-select-focused-bg           = #DEEBFF
+light.react-select-focused-fg           = light.fg
+
 
 /** Navbar **/
 
@@ -181,7 +198,7 @@ light.miniboard-stone-removal-border    = darken(light.miniboard-stone-removal, 
 light.miniboard-stone-removal-hover     = lighten(light.miniboard-stone-removal, 45%)
 light.miniboard-stone-removal-hover-border= darken(light.miniboard-stone-removal-hover, 45%)
 light.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
-light.player-white-background           = linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+light.player-white-background           = linear-gradient(to bottom, #cccccc 0%, #eeeeee 30%, #ffffff 100%);
 light.inactive-support-gradient         = linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
 light.active-support-gradient           = linear-gradient(to bottom, #ffffff 0%, lighten(light.supporter, 70%) 100%);
 light.player-black-fg                   = #eeeeee
@@ -190,6 +207,8 @@ light.player-black-name                 = lighten(light.user, 60%)
 light.player-white-name                 = light.user
 light.player-black-clock                = lighten(light.player-black-fg, 50%)
 light.player-white-clock                = light.player-white-fg
+light.player-black-paused-clock          = #ABA8AD;
+light.player-white-paused-clock          = #928A99;
 
 /************/
 /*** DARK ***/
@@ -229,7 +248,7 @@ dark.error-boundary-bg                  = darken(light.reject, 50%)
 dark.error-boundary-fg                  = lighten(light.reject, 50%)
 
 dark.user                               = #9dc6ff
-dark.supporter                          = #FFCC00;
+dark.supporter                          = light.supporter; // because it ends up against a light background in player-container
 dark.professional                       = green;
 dark.bot                                = light.bot
 dark.moderator                          = lighten(light.moderator, 20%)
@@ -267,6 +286,15 @@ dark.weak-w-text                        = dark.fg
 dark.weak-l-text                        = dark.fg
 
 
+/** React Select colors **/
+
+dark.react-select-bg                   = dark.shade4
+dark.react-select-border               = dark.shade5
+dark.react-select-selected-bg          = #2684FF
+dark.react-select-selected-fg          = #FFFFFF
+dark.react-select-focused-bg           = #435B80
+dark.react-select-focused-fg           = #ffffff
+
 /** Navbar **/
 
 dark.navbar-highlight-background-color  = #333
@@ -294,15 +322,19 @@ dark.miniboard-stone-removal-border     = darken(dark.miniboard-stone-removal, 4
 dark.miniboard-stone-removal-hover      = darken(dark.miniboard-stone-removal, 45%)
 dark.miniboard-stone-removal-hover-border= darken(dark.miniboard-stone-removal-hover, 45%)
 dark.player-black-background            = linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
-dark.player-white-background            = linear-gradient(to bottom, #dddddd 0%, #666666 50%, #333333 101%);
+dark.player-white-background            = linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
 dark.inactive-support-gradient          = linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
 dark.active-support-gradient            = linear-gradient(to bottom, darken(dark.supporter, 30%) 0%, darken(dark.supporter, 60%) 100%);
 dark.player-black-fg                    = dark.fg
-dark.player-white-fg                    = lighten(dark.fg, 20%)
+dark.player-white-fg                    = darken(dark.fg, 90%)
 dark.player-black-name                  = dark.user
-dark.player-white-name                  = lighten(dark.user, 10%)
+dark.player-white-name                  = darken(dark.user, 60%)
 dark.player-black-clock                 = lighten(dark.player-black-fg, 50%)
 dark.player-white-clock                 = #000
+dark.player-white-paused-clock          = #5F4A71;
+dark.player-black-paused-clock          = #928A99;
+
+dark.joseki-ideal                       = #DBAF00;
 
 
 /************/
@@ -339,13 +371,11 @@ nowrap()
 
 @require "lib/popover.styl";
 @require "lib/toast.styl";
+@require "lib/ogs-react-select.styl";
 
 @require "./components/material/*.styl";
 @require "./components/[A-Z]*/*.styl";
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";
-
-
-@require '../node_modules/react-select/dist/react-select.css';
 
 @require '../node_modules/react-table/react-table.css';

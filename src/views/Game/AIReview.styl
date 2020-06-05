@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,142 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-analysis-prediction-chart-height=100px;
-
-.AIReviewChart {
-    height: analysis-prediction-chart-height;
-    margin-bottom: 1rem;
-    max-width: calc(100vw - 2em);
-    user-select: none;
-
-    svg {
-        font-size: font-size-smaller;
-
-    }
-
-    .axis path, .axis line {
-        fill: none
-        themed stroke shade3
-        shape-rendering: crispEdges
-    }
-
-    .brush {
-        .selection {
-            themed stroke shade1
-            themed fill shade1
-            fill-opacity 0.200
-            shape-rendering crispEdges
-        }
-    }
-
-    .loading, .nodata {
-        height: analysis-prediction-chart-height;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        themed color shade2
-    }
-
-
-
-    .chart {
-        cursor: crosshair;
-
-        text {
-            fill: #7F8FAF
-        }
-        .line {
-            fill: none
-            stroke-width: 1px
-            clip-path: url("#clip")
-            shape-rendering: crispEdges;
-        }
-        /*
-        .fast-prediction.line {
-            stroke-width: 2px
-            themed stroke chart-line
-        }
-        */
-        .full-prediction.line {
-            stroke-width: 1px
-            //stroke: #C442EB;
-            themed stroke chart-line
-            shape-rendering: crispEdges;
-        }
-        .overlay {
-            opacity: 0
-            pointer-events: all
-        }
-        .data-point-circle {
-            fill: red
-            stroke: red
-        }
-        .crosshairs {
-            themed stroke shade3;
-            stroke-width: 1px;
-            shape-rendering: crispEdges;
-        }
-        /*
-        .fast.crosshairs {
-            themed stroke chart-line
-        }
-        */
-        .full.crosshairs {
-            themed stroke chart-line
-        }
-        .move.crosshairs {
-            themed stroke shade0
-        }
-        .cursor.crosshairs {
-        }
-        .win-loss-bar {
-            shape-rendering: crispEdges;
-        }
-    }
-
-    .deviation-area {
-        themed fill chart-area
-    }
-
-    .timeline .axis {
-        path, line {
-            display: none;
-        }
-    }
-
-    .y.axis {
-        .tick {
-            text {
-                text-anchor: start !important
-                fill: #7F8FAF
-            }
-            line {
-                display: none
-            }
-        }
-        path {
-            display: none
-        }
-    }
-
-
-    .date-legend-background {
-        themed fill shade2
-    }
-    .date-legend-text {
-        themed fill colored-background-fg
-    }
-
-}
-
 .AIReview {
     .reviewing, .pending {
-        margin: 1rem;
-        font-size: font-size-mid;
         text-align: center;
+        width: 100%;
 
         .fa-desktop {
-            margin-left: 0.5rem;
+            margin-right: 0.5rem;
             themed color info
         }
     }
@@ -184,10 +55,41 @@ analysis-prediction-chart-height=100px;
     .decreased-win-rate {
         color: red;
     }
+    .ai-review-option-container {
+        display: flex;
+        //width: calc(100% - 3rem);
+        //width: 100%;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        //padding-left: 0.5rem;
+
+        .ai-review-strength-icon {
+            flex: 0;
+            width: 1.1rem;
+            flex-basis: 1.1rem;
+            margin-left: 0.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .ai-review-information {
+            flex: 1;
+        }
+
+        .date {
+            font-style: italic;
+        }
+    }
+    .ai-review-win-rate-container {
+        display: inline-flex;
+        width: calc(100% - 3rem);
+        padding-left: 0.5rem;
+    }
     .prediction {
+        display: flex;
+    }
+    .prediction, .ai-review-win-rate-container {
         text-align: center;
 
-        display: flex;
         align-items: center;
         .ai-review-list-container {
             flex-grow: 0;
@@ -196,6 +98,7 @@ analysis-prediction-chart-height=100px;
 
         }
         .progress {
+            display: inline-flex;
             flex-grow: 1;
             flex-shrink: 1;
             overflow: hidden;
@@ -258,6 +161,44 @@ analysis-prediction-chart-height=100px;
         }
     }
 
+    .ai-review-new-review {
+        display: flex;
+        justify-content: space-around;
+        cursor: default;
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            i { 
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    .worst-move-list-container {
+        user-select: none;
+        display: inline-flex;
+        width: 100%;
+
+        .move-list {
+            flex: 1;
+        }
+
+        .move {
+            margin-left: 0.2rem;
+            margin-right: 0.2rem;
+            border-radius: 0.2rem;
+            border: 1px solid #888;
+            width: 2.5rem;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .filter {
+            flex: 0;
+        }
+    }
 }
 
 .ai-review-list, .ai-review-more-info {
@@ -287,3 +228,39 @@ analysis-prediction-chart-height=100px;
     }
 }
 
+
+.ai-review-fast,
+.ai-review-strength-0,
+.ai-review-strength-1,
+.ai-review-strength-2,
+.ai-review-strength-3,
+{
+    display: inline-flex;
+    width: 1.1rem;
+    height: 1rem;
+    margin-right: 0.3rem;
+    margin-left: 0.2rem;
+    border: 2px solid #000;
+    border-radius: 50%;
+
+    font-family: "Times New Roman", Times, serif;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.ai-review-strength-0,
+.ai-review-strength-1,
+.ai-review-strength-2,
+.ai-review-strength-3 {
+    themed color supporter;
+    themed border-color supporter;
+}
+.ai-review-fast { 
+    color: #888; 
+    border-color: #888;
+}
+.ai-review-list-container {
+    border: 1px solid red;
+}

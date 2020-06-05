@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,6 +27,7 @@ import {PlayerDetails} from "./PlayerDetails";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
+import * as preferences from "preferences";
 import online_status from "online_status";
 import {pgettext} from "translate";
 
@@ -56,6 +57,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     };
 
     online_subscription_user_id = null;
+    unmounted: boolean = false;
 
     constructor(props) {
         super(props);
@@ -76,6 +78,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
@@ -89,6 +94,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (username === user.username) {
                         this.setState({user: user});
                     }
@@ -103,6 +111,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     updateOnline = (_player_id, tf) => {
+        if (this.unmounted) {
+            return;
+        }
         this.setState({is_online: tf});
     }
 
@@ -140,6 +151,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (player_id === user.id) {
                         this.setState({user: user});
                     }
@@ -153,6 +167,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             else if (username) {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
+                    if (this.unmounted) {
+                        return;
+                    }
                     if (username === user.username) {
                         this.setState({user: user});
                     }
@@ -169,6 +186,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.syncUpdateOnline(this.props.user);
     }
     componentWillUnmount() {
+        this.unmounted = true;
         this.syncUpdateOnline(null);
     }
 
@@ -241,7 +259,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 rank_text = rating.bounded_rank_label;
             }
 
-            rank = <span className='Player-rank'>[{rank_text}]</span>;
+            if (!preferences.get("hide-ranks")) {
+                rank = <span className='Player-rank'>[{rank_text}]</span>;
+            }
         }
 
         if (props.flare) {
@@ -280,6 +300,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     display_details = (event) => {
         if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+            return;
+        }
+
+        if ( ("buttons" in event && (event.buttons & 2)) ||
+             ("button" in event && event.button === 2) ) {
+            /* on click with right mouse button do nothing.
+               buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
+               buttons isn't supported in all browsers, so we have to check button as fallback. */
             return;
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -45,7 +45,7 @@ import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 //import {VoiceChat} from "VoiceChat";
-import {openACLModal} from "./ACLModal";
+import {openACLModal} from "ACLModal";
 import {sfx} from "goban";
 import {AIReview} from "./AIReview";
 import {GameChat} from "./Chat";
@@ -88,6 +88,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     creator_id: number;
     ladder_id: number;
     tournament_id: number;
+    ai_review_selected: string | null = null;
     review_id: number;
     goban_div: HTMLDivElement;
     goban: Goban;
@@ -151,6 +152,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             black_auto_resign_expiration: null,
             white_auto_resign_expiration: null,
             ai_review_enabled: preferences.get('ai-review-enabled'),
+            show_score_breakdown: false,
+            selected_ai_review_id: null,
         };
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
@@ -182,12 +185,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             draw: () => { this.setAnalyzeTool("draw", this.state.analyze_pencil_color); },
             clear_and_sync: () => { this.goban.syncReviewMove({"clearpen": true}); this.goban.clearAnalysisDrawing(); },
             delete_branch: () => { this.goban_deleteBranch(); },
-        };
-        this.score_popups = {
-            popup_black: this.popupScores.bind(this, "black"),
-            popup_white: this.popupScores.bind(this, "white"),
-            hide_black: this.hideScores.bind(this, "black"),
-            hide_white: this.hideScores.bind(this, "white"),
         };
 
         this.handleEscapeKey = this.handleEscapeKey.bind(this);
@@ -594,18 +591,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         this.goban.on("auto-resign", (data) => {
-            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
                 this.setState({ black_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift() ) });
             }
-            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.white.id) {
                 this.setState({ white_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift()) });
             }
         });
         this.goban.on("clear-auto-resign", (data) => {
-            if (this.goban.engine && data.player_id === this.goban.engine.black_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
                 this.setState({ black_auto_resign_expiration: null });
             }
-            if (this.goban.engine && data.player_id === this.goban.engine.white_player_id) {
+            if (this.goban.engine && data.player_id === this.goban.engine.players.white.id) {
                 this.setState({ white_auto_resign_expiration:null });
             }
         });
@@ -799,13 +796,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.startAutoplay();
         }
     }
-    nav_goto_move = (mv:number) => {
+    nav_goto_move = (move_number:number) => {
         let last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
-        this.goban.showFirst(true);
-        for (let i = 0; i < mv; ++i) {
-            this.goban.showNext(i !== mv - 1);
+        this.goban.showFirst(move_number > 0);
+        for (let i = 0; i < move_number; ++i) {
+            this.goban.showNext(i !== move_number - 1);
         }
         this.goban.syncReviewMove();
     }
@@ -1183,10 +1180,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     openACL = () => {
-        openACLModal(this.game_id, this.review_id, this.goban.engine);
+        if (this.game_id) {
+            openACLModal({ game_id: this.game_id });
+        }
+        else if (this.review_id) {
+            openACLModal({ review_id: this.review_id });
+        }
     }
 
-    popupScores(color) {
+    popupScores() {
         let goban = this.goban;
 
         if (goban.engine.cur_move) {
@@ -1195,6 +1197,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
         } else {
             this.orig_marks = null;
         }
+
+        this._popupScores('black');
+        this._popupScores('white');
+    }
+    _popupScores(color) {
+        let goban = this.goban;
 
         let only_prisoners = false;
         let scores = goban.engine.computeScore(only_prisoners);
@@ -1236,8 +1244,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         $("#" + color + "-score-details").html(html);
+        this.setState({
+            show_score_breakdown: true
+        });
     }
-    hideScores(color) {
+    hideScores() {
         let goban = this.goban;
 
         if (!this.showing_scores) {
@@ -1247,7 +1258,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
             goban.engine.cur_move.setAllMarks(JSON.parse(this.orig_marks));
         }
         goban.redraw();
-        $("#" + color + "-score-details").children().remove();
+
+        $("#black-score-details").children().remove();
+        $("#white-score-details").children().remove();
+
+        this.setState({
+            show_score_breakdown: false
+        });
     }
 
     /*** Game stuff ***/
@@ -1318,7 +1335,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.official_move_number = engine.last_official_move ? engine.last_official_move.move_number : -1;
             new_state.strict_seki_mode = engine.strict_seki_mode;
             new_state.rules = engine.rules;
-            new_state.paused = goban.engine.pause_control && !!goban.engine.pause_control.paused;
+            new_state.paused = goban.pause_control && !!goban.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
 
@@ -1778,12 +1795,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }
     clearAnalysisDrawing() {
-        swal({"text": _("Clear all pen marks?"), showCancelButton: true})
-        .then(() => {
-            this.goban.syncReviewMove({"clearpen": true});
-            this.goban.clearAnalysisDrawing();
-        })
-        .catch(() => 0);
+        this.goban.syncReviewMove({"clearpen": true});
+        this.goban.clearAnalysisDrawing();
     }
     setChatLog = (chat_log) => {
         this.setState({chat_log: chat_log});
@@ -1832,7 +1845,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     force_ai_review(analysis_type:"fast" | "full") {
         post(`games/${this.game_id}/ai_reviews`, {
-            "engine": "leela_zero",
+            "engine": "katago",
             "type": analysis_type,
         })
         .then((res) => swal("Analysis started"))
@@ -1869,11 +1882,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {this.frag_kb_shortcuts()}
                 <i onClick={this.toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
+                <div className="align-row-start"></div>
                 <div className="left-col">
                 </div>
 
                 <div className="center-col">
-                    {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_players()}
+                    {(this.state.view_mode === "portrait" || null) && this.frag_players()}
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
@@ -1882,12 +1896,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </div>
                     }
 
-                    {(this.state.view_mode === "zen" || null) && this.frag_play_controls(true)}
-
                     {this.frag_below_board_controls()}
 
                     {((this.state.view_mode === "square" && !this.state.squashed) || null) && CHAT}
-
 
                     {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
@@ -1917,11 +1928,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(this.state.view_mode !== "portrait" || null) &&
                     <div className="right-col">
+                        {(this.state.zen_mode || null) &&
+                            <div className="align-col-start"></div>
+                        }
                         {(this.state.view_mode === "square" ||
                             this.state.view_mode === "wide" || null) && this.frag_players()}
 
                         {(this.state.view_mode === "square" ||
-                            this.state.view_mode === "wide" || null) && this.frag_ai_review()}
+                            this.state.view_mode === "wide" || null) &&
+                            !this.state.zen_mode && this.frag_ai_review()}
 
                         {review
                             ? this.frag_review_controls()
@@ -1936,8 +1951,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         {((this.state.view_mode === "square" && this.state.squashed) || null) && CHAT}
 
                         {this.frag_dock()}
+                        {(this.state.zen_mode || null) &&
+                            <div className="align-col-end"></div>
+                        }
                     </div>
                 }
+
+                <div className="align-row-end"></div>
 
              </div>
             </div>
@@ -2073,7 +2093,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             {state.winner
                                 ?
                                 (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
-                                    "color": (state.winner === this.goban.engine.black_player_id || state.winner === "black" ? _("Black") : _("White")),
+                                    "color": (state.winner === this.goban.engine.players.black.id || state.winner === "black" ? _("Black") : _("White")),
                                     "outcome": getOutcomeTranslation(this.goban.engine.outcome)
                                 }))
                                 :
@@ -2086,8 +2106,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {( state.phase === "play"
                     && state.mode === "play"
                     && this.state.paused
-                    && this.goban.engine.pause_control
-                    && this.goban.engine.pause_control.paused
+                    && this.goban.pause_control
+                    && this.goban.pause_control.paused
                     || null) &&  /* { */
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
@@ -2097,15 +2117,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             </button>
                         }
                         <div>{
-                            this.goban.engine.black_player_id === this.goban.engine.pause_control.paused.pausing_player_id
-                                ? interpolate(_("{{pauses_left}} pauses left for Black"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
-                                : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.engine.pause_control.paused.pauses_left})
+                            this.goban.engine.players.black.id === this.goban.pause_control.paused.pausing_player_id
+                                ? interpolate(_("{{pauses_left}} pauses left for Black"), {pauses_left: this.goban.pause_control.paused.pauses_left})
+                                : interpolate(_("{{pauses_left}} pauses left for White"), {pauses_left: this.goban.pause_control.paused.pauses_left})
                         }</div>
                     </div>
                 }
 
-                {(( this.goban.engine.pause_control
-                    && this.goban.engine.pause_control.moderator_paused
+                {(( this.goban.pause_control
+                    && this.goban.pause_control.moderator_paused
                     && user.is_moderator
                     ) || null) &&  /* { */
                     <div className="pause-controls">
@@ -2431,16 +2451,45 @@ export class Game extends React.PureComponent<GameProperties, any> {
         </div>
         );
     }
+
     frag_ai_review() {
         if (this.goban
             && this.goban.engine
             && this.goban.engine.phase === "finished"
-            && this.goban.engine.width === 19
-            && this.goban.engine.height === 19
+            && (
+                (this.goban.engine.width === 19 && this.goban.engine.height === 19)
+                || (this.goban.engine.width === 13 && this.goban.engine.height === 13)
+                || (this.goban.engine.width === 9 && this.goban.engine.height === 9)
+            )
         ) {
-            return <AIReview game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
+            return <AIReview
+                onAIReviewSelected={r => this.setState({selected_ai_review_id: r?.id})}
+                game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
         }
         return null;
+    }
+
+    frag_num_captures_text(color) {
+        let num_prisoners = this.state.score[color].prisoners;
+        let prisoner_color = color === "black" ? "white" : "black";
+        let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
+        return (
+          <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
+            <span className="num-captures-container">
+                <span className="num-captures-count">{num_prisoners}</span>
+                {(!this.state.zen_mode || null) &&
+                    <span className="num-captures-units">
+                        {` ${ngettext("capture", "captures", num_prisoners)}`}
+                    </span>
+                }
+                {(this.state.zen_mode || null) &&
+                    <span className="num-captures-stone">
+                        {' '}<img className="stone-image" src={prisoner_img_src} />
+                    </span>
+                }
+            </span>
+          </div>
+        );
     }
 
     frag_players() {
@@ -2449,74 +2498,71 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return null;
         }
         let engine = goban.engine;
-        let portrait_game_mode = this.state.view_mode === "portrait" && this.state.portrait_tab === "game";
-
 
         return (
             <div ref={el => this.ref_players = el} className="players">
-              {["black", "white"].map((color: 'black' | 'white', idx) => {
-                  let player_bg: any = {};
-                  if (this.state[`historical_${color}`]) {
-                      let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
-                      player_bg.backgroundImage = `url("${icon}")`;
-                  }
+                {["black", "white"].map((color: 'black' | 'white', idx) => {
+                    let player_bg: any = {};
+                    if (this.state[`historical_${color}`]) {
+                        let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                        player_bg.backgroundImage = `url("${icon}")`;
+                    }
+                    return (
+                    <div key={idx} className={`${color} player-container`}>
 
-                  return (
-                  <div key={idx} className={`${color} player-container`}>
-                      {this.state[`${color}_auto_resign_expiration`] &&
-                          <div className={`auto-resign-overlay`}>
-                              <i className='fa fa-bolt' />
-                              <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
-                          </div>
-                      }
+                        <div className="player-icon-clock-row">
+                            {((engine.players[color] && engine.players[color].id) || null) &&
+                                <div className="player-icon-container" style={player_bg}>
+                                    {this.state[`${color}_auto_resign_expiration`] &&
+                                        <div className={`auto-resign-overlay`}>
+                                            <i className='fa fa-bolt' />
+                                            <CountDown to={this.state[`${color}_auto_resign_expiration`]} />
+                                        </div>
+                                    }
+                                    <div className="player-flag"><Flag country={engine.players[color].country}/></div>
+                                    <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
+                                </div>
+                            }
 
-                      <div className="player-icon-clock-row">
-                          {((engine.players[color] && engine.players[color].id) || null) &&
-                              <div className="player-icon-container" style={player_bg}>
-                                 <div className="player-flag"><Flag country={engine.players[color].country}/></div>
-                                 <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
-                              </div>
-                          }
+                            {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
+                                <Clock goban={this.goban} color={color} className="in-game-clock" />
+                            }
+                        </div>
 
-                          {(goban.engine.phase !== "finished" && !goban.review_id || null) &&
-                              <Clock goban={this.goban} color={color} className="in-game-clock" />
-                          }
-                      </div>
+                        {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
+                            <div className={`${color} player-name-container`}>
+                                <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
+                            </div>
+                        }
 
-                      {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
-                          <div className={`${color} player-name-container`}>
-                             <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
-                          </div>
-                      }
-
-                      {((!goban.engine.players[color]) || null) &&
-                          <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>
-                      }
+                        {((!goban.engine.players[color]) || null) &&
+                            <span className="player-name-plain">{color === "black" ? _("Black") : _("White")}</span>
+                        }
 
 
-                      <div className="score-container" onMouseEnter={this.score_popups[`popup_${color}`]} onMouseLeave={this.score_popups[`hide_${color}`]}>
-                          {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
-                            goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
-                              <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
-                                  {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
-                              </div>
-                          }
-                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
-                                  {interpolate(_("{{captures}} {{unit}}"), {"captures": this.state.score[color].prisoners, "unit": ngettext("capture", "captures", this.state.score[color].prisoners)})}
-                              </div>
-                          }
-                          {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
-                            goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
-                              <div className="komi">
-                                {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
-                              </div>
-                          }
-                          <div id={`${color}-score-details`} className="score-details"/>
-                      </div>
-                  </div>
-              ); })}
+                        <div className={"score-container " + (this.state.show_score_breakdown ? 'show-score-breakdown' : '')}
+                            onClick={() => this.state.show_score_breakdown ? this.hideScores() : this.popupScores()}
+                            >
+                            {((goban.engine.phase === "finished" || goban.engine.phase === "stone removal" || null) && goban.mode !== "analyze" &&
+                                goban.engine.outcome !== "Timeout" && goban.engine.outcome !== "Resignation" && goban.engine.outcome !== "Cancellation") &&
+                                <div className={"points" + (this.state.estimating_score ? " hidden" : "")} >
+                                    {interpolate(_("{{total}} {{unit}}"), {"total": this.state.score[color].total, "unit": ngettext("point", "points", this.state.score[color].total)})}
+                                </div>
+                            }
+                            {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                                    this.frag_num_captures_text(color)
+                            }
+                            {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
+                                goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
+                                <div className="komi">
+                                    {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
+                                </div>
+                            }
+                            <div id={`${color}-score-details`} className="score-details"/>
+                        </div>
+                    </div>
+                ); })}
             </div>
         );
     }
@@ -2592,8 +2638,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         let sgf_url = null;
         let sgf_with_comments_url = null;
+        let sgf_with_ai_review_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
+            if (this.state.selected_ai_review_id) {
+                sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=${this.state.selected_ai_review_id}`);
+            }
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
             sgf_with_comments_url = api1(`reviews/${this.review_id}/sgf`);
@@ -2665,6 +2715,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {sgf_download_enabled
                     ? <a href={sgf_url} target='_blank'><i className="fa fa-download"></i> {_("Download SGF")}</a>
                     : <a className='disabled' onClick={() => swal(_("SGF downloading for this game is disabled until the game is complete."))}><i className="fa fa-download"></i> {_("Download SGF")}</a>
+                }
+                {(sgf_download_enabled && sgf_with_ai_review_url)
+                    && <a href={sgf_with_ai_review_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with AI Review")}</a>
                 }
                 {(sgf_download_enabled && sgf_with_comments_url)
                     && <a href={sgf_with_comments_url} target='_blank'><i className="fa fa-download"></i> {_("SGF with comments")}</a>

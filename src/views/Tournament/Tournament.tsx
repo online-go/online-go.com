@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -46,6 +46,8 @@ import * as d3 from "d3";
 
 
 declare var swal;
+
+let logspam_debounce:any;
 
 let ranks = amateurRanks();
 
@@ -1622,12 +1624,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                         {selected_round.matches.map((m, idx) => {
                                             let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
                                             if (pxo === "error-invalid-player-or-opponent") {
-                                                console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                                if (!logspam_debounce) {
+                                                    logspam_debounce = setTimeout(() => {
+                                                        console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                                        logspam_debounce = undefined;
+                                                    }, 10);
+                                                }
                                             }
 
                                             return (
                                             <tr key={idx} >
-                                                {(tournament.ended || null) && <td className="rank">{m.player.rank}</td>}
+                                                {(tournament.ended || null) && <td className="rank">{m.player?.rank}</td>}
                                                 {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
                                                 {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
 

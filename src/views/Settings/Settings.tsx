@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del} from "requests";
-import {errorAlerter, ignore} from "misc";
+import {errorAlerter, errorLogger, ignore} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
 import {sfx} from "goban";
@@ -50,6 +50,37 @@ function logoutOtherDevices() {
         }).catch(ignore);
     //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
 }
+function logoutAndClearLocalData() {
+    try {
+        get("/api/v0/logout")
+        .then((config) => {
+            window.location.href = '/';
+        })
+        .catch(errorLogger);
+    } catch (e) {
+        console.warn(e);
+    }
+
+    try {
+        let cookies = document.cookie.split(";");
+
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i];
+            let eqPos = cookie.indexOf("=");
+            let name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+
+    try {
+        localStorage.clear();
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
 
 export class Settings extends React.PureComponent<{}, any> {
     vacation_base_time = Date.now();
@@ -99,6 +130,7 @@ export class Settings extends React.PureComponent<{}, any> {
             translation_dialog_never_show: preferences.get("translation-dialog-never-show"),
             dock_delay: preferences.get("dock-delay"),
             show_tournament_indicator: preferences.get("show-tournament-indicator"),
+            hide_ranks: preferences.get("hide-ranks"),
             disable_ai_review: !preferences.get("ai-review-enabled"),
             disable_variations_in_chat: !preferences.get("variations-in-chat-enabled"),
         };
@@ -314,6 +346,10 @@ export class Settings extends React.PureComponent<{}, any> {
     setShowTournamentIndicator = (ev) => {
         preferences.set("show-tournament-indicator", ev.target.checked),
         this.setState({show_tournament_indicator: preferences.get("show-tournament-indicator")});
+    }
+    setHideRanks = (ev) => {
+        preferences.set("hide-ranks", ev.target.checked),
+        this.setState({hide_ranks: preferences.get("hide-ranks")});
     }
     setUnicodeFilterUsernames = (ev) => {
         preferences.set("unicode-filter", ev.target.checked),
@@ -572,6 +608,11 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="show-tournament-indicator" type="checkbox" checked={this.state.show_tournament_indicator} onChange={this.setShowTournamentIndicator} />
                             </dd>
+                            <dt><label htmlFor="hide-ranks">{_("Hide ranks and ratings")}</label></dt>
+                            <dd>
+                                <input id="hide-ranks" type="checkbox" checked={this.state.hide_ranks} onChange={this.setHideRanks} />
+                            </dd>
+
 
                             {(user.is_moderator || null) &&
                                 <dt><label htmlFor="incident-report-notifications">{_("Notify me when an incident is submitted for moderation")}</label></dt>
@@ -682,7 +723,7 @@ export class Settings extends React.PureComponent<{}, any> {
                             <dd>
                                 <input id="always-disable-analysis" type="checkbox" checked={this.state.always_disable_analysis} onChange={this.setAlwaysDisableAnalysis} />
                                 <div><i>
-                                {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings.")}
+                                {_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
                                 </i></div>
                             </dd>
                             <dt><label htmlFor="dynamic-title">{_("Dynamic title")}</label></dt>
@@ -829,6 +870,10 @@ export class Settings extends React.PureComponent<{}, any> {
                         <div className="logout-all-devices-container">
                             <div>
                                 <button onClick={logoutOtherDevices} className="danger">Logout other devices</button>
+                            </div>
+
+                            <div>
+                                <button onClick={logoutAndClearLocalData} className="danger">{_("Logout and clear all settings")}</button>
                             </div>
                         </div>
                     </Card>

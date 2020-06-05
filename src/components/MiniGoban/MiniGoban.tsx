@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -113,8 +113,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
             white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
 
-            black_name: (typeof(black) === "object" ? (black.username + " [" + getUserRating(black).bounded_rank_label + "]") : black),
-            white_name: (typeof(white) === "object" ? (white.username + " [" + getUserRating(white).bounded_rank_label + "]") : white),
+            black_name: (typeof(black) === "object" ? (black.username + (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]"))) : black),
+            white_name: (typeof(white) === "object" ? (white.username + (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]"))) : white),
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,

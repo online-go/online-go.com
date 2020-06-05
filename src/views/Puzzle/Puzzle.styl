@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -90,4 +90,34 @@ puzzle-controls-width=400px
         padding: 0.5rem;
     }
 
+    .puzzle-node-content {
+        border: 1px solid transparent;
+        themed border-color shade4
+        margin-top: 1rem;
+
+        .actions {
+            padding-top: 1rem;
+            text-align: right;
+        }
+
+        .content {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .incorrect, .success {
+            font-size: font-size-big;
+            text-align: center;
+            padding: 1rem;
+            font-weight: bold;
+        }
+        .success {
+            themed background-color success
+            themed color colored-background-fg
+        }
+        .incorrect {
+            themed background-color reject
+            themed color colored-background-fg
+        }
+    }
 }

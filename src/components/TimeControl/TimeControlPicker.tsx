@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -35,8 +35,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
     constructor(props) {
         super(props);
 
-        let speed = data.get("time_control.speed", "correspondence");
-        let system = data.get("time_control.system", "fischer");
+        let speed = data.get("time_control.speed", "correspondence") || "correspondence";
+        let system = data.get("time_control.system", "fischer") || "fischer";
 
         this.state = Object.assign(recallTimeControlSettings(speed, system), this.props.value || {});
         if (this.state.time_control) {

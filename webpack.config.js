@@ -11,7 +11,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 let plugins = [];
 
 plugins.push(new webpack.BannerPlugin(
-`Copyright (C) 2012-2019  Online-Go.com
+`Copyright (C) 2012-2020  Online-Go.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -30,22 +30,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module.exports = (env, argv) => {
     const production = argv.mode === 'production';
+    let alias = {};
 
     if (production) {
-        console.log("Production build");
+        console.log("Production build, enabling react profiling");
+        alias = {
+            'react-dom$': 'react-dom/profiling',
+            'scheduler/tracing': 'scheduler/tracing-profiling',
+        };
     }
 
-
-    /*
-    plugins.push(
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            minChunks: function (module) {
-                return module.context && module.context.indexOf('node_modules') !== -1;
-            }
-        })
-    );
-    */
 
     plugins.push(new webpack.EnvironmentPlugin({
         NODE_ENV: production ? 'production' : 'development',
@@ -78,6 +72,7 @@ module.exports = (env, argv) => {
                 'src',
                 'node_modules'
             ],
+            alias: alias,
             extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
         },
         output: {
@@ -134,6 +129,7 @@ module.exports = (env, argv) => {
             "goban": "goban",
             "swal": "swal", // can't seem to import anyways
         },
+
 
 
         devServer: {

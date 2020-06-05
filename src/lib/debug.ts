@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -61,19 +61,4 @@ export default class Debug {
     }
 }
 
-
-
-// Make modules available globally. Use these for debugging purposes only.
-// Don't even think of trying to access a module in the global scope.
-import * as data from "data";
-import * as player_cache from "player_cache";
-import * as preferences from "preferences";
-import * as sockets from "sockets";
-
-Object.assign(window, {
-    debug: debug,
-    data: data,
-    player_cache: player_cache,
-    preferences: preferences,
-    sockets: sockets,
-});
+window['debug'] = debug;

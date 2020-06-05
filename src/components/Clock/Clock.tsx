@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -50,7 +50,7 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
         let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
-        let player_id:number = color === 'black' ? goban.engine.black_player_id : goban.engine.white_player_id;
+        let player_id:number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
 
         let clock_className = 'Clock ' + color;
         if (clock.pause_state) {
@@ -83,17 +83,17 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
                 }
 
                 {time_control.system === 'byoyomi' &&
-                    <div>
+                    <div className='byo-yomi-container'>
                         {(!compact || player_clock.main_time <= 0) &&
                             <React.Fragment>
-                                {player_clock.main_time > 0 && <span> + </span>}
+                                {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
                                 <span className={'period-time boxed' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
                                     {prettyTime(player_clock.period_time_left)}
                                 </span>
                             </React.Fragment>
                         }
-                        <span className={'byo-yomi-periods ' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}
-                            > ({
+                        <span className={'byo-yomi-periods ' + (player_clock.periods_left <= 1 ? 'sudden-death' : '')}>
+                            ({
                                 player_clock.periods_left === 1
                                     ?  pgettext("Final byo-yomi period (Sudden Death)", "SD")
                                     : `${player_clock.periods_left}`
@@ -104,11 +104,11 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
                 {time_control.system === 'canadian' &&
                  (!compact || player_clock.main_time <= 0) &&
                     <React.Fragment>
-                        <span>
-                            {player_clock.main_time > 0 && <span> + </span>}
+                        <span className='canadian-clock-container'>
+                            {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
                             <span className='period-time boxed'>{prettyTime(player_clock.block_time_left)}</span>
-                            /
-                            <span className='periods boxed'>{player_clock.moves_left}</span>
+                            <span className='periods-delimiter'>/</span>
+                            <span className='period-moves boxed'>{player_clock.moves_left}</span>
                         </span>
                     </React.Fragment>
                 }

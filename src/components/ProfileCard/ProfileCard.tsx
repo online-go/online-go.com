@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@ import {Link} from "react-router-dom";
 import {getUserRating, is_novice, is_provisional, humble_rating} from "rank_utils";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
+import * as preferences from "preferences";
 
 
 
@@ -37,7 +38,7 @@ export class ProfileCard extends React.Component<ProfileCardInterface, any> {
 
     render() {
         let user = this.props.user;
-        let rating = user ? getUserRating(user, 'overall', 0) : null;
+        let rating = !preferences.get("hide-ranks") && user ? getUserRating(user, 'overall', 0) : null;
 
         return (
             <div className='ProfileCard'>

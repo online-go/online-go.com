@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -29,6 +29,7 @@ import {Flag} from "Flag";
 import {Card} from "material";
 import {TabCompleteInput} from "TabCompleteInput";
 import * as player_cache from "player_cache";
+import { PlayerCacheEntry } from "player_cache";
 import {string_splitter, n2s, dup} from "misc";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
@@ -38,21 +39,13 @@ import cached from 'cached';
 import {popover} from "popover";
 import {ChatDetails} from './ChatDetails';
 import {shouldOpenNewTab} from 'misc';
+import { ActiveTournamentList, GroupList } from 'types';
 
 
 declare let swal;
 
 
 data.setDefault("chat.joined", {});
-
-interface ChatProperties {
-    channel?: string;
-    autofocus?: boolean;
-    showChannels?: boolean;
-    showUserList?: boolean;
-    updateTitle: boolean;
-    fakelink?: boolean;
-}
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
@@ -64,13 +57,14 @@ data.watch("config.user", (user) => {
         , "i");
 });
 
+/* Any modifications to this must also be mirrored on the server */
 let global_channels: Array<any> = [
-    {"id": "global-english" , "name": "English", "country": "us"},
+    {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
-    {"id": "global-japanese", "name": "日本語 ", "country": "jp"},
-    {"id": "global-chinese" , "name": "中文"   , "country": "cn"},
-    {"id": "global-korean"  , "name": "한국어" , "country": "kr"},
+    {"id": "global-japanese", "name": "日本語 ", "country": "jp", "language": "japanese"},
+    {"id": "global-chinese" , "name": "中文"   , "country": "cn", "language": "chinese"},
+    {"id": "global-korean"  , "name": "한국어" , "country": "kr", "language": "korean"},
     {"id": "global-russian"  , "name": "Русский" , "country": "ru"},
     {"id": "global-polish"  , "name": "Polski" , "country": "pl"},
     {"id": "global-arabic", "name": "العَرَبِيَّةُ", "country": "_Arab_League", "rtl": true},
@@ -78,9 +72,9 @@ let global_channels: Array<any> = [
     {"id": "global-catalan"  , "name": "Català" , "country": "es"},
     {"id": "global-czech"  , "name": "Čeština" , "country": "cz"},
     {"id": "global-esperanto"  , "name": "Esperanto" , "country": "_Esperanto"},
-    {"id": "global-german"  , "name": "Deutsch" , "country": "de"},
-    {"id": "global-spanish"  , "name": "Español" , "country": "es"},
-    {"id": "global-french"  , "name": "Français" , "country": "fr"},
+    {"id": "global-german"  , "name": "Deutsch" , "country": "de", "language": "german"},
+    {"id": "global-spanish"  , "name": "Español" , "country": "es", "language": "spanish"},
+    {"id": "global-french"  , "name": "Français" , "country": "fr", "language": "french"},
     {"id": "global-filipino"  , "name": "Filipino" , "country": "ph"},
     {"id": "global-indonesian", "name": "Indonesian", "country": "id"},
     {"id": "global-hebrew", "name": "עִבְרִית", "country": "il", "rtl": true},
@@ -89,10 +83,10 @@ let global_channels: Array<any> = [
     {"id": "global-bangla"  , "name": "বাংলা" , "country": "bd"},
     {"id": "global-lithuanian", "name": "Lietuvių", "country": "lt"},
     {"id": "global-hungarian"  , "name": "Magyar" , "country": "hu"},
-    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl"},
+    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl", "language": "dutch"},
     {"id": "global-norwegian"  , "name": "Norsk" , "country": "no"},
-    {"id": "global-italian"  , "name": "Italiano" , "country": "it"},
-    {"id": "global-portuguese"  , "name": "Português" , "country": "pt"},
+    {"id": "global-italian"  , "name": "Italiano" , "country": "it", "language": "italian"},
+    {"id": "global-portuguese"  , "name": "Português" , "country": "pt", "language": "portuguese"},
     {"id": "global-romanian"  , "name": "Română" , "country": "ro"},
     {"id": "global-swedish"  , "name": "Svenska" , "country": "se"},
     {"id": "global-finnish"  , "name": "Suomi" , "country": "fi"},
@@ -109,12 +103,26 @@ data.watch("config.ogs", (settings) => {
 });
 
 
-let rtl_mode = {};
+let rtl_mode:{[channel: string]: boolean} = {};
 for (let chan of global_channels) {
     rtl_mode[chan.id] = !!chan.rtl;
 }
 
-let channels = { };
+interface Channel {
+    name: string;
+    chat_log: Array<ChatMessage>;
+    chat_ids: {
+        [uuid:string]: boolean
+    };
+    unread_ct: number;
+    mentioned: boolean;
+    user_list: {
+        [player_id:string]: ChatUser
+    };
+    user_count: number;
+    rtl_mode: boolean;
+}
+let channels:{[channel:string]: Channel} = {};
 
 function getChannel(channel) {
     if (!(channel in channels)) {
@@ -132,14 +140,52 @@ function getChannel(channel) {
     return channels[channel];
 }
 
-
-export class EmbeddedChat extends React.PureComponent<ChatProperties, any> {
-    render() {
-        return <Card className="Card EmbeddedChat"><Chat {...this.props} /></Card>;
-    }
+interface ChatMessage {
+    channel: string;
+    username: string;
+    id: number;
+    ranking: number;
+    professional: boolean;
+    ui_class: string;
+    message: {
+        i: string; // uuid;
+        t: number; // epoch in seconds
+        m: string; // the text
+    };
+    system_message_type?:'flood';
+    system?:boolean; // true if it's a system message
+}
+interface ChatUser extends PlayerCacheEntry {
+    professional: boolean;
+}
+interface ChatProperties {
+    channel?: string;
+    autofocus?: boolean;
+    showChannels?: boolean;
+    showUserList?: boolean;
+    updateTitle: boolean;
+    fakelink?: boolean;
 }
 
-export class Chat extends React.Component<ChatProperties, any> {
+interface ChatState {
+    online_count: number;
+    chat_log: Array<ChatMessage>;
+    user_list: {[player_id:string]: ChatUser};
+    joined_channels: Array<string>;
+    active_channel: string;
+    group_channels: GroupList;
+    tournament_channels: ActiveTournamentList;
+    show_all_global_channels: boolean;
+    show_all_group_channels: boolean;
+    show_all_tournament_channels: boolean;
+    user_sort_order: 'alpha' | 'rank';
+    force_show_channels: boolean;
+    force_show_users: boolean;
+    show_say_hi_placeholder: boolean;
+    rtl_mode: boolean;
+}
+
+export class Chat extends React.Component<ChatProperties, ChatState> {
     refs: {
         input;
         chat_log;
@@ -165,7 +211,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         this.state = {
             online_count: 0,
             chat_log: [],
-            user_list: [],
+            user_list: {},
             joined_channels: this.props.channel ? [this.props.channel] : data.get("chat.joined"),
             active_channel: this.props.channel ? this.props.channel : data.get("chat.active_channel", "global-english"),
             group_channels: [],
@@ -177,19 +223,20 @@ export class Chat extends React.Component<ChatProperties, any> {
             force_show_channels: false,
             force_show_users: false,
             show_say_hi_placeholder: true,
+            rtl_mode: false,
         };
 
         this.seekgraph_canvas = $("<canvas class='SeekGraph'>")[0];
     }
 
-    updateGroups = (groups) => {
+    updateGroups = (groups:GroupList) => {
         this.setState({group_channels: groups});
         groups.map((g) => {
             getChannel("group-" + g.id).name = g.name;
         });
     }
 
-    updateTournaments = (tournaments) => {
+    updateTournaments = (tournaments:ActiveTournamentList) => {
         this.setState({tournament_channels: tournaments});
         tournaments.map((t) => {
             getChannel("tournament-" + t.id).name = t.name;
@@ -345,10 +392,6 @@ export class Chat extends React.Component<ChatProperties, any> {
 
         this.syncStateSoon();
 
-        if (c.channel !== this.state.active_channel) {
-
-        }
-
         if (document.hasFocus()) {
             this.unread_ct = 0;
             if (this.props.updateTitle) {
@@ -382,26 +425,33 @@ export class Chat extends React.Component<ChatProperties, any> {
         delete c.user_list[part.user.id];
 
         //if (this.state.active_channel === part.channel) {
-            this.syncStateSoon();
+        this.syncStateSoon();
         //}
     }
-    systemMessage(text, type) {
+    systemMessage(text:string, system_message_type:'flood') {
         let c = getChannel(this.state.active_channel);
         c.chat_log.push({
+            channel: this.state.active_channel,
+            username: 'system',
+            id: -1,
+            ranking: 99,
+            professional: false,
+            ui_class: '',
             message: {
-                "i": n2s(Date.now()),
+                i: n2s(Date.now()),
+                t: Date.now() / 1000,
+                m: text,
             },
-            "system": true,
-            "type": type,
-            "body": text,
+            system: true,
+            system_message_type: system_message_type,
         });
         this.syncStateSoon();
     }
-    clearSystemMessages(type) {
+    clearSystemMessages(system_message_type: 'flood') {
         for (let channel in channels) {
             let c = getChannel(channel);
             for (let i = 0; i < c.chat_log.length; ++i) {
-                if (c.chat_log[i].system && type === c.chat_log[i].type) {
+                if (c.chat_log[i].system && system_message_type === c.chat_log[i].system_message_type) {
                     c.chat_log.splice(i, 1);
                     --i;
                 }
@@ -536,7 +586,7 @@ export class Chat extends React.Component<ChatProperties, any> {
         return lst;
     }
     toggleSortOrder = () => {
-        let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        let new_sort_order:'rank' | 'alpha' = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
     }
@@ -665,6 +715,8 @@ export class Chat extends React.Component<ChatProperties, any> {
     render() {
         let sorted_user_list = this.sortedUserList();
         let last_line = null;
+        let user = data.get('user');
+        let user_country = user.country || 'un';
 
         let chan_class = (chan: string): string => {
             return (chan in this.state.joined_channels ? " joined" : " unjoined") +
@@ -753,7 +805,7 @@ export class Chat extends React.Component<ChatProperties, any> {
                                         }
                                     >
                                         <span className="channel-name" data-channel={chan.id} onClick={this.setActiveChannel}>
-                                            <Flag country={chan.country}/> {chan.name}
+                                            <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
                                         </span>
                                         {user_count(chan.id)}
                                     </div>
@@ -848,6 +900,12 @@ export class Chat extends React.Component<ChatProperties, any> {
     }
 }
 
+export class EmbeddedChat extends React.PureComponent<ChatProperties, {}> {
+    render() {
+        return <Card className="Card EmbeddedChat"><Chat {...this.props} /></Card>;
+    }
+}
+
 function searchString(site, parameters) {
     if (parameters.length === 1) {
         return site + parameters[0];
@@ -879,7 +937,7 @@ function ChatLine(props) {
     let user = line;
 
     if (line.system) {
-        return ( <div className="chat-line system">{chat_markup(line.body)}</div>);
+        return ( <div className="chat-line system">{chat_markup(line.message.m)}</div>);
     }
 
     let message = line.message;
@@ -954,7 +1012,10 @@ export function chat_markup(body, extra_pattern_replacements?: Array<{split: Reg
         // links to the wiki
         {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/(?:[^\/<> ]+)(?:\/|\b))/gi,
             pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/([^\/<> ]+)(?:\/|\b))/gi,
-            replacement: (m, idx) => (<Link key={idx} to={m[1]}>{"wiki: " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</Link>)},
+            replacement: (m, idx) => (<a key={idx} href={m[1]}>{"wiki: " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</a>)},
+        {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#(?:[^\/<> ]+)(?:\/|\b))/gi,
+            pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#([^\/<> ]+)(?:\/|\b))/gi,
+            replacement: (m, idx) => (<a key={idx} href={m[1]}>{"wiki: TOC " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</a>)},
         // Match forum links
         {split: /\b(https?:\/\/forums\.online-go\.com\/t\/[a-zA-z0-9-]+\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
             pattern: /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-z0-9-]+)\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,

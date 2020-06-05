@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -34,6 +34,7 @@ import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
 import {Player} from "./Player";
+import * as preferences from "preferences";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 
@@ -228,7 +229,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     render() {
         let user = data.get("user");
 
-        let rating = this.state.ratings ? getUserRating(this.state, 'overall', 0) : null;
+        let rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
 
         return (
             <div className="PlayerDetails">

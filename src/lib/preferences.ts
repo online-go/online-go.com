@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -59,6 +59,7 @@ let defaults = {
     "show-all-challenges": false,
     "show-move-numbers": true,
     "show-offline-friends": true,
+    "hide-ranks": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
     "sound-enabled": true,

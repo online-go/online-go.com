@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,7 +18,6 @@
 import {
     Goban,
     GobanCanvasConfig,
-    NumericPlayerColor,
     GoMath,
     PuzzleConfig,
     PuzzlePlacementSetting,
@@ -288,8 +287,8 @@ export class PuzzleEditor {
             }
         };
 
-        process(GoMath.decodeMoves(puzzle.initial_state.black), width, height);
-        process(GoMath.decodeMoves(puzzle.initial_state.white), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state.black, width, height), width, height);
+        process(GoMath.decodeMoves(puzzle.initial_state.white, width, height), width, height);
         process(puzzle.move_tree, width, height);
 
         if (ret.top > ret.bottom) {

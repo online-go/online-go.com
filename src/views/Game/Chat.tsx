@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -556,7 +556,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             <div className={`chat-line-container`} data-chat-id={chat_id}>
                 {move_number}
                 {show_date}
-                <div className={`chat-line ${line.channel} ${third_person}`}>
+                <div className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}>
                     {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
                     {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                     <span className="body">{third_person ? " " : ": "}{msg}</span>

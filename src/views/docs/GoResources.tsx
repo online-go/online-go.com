@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2012-2019  Online-Go.com
+ * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -138,7 +138,7 @@ export let GoResources = (props) => {
                         </span>
                     </span>,
 
-                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up.pdf">Shape Up!</a>
+                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/shape_up_v1.2.pdf">Shape Up!</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Charles Matthews</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Seong-June Kim</span>
                     </span>
@@ -175,6 +175,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.goproblems.com">GoProblems.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://tsumego.tasuki.org/">[PDF] Tsumego Collection</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://sahwal.com">Sahwal.com</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://blacktoplay.com/">Black To Play</a></span>,
                 <span><Flag country={un}/> <a rel="noopener" href="http://gochild2009.appspot.com/?locale=en_US">GoChild</a></span>,
                 <span><Flag country={"cn"}/><Flag country={en}/> <a rel="noopener" href="http://www.weiqiok.com/asp/English.asp">Weiqiok</a></span>,
                 <span><Flag country={un}/> <a rel="noopener" href="http://321go.org/">3-2-1 Go</a></span>,
@@ -400,7 +401,6 @@ export let GoResources = (props) => {
                 <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://pachi.or.cz/">Pachi</a></span>,
                 <span><i className="fa fa-linux"/> <i className="fa fa-apple"/> <i className="fa fa-windows"></i> <a rel="noopener" href="http://gogui.sourceforge.net/">GoGui</a></span>,
                 <span><i className="fa fa-linux"></i> <i className="fa fa-apple"></i> <i className="fa fa-windows"></i> <a rel="noopener" href="https://github.com/SabakiHQ/Sabaki">Sabaki</a></span>,
-                <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=net.lrstudios.android.pachi">Pachi for Android</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=nl.tengen.gridmaster">Go GridMaster</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/details?id=org.ligi.gobandroid_hd">Gobandroid HD</a></span>,
                 <span><i className="fa fa-android"/> <a rel="noopener" href="https://play.google.com/store/apps/developer?id=Lauri+Paatero">Hactar Go</a></span>,
