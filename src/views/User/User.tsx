@@ -580,19 +580,20 @@ export class User extends React.PureComponent<UserProperties, any> {
                         item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                     }
                 }
-
-                if ("time_control_parameters" in r) {
+                if (r.time_per_move <= 12) { // override blitz games displaying as live
+                    item.speed = "Blitz";
+                } else if ("time_control_parameters" in r) {
                     let tcp = JSON.parse(r.time_control_parameters);
-                    if ("speed" in tcp) {
+                    if ("speed" in tcp) { 
                         item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
                     }
                 }
                 if (!item.speed) { // fallback
                     if (r.time_per_move >= 3600 || r.time_per_move === 0) {
                         item.speed = "Correspondence";
-                    } else if (r.time_per_move < 15 && r.time_per_move > 0) {
+                    } else if (r.time_per_move < 12 && r.time_per_move > 0) {
                         item.speed = "Blitz";
-                    } else if (r.time_per_move < 3600 && r.time_per_move >= 15) {
+                    } else if (r.time_per_move < 3600 && r.time_per_move >= 12) {
                         item.speed = "Live";
                     } else {
                         console.log("time_per_move < 0");
