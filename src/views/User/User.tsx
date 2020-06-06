@@ -601,7 +601,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                     item.speed = "Blitz";
                 } else if ("time_control_parameters" in r) {
                     let tcp = JSON.parse(r.time_control_parameters);
-                    if ("speed" in tcp) { 
+                    if ("speed" in tcp) {
                         item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
                     }
                 }
