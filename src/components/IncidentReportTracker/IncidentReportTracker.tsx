@@ -161,6 +161,13 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                 return -1;
             }
 
+            if (a.moderator && a.moderator.id === user.id && !b.moderator) {
+                return -1;
+            }
+            if (b.moderator && b.moderator.id === user.id && !a.moderator) {
+                return 1;
+            }
+
             if (a.moderator && a.moderator.id !== user.id && !b.moderator) {
                 return 1;
             }

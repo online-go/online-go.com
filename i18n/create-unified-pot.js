@@ -40,7 +40,7 @@ function main() {
     fs.readFile('./build/ogs.strings.js.map', "utf-8", (err,sourcemap_text) => {
         let sourcemap = new SourceMapConsumer(JSON.parse(sourcemap_text));
 
-        fs.readFile('./build/ogs.strings.js', "utf-8", (err,data) => {
+        fs.readFile('./build/ogs.strings.cleaned-for-xgettext.js', "utf-8", (err,data) => {
             if (err) {
                 console.err(err);
                 return;

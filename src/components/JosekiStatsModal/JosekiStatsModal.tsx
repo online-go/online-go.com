@@ -17,6 +17,9 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import {Chart} from 'react-charts';
+
+import * as data from "data";
 
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
@@ -31,31 +34,63 @@ interface JosekiStatsModalProperties {
         explorePageVisits: number, playPageVisits: number, guestPageVisits: number}>;
 }
 
+function StatsChart(props: JosekiStatsModalProperties) {
+    const stats_data = React.useMemo(() => (
+        [
+            {
+                label: 'Total Page Visits',
+                data: props.daily_page_visits.map(day => ({x: new Date(day.date).setHours(0, 0, 0, 0), y: day.pageVisits}))
+            },
+            {
+                label: 'Explore Page Visits',
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.explorePageVisits])
+            },
+            {
+                label: 'Play Mode Visits',
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.playPageVisits])
+            },
+            {
+                label: 'Guest Visits',
+                data: props.daily_page_visits.map(day => [new Date(day.date).setHours(0, 0, 0, 0), day.guestPageVisits])
+            }
+        ]), [props]);
+
+    const axes =
+        [
+            { primary: true, type: 'time', position: 'bottom' },
+            { type: 'linear', position: 'left' }
+        ];
+
+    const series = {
+          showPoints: false
+        };
+
+    const label_colour = data.get("theme") === "light" ? false : true;
+
+    return (
+        <Chart
+            data={stats_data} axes={axes} series={series} tooltip dark={label_colour}
+        />
+    );
+}
+
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
+
     render() {
-        //console.log(this.props.daily_page_visits);
-        const visits = this.props.daily_page_visits.map((day, index) => (
-            <div className="daily-result" key={index}>
-                <div className="result-date">{moment(day.date).format("ddd MMM Do")}:</div>
-                <div className="result-count">{day.pageVisits}</div>
-                <div className="result-count">{day.explorePageVisits}</div>
-                <div className="result-count">{day.playPageVisits}</div>
-                <div className="result-count">{day.guestPageVisits}</div>
-            </div>
-        ));
+        const start_graph = moment("2020-01-15");  // before this time the data is dodgy
+        const today = moment().startOf('day');
+
+        const daily_page_visits = this.props.daily_page_visits
+            .filter((day) => ((moment(day.date) > start_graph) && (moment(day.date) < today)))
+            // strip out tiny days, which theoretically shouldn't be there in the first place
+            // (I think they get there when two people simultaneously click on a position in the first visit of a day)
+            .filter((day) => (day.pageVisits > 10));
 
         return (
             <div className="Modal JosekiStatsModal" ref="modal">
                 <div className="header">{_("Joseki Explorer Stats - Daily Position Loads")}</div>
-                <div className="daily-result">
-                    <div className="result-date"></div>
-                    <div className="result-count">Total</div>
-                    <div className="result-count">Explore</div>
-                    <div className="result-count">Play</div>
-                    <div className="result-count">Guests</div>
-                </div>
                 <div className="daily-visit-results">
-                    {visits}
+                    <StatsChart daily_page_visits={daily_page_visits}/>
                 </div>
             </div>
         );

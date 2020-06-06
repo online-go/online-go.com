@@ -15,18 +15,79 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 .Settings {
     // here
     user-select: none;
 
-    display: flex;
-    flex-wrap: wrap;
+    .PreferenceLine {
+        display: flex;
+        max-width: 100vw;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        align-items: center;
 
-    justify-content: space-around;
+        .PreferenceLineTitle {
+            display: inline-block;
+            width: 20rem;
+            min-width: 20rem;
+            font-size: large;
+            font-weight: bold;
+        }
+
+        .PreferenceLineDescription {
+            display: inline-block;
+            width: 20rem;
+            min-width: 20rem;
+            font-size: small;
+            font-weight: normal;
+            font-style: italic;
+        }
+        .PreferenceLineBody {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 1rem;
+            min-width: 10rem;
+        }
+    }
+
+    .PreferenceDropdown {
+        min-width: 10rem;
+        .PreferenceDropdown-value-container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+    .ProfanityFilterCard {
+        display: inline-flex;
+        width: 20rem;
+        max-width: calc(100vw - 4rem);
+        flex-wrap: wrap;
+        margin: 0;
+
+        .ProfanityFilterOption {
+            display: inline-block;
+
+            .ProfanityFilterOptionName {
+                display: inline-block;
+                width: 5rem;
+                margin: 0.5rem;
+                text-align: right;
+            }
+        }
+    }
 
     .Card {
         margin-bottom: 1rem;
+    }
+
+    .LanguagePicker {
+        themed color link-color
+        font-size: large;
+        text-decoration: underline;
+
+        .fa {
+            themed color fg
+        }
     }
 
     .fa-smile-o {
@@ -60,6 +121,68 @@
         padding-left: 1rem;
     }
 
+    .Settings-Card {
+        > div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            flex-wrap: wrap;
+
+            > h4 {
+                display: inline-block;
+                width: 10rem;
+                max-width: 100vw;
+                flex: 0;
+                flex-basis: 10rem;
+                margin-right: 2rem;
+            }
+            > h5 {
+                display: inline-block;
+                padding-left: 2rem;
+                flex: 0;
+                flex-basis: 15rem;
+            }
+
+            > span:first-of-type {
+                margin-left: 3rem;
+                margin-right: 1rem;
+                flex: 0;
+                flex-basis: 14rem;
+            }
+
+            .sound-option-select {
+                text-wrap: nowrap;
+
+                .sound-option {
+                    padding-left: 0.5rem;
+                }
+            }
+
+            .flag {
+                margin-left: 0.3rem;
+            }
+
+            .volume {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                margin-top: 1.0rem;
+                margin-bottom: 1.0rem;
+
+                input {
+                    flex: 1;
+                    display: inline-block;
+                }
+
+                i {
+                    flex: 0;
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                }
+            }
+        }
+    }
+
     dt {
         margin-top: 2.0rem;
         font-weight: bold;
@@ -81,5 +204,176 @@
         border-radius: 0.3rem;
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
+    }
+
+    .SoundToggle {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        max-width: 95vw;
+
+
+        label {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5rem;
+            flex-basis: 14rem;
+
+            .sound-toggle-name {
+                flex: 1;
+                flex-basis: 14rem;
+            }
+
+            .voice-or-effect {
+                width: 3rem;
+                flex-basis: 3rem;
+                text-align: right;
+            }
+        }
+
+        .Toggle {
+            margin-right: 0.5rem;
+            margin-left: 0.5rem;
+        }
+
+        .SoundToggle-voice-label {
+            flex: 1;
+            //flex-grow: 1;
+        }
+    }
+
+    .PreferenceToggle, .EmailNotificationToggle {
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
+        display: flex;
+        align-items: center;
+
+        label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5rem;
+
+            .preference-toggle-name {
+                width: 14rem;
+                flex-basis: 14rem;
+            }
+
+        }
+
+        .Toggle {
+            margin-right: 0.5rem;
+            margin-left: 0.5rem;
+        }
+    }
+
+    .EmailNotificationToggle {
+        margin-top: 1rem;
+        margin-left: 1rem;
+        label {
+            .preference-toggle-name {
+                width: 20rem;
+                flex-basis: 20rem;
+            }
+        }
+    }
+
+    .sound-sample-left-column {
+
+    }
+
+    .col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+    }
+
+    .LogoutButtons {
+        flex: 1;
+
+        > div { 
+            text-align: center;
+            margin-top: 3rem;
+        }
+    }
+}
+
+#SettingsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    //align-items: stretch;
+    align-items: flex-start;
+}
+
+#SettingsGroupSelector {
+    border: 1px solid black;
+    themed border-color shade3
+
+    .SettingsGroup {
+        cursor: pointer;
+        padding: 0.7rem;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &.selected {
+            themed background-color primary
+            themed color colored-background-fg
+        }
+
+        .spacer {
+            display: inline-block;
+            width: 1rem;
+        }
+
+        i {
+            display: inline-block;
+            width: 1rem;
+
+        }
+    }
+}
+
+#SelectedSettingsContainer {
+    flex: 1;
+    display: flex;
+}
+
+// Mobile
+@media (max-width: 767px) {
+    #SettingsGroupSelector {
+        display: none;
+    }
+    #SettingsContainer {
+        flex-direction: column;
+    }
+    #SelectedSettingsContainer {
+        padding-top: 1rem;
+    }
+
+
+    #SettingsGroupDropdown {
+        .settings-group-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    #SettingsContainer {
+        align-items: stretch;
+    }
+}
+
+// Desktop
+@media (min-width: 768px) {
+    #SettingsGroupDropdown {
+        display: none;
+    }
+    #SelectedSettingsContainer {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }

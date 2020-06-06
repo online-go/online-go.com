@@ -46,11 +46,30 @@ export function ngettext(singular, plural, count) {
     let key = singular + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
+            /* If we don't have a plural translation in a multi-message-id
+             * translation but we do happen to have the plural translation as a
+             * stand alone translation, use that. */
+            if (count !== 1) {
+                if (plural in catalog) {
+                    return catalog[plural][0];
+                }
+            }
+
             count = 1;
         }
 
         return catalog[key][count === 1 ? 0 : 1];
     }
+
+    /* If we don't have a ngettext translation entry at all, but
+     * we do have some stand alone translations, use those */
+    if ((count !== 1 || !(singular in catalog)) && plural in catalog) {
+        return catalog[plural][0];
+    }
+    if (singular in catalog) {
+        return catalog[singular][0];
+    }
+
     return debug_wrap(count === 1 ? singular : plural);
 }
 
@@ -65,12 +84,46 @@ export function pgettext(context, msgid) {
 
 export function npgettext(context, singular, plural, count) {
     let key = context + "" + singular + "" + plural;
+    let skey = context + "" + singular;
+    let pkey = context + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
+            /* If we don't have a plural translation in a multi-message-id
+             * translation but we do happen to have the plural translation as a
+             * stand alone translation, use that. */
+            if (count !== 1) {
+                if (pkey in catalog) {
+                    return catalog[pkey][0];
+                }
+
+                if (plural in catalog) {
+                    return catalog[plural][0];
+                }
+            }
+
             count = 1;
         }
         return catalog[key][count === 1 ? 0 : 1];
     }
+
+    /* If we don't have a npgettext translation entry at all, but
+     * we do have some stand alone translations, use those */
+    if (count !== 1 || !(singular in catalog || skey in catalog)) {
+        if (pkey in catalog) {
+            return catalog[pkey][0];
+        }
+        if (plural in catalog) {
+            return catalog[plural][0];
+        }
+    }
+    if (skey in catalog) {
+        return catalog[skey][0];
+    }
+    if (singular in catalog) {
+        return catalog[singular][0];
+    }
+
+
     return debug_wrap(count === 1 ? singular : plural);
 }
 
@@ -216,28 +269,31 @@ sorted_locale_countries.sort((a, b) => {
 });
 
 
+function sanitize(language_or_country:string):string {
+    return language_or_country.replace(/[^a-zA-Z0-9_-]/g, '');
+}
 
 export function getLanguageFlag(language, user_country, default_flag) {
     if (language === "english" && ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "spanish" && ["mx", "co", "cl", "ar"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "french" && ["ca", "be", "cd", "ci", "ch"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "german" && ["at", "de", "be", "ch"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "italian" && ["it", "ch", "va", "sm"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "portuguese" && ["pt", "br", "mz", "ao"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
     if (language === "dutch" && ["nl", "be"].indexOf(user_country) >= 0) {
-        return user_country;
+        return sanitize(user_country);
     }
 
     return getCountryFlagClass(default_flag);
@@ -249,8 +305,8 @@ export function getCountryFlagClass(country_code) {
     if (country_code === "eu")       { return "_European_Union"; }
     if (country_code === "un")       { return "_United_Nations"; }
     if (parseInt(country_code) > 0 ) { return "_United_Nations"; }
-    if (country_code.length > 2)     { return country_code; }
-    return country_code;
+    if (country_code.length > 2)     { return sanitize(country_code); }
+    return sanitize(country_code);
 }
 
 export function setCurrentLanguage(language_code) {
@@ -326,3 +382,9 @@ export default {
 _("Not allowed to access this game");
 _("Not allowed to access this review");
 
+window['gettext'] = gettext;
+window['pgettext'] = pgettext;
+window['ngettext'] = ngettext;
+window['npgettext'] = npgettext;
+window['get_format'] = get_format;
+window['interpolate'] = interpolate;

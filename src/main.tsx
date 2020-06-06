@@ -19,6 +19,8 @@
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
 import { configure_goban } from 'configure-goban';
+import { sfx } from 'sfx';
+sfx.sync();
 
 declare var ogs_current_language;
 declare var ogs_version;
@@ -280,6 +282,8 @@ browserHistory.listen(location => {
 init_tabcomplete();
 
 /* Initialization done, render!! */
+let svg_loader = document.getElementById('loading-svg-container');
+svg_loader.parentNode.removeChild(svg_loader);
 ReactDOM.render(routes, document.getElementById("main-content"));
 
 window['data'] = data;

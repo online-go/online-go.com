@@ -21,6 +21,7 @@ import {Link} from "react-router-dom";
 import {openModal} from 'Modal';
 import {NotesModal} from 'NotesModal';
 import {post, get, put, del, patch} from "requests";
+import { parse } from 'query-string';
 import * as data from "data";
 import * as moment from "moment";
 import {Card} from 'material';
@@ -52,6 +53,7 @@ interface UserProperties {
     match: {
         params: any
     };
+    location?: any;
     // id?: any,
     // user?: any,
     // callback?: ()=>any,
@@ -88,6 +90,8 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_update_interval: any;
     moderator_note:any = null;
     moderator_log:any = null;
+    moderator_log_anchor: any = React.createRef();
+    show_mod_log: boolean;
 
     constructor(props) {
         super(props);
@@ -110,6 +114,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
         };
+
+        this.show_mod_log = parse(this.props.location.search)['show_mod_log'] === '1';
     }
 
     componentDidMount() {
@@ -128,6 +134,13 @@ export class User extends React.PureComponent<UserProperties, any> {
         }, 1000);
         this.resolve(this.props);
     }
+
+    componentDidUpdate() {
+        if (this.show_mod_log && this.moderator_log_anchor.current !== null) {
+            this.moderator_log_anchor.current.scrollIntoView();
+        }
+    }
+
     componentWillUnmount() {
         clearInterval(this.vacation_update_interval);
     }
@@ -556,28 +569,32 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
-                let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
-                    item.result_class = "library-tie-result";
-                } else if (item.white.id === this.user_id) /* played white */ {
-                    if (item.ranked) {
-                        if (item.white_won) /* player won */ {
-                            item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
-                        } else if (item.black_won) /* player lost */ {
-                            item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                if (preferences.get("hide-ranks")) {
+                    item.result_class = "library-hidden-result";
+                } else {
+                    let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
+                    if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
+                        item.result_class = "library-tie-result";
+                    } else if (item.white.id === this.user_id) /* played white */ {
+                        if (item.ranked) {
+                            if (item.white_won) /* player won */ {
+                                item.result_class = outcome.white_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                            } else if (item.black_won) /* player lost */ {
+                                item.result_class = outcome.white_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                            }
+                        } else {
+                            item.result_class = item.white_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                         }
-                    } else {
-                        item.result_class = item.white_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
-                    }
-                } else if (item.black.id === this.user_id) /* played black */ {
-                    if (item.ranked) {
-                        if (item.black_won) /* player won */ {
-                            item.result_class = outcome.black_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
-                        } else if (item.white_won) /* player black */ {
-                            item.result_class = outcome.black_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                    } else if (item.black.id === this.user_id) /* played black */ {
+                        if (item.ranked) {
+                            if (item.black_won) /* player won */ {
+                                item.result_class = outcome.black_effective_stronger ? "library-won-result-vs-weaker" : "library-won-result-vs-stronger";
+                            } else if (item.white_won) /* player black */ {
+                                item.result_class = outcome.black_effective_stronger ? "library-lost-result-vs-weaker" : "library-lost-result-vs-stronger";
+                            }
+                        } else {
+                            item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                         }
-                    } else {
-                        item.result_class = item.black_won ? "library-won-result-unranked" : "library-lost-result-unranked"; /* tie catched above */
                     }
                 }
                 if (r.time_per_move <= 12) { // override blitz games displaying as live
@@ -746,7 +763,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
 
                             {(!editing && user.website) &&
-                                <div className='website-url'><a target="_blank" href={cleaned_website}>{user.website}</a></div>
+                                <div className='website-url'><a target="_blank" rel="noopener" href={cleaned_website}>{user.website}</a></div>
                             }
                             {(editing || null) &&
                                 <div className='website-url'><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
@@ -813,7 +830,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                         <b>Mod log</b>
                         <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
-                        <div id='leave-moderator-note'>
+                        <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
                             <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
                             <button onClick={this.addModeratorNote}>Add note</button>
                         </div>
@@ -1051,7 +1068,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.ladders.map((ladder, idx) => (
                                 <dd key={idx}>
-                                    #{ladder.rank} <a href={`/ladder/${ladder.id}`}>{ladder.name}</a>
+                                    #{ladder.rank} <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
                                 </dd>
                                 ))}
                             </dl>
@@ -1066,7 +1083,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.tournaments.map((tournament, idx) => (
                                 <dd key={idx}>
-                                    <a href={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</a>
+                                    <Link to={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</Link>
                                 </dd>
                                 ))}
                             </dl>
@@ -1080,7 +1097,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <dl className="activity-dl">
                                 {this.state.groups.map((group, idx) => (
                                 <dd key={idx}>
-                                    <a href={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</a>
+                                    <Link to={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</Link>
                                 </dd>
                                 ))}
                             </dl>

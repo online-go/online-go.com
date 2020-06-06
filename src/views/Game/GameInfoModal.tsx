@@ -72,12 +72,12 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 'name': config.game_name,
                 'outcome': config.outcome,
             };
-            if (config.black_player_id === 0) {
+            if (config.black_player_id === 0 || !config.players?.black?.id) {
                 settings['black_player_name'] = config.players.black.name;
                 settings['black_player_rank'] = config.players.black.rank;
                 settings['black_player_pro'] = !!config.players.black.pro;
             }
-            if (config.white_player_id === 0) {
+            if (config.white_player_id === 0 || !config.players?.white?.id) {
                 settings['white_player_name'] = config.players.white.name;
                 settings['white_player_rank'] = config.players.white.rank;
                 settings['white_player_pro'] = !!config.players.white.pro;
@@ -174,6 +174,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
             ranks.push({value: i + ".1", label: rankString({ranking: i, professional: true})});
         }
 
+        const black_editable = editable && (config.black_player_id === 0 || !config.players?.black?.id);
+        const white_editable = editable && (config.white_player_id === 0 || !config.players?.white?.id);
+
         return (
           <div className="Modal GameInfoModal" ref="modal">
               <div className="header">
@@ -199,7 +202,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                     {this.props.creatorId && <dt>{_("Creator")}</dt>}
                     {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
                     <dt>{_("Black")}</dt><dd>
-                        { editable && this.props.config.black_player_id === 0
+                        { black_editable
                             ? <span>
                                 <input value={config.players.black.name} onChange={this.updateBlackName} />
                                 <select value={config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)} onChange={this.updateBlackRank} >
@@ -212,7 +215,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                         }
                     </dd>
                     <dt>{_("White")}</dt><dd>
-                        { editable && this.props.config.white_player_id === 0
+                        { white_editable
                             ? <span>
                                 <input value={config.players.white.name} onChange={this.updateWhiteName} />
                                 <select value={config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)} onChange={this.updateWhiteRank} >

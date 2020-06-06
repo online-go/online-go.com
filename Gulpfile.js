@@ -161,7 +161,7 @@ function min_styl(done) {
 function background_webpack(done) {
     function spawn_webpack() {
         let env = process.env;
-        let webpack = spawn('npm', ['run', 'webpack-watch'], { stdio: 'inherit' })
+        let webpack = spawn('npm', ['run', 'webpack-watch'], { stdio: 'inherit', shell: true })
 
         webpack.on('exit', spawn_webpack);
     }
@@ -193,7 +193,7 @@ function dev_server(done) {
 
     let beta_proxy = (prefix) => proxy('beta.online-go.com', {
         https: true,
-        forwardPath: function(req, res) {
+        proxyReqPathResolver: function(req) {
             let path = prefix + require('url').parse(req.url).path;
             console.log('-->', path);
             return path;
@@ -238,7 +238,19 @@ function dev_server(done) {
     });
 
     devserver.get('/goban.js', (req, res) => {
-        let js = fs.readFileSync('node_modules/goban/lib/index.js', {encoding: 'utf-8'});
+        console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js`);
+        let js = fs.readFileSync('node_modules/goban/lib/goban.js', {encoding: 'utf-8'});
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader("Content-Length", js.length);
+        res.status(200).send(js);
+    });
+
+    devserver.get('/goban.js.map', (req, res) => {
+        console.info(`GET ${req.path} -> node_modules/goban/lib/goban.js.map`);
+        let js = fs.readFileSync('node_modules/goban/lib/goban.js.map', {encoding: 'utf-8'});
         res.setHeader("Content-Type", "application/javascript; charset=utf-8");
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
@@ -294,7 +306,7 @@ function dev_server(done) {
                 case 'LANGUAGE_VERSION_DOTJS': return 'js';
                 case 'GOBAN_JS': {
                     if (fs.lstatSync('node_modules/goban').isSymbolicLink()) {
-                        return `http://localhost:9000/goban.js`;
+                        return `/goban.js`;
                     } else {
                         return `https://cdn.online-go.com/goban/${_package_json.devDependencies.goban.substr(1)}/goban.js`;
                     }

@@ -81,6 +81,18 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             page_size: this.props.pageSize || (this.props.name ? data.get(`paginated-table.${this.props.name}.page_size`) : 0) || 10,
         });
         this.filter = this.props.filter || {};
+        this.update_source();
+        setTimeout(() => this.update(), 1);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.source !== prevProps.source) {
+            this.update_source();
+        }
+        setTimeout(() => this.update(), 1);
+    }
+
+    update_source = () => {
         if (typeof(this.props.source) === "string") {
             this.source_url = this.props.source as string;
             this.source_method = this.props.method || "get";
@@ -88,7 +100,6 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         } else {
             this.source_function = this.props.source as SourceFunction;
         }
-        setTimeout(() => this.update(), 1);
     }
 
     shouldComponentUpdate(nextProps, nextState) {

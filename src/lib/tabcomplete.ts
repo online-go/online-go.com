@@ -135,7 +135,8 @@ function matchFullName(input, nicknames) {
     let letter;
     let letters = "";
     $.each(nicknames, (index, value) => {
-        if (input.lastIndexOf(value) === input.length - value.length) {
+        let idx = input.lastIndexOf(value);
+        if (idx >= 0 && idx === input.length - value.length) {
             matches.push(value);
         }
     });
@@ -227,7 +228,7 @@ function onKeyPress(e, options) {
                 completed_event.caret = sel.start;
                 $this.trigger(completed_event);
 
-                if ((match.value && !completed_event.isDefaultPrevented()) || true) {
+                if ((match.value && !completed_event.isDefaultPrevented())) {
                     first = val.substr(0, sel.start - match.value.length - space.length);
                     last    = val.substr(sel.start);
                     /* Space should not be added when there is only 1 match

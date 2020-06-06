@@ -18,3 +18,5 @@
 
 export * from "./Chat";
 export * from "./ChatDetails";
+export * from "./ChatIndicator";
+export * from "./ChatList";

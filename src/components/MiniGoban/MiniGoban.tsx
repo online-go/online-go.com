@@ -113,9 +113,12 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
             white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
 
-            black_name: (typeof(black) === "object" ? (black.username + (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]"))) : black),
-            white_name: (typeof(white) === "object" ? (white.username + (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]"))) : white),
+            black_name: (typeof(black) === "object" ? (black.username) : black),
+            white_name: (typeof(white) === "object" ? (white.username) : white),
             paused: this.state.black_pause_text ? "paused" : "",
+
+            black_rank: (typeof(black) === "object" ? (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]")) : ""),
+            white_rank: (typeof(white) === "object" ? (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]")) : ""),
 
             current_users_move: player_to_move === data.get("config.user").id,
             black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
@@ -146,11 +149,13 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                 elt={this.goban_div} />
                 <div className={`title-black ${this.state.black_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.black_name}</span>
+                    <span className={`player-rank`}>{this.state.black_rank}</span>
                     <Clock compact goban={this.goban} color='black' className='mini-goban' />
                     <span className="score">{this.state.black_score}</span>
                 </div>
                 <div className={`title-white ${this.state.white_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.white_name}</span>
+                    <span className={`player-rank`}>{this.state.white_rank}</span>
                     <Clock compact goban={this.goban} color='white' className='mini-goban' />
                     <span className="score">{this.state.white_score}</span>
                 </div>

@@ -19,7 +19,7 @@
 import * as React from "react";
 import {post, get} from "requests";
 import {Goban} from "goban";
-import {sfx} from "goban";
+import {sfx} from "sfx";
 import {PersistentElement} from "PersistentElement";
 
 interface InstructionalGobanProps {
@@ -97,14 +97,8 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             }
         });
 
-        let last_stone_sound = -1;
-        this.goban.on("puzzle-place", (o:any) => {
-            let idx;
-            do {
-                idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
-            } while (idx === last_stone_sound);
-            last_stone_sound = idx;
-            sfx.play("stone-" + (idx + 1));
+        this.goban.on("puzzle-place", (o:{x: number, y: number, width: number, height: number, color: 'black' | 'white'}) => {
+            sfx.playStonePlacementSound(o.x, o.y, o.width, o.height, o.color);
         });
         this.goban.on("set-for-removal", (obj:any) => {
             if (this.props.config.onSetStoneRemoval) {

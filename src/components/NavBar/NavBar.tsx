@@ -37,6 +37,7 @@ import {Player} from "Player";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
 import cached from 'cached';
+import {ChatIndicator} from "Chat";
 
 let body = $(document.body);
 
@@ -303,6 +304,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 <section className="right">
                     <IncidentReportTracker />
                     { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
+                    <ChatIndicator />
                     <FriendIndicator />
                     <TurnIndicator />
                     <span className="icon-container" onClick={this.toggleRightNav}>
@@ -372,28 +374,28 @@ export class NavBar extends React.PureComponent<{}, any> {
                 </div>
                 {(!omnisearch_searching || null) &&
                     <ul id="items">
-                        {user && <li><Link to="/overview"><i className="fa fa-home"></i> {_("Home")}</Link></li>}
-                        {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i> {_("Sign In")}</Link></li>}
-                        {user && <li><Link to="/play"><i className="ogs-goban"></i> {_("Play")}</Link></li>}
-                        {/* user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i> {_("New Game")}</span></li> */}
-                        {user && <li><span className="fakelink" onClick={this.newDemo}><i className="fa fa-plus"></i> {_("Demo Board")}</span></li>}
-                        <li><Link to="/observe-games"><i className="fa fa-eye"></i> {_("Games")}</Link></li>
-                        <li><Link to="/leaderboards"><i className="fa fa-list-ol"></i> {_("Leaderboards")}</Link></li>
-                        <li><Link to="/chat"><i className="fa fa-comment-o"></i> {_("Chat")}</Link></li>
+                        {user && <li><Link to="/overview"><i className="fa fa-home"></i>{_("Home")}</Link></li>}
+                        {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i>{_("Sign In")}</Link></li>}
+                        {user && <li><Link to="/play"><i className="ogs-goban"></i>{_("Play")}</Link></li>}
+                        {/* user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i>{_("New Game")}</span></li> */}
+                        {user && <li><span className="fakelink" onClick={this.newDemo}><i className="fa fa-plus"></i>{_("Demo Board")}</span></li>}
+                        <li><Link to="/observe-games"><i className="fa fa-eye"></i>{_("Games")}</Link></li>
+                        <li><Link to="/leaderboards"><i className="fa fa-list-ol"></i>{_("Leaderboards")}</Link></li>
+                        <li><Link to="/chat"><i className="fa fa-comment-o"></i>{_("Chat")}</Link></li>
                         <li className="divider"></li>
                         {/*
-                        <li ng-if='::global_user'><Link to='/mail'><i className='fa fa-envelope'></i> {_("Mail")}
+                        <li ng-if='::global_user'><Link to='/mail'><i className='fa fa-envelope'></i>{_("Mail")}
                             <ogs-on-ui-push event='mail-update' action='mail_unread_count = data["unread-count"]'></ogs-on-ui-push>
                             <span ng-if='mail_unread_count > 0' style='font-weight: bold; display: inline;'> ({mail_unread_count})</span>
                         </Link></li>
                         */}
 
-                        <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i> {_("Learn to play Go")}</Link></li>
-                        <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</Link></li>
-                        <li><Link to="/joseki"><i className="fa fa-sitemap"></i> {_("Joseki")}</Link></li>
-                        {/* <li><Link to='/library'><i className='fa fa-university'></i> {_("Server Library")}</Link></li> */}
-                        {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i> {_("SGF Library")}</Link></li>}
-                        {/* {user && <li><Link to='/library/game-history'><i className='fa fa-archive'></i> {_("Game History")}</Link></li>} */}
+                        <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i>{_("Learn to play Go")}</Link></li>
+                        <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i>{_("Puzzles")}</Link></li>
+                        <li><Link to="/joseki"><i className="fa fa-sitemap"></i>{_("Joseki")}</Link></li>
+                        {/* <li><Link to='/library'><i className='fa fa-university'></i>{_("Server Library")}</Link></li> */}
+                        {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i>{_("SGF Library")}</Link></li>}
+                        {/* {user && <li><Link to='/library/game-history'><i className='fa fa-archive'></i>{_("Game History")}</Link></li>} */}
 
                         {/* <li className='divider'></li> */}
 
@@ -406,16 +408,16 @@ export class NavBar extends React.PureComponent<{}, any> {
                         <li><Link to="/docs/other-go-resources"><i className="fa fa-link"></i>{_("Other Go Resources")}</Link></li>
 
                         {user && <li className="divider"></li>}
-                        <li><Link to="/user/supporter"><i className="fa fa-star"></i> {_("Support OGS")}</Link></li>
-                        {user && <li><Link to={`/user/view/${user.id}`}><i className="fa fa-user"></i> {_("Profile")}</Link></li>}
-                        {user && <li><Link to="/user/settings"><i className="fa fa-gear"></i> {_("Settings")}</Link></li>}
-                        {user && <li><span className="fakelink" onClick={logout}><i className="fa fa-sign-out"></i> {_("Logout")}</span></li>}
+                        <li><Link to="/user/supporter"><i className="fa fa-star"></i>{_("Support OGS")}</Link></li>
+                        {user && <li><Link to={`/user/view/${user.id}`}><i className="fa fa-user"></i>{_("Profile")}</Link></li>}
+                        {user && <li><Link to="/user/settings"><i className="fa fa-gear"></i>{_("Settings")}</Link></li>}
+                        {user && <li><span className="fakelink" onClick={logout}><i className="fa fa-sign-out"></i>{_("Logout")}</span></li>}
 
 
 
                         {user && (user.is_moderator || user.is_announcer) && <li className="divider"></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i> {_("Moderator Center")}</Link></li>}
-                        {user && (user.is_moderator || user.is_announcer) && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i> {_("Announcement Center")}</Link></li>}
+                        {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i>{_("Moderator Center")}</Link></li>}
+                        {user && (user.is_moderator || user.is_announcer) && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i>{_("Announcement Center")}</Link></li>}
                         {user && user.is_superuser && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
 
                         {(tournament_invites.length || tournaments.length || false) && <li className="divider"></li>}

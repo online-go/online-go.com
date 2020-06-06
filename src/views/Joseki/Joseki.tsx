@@ -41,6 +41,25 @@ import {Throbber} from "Throbber";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
+const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) => {
+    let prefetch_url = server_url + "positions?id=" + node_id;
+    if (variation_filter) {
+        if (variation_filter.contributor) {
+            prefetch_url += "&cfilterid=" + variation_filter.contributor;
+        }
+        if (variation_filter.tags && variation_filter.tags.length !== 0) {
+            prefetch_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
+        }
+        if (variation_filter.source) {
+            prefetch_url += "&sfilterid=" + variation_filter.source;
+        }
+    }
+    if (mode) {
+        prefetch_url += "&mode=" + mode;
+    }
+    return prefetch_url;
+};
+
 const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter) {
@@ -332,22 +351,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     updatePlayerJosekiRecord = (node_id) => {
-        fetch(server_url + "playrecord/", {
-            method: 'put',
-            mode: 'cors',
-            headers: godojo_headers(),
-            body: JSON.stringify({
-                position_id: node_id,
-                errors: this.state.joseki_errors
+        if (!data.get("user").anonymous) {
+            fetch(server_url + "playrecord/", {
+                method: 'put',
+                mode: 'cors',
+                headers: godojo_headers(),
+                body: JSON.stringify({
+                    position_id: node_id,
+                    errors: this.state.joseki_errors
+                })
             })
-        })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to play record PUT:", body);
-            this.extractPlayResults(body);
-        }).catch((r) => {
-            console.log("Play record PUT failed:", r);
-        });
+            .then(res => res.json())
+            .then(body => {
+                // console.log("Server response to play record PUT:", body);
+                this.extractPlayResults(body);
+            }).catch((r) => {
+                console.log("Play record PUT failed:", r);
+            });
+        }
     }
 
    // Fetch the next moves based on the current filter
@@ -376,25 +397,42 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // console.log("Fetch next moves for ", node_id);
         // console.log("... cache: ", this.cached_positions);
 
-        // Because of tricky sequencing of state update from server responses, only
-        // explore mode works with this caching ... the others need processNewMoves to happen after completion
-        // of fetchNextFilteredMovesFor (this routine), which doesn't work with caching... needs some reorganisation
+        // Because of tricky sequencing of state update from server responses, caching works only with
+        // explore mode  ... the other modes need processNewMoves to happen after completion
+        // of fetchNextFilteredMovesFor() (IE this procedure), which doesn't work with caching... needs some reorganisation
         // to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
             // console.log("cached position:", node_id);
+            // console.log("prefetching next positions for node", node_id, this.state.mode);
+            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
+                mode: 'cors',
+                headers: godojo_headers()
+            })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                // console.log("Prefetch Server response:", body);
+                body.forEach((move_info) => {
+                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                });
+            }).catch((r) => {
+                console.log("Node GET failed:", r);
+            });
+
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
             console.log("fetching position for node", node_id, this.state.mode);
-            fetch(position_url(node_id, variation_filter, this.state.mode), {
+            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
                 // console.log("Server response:", body);
-                this.processNewMoves(node_id, body);
-                this.cached_positions = {[node_id]: body, ...this.cached_positions};
+                this.processNewMoves(node_id, body[0]);
+                body.forEach((move_info) => {
+                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                });
             }).catch((r) => {
                 console.log("Node GET failed:", r);
             });
@@ -408,7 +446,6 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     processNewMoves = (node_id: string, dto) => {
         // console.log("Process new moves...");
-        this.setState({throb: false});
 
         if (this.load_sequence_to_board) {
             // when they clicked a position link, we have to load the whole sequence we recieved onto the board
@@ -458,6 +495,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }
         }
 
+        this.setState({throb: false});
         this.goban.enableStonePlacement();
     }
 
@@ -615,7 +653,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.trace_index--;
                 if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
                     this.trace_index = 0;
-                    this.move_trace = [stepping_back_to];
+                    this.move_trace.unshift(stepping_back_to);
                 }
                 else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
                     console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
@@ -825,7 +863,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
-        if (!this.backstepping) {
+        if (!this.backstepping && !this.state.throb) {
             // console.log("backstepping...");
             this.backstepping = true;  // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
@@ -1460,7 +1498,9 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                         </div>
                                     )}
                                 </div>
-                                <textarea className="comment-input" rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
+                                <textarea className="comment-input"
+                                    hidden={!this.props.can_comment}
+                                    rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
                             </div>
                         }
 

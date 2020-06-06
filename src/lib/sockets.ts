@@ -16,8 +16,12 @@
  */
 
 import * as data from "data";
-
 import Debug from "debug";
+import { current_language } from 'translate';
+
+declare var ogs_language_version;
+declare var ogs_version;
+
 const debug = new Debug("sockets");
 
 let io_config = {
@@ -61,6 +65,13 @@ function handle_pong(data) {
     last_latency = latency;
     last_clock_drift = drift;
 }
+function send_client_info() {
+    termination_socket.send("client/info", {
+        language: current_language,
+        langauge_version: ogs_language_version,
+        version: ogs_version,
+    });
+}
 export function get_network_latency(): number {
     return last_latency;
 }
@@ -69,6 +80,7 @@ export function get_clock_drift(): number {
 }
 termination_socket.on("net/pong", handle_pong);
 termination_socket.on("connect", ping);
+termination_socket.on("connect", send_client_info);
 setInterval(ping, 10000);
 
 

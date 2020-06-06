@@ -160,7 +160,7 @@ function prettyTime(ms:number):string {
     } else if (days > 1) {
         ret += (days + ' ' + ngettext("Day", "Days", days));
         if (hours > 0) {
-            ret += ' ' + (hours + (hours ? ngettext("Hour", "Hours", hours) : ""));
+            ret += ' ' + (hours + (hours ? (' ' + ngettext("Hour", "Hours", hours)) : ""));
         }
     } else if (hours || days === 1) {
         ret = days === 0

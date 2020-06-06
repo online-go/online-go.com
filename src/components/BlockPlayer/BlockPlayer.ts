@@ -96,6 +96,10 @@ function unIgnoreUser(uid) {
 
 data.watch(cached.blocks, (blocks) => {
     try {
+        if (!blocks) {
+            return;
+        }
+
         block_state = {};
         let new_ignores = {};
         for (let entry of blocks) {
@@ -118,5 +122,6 @@ data.watch(cached.blocks, (blocks) => {
     } catch (e) {
         console.error("Failed to set blocks. Blocks was ", blocks);
         console.error(e);
+        data.remove(cached.blocks);
     }
 });

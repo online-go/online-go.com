@@ -24,8 +24,6 @@ let defaults = {
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
-    "automatch-alert-sound": "tutorial-bling",
-    "automatch-alert-volume": 0.3, // Control this important alert separately from "goban sounds"
     "autoplay-delay": 10000,
     "board-labeling": 'automatic',
     "chat.show-all-global-channels": true,
@@ -57,15 +55,33 @@ let defaults = {
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
     "show-all-challenges": false,
+    "show-unranked-challenges": true,
+    "show-ranked-challenges": true,
+    "show-19x19-challenges": true,
+    "show-13x13-challenges": true,
+    "show-9x9-challenges": true,
+    "show-other-boardsize-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
     "hide-ranks": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
+
     "sound-enabled": true,
     "sound-voice-countdown-main" : false,
     "sound-voice-countdown": true,
     "sound-volume": 0.5,
+
+    "sound.volume.master": 1.0,
+
+    "sound.countdown.tick-tock.start": 30,
+    "sound.countdown.ten-seconds.start": 10,
+    "sound.countdown.five-seconds.start": 10,
+    "sound.countdown.every-second.start": 10,
+    "sound.countdown.byoyomi-direction": "auto",
+    "sound.vibrate-on-stone-placement": true,
+    "sound.positional-stone-placement-effect": true,
+
     "supporter.currency": "auto",
     "supporter.interval": "month",
     "tournaments-tab": "correspondence",
@@ -73,6 +89,13 @@ let defaults = {
     "translation-dialog-never-show": false,
     "unicode-filter": false,
     "variations-in-chat-enabled": true,
+
+    "show-empty-chat-notification": true,
+    "chat-subscribe-group-chat-unread": true,
+    "chat-subscribe-group-mentions": true,
+    "chat-subscribe-tournament-chat-unread": true,
+    "chat-subscribe-tournament-mentions": true,
+
 };
 
 defaults['profanity-filter'][current_language] = true;
@@ -82,9 +105,9 @@ for (let k in defaults) {
     data.setDefault(`preferences.${k}`, defaults[k]);
 }
 
+export type ValidPreference = keyof typeof defaults;
 
-
-export function get(key: keyof typeof defaults): any {
+export function get(key: ValidPreference): any {
     if (!(key in defaults)) {
         throw new Error(`Undefined default: ${key}`);
     }

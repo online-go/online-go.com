@@ -107,6 +107,9 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
 
     let id = "user_id" in player ? player.user_id : player.id;
     if (!id) {
+        if (player && player.anonymous) {
+            return;
+        }
         console.error("Invalid player object", player);
         return;
     }

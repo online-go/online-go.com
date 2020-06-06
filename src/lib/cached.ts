@@ -148,7 +148,7 @@ export let cached = {
 
         blocks: () => {
             if (anon()) {
-                data.set(cached.blocks, {});
+                data.set(cached.blocks, []);
                 return;
             }
 

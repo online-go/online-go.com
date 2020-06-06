@@ -170,6 +170,16 @@ export let GoResources = (props) => {
             </dl>
 
             <dl>
+                <dt>{_("Online Lessons")}</dt>
+                {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="https://internetgoschool.com/index.vhtml.com">Guo Juans Internet Go School</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.yunguseng.com/">Yunguseng Dojang's Online Go School</a></span>,
+                <span><Flag country={"jp"}/> <a rel="noopener" href="https://www.hoenkikaku.co.jp/">Hoenkikaku Co, Ltd.</a></span>
+                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
+                }
+            </dl>
+
+            <dl>
                 <dt>{_("Tsumego")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.goproblems.com">GoProblems.com</a></span>,
@@ -219,7 +229,9 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">Yoon's Baduk Cafe</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w">Go Pro Yeonwoo</a> / <Flag country={kr}/> <a rel="noopener" href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ">프로연우</a></span>,
                 <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
-                <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>
+                <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>,
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ">Şibumi Go Okulu</a></span>,
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
@@ -229,7 +241,6 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Sites")}</dt>
                 {scramble(
-                <span><Flag country={en}/> <a rel="noopener" href="WhereToPlayGo.com">WhereToPlayGo.com</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://openstudyroom.org">Open Study Room</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://gobase.org/">GoBase.org</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="http://rfg.jeudego.org/">Revue Française de Go</a></span>,
@@ -262,14 +273,6 @@ export let GoResources = (props) => {
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
-            </dl>
-
-            <dl>
-                <dt>{_("Podcasts")}</dt>
-                {scramble(
-                <span><Flag country={en}/> <a rel="noopener" href="http://podcast.baduk.club/">We Heart Baduk Podcast</a></span>
-                ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
-                }
             </dl>
 
             <dl>
@@ -323,7 +326,9 @@ export let GoResources = (props) => {
                 <span><Flag country={"se"}/> <a rel="noopener" href="http://goforbundet.se">Svenska Goförbundet</a></span>,
                 <span><Flag country={"ru"}/> <a rel="noopener" href="http://gofederation.ru">Russian Go Federation</a></span>,
                 <span><Flag country={"pt"}/> <a rel="noopener" href="http://www.go-portugal.org">Associação Portuguesa de Go</a></span>,
-                <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>
+                <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
+                <span><Flag country={"mx"}/> <a rel="noopener" href="http://go.org.mx/ ">Mexican Association of Go</a></span>,
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>

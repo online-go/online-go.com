@@ -17,6 +17,7 @@
 
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
+import {createModeratorNote} from "ModNoteModal";
 import {_} from 'translate';
 import * as data from "data";
 import ITC from "ITC";
@@ -44,6 +45,7 @@ class PrivateChat {
     last_date = new Date().toLocaleDateString();
     floating = false;
     superchat_enabled = false;
+    banner;
     body;
     input;
     superchat_modal;
@@ -89,6 +91,9 @@ class PrivateChat {
             this.player_dom.text(unicodeFilter(player.username));
             this.player_dom.addClass(player.ui_class);
             this.updateInputPlaceholder();
+            if (this.banner) {
+                this.updateModeratorBanner();
+            }
         })
         .catch((err) => {
             console.error(err);
@@ -138,12 +143,17 @@ class PrivateChat {
                 superchat.addClass("enabled");
             }
             title.append(superchat);
+
+            title.append($("<i>").addClass("fa fa-clipboard").click(() => {
+                this.createModNote();
+            }));
+        }
+        else {
+            title.append($("<i>").addClass("ogs-goban").click(() => {
+                challenge(this.user_id);
+            }));
         }
 
-
-        title.append($("<i>").addClass("ogs-goban").click(() => {
-            challenge(this.user_id);
-        }));
         title.append($("<i>").addClass("fa fa-info-circle").click(() => {
             window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)), "_blank");
         }));
@@ -224,6 +234,9 @@ class PrivateChat {
             }
         };
 
+        let banner = this.banner =  $("<div>").addClass("banner banner-inactive");
+        this.dom.append(banner);
+        this.updateModeratorBanner();
 
         let body = this.body = $("<div>").addClass("body");
         this.dom.append(body);
@@ -266,6 +279,22 @@ class PrivateChat {
             data.set("pm.read-" + this.user_id, this.last_uid);
         }
     }
+    updateModeratorBanner() {
+        if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
+            this.banner.removeClass("banner-inactive");
+            this.banner.empty();
+            let line = $("<div>").addClass("banner-text");
+            if (this.superchat_enabled) {
+                line.addClass("megaphone-banner");
+                line.text(_("OGS Moderator official message: please respond"));
+            }
+            else {
+                line.text(_("(You are talking with an OGS Moderator)"));
+            }
+            this.banner.append(line);
+        }
+    }
+
     updateInputPlaceholder() {
         if (!this.input) {
             return;
@@ -278,6 +307,7 @@ class PrivateChat {
             this.input.removeAttr("disabled");
         }
     }
+
     minimize(send_itc?) {
         if (this.superchat_enabled) { return; }
         if (this.display_state === "minimized") { return; }
@@ -351,7 +381,6 @@ class PrivateChat {
             }
         }
 
-
         if (typeof(txt) === "string" && txt.substr(0, 4) === "/me ") {
             line.append("<span> ** </span>");
             line.append($("<span>").addClass("username").text(from)).append("<span> </span>");
@@ -360,7 +389,6 @@ class PrivateChat {
             line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
         }
         line.append($("<span>").html(chat_markup(profanity_filter(txt))));
-
 
         this.lines.push(line);
         if (this.body) {
@@ -378,6 +406,7 @@ class PrivateChat {
             }
         }
         this.updateInputPlaceholder();
+        this.updateModeratorBanner();
     }
     addSystem(message) {
         let line = $("<div>").addClass("chat-line system");
@@ -398,6 +427,16 @@ class PrivateChat {
             }
         }
     }
+
+    createModNote = () => {
+        let moderator_note = "";
+        this.lines.forEach((line) => {
+            moderator_note += line[0].textContent + "\n";
+        });
+
+        createModeratorNote(this.user_id, moderator_note);
+    }
+
     hilight() {
         if (this.dom) {
             this.dom.addClass("highlighted");
@@ -615,6 +654,9 @@ function chat_markup(body) {
         ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
         let group_matcher = /(#group-([0-9]+))/gi;
         ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
+        // try to migigate tsumegodojo spam
+        let tsumegodojo_matcher = /(tsumegodojo)/gi;
+        ret = ret.replace(tsumegodojo_matcher, "tsumegododo");
         return ret;
     } else {
         console.log("Attempted to markup non-text object: ", body);

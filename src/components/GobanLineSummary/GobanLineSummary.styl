@@ -17,9 +17,11 @@
 
 .GobanLineSummaryContainer {
     //display: table
-    width: 100%;
+    width: max-content;
     max-width: 100vw;
     overflow-x: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .GobanLineSummary {
@@ -55,6 +57,10 @@
 
     .game-name, .player {
         text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 13em;
     }
 
     &.in-stone-removal-phase {

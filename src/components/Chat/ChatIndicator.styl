@@ -1,0 +1,78 @@
+/*
+ * Copyright (C) 2012-2020  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.ChatIndicator {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    align-self: baseline;
+    font-size: 12pf;
+
+    .navbar-icon {
+        display: inline-flex;
+        flex-direction: column;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+        align-items: center;
+        margin-bottom: -3px;
+        margin-top: 1px;
+        cursor: pointer;
+        width: max-content;
+    }
+    .fa-comment {
+        themed color shade3;
+    }
+    .count {
+        font-size: font-size-smaller;
+        padding-bottom: -5px;
+    }
+
+    &.mentioned .fa-comment {
+        themed color chat-mentions;
+    }
+    &.mentioned .count {
+        themed color chat-mentions;
+    }
+
+    &.unread .fa-comment {
+        themed color primary;
+    }
+    &.unread .count {
+        themed color primary;
+    }
+
+    .ChatList {
+        display: flex;
+        position: absolute;
+        themed background-color bg
+        top: navbar-height;
+        right: 0;
+        width: 12rem;
+        height: max-content;
+        max-width: 100vw;
+        max-height: 40%;
+        overflow-x: hidden;
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        z-index: z.friend-list.menu;
+    }
+
+}
