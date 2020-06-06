@@ -1,0 +1,10 @@
+version: "3"
+services:
+
+  online-go:
+    build: .
+    image: online-go
+    container_name: online-go
+    ports:
+      - "8080:8080"
+
