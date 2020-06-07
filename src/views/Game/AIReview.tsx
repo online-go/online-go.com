@@ -746,9 +746,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     />
                                 {this.renderWorstMoveList()}
                                 {
-                                    <div className='foo'>
+                                    <div className='WinScoreToggler' style={{paddingTop: "8px"}}>
                                     {_("Win% est.")}
-                                    <Toggle checked={this.state.use_score} onChange={b => this.setState({use_score: b})} />
+                                    <span style={{paddingLeft: "8px", paddingRight: "8px"}}>
+                                        <Toggle checked={this.state.use_score} onChange={b => this.setState({use_score: b})} />
+                                    </span>
                                     {_("Score est.")}
                                     </div>
                                 }
