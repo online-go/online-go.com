@@ -28,6 +28,7 @@ import { Game } from './Game';
 import { close_all_popovers, popover } from "popover";
 import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
+import {Toggle} from 'Toggle';
 import {
     GoMath,
     MoveTree,
@@ -58,6 +59,7 @@ interface AIReviewProperties {
 interface AIReviewState {
     loading: boolean;
     reviewing: boolean;
+    use_score: boolean;
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
@@ -80,6 +82,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             updatecount: 0,
             top_moves: [],
             worst_move_delta_filter: 0.1,
+            use_score: false,
         };
         this.state = state;
         window['aireview'] = this;
@@ -714,8 +717,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     entries={ai_review_chart_entries}
                                     updatecount={this.state.updatecount}
                                     move_number={this.props.move.move_number}
-                                    setmove={this.props.game.nav_goto_move} />
+                                    setmove={this.props.game.nav_goto_move}
+                                    use_score={this.state.use_score}
+                                    />
                                 {this.renderWorstMoveList()}
+                                {
+                                    <div className='foo'>
+                                    {_("Score est.")}
+                                    <Toggle checked={this.state.use_score} onChange={b => this.setState({use_score: b})} />
+                                    </div>
+                                }
                             </React.Fragment>
                         }
 

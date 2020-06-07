@@ -32,6 +32,7 @@ interface AIReviewChartProperties {
     updatecount : number;
     move_number : number;
     setmove     : (move_number:number) => void;
+    use_score   : boolean;
 }
 
 const bisector = d3.bisector((d:AIReviewEntry) => { return d.move_number; }).left;
