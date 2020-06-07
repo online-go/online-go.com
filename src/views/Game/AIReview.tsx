@@ -46,6 +46,7 @@ declare var swal;
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
+    score: number;
     num_variations: number;
 }
 
@@ -329,9 +330,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let ai_review_move:JGOFAIReviewMove;
         let next_ai_review_move:JGOFAIReviewMove;
         let win_rate:number = this.ai_review.win_rate;
+        let score:number = this.ai_review.win_rates[-1];
         let next_win_rate:number;
+        let next_score:number;
         let next_move = null;
-        let next_move_delta = null;
+        let next_move_delta_win_rate = null;
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
@@ -345,6 +348,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         let win_rates = this.ai_review?.win_rates || [];
+        let scores = this.ai_review?.scores || [];
 
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
@@ -354,8 +358,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (next_ai_review_move) {
             next_win_rate = next_ai_review_move.win_rate;
+            next_score = next_ai_review_move.score;
         } else {
             next_win_rate = win_rates[move_number + 1] || win_rate;
+            next_win_rate = scores[move_number + 1] || score;
         }
 
         let marks:any = {};
@@ -379,6 +385,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                             found_next_move = true;
                             branch.win_rate = next_win_rate;
+                            branch.score = next_score;
                             break;
                         }
                     }
@@ -386,6 +393,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         branches.push({
                             moves: [next_move],
                             win_rate: next_win_rate,
+                            score: next_score,
                             visits: 0,
                         });
                     }
@@ -428,11 +436,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 : JGOFNumericPlayerColor.BLACK;
                         }
 
-                        let delta:number = next_player === JGOFNumericPlayerColor.WHITE
-                            ? (ai_review_move.win_rate) - (branch.win_rate)
-                            : (branch.win_rate) - (ai_review_move.win_rate);
+                        let delta:number = this.state.use_score
+                            ? (next_player === JGOFNumericPlayerColor.WHITE
+                                ? (ai_review_move.score - branch.score)
+                                : (branch.score) - (ai_review_move.score))
+                            : 100 * (next_player === JGOFNumericPlayerColor.WHITE
+                                ? (ai_review_move.win_rate) - (branch.win_rate)
+                                : (branch.win_rate) - (ai_review_move.win_rate));
 
-                        let key = (delta * 100).toFixed(1);
+                        let key = (delta).toFixed(1);
                         if (key === "0.0" || key === "-0.0") {
                             key = "0";
                         }
@@ -527,9 +539,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         if (next_win_rate >= 0) {
-            next_move_delta = next_win_rate - win_rate;
+            next_move_delta_win_rate = next_win_rate - win_rate;
             if (this.props.game.goban.engine.colorToMove() === "white") {
-                next_move_delta = -next_move_delta;
+                next_move_delta_win_rate = -next_move_delta_win_rate;
             }
         }
 
@@ -539,7 +551,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         return [
             win_rate,
-            next_move_delta,
+            next_move_delta_win_rate,
             next_move_pretty_coords,
         ];
     }
@@ -607,6 +619,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return {
                 move_number: idx,
                 win_rate: x,
+                score: this.ai_review?.moves[idx]?.score || 0,
                 num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
             };
         }) || [];
@@ -723,8 +736,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 {this.renderWorstMoveList()}
                                 {
                                     <div className='foo'>
-                                    {_("Score est.")}
+                                    {_("Win% est.")}
                                     <Toggle checked={this.state.use_score} onChange={b => this.setState({use_score: b})} />
+                                    {_("Score est.")}
                                     </div>
                                 }
                             </React.Fragment>
