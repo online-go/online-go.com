@@ -61,6 +61,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     win_rate_line?: d3.Line<AIReviewEntry>;
     win_rate_area?: d3.Area<AIReviewEntry>;
     x_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
     mouse?:number;
     mouse_rect?:d3.Selection<SVGRectElement, unknown, null, undefined>;
     move_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
@@ -168,13 +169,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
 
         this.x_axis = this.prediction_graph.append("g");
-
         this.x_axis
             .attr("transform", "translate(0," + this.height + ")")
             .call(d3.axisBottom(this.x))
             .select(".domain")
             .remove();
 
+        this.y_axis = this.prediction_graph.append("g");
 
         this.highlighted_move_circle_container = this.prediction_graph.append("g");
 
@@ -369,6 +370,22 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr("offset", d => d.offset)
             .attr("stop-color", d => d.color)
             ;
+
+        this.y_axis.remove();
+        this.y_axis = this.prediction_graph.append("g");
+        if (this.props.use_score) {
+            // Heuristic for getting a nice number of ticks?
+            let avg_tick_size = (this.max_score - this.min_score) / 6;
+            let num_ticks = Math.ceil(this.min_score / avg_tick_size) + Math.ceil(this.max_score / avg_tick_size) + 1;
+            this.y_axis
+                .attr("transform", "translate(0,0)")
+                .call(d3.axisRight(this.y).ticks(num_ticks));
+            // Remove the zero'th tick label
+            this.y_axis.selectAll(".tick")
+                .filter(d => d === 0)
+                .remove();
+        }
+
 
         this.highlighted_move_circles =
             this.highlighted_move_circle_container
