@@ -329,8 +329,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     public updateHighlightsMarksAndHeatmaps() {
         let ai_review_move:JGOFAIReviewMove;
         let next_ai_review_move:JGOFAIReviewMove;
-        let win_rate:number = this.ai_review.win_rate;
-        let score:number = this.ai_review.win_rates[-1];
+        let win_rate:number;
+        let score:number;
         let next_win_rate:number;
         let next_score:number;
         let next_move = null;
@@ -352,8 +352,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
+            score = ai_review_move.score || 0;
         } else {
             win_rate = win_rates[move_number] || this.ai_review.win_rate;
+            score = scores[move_number] || (this.ai_review.scores ? this.ai_review.scores[-1] : 0);
         }
 
         if (next_ai_review_move) {
@@ -551,6 +553,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         return [
             win_rate,
+            score,
             next_move_delta_win_rate,
             next_move_pretty_coords,
         ];
@@ -608,12 +611,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         let [
             win_rate,
-            next_move_delta,
+            score,
+            next_move_delta_win_rate,
             next_move_pretty_coords,
         ] = this.updateHighlightsMarksAndHeatmaps();
 
         let win_rate_p = win_rate * 100.0;
-        let next_move_delta_p = next_move_delta * 100.0;
+        let next_move_delta_p = next_move_delta_win_rate * 100.0;
 
         let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
@@ -675,10 +679,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
                                     {(win_rate >= 0 && win_rate <= 1.0)
-                                        ? <div className="progress">
-                                              <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
-                                              <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
-                                          </div>
+                                        ? (this.state.use_score && score
+                                            ? <div className="progress">
+                                                {(score > 0
+                                                  ? <div className="progress-bar black-background" style={{width: "100%"}}>B+{score.toFixed(1)}</div>
+                                                  : <div className="progress-bar white-background" style={{width: "100%"}}>W+{(-score).toFixed(1)}</div>
+                                                )}
+                                            </div>
+                                            : <div className="progress">
+                                                <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
+                                                <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
+                                              </div>)
                                         : <div className="pending">
                                               <i className='fa fa-desktop slowstrobe'></i>
                                               {_("Processing")}
@@ -767,7 +778,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     </div>
                 }
 
-                {null && next_move_pretty_coords && next_move_delta !== null &&
+                {null && next_move_pretty_coords && next_move_delta_win_rate !== null &&
                     <div className='next-move-delta-container'>
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
