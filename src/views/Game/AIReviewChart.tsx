@@ -55,6 +55,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     width?:number;
     height?:number;
     max_score?:number;
+    min_score?:number;
     win_rate_line_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_area_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_line?: d3.Line<AIReviewEntry>;
@@ -131,35 +132,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.x = d3.scaleLinear().rangeRound([0, this.width]);
         this.y = d3.scaleLinear().rangeRound([this.height, 0]);
 
-        this.svg.append("linearGradient")
-            .attr("id", "win-rate-area-gradient")
-            .attr("gradientUnits", "userSpaceOnUse")
-            .attr("x1", 0).attr("y1", 0)
-            .attr("x2", 0).attr("y2", this.height)
-            .selectAll("stop")
-            .data(
-                data.get('theme') === 'dark'
-                    ? [
-                        {offset: "0%", color: "#000000"},
-                        {offset: "49%", color: "#333333"},
-                        {offset: "50%", color: "#888888"},
-                        {offset: "51%", color: "#909090"},
-                        {offset: "100%", color: "#999999"}
-                      ]
-                    : [
-                        {offset: "0%", color: "#222222"},
-                        {offset: "49%", color: "#444444"},
-                        {offset: "50%", color: "#888888"},
-                        {offset: "51%", color: "#cccccc"},
-                        {offset: "100%", color: "#eeeeee"}
-                      ]
-            )
-            .enter()
-            .append("stop")
-            .attr("offset", d => d.offset)
-            .attr("stop-color", d => d.color)
-            ;
-
 
         this.win_rate_area = d3.area<AIReviewEntry>()
             .curve(d3.curveMonotoneX)
@@ -183,14 +155,17 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             move_number: entries[entries.length - 1].move_number,
             num_variations: 0
         });
-        let max_score = Math.max(... entries.map(e => Math.abs(e.score)));
+        let max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
+        let min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
         this.max_score = max_score;
+        this.min_score = min_score;
 
         if (this.props.use_score) {
-            this.y.domain(d3.extent([-max_score, max_score]) as [number, number]);
+            this.y.domain(d3.extent([min_score, max_score]) as [number, number]);
         } else {
             this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
         }
+
 
         this.x_axis = this.prediction_graph.append("g");
 
@@ -332,7 +307,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
         if (this.props.use_score) {
-            this.y.domain(d3.extent([-this.max_score, this.max_score]) as [number, number]);
+            this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
         } else {
             this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
         }
@@ -358,6 +333,42 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
             return false;
         });
+
+
+        let gradient_transition_point = 50;
+        if (this.props.use_score) {
+            let yRange = this.max_score - this.min_score;
+            gradient_transition_point = (this.max_score / yRange) * 100;
+        }
+        this.svg.select("linearGradient").remove();
+        this.svg.append("linearGradient")
+            .attr("id", "win-rate-area-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", 0).attr("y1", 0)
+            .attr("x2", 0).attr("y2", this.height)
+            .selectAll("stop")
+            .data(
+                data.get('theme') === 'dark'
+                    ? [
+                        {offset: "0%", color: "#000000"},
+                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333"},
+                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
+                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090"},
+                        {offset: "100%", color: "#999999"}
+                      ]
+                    : [
+                        {offset: "0%", color: "#222222"},
+                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444"},
+                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
+                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#cccccc"},
+                        {offset: "100%", color: "#eeeeee"}
+                      ]
+            )
+            .enter()
+            .append("stop")
+            .attr("offset", d => d.offset)
+            .attr("stop-color", d => d.color)
+            ;
 
         this.highlighted_move_circles =
             this.highlighted_move_circle_container
