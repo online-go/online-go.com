@@ -206,6 +206,9 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         for (let channel in joined) {
             this.join(channel);
         }
+        if (!(this.state.active_channel in joined)) {
+            this.join(this.state.active_channel);
+        }
         this.setActiveChannel(this.state.active_channel);
 
         data.watch("chat.active_channel", this.onActiveChannelChanged, false, false);
@@ -416,20 +419,18 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
             state_update.active_channel = active_channel;
         }
 
-        let chan = getChannel(active_channel);
-        chan.markAsRead();
         if (!(active_channel in data.get("chat.joined"))) {
             this.join(active_channel);
         }
+
+        let chan = getChannel(active_channel);
+        chan.markAsRead();
         state_update.user_list = chan.user_list;
         state_update.chat_log = chan.chat_log;
         state_update.rtl_mode = chan.rtl_mode;
         this.scrolled_to_bottom = true;
         this.setState(state_update);
 
-        if (!(active_channel in data.get("chat.joined"))) {
-            this.join(active_channel);
-        }
     }
 
     sortedUserList(): Array<any> {
