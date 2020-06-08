@@ -25,6 +25,7 @@ import cached from 'cached';
 import { ActiveTournamentList, GroupList } from 'types';
 import {_, interpolate} from "translate";
 import { shadowban } from "src/views/Moderator";
+import { getBlocks } from "BlockPlayer";
 
 interface Events {
     "chat": any;
@@ -132,6 +133,7 @@ data.watch(cached.groups, updateGroups);
 data.watch(cached.active_tournaments, updateTournaments);
 
 
+let user_id: number;
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
@@ -140,6 +142,7 @@ data.watch("config.user", (user) => {
         + "|\\bplayer ?" + user.id + "\\b"
         + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
+    user_id = user.id;
 });
 
 
@@ -243,13 +246,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         try {
             if (typeof(obj.message.m) === "string") {
-                if (name_match_regex.test(obj.message.m)) {
-                    if (obj.message.t > this.last_seen_timestamp) { // TODO remember chat read position
-                        this.mentioned = true;
-                        emitNotification("[" + this.name + "]: " + obj.username,
-                                         "[" + this.name + "] " + obj.username + ": " + obj.message.m);
-                    } else {
-                        console.log("Not sending name match notification since we just joined the channel ", obj.channel);
+                if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
+                    if (name_match_regex.test(obj.message.m)) {
+                        if (obj.message.t > this.last_seen_timestamp) { // TODO remember chat read position
+                            this.mentioned = true;
+                            emitNotification("[" + this.name + "]: " + obj.username,
+                                             "[" + this.name + "] " + obj.username + ": " + obj.message.m);
+                        } else {
+                            console.log("Not sending name match notification since we just joined the channel ", obj.channel);
+                        }
                     }
                 }
             }
@@ -257,21 +262,25 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
 
-        if (obj.message.t > this.last_seen_timestamp) {
-            this.unread_ct++;
-            unread_delta = 1;
-            this.last_seen_timestamp = obj.message.t;
+        if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
+            if (obj.message.t > this.last_seen_timestamp) {
+                this.unread_ct++;
+                unread_delta = 1;
+                this.last_seen_timestamp = obj.message.t;
+            }
         }
 
         try {
-            if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
-                this.emit("unread-count-changed",
-                        {channel: this.channel,
-                        unread_ct: this.unread_ct,
-                        unread_delta: unread_delta,
-                        mentioned: this.mentioned,
-                        previous_mentioned: previous_mentioned
-                        });
+            if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
+                if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
+                    this.emit("unread-count-changed",
+                            {channel: this.channel,
+                            unread_ct: this.unread_ct,
+                            unread_delta: unread_delta,
+                            mentioned: this.mentioned,
+                            previous_mentioned: previous_mentioned
+                            });
+                }
             }
         } catch (e) {
             console.log(e);
