@@ -4,6 +4,7 @@ var path = require('path');
 let fs = require('fs');
 var webpack = require('webpack');
 const pkg = require('./package.json');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -110,7 +111,14 @@ module.exports = (env, argv) => {
                         priority: -10
                     }
                 }
-            }
+            },
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions: {
+                      safari10: true,
+                    },
+                }),
+            ],
         },
 
 

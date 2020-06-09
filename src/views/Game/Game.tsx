@@ -1950,10 +1950,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
              }
         ).catch(errorAlerter);
     }
-    annul = () => {
+    private annul(tf:boolean):void {
         let moderation_note = null;
         do {
-            moderation_note = prompt("ANNULMENT - Moderator note:");
+            moderation_note = tf ? prompt("ANNULMENT - Moderator note:") : prompt("Un-annulment - Moderator note:");
             if (moderation_note == null) {
                 return;
             }
@@ -1962,11 +1962,16 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         post("games/%%/annul", this.game_id,
              {
+                 "annul": tf ? 1 : 0,
                  "moderation_note": moderation_note,
              }
         )
         .then(() => {
-            swal({text: _(`Game has been annulled`)});
+            if (tf) {
+                swal({text: _(`Game has been annulled`)});
+            } else {
+                swal({text: `Game ranking has been restored`});
+            }
         })
         .catch(errorAlerter);
     }
@@ -2999,6 +3004,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
         let annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
+        let unannulable = (goban && this.state.annulled && goban.engine.config.ranked || null);
 
         let review = !!this.review_id || null;
         let game = !!this.game_id || null;
@@ -3103,8 +3109,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
 
-                {(annul && annulable) && <a onClick={this.annul}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
-                {(annul && !annulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
+                {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
+                {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel"></i> {"Remove annulment"}</a>}
+                {(annul && !annulable && !unannulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
 
                 {(mod || annul) && <hr/>}
                 {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}

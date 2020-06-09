@@ -154,7 +154,7 @@ function formatMoney(currency: string, n:number, no_fraction_digits:boolean = fa
     let ret = Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency}).format(n);
 
     if (no_fraction_digits) {
-        return ret.replace(/[.,].*/, "");
+        return ret.replace(/[.,].{2}$/, "");
     }
     return ret;
 }
