@@ -745,7 +745,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     use_score={this.state.use_score}
                                     />
                                 {this.renderWorstMoveList()}
-                                {
+                                {this.ai_review.scores &&
                                     <div className='WinScoreToggler' style={{paddingTop: "8px"}}>
                                     {_("Win% est.")}
                                     <span style={{paddingLeft: "8px", paddingRight: "8px"}}>
