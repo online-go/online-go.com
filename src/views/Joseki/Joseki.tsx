@@ -536,7 +536,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         // Give them the URL for this position in the URL bar
-        window.history.replaceState({}, document.title, '/joseki/' + this.state.current_node_id);
+        window.history.replaceState({}, document.title, '/joseki/' + position.node_id);
     }
 
     // Draw all the variations that we know about from the server (array of moves from the server)
