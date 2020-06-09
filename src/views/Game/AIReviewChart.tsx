@@ -295,10 +295,11 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             const n_moves_to_render = 100;
             const sine_step = (Math.PI / n_moves_to_render) * 4;
             for (let i = 0; i < n_moves_to_render; ++i) {
+                const unitNoiseLine = simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
                 entries.push({
                     //win_rate: Math.sin((Date.now() * 0.005 + i) * sine_step) * 0.4 + 0.5,
-                    win_rate: simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4 + 0.5,
-                    score: simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4 + 0.5,
+                    win_rate: unitNoiseLine + 0.5,
+                    score: unitNoiseLine * (this.max_score - this.min_score) + (this.max_score + this.min_score) / 2,
                     move_number: i,
                     num_variations: 0
                 });
