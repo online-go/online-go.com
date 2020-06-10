@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
-import {_, interpolate} from "translate";
+import {_, ngettext, interpolate} from "translate";
 import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
@@ -46,8 +46,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
     constructor(props) {
         super(props);
         this.state = {
-            white_score: "",
-            black_score: "",
+            white_score: 0,
+            black_score: 0,
         };
 
         this.goban_div = document.createElement('div');
@@ -110,8 +110,8 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
 
 
         this.setState({
-            black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
-            white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
+            black_score: score.black.prisoners + score.black.komi,
+            white_score: score.white.prisoners + score.white.komi,
 
             black_name: (typeof(black) === "object" ? (black.username) : black),
             white_name: (typeof(white) === "object" ? (white.username) : white),
@@ -151,13 +151,13 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                     <span className={`player-name`}>{this.state.black_name}</span>
                     <span className={`player-rank`}>{this.state.black_rank}</span>
                     <Clock compact goban={this.goban} color='black' className='mini-goban' />
-                    <span className="score">{this.state.black_score}</span>
+                    <span className="score">{this.state.black_score} {ngettext("point", "points", this.state.black_score)}</span>
                 </div>
                 <div className={`title-white ${this.state.white_to_move_cls}`}>
                     <span className={`player-name`}>{this.state.white_name}</span>
                     <span className={`player-rank`}>{this.state.white_rank}</span>
                     <Clock compact goban={this.goban} color='white' className='mini-goban' />
-                    <span className="score">{this.state.white_score}</span>
+                    <span className="score">{this.state.white_score} {ngettext("point", "points", this.state.white_score)}</span>
                 </div>
             </div>
         );
