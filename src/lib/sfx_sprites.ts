@@ -40,7 +40,7 @@ sprite_packs["de-de-lara-numbers"] = {
     language: "de",
     country: "de",
     name: "Lara",
-    filename_prefix: "de-de-lara-numbers.v4",
+    filename_prefix: "de-de-lara-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -298,7 +298,7 @@ sprite_packs["de-de-lara-phrases"] = {
     language: "de",
     country: "de",
     name: "Lara",
-    filename_prefix: "de-de-lara-phrases.v4",
+    filename_prefix: "de-de-lara-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -428,7 +428,7 @@ sprite_packs["en-gb-claire-numbers"] = {
     language: "en",
     country: "gb",
     name: "Claire",
-    filename_prefix: "en-gb-claire-numbers.v4",
+    filename_prefix: "en-gb-claire-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -686,7 +686,7 @@ sprite_packs["en-gb-claire-phrases"] = {
     language: "en",
     country: "gb",
     name: "Claire",
-    filename_prefix: "en-gb-claire-phrases.v4",
+    filename_prefix: "en-gb-claire-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -816,7 +816,7 @@ sprite_packs["en-us-amy-numbers"] = {
     language: "en",
     country: "us",
     name: "Amy",
-    filename_prefix: "en-us-amy-numbers.v4",
+    filename_prefix: "en-us-amy-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -870,7 +870,7 @@ sprite_packs["en-us-lindsay-numbers"] = {
     language: "en",
     country: "us",
     name: "Lindsay",
-    filename_prefix: "en-us-lindsay-numbers.v4",
+    filename_prefix: "en-us-lindsay-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -1128,7 +1128,7 @@ sprite_packs["en-us-lindsay-phrases"] = {
     language: "en",
     country: "us",
     name: "Lindsay",
-    filename_prefix: "en-us-lindsay-phrases.v4",
+    filename_prefix: "en-us-lindsay-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -1258,7 +1258,7 @@ sprite_packs["es-ar-sabrina-numbers"] = {
     language: "es",
     country: "ar",
     name: "Sabrina  ",
-    filename_prefix: "es-ar-sabrina-numbers.v4",
+    filename_prefix: "es-ar-sabrina-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -1516,7 +1516,7 @@ sprite_packs["es-ar-sabrina-phrases"] = {
     language: "es",
     country: "ar",
     name: "Sabrina",
-    filename_prefix: "es-ar-sabrina-phrases.v4",
+    filename_prefix: "es-ar-sabrina-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -1646,7 +1646,7 @@ sprite_packs["fr-fr-chloe-numbers"] = {
     language: "fr",
     country: "fr",
     name: "Chloé",
-    filename_prefix: "fr-fr-chloe-numbers.v4",
+    filename_prefix: "fr-fr-chloe-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -1904,7 +1904,7 @@ sprite_packs["fr-fr-chloe-phrases"] = {
     language: "fr",
     country: "fr",
     name: "Chloé",
-    filename_prefix: "fr-fr-chloe-phrases.v4",
+    filename_prefix: "fr-fr-chloe-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -2034,7 +2034,7 @@ sprite_packs["ja-jp-hitomi-numbers"] = {
     language: "ja",
     country: "jp",
     name: "Hitomi",
-    filename_prefix: "ja-jp-hitomi-numbers.v4",
+    filename_prefix: "ja-jp-hitomi-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -2292,7 +2292,7 @@ sprite_packs["ja-jp-hitomi-phrases"] = {
     language: "ja",
     country: "jp",
     name: "Hitomi",
-    filename_prefix: "ja-jp-hitomi-phrases.v4",
+    filename_prefix: "ja-jp-hitomi-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -2422,7 +2422,7 @@ sprite_packs["ja-jp-kei-numbers"] = {
     language: "ja",
     country: "jp",
     name: "Kei",
-    filename_prefix: "ja-jp-kei-numbers.v4",
+    filename_prefix: "ja-jp-kei-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -2680,7 +2680,7 @@ sprite_packs["ja-jp-kei-phrases"] = {
     language: "ja",
     country: "jp",
     name: "Kei",
-    filename_prefix: "ja-jp-kei-phrases.v4",
+    filename_prefix: "ja-jp-kei-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -2810,7 +2810,7 @@ sprite_packs["ko-kr-sandra-numbers"] = {
     language: "ko",
     country: "kr",
     name: "Sandra",
-    filename_prefix: "ko-kr-sandra-numbers.v4",
+    filename_prefix: "ko-kr-sandra-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -3068,7 +3068,7 @@ sprite_packs["ko-kr-sandra-phrases"] = {
     language: "ko",
     country: "kr",
     name: "Sandra",
-    filename_prefix: "ko-kr-sandra-phrases.v4",
+    filename_prefix: "ko-kr-sandra-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -3202,7 +3202,7 @@ sprite_packs["ru-ru-alevtina-numbers"] = {
     language: "ru",
     country: "ru",
     name: "Alevtina  ",
-    filename_prefix: "ru-ru-alevtina-numbers.v4",
+    filename_prefix: "ru-ru-alevtina-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -3460,7 +3460,7 @@ sprite_packs["ru-ru-alevtina-phrases"] = {
     language: "ru",
     country: "ru",
     name: "Alevtina",
-    filename_prefix: "ru-ru-alevtina-phrases.v4",
+    filename_prefix: "ru-ru-alevtina-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -3590,7 +3590,7 @@ sprite_packs["zh-cn-inni-numbers"] = {
     language: "zh",
     country: "cn",
     name: "Inni  ",
-    filename_prefix: "zh-cn-inni-numbers.v4",
+    filename_prefix: "zh-cn-inni-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -3848,7 +3848,7 @@ sprite_packs["zh-cn-inni-phrases"] = {
     language: "zh",
     country: "cn",
     name: "Inni",
-    filename_prefix: "zh-cn-inni-phrases.v4",
+    filename_prefix: "zh-cn-inni-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -3856,122 +3856,122 @@ sprite_packs["zh-cn-inni-phrases"] = {
     ],
     "2_periods_left": [
         1000.0,
-        1135.125
+        1128.375
     ],
     "3_periods_left": [
-        3135.125,
-        1079.6875
+        3128.375,
+        1148.4375
     ],
     "4_periods_left": [
-        5214.8125,
-        1146.6875
+        5276.8125,
+        1127.3541666666667
     ],
     "5_periods_left": [
-        7361.5,
-        1036.7291666666667
+        7404.166666666667,
+        990.25
     ],
     "black_wins": [
-        9398.229166666666,
+        9394.416666666666,
         616.4791666666667
     ],
     "byoyomi": [
-        11014.708333333334,
-        586.7708333333334
+        11010.895833333332,
+        523.3125
     ],
     "challenge_received": [
-        12601.479166666668,
+        12534.208333333334,
         1113.2291666666667
     ],
     "disconnected": [
-        14714.708333333334,
+        14647.4375,
         786.4583333333334
     ],
     "game_paused": [
-        16501.166666666668,
+        16433.895833333336,
         1021.1250000000001
     ],
     "game_resumed": [
-        18522.291666666668,
+        18455.020833333332,
         959.0208333333334
     ],
     "game_started": [
-        20481.3125,
+        20414.041666666664,
         894.1041666666667
     ],
     "last_period": [
-        22375.416666666668,
-        863.875
+        22308.145833333336,
+        920.7291666666667
     ],
     "overtime": [
-        24239.291666666668,
+        24228.875,
         720.625
     ],
     "pass": [
-        25959.916666666668,
+        25949.5,
         687.8541666666666
     ],
     "period": [
-        27647.770833333332,
-        343.58333333333337
+        27637.354166666668,
+        354.4791666666667
     ],
     "player_disconnected": [
-        28991.354166666668,
+        28991.833333333332,
         2189.9166666666665
     ],
     "player_reconnected": [
-        32181.270833333336,
+        32181.75,
         2390.25
     ],
     "reconnected": [
-        35571.52083333333,
+        35572.0,
         964.0625
     ],
     "remove_the_dead_stones": [
-        37535.583333333336,
+        37536.0625,
         1346.4375
     ],
     "review_started": [
-        39882.020833333336,
+        39882.5,
         1189.375
     ],
     "start_counting": [
-        42071.395833333336,
-        1151.8333333333333
+        42071.875,
+        1144.8541666666667
     ],
     "tie": [
-        44223.22916666667,
+        44216.729166666664,
         711.75
     ],
     "undo_granted": [
-        45934.979166666664,
+        45928.47916666667,
         1092.1666666666667
     ],
     "undo_requested": [
-        48027.145833333336,
+        48020.645833333336,
         1289.5208333333333
     ],
     "white_wins": [
-        50316.66666666667,
+        50310.166666666664,
         576.2083333333334
     ],
     "you_have_lost": [
-        51892.875,
+        51886.375,
         874.8958333333334
     ],
     "you_have_won": [
-        53767.77083333333,
+        53761.270833333336,
         790.2916666666666
     ],
     "your_move": [
-        55558.0625,
+        55551.5625,
         1135.75
     ],
     "your_opponent_has_disconnected": [
-        57693.8125,
+        57687.3125,
         2272.0
     ],
     "your_opponent_has_reconnected": [
-        60965.8125,
+        60959.3125,
         2407.125
     ]
 }
@@ -3982,7 +3982,7 @@ sprite_packs["zh-hk-bi-numbers"] = {
     language: "zh",
     country: "hk",
     name: "Bi",
-    filename_prefix: "zh-hk-bi-numbers.v4",
+    filename_prefix: "zh-hk-bi-numbers.v5",
     definitions: {
     "silence": [
         0,
@@ -4236,7 +4236,7 @@ sprite_packs["zh-hk-bi-phrases"] = {
     language: "zh",
     country: "hk",
     name: "Bi",
-    filename_prefix: "zh-hk-bi-phrases.v4",
+    filename_prefix: "zh-hk-bi-phrases.v5",
     definitions: {
     "silence": [
         0,
@@ -4370,7 +4370,7 @@ sprite_packs["zz-un-effects-2012"] = {
     language: "zz",
     country: "un",
     name: "Effects (2012)",
-    filename_prefix: "zz-un-effects-2012.v4",
+    filename_prefix: "zz-un-effects-2012.v5",
     definitions: {
     "silence": [
         0,
@@ -4820,7 +4820,7 @@ sprite_packs["zz-un-effects"] = {
     language: "zz",
     country: "un",
     name: "Effects",
-    filename_prefix: "zz-un-effects.v4",
+    filename_prefix: "zz-un-effects.v5",
     definitions: {
     "silence": [
         0,
@@ -5334,7 +5334,7 @@ sprite_packs["zz-un-floor-goban-rich"] = {
     language: "zz",
     country: "un",
     name: "Floor Goban (room)",
-    filename_prefix: "zz-un-floor-goban-rich.v4",
+    filename_prefix: "zz-un-floor-goban-rich.v5",
     definitions: {
     "silence": [
         0,
@@ -5388,7 +5388,7 @@ sprite_packs["zz-un-floor-goban"] = {
     language: "zz",
     country: "un",
     name: "Floor Goban",
-    filename_prefix: "zz-un-floor-goban.v4",
+    filename_prefix: "zz-un-floor-goban.v5",
     definitions: {
     "silence": [
         0,
@@ -5442,7 +5442,7 @@ sprite_packs["zz-un-melamine"] = {
     language: "zz",
     country: "un",
     name: "Melamine",
-    filename_prefix: "zz-un-melamine.v4",
+    filename_prefix: "zz-un-melamine.v5",
     definitions: {
     "silence": [
         0,
@@ -5496,7 +5496,7 @@ sprite_packs["zz-un-original-2013"] = {
     language: "zz",
     country: "un",
     name: "Original (2013)",
-    filename_prefix: "zz-un-original-2013.v4",
+    filename_prefix: "zz-un-original-2013.v5",
     definitions: {
     "silence": [
         0,
@@ -5550,7 +5550,7 @@ sprite_packs["zz-un-table-goban"] = {
     language: "zz",
     country: "un",
     name: "Table",
-    filename_prefix: "zz-un-table-goban.v4",
+    filename_prefix: "zz-un-table-goban.v5",
     definitions: {
     "silence": [
         0,

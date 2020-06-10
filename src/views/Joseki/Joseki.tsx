@@ -546,7 +546,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         // Give them the URL for this position in the URL bar
-        window.history.replaceState({}, document.title, '/joseki/' + this.state.current_node_id);
+        window.history.replaceState({}, document.title, '/joseki/' + position.node_id);
     }
 
     // Draw all the variations that we know about from the server (array of moves from the server)
@@ -871,6 +871,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
         });
     }
 
+    backOneMoveKey = () => {
+        //console.log("backarrow key");
+        // Play mode has back and forwards button disabled
+        if (this.state.mode !== PageMode.Play) {
+            this.backOneMove();
+        }
+    }
+
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
         if (!this.backstepping && !this.state.throb) {
@@ -883,6 +891,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
+    forwardOneMoveKey = () => {
+        // Play mode has back and forwards button disabled
+        if (this.state.mode !== PageMode.Play) {
+            this.forwardOneMove();
+        }
+    }
 
     forwardOneMove = () => {
         // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
@@ -1018,8 +1032,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         return (
             <div className={"Joseki"}>
                 <KBShortcut shortcut="home" action={this.resetBoard} />
-                <KBShortcut shortcut="left" action={this.backOneMove} />
-                <KBShortcut shortcut="right" action={this.forwardOneMove} />
+                <KBShortcut shortcut="left" action={this.backOneMoveKey} />
+                <KBShortcut shortcut="right" action={this.forwardOneMoveKey} />
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref={(e) => this.goban_container = e} className="goban-container">
