@@ -1,7 +1,20 @@
 # Development Environment
 
-Getting setup is easy, you'll need to have [Docker](https://docs.docker.com/get-docker/) installed,
+Getting setup is easy, you'll need to have [node.js](https://nodejs.org/) installed,
 then simply clone the repository and within the working directory run the following:
+
+```
+# You only need to run this the first time
+sudo npm install -g yarn
+yarn install
+
+# Run this to start the development server and build system
+npm run dev
+```
+
+If you're on linux, you can simply type `make` and it will do all this for you as well.
+
+Getting setup is even easier with Docker Compose, you'll need to have [Docker](https://docs.docker.com/get-docker/) installed, then within the working directory run the following:
 
 ```
 # Run this to start the development server and build system
