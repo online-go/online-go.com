@@ -21,6 +21,7 @@ import {current_language} from "translate";
 
 let defaults = {
     "ai-review-enabled": true,
+    "ai-review-use-score": false,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,

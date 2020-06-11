@@ -18,6 +18,7 @@
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
+import * as preferences from "preferences";
 import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
 import { openBecomeASiteSupporterModal } from "Supporter";
@@ -83,7 +84,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             updatecount: 0,
             top_moves: [],
             worst_move_delta_filter: 0.1,
-            use_score: false,
+            use_score: preferences.get('ai-review-use-score'),
         };
         this.state = state;
         window['aireview'] = this;
@@ -749,7 +750,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     <div className='WinScoreToggler' style={{paddingTop: "8px"}}>
                                     {_("Win% est.")}
                                     <span style={{paddingLeft: "8px", paddingRight: "8px"}}>
-                                        <Toggle checked={this.state.use_score} onChange={b => this.setState({use_score: b})} />
+                                        <Toggle checked={this.state.use_score} onChange={b => {
+                                            preferences.set('ai-review-use-score', b);
+                                            this.setState({use_score: b});
+                                            }} />
                                     </span>
                                     {_("Score est.")}
                                     </div>
