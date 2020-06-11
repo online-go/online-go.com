@@ -102,6 +102,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     initialize() {
         let self = this;
 
+        //let this.props.use_score = this.props.use_score && this.props.ai_review.scores != null;
+
         this.width = INITIAL_WIDTH;
         this.height = INITIAL_HEIGHT;
         this.svg = d3.select(this.chart_div)
@@ -134,38 +136,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.y = d3.scaleLinear().rangeRound([this.height, 0]);
 
 
-        this.win_rate_area = d3.area<AIReviewEntry>()
-            .curve(d3.curveMonotoneX)
-            .x1(d => this.x(d.move_number))
-            .y1(d => this.y(this.props.use_score ? d.score * 1.0 : d.win_rate * 100.0))
-            .x0(d => this.x(d.move_number))
-            .y0(d => this.y(this.props.use_score ? 0 : 50))
-            ;
-
-        this.win_rate_line = d3.line<AIReviewEntry>()
-            .curve(d3.curveMonotoneX)
-            .x(d => this.x(d.move_number))
-            .y(d => this.y(this.props.use_score ? d.score : d.win_rate * 100.0));
-
-        let entries:Array<AIReviewEntry>;
-        entries = this.props.entries.map(x => x);
-        entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
-        entries.push({
-            win_rate: 0.5,
-            score: 0.0,
-            move_number: entries[entries.length - 1].move_number,
-            num_variations: 0
-        });
-        let max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
-        let min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
-        this.max_score = max_score;
-        this.min_score = min_score;
-
-        if (this.props.use_score) {
-            this.y.domain(d3.extent([min_score, max_score]) as [number, number]);
-        } else {
-            this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
-        }
+        this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
 
 
         this.x_axis = this.prediction_graph.append("g");
@@ -280,8 +251,19 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     plot() {
         let entries:Array<AIReviewEntry>;
 
+        let use_score_safe = this.props.use_score
+          && this.props.ai_review.scores != null
+          && !this.props.ai_review.scores.includes(0);
+
         if (this.props.entries.length > 0) {
-            entries = this.props.entries.map(x => x);
+            entries = this.props.entries.map((x, i) => {
+                return {
+                    win_rate: x.win_rate,
+                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    move_number: x.move_number,
+                    num_variations: x.num_variations,
+                };
+            });
             entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
             entries.push({
                 win_rate: 0.5,
@@ -299,7 +281,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 entries.push({
                     //win_rate: Math.sin((Date.now() * 0.005 + i) * sine_step) * 0.4 + 0.5,
                     win_rate: unitNoiseLine + 0.5,
-                    score: unitNoiseLine * (this.max_score - this.min_score) + (this.max_score + this.min_score) / 2,
+                    score: unitNoiseLine * 50,
                     move_number: i,
                     num_variations: 0
                 });
@@ -308,11 +290,28 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         }
 
         this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
-        if (this.props.use_score) {
+        if (use_score_safe) {
+            this.max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
+            this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
+
             this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
         } else {
             this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
         }
+
+        this.win_rate_area = d3.area<AIReviewEntry>()
+            .curve(d3.curveMonotoneX)
+            .x1(d => this.x(d.move_number))
+            .y1(d => this.y(use_score_safe ? d.score * 1.0 : d.win_rate * 100.0))
+            .x0(d => this.x(d.move_number))
+            .y0(d => this.y(use_score_safe ? 0 : 50))
+            ;
+
+        this.win_rate_line = d3.line<AIReviewEntry>()
+            .curve(d3.curveMonotoneX)
+            .x(d => this.x(d.move_number))
+            .y(d => this.y(use_score_safe ? d.score : d.win_rate * 100.0));
+
 
         this.win_rate_area_container
             ?.datum(entries)
@@ -338,7 +337,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
 
         let gradient_transition_point = 50;
-        if (this.props.use_score) {
+        if (use_score_safe) {
             let yRange = this.max_score - this.min_score;
             gradient_transition_point = (this.max_score / yRange) * 100;
         }
@@ -374,13 +373,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         this.y_axis.remove();
         this.y_axis = this.prediction_graph.append("g");
-        if (this.props.use_score) {
-            // Heuristic for getting a nice number of ticks?
-            let avg_tick_size = (this.max_score - this.min_score) / 6;
-            let num_ticks = Math.ceil(this.min_score / avg_tick_size) + Math.ceil(this.max_score / avg_tick_size) + 1;
+        if (use_score_safe) {
             this.y_axis
                 .attr("transform", "translate(0,0)")
-                .call(d3.axisRight(this.y).ticks(num_ticks));
+                .call(d3.axisRight(this.y).ticks(7));
             // Remove the zero'th tick label
             this.y_axis.selectAll(".tick")
                 .filter(d => d === 0)
@@ -401,7 +397,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .transition()
             .duration(200)
             .attr('cx', d => this.x(d.move_number))
-            .attr('cy', d => this.y(this.props.use_score ? d.score : d.win_rate * 100))
+            .attr('cy', d => this.y(use_score_safe ? d.score : d.win_rate * 100))
             .attr('r', d => 3)
             .attr('fill', d => '#FF0000');
     }

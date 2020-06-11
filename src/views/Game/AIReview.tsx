@@ -363,7 +363,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = next_ai_review_move.score;
         } else {
             next_win_rate = win_rates[move_number + 1] || win_rate;
-            next_win_rate = scores[move_number + 1] || score;
+            next_score = scores[move_number + 1] || score;
         }
 
         let marks:any = {};
@@ -438,7 +438,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 : JGOFNumericPlayerColor.BLACK;
                         }
 
-                        let delta:number = this.state.use_score
+                        let delta:number = this.state.use_score && this.ai_review.scores
                             ? (next_player === JGOFNumericPlayerColor.WHITE
                                 ? (ai_review_move.score - branch.score)
                                 : (branch.score) - (ai_review_move.score))
@@ -679,7 +679,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
                                     {(win_rate >= 0 && win_rate <= 1.0)
-                                        ? (this.state.use_score && score
+                                        ? (this.state.use_score && this.ai_review.scores
                                             ? <div className="progress">
                                                 {(score > 0
                                                   ? <div className="progress-bar black-background" style={{width: "100%"}}>B+{score.toFixed(1)}</div>
