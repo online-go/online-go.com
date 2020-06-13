@@ -246,7 +246,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         try {
             if (typeof(obj.message.m) === "string") {
-                if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
+                if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) { // ignore messages from blocked users or oneself
                     if (name_match_regex.test(obj.message.m)) {
                         if (obj.message.t > this.last_seen_timestamp) { // TODO remember chat read position
                             this.mentioned = true;
@@ -262,7 +262,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
 
-        if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
+        if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) { // ignore messages from blocked users or oneself
             if (obj.message.t > this.last_seen_timestamp) {
                 this.unread_ct++;
                 unread_delta = 1;
@@ -271,16 +271,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
 
         try {
-            if (getBlocks(obj.id).message || obj.id === user_id) { // ignore messages from blocked users or oneself
-                if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
-                    this.emit("unread-count-changed",
-                            {channel: this.channel,
-                            unread_ct: this.unread_ct,
-                            unread_delta: unread_delta,
-                            mentioned: this.mentioned,
-                            previous_mentioned: previous_mentioned
-                            });
-                }
+            if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
+                this.emit("unread-count-changed",
+                        {channel: this.channel,
+                        unread_ct: this.unread_ct,
+                        unread_delta: unread_delta,
+                        mentioned: this.mentioned,
+                        previous_mentioned: previous_mentioned
+                        });
             }
         } catch (e) {
             console.log(e);
