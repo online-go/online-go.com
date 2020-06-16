@@ -14,6 +14,13 @@ npm run dev
 
 If you're on linux, you can simply type `make` and it will do all this for you as well.
 
+Getting setup is even easier with Docker Compose, you'll need to have [Docker](https://docs.docker.com/get-docker/) installed, then within the working directory run the following:
+
+```
+# Run this to start the development server and build system
+docker-compose up
+```
+
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
 which loads the interface from your local server that you just started with gulp, and
 connects to the beta server for testing.
