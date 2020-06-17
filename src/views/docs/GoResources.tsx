@@ -85,6 +85,13 @@ export let GoResources = (props) => {
                 {scramble(
                     <span><Flag country={kr}/><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">Falling in love with Baduk</a>
                         <br/><span style={{marginLeft: "1.7em", fontSize: "0.9em"}}> Korea Baduk Association</span></span>,
+                    <span><Flag country={en}/> <a rel="noopener" href="https://cdn.online-go.com/relentless.pdf">Relentless (2016)</a>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Younggil An</span>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Josh Hoak</span>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>David Ormerod</span>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}><a rel="noopener" href="http://gogameguru.com/relentless/">Go Game Guru</a></span>
+
+                    </span>,
                     <span><Flag country={en}/> <a rel="noopener" href="https://archive.org/details/gameofgonational00smitrich/page/n9">The Game of Go</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Arthur Smith (1908)</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">River Mountain Go 1 (30k-20k)</a>
