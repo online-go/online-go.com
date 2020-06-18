@@ -55,7 +55,7 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                         <SearchInput
                             placeholder={_("Search")}
                             onChange={(event) => {
-                                this.refs.table.filter.name__istartswith = (event.target as HTMLInputElement).value.trim();
+                                this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
                                 this.refs.table.filter_updated();
                             }}
                         />
@@ -69,7 +69,7 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
                         name="game-history"
                         source={`groups/`}
                         orderBy={["-member_count"]}
-                        filter={{ "name__istartswith": "" }}
+                        filter={{ "name__icontains": "" }}
                         onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
                         columns={[
                             {header: "",  className: "group-icon-header",
