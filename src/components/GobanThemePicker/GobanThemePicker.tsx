@@ -52,7 +52,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             lineCustom: this.getCustom("line"),
             whiteCustom: this.getCustom("white"),
             blackCustom: this.getCustom("black"),
-			urlCustom: this.getCustom("url")
+            urlCustom: this.getCustom("url")
         };
 
         for (let k in GoThemesSorted) {
@@ -104,7 +104,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         if (key === "url") { // Changing the custom image should update the board theme
             key = "board";
         }
-		
+
         if (key === "line") { // Changing the line color should update the board theme
             key = "board";
         }
@@ -127,13 +127,11 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             }}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                             >
-							
-								{theme.theme_name === "Plain" 
-									? <span>CUSTOM</span>
-									: <PersistentElement elt={this.canvases.board[idx]} />
-								}
-							
                             
+                            {theme.theme_name === "Plain" 
+                                ? <span>CUSTOM</span>
+                                : <PersistentElement elt={this.canvases.board[idx]} />
+                            }
                         </div>
                     ))}
                     {this.state.board === "Plain" &&
