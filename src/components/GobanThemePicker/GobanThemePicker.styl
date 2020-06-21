@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -28,12 +28,15 @@
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
+		text-align: center;
+		font-size: 10px;
 
         .selector {
             margin: 1px;
             cursor: pointer;
             border: 1px solid transparent;
             opacity: 0.5;
+			color: white;
         }
 
         .selector:hover, .selector.active {
@@ -49,5 +52,13 @@
             vertical-align: top;
             margin-top: 0.4rem;
         }
+	
+		.customUrlSelector {
+			width: 212px;
+			height: 24px;
+			border: 1px solid lightgrey;
+			margin-top: 0px;
+			margin-bottom: 10px;
+		}
     }
 }
