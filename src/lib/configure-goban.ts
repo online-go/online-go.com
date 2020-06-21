@@ -97,8 +97,8 @@ export function configure_goban() {
         discWhiteTextColor: ():string => data.get("custom.black"),
         plainBoardColor: ():string => data.get("custom.board"),
         plainBoardLineColor: ():string => data.get("custom.line"),
-		plainBoardUrl: ():string => data.get("custom.url"),
-		
+        plainBoardUrl: ():string => data.get("custom.url"),
+
         addCoordinatesToChatInput: (coordinates:string):void => {
             let chat_input = $(".chat-input");
 
