@@ -238,7 +238,8 @@ export let GoResources = (props) => {
                 <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
                 <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ">Şibumi Go Okulu</a></span>,
-                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>,
+                <span><Flag country={"br"}/> <a rel="noopener" href="https://www.twitch.tv/brasilnihonkiin">Nihon Kiin do Brasil</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
 
@@ -335,7 +336,8 @@ export let GoResources = (props) => {
                 <span><Flag country={"pt"}/> <a rel="noopener" href="http://www.go-portugal.org">Associação Portuguesa de Go</a></span>,
                 <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
                 <span><Flag country={"mx"}/> <a rel="noopener" href="http://go.org.mx/ ">Mexican Association of Go</a></span>,
-                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>
+                <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>,
+                <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
