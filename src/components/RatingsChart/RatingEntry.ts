@@ -91,7 +91,7 @@ export function makeRatingEntry(d:any):RatingEntry {
     let rating = parseFloat(d.rating);
     let opponent_rating = parseFloat(d.opponent_rating);
     let handicap = parseInt(d.handicap);
-    let won = parseInt(d.outcome) === 2 ? 1 : 0;
+    let won = parseInt(d.outcome);
     let lost = 1 - won;
     let extra = JSON.parse(d.extra);
 

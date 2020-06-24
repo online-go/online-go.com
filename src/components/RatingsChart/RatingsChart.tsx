@@ -527,7 +527,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
     refreshData() {
         this.setState({loading: true});
-        d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
+        //d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
+        d3.tsv(`/termination-api/player/${this.props.playerId}/glicko2-history?speed=${this.props.speed}&size=${this.props.size}`,
             makeRatingEntry
         ).then(this.loadDataAndPlot)
         .catch(errorLogger)
