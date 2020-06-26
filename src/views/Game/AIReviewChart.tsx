@@ -32,6 +32,7 @@ interface AIReviewChartProperties {
     updatecount : number;
     move_number : number;
     setmove     : (move_number:number) => void;
+    use_score   : boolean;
 }
 
 const bisector = d3.bisector((d:AIReviewEntry) => { return d.move_number; }).left;
@@ -53,11 +54,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     prediction_graph?:d3.Selection<SVGGElement, unknown, null, undefined>;
     width?:number;
     height?:number;
+    max_score?:number;
+    min_score?:number;
     win_rate_line_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_area_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_line?: d3.Line<AIReviewEntry>;
     win_rate_area?: d3.Area<AIReviewEntry>;
     x_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
     mouse?:number;
     mouse_rect?:d3.Selection<SVGRectElement, unknown, null, undefined>;
     move_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
@@ -90,11 +94,15 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.deinitialize();
     }
     shouldComponentUpdate(nextProps:AIReviewChartProperties, nextState:any) {
-        return !deepCompare(nextProps.entries, this.props.entries) || this.props.move_number !== nextProps.move_number;
+        return !deepCompare(nextProps.entries, this.props.entries) ||
+            this.props.move_number !== nextProps.move_number ||
+            this.props.use_score !== nextProps.use_score;
     }
 
     initialize() {
         let self = this;
+
+        //let this.props.use_score = this.props.use_score && this.props.ai_review.scores != null;
 
         this.width = INITIAL_WIDTH;
         this.height = INITIAL_HEIGHT;
@@ -127,59 +135,18 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.x = d3.scaleLinear().rangeRound([0, this.width]);
         this.y = d3.scaleLinear().rangeRound([this.height, 0]);
 
-        this.svg.append("linearGradient")
-            .attr("id", "win-rate-area-gradient")
-            .attr("gradientUnits", "userSpaceOnUse")
-            .attr("x1", 0).attr("y1", 0)
-            .attr("x2", 0).attr("y2", this.height)
-            .selectAll("stop")
-            .data(
-                data.get('theme') === 'dark'
-                    ? [
-                        {offset: "0%", color: "#000000"},
-                        {offset: "49%", color: "#333333"},
-                        {offset: "50%", color: "#888888"},
-                        {offset: "51%", color: "#909090"},
-                        {offset: "100%", color: "#999999"}
-                      ]
-                    : [
-                        {offset: "0%", color: "#222222"},
-                        {offset: "49%", color: "#444444"},
-                        {offset: "50%", color: "#888888"},
-                        {offset: "51%", color: "#cccccc"},
-                        {offset: "100%", color: "#eeeeee"}
-                      ]
-            )
-            .enter()
-            .append("stop")
-            .attr("offset", d => d.offset)
-            .attr("stop-color", d => d.color)
-            ;
-
-
-        this.win_rate_area = d3.area<AIReviewEntry>()
-            .curve(d3.curveMonotoneX)
-            .x1(d => this.x(d.move_number))
-            .y1(d => this.y(d.win_rate * 100.0))
-            .x0(d => this.x(d.move_number))
-            .y0(d => this.y(50))
-            ;
-
-        this.win_rate_line = d3.line<AIReviewEntry>()
-            .curve(d3.curveMonotoneX)
-            .x(d => this.x(d.move_number))
-            .y(d => this.y(d.win_rate * 100.0));
 
         this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
 
-        this.x_axis = this.prediction_graph.append("g");
 
+        this.x_axis = this.prediction_graph.append("g");
         this.x_axis
             .attr("transform", "translate(0," + this.height + ")")
             .call(d3.axisBottom(this.x))
             .select(".domain")
             .remove();
 
+        this.y_axis = this.prediction_graph.append("g");
 
         this.highlighted_move_circle_container = this.prediction_graph.append("g");
 
@@ -243,7 +210,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
                 let d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 self.cursor_crosshair?.attr('transform', 'translate(' + self.x(d.move_number) + ', 0)');
-                self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(d.win_rate * 100.0) + ')');
+                self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(self.props.use_score ? d.score : d.win_rate * 100.0) + ')');
 
                 if (mouse_down) {
                     if (d.move_number !== last_move) {
@@ -284,11 +251,23 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     plot() {
         let entries:Array<AIReviewEntry>;
 
+        let use_score_safe = this.props.use_score
+          && this.props.ai_review.scores != null
+          && !this.props.ai_review.scores.includes(0);
+
         if (this.props.entries.length > 0) {
-            entries = this.props.entries.map(x => x);
-            entries.unshift({win_rate: 0.5, move_number: 0, num_variations: 0});
+            entries = this.props.entries.map((x, i) => {
+                return {
+                    win_rate: x.win_rate,
+                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    move_number: x.move_number,
+                    num_variations: x.num_variations,
+                };
+            });
+            entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
             entries.push({
                 win_rate: 0.5,
+                score: 0.0,
                 move_number: entries[entries.length - 1].move_number,
                 num_variations: 0
             });
@@ -298,9 +277,11 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             const n_moves_to_render = 100;
             const sine_step = (Math.PI / n_moves_to_render) * 4;
             for (let i = 0; i < n_moves_to_render; ++i) {
+                const unitNoiseLine = simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
                 entries.push({
                     //win_rate: Math.sin((Date.now() * 0.005 + i) * sine_step) * 0.4 + 0.5,
-                    win_rate: simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4 + 0.5,
+                    win_rate: unitNoiseLine + 0.5,
+                    score: unitNoiseLine * 50,
                     move_number: i,
                     num_variations: 0
                 });
@@ -309,7 +290,28 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         }
 
         this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
-        this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
+        if (use_score_safe) {
+            this.max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
+            this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
+
+            this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
+        } else {
+            this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
+        }
+
+        this.win_rate_area = d3.area<AIReviewEntry>()
+            .curve(d3.curveMonotoneX)
+            .x1(d => this.x(d.move_number))
+            .y1(d => this.y(use_score_safe ? d.score * 1.0 : d.win_rate * 100.0))
+            .x0(d => this.x(d.move_number))
+            .y0(d => this.y(use_score_safe ? 0 : 50))
+            ;
+
+        this.win_rate_line = d3.line<AIReviewEntry>()
+            .curve(d3.curveMonotoneX)
+            .x(d => this.x(d.move_number))
+            .y(d => this.y(use_score_safe ? d.score : d.win_rate * 100.0));
+
 
         this.win_rate_area_container
             ?.datum(entries)
@@ -333,6 +335,55 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             return false;
         });
 
+
+        let gradient_transition_point = 50;
+        if (use_score_safe) {
+            let yRange = this.max_score - this.min_score;
+            gradient_transition_point = (this.max_score / yRange) * 100;
+        }
+        this.svg.select("linearGradient").remove();
+        this.svg.append("linearGradient")
+            .attr("id", "win-rate-area-gradient")
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", 0).attr("y1", 0)
+            .attr("x2", 0).attr("y2", this.height)
+            .selectAll("stop")
+            .data(
+                data.get('theme') === 'dark'
+                    ? [
+                        {offset: "0%", color: "#000000"},
+                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333"},
+                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
+                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090"},
+                        {offset: "100%", color: "#999999"}
+                      ]
+                    : [
+                        {offset: "0%", color: "#222222"},
+                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444"},
+                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
+                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#cccccc"},
+                        {offset: "100%", color: "#eeeeee"}
+                      ]
+            )
+            .enter()
+            .append("stop")
+            .attr("offset", d => d.offset)
+            .attr("stop-color", d => d.color)
+            ;
+
+        this.y_axis.remove();
+        this.y_axis = this.prediction_graph.append("g");
+        if (use_score_safe) {
+            this.y_axis
+                .attr("transform", "translate(0,0)")
+                .call(d3.axisRight(this.y).ticks(7));
+            // Remove the zero'th tick label
+            this.y_axis.selectAll(".tick")
+                .filter(d => d === 0)
+                .remove();
+        }
+
+
         this.highlighted_move_circles =
             this.highlighted_move_circle_container
                 .selectAll('circle')
@@ -346,7 +397,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .transition()
             .duration(200)
             .attr('cx', d => this.x(d.move_number))
-            .attr('cy', d => this.y(d.win_rate * 100))
+            .attr('cy', d => this.y(use_score_safe ? d.score : d.win_rate * 100))
             .attr('r', d => 3)
             .attr('fill', d => '#FF0000');
     }
@@ -385,9 +436,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.x.range([0, this.width]);
 
         let entries = this.props.entries.map(x => x);
-        entries.unshift({win_rate: 0.5, move_number: 0, num_variations: 0});
+        entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
         entries.push({
             win_rate: 0.5,
+            score: 0.0,
             move_number: this.props.entries?.length >= 1 ? this.props.entries[this.props.entries.length - 1].move_number : 0,
             num_variations: 0
         });

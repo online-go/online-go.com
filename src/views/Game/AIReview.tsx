@@ -18,6 +18,7 @@
 import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
+import * as preferences from "preferences";
 import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
 import { openBecomeASiteSupporterModal } from "Supporter";
@@ -28,6 +29,7 @@ import { Game } from './Game';
 import { close_all_popovers, popover } from "popover";
 import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
+import {Toggle} from 'Toggle';
 import {
     GoMath,
     MoveTree,
@@ -45,6 +47,7 @@ declare var swal;
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
+    score: number;
     num_variations: number;
 }
 
@@ -58,6 +61,7 @@ interface AIReviewProperties {
 interface AIReviewState {
     loading: boolean;
     reviewing: boolean;
+    use_score: boolean;
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
@@ -80,6 +84,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             updatecount: 0,
             top_moves: [],
             worst_move_delta_filter: 0.1,
+            use_score: preferences.get('ai-review-use-score'),
         };
         this.state = state;
         window['aireview'] = this;
@@ -325,10 +330,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     public updateHighlightsMarksAndHeatmaps() {
         let ai_review_move:JGOFAIReviewMove;
         let next_ai_review_move:JGOFAIReviewMove;
-        let win_rate:number = this.ai_review.win_rate;
+        let win_rate:number;
+        let score:number;
         let next_win_rate:number;
+        let next_score:number;
         let next_move = null;
-        let next_move_delta = null;
+        let next_move_delta_win_rate = null;
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
@@ -342,17 +349,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         let win_rates = this.ai_review?.win_rates || [];
+        let scores = this.ai_review?.scores || [];
 
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
+            score = ai_review_move.score || 0;
         } else {
             win_rate = win_rates[move_number] || this.ai_review.win_rate;
+            score = scores[move_number] || (this.ai_review.scores ? this.ai_review.scores[-1] : 0);
         }
 
         if (next_ai_review_move) {
             next_win_rate = next_ai_review_move.win_rate;
+            next_score = next_ai_review_move.score;
         } else {
             next_win_rate = win_rates[move_number + 1] || win_rate;
+            next_score = scores[move_number + 1] || score;
         }
 
         let marks:any = {};
@@ -376,6 +388,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                             found_next_move = true;
                             branch.win_rate = next_win_rate;
+                            branch.score = next_score;
                             break;
                         }
                     }
@@ -383,6 +396,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         branches.push({
                             moves: [next_move],
                             win_rate: next_win_rate,
+                            score: next_score,
                             visits: 0,
                         });
                     }
@@ -425,11 +439,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 : JGOFNumericPlayerColor.BLACK;
                         }
 
-                        let delta:number = next_player === JGOFNumericPlayerColor.WHITE
-                            ? (ai_review_move.win_rate) - (branch.win_rate)
-                            : (branch.win_rate) - (ai_review_move.win_rate);
+                        let delta:number = this.state.use_score && this.ai_review.scores
+                            ? (next_player === JGOFNumericPlayerColor.WHITE
+                                ? (ai_review_move.score - branch.score)
+                                : (branch.score) - (ai_review_move.score))
+                            : 100 * (next_player === JGOFNumericPlayerColor.WHITE
+                                ? (ai_review_move.win_rate) - (branch.win_rate)
+                                : (branch.win_rate) - (ai_review_move.win_rate));
 
-                        let key = (delta * 100).toFixed(1);
+                        let key = (delta).toFixed(1);
                         if (key === "0.0" || key === "-0.0") {
                             key = "0";
                         }
@@ -524,9 +542,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         if (next_win_rate >= 0) {
-            next_move_delta = next_win_rate - win_rate;
+            next_move_delta_win_rate = next_win_rate - win_rate;
             if (this.props.game.goban.engine.colorToMove() === "white") {
-                next_move_delta = -next_move_delta;
+                next_move_delta_win_rate = -next_move_delta_win_rate;
             }
         }
 
@@ -536,7 +554,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         return [
             win_rate,
-            next_move_delta,
+            score,
+            next_move_delta_win_rate,
             next_move_pretty_coords,
         ];
     }
@@ -593,17 +612,19 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         let [
             win_rate,
-            next_move_delta,
+            score,
+            next_move_delta_win_rate,
             next_move_pretty_coords,
         ] = this.updateHighlightsMarksAndHeatmaps();
 
         let win_rate_p = win_rate * 100.0;
-        let next_move_delta_p = next_move_delta * 100.0;
+        let next_move_delta_p = next_move_delta_win_rate * 100.0;
 
         let ai_review_chart_entries:Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
                 move_number: idx,
                 win_rate: x,
+                score: this.ai_review?.moves[idx]?.score || 0,
                 num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
             };
         }) || [];
@@ -659,10 +680,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
                                     {(win_rate >= 0 && win_rate <= 1.0)
-                                        ? <div className="progress">
-                                              <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
-                                              <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
-                                          </div>
+                                        ? (this.state.use_score && this.ai_review.scores
+                                            ? <div className="progress">
+                                                {(score > 0
+                                                  ? <div className="progress-bar black-background" style={{width: "100%"}}>B+{score.toFixed(1)}</div>
+                                                  : <div className="progress-bar white-background" style={{width: "100%"}}>W+{(-score).toFixed(1)}</div>
+                                                )}
+                                            </div>
+                                            : <div className="progress">
+                                                <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
+                                                <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
+                                              </div>)
                                         : <div className="pending">
                                               <i className='fa fa-desktop slowstrobe'></i>
                                               {_("Processing")}
@@ -714,8 +742,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     entries={ai_review_chart_entries}
                                     updatecount={this.state.updatecount}
                                     move_number={this.props.move.move_number}
-                                    setmove={this.props.game.nav_goto_move} />
+                                    setmove={this.props.game.nav_goto_move}
+                                    use_score={this.state.use_score}
+                                    />
                                 {this.renderWorstMoveList()}
+                                {this.ai_review.scores &&
+                                    <div className='WinScoreToggler' style={{paddingTop: "8px"}}>
+                                    {_("Win% est.")}
+                                    <span style={{paddingLeft: "8px", paddingRight: "8px"}}>
+                                        <Toggle checked={this.state.use_score} onChange={b => {
+                                            preferences.set('ai-review-use-score', b);
+                                            this.setState({use_score: b});
+                                            }} />
+                                    </span>
+                                    {_("Score est.")}
+                                    </div>
+                                }
                             </React.Fragment>
                         }
 
@@ -742,7 +784,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     </div>
                 }
 
-                {null && next_move_pretty_coords && next_move_delta !== null &&
+                {null && next_move_pretty_coords && next_move_delta_win_rate !== null &&
                     <div className='next-move-delta-container'>
                         <span className={"next-move-coordinates " +
                             (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
