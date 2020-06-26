@@ -168,6 +168,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     cached_positions = {};  // a hash by node-ide of position information we've received from the server
     move_trace = [];   // the list of moves that we know the person clicked on to maximum depth, so we can forward-step
     trace_index = -1;  // index into move_trace of the current node that we are on
+    waiting_for = "";  // what position is the most recent fetch to the server waiting to hear about.
 
     constructor(props) {
         super(props);
@@ -385,6 +386,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
 
+        this.waiting_for = node_id; // keep track of which position is the latest one that we're interested in
+
         // visual indication that we are processing their click
         this.setState({
             position_description: "",
@@ -398,9 +401,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, caching works only with
-        // explore mode  ... the other modes need processNewMoves to happen after completion
-        // of fetchNextFilteredMovesFor() (IE this procedure), which doesn't work with caching... needs some reorganisation
-        // to make that work
+        // explore mode  ... the other modes need processNewMoves to happen after completion of fetchNextFilteredMovesFor() (IE this procedure)
+        // which doesn't work with caching... needs some reorganisation to make that work
+
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
             // console.log("cached position:", node_id);
             // console.log("prefetching next positions for node", node_id, this.state.mode);
@@ -421,7 +424,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
-            console.log("fetching position for node", node_id, this.state.mode);
+            // console.log("fetching position for node", node_id, this.state.mode);
             fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
@@ -429,7 +432,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
                 // console.log("Server response:", body);
-                this.processNewMoves(node_id, body[0]);
+                const target_node = body[0];  // the one we're after comes in the first slot of the array
+
+                // If this response we just got is the one we're waiting for now (rather than an old one) then process it
+                if ((this.waiting_for === "root" && target_node.placement === "root") ||
+                    (this.waiting_for === target_node.node_id.toString()) ) {
+                    this.processNewMoves(node_id, target_node);
+                }
+                // update the cache with anything we got (irrespective of what we were waiting for)
                 body.forEach((move_info) => {
                     this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
                 });
