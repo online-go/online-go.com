@@ -105,7 +105,18 @@
   <body>
       <script>
         try {
-            document.body.className = JSON.parse(localStorage.getItem('ogs.theme') || '"light"');
+            let theme = localStorage.getItem('ogs.theme');
+            if (theme) { // user has been on the site before
+                document.body.className = JSON.parse(theme);
+            } else { // first time user is on the site, so set initial theme according to his operating system theme.
+                if (window.matchMedia("(prefers-color-scheme: dark)").matches) { // if OS theme set to dark
+                    document.body.className = "dark";
+                    localStorage.setItem('ogs.theme', '"dark"');
+                } else { 
+                    document.body.className = "light";
+                    localStorage.setItem('ogs.theme', '"light"');
+                }
+            }
         } catch (e) {
             console.error(e);
             document.body.className = "light";
