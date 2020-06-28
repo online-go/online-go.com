@@ -352,7 +352,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                             getProps: ((state, rowInfo, column) => (
                                 {
                                     onClick: (e, handleOriginal) => {
-                                        this.props.loadPositionToBoard(rowInfo.original.node_id);
+                                        this.props.loadPositionToBoard(rowInfo.original.node_id.toString());
                                     },
                                     className: "position-link"
                                 }
