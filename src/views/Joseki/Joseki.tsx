@@ -344,7 +344,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
     }
 
-    loadPosition = (node_id) => {
+    loadPosition = (node_id: string) => {
+        //console.log("load position:", node_id);
         this.load_sequence_to_board = true;
         this.fetchNextMovesFor(node_id);
         this.move_trace = [];
@@ -438,6 +439,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 if ((this.waiting_for === "root" && target_node.placement === "root") ||
                     (this.waiting_for === target_node.node_id.toString()) ) {
                     this.processNewMoves(node_id, target_node);
+                }
+                else {
+                    // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
                 }
                 // update the cache with anything we got (irrespective of what we were waiting for)
                 body.forEach((move_info) => {
