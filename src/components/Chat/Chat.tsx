@@ -540,7 +540,7 @@ export class Chat extends React.Component<ChatProperties, ChatState> {
         let tf = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
-            this.refs.chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
+            this.refs.chat_log.className = (this.state.rtl_mode ? "rtl chat-log " : "chat-log ") + (tf ? "autoscrolling" : "");
         }
         this.scrolled_to_bottom = this.refs.chat_log.scrollHeight - this.refs.chat_log.scrollTop - 10 < this.refs.chat_log.offsetHeight;
     }
