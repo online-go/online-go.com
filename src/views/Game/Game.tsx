@@ -1773,6 +1773,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.setState(new_state);
     }
+
     createConditionalMoveTreeDisplay(root, cpath, blacks_move) {
         let goban = this.goban;
 
@@ -1953,7 +1954,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     private annul(tf:boolean):void {
         let moderation_note = null;
         do {
-            moderation_note = tf ? prompt("ANNULMENT - Moderator note:") : prompt("Un-annulment - Moderator note:");
+            moderation_note = tf ? prompt(_("ANNULMENT - Moderator note:")) : prompt(_("Un-annulment - Moderator note:"));
             if (moderation_note == null) {
                 return;
             }
@@ -1968,10 +1969,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         )
         .then(() => {
             if (tf) {
-                swal({text: _(`Game has been annulled`)});
+                swal({text: _("Game has been annulled")});
             } else {
-                swal({text: `Game ranking has been restored`});
+                swal({text: _("Game ranking has been restored")});
             }
+            this.setState({annulled: tf});
         })
         .catch(errorAlerter);
     }
@@ -3109,9 +3111,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
 
-                {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
-                {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel"></i> {"Remove annulment"}</a>}
-                {(annul && !annulable && !unannulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
+                {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a> /* mod can annul this game */}
+                {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel unannulable"></i> {"Remove annulment"}</a> /* mod can't annul, presumably because it's already annulled */}
+                {(annul && !annulable && !unannulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div> /* What is this case?! */}
 
                 {(mod || annul) && <hr/>}
                 {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}
