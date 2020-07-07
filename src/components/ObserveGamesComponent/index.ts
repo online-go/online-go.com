@@ -16,6 +16,4 @@
  */
 
 
-.ObserveGames {
-    text-align: center;
-}
+export * from "./ObserveGamesComponent";
