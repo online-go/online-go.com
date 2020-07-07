@@ -65,6 +65,8 @@ export class Team extends React.PureComponent<{}, any> {
         let gb = getLanguageFlag("gb", country, "gb");
         let se = getLanguageFlag("swedish", country, "se");
         let cz = getLanguageFlag("czech", country, "cz");
+        let nl = getLanguageFlag("netherlands", country, "nl");
+        let jp = getLanguageFlag("japan", country, "jp");
 
         let moderators = [
             {"id": 784    , "username": "mlopezviedma"   , "country": ["ar"] , "languages": [es, en]} ,
