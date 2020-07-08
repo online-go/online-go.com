@@ -29,7 +29,7 @@ data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");
 data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
-data.setDefault("custom.url", "Url for custom image");
+data.setDefault("custom.url", pgettext("Custom board url text", "Url for custom image"));
 
 export function configure_goban() {
     Goban.setHooks({

@@ -129,7 +129,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             >
 
                             {theme.theme_name === "Plain"
-                                ? <span>CUSTOM</span>
+                                ? <span>{pgettext("Custom board theme", "Custom")}</span>
                                 : <PersistentElement elt={this.canvases.board[idx]} />
                             }
                         </div>
