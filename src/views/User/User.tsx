@@ -871,7 +871,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                     </Card>
                 }
 
-                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
+                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
                 <GameList list={this.state.active_games} player={user}/>
 
 

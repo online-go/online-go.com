@@ -137,7 +137,7 @@ export class Overview extends React.Component<{}, any> {
 
                     {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
-                            <h2>{_("Active Games")}</h2>
+                            <h2>{_("Active Games")} ({this.state.overview.active_games.length})</h2>
                             <GameList list={this.state.overview.active_games} player={user}
                                 emptyMessage={_("You're not currently playing any games. Start a new game with the \"Create a new game\" or \"Look for open games\" buttons above.")}
                             />
