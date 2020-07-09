@@ -524,7 +524,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     fillAIMarksBacktracking(cur_move, trunk_move, marks) {
         /* this method attempts to match our cur_move sequence with any of the AI generated sequences starting from the nearest trunk move (iterating through previous trunk moves if necessary) and breaks out as soon as it finds a match */
         /* the reason why we iterate through previous trunk moves is to solve the problem when the trunk moves happen to coincide with the AI generated sequence */
-        /* once match is found we return marks object with the remaining AI sequence */
+        /* once match is found we fill marks object with the remaining AI sequence */
 
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             let ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
