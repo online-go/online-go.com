@@ -76,6 +76,10 @@ export function EmbeddedChat({channel, autofocus, updateTitle}:EmbeddedChatPrope
         }
 
         function onChatMessage(obj) {
+            if (proxy) {
+                proxy.channel.markAsRead();
+            }
+
             syncStateSoon();
 
             if (updateTitle) {

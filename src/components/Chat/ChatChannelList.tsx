@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import * as data from "data";
-import { useEffect, useState, useCallback } from "react";
+import { _ } from "translate";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Flag } from "Flag";
 import { browserHistory } from "ogsHistory";
 import { shouldOpenNewTab, slugify } from 'misc';
@@ -31,28 +32,97 @@ interface ChatChannelListProperties {
 }
 
 export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element {
+    const joined_channels = data.get("chat.joined");
+    let [more, set_more]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    let [search, set_search]:[string, (text:string) => void] = useState("");
+
+    useEffect(() => {
+        set_more(false);
+        set_search("");
+    }, [channel]);
+
+    let more_channels:JSX.Element;
+
+    function chanSearch(chan: {name: string}):boolean {
+        let s = search.toLowerCase().trim();
+
+        if (s === "") {
+            return true;
+        }
+
+        return chan.name.toLowerCase().indexOf(s) >= 0;
+    }
+
+    if (more) {
+        more_channels = (
+            <div className='joinable'>
+                <input type="search"
+                    autoFocus={true}
+                    value={search}
+                    onChange={(ev) => set_search(ev.target.value)}
+                    placeholder={_("Search")}
+                />
+
+                {group_channels.filter(chan => !(`group-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
+                    <ChatChannel
+                        key={`group-${chan.id}`}
+                        channel={`group-${chan.id}`}
+                        icon={chan.icon}
+                        name={chan.name}
+                    />
+                ))}
+
+                {tournament_channels.filter(chan => !(`tournament-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
+                    <ChatChannel
+                        key={`tournament-${chan.id}`}
+                        channel={`tournament-${chan.id}`}
+                        name={chan.name}
+                    />
+                ))}
+
+                {global_channels.filter(chan => !(chan.id in joined_channels) && chanSearch(chan)).map((chan) => (
+                    <ChatChannel
+                        key={chan.id}
+                        channel={chan.id}
+                        name={chan.name}
+                        language={chan.language}
+                        country={chan.country}
+                    />
+                ))}
+            </div>
+        );
+    } else {
+        more_channels = (
+            <button className='default' onClick={() => set_more(true)}>
+                &#9679; &#9679; &#9679;
+            </button>
+        );
+    }
+
     return (
         <div className='ChatChannelList'>
-            {group_channels.map((chan) => (
+            {group_channels.filter(chan => `group-${chan.id}` in joined_channels).map((chan) => (
                 <ChatChannel
                     key={`group-${chan.id}`}
                     channel={`group-${chan.id}`}
                     active={channel === `group-${chan.id}`}
                     icon={chan.icon}
                     name={chan.name}
+                    joined={true}
                 />
             ))}
 
-            {tournament_channels.map((chan) => (
+            {tournament_channels.filter(chan => `tournament-${chan.id}` in joined_channels).map((chan) => (
                 <ChatChannel
                     key={`tournament-${chan.id}`}
                     channel={`tournament-${chan.id}`}
                     active={channel === `tournament-${chan.id}`}
                     name={chan.name}
+                    joined={true}
                 />
             ))}
 
-            {global_channels.map((chan) => (
+            {global_channels.filter(chan => chan.id in joined_channels).map((chan) => (
                 <ChatChannel
                     key={chan.id}
                     channel={chan.id}
@@ -60,8 +130,11 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
                     name={chan.name}
                     language={chan.language}
                     country={chan.country}
+                    joined={true}
                 />
             ))}
+
+            {more_channels}
         </div>
     );
 }
@@ -71,21 +144,27 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
 interface ChatChannelProperties {
     channel: string;
     name: string;
-    active: boolean;
+    active?: boolean;
     country?: string;
     language?: string;
     icon?: string;
+    joined?: boolean;
 }
 
-export function ChatChannel({channel, name, active, country, language, icon}:ChatChannelProperties):JSX.Element {
+export function ChatChannel({channel, name, active, country, language, icon, joined}:ChatChannelProperties):JSX.Element {
     const user = data.get('user');
     const user_country = user?.country || 'un';
-    const joined_channels = data.get("chat.joined");
 
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [unread_ct, set_unread_ct]:[number, (x:number) => void] = useState(0);
 
     let setChannel = useCallback(() => {
+        if (!joined) {
+            const joined_channels = data.get("chat.joined");
+            joined_channels[channel] = 1;
+            data.set("chat.joined", joined_channels);
+        }
+
         if (name) {
             browserHistory.push(`/chat/${channel}/${slugify(name)}`);
         } else {
@@ -94,35 +173,44 @@ export function ChatChannel({channel, name, active, country, language, icon}:Cha
     }, [channel, name]);
 
     useEffect(() => {
-        let proxy = chat_manager.join(channel);
-        if (proxy && active) {
-            proxy.channel.markAsRead();
-        }
-        setProxy(proxy);
-        proxy.on("chat", sync);
-        proxy.on("chat-removed", sync);
-        //chan.on("join", onChatJoin);
-        //chan.on("part", onChatPart);
-        sync();
+        let proxy;
 
-        return () => {
-            proxy.part();
-        };
+        if (joined) {
+            proxy = chat_manager.join(channel);
+            setProxy(proxy);
+            proxy.on("chat", sync);
+            proxy.on("chat-removed", sync);
+            //chan.on("join", onChatJoin);
+            //chan.on("part", onChatPart);
+            sync();
+
+            return () => {
+                proxy.part();
+            };
+        }
 
         function sync() {
             if (proxy) {
-                set_unread_ct(proxy.channel.unread_ct);
+                setTimeout(() => {
+                    set_unread_ct(proxy.channel.unread_ct);
+                }, 1);
             }
         }
-    }, [channel]);
+    }, [channel, joined]);
 
+    useEffect(() => {
+        if (proxy && active) {
+            proxy.channel.markAsRead();
+            set_unread_ct(proxy.channel.unread_ct);
+        }
+    }, [active, proxy]);
 
 
     let icon_element:JSX.Element;
 
     if (channel.indexOf('tournament') === 0) {
         icon_element = <i className="fa fa-trophy" />;
-    } else if (channel.indexOf('global') === 0) {
+    } else if (channel.indexOf('global') === 0 || channel === 'shadowban') {
         icon_element = <Flag country={country} language={language} user_country={user_country} />;
     } else if (channel.indexOf('group') === 0) {
         icon_element = <img src={icon}/>;
@@ -146,7 +234,7 @@ export function ChatChannel({channel, name, active, country, language, icon}:Cha
     if (unread_ct > 0) {
         cls += " unread";
     }
-    if (channel in joined_channels) {
+    if (joined) {
         cls += " joined";
     } else {
         cls += " unjoined";
@@ -155,7 +243,9 @@ export function ChatChannel({channel, name, active, country, language, icon}:Cha
     return (
         <div className={cls} onClick={setChannel} >
             <span className="channel-name">
-                {icon_element} {name} {unread}
+                {icon_element}
+                <span className='name'>{name}</span>
+                {unread}
             </span>
         </div>
     );
