@@ -21,7 +21,6 @@ import { group_channels, tournament_channels, global_channels, ChatChannelProxy,
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { Flag } from "Flag";
-import { setActiveChannel } from "Chat";
 import { shouldOpenNewTab } from "misc";
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
@@ -395,4 +394,12 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             </div>
         );
     }
+}
+
+function setActiveChannel(channel: string) {
+    console.log("Setting active channel, i'm not sure if this works anymore, this should cause the /chat redirect to go to the appropriate url now", channel);
+    if (!channel) {
+        throw new Error(`Invalid channel ID: ${channel}`);
+    }
+    data.set("chat.active_channel", channel);
 }

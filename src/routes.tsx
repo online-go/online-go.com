@@ -93,7 +93,13 @@ export const routes = (
             <Route path="/overview" component={Overview}/>
 
             <Route path="/play" component={Play}/>
-            <Route path="/chat" component={ChatView}/>
+            <Route path="/chat/:channel" component={ChatView}/>
+            <Route path="/chat/:channel/*" component={ChatView}/>
+            <Route path="/chat/:channel/**/*" component={ChatView}/>
+            <Route path="/chat" render={() => {
+                let channel = "global-english";
+                return <Redirect to={`/chat/${channel}`}/>;
+            }}/>
             <Route path="/observe-games" component={ObserveGames}/>
             <Route path="/game/view/:game_id" component={Game}/>
             <Route path="/game/:game_id" component={Game}/>

@@ -43,6 +43,22 @@ export interface UnreadChanged {
     "previous_mentioned": Boolean;
 }
 
+export interface ChatMessage {
+    channel: string;
+    username: string;
+    id: number;
+    ranking: number;
+    professional: boolean;
+    ui_class: string;
+    message: {
+        i: string; // uuid;
+        t: number; // epoch in seconds
+        m: string; // the text
+    };
+    system_message_type?:'flood';
+    system?:boolean; // true if it's a system message
+}
+
 /* Any modifications to this must also be mirrored on the server */
 export let global_channels: Array<any> = [
     {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
@@ -153,12 +169,13 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
+
 class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     name: string;
     proxies: {[id: number]: ChatChannelProxy} = {};
     joining: boolean = false;
-    chat_log   = [];
+    chat_log:Array<ChatMessage>   = [];
     chat_ids   = {};
     has_unread = false;
     unread_ct = 0;
@@ -234,7 +251,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }
 
-    handleChat(obj) {
+    handleChat(obj: ChatMessage) {
         if (obj.message.i in this.chat_ids) {
             return;
         }
@@ -250,8 +267,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
                     if (name_match_regex.test(obj.message.m)) {
                         if (obj.message.t > this.last_seen_timestamp) { // TODO remember chat read position
                             this.mentioned = true;
-                            emitNotification("[" + this.name + "]: " + obj.username,
-                                             "[" + this.name + "] " + obj.username + ": " + obj.message.m);
+                            emitNotification(
+                                "[" + this.name + "]: " + obj.username,
+                                "[" + this.name + "] " + obj.username + ": " + obj.message.m
+                            );
                         } else {
                             console.log("Not sending name match notification since we just joined the channel ", obj.channel);
                         }
@@ -273,12 +292,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
         try {
             if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
                 this.emit("unread-count-changed",
-                        {channel: this.channel,
+                    {
+                        channel: this.channel,
                         unread_ct: this.unread_ct,
                         unread_delta: unread_delta,
                         mentioned: this.mentioned,
                         previous_mentioned: previous_mentioned
-                        });
+
+                    }
+                );
             }
         } catch (e) {
             console.log(e);
@@ -424,7 +446,7 @@ class ChatManager {
         comm_socket.on("chat-part", this.onPart);
     }
 
-    onMessage = (obj) => {
+    onMessage = (obj: ChatMessage) => {
         if (!(obj.channel in this.channels)) {
             return;
         }

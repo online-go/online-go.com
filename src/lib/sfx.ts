@@ -234,7 +234,7 @@ export class SFXSprite {
 
     public play():void {
         if (this.volume >= 0.01) {
-            console.log('Playing sound bite: ', this.name, ' at volume: ', this.volume);
+            console.debug('Playing sound bite: ', this.name, ' at volume: ', this.volume);
             let id = this.howl.play(this.name);
             this.howl.volume(this.volume, id);
             this.id = id;
@@ -415,7 +415,7 @@ export class SFXManager {
             let silence = new SFXSprite(howl, group_name, 'silence');
             silence.play();
             silence.then(() => {
-                console.log("Successfully played silence from ", group_name);
+                console.debug("Successfully played silence from ", group_name);
             });
         } catch (e) {
             console.warn(e);

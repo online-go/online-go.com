@@ -17,23 +17,20 @@
 
 import * as React from "react";
 
-export class TabCompleteInput extends React.PureComponent<any, any> {
-    refs: {
-        input;
-    };
-
-    constructor(props) {
-        super(props);
-        this.state = { };
-    }
-
-    componentDidMount() {
-        ($(this.refs.input) as any).nicknameTabComplete();
-    }
-
-    render() {
-        return (
-            <input ref="input" {...this.props} />
-        );
-    }
+interface TabCompleteInputProperties {
+    placeholder: string;
+    disabled?: boolean;
+    onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
+    className?: string;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
+
+export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLProps<HTMLInputElement>>(
+    (props: TabCompleteInputProperties, ref): JSX.Element => {
+        React.useEffect(() => {
+            ($((ref as any).current) as any).nicknameTabComplete();
+        }, [(ref as any).current]);
+
+        return <input ref={ref} {...props} />;
+    }
+);

@@ -168,7 +168,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
     }
 
     updateStats() {
-        console.warn("updateStats");
+        //console.warn("updateStats");
         let unread_ct = 0;
         let mentioned = false;
         let add_count = (channel: string) => {

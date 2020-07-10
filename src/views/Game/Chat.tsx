@@ -28,7 +28,7 @@ import {profanity_filter} from "profanity_filter";
 import {Game} from './Game';
 import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {TabCompleteInput} from "TabCompleteInput";
-import * as Chat from "Chat";
+import { chat_markup } from "components/Chat";
 
 let active_game_view:Game = null;
 
@@ -365,7 +365,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
 
     markup(body): JSX.Element|Array<JSX.Element> {
         if (typeof(body) === "string") {
-            return Chat.chat_markup(body, [
+            return chat_markup(body, [
                 {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
                     replacement: (m, idx) => {
                         let pos = m[1];

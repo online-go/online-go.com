@@ -16,7 +16,11 @@
  */
 
 
-export * from "./Chat";
+export * from "./ChatChannelList";
+export * from "./EmbeddedChat";
+export * from "./ChatUsersList";
 export * from "./ChatDetails";
 export * from "./ChatIndicator";
 export * from "./ChatList";
+export * from "./ChatLine";
+export * from "./chat_markup";

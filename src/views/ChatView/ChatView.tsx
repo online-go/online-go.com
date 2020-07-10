@@ -17,31 +17,32 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {errorAlerter} from "misc";
-import {Chat} from "Chat";
+//import {post, get} from "requests";
+//import {errorAlerter} from "misc";
+//import {Chat} from "Chat";
+import { ChatChannelList, EmbeddedChat, ChatUsersList } from "Chat";
 
 
 interface ChatViewProperties {
+    match: {
+        params: {
+            channel?: string;
+        }
+    };
 }
 
-export class ChatView extends React.PureComponent<ChatViewProperties, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
+
+export function ChatView(props: ChatViewProperties):JSX.Element {
+    let channel = props?.match?.params?.channel;
+    if (!channel) {
+        channel = 'english';
     }
 
-    componentDidMount() {
-    }
-    componentWillUnmount() {
-    }
-
-    render() {
-        return (
+    return (
         <div className="ChatView">
-            <Chat autofocus={true} showChannels={true} showUserList={true} updateTitle={true} />
+            <ChatChannelList channel={channel} />
+            <EmbeddedChat channel={channel} autofocus={true} updateTitle={true} />
+            <ChatUsersList channel={channel} />
         </div>
-        );
-    }
+    );
 }
