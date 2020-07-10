@@ -233,10 +233,13 @@ channel-width=12rem;
         padding-left: 0.2rem;
         display: flex;
         justify-content: space-between;
-        align-items: center;
 
         &.active {
             themed background-color primary
+            themed color colored-background-fg
+        }
+        &:hover {
+            themed-desaturate background-color primary 80%
             themed color colored-background-fg
         }
         &.unjoined {
@@ -250,11 +253,22 @@ channel-width=12rem;
         }
 
         .channel-name {
+            display: inline-flex;
+            align-items: center;
             flex-shrink: 1;
             flex-grow: 1;
             cursor: pointer;
             overflow: hidden;
             white-space: nowrap;
+            font-size: font-size-mid;
+
+            i, img, .flag {
+                display: inline-block;
+                height: 16px;
+                width: 16px;
+                margin-right: 5px;
+                margin-left: 2px;
+            }
         }
 
         .unread-count {
@@ -270,27 +284,5 @@ channel-width=12rem;
                 content: attr(data-count);
             }
         }
-
-        .icon {
-            width: 15px;
-            height: 15px;
-        }
-    }
-
-    .channel:hover .unread-count:before {
-        cursor: pointer;
-        border: 1px solid transparent
-        border-radius: 0.2rem;
-        themed background-color shade4
-        themed border-color shade3
-        padding-left: 0.3rem;
-        padding-right: 0.3rem;
-        themed color fg
-    }
-
-    .channel:hover .unread-count:hover:before {
-        themed background-color shade5
-        themed border-color shade4
-        themed color fg
     }
 }

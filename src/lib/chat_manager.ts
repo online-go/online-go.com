@@ -50,6 +50,7 @@ export interface ChatMessage {
     ranking: number;
     professional: boolean;
     ui_class: string;
+    country?: string;
     message: {
         i: string; // uuid;
         t: number; // epoch in seconds

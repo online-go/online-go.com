@@ -17,148 +17,147 @@
 
 import * as React from "react";
 import * as data from "data";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Flag } from "Flag";
 import { browserHistory } from "ogsHistory";
 import { shouldOpenNewTab, slugify } from 'misc';
-import { ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
+import { chat_manager, ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
 
 data.setDefault("chat.joined", {});
 
-let proxies:{[channel:string]: ChatChannelProxy} = {};
-
-function getProxy(channel):ChatChannelProxy | undefined {
-    if (!(channel in proxies)) {
-        //throw new Error(`Invalid channel: ${channel}`);
-        return undefined;
-    }
-    return proxies[channel];
-}
-
-
-let set_channel_callbacks:{[id:string]: () => void} = {};
-
-function setChannelCb(channel: string, name?: string): () => void {
-    if (!(channel in set_channel_callbacks)) {
-        set_channel_callbacks[channel] = () => {
-            if (name) {
-                browserHistory.push(`/chat/${channel}/${slugify(name)}`);
-            } else {
-                browserHistory.push(`/chat/${channel}`);
-            }
-        };
-    }
-
-    return set_channel_callbacks[channel];
-}
 
 interface ChatChannelListProperties {
     channel: string;
 }
 
-interface ChatChannelListState {
-    joined_channels: Array<string>;
-    active_channel: string;
-    show_all_global_channels: boolean;
-    show_all_group_channels: boolean;
-    show_all_tournament_channels: boolean;
-}
-
 export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element {
-    let joined_channels = data.get("chat.joined");
-    //let [, refresh]:[number, (n:number) => void] = useState(0);
-
-    useEffect(() => {
-        for (let channel in joined_channels) {
-            join(channel);
-        }
-
-        if (!(channel in joined_channels)) {
-            join(channel);
-        }
-
-        return () => {
-            console.log("Destructing channels");
-            //channels[key].part();
-        };
-    }, []);
-
-
-    function join(channel: string): void {
-        //console.log("Should be joining", channel);
-    }
-
-
-    function chan_class(channel: string): string {
-        return (channel in joined_channels ? " joined" : " unjoined") +
-            (getProxy(channel)?.channel.unread_ct > 0 ? " unread" : "") +
-            (getProxy(channel)?.channel.mentioned ? " mentioned" : "");
-    }
-
-
-    function user_count(channel: string):JSX.Element {
-        let c = getProxy(channel)?.channel;
-        if (!c) {
-            return null;
-        }
-        if (c.unread_ct) {
-            return <span className="unread-count" data-count={"(" + c.unread_ct + ")"} />;
-        } else if (channel in joined_channels) {
-            return <span className="unread-count" data-count="" />;
-        }
-        return null;
-    }
-
-    function setChannel(channel: string):void {
-        console.log("Should be setting channel", channel);
-    }
-
-    let user = data.get('user');
-    let user_country = user?.country || 'un';
-
     return (
         <div className='ChatChannelList'>
             {group_channels.map((chan) => (
-                <div key={`group-${chan.id}`} onClick={setChannelCb(`group-${chan.id}`, chan.name)}
-                    className={
-                        (channel === `group-${chan.id}` ? "channel active" : "channel")
-                        + chan_class("group-" + chan.id)
-                    }
-                >
-                    <span className="channel-name">
-                        <img className="icon" src={chan.icon}/> {chan.name}
-                    </span>
-                    {user_count("group-" + chan.id)}
-                </div>
+                <ChatChannel
+                    key={`group-${chan.id}`}
+                    channel={`group-${chan.id}`}
+                    active={channel === `group-${chan.id}`}
+                    icon={chan.icon}
+                    name={chan.name}
+                />
             ))}
 
             {tournament_channels.map((chan) => (
-                <div key={`tournament-${chan.id}`} onClick={setChannelCb(`tournament-${chan.id}`, chan.name)}
-                    className={
-                        (channel === `tournament-${chan.id}` ? "channel active" : "channel")
-                        + chan_class("tournament-" + chan.id)
-                    }
-                >
-                    <span className="channel-name">
-                        <i className="fa fa-trophy" /> {chan.name}
-                    </span>
-                    {user_count("tournament-" + chan.id)}
-                </div>
+                <ChatChannel
+                    key={`tournament-${chan.id}`}
+                    channel={`tournament-${chan.id}`}
+                    active={channel === `tournament-${chan.id}`}
+                    name={chan.name}
+                />
             ))}
 
             {global_channels.map((chan) => (
-                <div key={chan.id} onClick={setChannelCb(chan.id, chan.name)}
-                    className={
-                        (channel === chan.id ? "channel active" : "channel")
-                        + chan_class(chan.id)
-                    }
-                >
-                    <span className="channel-name">
-                        <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
-                    </span>
-                    {user_count(chan.id)}
-                </div>
+                <ChatChannel
+                    key={chan.id}
+                    channel={chan.id}
+                    active={channel === chan.id}
+                    name={chan.name}
+                    language={chan.language}
+                    country={chan.country}
+                />
             ))}
         </div>
     );
 }
+
+
+
+interface ChatChannelProperties {
+    channel: string;
+    name: string;
+    active: boolean;
+    country?: string;
+    language?: string;
+    icon?: string;
+}
+
+export function ChatChannel({channel, name, active, country, language, icon}:ChatChannelProperties):JSX.Element {
+    const user = data.get('user');
+    const user_country = user?.country || 'un';
+    const joined_channels = data.get("chat.joined");
+
+    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
+    let [unread_ct, set_unread_ct]:[number, (x:number) => void] = useState(0);
+
+    let setChannel = useCallback(() => {
+        if (name) {
+            browserHistory.push(`/chat/${channel}/${slugify(name)}`);
+        } else {
+            browserHistory.push(`/chat/${channel}`);
+        }
+    }, [channel, name]);
+
+    useEffect(() => {
+        let proxy = chat_manager.join(channel);
+        if (proxy && active) {
+            proxy.channel.markAsRead();
+        }
+        setProxy(proxy);
+        proxy.on("chat", sync);
+        proxy.on("chat-removed", sync);
+        //chan.on("join", onChatJoin);
+        //chan.on("part", onChatPart);
+        sync();
+
+        return () => {
+            proxy.part();
+        };
+
+        function sync() {
+            if (proxy) {
+                set_unread_ct(proxy.channel.unread_ct);
+            }
+        }
+    }, [channel]);
+
+
+
+    let icon_element:JSX.Element;
+
+    if (channel.indexOf('tournament') === 0) {
+        icon_element = <i className="fa fa-trophy" />;
+    } else if (channel.indexOf('global') === 0) {
+        icon_element = <Flag country={country} language={language} user_country={user_country} />;
+    } else if (channel.indexOf('group') === 0) {
+        icon_element = <img src={icon}/>;
+    }
+
+    let mentioned = proxy?.channel.mentioned;
+    let unread:JSX.Element;
+
+    if (unread_ct) {
+        unread = <span className="unread-count" data-count={`(${unread_ct})`} />;
+    }
+
+
+    let cls = "channel";
+    if (active) {
+        cls += " active";
+    }
+    if (mentioned) {
+        cls += " mentioned";
+    }
+    if (unread_ct > 0) {
+        cls += " unread";
+    }
+    if (channel in joined_channels) {
+        cls += " joined";
+    } else {
+        cls += " unjoined";
+    }
+
+    return (
+        <div className={cls} onClick={setChannel} >
+            <span className="channel-name">
+                {icon_element} {name} {unread}
+            </span>
+        </div>
+    );
+}
+
