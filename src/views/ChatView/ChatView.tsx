@@ -41,7 +41,7 @@ export function ChatView(props: ChatViewProperties):JSX.Element {
     return (
         <div className="ChatView">
             <ChatChannelList channel={channel} />
-            <EmbeddedChat channel={channel} autofocus={true} updateTitle={true} />
+            <EmbeddedChat channel={channel} autoFocus={true} updateTitle={true} />
             <ChatUsersList channel={channel} />
         </div>
     );

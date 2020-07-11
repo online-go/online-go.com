@@ -18,11 +18,13 @@
 import * as React from "react";
 
 interface TabCompleteInputProperties {
+    id?:string;
     placeholder: string;
     disabled?: boolean;
     onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
     className?: string;
     onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    autoFocus?: boolean;
 }
 
 export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLProps<HTMLInputElement>>(

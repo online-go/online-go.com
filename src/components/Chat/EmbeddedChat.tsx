@@ -36,7 +36,7 @@ interface EmbeddedChatState {
 
 interface EmbeddedChatProperties {
     channel: string;
-    autofocus?: boolean;
+    autoFocus?: boolean;
     updateTitle?: boolean;
 }
 
@@ -44,11 +44,20 @@ let deferred_chat_update:Timeout = null;
 let send_tokens = 5;
 let flood_protection:Timeout = null;
 
-export function EmbeddedChat({channel, autofocus, updateTitle}:EmbeddedChatProperties):JSX.Element {
+export function EmbeddedChat(props:EmbeddedChatProperties):JSX.Element {
+    return (
+        <div className='EmbeddedChat'>
+            <ChatLog {...props} />
+            <ChatInput {...props} />
+        </div>
+    );
+}
+
+let scrolled_to_bottom:boolean = true;
+function ChatLog({channel, autoFocus, updateTitle}:EmbeddedChatProperties):JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
-    let input = useRef(null);
-    let [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
+    let chat_log_div = useRef(null);
     let [, refresh]:[number, (n:number) => void] = useState(0);
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
 
@@ -103,11 +112,74 @@ export function EmbeddedChat({channel, autofocus, updateTitle}:EmbeddedChatPrope
     }, [channel]);
 
     const focusInput = useCallback(():void => {
-        input.current.focus();
+        //input.current.focus();
+        document.getElementById("chat-input")?.focus();
+    }, [channel]);
+
+    useEffect(() => {
+        scrolled_to_bottom = true;
     }, [channel]);
 
     const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>):void => {
-        console.log("Scroll ", event);
+        let div = chat_log_div.current;
+        if (!div) {
+            return;
+        }
+
+        let tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        if (tf !== scrolled_to_bottom) {
+            scrolled_to_bottom  = tf;
+            div.className = (rtl_mode ? "rtl chat-log " : "chat-log ") + (tf ? "autoscrolling" : "");
+        }
+        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+    }, [channel]);
+
+    window.requestAnimationFrame(() => {
+        let div = chat_log_div.current;
+        if (!div) {
+            return;
+        }
+
+        if (scrolled_to_bottom) {
+            div.scrollTop = div.scrollHeight;
+            setTimeout(() => {
+                try {
+                    div.scrollTop = div.scrollHeight;
+                } catch (e) {
+                }
+            } , 100);
+        }
+    });
+
+    let last_line:ChatMessage;
+
+    return (
+        <div
+            className={rtl_mode ? "rtl chat-log" : "chat-log"}
+            ref={chat_log_div}
+            onScroll={onScroll}
+            onClick={focusInput}
+            >
+            {proxy?.channel.chat_log.map((line, idx) => {
+                let ll = last_line;
+                last_line = line;
+                return <ChatLine key={line.message.i} line={line} lastline={ll} />;
+            })}
+        </div>
+    );
+}
+
+
+function ChatInput({channel, autoFocus}:EmbeddedChatProperties):JSX.Element {
+    const user = data.get("user");
+    const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
+    let input = useRef(null);
+    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
+    let [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
+
+    useEffect(() => {
+        let proxy = chat_manager.join(channel);
+        setProxy(proxy);
     }, [channel]);
 
     const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>):boolean => {
@@ -119,7 +191,6 @@ export function EmbeddedChat({channel, autofocus, updateTitle}:EmbeddedChatPrope
             }
 
             sendChat(input.value, channel);
-            syncStateSoon();
             if (show_say_hi_placeholder) {
                 set_show_say_hi_placeholder(false);
             }
@@ -236,38 +307,22 @@ export function EmbeddedChat({channel, autofocus, updateTitle}:EmbeddedChatPrope
                 deferred_chat_update = setTimeout(() => {
                     deferred_chat_update = null;
                     proxy?.channel.markAsRead();
-                    refresh(Math.random());
+                    //refresh(Math.random());
                 }, 20);
             }
         }
     }, [channel, proxy]);
 
-
-    let last_line:ChatMessage;
-
     return (
-        <div className='EmbeddedChat'>
-            <div
-                className={rtl_mode ? "rtl chat-log" : "chat-log"}
-                onScroll={onScroll}
-                onClick={focusInput}
-                >
-                {proxy?.channel.chat_log.map((line, idx) => {
-                    let ll = last_line;
-                    last_line = line;
-                    return <ChatLine key={line.message.i} line={line} lastline={ll} />;
-                })}
-            </div>
-
-            <TabCompleteInput ref={input} className={rtl_mode ? "rtl" : ""}
-                placeholder={
-                    !user.email_validated ? _("Chat will be enabled once your email address has been validated") :
-                    show_say_hi_placeholder ? _("Say hi!") : ""
-                }
-                disabled={user.anonymous || !data.get('user').email_validated}
-                onKeyPress={onKeyPress}
-            />
-        </div>
+        <TabCompleteInput ref={input} id="chat-input" className={rtl_mode ? "rtl" : ""}
+            autoFocus={autoFocus}
+            placeholder={
+                !user.email_validated ? _("Chat will be enabled once your email address has been validated") :
+                show_say_hi_placeholder ? _("Say hi!") : ""
+            }
+            disabled={user.anonymous || !data.get('user').email_validated}
+            onKeyPress={onKeyPress}
+        />
     );
 }
 
