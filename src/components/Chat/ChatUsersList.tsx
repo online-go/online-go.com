@@ -44,8 +44,6 @@ interface ChatUsersListState {
 let deferred_users_update:Timeout = null;
 
 export function ChatUsersList({channel}:ChatUsersListProperties):JSX.Element {
-    console.log("Chat users list: ", channel);
-
     let [, refresh]:[number, (n:number) => void] = useState(0);
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [user_sort_order, set_user_sort_order]: [string, (s:string) => void] = useState(preferences.get("chat.user-sort-order"));

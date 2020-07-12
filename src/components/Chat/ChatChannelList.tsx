@@ -243,10 +243,19 @@ export function ChatChannel(
             data.set("chat.joined", joined_channels);
         }
 
+        let next_location:string;
+
         if (name) {
-            browserHistory.push(`/chat/${channel}/${slugify(name)}`);
+            next_location = `/chat/${channel}/${slugify(name)}`;
         } else {
-            browserHistory.push(`/chat/${channel}`);
+            next_location = `/chat/${channel}`;
+        }
+
+        if (next_location !== browserHistory.location.pathname) {
+            console.log(next_location, browserHistory.location);
+            browserHistory.push(next_location);
+        } else {
+            console.log("Same location");
         }
     }, [channel, name]);
 

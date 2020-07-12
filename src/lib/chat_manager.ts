@@ -26,22 +26,8 @@ import { ActiveTournamentList, GroupList } from 'types';
 import {_, interpolate} from "translate";
 import { shadowban } from "src/views/Moderator";
 import { getBlocks } from "BlockPlayer";
+import { string_splitter, n2s, dup, Timeout } from "misc";
 
-interface Events {
-    "chat": any;
-    "chat-removed": any;
-    "join": Array<any>;
-    "part": any;
-    "unread-count-changed": any;
-}
-
-export interface UnreadChanged {
-    "channel": string;
-    "unread_ct": number;
-    "unread_delta": number;
-    "mentioned": Boolean;
-    "previous_mentioned": Boolean;
-}
 
 export interface ChatMessage {
     channel: string;
@@ -59,6 +45,24 @@ export interface ChatMessage {
     system_message_type?:'flood';
     system?:boolean; // true if it's a system message
 }
+
+
+interface Events {
+    "chat": ChatMessage | null;
+    "chat-removed": any;
+    "join": Array<any>;
+    "part": any;
+    "unread-count-changed": any;
+}
+
+export interface UnreadChanged {
+    "channel": string;
+    "unread_ct": number;
+    "unread_delta": number;
+    "mentioned": Boolean;
+    "previous_mentioned": Boolean;
+}
+
 
 /* Any modifications to this must also be mirrored on the server */
 export let global_channels: Array<any> = [
@@ -187,6 +191,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
     user_count = 0;
     rtl_mode   = false;
     last_seen_timestamp: number;
+    send_tokens = 5;
+    flood_protection:Timeout = null;
+
 
 
     constructor(channel: string, display_name: string) {
@@ -369,6 +376,115 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
         this.users_by_rank.sort(users_by_rank);
     }
+
+
+    public send(text: string):void {
+        if (text.length > 300) {
+            for (let split_str of string_splitter(text)) {
+                this.send(split_str);
+            }
+            return;
+        }
+
+        if (this.flood_protection) {
+            return;
+        }
+        if (text.trim().length === 0) {
+            return;
+        }
+
+        if (this.send_tokens <= 0) {
+            let chillout_time = 20;
+            if (data.get("config.user").supporter) {
+                chillout_time = 10;
+            }
+            if (data.get("config.user").is_moderator) {
+                chillout_time = 2;
+            }
+
+            this.systemMessage(
+                interpolate(
+                    _("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."),
+                    {"time": chillout_time}
+                )
+                , "flood"
+            );
+            let start = Date.now();
+            this.flood_protection = setInterval(() => {
+                this.clearSystemMessages("flood");
+                let left = chillout_time * 1000 - (Date.now() - start);
+                if (left > 0) {
+                    this.systemMessage(
+                        interpolate(
+                            _("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."),
+                            {"time": Math.round(left / 1000)}
+                        )
+                        , "flood"
+                    );
+                } else {
+                    clearInterval(this.flood_protection);
+                    this.flood_protection = null;
+                }
+            }, 1000);
+            return;
+        }
+        --this.send_tokens;
+        setTimeout(() => { this.send_tokens = Math.min(5, this.send_tokens + 1); }, 2000);
+
+        let user = data.get("config.user");
+
+        let _send_obj = {
+            "channel": this.channel,
+            "uuid": n2s(user.id) + "." + n2s(Date.now()),
+            "message": text
+        };
+
+        comm_socket.send("chat/send", _send_obj);
+        let obj:ChatMessage = {
+            channel: _send_obj.channel,
+            username: user.username,
+            id: user.id,
+            ranking: user.ranking,
+            professional: user.professional,
+            ui_class: user.ui_class,
+            message: {"i": _send_obj.uuid, "t": Math.floor(Date.now() / 1000), "m": text},
+        };
+        this.chat_log.push(obj);
+        this.emit("chat", obj);
+    }
+
+    public systemMessage(text:string, system_message_type:'flood'):void {
+        let obj:ChatMessage = {
+            channel: this.channel,
+            username: 'system',
+            id: -1,
+            ranking: 99,
+            professional: false,
+            ui_class: '',
+            message: {
+                i: n2s(Date.now()),
+                t: Date.now() / 1000,
+                m: text,
+            },
+            system: true,
+            system_message_type: system_message_type,
+        };
+
+        this.chat_log.push(obj);
+        this.emit("chat", obj);
+    }
+
+    public clearSystemMessages(system_message_type: 'flood'):void {
+        for (let i = 0; i < this.chat_log.length; ++i) {
+            if (this.chat_log[i].system && system_message_type === this.chat_log[i].system_message_type) {
+                this.chat_log.splice(i, 1);
+                --i;
+            }
+        }
+        this.emit("chat", null);
+    }
+
+
 }
 
 export function users_by_rank(a, b) {
@@ -452,14 +568,16 @@ class ChatManager {
             return;
         }
 
-        player_cache.update({
-            id: obj.id,
-            username: obj.username,
-            ui_class: obj.ui_class,
-            country: obj.country,
-            ranking: obj.ranking,
-            professional: obj.professional,
-        }, true);
+        if (!obj.system && obj.id && obj.username)  {
+            player_cache.update({
+                id: obj.id,
+                username: obj.username,
+                ui_class: obj.ui_class,
+                country: obj.country,
+                ranking: obj.ranking,
+                professional: obj.professional,
+            }, true);
+        }
 
         this.channels[obj.channel].handleChat(obj);
     }
