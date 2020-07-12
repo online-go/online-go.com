@@ -121,23 +121,23 @@ export const time_options = {
     },
     "live": {
         "fischer": {
-            "initial_time": gen(30, 3600),
-            "time_increment": gen(10, 1800),
-            "max_time": gen(30, 3600),
+            "initial_time": gen(5, 21600),
+            "time_increment": gen(1, 1800),
+            "max_time": gen(5, 21600),
         },
         "simple": {
-            "per_move": gen(10, 3600),
+            "per_move": gen(3, 3600),
         },
         "canadian": {
-            "main_time": [zero].concat(gen(30, 3600 * 4)),
-            "period_time": gen(20, 3600),
+            "main_time": [zero].concat(gen(0, 21600)),
+            "period_time": gen(5, 3600),
         },
         "byoyomi": {
-            "main_time": [zero].concat(gen(30, 3600 * 4)),
-            "period_time": gen(10, 3600),
+            "main_time": [zero].concat(gen(0, 21600)),
+            "period_time": gen(1, 1800),
         },
         "absolute": {
-            "total_time": gen(600, 14400),
+            "total_time": gen(30, 21600),
         },
     },
     "correspondence": {
@@ -166,7 +166,7 @@ export const time_options = {
 
 export function makeTimeControlParameters(tc: any): TimeControl {
     let tpm = computeAverageMoveTime(tc);
-    let speed: TimeControlTypes.TimeControlSpeed = tpm === 0 || tpm > 3600 ? "correspondence" : (tpm < 10 ? "blitz" : "live");
+    let speed: TimeControlTypes.TimeControlSpeed = tpm === 0 || tpm > 3600 ? "correspondence" : "live";
 
     switch (tc.time_control || tc.system) {
         case "fischer":

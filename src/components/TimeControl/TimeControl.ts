@@ -16,7 +16,7 @@
  */
 
 export namespace TimeControlTypes {
-    export type TimeControlSpeed = "blitz" | "live" | "correspondence";
+    export type TimeControlSpeed = "live" | "correspondence";
     export type TimeControlSystem = "fischer" | "byoyomi" | "canadian" | "simple" | "absolute" | "none";
 
     export interface Fischer {

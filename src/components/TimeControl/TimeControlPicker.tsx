@@ -180,7 +180,6 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                       <div className="checkbox">
                           <select id="challenge-speed" value={speed} onChange={this.update_speed_bracket}
                                 className="challenge-dropdown form-control" style={{overflow: "hidden"}}>
-                            <option value="blitz">{_("Blitz")}</option>
                             <option value="live">{_("Live")}</option>
                             <option value="correspondence">{_("Correspondence")}</option>
                           </select>
