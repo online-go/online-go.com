@@ -24,6 +24,7 @@ import { get } from "requests";
 import { browserHistory } from "ogsHistory";
 import { errorLogger, shouldOpenNewTab, slugify } from 'misc';
 import { chat_manager, ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
+import { ChannelInformation, resolveChannelInformation, cachedChannelInformation } from "./resolveChannelInformation";
 
 data.setDefault("chat.joined", {});
 
@@ -31,16 +32,6 @@ data.setDefault("chat.joined", {});
 interface ChatChannelListProperties {
     channel: string;
 }
-
-interface ResolvedChannel {
-    group_id?: number;
-    name: string;
-    icon?: string;
-    banner?: string;
-}
-
-let channel_resolution_cache:{[channel: string]: ResolvedChannel} = {};
-let active_resolvers:{[channel: string]: Promise<ResolvedChannel>} = {};
 
 export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element {
     const joined_channels = data.get("chat.joined");
@@ -52,50 +43,24 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
 
     let [more, set_more]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [search, set_search]:[string, (text:string) => void] = useState("");
-    let [resolved_channel, set_resolved_channel]: [ResolvedChannel | null, (s:ResolvedChannel | null) => void] = useState(null);
+    let [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s:ChannelInformation | null) => void] = useState(null);
 
     //pgettext("Joining chat channel", "Joining"));
 
     useEffect(() => {
         set_more(false);
         set_search("");
-        set_resolved_channel(channel in channel_resolution_cache ? channel_resolution_cache[channel] : null);
+        set_resolved_channel(cachedChannelInformation(channel));
 
         let still_resolving = true;
-        if (using_resolved_channel && !(channel in channel_resolution_cache)) {
-            if (channel in active_resolvers) {
-                active_resolvers[channel].then((res) => {
-                    if (still_resolving) {
-                        set_resolved_channel(res);
-                    }
-                })
-                .catch(errorLogger);
-            } else {
-                let resolver:Promise<any>;
-
-                let m = channel.match(/group-([0-9]+)/);
-                if (m) {
-                    resolver = get(`/termination-api/group/${m[1]}`)
-                        .then((res:any):ResolvedChannel => {
-                            console.log(res);
-                            channel_resolution_cache[channel] = res;
-                            delete active_resolvers[channel];
-                            if (still_resolving) {
-                                set_resolved_channel(res);
-                            }
-                            return res;
-                        })
-                        .catch(errorLogger);
+        if (using_resolved_channel && !cachedChannelInformation(channel)) {
+            resolveChannelInformation(channel)
+            .then((info) => {
+                if (still_resolving) {
+                    set_resolved_channel(info);
                 }
-
-                if (!resolver) {
-                    resolver = Promise.resolve({
-                        name: "<Error>"
-                    } as ResolvedChannel);
-                }
-
-                active_resolvers[channel] = resolver;
-            }
+            })
+            .catch(errorLogger);
         }
 
         return () => {

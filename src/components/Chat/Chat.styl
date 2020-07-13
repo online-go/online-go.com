@@ -18,7 +18,7 @@
 channel-utils-height=8.4rem;
 channel-width=12rem;
 
-.EmbeddedChat {
+.ChatLog {
     position: relative;
     display: flex;
     min-height: 20rem;
@@ -83,7 +83,7 @@ channel-width=12rem;
     }
     .center-container {
 
-        .chat-log {
+        .chat-lines {
             flex-basis: 100%;
             flex-grow: 1;
             flex-shrink: 1;
@@ -111,14 +111,14 @@ channel-width=12rem;
 
 
 
-.EmbeddedChat, .ChatUsersList {
+.ChatLog, .ChatUsersList {
     .Player {
         themed color fg
         font-weight: bold;
     }
 }
 
-.EmbeddedChat {
+.ChatLog {
     display: flex;
     flex-basis: 100%;
     flex-grow: 1;
@@ -126,7 +126,7 @@ channel-width=12rem;
     flex-direction: column;
 
 
-    .chat-log {
+    .chat-lines {
         flex-basis: 100%;
         flex-grow: 1;
         flex-shrink: 1;
@@ -228,3 +228,114 @@ channel-width=12rem;
     }
 }
 
+.ChatHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+
+    border-bottom: 1px solid transparent;
+    themed border-bottom-color shade3
+
+    padding: 0.5rem;
+    background-size: cover;
+
+    .channel-topic {
+        flex: 1;
+
+        height: 2.1rem;
+        font-weight: bold;
+        font-size: font-size-normal;
+
+        position: relative;
+
+
+        .backdrop {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            themed background-color bg
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .topic {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
+        }
+
+        p {
+            themed color fg-increased-contrast
+            margin: 0.5rem;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
+    }
+
+    input {
+        themed background bg
+        padding: 0.5rem;
+    }
+
+    .channel-topic-edit {
+        flex: 1;
+        margin: 0;
+    }
+
+    .fa {
+        display: inline-flex;
+        flex: 0;
+        flex-basis: 2rem;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+            themed background-color primary
+            themed color colore-background-fg
+        }
+
+    }
+
+    .expanded-area {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 3.5rem;
+        min-height: 3rem;
+        max-height: 50vh;
+        border: 1px solid transparent;
+        themed background-color bg
+        themed border-color shade3
+        border-top-color: transparent;
+
+        .header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            .left {
+                flex: 1;
+            }
+
+            .buttons {
+            }
+        }
+
+
+
+        .description {
+            max-height: 40vh;
+            overflow: auto;
+        }
+    }
+}

@@ -17,7 +17,7 @@
 
 
 export * from "./ChatChannelList";
-export * from "./EmbeddedChat";
+export * from "./ChatLog";
 export * from "./ChatUsersList";
 export * from "./ChatDetails";
 export * from "./ChatIndicator";

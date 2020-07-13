@@ -46,9 +46,22 @@ export interface ChatMessage {
     system?:boolean; // true if it's a system message
 }
 
+export interface TopicMessage {
+    channel: string;
+    username: string;
+    id: number;
+    ranking: number;
+    professional: boolean;
+    ui_class: string;
+    country?: string;
+    topic: string;
+    timestamp: number;
+}
+
 
 interface Events {
     "chat": ChatMessage | null;
+    "topic": TopicMessage;
     "chat-removed": any;
     "join": Array<any>;
     "part": any;
@@ -193,6 +206,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     last_seen_timestamp: number;
     send_tokens = 5;
     flood_protection:Timeout = null;
+    topic:TopicMessage;
 
 
 
@@ -259,6 +273,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }
 
+    handleTopic(obj: TopicMessage):void {
+        this.topic = obj;
+        this.emit("topic", obj);
+    }
+
     handleChat(obj: ChatMessage) {
         if (obj.message.i in this.chat_ids) {
             return;
@@ -280,7 +299,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
                                 "[" + this.name + "] " + obj.username + ": " + obj.message.m
                             );
                         } else {
-                            console.log("Not sending name match notification since we just joined the channel ", obj.channel);
+                            //console.debug("Not sending name match notification since we just joined the channel ", obj.channel);
                         }
                     }
                 }
@@ -452,6 +471,23 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.chat_log.push(obj);
         this.emit("chat", obj);
     }
+    public setTopic(topic: string) {
+        let user = data.get('user');
+
+        let msg:TopicMessage = {
+            channel: this.channel,
+            username: user.username,
+            id: user.id,
+            ranking: user.ranking,
+            professional: user.professional,
+            ui_class: user.ui_class,
+            country: user.country,
+            topic: topic,
+            timestamp: Date.now(),
+        };
+        comm_socket.send("chat/topic", msg);
+        this.topic = msg;
+    }
 
     public systemMessage(text:string, system_message_type:'flood'):void {
         let obj:ChatMessage = {
@@ -516,6 +552,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         super();
         this.channel = channel;
         this.channel.on("chat", this._onChat);
+        this.channel.on("topic", this._onTopic);
         this.channel.on("join", this._onJoin);
         this.channel.on("part", this._onPart);
         this.channel.on("chat-removed", this._onChatRemoved);
@@ -528,6 +565,9 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
 
     _onChat = (...args) => {
         this.emit.apply(this, ["chat"].concat(args));
+    }
+    _onTopic = (...args) => {
+        this.emit.apply(this, ["topic"].concat(args));
     }
     _onJoin = (...args) => {
         this.emit.apply(this, ["join"].concat(args));
@@ -543,6 +583,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     }
     _destroy() {
         this.channel.off("chat", this._onChat);
+        this.channel.off("topic", this._onTopic);
         this.channel.off("join", this._onJoin);
         this.channel.off("part", this._onPart);
         this.channel.off("chat-removed", this._onChatRemoved);
@@ -558,11 +599,30 @@ class ChatManager {
 
     constructor() {
         comm_socket.on("chat-message", this.onMessage);
+        comm_socket.on("chat-topic", this.onTopic);
         comm_socket.on("chat-message-removed", this.onMessageRemoved);
         comm_socket.on("chat-join", this.onJoin);
         comm_socket.on("chat-part", this.onPart);
     }
 
+    onTopic = (obj: TopicMessage) => {
+        if (!(obj.channel in this.channels)) {
+            return;
+        }
+
+        if (obj.id && obj.username)  {
+            player_cache.update({
+                id: obj.id,
+                username: obj.username,
+                ui_class: obj.ui_class,
+                country: obj.country,
+                ranking: obj.ranking,
+                professional: obj.professional,
+            }, true);
+        }
+
+        this.channels[obj.channel].handleTopic(obj);
+    }
     onMessage = (obj: ChatMessage) => {
         if (!(obj.channel in this.channels)) {
             return;

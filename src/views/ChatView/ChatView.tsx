@@ -20,7 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 //import {post, get} from "requests";
 //import {errorAlerter} from "misc";
 //import {Chat} from "Chat";
-import { ChatChannelList, EmbeddedChat, ChatUsersList } from "Chat";
+import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
 
 
 interface ChatViewProperties {
@@ -41,7 +41,7 @@ export function ChatView(props: ChatViewProperties):JSX.Element {
     return (
         <div className="ChatView">
             <ChatChannelList channel={channel} />
-            <EmbeddedChat channel={channel} autoFocus={true} updateTitle={true} />
+            <ChatLog channel={channel} autoFocus={true} updateTitle={true} />
             <ChatUsersList channel={channel} />
         </div>
     );
