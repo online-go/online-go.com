@@ -50,7 +50,7 @@ export interface ChatMessage {
 export interface ChannelInformation {
     id: string;
     name: string;
-    language?: string;
+    language?: string | Array<string>;
     rtl?: boolean;
     group_id?: number;
     tournament_id?: number;
@@ -58,6 +58,9 @@ export interface ChannelInformation {
     banner?: string;
     country?: string;
     description?: string;
+    navigator_language?: boolean;
+    primary_language?: boolean;
+    sort_order?: number;
 }
 
 export interface TopicMessage {
@@ -95,50 +98,114 @@ let channel_information_cache:{[channel: string]: ChannelInformation} = {};
 let channel_information_resolvers:{[channel: string]: Promise<ChannelInformation>} = {};
 
 
-/* Any modifications to this must also be mirrored on the server */
 export let global_channels: Array<ChannelInformation> = [
-    {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
-    {"id": "global-help" , "name": "Help", "country": "un"},
-    {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
-    {"id": "global-japanese", "name": "日本語 ", "country": "jp", "language": "japanese"},
-    {"id": "global-chinese" , "name": "中文"   , "country": "cn", "language": "chinese"},
-    {"id": "global-korean"  , "name": "한국어" , "country": "kr", "language": "korean"},
-    {"id": "global-russian"  , "name": "Русский" , "country": "ru"},
-    {"id": "global-polish"  , "name": "Polski" , "country": "pl"},
-    {"id": "global-arabic", "name": "العَرَبِيَّةُ", "country": "_Arab_League", "rtl": true},
-    {"id": "global-bulgarian"  , "name": "Български" , "country": "bg"},
-    {"id": "global-catalan"  , "name": "Català" , "country": "es"},
-    {"id": "global-czech"  , "name": "Čeština" , "country": "cz"},
-    {"id": "global-esperanto"  , "name": "Esperanto" , "country": "_Esperanto"},
-    {"id": "global-german"  , "name": "Deutsch" , "country": "de", "language": "german"},
-    {"id": "global-spanish"  , "name": "Español" , "country": "es", "language": "spanish"},
-    {"id": "global-french"  , "name": "Français" , "country": "fr", "language": "french"},
-    {"id": "global-filipino"  , "name": "Filipino" , "country": "ph"},
-    {"id": "global-indonesian", "name": "Indonesian", "country": "id"},
-    {"id": "global-hebrew", "name": "עִבְרִית", "country": "il", "rtl": true},
-    {"id": "global-hindi"  , "name": "हिन्दी" , "country": "in"},
-    {"id": "global-nepali" , "name": "नेपाली", "country": "np"},
-    {"id": "global-bangla"  , "name": "বাংলা" , "country": "bd"},
-    {"id": "global-lithuanian", "name": "Lietuvių", "country": "lt"},
-    {"id": "global-hungarian"  , "name": "Magyar" , "country": "hu"},
-    {"id": "global-dutch"  , "name": "Nederlands" , "country": "nl", "language": "dutch"},
-    {"id": "global-norwegian"  , "name": "Norsk" , "country": "no"},
-    {"id": "global-italian"  , "name": "Italiano" , "country": "it", "language": "italian"},
-    {"id": "global-portuguese"  , "name": "Português" , "country": "pt", "language": "portuguese"},
-    {"id": "global-romanian"  , "name": "Română" , "country": "ro"},
-    {"id": "global-swedish"  , "name": "Svenska" , "country": "se"},
-    {"id": "global-finnish"  , "name": "Suomi" , "country": "fi"},
-    {"id": "global-turkish"  , "name": "Türkçe" , "country": "tr"},
-    {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"},
-    {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
-    {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
+    {"id": "global-english"    , "name": "English"    , "country": "us"           , language: "en"}    ,
+    {"id": "global-help"       , "name": "Help"       , "country": "un"}          ,
+    {"id": "global-offtopic"   , "name": "Off Topic"  , "country": "un"}          ,
+    {"id": "global-japanese"   , "name": "日本語 "    , "country": "jp"           , language: "ja"}    ,
+    {"id": "global-zh-hans"    , "name": "中文"       , "country": "cn"           , language: ["zh", "zh_hans", "zh_cn"]}    ,
+    {"id": "global-zh-hant"    , "name": "廣東話"     , "country": "hk"           , language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"]} ,
+    {"id": "global-korean"     , "name": "한국어"     , "country": "kr"           , language: "ko"}    ,
+    {"id": "global-russian"    , "name": "Русский"    , "country": "ru"           , language: "ru"}    ,
+    {"id": "global-polish"     , "name": "Polski"     , "country": "pl"           , language: "pl"}    ,
+    {"id": "global-arabic"     , "name": "العَرَبِيَّةُ"    , "country": "_Arab_League" , language: "ar"     , "rtl": true} ,
+    {"id": "global-bulgarian"  , "name": "Български"  , "country": "bg"           , language: "bg"}    ,
+    {"id": "global-catalan"    , "name": "Català"     , "country": "_cat"         , language: "ca"}    ,
+    {"id": "global-czech"      , "name": "Čeština"    , "country": "cz"           , language: "cs"}    ,
+    {"id": "global-esperanto"  , "name": "Esperanto"  , "country": "_Esperanto"   , language: "eo"}    ,
+    {"id": "global-german"     , "name": "Deutsch"    , "country": "de"           , language: "de"}    ,
+    {"id": "global-spanish"    , "name": "Español"    , "country": "es"           , language: "es"}    ,
+    {"id": "global-french"     , "name": "Français"   , "country": "fr"           , language: "fr"}    ,
+    {"id": "global-filipino"   , "name": "Filipino"   , "country": "ph"           , language: "fil"}   ,
+    {"id": "global-indonesian" , "name": "Indonesian" , "country": "id"           , language: "id"}    ,
+    {"id": "global-hebrew"     , "name": "עִבְרִית"      , "country": "il"           , language: "he"     , "rtl": true} ,
+    {"id": "global-hindi"      , "name": "हिन्दी"        , "country": "in"           , language: "hi"}    ,
+    {"id": "global-nepali"     , "name": "नेपाली"        , "country": "np"           , language: "ne"}    ,
+    {"id": "global-bangla"     , "name": "বাংলা"         , "country": "bd"           , language: "bn"}    ,
+    {"id": "global-lithuanian" , "name": "Lietuvių"   , "country": "lt"           , language: "lt"}    ,
+    {"id": "global-hungarian"  , "name": "Magyar"     , "country": "hu"           , language: "hu"}    ,
+    {"id": "global-dutch"      , "name": "Nederlands" , "country": "nl"           , language: "nl"}    ,
+    {"id": "global-norwegian"  , "name": "Norsk"      , "country": "no"           , language: "no"}    ,
+    {"id": "global-italian"    , "name": "Italiano"   , "country": "it"           , language: "it"}    ,
+    {"id": "global-portuguese" , "name": "Português"  , "country": "pt"           , language: "pt"}    ,
+    {"id": "global-romanian"   , "name": "Română"     , "country": "ro"           , language: "ro"}    ,
+    {"id": "global-swedish"    , "name": "Svenska"    , "country": "se"           , language: "sv"}    ,
+    {"id": "global-finnish"    , "name": "Suomi"      , "country": "fi"           , language: "fi"}    ,
+    {"id": "global-turkish"    , "name": "Türkçe"     , "country": "tr"           , language: "tr"}    ,
+    {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"           , language: "uk"}    ,
+    {"id": "global-vietnamese" , "name": "Tiếng Việt" , "country": "vn"           , language: "vi"}    ,
+    {"id": "global-thai"       , "name": "ภาษาไทย"    , "country": "th"           , language: "th"}    ,
 ];
 
+
+try {
+    let sort_order = 0;
+    for (let chan of global_channels) {
+        chan.sort_order = sort_order + 1000;
+        sort_order += 1;
+    }
+
+
+    let primary_language = true;
+
+    for (let language of navigator.languages) {
+        language = language.toLowerCase().replace('-', '_');
+
+        for (let chan of global_channels) {
+            if (chan.language) {
+                let chan_lang_list = typeof(chan.language) === "string" ? [chan.language] : chan.language;
+                for (let chan_lang of chan_lang_list) {
+                    if (chan_lang === language && !chan.navigator_language) {
+                        console.log("Found", chan);
+                        chan.navigator_language = true;
+                        if (primary_language) {
+                            chan.primary_language = primary_language;
+                        }
+                        primary_language = false;
+                        chan.sort_order = sort_order;
+                        sort_order += 1;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    global_channels.sort((a, b) => a.sort_order - b.sort_order);
+    console.log(global_channels);
+} catch (e) {
+    console.error(e);
+}
+
+
+
+data.watch('user', (user) => {
+    if (user.is_supporter && global_channels.filter(c => c.id === 'global-supporter').length === 0) {
+        global_channels.splice(0, 0, {
+            "id": "global-supporter",
+            "name": _("Site Supporters"),
+            "country": "un",
+        });
+    }
+
+    if (user.is_moderator && global_channels.filter(c => c.id === 'shadowban').length === 0) {
+        global_channels.splice(0, 0, {
+            "id": "shadowban",
+            "country": "_Pirate",
+            "name": "Shadowban",
+        });
+    }
+});
+
+
+
+/*
 data.watch("config.ogs", (settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
 });
+*/
 
 
 
@@ -779,14 +846,6 @@ export function resolveChannelInformation(channel:string):Promise<ChannelInforma
 for (let chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
 }
-
-data.watch("config.ogs", (settings) => {
-    if (settings && settings.channels) {
-        for (let chan of settings.channels) {
-            updateCachedChannelInformation(chan.id, chan);
-        }
-    }
-});
 data.watch(cached.active_tournaments, (tournaments:ActiveTournamentList) => {
     for (let tournament of tournaments) {
         updateCachedChannelInformation(`tournament-${tournament.id}`, {

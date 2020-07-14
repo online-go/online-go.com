@@ -218,6 +218,11 @@ function ChannelTopic(
         <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
             <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
 
+            <i className={'header-icon fa fa-times'}
+                title={pgettext("Leave the selected channel.", "Leave Channel")}
+                onClick={partChannel}
+                />
+
             {(editing && topic_editable)
                 ?  <div className='channel-topic'>
                     <input

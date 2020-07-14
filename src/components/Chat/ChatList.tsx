@@ -385,7 +385,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                             onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={chan.id}>
-                                <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
+                                <Flag country={chan.country} language={chan.language && (typeof(chan.language) === "string" ? chan.language : chan.language[0])} user_country={user_country} /> {chan.name}
                             </span>
                             {message_count(chan.id)}
                         </div>

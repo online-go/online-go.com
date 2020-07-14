@@ -34,7 +34,34 @@ import {
     cachedChannelInformation
 } from 'chat_manager';
 
-data.setDefault("chat.joined", {});
+
+data.setDefault("chat.joined", {'global-english': true});
+
+try {
+    let joined_defaults:any = {};
+    let found = false;
+    for (let chan of global_channels) {
+        try {
+            if (chan.id === "global-help" && navigator.languages.indexOf("en") >= 0) {
+                joined_defaults[chan.id] = true;
+            }
+            if (chan.id === "global-offtopic" && navigator.languages.indexOf("en") >= 0) {
+                joined_defaults[chan.id] = true;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        if (chan.navigator_language) {
+            joined_defaults[chan.id] = true;
+            found = true;
+        }
+    }
+    if (found) {
+        data.setDefault("chat.joined", joined_defaults);
+    }
+} catch (e) {
+    console.error(e);
+}
 
 
 interface ChatChannelListProperties {
@@ -195,7 +222,7 @@ interface ChatChannelProperties {
     name: string;
     active?: boolean;
     country?: string;
-    language?: string;
+    language?: string | Array<string>;
     icon?: string;
     joined?: boolean;
 }
@@ -205,6 +232,11 @@ export function ChatChannel(
 ):JSX.Element {
     const user = data.get('user');
     const user_country = user?.country || 'un';
+
+    if (language && typeof(language) !== "string") {
+        language = language[0];
+    }
+
 
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [unread_ct, set_unread_ct]:[number, (x:number) => void] = useState(0);
@@ -271,7 +303,7 @@ export function ChatChannel(
     if (channel.indexOf('tournament') === 0) {
         icon_element = <i className="fa fa-trophy" />;
     } else if (channel.indexOf('global') === 0 || channel === 'shadowban') {
-        icon_element = <Flag country={country} language={language} user_country={user_country} />;
+        icon_element = <Flag country={country} language={language as string} user_country={user_country} />;
     } else if (channel.indexOf('group') === 0) {
         icon_element = <img src={icon}/>;
     }

@@ -470,7 +470,7 @@ export class SFXManager {
 
             for (let pack of SpriteGroups[group_name]) {
                 let lang_code = pack.language + '-' + pack.country;
-                console.log(lang_code, l);
+                //console.log(lang_code, l);
                 if (lang_code.indexOf(l) >= 0) {
                     return pack.pack_id;
                 }

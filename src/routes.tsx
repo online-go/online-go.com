@@ -58,6 +58,7 @@ import { Styling } from "Styling";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
 import { GobanTest } from "GobanTest";
+import { global_channels } from "chat_manager";
 
 import * as docs from "docs";
 
@@ -97,7 +98,17 @@ export const routes = (
             <Route path="/chat/:channel/*" component={ChatView}/>
             <Route path="/chat/:channel/**/*" component={ChatView}/>
             <Route path="/chat" render={() => {
-                let channel = "global-english";
+                let channel = data.get('chat.active_channel');
+
+                if (!channel) {
+                    channel = "global-english";
+                    for (let chan of global_channels) {
+                        if (chan.primary_language) {
+                            channel = chan.id;
+                        }
+                    }
+                }
+
                 return <Redirect to={`/chat/${channel}`}/>;
             }}/>
             <Route path="/observe-games" component={ObserveGames}/>

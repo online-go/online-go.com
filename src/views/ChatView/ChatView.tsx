@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import { useState, useEffect, useCallback } from "react";
 
@@ -28,17 +29,16 @@ import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
 interface ChatViewProperties {
     match: {
         params: {
-            channel?: string;
+            channel: string;
         }
     };
 }
 
 
 export function ChatView(props: ChatViewProperties):JSX.Element {
-    let channel = props?.match?.params?.channel;
-    if (!channel) {
-        channel = 'english';
-    }
+    let channel = props.match.params.channel;
+
+    data.set('chat.active_channel', channel);
 
     let [showing_channels, set_showing_channels]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [showing_users, set_showing_users]:[boolean, (tf:boolean) => void] = useState(false as boolean);
