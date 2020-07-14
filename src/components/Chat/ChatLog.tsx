@@ -214,14 +214,18 @@ function ChannelTopic(
         }
     }, [topic, topic_updated, proxy]);
 
+    const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length == 0;
+
     return (
         <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
             <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
 
-            <i className={'header-icon fa fa-times'}
-                title={pgettext("Leave the selected channel.", "Leave Channel")}
-                onClick={partChannel}
-                />
+            {channel_leavable &&
+                <i className={'header-icon fa fa-times'}
+                    title={pgettext("Leave the selected channel.", "Leave Channel")}
+                    onClick={partChannel}
+                    />
+            }
 
             {(editing && topic_editable)
                 ?  <div className='channel-topic'>

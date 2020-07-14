@@ -171,6 +171,10 @@ try {
         }
     }
 
+    if (primary_language === true) { // not found
+        global_channels[0].primary_language = true; /* default to english as primary */
+    }
+
     global_channels.sort((a, b) => a.sort_order - b.sort_order);
     console.log(global_channels);
 } catch (e) {
