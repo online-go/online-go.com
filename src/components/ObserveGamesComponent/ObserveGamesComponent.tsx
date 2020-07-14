@@ -25,14 +25,16 @@ import {comm_socket} from "sockets";
 
 interface ObserveGamesComponentProperties {
     announcements: boolean;
-    channel: string;
+    miniGobanProps?: any;
+    channel?: string;
+    namesByGobans?: boolean;
 }
 
 export class ObserveGamesComponent extends React.PureComponent<ObserveGamesComponentProperties, any> {
     private last_refresh: number;
     private next_refresh: any;
     private auto_refresh: number;
-    readonly channel: string;
+    readonly channel?: string;
     readonly show_announcements: boolean;
 
     constructor(props) {
@@ -203,7 +205,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
 
             <ActiveAnnouncements  />
 
-            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} />
+            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} miniGobanProps={this.props.miniGobanProps} namesByGobans={this.props.namesByGobans} />
         </div>
         );
     }

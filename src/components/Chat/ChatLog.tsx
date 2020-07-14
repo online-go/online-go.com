@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as moment from "moment";
+import Linkify from "react-linkify";
 import { Card } from "material";
 import { Link } from "react-router-dom";
 import { comm_socket } from "sockets";
@@ -36,9 +37,9 @@ import {
 } from 'chat_manager';
 import { ChatLine } from './ChatLine';
 import { TabCompleteInput } from "TabCompleteInput";
-import Linkify from "react-linkify";
 import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
+import { ObserveGamesComponent } from "ObserveGamesComponent";
 
 declare let swal;
 
@@ -68,9 +69,19 @@ interface InternalChatLogProperties extends ChatLogProperties {
 let deferred_chat_update:Timeout = null;
 
 export function ChatLog(props:ChatLogProperties):JSX.Element {
+    let show_games = true;
+
     return (
         <div className='ChatLog'>
             <ChannelTopic {...props} />
+            <div className='game-list'>
+                <ObserveGamesComponent
+                    announcements={false}
+                    channel={props.channel}
+                    namesByGobans={true}
+                    miniGobanProps={{noText: true, displayWidth: 64}}
+                />
+            </div>
             <ChatLines {...props} />
             <ChatInput {...props} />
         </div>

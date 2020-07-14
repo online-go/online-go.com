@@ -227,7 +227,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")} <i className={"fa " + (this.state.chat_log === "moderator" ? "fa-caret-up" : "fa-caret-down")}/>
                         </button>
                     }
-                    <TabCompleteInput className={`chat-input  ${this.state.chat_log}`}
+                    <TabCompleteInput
+                        ref={(elt) => 0}
+                        className={`chat-input  ${this.state.chat_log}`}
                         disabled={user.anonymous || !data.get('user').email_validated}
                         placeholder={user.anonymous
                             ? _("Login to chat")

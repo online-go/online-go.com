@@ -18,99 +18,6 @@
 channel-utils-height=8.4rem;
 channel-width=12rem;
 
-.ChatLog {
-    position: relative;
-    display: flex;
-    min-height: 20rem;
-    .input-container {
-        border-bottom: 1px solid transparent;
-    }
-}
-.Chat {
-    display: flex;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-
-
-    .channel-container {
-        flex-basis: channel-width;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: channel-width;
-        //overflow-y: scroll;
-
-        border-right: 1px solid transparent;
-        themed border-right-color shade3
-        display: flex;
-        flex-direction: column;
-        user-select: none;
-    }
-    .all-channels {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow-y: auto;
-        width: channel-width;
-    }
-    .channel-buttons {
-        display: flex;
-        //justify-content: space-between;
-    }
-
-    .users {
-        flex-basis: 12rem;
-        flex-shrink: 0;
-        flex-grow: 0;
-        overflow-y: auto;
-        user-select: none;
-
-        .user-header {
-            margin-top: 0.5rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: font-size-smaller;
-            margin-bottom: 0.2rem;
-            cursor: pointer;
-            .fa-sort-numeric-asc, .fa-sort-alpha-asc  {
-                margin-left: 0.2rem;
-                width: 0.8rem;
-            }
-        }
-
-    }
-    .center-container {
-
-        .chat-lines {
-            flex-basis: 100%;
-            flex-grow: 1;
-            flex-shrink: 1;
-            max-width: "calc(100vw - %s * 2)" % channel-width;
-            overflow-y: scroll;
-            border-bottom: 1px solid transparent;
-            themed border-bottom-color shade3
-            .Player {
-                themed color fg
-            }
-        }
-
-        input {
-            width: 100%;
-            border: none;
-            font-size: 1.0rem;
-            line-height: 1.5rem;
-            padding: 0.2rem;
-        }
-    }
-}
-
-
-
-
-
-
 .ChatLog, .ChatUsersList {
     .Player {
         themed color fg
@@ -125,6 +32,33 @@ channel-width=12rem;
     flex-shrink: 1;
     flex-direction: column;
 
+    /*
+    position: relative;
+    display: flex;
+    min-height: 20rem;
+    .input-container {
+        border-bottom: 1px solid transparent;
+    }
+    */
+
+    .game-list {
+        flex-basis: 20%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-height: 10rem;
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        overflow: auto; 
+
+        .GameList {
+            overflow-x: visible;
+        }
+
+        .MiniGoban {
+            width: 72px;
+            height: 72px;
+        }
+    }
 
     .chat-lines {
         flex-basis: 100%;
