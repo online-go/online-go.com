@@ -201,12 +201,12 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 return (
                     <div className="GameList">
                         {lst.map((game) =>
-                            <div className='goban-with-names'>
+                            <div className='goban-with-names' key={game.id}>
                                 <div className='names'>
                                     <div><Player user={game.black} disableCacheUpdate noextracontrols /></div>
                                     <div><Player user={game.white} disableCacheUpdate noextracontrols /></div>
                                 </div>
-                                <MiniGoban key={game.id}
+                                <MiniGoban
                                     id={game.id}
                                     black={game.black}
                                     white={game.white}

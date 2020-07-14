@@ -62,26 +62,38 @@ interface ChatLogProperties {
 }
 
 interface InternalChatLogProperties extends ChatLogProperties {
-    //showingChannels: boolean;
-    //showingUsers: boolean;
+    onShowGames?: (tf:boolean) => void;
+    showingGames?: boolean;
+    canShowGames?: boolean;
 }
 
 let deferred_chat_update:Timeout = null;
 
 export function ChatLog(props:ChatLogProperties):JSX.Element {
-    let show_games = true;
+    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    const onShowGames = useCallback((tf:boolean) => {
+        if (tf !== showing_games) {
+            set_showing_games(tf);
+        }
+    }, [props.channel, showing_games]);
+
+    let canShowGames = /^(group-|global)/.test(props.channel);
+    let game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
 
     return (
         <div className='ChatLog'>
-            <ChannelTopic {...props} />
-            <div className='game-list'>
-                <ObserveGamesComponent
-                    announcements={false}
-                    channel={props.channel}
-                    namesByGobans={true}
-                    miniGobanProps={{noText: true, displayWidth: 64}}
-                />
-            </div>
+            <ChannelTopic {...props} showingGames={showing_games} onShowGames={onShowGames} canShowGames={canShowGames} />
+            {showing_games &&
+                <div className='game-list'>
+                    <ObserveGamesComponent
+                        announcements={false}
+                        updateTitle={false}
+                        channel={game_channel}
+                        namesByGobans={true}
+                        miniGobanProps={{noText: true, displayWidth: 64}}
+                    />
+                </div>
+            }
             <ChatLines {...props} />
             <ChatInput {...props} />
         </div>
@@ -90,7 +102,17 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
 
 
 function ChannelTopic(
-    {channel, hideTopic, onShowChannels, onShowUsers, showingChannels, showingUsers}:InternalChatLogProperties
+    {
+        channel,
+        hideTopic,
+        onShowChannels,
+        onShowUsers,
+        onShowGames,
+        showingChannels,
+        showingUsers,
+        showingGames,
+        canShowGames
+    }:InternalChatLogProperties
 ):JSX.Element {
     if (hideTopic) {
         return null;
@@ -98,7 +120,8 @@ function ChannelTopic(
 
     let user = data.get('user');
 
-    let [expanded, set_expanded]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    //let [expanded, set_expanded]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    let [editing, set_editing]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [topic, set_topic]:[string, (tf:string) => void] = useState("");
     let [topic_updated, set_topic_updated]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [name, set_name]:[string, (tf:string) => void] = useState(channel);
@@ -168,14 +191,6 @@ function ChannelTopic(
         //proxy?.channel.emit('should-part', channel);
     }, [proxy]);
 
-    const closeExpanded = useCallback(() => {
-        if (topic_updated) {
-            proxy.channel.setTopic(topic);
-        }
-        set_topic_updated(false);
-        set_expanded(false);
-    }, [proxy, topic, topic_updated]);
-
     const toggleShowChannels = useCallback(() => {
         if (onShowChannels) {
             onShowChannels(!showingChannels);
@@ -188,37 +203,54 @@ function ChannelTopic(
         }
     }, [onShowUsers, showingUsers]);
 
+    const startEditing = useCallback(() => {
+        set_editing(true);
+    }, []);
+
+    const saveEdits = useCallback(() => {
+        set_editing(false);
+        if (topic_updated) {
+            proxy.channel.setTopic(topic);
+        }
+    }, [topic, topic_updated, proxy]);
 
     return (
-        <div className={'ChatHeader' + (expanded ? ' expanded' : '')}
-                style={banner ? {'backgroundImage': `url("${banner}")`} : {}}
-            >
-
+        <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
             <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
 
-            {(expanded && topic_editable)
-                ?  <input
+            {(editing && topic_editable)
+                ?  <div className='channel-topic'>
+                    <input
                         value={topic}
                         className="channel-topic-edit"
                         placeholder={pgettext("Set channel topic", "Topic")}
                         onChange={updateTopic}
                         autoFocus={true}
                     />
+                     <i className='fa fa-save' onClick={saveEdits} />
+                   </div>
                 : <div className='channel-topic' title={title_hover}>
                       <div className='backdrop' />
                       <div className='topic'>
-                          <Linkify>{topic.trim() || name}</Linkify>
+                          <span className='content'><Linkify>{topic.trim() || name}</Linkify></span>
+                          {topic_editable && <i className='fa fa-pencil' onClick={startEditing} />}
                       </div>
                   </div>
             }
 
-            {expanded
-                ? <i className='header-icon fa fa-chevron-up' onClick={closeExpanded} />
-                : <i className='header-icon fa fa-chevron-down' onClick={() => set_expanded(true)} />
-            }
+            {canShowGames && (
+                showingGames
+                    ? <i className='header-icon fa fa-chevron-up' onClick={() => onShowGames(false)} />
+                    : <i className='header-icon fa fa-chevron-down' onClick={() => onShowGames(true)} />
+            )}
 
             <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
 
+        </div>
+    );
+}
+
+/*
             {expanded &&
                 <div className='expanded-area'>
                     <div className='header'>
@@ -252,10 +284,7 @@ function ChannelTopic(
                     <Markdown source={description} className='description' />
                 </div>
             }
-        </div>
-    );
-}
-
+*/
 
 /*
   let group_text = pgettext("Go to the main page for this group.", "Group Page");

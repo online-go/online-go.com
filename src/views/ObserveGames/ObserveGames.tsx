@@ -36,7 +36,7 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
         return (
         <div className="ObserveGames">
             <div className="container">
-                <ObserveGamesComponent announcements={true} channel='' />
+                <ObserveGamesComponent announcements={true} updateTitle={true} channel='' />
             </div>
         </div>
         );

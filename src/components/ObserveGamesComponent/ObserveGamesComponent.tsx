@@ -25,6 +25,7 @@ import {comm_socket} from "sockets";
 
 interface ObserveGamesComponentProperties {
     announcements: boolean;
+    updateTitle: boolean;
     miniGobanProps?: any;
     channel?: string;
     namesByGobans?: boolean;
@@ -34,8 +35,8 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     private last_refresh: number;
     private next_refresh: any;
     private auto_refresh: number;
-    readonly channel?: string;
-    readonly show_announcements: boolean;
+    private channel?: string;
+    private show_announcements: boolean;
 
     constructor(props) {
         super(props);
@@ -57,8 +58,21 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         comm_socket.send("gamelist/count/subscribe", this.channel);
     }
 
-    componentDidMount() {
-        window.document.title = _("Games");
+    componentDidUpdate(prevProps:ObserveGamesComponentProperties, prevState:any) {
+        console.log(this.props.channel, prevProps.channel);
+        if (this.props.channel !== prevProps.channel) {
+            console.log("Should be reconnecting");
+            this.destroy();
+            this.channel = this.props.channel;
+            this.init();
+        }
+    }
+
+    init() {
+        if (this.props.updateTitle) {
+            window.document.title = _("Games");
+        }
+        console.log("Channel: ", this.channel);
         if (this.channel) {
             comm_socket.on(`gamelist-count-${this.channel}`, this.updateCounts);
         } else {
@@ -71,7 +85,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         this.refresh();
         //this.auto_refresh = setInterval(this.refresh, 500);
     }
-    componentWillUnmount() {
+    destroy() {
         if (this.channel) {
             comm_socket.off(`gamelist-count-${this.channel}`, this.updateCounts);
         }
@@ -85,6 +99,13 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         if (this.auto_refresh) {
             clearInterval(this.auto_refresh);
         }
+    }
+
+    componentDidMount() {
+        this.init();
+    }
+    componentWillUnmount() {
+        this.destroy();
     }
     updateCounts = (counts) => {
         console.log(counts);

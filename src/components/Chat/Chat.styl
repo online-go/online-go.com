@@ -184,6 +184,7 @@ channel-width=12rem;
     }
 
     .channel-topic {
+        display: flex;
         flex: 1;
 
         height: 2.1rem;
@@ -192,6 +193,9 @@ channel-width=12rem;
 
         position: relative;
 
+        input {
+            flex: 1;
+        }
 
         .backdrop {
             position: absolute;
@@ -224,6 +228,17 @@ channel-width=12rem;
                 padding-right: 0.3rem;
             }
 
+            .content {
+                flex: 1;
+            }
+            .fa {
+                flex: 0;
+
+                flex-basis: 2rem;
+                width: 2rem;
+                height: 2rem;
+
+            }
         }
     }
 
@@ -253,6 +268,10 @@ channel-width=12rem;
             themed color colore-background-fg
         }
 
+    }
+
+    .fa-pencil, .fa-save {
+        float: right;
     }
 
     .expanded-area {

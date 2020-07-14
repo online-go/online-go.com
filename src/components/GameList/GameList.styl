@@ -54,11 +54,15 @@
 
     .goban-with-names {
         display: inline-flex;
+        width: 12rem;
+        flex: 0;
         flex-direciton: row;
         align-items: center;
+        justify-content: right;
         .names {
             text-align: right;
-
+            flex: 1;
+            overflow: hidden;
         }
     }
 }
