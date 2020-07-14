@@ -17,6 +17,8 @@
 
 import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
+import { useState, useEffect, useCallback } from "react";
+
 //import {post, get} from "requests";
 //import {errorAlerter} from "misc";
 //import {Chat} from "Chat";
@@ -38,11 +40,42 @@ export function ChatView(props: ChatViewProperties):JSX.Element {
         channel = 'english';
     }
 
+    let [showing_channels, set_showing_channels]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    let [showing_users, set_showing_users]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+
+    useEffect(() => {
+        set_showing_channels(false);
+        set_showing_users(false);
+    }, [channel]);
+
+    const onShowChannels = useCallback((tf:boolean) => {
+        if (tf !== showing_channels) {
+            set_showing_channels(tf);
+            set_showing_users(false);
+        }
+    }, [channel, showing_channels]);
+
+    const onShowUsers = useCallback((tf:boolean) => {
+        if (tf !== showing_users) {
+            set_showing_users(tf);
+            set_showing_channels(false);
+        }
+    }, [channel, showing_users]);
+
+
+    let subprops = {
+        channel: channel,
+        showingChannels: showing_channels,
+        showingUsers: showing_users,
+        onShowChannels,
+        onShowUsers,
+    };
+
     return (
-        <div className="ChatView">
-            <ChatChannelList channel={channel} />
-            <ChatLog channel={channel} autoFocus={true} updateTitle={true} />
-            <ChatUsersList channel={channel} />
+        <div className={'ChatView ' + (showing_channels ? ' show-channels' : '') + (showing_users ? ' show-users' : '')} >
+            <ChatChannelList {...subprops} />
+            <ChatLog  autoFocus={true} updateTitle={true} {...subprops} />
+            <ChatUsersList {...subprops} />
         </div>
     );
 }

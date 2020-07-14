@@ -15,15 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {comm_socket} from "sockets";
-import {TypedEventEmitter} from "TypedEventEmitter";
-import * as data from "data";
-import {emitNotification} from "Notifications";
-import * as player_cache from "player_cache";
-import {bounded_rank} from 'rank_utils';
 import cached from 'cached';
+import * as data from "data";
+import * as player_cache from "player_cache";
+import { comm_socket } from "sockets";
+import { get } from "requests";
+import { TypedEventEmitter } from "TypedEventEmitter";
+import { emitNotification } from "Notifications";
+import { bounded_rank } from 'rank_utils';
 import { ActiveTournamentList, GroupList } from 'types';
-import {_, interpolate} from "translate";
+import {_, interpolate } from "translate";
 import { shadowban } from "src/views/Moderator";
 import { getBlocks } from "BlockPlayer";
 import { string_splitter, n2s, dup, Timeout } from "misc";
@@ -44,6 +45,19 @@ export interface ChatMessage {
     };
     system_message_type?:'flood';
     system?:boolean; // true if it's a system message
+}
+
+export interface ChannelInformation {
+    id: string;
+    name: string;
+    language?: string;
+    rtl?: boolean;
+    group_id?: number;
+    tournament_id?: number;
+    icon?: string;
+    banner?: string;
+    country?: string;
+    description?: string;
 }
 
 export interface TopicMessage {
@@ -77,8 +91,12 @@ export interface UnreadChanged {
 }
 
 
+let channel_information_cache:{[channel: string]: ChannelInformation} = {};
+let channel_information_resolvers:{[channel: string]: Promise<ChannelInformation>} = {};
+
+
 /* Any modifications to this must also be mirrored on the server */
-export let global_channels: Array<any> = [
+export let global_channels: Array<ChannelInformation> = [
     {"id": "global-english" , "name": "English", "country": "us", "language": "english"},
     {"id": "global-help" , "name": "Help", "country": "un"},
     {"id": "global-offtopic" , "name": "Off Topic", "country": "un"},
@@ -115,11 +133,13 @@ export let global_channels: Array<any> = [
     {"id": "global-vietnamese"  , "name": "Tiếng Việt" , "country": "vn"},
     {"id": "global-thai"  , "name": "ภาษาไทย" , "country": "th"},
 ];
+
 data.watch("config.ogs", (settings) => {
     if (settings && settings.channels) {
         global_channels = settings.channels;
     }
 });
+
 
 
 export function resolveChannelDisplayName(channel: string): string {
@@ -680,6 +700,100 @@ class ChatManager {
     }
 }
 
-
-
 export const chat_manager = new ChatManager();
+
+
+
+/* Channel information resolver */
+
+export function cachedChannelInformation(channel:string):ChannelInformation | null {
+    if (channel in channel_information_cache) {
+        return channel_information_cache[channel];
+    }
+    return null;
+}
+
+export function updateCachedChannelInformation(channel: string, info:ChannelInformation):void {
+     channel_information_cache[channel] = info;
+}
+
+export function resolveChannelInformation(channel:string):Promise<ChannelInformation> {
+    if (channel in channel_information_cache) {
+        return Promise.resolve( channel_information_cache[channel]);
+    }
+
+    if (channel in channel_information_resolvers) {
+        return channel_information_resolvers[channel];
+    }
+
+
+    let resolver:Promise<ChannelInformation>;
+
+    let ret:ChannelInformation = {
+        id: channel,
+        name: channel,
+    };
+
+    {
+        let m = channel.match(/^group-([0-9]+)$/);
+        if (m) {
+            ret.group_id = parseInt(m[1]);
+        }
+    }
+
+    {
+        let m = channel.match(/^tournament-([0-9]+)$/);
+        if (m) {
+            ret.tournament_id = parseInt(m[1]);
+        }
+    }
+
+    if (ret.group_id) {
+        resolver = new Promise<ChannelInformation>((resolve, reject) => {
+            get(`/termination-api/group/${ret.group_id}`)
+            .then((res:any):ChannelInformation => {
+                ret.name = res.name;
+                ret.icon = res.icon;
+                ret.banner = res.banner;
+                ret.description = res.description;
+                updateCachedChannelInformation(channel, ret);
+                delete channel_information_resolvers[channel];
+                resolve(ret);
+                return ret;
+            })
+            .catch(reject);
+        });
+    } else if (ret.tournament_id) {
+        updateCachedChannelInformation(channel, ret);
+        resolver = Promise.resolve(ret);
+    } else {
+        updateCachedChannelInformation(channel, ret);
+        resolver = Promise.resolve(ret);
+    }
+
+
+    return channel_information_resolvers[channel] = resolver;
+}
+
+
+for (let chan of global_channels) {
+    updateCachedChannelInformation(chan.id, chan);
+}
+
+data.watch("config.ogs", (settings) => {
+    if (settings && settings.channels) {
+        for (let chan of settings.channels) {
+            updateCachedChannelInformation(chan.id, chan);
+        }
+    }
+});
+data.watch(cached.active_tournaments, (tournaments:ActiveTournamentList) => {
+    for (let tournament of tournaments) {
+        updateCachedChannelInformation(`tournament-${tournament.id}`, {
+            id: `tournament-${tournament.id}`,
+            name: tournament.name,
+            tournament_id: tournament.id,
+            description: tournament.description,
+        });
+    }
+});

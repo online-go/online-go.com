@@ -23,8 +23,16 @@ import { Flag } from "Flag";
 import { get } from "requests";
 import { browserHistory } from "ogsHistory";
 import { errorLogger, shouldOpenNewTab, slugify } from 'misc';
-import { chat_manager, ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
-import { ChannelInformation, resolveChannelInformation, cachedChannelInformation } from "./resolveChannelInformation";
+import {
+    chat_manager,
+    ChatChannelProxy,
+    global_channels,
+    group_channels,
+    tournament_channels,
+    ChannelInformation,
+    resolveChannelInformation,
+    cachedChannelInformation
+} from 'chat_manager';
 
 data.setDefault("chat.joined", {});
 

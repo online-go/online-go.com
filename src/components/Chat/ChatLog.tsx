@@ -25,11 +25,20 @@ import { _, pgettext, interpolate } from "translate";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Timeout, errorLogger } from "misc";
 //import { ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
-import { chat_manager, global_channels, ChatChannelProxy, ChatMessage, TopicMessage } from 'chat_manager';
+import {
+    chat_manager,
+    global_channels,
+    ChatChannelProxy,
+    ChatMessage,
+    TopicMessage,
+    ChannelInformation,
+    resolveChannelInformation
+} from 'chat_manager';
 import { ChatLine } from './ChatLine';
 import { TabCompleteInput } from "TabCompleteInput";
+import Linkify from "react-linkify";
 import { Markdown } from "Markdown";
-import { ChannelInformation, resolveChannelInformation } from "./resolveChannelInformation";
+import { browserHistory } from "ogsHistory";
 
 declare let swal;
 
@@ -42,6 +51,18 @@ interface ChatLogProperties {
     channel: string;
     autoFocus?: boolean;
     updateTitle?: boolean;
+    hideTopic?: boolean;
+    onShowChannels?: (tf:boolean) => void;
+    onShowUsers?: (tf:boolean) => void;
+    /* if properties are added to this, don't forget to
+     * add a copy line in the ChatLog internal props construction */
+    showingChannels?: boolean;
+    showingUsers?: boolean;
+}
+
+interface InternalChatLogProperties extends ChatLogProperties {
+    //showingChannels: boolean;
+    //showingUsers: boolean;
 }
 
 let deferred_chat_update:Timeout = null;
@@ -57,7 +78,13 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
 }
 
 
-function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
+function ChannelTopic(
+    {channel, hideTopic, onShowChannels, onShowUsers, showingChannels, showingUsers}:InternalChatLogProperties
+):JSX.Element {
+    if (hideTopic) {
+        return null;
+    }
+
     let user = data.get('user');
 
     let [expanded, set_expanded]:[boolean, (tf:boolean) => void] = useState(false as boolean);
@@ -122,6 +149,14 @@ function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
         set_topic_updated(true);
     }, [channel]);
 
+    const partChannel = useCallback(() => {
+        let joined = data.get("chat.joined");
+        delete joined[channel];
+        data.set("chat.joined", joined);
+        browserHistory.push('/chat');
+        //proxy?.channel.emit('should-part', channel);
+    }, [proxy]);
+
     const closeExpanded = useCallback(() => {
         if (topic_updated) {
             proxy.channel.setTopic(topic);
@@ -130,11 +165,25 @@ function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
         set_expanded(false);
     }, [proxy, topic, topic_updated]);
 
+    const toggleShowChannels = useCallback(() => {
+        if (onShowChannels) {
+            onShowChannels(!showingChannels);
+        }
+    }, [onShowChannels, showingChannels]);
+
+    const toggleShowUsers = useCallback(() => {
+        if (onShowUsers) {
+            onShowUsers(!showingUsers);
+        }
+    }, [onShowUsers, showingUsers]);
+
 
     return (
         <div className={'ChatHeader' + (expanded ? ' expanded' : '')}
                 style={banner ? {'backgroundImage': `url("${banner}")`} : {}}
             >
+
+            <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
 
             {(expanded && topic_editable)
                 ?  <input
@@ -146,14 +195,18 @@ function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
                     />
                 : <div className='channel-topic' title={title_hover}>
                       <div className='backdrop' />
-                      <Markdown source={topic.trim() || name} className='topic' />
+                      <div className='topic'>
+                          <Linkify>{topic.trim() || name}</Linkify>
+                      </div>
                   </div>
             }
 
             {expanded
-                ? <i className='fa fa-chevron-up' onClick={closeExpanded} />
-                : <i className='fa fa-chevron-down' onClick={() => set_expanded(true)} />
+                ? <i className='header-icon fa fa-chevron-up' onClick={closeExpanded} />
+                : <i className='header-icon fa fa-chevron-down' onClick={() => set_expanded(true)} />
             }
+
+            <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
 
             {expanded &&
                 <div className='expanded-area'>
@@ -179,7 +232,7 @@ function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
                         </div>
 
                         <div className='buttons'>
-                            <button className='danger leave-channel' onClick={() => console.log("SHould be leaving ", channel)}>
+                            <button className='danger leave-channel' onClick={partChannel}>
                                 {pgettext("Leave the selected channel.", "Leave Channel")}
                             </button>
                         </div>
@@ -201,7 +254,7 @@ function ChannelTopic({channel}:ChatLogProperties):JSX.Element {
 
 
 let scrolled_to_bottom:boolean = true;
-function ChatLines({channel, autoFocus, updateTitle}:ChatLogProperties):JSX.Element {
+function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}:InternalChatLogProperties):JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     let chat_log_div = useRef(null);
@@ -261,6 +314,12 @@ function ChatLines({channel, autoFocus, updateTitle}:ChatLogProperties):JSX.Elem
     const focusInput = useCallback(():void => {
         //input.current.focus();
         document.getElementById("chat-input")?.focus();
+        if (onShowChannels) {
+            onShowChannels(false);
+        }
+        if (onShowUsers) {
+            onShowUsers(false);
+        }
     }, [channel]);
 
     useEffect(() => {
@@ -317,7 +376,7 @@ function ChatLines({channel, autoFocus, updateTitle}:ChatLogProperties):JSX.Elem
 }
 
 
-function ChatInput({channel, autoFocus}:ChatLogProperties):JSX.Element {
+function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     let input = useRef(null);
@@ -367,7 +426,7 @@ function ChatInput({channel, autoFocus}:ChatLogProperties):JSX.Element {
 export function EmbeddedChatCard(props:ChatLogProperties):JSX.Element {
     return (
         <Card className="Card EmbeddedChatCard">
-            <ChatLog key={props.channel} {...props} />
+            <ChatLog key={props.channel} {...props} hideTopic={true} />
         </Card>
     );
 }

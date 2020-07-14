@@ -240,6 +240,15 @@ channel-width=12rem;
     padding: 0.5rem;
     background-size: cover;
 
+
+    .header-icon {
+        themed color fg-increased-contrast
+
+        &.active {
+            themed color primary
+        }
+    }
+
     .channel-topic {
         flex: 1;
 
@@ -263,18 +272,24 @@ channel-width=12rem;
 
         .topic {
             position: absolute;
+            display: flex;
+            align-items: center;
             left: 0;
             right: 0;
             top: 0;
             bottom: 0;
             z-index: 2;
-        }
-
-        p {
             themed color fg-increased-contrast
-            margin: 0.5rem;
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+            overflow: hidden;
+
+            white-space: nowrap;
+            a {
+                padding-left: 0.3rem;
+                padding-right: 0.3rem;
+            }
+
         }
     }
 
@@ -339,3 +354,4 @@ channel-width=12rem;
         }
     }
 }
+

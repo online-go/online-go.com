@@ -85,6 +85,7 @@
     "react-datetime": "^2.16.3",
     "react-dom": "^16.13.1",
     "react-dropzone": "^3.7.3",
+    "react-linkify": "^1.0.0-alpha",
     "react-number-format": "^3.0.2",
     "react-redux": "^4.4.6",
     "react-resize-detector": "^4.2.0",

@@ -30,8 +30,6 @@ channel-width=12rem;
     flex-direction: row;
 
 
-
-
     .ChatChannelList, .ChatUsersList {
         flex-basis: channel-width;
         flex-shrink: 0;
@@ -74,37 +72,36 @@ channel-width=12rem;
     }
 }
 
-/*
-    .users-toggle, .channel-toggle {
+
+.ChatHeader {
+    .fa-list, .fa-users {
         display: none;
     }
+}
 
-    @media (max-width: 800px){
-        .users-toggle, .channel-toggle {
-            display: inline-block;
+@media (max-width: 800px) {
+    .ChatChannelList {
+        display: none !important;
+    }
+    .ChatUsersList {
+        display: none !important;
+    }
 
-        }
-
-        .channel-container, .users {
-            display: none;
-        }
-        .channel-container.force-show, .users.force-show {
-            display: inline-block;
-        }
-
-
-        .center-container {
-            .chat-log {
-                max-width: 100vw;
-            }
-        }
-
-        &.force-show-users {
-            .center-container {
-                .chat-log {
-                    max-width: "calc(100vw - %s)" % channel-width;
-                }
-            }
+    .show-channels {
+        .ChatChannelList {
+            display: flex !important;
         }
     }
-    */
+
+    .show-users {
+        .ChatUsersList {
+            display: flex !important;
+        }
+    }
+
+    .ChatHeader {
+        .fa-list, .fa-users {
+            display: inline-flex;
+        }
+    }
+}
