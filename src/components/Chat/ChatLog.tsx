@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import * as data from "data";
-import * as preferences from "data";
 import * as moment from "moment";
 import Linkify from "react-linkify";
 import Split from 'react-split';
@@ -77,11 +76,11 @@ function saveSplitSizes(sizes: Array<number>):void {
 }
 
 export function ChatLog(props:ChatLogProperties):JSX.Element {
-    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(preferences.get('chat.show-games') as boolean);
+    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
     const onShowGames = useCallback((tf:boolean) => {
         if (tf !== showing_games) {
             set_showing_games(tf);
-            preferences.set('chat.show-games', tf);
+            data.set('chat.show-games', tf);
         }
     }, [props.channel, showing_games]);
 
@@ -200,7 +199,6 @@ function ChannelTopic(
             if (topic && topic.username && topic.timestamp) {
                 return topic.username + " - " + moment(new Date(topic.timestamp)).format('LL');
             }
-            console.log("crap", topic);
 
             return "";
         }
