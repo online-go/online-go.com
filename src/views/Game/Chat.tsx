@@ -28,7 +28,7 @@ import {profanity_filter} from "profanity_filter";
 import {Game} from './Game';
 import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {TabCompleteInput} from "TabCompleteInput";
-import * as Chat from "Chat";
+import { chat_markup } from "components/Chat";
 
 let active_game_view:Game = null;
 
@@ -227,7 +227,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")} <i className={"fa " + (this.state.chat_log === "moderator" ? "fa-caret-up" : "fa-caret-down")}/>
                         </button>
                     }
-                    <TabCompleteInput className={`chat-input  ${this.state.chat_log}`}
+                    <TabCompleteInput
+                        ref={(elt) => 0}
+                        className={`chat-input  ${this.state.chat_log}`}
                         disabled={user.anonymous || !data.get('user').email_validated}
                         placeholder={user.anonymous
                             ? _("Login to chat")
@@ -365,7 +367,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
 
     markup(body): JSX.Element|Array<JSX.Element> {
         if (typeof(body) === "string") {
-            return Chat.chat_markup(body, [
+            return chat_markup(body, [
                 {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
                     replacement: (m, idx) => {
                         let pos = m[1];

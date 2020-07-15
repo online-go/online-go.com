@@ -23,6 +23,8 @@ import * as preferences from "preferences";
 
 declare var swal;
 
+export type Timeout = ReturnType<typeof setTimeout>;
+
 export function updateDup(obj: any, field: string, value: any) {
     let ret = dup(obj);
     let arr =  field.split(".");

@@ -18,203 +18,72 @@
 channel-utils-height=8.4rem;
 channel-width=12rem;
 
-.EmbeddedChat {
+.ChatLog, .ChatUsersList {
+    .Player {
+        themed color fg
+        font-weight: bold;
+    }
+}
+
+.ChatLog {
+    display: flex;
+    flex-basis: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
+
+    /*
     position: relative;
     display: flex;
     min-height: 20rem;
-    border-left: 1px solid transparent;
-    border-top: 1px solid transparent;
-    themed border-color shade3
     .input-container {
         border-bottom: 1px solid transparent;
     }
-}
-.Chat {
-    display: flex;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    */
 
-
-    .channel-container {
-        flex-basis: channel-width;
-        flex-shrink: 0;
-        flex-grow: 0;
-        width: channel-width;
-        //overflow-y: scroll;
-
-        border-right: 1px solid transparent;
-        themed border-right-color shade3
-        display: flex;
-        flex-direction: column;
-        user-select: none;
-    }
-    .all-channels {
-        display: flex;
-        flex-direction: column;
-        height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
-        overflow-y: auto;
-        width: channel-width;
-    }
-    .channels {
-        flex-grow: 0;
-        flex-shrink: 0;
-        overflow-x: hidden;
-
-        .channel-header {
-            margin-top: 1.0rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: font-size-smaller;
-            margin-bottom: 0.3rem;
-            display: flex;
-            justify-content: space-between;
-            align-content: center;
-
-            .channel-expand-toggle {
-                padding: 0.2rem;
-                padding-right: 0.5rem;
-                cursor: pointer;
-
-            }
-        }
-        .channel-header:first-child {
-            margin-top: 0;
-        }
-
-        .channel {
-            padding-left: 0.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            &.active {
-                themed background-color primary
-                themed color colored-background-fg
-            }
-            &.unjoined {
-                themed color shade2
-            }
-            &.unread {
-                themed color primary
-            }
-            &.mentioned {
-                themed color chat-mentions
-            }
-        }
-
-        .channel-name {
-            flex-shrink: 1;
-            flex-grow: 1;
-            cursor: pointer;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .unread-count {
-            flex-shrink: 0;
-            @extend .monospace
-            font-size: 0.8rem;
-            font-style: normal !important;
-            float: right;
-            padding-left: 0.5rem;
-            padding-top: 0.10rem;
-
-            &:before {
-                content: attr(data-count);
-            }
-        }
-        .channel:hover .unread-count:before {
-            cursor: pointer;
-            content: attr(data-menu);
-            border: 1px solid transparent
-            border-radius: 0.2rem;
-            themed background-color shade4
-            themed border-color shade3
-            padding-left: 0.3rem;
-            padding-right: 0.3rem;
-            themed color fg
-        }
-        .channel:hover .unread-count:hover:before {
-            themed background-color shade5
-            themed border-color shade4
-            themed color fg
-        }
-    }
-    .channels.hide-unjoined {
-        .unjoined {
-            display: none;
-        }
-    }
-    .seekgraph-container {
-        height: channel-utils-height;
-        .SeekGraph {
-            width: channel-width;
-            height: 8rem;
-        }
-    }
-    .channel-buttons {
-        display: flex;
-        //justify-content: space-between;
-    }
-
-    .users {
-        flex-basis: 12rem;
-        flex-shrink: 0;
-        flex-grow: 0;
-        overflow-y: auto;
-        user-select: none;
-
-        .user-header {
-            margin-top: 0.5rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: font-size-smaller;
-            margin-bottom: 0.2rem;
-            cursor: pointer;
-            .fa-sort-numeric-asc, .fa-sort-alpha-asc  {
-                margin-left: 0.2rem;
-                width: 0.8rem;
-            }
-        }
-
-    }
-    .Player {
-        themed color fg
-    }
-    .center-container {
+    .split {
         flex-basis: 100%;
         flex-grow: 1;
         flex-shrink: 1;
-        display: flex;
-        flex-direction: column;
-        border-right: 1px solid transparent;
-        themed border-right-color shade3
+        min-height: 10rem;
 
-        .chat-log {
-            flex-basis: 100%;
-            flex-grow: 1;
-            flex-shrink: 1;
-            max-width: "calc(100vw - %s * 2)" % channel-width;
-            overflow-y: scroll;
-            border-bottom: 1px solid transparent;
-            themed border-bottom-color shade3
-            .Player {
-                themed color fg
-            }
+
+        .gutter-vertical {
+            themed background-color shade3
+            cursor: move;
+            cursor: ns-resize;
+        }
+    }
+    .game-list {
+        //flex-basis: 20%;
+        //flex-grow: 1;
+        //flex-shrink: 1;
+        //min-height: 10rem;
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        overflow: auto; 
+
+        .GameList {
+            overflow-x: visible;
         }
 
-        input {
-            width: 100%;
-            border: none;
-            font-size: 1.0rem;
-            line-height: 1.5rem;
-            padding: 0.2rem;
+        .MiniGoban {
+            width: 72px;
+            height: 72px;
         }
     }
 
+    .chat-lines {
+        flex-basis: 100%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        overflow-y: scroll;
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        .Player {
+            themed color fg
+        }
+    }
 
     .timestamp {
         @extend .monospace
@@ -237,10 +106,6 @@ channel-width=12rem;
         themed color chat-self-message
     }
 
-    .icon {
-        width: 15px;
-        height: 15px;
-    }
 
     .system {
         themed color chat-system
@@ -251,11 +116,6 @@ channel-width=12rem;
         padding-bottom: 0.5rem
         margin-top: 0.5rem
     }
-
-    .Player {
-        font-weight: bold;
-    }
-
 
     .input-container {
         display: flex;
@@ -280,39 +140,6 @@ channel-width=12rem;
         }
     }
 
-    .users-toggle, .channel-toggle {
-        display: none;
-    }
-
-    @media (max-width: 800px){
-        .users-toggle, .channel-toggle {
-            display: inline-block;
-
-        }
-
-        .channel-container, .users {
-            display: none;
-        }
-        .channel-container.force-show, .users.force-show {
-            display: inline-block;
-        }
-
-
-        .center-container {
-            .chat-log {
-                max-width: 100vw;
-            }
-        }
-
-        &.force-show-users {
-            .center-container {
-                .chat-log {
-                    max-width: "calc(100vw - %s)" % channel-width;
-                }
-            }
-        }
-    }
-
     .chat-line {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -326,3 +153,138 @@ channel-width=12rem;
         }
     }
 }
+
+.ChatUsersList {
+    flex-basis: 12rem;
+    flex-shrink: 0;
+    flex-grow: 0;
+    overflow-y: auto;
+    user-select: none;
+
+    .user-header {
+        margin-top: 0.5rem;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: font-size-smaller;
+        margin-bottom: 0.2rem;
+        cursor: pointer;
+        .fa-sort-numeric-asc, .fa-sort-alpha-asc  {
+            margin-left: 0.2rem;
+            width: 0.8rem;
+        }
+    }
+}
+
+.ChatHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+
+    border-bottom: 1px solid transparent;
+    themed border-bottom-color shade3
+
+    padding: 0.5rem;
+    background-size: cover;
+
+
+    .header-icon {
+        themed color fg-increased-contrast
+
+        &.active {
+            themed color primary
+        }
+    }
+
+    .channel-topic {
+        display: flex;
+        flex: 1;
+
+        height: 2.1rem;
+        font-weight: bold;
+        font-size: font-size-normal;
+
+        position: relative;
+
+        input {
+            flex: 1;
+        }
+
+        .backdrop {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            themed background-color bg
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .topic {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
+            themed color fg-increased-contrast
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+            overflow: hidden;
+
+            white-space: nowrap;
+            a {
+                padding-left: 0.3rem;
+                padding-right: 0.3rem;
+            }
+
+            .content {
+                flex: 1;
+            }
+            .fa {
+                flex: 0;
+
+                flex-basis: 2rem;
+                width: 2rem;
+                height: 2rem;
+
+            }
+        }
+    }
+
+    input {
+        themed background bg
+        padding: 0.5rem;
+    }
+
+    .channel-topic-edit {
+        flex: 1;
+        margin: 0;
+    }
+
+    .fa {
+        display: inline-flex;
+        flex: 0;
+        flex-basis: 2rem;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+            themed background-color primary
+            themed color colore-background-fg
+        }
+
+    }
+
+    .fa-pencil, .fa-save {
+        float: right;
+    }
+}
+

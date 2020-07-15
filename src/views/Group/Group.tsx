@@ -35,7 +35,7 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
-import {EmbeddedChat} from "Chat";
+import {EmbeddedChatCard} from "Chat";
 
 
 declare var swal;
@@ -608,7 +608,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
-                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChat channel={`group-${this.state.group.id}`} updateTitle={false} />}
+                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />}
 
                     <Card>
                         {(group.has_tournament_records || null) &&

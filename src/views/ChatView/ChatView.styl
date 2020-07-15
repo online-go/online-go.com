@@ -16,10 +16,100 @@
  */
 
 
+channel-utils-height=8.4rem;
+channel-width=12rem;
+
 .ChatView {
     position: fixed;
     top: navbar-height+0.2rem;
     bottom: 0;
     left: 0;
     right: 0;
+
+    display: flex;
+    flex-direction: row;
+
+
+    .ChatChannelList, .ChatUsersList {
+        flex-basis: channel-width;
+        flex-shrink: 0;
+        flex-grow: 0;
+        width: channel-width;
+        //overflow-y: scroll;
+
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+        overflow-x: hidden;
+    }
+
+    .ChatChannelList {
+        border-right: 1px solid transparent;
+        themed border-right-color shade3
+    }
+
+    .ChatUsersList {
+        border-left: 1px solid transparent;
+        themed border-left-color shade3
+    }
+
+    .EmbeddedChat {
+        flex-grow: 1;
+
+        position: relative;
+        border-right: 1px solid transparent;
+        border-left: 1px solid transparent;
+        border-top: 1px solid transparent;
+        min-height: 20rem;
+        //themed border-right-color shade3
+        //themed border-color shade3
+        .input-container {
+            border-bottom: 1px solid transparent;
+        }
+    }
+}
+
+
+.ChatHeader {
+    .fa-list, .fa-users {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .ChatChannelList {
+        display: none !important;
+    }
+    .ChatUsersList {
+        display: none !important;
+    }
+
+    .show-channels {
+        .ChatChannelList {
+            display: flex !important;
+        }
+    }
+
+    .show-users {
+        .ChatUsersList {
+            display: flex !important;
+        }
+    }
+
+    .ChatHeader {
+        .fa-list, .fa-users {
+            display: inline-flex;
+        }
+    }
+}
+
+.EmbeddedChatCard {
+    height: 40rem;
+    display: flex;
+    .ChatLog {
+        flex: 1;
+    }
 }
