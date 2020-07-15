@@ -18,6 +18,7 @@
 
 .ObserveGamesComponent {
     text-align: center;
+    user-select: none;
     // here
 
     .games {
@@ -26,7 +27,7 @@
 
     .header {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: baseline;
         flex-wrap: wrap;
     }
@@ -106,5 +107,29 @@
 
     select {
         //font-size: 0.7em;
+    }
+
+    .filters {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+
+        .filter-group-group {
+            display: inline-flex;
+            flex-direction: row;
+        }
+        .filter-group {
+            display: inline-flex;
+            flex-direction: column;
+            margin-right: 2rem;
+        }
+        .filter-option {
+            text-align: left;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 0.3rem;
+        }
     }
 }

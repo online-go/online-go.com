@@ -16,9 +16,11 @@
  */
 
 import * as React from "react";
+import * as data from "data";
+import * as preferences from "preferences";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
-import * as preferences from "preferences";
+import {dup} from "misc";
 import {GameList} from "GameList";
 import {ActiveAnnouncements} from "Announcements";
 import {comm_socket} from "sockets";
@@ -29,6 +31,22 @@ interface ObserveGamesComponentProperties {
     miniGobanProps?: any;
     channel?: string;
     namesByGobans?: boolean;
+}
+
+interface GameListWhere {
+    hide_ranked?: boolean;
+    hide_unranked?: boolean;
+    hide_19x19?: boolean;
+    hide_9x9?: boolean;
+    hide_13x13?: boolean;
+    hide_other?: boolean;
+    hide_tournament?: boolean;
+    hide_ladder?: boolean;
+    hide_open?: boolean;
+    hide_handicap?: boolean;
+    hide_even?: boolean;
+    hide_bot_games?: boolean;
+    players?: Array<number>;
 }
 
 export class ObserveGamesComponent extends React.PureComponent<ObserveGamesComponentProperties, any> {
@@ -49,17 +67,24 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             game_list: [],
             live_game_count: 0,
             corr_game_count: 0,
+            show_filters: false,
+            filters: preferences.get("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
         this.show_announcements = props.show_announcements;
     }
 
-    doSubscribe = () => {
-        comm_socket.send("gamelist/count/subscribe", this.channel);
+    syncSubscribe = () => {
+        if (Object.keys(preferences.get("observed-games-filter")).length === 0) {
+            comm_socket.send("gamelist/count/subscribe", this.channel);
+        } else {
+            comm_socket.send("gamelist/count/unsubscribe", this.channel);
+        }
     }
 
+
+
     componentDidUpdate(prevProps:ObserveGamesComponentProperties, prevState:any) {
-        console.log(this.props.channel, prevProps.channel);
         if (this.props.channel !== prevProps.channel) {
             console.log("Should be reconnecting");
             this.destroy();
@@ -78,9 +103,9 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         } else {
             comm_socket.on("gamelist-count", this.updateCounts);
         }
-        comm_socket.on("connect", this.doSubscribe);
+        comm_socket.on("connect", this.syncSubscribe);
         if (comm_socket.connected) {
-            this.doSubscribe();
+            this.syncSubscribe();
         }
         this.refresh();
         //this.auto_refresh = setInterval(this.refresh, 500);
@@ -92,7 +117,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         else {
             comm_socket.off("gamelist-count", this.updateCounts);
         }
-        comm_socket.off("connect", this.doSubscribe);
+        comm_socket.off("connect", this.syncSubscribe);
         if (comm_socket.connected) {
             comm_socket.send("gamelist/count/unsubscribe", this.channel);
         }
@@ -130,31 +155,54 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     }
     refresh = () => {
         let now = Date.now();
-        if (this.last_refresh != null && (now - this.last_refresh < 1.0)) {
+        if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
             console.warn("Slow down");
             if (!this.next_refresh) {
                 this.next_refresh = setTimeout(() => {
                     this.next_refresh = null;
                     this.refresh();
-                }, 1000);
+                }, 1000 - (now - this.last_refresh));
             }
             return;
         }
         this.last_refresh = now;
 
+        let filter = dup(preferences.get("observed-games-filter"));
+        if (filter.friend_games_only) {
+            delete filter.friend_games_only;
+            try {
+                filter.players = data.get('cached.friends').map(friend => friend.id);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         comm_socket.send("gamelist/query", {
             list: this.state.viewing,
             sort_by: "rank",
+            where: filter,
             from: (this.state.page - 1) * this.state.page_size,
             limit: this.state.page_size,
             channel: this.channel,
         },
             (res) => {
-                this.setState({
+                let state_update:any = {
                     num_pages: Math.ceil(res.size / this.state.page_size),
                     game_list: res.results,
                     page: Math.max(1, Math.min(this.state.page, this.state.num_pages)),
-                });
+                };
+
+                if (res.where) {
+                    if (res.list === 'live') {
+                        state_update.live_game_count = res.size;
+                        state_update.corr_game_count = 0;
+                    } else {
+                        state_update.corr_game_count = res.size;
+                        state_update.live_game_count = 0;
+                    }
+                }
+
+                this.setState(state_update);
             }
         );
     }
@@ -192,16 +240,28 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         setTimeout(this.refresh, 1);
     }
 
+    toggleShowFilters = () => {
+        this.setState({show_filters: !this.state.show_filters});
+    }
+
     render() {
+        let n_filters = Object.keys(this.state.filters).length;
+
         return (
         <div className="ObserveGamesComponent">
             <div className="container">
                 <div className="games">
                     <div className="header">
+
                         <div className="btn-group">
-                            <button className={this.state.viewing === "live" ? "active" : ""} onClick={this.viewLive}>{interpolate(_("{{count}} live games"), {count: this.state.live_game_count})}</button>
-                            <button className={this.state.viewing === "corr" ? "active" : ""} onClick={this.viewCorrespondence}>{interpolate(_("{{count}} correspondence games"), {count: this.state.corr_game_count})}</button>
+                            <button className={this.state.viewing === "live" ? "active" : ""} onClick={this.viewLive}>{interpolate(_("{{count}} live games"), {count: this.state.live_game_count || ""})}</button>
+                            <button className={this.state.viewing === "corr" ? "active" : ""} onClick={this.viewCorrespondence}>{interpolate(_("{{count}} correspondence games"), {count: this.state.corr_game_count || ""})}</button>
+
+                            <button className="btn default" onClick={this.toggleShowFilters}>
+                                <i className="fa fa-filter"></i> {n_filters ? `(${n_filters})` : ''}
+                            </button>
                         </div>
+
 
                         <button className="btn xs primary" onClick={this.refresh}>
                             <i className="fa fa-refresh"></i> {_("Refresh")}
@@ -222,12 +282,84 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                         </div>
                     </div>
                 </div>
+
+                {this.state.show_filters && this.renderFilters()}
             </div>
 
             <ActiveAnnouncements  />
 
             <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} miniGobanProps={this.props.miniGobanProps} namesByGobans={this.props.namesByGobans} />
         </div>
+        );
+    }
+
+    private filterOption(filter_field:string, name:string):JSX.Element {
+        let self = this;
+
+        function toggle(ev) {
+            let new_filters = dup(self.state.filters);
+
+            if (!new_filters[filter_field]) {
+                new_filters[filter_field] = true;
+            } else {
+                delete new_filters[filter_field];
+            }
+
+            preferences.set("observed-games-filter", new_filters);
+            self.setState({filters: new_filters});
+            self.syncSubscribe();
+            self.refresh();
+        }
+
+        let hide_mode = filter_field.indexOf('hide') === 0;
+
+        return (
+            <div className='filter-option'>
+                <input
+                    id={filter_field}
+                    type='checkbox'
+                    checked={hide_mode ? !this.state.filters[filter_field] : !!this.state.filters[filter_field]}
+                    onChange={toggle}
+                />
+                <label htmlFor={filter_field}>{name}</label>
+            </div>
+        );
+
+    }
+
+
+    private renderFilters():JSX.Element {
+        return (
+            <div className='filters'>
+                <div className='filter-group'>
+                    {this.filterOption('hide_ranked', pgettext("Filter games list", "Ranked"))}
+                    {this.filterOption('hide_unranked', pgettext("Filter games list", "Unranked"))}
+                    {this.filterOption('friend_games_only', pgettext("Filter games list", "Friend games only"))}
+                </div>
+
+                <div className='filters-group-group'>
+                    <div className='filter-group'>
+                        {this.filterOption('hide_19x19', pgettext("Filter games list", "19x19"))}
+                        {this.filterOption('hide_13x13', pgettext("Filter games list", "13x13"))}
+                    </div>
+                    <div className='filter-group'>
+                        {this.filterOption('hide_9x9', pgettext("Filter games list", "9x9"))}
+                        {this.filterOption('hide_other', pgettext("Filter games list (odd board sizes)", "Other"))}
+                    </div>
+                </div>
+
+                <div className='filter-group'>
+                    {this.filterOption('hide_tournament', pgettext("Filter games list", "Tournament Games"))}
+                    {this.filterOption('hide_ladder', pgettext("Filter games list", "Ladder Games"))}
+                    {this.filterOption('hide_open', pgettext("Filter games list", "Open Games"))}
+                </div>
+
+                <div className='filter-group'>
+                    {this.filterOption('hide_even', pgettext("Filter games list", "Even Games"))}
+                    {this.filterOption('hide_handicap', pgettext("Filter games list", "Handicap Games"))}
+                    {this.filterOption('hide_bot_games', pgettext("Filter games list", "Bot Games"))}
+                </div>
+            </div>
         );
     }
 }

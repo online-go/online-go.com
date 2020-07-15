@@ -51,8 +51,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
             black_points: "",
         };
 
-        console.log("PROPS: ", props);
-
         this.goban_div = document.createElement('div');
         this.goban_div.className = 'Goban';
     }
