@@ -17,8 +17,10 @@
 
 import * as React from "react";
 import * as data from "data";
+import * as preferences from "data";
 import * as moment from "moment";
 import Linkify from "react-linkify";
+import Split from 'react-split';
 import { Card } from "material";
 import { Link } from "react-router-dom";
 import { comm_socket } from "sockets";
@@ -69,11 +71,16 @@ interface InternalChatLogProperties extends ChatLogProperties {
 
 let deferred_chat_update:Timeout = null;
 
+function saveSplitSizes(sizes: Array<number>):void {
+    data.set('chat.split-sizes', sizes);
+}
+
 export function ChatLog(props:ChatLogProperties):JSX.Element {
-    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(preferences.get('chat.show-games') as boolean);
     const onShowGames = useCallback((tf:boolean) => {
         if (tf !== showing_games) {
             set_showing_games(tf);
+            preferences.set('chat.show-games', tf);
         }
     }, [props.channel, showing_games]);
 
@@ -83,18 +90,29 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
     return (
         <div className='ChatLog'>
             <ChannelTopic {...props} showingGames={showing_games} onShowGames={onShowGames} canShowGames={canShowGames} />
-            {showing_games &&
-                <div className='game-list'>
-                    <ObserveGamesComponent
-                        announcements={false}
-                        updateTitle={false}
-                        channel={game_channel}
-                        namesByGobans={true}
-                        miniGobanProps={{noText: true, displayWidth: 64}}
-                    />
-                </div>
+            {showing_games
+                ? <Split
+                    className='split'
+                    direction="vertical"
+                    sizes={data.get('chat.split-sizes', [25, 75])}
+                    gutterSize={7}
+                    minSize={50}
+                    onDragEnd={saveSplitSizes}
+                    >
+                    <div className='game-list'>
+                        <ObserveGamesComponent
+                            announcements={false}
+                            updateTitle={false}
+                            channel={game_channel}
+                            namesByGobans={true}
+                            miniGobanProps={{noText: true, displayWidth: 64}}
+                        />
+                    </div>
+                    <ChatLines {...props} />
+                  </Split>
+
+                : <ChatLines {...props} />
             }
-            <ChatLines {...props} />
             <ChatInput {...props} />
         </div>
     );
@@ -120,7 +138,6 @@ function ChannelTopic(
 
     let user = data.get('user');
 
-    //let [expanded, set_expanded]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [editing, set_editing]:[boolean, (tf:boolean) => void] = useState(false as boolean);
     let [topic, set_topic]:[string, (tf:string) => void] = useState("");
     let [topic_updated, set_topic_updated]:[boolean, (tf:boolean) => void] = useState(false as boolean);

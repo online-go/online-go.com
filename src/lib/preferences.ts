@@ -30,6 +30,7 @@ let defaults = {
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
     "chat.show-all-tournament-channels": true,
+    "chat.show-games": true,
     "chat.user-sort-order": "rank",
     "desktop-notifications": true,
     "dock-delay": 0, // seconds.

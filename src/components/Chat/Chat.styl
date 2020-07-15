@@ -41,11 +41,24 @@ channel-width=12rem;
     }
     */
 
-    .game-list {
-        flex-basis: 20%;
+    .split {
+        flex-basis: 100%;
         flex-grow: 1;
         flex-shrink: 1;
         min-height: 10rem;
+
+
+        .gutter-vertical {
+            themed background-color shade3
+            cursor: move;
+            cursor: ns-resize;
+        }
+    }
+    .game-list {
+        //flex-basis: 20%;
+        //flex-grow: 1;
+        //flex-shrink: 1;
+        //min-height: 10rem;
         border-bottom: 1px solid transparent;
         themed border-bottom-color shade3
         overflow: auto; 
