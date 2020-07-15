@@ -18,7 +18,7 @@
 import * as preferences from "preferences";
 import * as data from "data";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
-import {_, interpolate, current_language} from "translate";
+import {_, interpolate, pgettext, current_language} from "translate";
 import {Goban, GoEngine, GoThemes} from 'goban';
 
 window['Goban'] = Goban;
