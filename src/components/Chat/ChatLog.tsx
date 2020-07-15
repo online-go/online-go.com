@@ -86,6 +86,9 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
 
     let canShowGames = /^(group-|global)/.test(props.channel);
     let game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
+    if (!canShowGames) {
+        showing_games = false;
+    }
 
     return (
         <div className='ChatLog'>
@@ -148,7 +151,13 @@ function ChannelTopic(
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [title_hover, set_title_hover]:[string, (s:string) => void] = useState("");
 
-    const topic_editable = true;
+    let groups = data.get('cached.groups', []);
+
+    // member of group, or a moderator, or a tournament channel
+    const topic_editable = user.is_moderator
+        || groups.filter(g => `group-${g.id}` === channel).length > 0
+        || channel.indexOf('tournament-') === 0
+    ;
 
     useEffect(() => {
         set_group_id(null);
