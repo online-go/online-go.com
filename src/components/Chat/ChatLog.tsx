@@ -55,6 +55,7 @@ interface ChatLogProperties {
     autoFocus?: boolean;
     updateTitle?: boolean;
     hideTopic?: boolean;
+    forceShowGames?: boolean;
     onShowChannels?: (tf:boolean) => void;
     onShowUsers?: (tf:boolean) => void;
     /* if properties are added to this, don't forget to
@@ -88,6 +89,10 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
     let game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
     if (!canShowGames) {
         showing_games = false;
+    }
+
+    if (canShowGames && props.forceShowGames) {
+        showing_games = true;
     }
 
     return (
@@ -456,7 +461,7 @@ function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
 export function EmbeddedChatCard(props:ChatLogProperties):JSX.Element {
     return (
         <Card className="Card EmbeddedChatCard">
-            <ChatLog key={props.channel} {...props} hideTopic={true} />
+            <ChatLog key={props.channel} {...props} hideTopic={true} forceShowGames={true} />
         </Card>
     );
 }
