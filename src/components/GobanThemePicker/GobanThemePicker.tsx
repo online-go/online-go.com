@@ -51,7 +51,8 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             boardCustom: this.getCustom("board"),
             lineCustom: this.getCustom("line"),
             whiteCustom: this.getCustom("white"),
-            blackCustom: this.getCustom("black")
+            blackCustom: this.getCustom("black"),
+            urlCustom: this.getCustom("url")
         };
 
         for (let k in GoThemesSorted) {
@@ -100,6 +101,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         this.setState(up);
         this.renderPickers();
 
+        if (key === "url") { // Changing the custom image should update the board theme
+            key = "board";
+        }
+
         if (key === "line") { // Changing the line color should update the board theme
             key = "board";
         }
@@ -108,7 +113,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
     render() {
         let inputStyle = {height: `${this.state.size}px`, width: `${this.state.size * 1.5}px`};
-        let {boardCustom, lineCustom, whiteCustom, blackCustom} = this.state;
+        let {boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom} = this.state;
 
         return (
             <div className="GobanThemePicker">
@@ -118,11 +123,15 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             className={"selector" + (this.state.board === theme.theme_name ? " active" : "")}
                             style={{
                                 ...theme.styles,
-                                ...(theme.theme_name === "Plain" ? {backgroundColor: boardCustom} : {})
+                                ...(theme.theme_name === "Plain" ? {backgroundImage: "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)"} : {})
                             }}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                             >
-                            <PersistentElement elt={this.canvases.board[idx]} />
+
+                            {theme.theme_name === "Plain"
+                                ? <span>{pgettext("Custom board theme", "Custom")}</span>
+                                : <PersistentElement elt={this.canvases.board[idx]} />
+                            }
                         </div>
                     ))}
                     {this.state.board === "Plain" &&
@@ -131,6 +140,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             <button className="color-reset" onClick={this.setCustom.bind(this, "board")}><i className="fa fa-undo"/></button>
                             <input type="color" style={inputStyle} value={lineCustom} onChange={this.setCustom.bind(this, "line")} />
                             <button className="color-reset" onClick={this.setCustom.bind(this, "line")}><i className="fa fa-undo"/></button>
+                            <input className="customUrlSelector" type="text" value={urlCustom} onFocus={e => e.target.select()} onChange={this.setCustom.bind(this, "url")} />
                         </div>
                     }
                 </div>
