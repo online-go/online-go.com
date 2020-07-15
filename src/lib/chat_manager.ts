@@ -57,7 +57,6 @@ export interface ChannelInformation {
     icon?: string;
     banner?: string;
     country?: string;
-    description?: string;
     navigator_language?: boolean;
     primary_language?: boolean;
     sort_order?: number;
@@ -826,7 +825,6 @@ export function resolveChannelInformation(channel:string):Promise<ChannelInforma
                 ret.name = res.name;
                 ret.icon = res.icon;
                 ret.banner = res.banner;
-                ret.description = res.description;
                 updateCachedChannelInformation(channel, ret);
                 delete channel_information_resolvers[channel];
                 resolve(ret);
@@ -856,7 +854,6 @@ data.watch(cached.active_tournaments, (tournaments:ActiveTournamentList) => {
             id: `tournament-${tournament.id}`,
             name: tournament.name,
             tournament_id: tournament.id,
-            description: tournament.description,
         });
     }
 });

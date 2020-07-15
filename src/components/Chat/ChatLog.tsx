@@ -127,7 +127,6 @@ function ChannelTopic(
     let [name, set_name]:[string, (tf:string) => void] = useState(channel);
     let [group_id, set_group_id]:[number | null, (tf:number) => void] = useState(null);
     let [tournament_id, set_tournament_id]:[number | null, (tf:number) => void] = useState(null);
-    let [description, set_description]:[string, (s:string) => void] = useState("");
     let [banner, set_banner]:[string, (s:string) => void] = useState("");
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [title_hover, set_title_hover]:[string, (s:string) => void] = useState("");
@@ -135,7 +134,6 @@ function ChannelTopic(
     const topic_editable = true;
 
     useEffect(() => {
-        set_description("");
         set_group_id(null);
         set_tournament_id(null);
         set_name("");
@@ -148,7 +146,6 @@ function ChannelTopic(
             set_name(info.name);
             if (info.group_id) {
                 set_group_id(info.group_id);
-                set_description(info.description);
                 set_banner(info.banner);
             }
             if (info.tournament_id) {
@@ -214,7 +211,7 @@ function ChannelTopic(
         }
     }, [topic, topic_updated, proxy]);
 
-    const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length == 0;
+    const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length === 0;
 
     return (
         <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
@@ -258,48 +255,6 @@ function ChannelTopic(
         </div>
     );
 }
-
-/*
-            {expanded &&
-                <div className='expanded-area'>
-                    <div className='header'>
-                        <div className='left'>
-                            {group_id &&
-                                <h3>
-                                    {pgettext("Go to the main page for this group.", "Group Page")}: <Link to={`/group/${group_id}`}>{name}</Link>
-                                </h3>
-                            }
-
-                            {tournament_id &&
-                                <h3>
-                                    {pgettext("Go to the main page for this tournament.", "Tournament Page")}: <Link to={`/tournament/${tournament_id}`}>{name}</Link>
-                                </h3>
-                            }
-
-                            {(!tournament_id && !group_id) &&
-                                <h3>
-                                    {name}
-                                </h3>
-                            }
-                        </div>
-
-                        <div className='buttons'>
-                            <button className='danger leave-channel' onClick={partChannel}>
-                                {pgettext("Leave the selected channel.", "Leave Channel")}
-                            </button>
-                        </div>
-                    </div>
-
-                    <Markdown source={description} className='description' />
-                </div>
-            }
-*/
-
-/*
-  let group_text = pgettext("Go to the main page for this group.", "Group Page");
-  let tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
-  let leave_text =
-*/
 
 
 let scrolled_to_bottom:boolean = true;
