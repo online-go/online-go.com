@@ -140,7 +140,13 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             <button className="color-reset" onClick={this.setCustom.bind(this, "board")}><i className="fa fa-undo"/></button>
                             <input type="color" style={inputStyle} value={lineCustom} onChange={this.setCustom.bind(this, "line")} />
                             <button className="color-reset" onClick={this.setCustom.bind(this, "line")}><i className="fa fa-undo"/></button>
-                            <input className="customUrlSelector" type="text" value={urlCustom} onFocus={e => e.target.select()} onChange={this.setCustom.bind(this, "url")} />
+                            <input className="customUrlSelector"
+                                type="text"
+                                value={urlCustom}
+                                placeholder={pgettext("Custom background image url for the goban", "Custom background URL")}
+                                onFocus={e => e.target.select()}
+                                onChange={this.setCustom.bind(this, "url")}
+                            />
                         </div>
                     }
                 </div>
