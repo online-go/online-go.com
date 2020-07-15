@@ -18,7 +18,7 @@
 import * as preferences from "preferences";
 import * as data from "data";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
-import {_, interpolate, pgettext, current_language} from "translate";
+import {_, interpolate, current_language} from "translate";
 import {Goban, GoEngine, GoThemes} from 'goban';
 
 window['Goban'] = Goban;
@@ -29,7 +29,7 @@ data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");
 data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
-data.setDefault("custom.url", pgettext("Custom board url text", "Url for custom image"));
+data.setDefault("custom.url", "");
 
 export function configure_goban() {
     Goban.setHooks({
