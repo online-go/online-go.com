@@ -341,9 +341,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let move_number = trunk_move.move_number;
         let next_move_pretty_coords:string = '';
 
-        if (this.ai_review.moves[move_number]) {
-            ai_review_move = this.ai_review.moves[move_number];
+        if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
+            ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
         }
+
         if (this.ai_review.moves[move_number + 1]) {
             next_ai_review_move = this.ai_review.moves[move_number + 1];
         }
@@ -371,170 +372,130 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let colored_circles = [];
         let heatmap:Array<Array<number>> | null = null;
         try {
-            if (cur_move.trunk) {
+            if (cur_move.trunk && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
                 next_move = cur_move.trunk_next;
+                let branches = ai_review_move.branches.slice(0, 6);
+                //let branches = ai_review_move.branches;
 
-                if (ai_review_move) {
-                    let branches = ai_review_move.branches.slice(0, 6);
-                    //let branches = ai_review_move.branches;
-
-                    // Ensure we have an entry in branches for our next move,
-                    // as we always want to show what move was made and how
-                    // that affected the game. Also, if we do have an entry,
-                    // make sure it's win rate aligns with what we determined
-                    // it was upon further analysis (use next move's win rate)
-                    let found_next_move = false;
-                    for (let branch of branches) {
-                        if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
-                            found_next_move = true;
-                            branch.win_rate = next_win_rate;
-                            branch.score = next_score;
-                            break;
-                        }
+                // Ensure we have an entry in branches for our next move,
+                // as we always want to show what move was made and how
+                // that affected the game. Also, if we do have an entry,
+                // make sure it's win rate aligns with what we determined
+                // it was upon further analysis (use next move's win rate)
+                let found_next_move = false;
+                for (let branch of branches) {
+                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                        found_next_move = true;
+                        branch.win_rate = next_win_rate;
+                        branch.score = next_score;
+                        break;
                     }
-                    if (!found_next_move && next_move) {
-                        branches.push({
-                            moves: [next_move],
-                            win_rate: next_win_rate,
-                            score: next_score,
-                            visits: 0,
-                        });
+                }
+                if (!found_next_move && next_move) {
+                    branches.push({
+                        moves: [next_move],
+                        win_rate: next_win_rate,
+                        score: next_score,
+                        visits: 0,
+                    });
+                }
+
+                /* Generate the heatmap, blue move, and triangle move */
+                let strength = this.ai_review.strength;
+                heatmap = [];
+                for (let y = 0; y < this.props.game.goban.engine.height; y++) {
+                    let r = [];
+                    for (let x = 0; x < this.props.game.goban.engine.width; x++) {
+                        r.push(0);
+                    }
+                    heatmap.push(r);
+                }
+
+                for (let i = 0 ; i < branches.length; ++i) {
+                    let branch = branches[i];
+                    let mv = branch.moves[0];
+
+                    if (mv.x === -1) {
+                        continue;
                     }
 
-                    /* Generate the heatmap, blue move, and triangle move */
-                    let strength = this.ai_review.strength;
-                    heatmap = [];
-                    for (let y = 0; y < this.props.game.goban.engine.height; y++) {
-                        let r = [];
-                        for (let x = 0; x < this.props.game.goban.engine.width; x++) {
-                            r.push(0);
-                        }
-                        heatmap.push(r);
+                    if (this.props.game.goban.engine.board[mv.y][mv.x]) {
+                        console.error("ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.");
+                        console.info("AIReview: ", this.ai_review);
                     }
 
-                    for (let i = 0 ; i < branches.length; ++i) {
-                        let branch = branches[i];
-                        let mv = branch.moves[0];
+                    heatmap[mv.y][mv.x] = branch.visits / strength;
 
-                        if (mv.x === -1) {
-                            continue;
+
+                    let next_player:JGOFNumericPlayerColor;
+
+                    if (next_move) {
+                        next_player = next_move.player;
+                    } else {
+                        // we don't always use this because when we are looking at handicap stones, it doesn't flip.
+                        next_player = cur_move.player === JGOFNumericPlayerColor.BLACK
+                            ? JGOFNumericPlayerColor.WHITE
+                            : JGOFNumericPlayerColor.BLACK;
+                    }
+
+                    let delta:number = this.state.use_score && this.ai_review.scores
+                        ? (next_player === JGOFNumericPlayerColor.WHITE
+                            ? (ai_review_move.score - branch.score)
+                            : (branch.score) - (ai_review_move.score))
+                        : 100 * (next_player === JGOFNumericPlayerColor.WHITE
+                            ? (ai_review_move.win_rate) - (branch.win_rate)
+                            : (branch.win_rate) - (ai_review_move.win_rate));
+
+                    let key = (delta).toFixed(1);
+                    if (key === "0.0" || key === "-0.0") {
+                        key = "0";
+                    }
+                    // only show numbers for well explored moves
+                    // show number for AI choice and played moves[0] as well
+                    if (mv && ((i === 0) ||
+                               //true || // debugging
+                               (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
+                               (branch.visits >= Math.min(50, 0.1 * strength)))) {
+                        if (parseFloat(key).toPrecision(2).length < key.length) {
+                            key = parseFloat(key).toPrecision(2);
                         }
+                        this.props.game.goban.setMark(mv.x, mv.y, key, true);
+                    }
 
-                        if (this.props.game.goban.engine.board[mv.y][mv.x]) {
-                            console.error("ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.");
-                            console.info("AIReview: ", this.ai_review);
-                        }
+                    let circle:ColoredCircle = {
+                        move: branch.moves[0],
+                        color: 'rgba(0,0,0,0)',
+                    };
 
-                        heatmap[mv.y][mv.x] = branch.visits / strength;
+                    if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
+                        this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
 
-
-                        let next_player:JGOFNumericPlayerColor;
-
-                        if (next_move) {
-                            next_player = next_move.player;
-                        } else {
-                            // we don't always use this because when we are looking at handicap stones, it doesn't flip.
-                            next_player = cur_move.player === JGOFNumericPlayerColor.BLACK
-                                ? JGOFNumericPlayerColor.WHITE
-                                : JGOFNumericPlayerColor.BLACK;
-                        }
-
-                        let delta:number = this.state.use_score && this.ai_review.scores
-                            ? (next_player === JGOFNumericPlayerColor.WHITE
-                                ? (ai_review_move.score - branch.score)
-                                : (branch.score) - (ai_review_move.score))
-                            : 100 * (next_player === JGOFNumericPlayerColor.WHITE
-                                ? (ai_review_move.win_rate) - (branch.win_rate)
-                                : (branch.win_rate) - (ai_review_move.win_rate));
-
-                        let key = (delta).toFixed(1);
-                        if (key === "0.0" || key === "-0.0") {
-                            key = "0";
-                        }
-                        // only show numbers for well explored moves
-                        // show number for AI choice and played moves[0] as well
-                        if (mv && ((i === 0) ||
-                                   //true || // debugging
-                                   (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
-                                   (branch.visits >= Math.min(50, 0.1 * strength)))) {
-                            if (parseFloat(key).toPrecision(2).length < key.length) {
-                                key = parseFloat(key).toPrecision(2);
-                            }
-                            this.props.game.goban.setMark(mv.x, mv.y, key, true);
-                        }
-
-                        let circle:ColoredCircle = {
-                            move: branch.moves[0],
-                            color: 'rgba(0,0,0,0)',
-                        };
-
-                        if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
-                            this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
-
-                            circle.border_width = 0.1;
-                            circle.border_color = 'rgb(0, 0, 0)';
-                            if (i === 0) {
-                                circle.color = 'rgba(0, 130, 255, 0.7)';
-                            } else {
-                                circle.color = 'rgba(255, 255, 255, 0.3)';
-                            }
-                            colored_circles.push(circle);
-                        }
-                        else if (i === 0) { //
-                            circle.border_width = 0.2;
-                            circle.border_color = 'rgb(0, 130, 255)';
+                        circle.border_width = 0.1;
+                        circle.border_color = 'rgb(0, 0, 0)';
+                        if (i === 0) {
                             circle.color = 'rgba(0, 130, 255, 0.7)';
-                            colored_circles.push(circle);
+                        } else {
+                            circle.color = 'rgba(255, 255, 255, 0.3)';
                         }
+                        colored_circles.push(circle);
+                    }
+                    else if (i === 0) { //
+                        circle.border_width = 0.2;
+                        circle.border_color = 'rgb(0, 130, 255)';
+                        circle.color = 'rgba(0, 130, 255, 0.7)';
+                        colored_circles.push(circle);
                     }
                 }
+            } else { /* if not on trunk move which was ai reviewed */
+                this.fillAIMarksBacktracking(cur_move, trunk_move, marks); /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
             }
-            else { // !cur_move.trunk
-                /* If we're not on the trunk, but rather exploring a branch, we want to provide
-                 * ghost stones for the moves that the AI was thinking would be played */
-                if (ai_review_move) {
-                    let trunk_move_string = trunk_move.getMoveStringToThisPoint();
-                    let cur_move_string = cur_move.getMoveStringToThisPoint();
-                    let next_moves = null;
 
-                    for (let branch of ai_review_move.branches) {
-                        let move_str:string = trunk_move_string + GoMath.encodeMoves(branch.moves);
-                        if (move_str.startsWith(cur_move_string)) {
-                            next_moves = move_str.slice(cur_move_string.length, Infinity);
-                            break;
-                        }
-                    }
-
-                    if (next_moves) {
-                        let decoded_moves = this.props.game.goban.engine.decodeMoves(next_moves);
-                        let black = "";
-                        let white = "";
-
-                        for (let i = 0; i < decoded_moves.length; ++i) {
-                            let mv = decoded_moves[i];
-                            let encoded_mv = GoMath.encodeMove(mv.x, mv.y);
-                            marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
-                            if (((this.props.game.goban.engine.player - 1) + i) % 2 === 1) {
-                                white += encoded_mv;
-                            } else {
-                                black += encoded_mv;
-                            }
-                        }
-                        if (black) {
-                            marks["black"] = black;
-                        }
-                        if (white) {
-                            marks["white"] = white;
-                        }
-                    }
-                }
-            }
         } catch (e) {
             errorLogger(e);
         }
 
         try {
-            this.props.game.goban.setMarks(marks, true);
+            this.props.game.goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
             this.props.game.goban.setHeatmap(heatmap, true);
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
@@ -559,6 +520,58 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_move_pretty_coords,
         ];
     }
+
+    fillAIMarksBacktracking(cur_move, trunk_move, marks) {
+        /* this method attempts to match our cur_move sequence with any of the AI generated sequences starting from the nearest trunk move (iterating through previous trunk moves if necessary) and breaks out as soon as it finds a match */
+        /* the reason why we iterate through previous trunk moves is to solve the problem when the trunk moves happen to coincide with the AI generated sequence */
+        /* once match is found we fill marks object with the remaining AI sequence */
+
+        for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
+            let ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
+            if (!ai_review_move) continue;
+
+            let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+
+            trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2*j);
+
+            let cur_move_string = cur_move.getMoveStringToThisPoint();
+            let next_moves = null;
+
+            for (let branch of ai_review_move.branches) {
+                let move_str:string = trunk_move_string + GoMath.encodeMoves(branch.moves);
+                if (move_str.startsWith(cur_move_string)) {
+                    next_moves = move_str.slice(cur_move_string.length, Infinity);
+                    break;
+                }
+            }
+
+            if (next_moves) {
+                let decoded_moves = this.props.game.goban.engine.decodeMoves(next_moves);
+                let black = "";
+                let white = "";
+
+                for (let i = 0; i < decoded_moves.length; ++i) {
+                    let mv = decoded_moves[i];
+                    let encoded_mv = GoMath.encodeMove(mv.x, mv.y);
+                    marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
+                    if (((this.props.game.goban.engine.player - 1) + i) % 2 === 1) {
+                        white += encoded_mv;
+                    } else {
+                        black += encoded_mv;
+                    }
+                }
+                if (black) {
+                    marks["black"] = black;
+                }
+                if (white) {
+                    marks["white"] = white;
+                }
+                break; /* match found, no need to check previous trunk moves anymore, return */
+            }
+
+        }
+    }
+
     public render():JSX.Element {
         if (this.state.loading) {
             return null;
