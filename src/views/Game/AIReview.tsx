@@ -528,11 +528,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             let ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
-            if (!ai_review_move) continue;
+            if (!ai_review_move) {
+                continue;
+            }
 
             let trunk_move_string = trunk_move.getMoveStringToThisPoint();
 
-            trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2*j);
+            trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2 * j);
 
             let cur_move_string = cur_move.getMoveStringToThisPoint();
             let next_moves = null;
