@@ -46,6 +46,9 @@ interface GameListWhere {
     hide_handicap?: boolean;
     hide_even?: boolean;
     hide_bot_games?: boolean;
+    hide_beginning?: boolean;
+    hide_middle?: boolean;
+    hide_end?: boolean;
     players?: Array<number>;
 }
 
@@ -336,6 +339,12 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                     {this.filterOption('friend_games_only', pgettext("Filter games list", "Friend games only"))}
                 </div>
 
+                <div className='filter-group'>
+                    {this.filterOption('hide_beginning', pgettext("Filter games list", "Beginning"))}
+                    {this.filterOption('hide_middle', pgettext("Filter games list", "Middle"))}
+                    {this.filterOption('hide_end', pgettext("Filter games list", "End"))}
+                </div>
+
                 <div className='filters-group-group'>
                     <div className='filter-group'>
                         {this.filterOption('hide_19x19', pgettext("Filter games list", "19x19"))}
@@ -350,7 +359,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                 <div className='filter-group'>
                     {this.filterOption('hide_tournament', pgettext("Filter games list", "Tournament Games"))}
                     {this.filterOption('hide_ladder', pgettext("Filter games list", "Ladder Games"))}
-                    {this.filterOption('hide_open', pgettext("Filter games list", "Open Games"))}
+                    {this.filterOption('hide_open', pgettext("Filter games list (non ladder / tournament games)", "Single Games"))}
                 </div>
 
                 <div className='filter-group'>
@@ -358,6 +367,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                     {this.filterOption('hide_handicap', pgettext("Filter games list", "Handicap Games"))}
                     {this.filterOption('hide_bot_games', pgettext("Filter games list", "Bot Games"))}
                 </div>
+
             </div>
         );
     }
