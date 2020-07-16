@@ -136,19 +136,37 @@
 
 
 .ChatHeader {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    position: relative;
-
     border-bottom: 1px solid transparent;
     themed border-bottom-color shade3
+    position: relative;
+    height: 2.0rem;
 
-    padding: 0.5rem;
     background-size: cover;
 
 
+    .backdrop, .foreground {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+    .backdrop {
+        themed background-color bg
+        opacity: 0.5;
+        z-index: 1;
+    }
+    .foreground {
+        z-index: 2;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
     .header-icon {
+        flex: 0;
+        width: 2rem;
+        flex-basis: 2rem;
         themed color fg-increased-contrast
 
         &.active {
@@ -159,8 +177,9 @@
     .channel-topic {
         display: flex;
         flex: 1;
+        flex-basis: 100%;
+        overflow: hidden;
 
-        height: 2.1rem;
         font-weight: bold;
         font-size: font-size-normal;
 
@@ -170,19 +189,7 @@
             flex: 1;
         }
 
-        .backdrop {
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            themed background-color bg
-            opacity: 0.5;
-            z-index: 1;
-        }
-
         .topic {
-            position: absolute;
             display: flex;
             align-items: center;
             left: 0;
@@ -206,11 +213,9 @@
             }
             .fa {
                 flex: 0;
-
                 flex-basis: 2rem;
                 width: 2rem;
                 height: 2rem;
-
             }
         }
     }
