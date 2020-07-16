@@ -218,12 +218,6 @@
             .content {
                 flex: 1;
             }
-            .fa {
-                flex: 0;
-                flex-basis: 2rem;
-                width: 2rem;
-                height: 2rem;
-            }
         }
     }
 
@@ -237,7 +231,7 @@
         margin: 0;
     }
 
-    .fa {
+    .fa, .ogs-goban {
         display: inline-flex;
         flex: 0;
         flex-basis: 2rem;
@@ -248,9 +242,9 @@
         transition: background-color 0.3s ease;
         cursor: pointer;
 
-        &:hover {
+        &:hover, &.active {
             themed background-color primary
-            themed color colore-background-fg
+            themed color colored-background-fg
         }
 
     }

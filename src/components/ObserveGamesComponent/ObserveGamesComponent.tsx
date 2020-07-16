@@ -156,7 +156,6 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     refresh = () => {
         let now = Date.now();
         if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
-            console.warn("Slow down");
             if (!this.next_refresh) {
                 this.next_refresh = setTimeout(() => {
                     this.next_refresh = null;

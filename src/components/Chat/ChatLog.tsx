@@ -79,10 +79,10 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
     let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
     let [height, set_height]:[number, (tf:number) => void] = useState(document.body.clientHeight);
     const onShowGames = useCallback((tf:boolean) => {
-        if (tf !== showing_games) {
+        //if (tf !== showing_games) {
             set_showing_games(tf);
             data.set('chat.show-games', tf);
-        }
+        //}
     }, [props.channel, showing_games]);
 
     useEffect(() => {
@@ -307,8 +307,8 @@ function ChannelTopic(
 
                 {canShowGames && (
                     showingGames
-                        ? <i className='header-icon fa fa-chevron-up' onClick={() => onShowGames(false)} />
-                        : <i className='header-icon fa fa-chevron-down' onClick={() => onShowGames(true)} />
+                        ? <i className='header-icon ogs-goban active' onClick={() => onShowGames(false)} />
+                        : <i className='header-icon ogs-goban' onClick={() => onShowGames(true)} />
                 )}
 
                 <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
