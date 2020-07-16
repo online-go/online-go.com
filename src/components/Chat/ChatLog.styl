@@ -38,12 +38,19 @@
         overflow: auto; 
 
         .GameList {
-            overflow-x: visible;
+            //overflow-x: visible;
+            text-align: left;
         }
 
         .MiniGoban {
             width: 72px;
             height: 72px;
+
+            .board {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.1rem;
+            }
         }
     }
 
