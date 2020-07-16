@@ -65,9 +65,6 @@ channel-width=12rem;
         border-right: 1px solid transparent;
         border-left: 1px solid transparent;
         border-top: 1px solid transparent;
-        min-height: 20rem;
-        //themed border-right-color shade3
-        //themed border-color shade3
         word-wrap: break-word;
         overflow-x: hidden;
         .input-container {
@@ -107,6 +104,24 @@ channel-width=12rem;
         .fa-list, .fa-users {
             display: inline-flex;
         }
+    }
+}
+
+@media (max-height: 300px) {
+    .show-channels {
+        .ChatChannelList {
+            display: flex !important;
+        }
+    }
+
+    .show-users {
+        .ChatUsersList {
+            display: flex !important;
+        }
+    }
+
+    .ChatHeader {
+        display: none;
     }
 }
 

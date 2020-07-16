@@ -204,7 +204,7 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
                 />
             ))}
 
-            {global_channels.filter(chan => chan.id in joined_channels).map((chan) => (
+            {global_channels.filter(chan => chan.id in joined_channels || chan.id === channel).map((chan) => (
                 <ChatChannel
                     key={chan.id}
                     channel={chan.id}

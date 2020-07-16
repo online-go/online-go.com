@@ -109,6 +109,11 @@ export const routes = (
                     }
                 }
 
+                // Make sure it shows up in the left pannel
+                let joined = data.get("chat.joined") || {};
+                joined[channel] = 1;
+                data.set("chat.joined", joined);
+
                 return <Redirect to={`/chat/${channel}`}/>;
             }}/>
             <Route path="/observe-games" component={ObserveGames}/>

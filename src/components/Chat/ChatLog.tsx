@@ -77,6 +77,7 @@ function saveSplitSizes(sizes: Array<number>):void {
 
 export function ChatLog(props:ChatLogProperties):JSX.Element {
     let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
+    let [height, set_height]:[number, (tf:number) => void] = useState(document.body.clientHeight);
     const onShowGames = useCallback((tf:boolean) => {
         if (tf !== showing_games) {
             set_showing_games(tf);
@@ -84,8 +85,33 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
         }
     }, [props.channel, showing_games]);
 
+    useEffect(() => {
+        function update_height() {
+            if (height !== document.body.clientHeight) {
+                set_height(document.body.clientHeight);
+                height = document.body.clientHeight;
+            }
+        }
+        window.addEventListener("resize", update_height);
+        return () => {
+            window.removeEventListener("resize", update_height);
+        };
+    }, []);
+
+    if (!height) {
+        requestAnimationFrame(() => {
+            set_height(-1); // this forces react to keep running this until we get a client height
+            set_height(document.body.clientHeight);
+        });
+    }
+
     let canShowGames = /^(group-|global)/.test(props.channel);
     let game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
+
+    if (height <= 300) {
+        canShowGames = false;
+    }
+
     if (!canShowGames) {
         showing_games = false;
     }
@@ -211,6 +237,7 @@ function ChannelTopic(
 
     const partChannel = useCallback(() => {
         let joined = data.get("chat.joined");
+        data.set('chat.active_channel', null);
         delete joined[channel];
         data.set("chat.joined", joined);
         browserHistory.push('/chat');
