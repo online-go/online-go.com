@@ -397,7 +397,6 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
 }
 
 function setActiveChannel(channel: string) {
-    console.log("Setting active channel, i'm not sure if this works anymore, this should cause the /chat redirect to go to the appropriate url now", channel);
     if (!channel) {
         throw new Error(`Invalid channel ID: ${channel}`);
     }
