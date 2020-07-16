@@ -139,6 +139,7 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
                             channel={game_channel}
                             namesByGobans={true}
                             miniGobanProps={{noText: true, displayWidth: 64}}
+                            preferenceNamespace="chat"
                         />
                     </div>
                     <ChatLines {...props} />

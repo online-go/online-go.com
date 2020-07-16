@@ -32,6 +32,7 @@ interface GameListProps {
     disableSort?: boolean;
     miniGobanProps?: any;
     namesByGobans?: boolean;
+    forceList?: boolean;
 }
 
 export class GameList extends React.PureComponent<GameListProps, any> {
@@ -153,7 +154,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
 
         if (lst.length === 0) {
             return <div className="container">{this.props.emptyMessage || ""}</div>;
-        } else if (lst.length > preferences.get("game-list-threshold")) {
+        } else if (this.props.forceList || lst.length > preferences.get("game-list-threshold")) {
             let sortable = this.props.disableSort && this.props.player ? '' : ' sortable ';
             let sort_order = this.state.sort_order;
             let move_number_sort      = sort_order === 'move-number'    ? 'sorted-desc' : sort_order === '-move-number'    ? 'sorted-asc' : '';

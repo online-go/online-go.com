@@ -31,6 +31,7 @@ interface ObserveGamesComponentProperties {
     miniGobanProps?: any;
     channel?: string;
     namesByGobans?: boolean;
+    preferenceNamespace?: string;
 }
 
 interface GameListWhere {
@@ -64,28 +65,41 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         this.state = {
             page: 1,
             num_pages: 1,
-            page_size: preferences.get("observed-games-page-size"),
-            page_size_text_input: preferences.get("observed-games-page-size"),
-            viewing: preferences.get("observed-games-viewing"), /* live / correspondence */
+            page_size: this.namespacedPreferenceGet("observed-games-page-size"),
+            page_size_text_input: this.namespacedPreferenceGet("observed-games-page-size"),
+            viewing: this.namespacedPreferenceGet("observed-games-viewing"), /* live / correspondence */
             game_list: [],
             live_game_count: 0,
             corr_game_count: 0,
             show_filters: false,
-            filters: preferences.get("observed-games-filter") as GameListWhere,
+            force_list: this.namespacedPreferenceGet("observed-games-force-list") as boolean,
+            filters: this.namespacedPreferenceGet("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
         this.show_announcements = props.show_announcements;
     }
 
+    namespacedPreferenceGet(key:preferences.ValidPreference): any {
+        if (this.props.preferenceNamespace) {
+            return data.get(`observed-games.${this.props.preferenceNamespace}.${key}`, preferences.get(key));
+        }
+        return preferences.get(key);
+    }
+
+    namespacedPreferenceSet(key:preferences.ValidPreference, value:any): any {
+        if (this.props.preferenceNamespace) {
+            return data.set(`observed-games.${this.props.preferenceNamespace}.${key}`, value);
+        }
+        return preferences.set(key, value);
+    }
+
     syncSubscribe = () => {
-        if (Object.keys(preferences.get("observed-games-filter")).length === 0) {
+        if (Object.keys(this.namespacedPreferenceGet("observed-games-filter")).length === 0) {
             comm_socket.send("gamelist/count/subscribe", this.channel);
         } else {
             comm_socket.send("gamelist/count/unsubscribe", this.channel);
         }
     }
-
-
 
     componentDidUpdate(prevProps:ObserveGamesComponentProperties, prevState:any) {
         if (this.props.channel !== prevProps.channel) {
@@ -145,7 +159,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     setPageSize = (ev) => {
         if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
             let ct: number = parseInt(ev.target.value);
-            preferences.set("observed-games-page-size", ct);
+            this.namespacedPreferenceSet("observed-games-page-size", ct);
             this.setState({
                 page_size: ct,
                 page_size_text_input: ct
@@ -169,7 +183,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         }
         this.last_refresh = now;
 
-        let filter = dup(preferences.get("observed-games-filter"));
+        let filter = dup(this.namespacedPreferenceGet("observed-games-filter"));
         if (filter.friend_games_only) {
             delete filter.friend_games_only;
             try {
@@ -233,17 +247,21 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
 
     viewLive = () => {
         this.setState({viewing: "live", page: 0});
-        preferences.set("observed-games-viewing", "live");
+        this.namespacedPreferenceSet("observed-games-viewing", "live");
         setTimeout(this.refresh, 1);
     }
     viewCorrespondence = () => {
         this.setState({viewing: "corr", page: 0});
-        preferences.set("observed-games-viewing", "corr");
+        this.namespacedPreferenceSet("observed-games-viewing", "corr");
         setTimeout(this.refresh, 1);
     }
 
     toggleShowFilters = () => {
         this.setState({show_filters: !this.state.show_filters});
+    }
+    toggleForceList = () => {
+        this.namespacedPreferenceSet("observed-games-force-list", !this.state.force_list);
+        this.setState({force_list: !this.state.force_list});
     }
 
     render() {
@@ -261,6 +279,9 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
 
                             <button className="btn default" onClick={this.toggleShowFilters}>
                                 <i className="fa fa-filter"></i> {n_filters ? `(${n_filters})` : ''}
+                            </button>
+                            <button className={"btn default " + (this.state.force_list ? "active" : "")} onClick={this.toggleForceList}>
+                                <i className="fa fa-list"></i>
                             </button>
                         </div>
 
@@ -290,7 +311,14 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
 
             <ActiveAnnouncements  />
 
-            <GameList list={this.state.game_list} disableSort={true} emptyMessage={_("No games being played")} miniGobanProps={this.props.miniGobanProps} namesByGobans={this.props.namesByGobans} />
+            <GameList
+                list={this.state.game_list}
+                disableSort={true}
+                emptyMessage={_("No games being played")}
+                miniGobanProps={this.props.miniGobanProps}
+                namesByGobans={this.props.namesByGobans}
+                forceList={this.state.force_list}
+            />
         </div>
         );
     }
@@ -307,7 +335,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                 delete new_filters[filter_field];
             }
 
-            preferences.set("observed-games-filter", new_filters);
+            self.namespacedPreferenceSet("observed-games-filter", new_filters);
             self.setState({filters: new_filters});
             self.syncSubscribe();
             self.refresh();
