@@ -118,41 +118,47 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
 
     if (more) {
         more_channels = (
-            <div className='joinable'>
-                <input type="search"
-                    autoFocus={true}
-                    value={search}
-                    onChange={(ev) => set_search(ev.target.value)}
-                    placeholder={_("Search")}
-                />
+            <React.Fragment>
+                <button className='primary' onClick={() => set_more(false)}>
+                    &#9679; &#9679; &#9679;
+                </button>
 
-                {group_channels.filter(chan => !(`group-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
-                    <ChatChannel
-                        key={`group-${chan.id}`}
-                        channel={`group-${chan.id}`}
-                        icon={chan.icon}
-                        name={chan.name}
+                <div className='joinable'>
+                    <input type="search"
+                        autoFocus={true}
+                        value={search}
+                        onChange={(ev) => set_search(ev.target.value)}
+                        placeholder={_("Search")}
                     />
-                ))}
 
-                {tournament_channels.filter(chan => !(`tournament-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
-                    <ChatChannel
-                        key={`tournament-${chan.id}`}
-                        channel={`tournament-${chan.id}`}
-                        name={chan.name}
-                    />
-                ))}
+                    {group_channels.filter(chan => !(`group-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
+                        <ChatChannel
+                            key={`group-${chan.id}`}
+                            channel={`group-${chan.id}`}
+                            icon={chan.icon}
+                            name={chan.name}
+                        />
+                    ))}
 
-                {global_channels.filter(chan => !(chan.id in joined_channels) && chanSearch(chan)).map((chan) => (
-                    <ChatChannel
-                        key={chan.id}
-                        channel={chan.id}
-                        name={chan.name}
-                        language={chan.language}
-                        country={chan.country}
-                    />
-                ))}
-            </div>
+                    {tournament_channels.filter(chan => !(`tournament-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
+                        <ChatChannel
+                            key={`tournament-${chan.id}`}
+                            channel={`tournament-${chan.id}`}
+                            name={chan.name}
+                        />
+                    ))}
+
+                    {global_channels.filter(chan => !(chan.id in joined_channels) && chanSearch(chan)).map((chan) => (
+                        <ChatChannel
+                            key={chan.id}
+                            channel={chan.id}
+                            name={chan.name}
+                            language={chan.language}
+                            country={chan.country}
+                        />
+                    ))}
+                </div>
+            </React.Fragment>
         );
     } else {
         more_channels = (
