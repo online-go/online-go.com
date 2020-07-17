@@ -41,6 +41,7 @@ import { TabCompleteInput } from "TabCompleteInput";
 import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
+import { profanity_filter } from "profanity_filter";
 
 declare let swal;
 
@@ -299,7 +300,7 @@ function ChannelTopic(
                           {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
                           <div className='channel-topic' title={title_hover}>
                               <div className='topic'>
-                                  <span className='content'><Linkify>{topic.trim() || name}</Linkify></span>
+                                  <span className='content'><Linkify>{profanity_filter(topic.trim()) || name}</Linkify></span>
                               </div>
                           </div>
                       </React.Fragment>
