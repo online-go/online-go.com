@@ -99,18 +99,25 @@ export const routes = (
             <Route path="/chat/:channel/**/*" component={ChatView}/>
             <Route path="/chat" render={() => {
                 let channel = data.get('chat.active_channel');
+                let joined = data.get("chat.joined") || {};
 
                 if (!channel) {
-                    channel = "global-english";
-                    for (let chan of global_channels) {
-                        if (chan.primary_language) {
-                            channel = chan.id;
+                    if (Object.keys(joined).length) {
+                        for (let key of Object.keys(joined)) {
+                            channel = key;
+                            break;
+                        }
+                    } else {
+                        channel = "global-english";
+                        for (let chan of global_channels) {
+                            if (chan.primary_language) {
+                                channel = chan.id;
+                            }
                         }
                     }
                 }
 
                 // Make sure it shows up in the left pannel
-                let joined = data.get("chat.joined") || {};
                 joined[channel] = 1;
                 data.set("chat.joined", joined);
 

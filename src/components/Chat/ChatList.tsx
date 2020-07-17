@@ -266,7 +266,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         }
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")} partFunc={(channel in this.channels ? this.state.partFunc : undefined)}/>),
+            elt: (<ChatDetails chatChannelId={channel} subscribable={!(channel.startsWith("global") || channel === "shadowban")} partFunc={(channel in this.channels ? this.state.partFunc : undefined)}/>),
             below: event.currentTarget,
             minWidth: 130,
         });

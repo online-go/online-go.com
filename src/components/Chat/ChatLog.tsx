@@ -42,6 +42,10 @@ import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
+import { popover } from "popover";
+import { ChatDetails } from "Chat";
+
+
 
 declare let swal;
 
@@ -269,7 +273,21 @@ function ChannelTopic(
         }
     }, [topic, topic_updated, proxy]);
 
-    const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length === 0;
+    const channelDetails = useCallback((event) => {
+        popover({
+            elt: (
+                <ChatDetails
+                    chatChannelId={channel}
+                    subscribable={!(channel.startsWith("global") || channel === "shadowban")}
+                    partFunc={partChannel}/>
+            ),
+            below: event.currentTarget,
+            minWidth: 130,
+        });
+    }, [channel, partChannel]);
+
+
+    //const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length === 0;
 
     return (
         <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
@@ -307,12 +325,15 @@ function ChannelTopic(
                 }
 
 
-                {channel_leavable &&
+                <i className={'header-icon fa fa-gear'}
+                    onClick={channelDetails}
+                    />
+                {/*channel_leavable &&
                     <i className={'header-icon fa fa-times'}
                         title={pgettext("Leave the selected channel.", "Leave Channel")}
                         onClick={partChannel}
                         />
-                }
+                */}
 
                 <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
             </div>

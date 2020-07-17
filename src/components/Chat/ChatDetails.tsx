@@ -27,7 +27,7 @@ import { getUnreadChatPreference, getMentionedChatPreference, watchChatSubscript
 interface ChatDetailsProperties {
     chatChannelId: string;
     partFunc?: any;
-    subscribale?: boolean;
+    subscribable?: boolean;
 }
 
 
@@ -38,7 +38,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         if (channel) {
             this.state = {
                 channelId: channel,
-                subscribale: props.subscribale,
+                subscribable: props.subscribable,
                 notify_unread: false,
                 notify_mentioned: false
             };
@@ -141,14 +141,14 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                                 <i className="fa fa-trophy"/>{" "}{tournament_text}
                         </button>
                     }
-                    {this.state.subscribale &&
+                    {this.state.subscribable &&
                         <button
                             className={"xs noshadow "}// + this.state.notify_mentioned ? "active" : "inactive"}
                             onClick={this.toggleMentionNotification}>
                                 <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
                         </button>
                     }
-                    {this.state.subscribale &&
+                    {this.state.subscribable &&
                         <button
                             className={"xs noshadow "}// + this.state.notify_unread ? "active" : "inactive"}
                             onClick={this.toggleNewMessageNotification}>
