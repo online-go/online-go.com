@@ -64,7 +64,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         super(props);
         this.state = {
             page: 1,
-            num_pages: 1,
+            num_pages: 0,
             page_size: this.namespacedPreferenceGet("observed-games-page-size"),
             page_size_text_input: this.namespacedPreferenceGet("observed-games-page-size"),
             viewing: this.namespacedPreferenceGet("observed-games-viewing"), /* live / correspondence */
@@ -291,13 +291,15 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                         </button>
 
                         <div className="page-controls">
-                            <div className="left">
-                                {this.state.page > 1 ? <i className="fa fa-step-backward" onClick={this.prevPage}/> : <i className="fa"/>}
-                                <input onChange={this.setPage} value={this.state.page}/>
-                                <span className="of"> / </span>
-                                <span className="total">{this.state.num_pages.toString()}</span>
-                                {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
-                            </div>
+                            {((this.state.num_pages && this.state.num_pages > 0) || null) &&
+                                <div className="left">
+                                    {this.state.page > 1 ? <i className="fa fa-step-backward" onClick={this.prevPage}/> : <i className="fa"/>}
+                                    <input onChange={this.setPage} value={this.state.page}/>
+                                    <span className="of"> / </span>
+                                    <span className="total">{this.state.num_pages.toString()}</span>
+                                    {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
+                                </div>
+                            }
                             <div className="right">
                                 <label className="labelshow">{_("Show") + ":"}</label>
                                 <input className="show" onChange={this.setPageSize} value={this.state.page_size_text_input} type="number" min="3" max="100" step="1" />
