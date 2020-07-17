@@ -108,7 +108,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         this.state = {
             unread_ct: 0,
             mentioned: false,
-            show_friend_list: false,
+            show_channel_list: false,
             show_empty_notification: true,
         };
     }
@@ -194,9 +194,9 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                        mentioned: mentioned});
     }
 
-    toggleChatList = () => {
+    toggleChannelList = () => {
         this.setState({
-            show_friend_list: !this.state.show_friend_list
+            show_channel_list: !this.state.show_channel_list
         });
     }
 
@@ -212,14 +212,15 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         return (
             <span className={"ChatIndicator" + (this.state.mentioned ? " mentioned" : (this.state.unread_ct > 0 ? " unread" : ""))}>
                 {(this.state.show_empty_notification || this.state.mentioned || this.state.unread_ct > 0) &&
-                <span className={"navbar-icon"} onClick={this.toggleChatList} >
+                <span className={"navbar-icon"} onClick={this.toggleChannelList} >
                     <i className="fa fa-comment" />
                     <span className="count" >{this.state.unread_ct} </span>
                 </span>}
-                {(this.state.show_friend_list || null) &&
+                {(this.state.show_channel_list || null) &&
                     <div>
-                        <KBShortcut shortcut="escape" action={this.toggleChatList}/>
-                        <ChatList join_subscriptions show_unjoined hide_global show_read collapse_read collapse_unjoined collapse_state_store_name="chat-indicator.collapse-chat-group" closing_toggle={this.toggleChatList} partFunc={this.partFunc} />
+                        <KBShortcut shortcut="escape" action={this.toggleChannelList}/>
+                        <div className='FriendListBackdrop' onClick={this.toggleChannelList} />
+                        <ChatList join_subscriptions show_unjoined hide_global show_read collapse_read collapse_unjoined collapse_state_store_name="chat-indicator.collapse-chat-group" closing_toggle={this.toggleChannelList} partFunc={this.partFunc} />
                     </div>
                 }
             </span>
