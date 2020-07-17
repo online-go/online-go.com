@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {Player} from "Player";
-import {profanity_filter} from "profanity_filter";
+import { _ } from "translate";
+import { Link } from "react-router-dom";
+import { Player } from "Player";
+import { profanity_filter } from "profanity_filter";
 
 const global_replacements = [
     // spam mitigation
@@ -130,6 +131,9 @@ const global_replacements = [
 export function chat_markup(body: string, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
     let replacements = global_replacements;
 
+    if (body.length > 1024) {
+        return [<span key="message-too-long">&lt;{_("Message too long")}&gt;</span>];
+    }
 
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
