@@ -41,8 +41,8 @@ const global_replacements = [
         pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#([^\/<> ]+)(?:\/|\b))/gi,
         replacement: (m, idx) => (<a key={idx} href={m[1]}>{"wiki: TOC " + m[2].replace(/-/gi, " ").replace(/#/gi, " — ")}</a>)},
     // Match forum links
-    {split: /\b(https?:\/\/forums\.online-go\.com\/t\/[a-zA-z0-9-]+\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
-        pattern: /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-z0-9-]+)\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
+    {split: /\b(https?:\/\/forums\.online-go\.com\/t\/[a-zA-Z0-9-]+\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
+        pattern: /\b(https?:\/\/forums\.online-go\.com\/t\/([a-zA-Z0-9-]+)\/[0-9]+(?:\/[0-9]+)?(?:\?[^\/<> ]+)?(?:\/|\b))/gi,
         replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{(m[2]).replace(/(\-)/gi, " ")}</a>)},
     // Match online-go links
     // user profiles
@@ -118,7 +118,7 @@ const global_replacements = [
         pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([^\/<> ]+)(?:\/|\b))/gi,
         replacement: (m, idx) => (<a key={idx} target='_blank' href={m[1]}>{"senseis: " + m[2]}</a>)},
     // mails
-    {split: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
+    {split: /([^<> ]{1,64}[@][^<> ]+[.][^<> ]+)/gi,  pattern: /([^<> ]{1,64}[@][^<> ]+[.][^<> ]+)/gi,  replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)},
     // general urls
     // replaces any url not matched above
     {split: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, pattern: /(https?:\/\/(?!online-go\.com\/)[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
@@ -129,6 +129,7 @@ const global_replacements = [
 
 export function chat_markup(body: string, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
     let replacements = global_replacements;
+
 
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
