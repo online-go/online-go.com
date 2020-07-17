@@ -7,15 +7,6 @@
     flex-direction: column;
     max-width: 100%;
 
-    /*
-    position: relative;
-    display: flex;
-    min-height: 20rem;
-    .input-container {
-        border-bottom: 1px solid transparent;
-    }
-    */
-
     .split {
         flex-basis: 100%;
         flex-grow: 1;
@@ -30,16 +21,11 @@
         }
     }
     .game-list {
-        //flex-basis: 20%;
-        //flex-grow: 1;
-        //flex-shrink: 1;
-        //min-height: 10rem;
         border-bottom: 1px solid transparent;
         themed border-bottom-color shade3
         overflow: auto; 
 
         .GameList {
-            //overflow-x: visible;
             text-align: left;
         }
 
@@ -147,7 +133,11 @@
     border-bottom: 1px solid transparent;
     themed border-bottom-color shade3
     position: relative;
+    flex: 0;
     height: 2.0rem;
+    min-height: 2.0rem;
+    max-height: 2.0rem;
+
 
     background-size: cover;
 
@@ -195,6 +185,10 @@
 
         input {
             flex: 1;
+            height: 2.0rem;
+            min-height: 2.0rem;
+            max-height: 2.0rem;
+            border: none;
         }
 
         .topic {

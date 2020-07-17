@@ -120,7 +120,7 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
         more_channels = (
             <React.Fragment>
                 <button className='primary' onClick={() => set_more(false)}>
-                    &#9679; &#9679; &#9679;
+                    <span className='triangle'>&#9651;</span><span className='text'>{_("More channels")}</span>
                 </button>
 
                 <div className='joinable'>
@@ -163,7 +163,7 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
     } else {
         more_channels = (
             <button className='default' onClick={() => set_more(true)}>
-                &#9679; &#9679; &#9679;
+                <span className='triangle'>&#9661;</span><span className='text'>{_("More channels")}</span>
             </button>
         );
     }

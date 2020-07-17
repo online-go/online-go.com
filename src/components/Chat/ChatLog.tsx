@@ -276,16 +276,16 @@ function ChannelTopic(
             <div className='foreground'>
                 <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
 
-                {channel_leavable &&
-                    <i className={'header-icon fa fa-times'}
-                        title={pgettext("Leave the selected channel.", "Leave Channel")}
-                        onClick={partChannel}
-                        />
-                }
+                {canShowGames && (
+                    showingGames
+                        ? <i className='header-icon ogs-goban active' onClick={() => onShowGames(false)} />
+                        : <i className='header-icon ogs-goban' onClick={() => onShowGames(true)} />
+                )}
 
                 {(editing && topic_editable)
                     ?  <React.Fragment>
-                           <div className='channel-topic'>
+                          <i className='header-icon fa fa-save' onClick={saveEdits} />
+                          <div className='channel-topic'>
                                <input
                                    value={topic}
                                    className="channel-topic-edit"
@@ -294,23 +294,24 @@ function ChannelTopic(
                                    autoFocus={true}
                                />
                           </div>
-                          <i className='header-icon fa fa-save' onClick={saveEdits} />
                       </React.Fragment>
                     : <React.Fragment>
+                          {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
                           <div className='channel-topic' title={title_hover}>
                               <div className='topic'>
                                   <span className='content'><Linkify>{topic.trim() || name}</Linkify></span>
                               </div>
                           </div>
-                          {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
                       </React.Fragment>
                 }
 
-                {canShowGames && (
-                    showingGames
-                        ? <i className='header-icon ogs-goban active' onClick={() => onShowGames(false)} />
-                        : <i className='header-icon ogs-goban' onClick={() => onShowGames(true)} />
-                )}
+
+                {channel_leavable &&
+                    <i className={'header-icon fa fa-times'}
+                        title={pgettext("Leave the selected channel.", "Leave Channel")}
+                        onClick={partChannel}
+                        />
+                }
 
                 <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
             </div>
