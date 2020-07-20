@@ -311,7 +311,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                 {this.state.show_filters && this.renderFilters()}
             </div>
 
-            <ActiveAnnouncements  />
+            {this.props.announcements && <ActiveAnnouncements  />}
 
             <GameList
                 list={this.state.game_list}
