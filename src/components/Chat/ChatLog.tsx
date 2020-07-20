@@ -246,6 +246,11 @@ function ChannelTopic(
         data.set('chat.active_channel', null);
         delete joined[channel];
         data.set("chat.joined", joined);
+
+        let parted_channels = data.get("chat.parted", {});
+        parted_channels[channel] = 1;
+        data.set("chat.parted", parted_channels);
+
         browserHistory.push('/chat');
         //proxy?.channel.emit('should-part', channel);
     }, [proxy]);

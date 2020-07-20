@@ -68,7 +68,38 @@ interface ChatChannelListProperties {
     channel: string;
 }
 
+
+function autojoin_channels() {
+    let joined_channels = data.get("chat.joined");
+    const parted_channels = data.get("chat.parted", {});
+
+    for (let chan of group_channels) {
+        let key = `group-${chan.id}`;
+        if (!(key in parted_channels)) {
+            joined_channels[key] = 1;
+        }
+    }
+    for (let chan of tournament_channels) {
+        let key = `group-${chan.id}`;
+        if (!(key in parted_channels)) {
+            joined_channels[key] = 1;
+        }
+    }
+    for (let chan of global_channels) {
+        if (chan.id.indexOf('supporter') >= 0 || chan.id.indexOf('shadowban') >= 0) {
+            if (!(chan.id in parted_channels)) {
+                joined_channels[chan.id] = 1;
+            }
+        }
+    }
+
+    data.set("chat.joined", joined_channels);
+}
+
+
 export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element {
+    autojoin_channels();
+
     const joined_channels = data.get("chat.joined");
     const using_resolved_channel:boolean = !(
         group_channels.filter(chan => `group-${chan.id}` === channel).length

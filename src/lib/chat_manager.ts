@@ -182,7 +182,7 @@ try {
 
 
 data.watch('user', (user) => {
-    if (user.is_supporter && global_channels.filter(c => c.id === 'global-supporter').length === 0) {
+    if (user.supporter && global_channels.filter(c => c.id === 'global-supporter').length === 0) {
         global_channels.splice(0, 0, {
             "id": "global-supporter",
             "name": _("Site Supporters"),
