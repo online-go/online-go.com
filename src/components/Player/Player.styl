@@ -24,8 +24,6 @@
     max-width: 100%;
     align-items: baseline; /* needed for Game info modal */
 
-
-    //themed color primary
     &:hover {
         text-decoration: underline;
     }
@@ -42,15 +40,12 @@
         margin-left: 0.1rem;
     }
 
-
-
     &.with-flare:before {
         display: inline-block;
         width: 0.8rem;
         font-family: 'FontAwesome';
         font-size: 0.7rem;
         content: " ";
-        //text-shadow: 0 0 1px rgba(0,0,0,0.5);
     }
     &.with-flare.supporter:before {
         themed color supporter
@@ -76,11 +71,12 @@
         display: inline-block;
         background-image: svg-load("../assets/dragon-icon.svg");
         background-size: cover;
+        margin-left: -0.05rem;
+        margin-right: 0.05rem;
     }
 
 
     &.timeout{
-        //color: @ogs-player-timeout  !important;
     }
     &.supporter {
         themed-important color supporter
