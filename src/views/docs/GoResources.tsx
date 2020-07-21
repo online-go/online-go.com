@@ -337,7 +337,8 @@ export let GoResources = (props) => {
                 <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
                 <span><Flag country={"mx"}/> <a rel="noopener" href="http://go.org.mx/ ">Mexican Association of Go</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>,
-                <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>
+                <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>,
+                <span><Flag country={"il"}/> <a rel="noopener" href="https://igo.org.il/">Israeli Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
