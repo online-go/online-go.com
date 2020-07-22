@@ -406,6 +406,10 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
     }, [channel]);
 
     const focusInput = useCallback(():void => {
+        if (window.getSelection() && window.getSelection().toString() !== "") {
+            // don't focus input if we're selecting text
+            return;
+        }
         //input.current.focus();
         document.getElementById("chat-input")?.focus();
         if (onShowChannels) {
