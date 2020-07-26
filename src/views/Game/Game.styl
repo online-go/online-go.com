@@ -507,7 +507,14 @@ goban-view-bar-width=400px
 			flex-basis: auto;
 			width: auto;
 			margin-left: 5%;
-			flex-grow: 0;
+			flex-grow: 0;            
+            .players {
+                flex-direction: column;
+                .player-container {
+                    width: 100%;
+                }
+            }
+            min-width 170px;
 		}
 		.center-col {
 			.goban-container {
