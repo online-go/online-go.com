@@ -2277,7 +2277,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
-                    {((this.state.view_mode === "portrait" && !this.state.zen_mode) || null) &&
+                    {((this.state.view_mode === "portrait") || null) &&
                         (review
                             ? this.frag_review_controls()
                             : this.frag_play_controls(false)
