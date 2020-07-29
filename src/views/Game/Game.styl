@@ -503,19 +503,21 @@ goban-view-bar-width=400px
 				flex-grow: 0;
 			}
 			justify-content: center;
-			min-width: auto;
-			flex-basis: auto;
 			width: auto;
-			margin-left: 5%;
 			flex-grow: 0;
 		}
 		.center-col {
 			.goban-container {
 				flex-grow: 0;
 			}
-			justify-content: center;
+            flex-basis: 100vh
+			justify-content: flex-start;
 			flex-grow: 0;
 		}
+        &.portrait {
+            .center-col {
+                flex-basis: 100%
+            }}
 		.align-row-start, .align-col-start {
 			align-self: flex-start;
 		}
@@ -523,7 +525,6 @@ goban-view-bar-width=400px
 			align-self: flex-end;
 		}
 		.align-row-start, .align-row-end {
-			flex-basis: 5%;
 			flex-grow: 1;
 		}
     }
