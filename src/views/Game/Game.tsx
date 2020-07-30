@@ -713,7 +713,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             .catch(ignore);
         }
 
-        const move_number_match = document.URL.match(/game\/\d+\/(\d+)$/);
+        const move_number_match = document.URL.match(/game\/\d+\/(\d+)\/?$/);
         if (move_number_match) {
             setTimeout(() => {
                 this.nav_goto_move(Number(move_number_match[1]));
