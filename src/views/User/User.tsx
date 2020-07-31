@@ -72,7 +72,7 @@ let rating_percentage = (rating: number) => {
 
 let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
 
-let inlineBlock = {display: "inline-block"};
+let inlineBlock = {display: "inline-flex", "align-items": "center"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
@@ -715,6 +715,8 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                             <div className='avatar-subtext'>
                                 {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
+
+                                {(user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0) && <div ><h4 style={inlineBlock}><img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")} </h4></div>}
 
                                 {(user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
 
