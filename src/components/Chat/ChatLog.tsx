@@ -24,6 +24,7 @@ import { Card } from "material";
 import { Link } from "react-router-dom";
 import { comm_socket } from "sockets";
 import { _, pgettext, interpolate } from "translate";
+import { localize_time_strings } from "localize-time";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Timeout, errorLogger } from "misc";
 //import { ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
@@ -323,7 +324,7 @@ function ChannelTopic(
                           {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
                           <div className='channel-topic' title={title_hover}>
                               <div className='topic'>
-                                  <span className='content'><Linkify>{profanity_filter(topic.trim()) || name}</Linkify></span>
+                                  <span className='content'><Linkify>{localize_time_strings(profanity_filter(topic.trim())) || name}</Linkify></span>
                               </div>
                           </div>
                       </React.Fragment>

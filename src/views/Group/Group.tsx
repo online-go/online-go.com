@@ -36,6 +36,7 @@ import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {EmbeddedChatCard} from "Chat";
+import { localize_time_strings } from 'localize-time';
 
 
 declare var swal;
@@ -585,7 +586,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
                                                 ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
-                                                : <h2>{entry.title}</h2>
+                                                : <h2>{localize_time_strings(entry.title)}</h2>
                                             }
                                             <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
                                             {this.state.is_admin &&
