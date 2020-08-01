@@ -697,8 +697,16 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         />
                     </Card>
 
+                    <Card className='ladders'>
+                        <div><Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link></div>
+                        <div><Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link></div>
+                        <div><Link to={`/ladder/${group.ladder_ids[2]}`}>{_("19x19 Ladder")}</Link></div>
+                    </Card>
+
+                    {/*
                     {group.ladder_ids.map((ladder_id, idx) => (
                         <Card key={idx}>
+                            <Link
                             <LadderComponent
                                 pageSize={10}
                                 ladderId={ladder_id}
@@ -709,6 +717,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 />
                         </Card>
                     ))}
+                    */}
                 </div>
 
 
