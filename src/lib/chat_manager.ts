@@ -558,6 +558,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             message: {"i": _send_obj.uuid, "t": Math.floor(Date.now() / 1000), "m": text},
         };
         this.chat_log.push(obj);
+        this.chat_ids[obj.message.i] = true;
         this.emit("chat", obj);
     }
     public setTopic(topic: string) {
