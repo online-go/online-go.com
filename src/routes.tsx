@@ -117,7 +117,7 @@ export const routes = (
                     }
                 }
 
-                // Make sure it shows up in the left pannel
+                // Make sure it shows up in the left panel
                 joined[channel] = 1;
                 data.set("chat.joined", joined);
 
@@ -125,6 +125,7 @@ export const routes = (
             }}/>
             <Route path="/observe-games" component={ObserveGames}/>
             <Route path="/game/view/:game_id" component={Game}/>
+            <Route path="/game/:game_id/:move_number" component={Game}/>
             <Route path="/game/:game_id" component={Game}/>
             <Route path="/review/view/:review_id" exact component={Game}/>
             <Route path="/review/:review_id" component={Game}/>

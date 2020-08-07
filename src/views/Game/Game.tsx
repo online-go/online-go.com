@@ -68,6 +68,7 @@ interface GameProperties {
         params: {
             game_id?: string,
             review_id?: string,
+            move_number?: string,
         }
     };
 }
@@ -91,6 +92,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     tournament_id: number;
     ai_review_selected: string | null = null;
     review_id: number;
+    move_number: number | null = null;
     goban_div: HTMLDivElement;
     goban: Goban;
     resize_debounce: any = null;
@@ -130,6 +132,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
+        if ("move_number" in this.props.match.params) {
+            // 0 is a valid move number, and is different from a lack of move_number meaning load latest move.
+            this.move_number = parseInt(this.props.match.params.move_number);
+        }
         this.state = {
             view_mode: this.computeViewMode(),
             squashed: goban_view_squashed(),
@@ -574,6 +580,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.sync_state();
         });
 
+        if (this.move_number !== null) {
+            this.goban.once("gamedata", () => {
+                this.nav_goto_move(this.move_number);
+            });
+        }
+
         this.goban.on("auto-resign", (data) => {
             if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
                 this.setState({ black_auto_resign_expiration: new Date(data.expiration - get_network_latency() + get_clock_drift() ) });
@@ -711,13 +723,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
             })
             .catch(ignore);
-        }
-
-        const move_number_match = document.URL.match(/game\/\d+\/(\d+)\/?$/);
-        if (move_number_match) {
-            setTimeout(() => {
-                this.nav_goto_move(Number(move_number_match[1]));
-            }, 1000);
         }
     }
     private bindAudioEvents():void { // called by init
