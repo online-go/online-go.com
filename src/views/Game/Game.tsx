@@ -2863,7 +2863,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
     frag_timings = () => {
         if (this.goban &&
             this.goban.engine) {
-            return <GameTimings moves={this.goban.engine.config.moves}></GameTimings>;
+            return <GameTimings
+                moves={this.goban.engine.config.moves}
+                free_handicap_placement={this.goban.engine.config.free_handicap_placement}
+                handicap={this.goban.engine.config.handicap}/>;
         }
         return null;
     }
