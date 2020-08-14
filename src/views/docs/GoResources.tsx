@@ -230,6 +230,7 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>,
                 <span><Flag country={ar}/> <a rel="noopener" href="https://www.youtube.com/user/lucho4668 ">Luciano Zinni</a></span>,
                 <span><Flag country={it}/> <a rel="noopener" href="https://www.youtube.com/user/jejosamurai ">Diego Laurenti</a></span>,
+                <span><Flag country={es}/> <a rel="noopener" href="https://www.youtube.com/EstudiandoGoconIni">Estudiando Go con Ini</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98 Twitch</a> / <a rel="noopener" href="https://www.youtube.com/channel/UCohURdr4oSzrXL49qOQQpwg">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a></span>,
