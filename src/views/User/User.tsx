@@ -971,6 +971,21 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         ))}
                                     </div>
                                 }
+
+                                {(user.id === 519197 || null) &&
+                                    <React.Fragment>
+                                        <hr />
+                                        <div className="SpicyDragon-trophy">
+                                            <img src='https://cdn.online-go.com/spicydragon/spicydragon400.jpg' width={400} height={340} />
+                                            <div>
+                                                {pgettext("Special trophy for a professional go player", "1004 simultaneous correspondence games")}
+                                            </div>
+                                            <div>
+                                                {moment("2020-07-20T14:38:37").format("LLLL")}
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                }
                             </Card>
                         }
 
