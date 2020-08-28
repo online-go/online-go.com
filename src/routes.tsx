@@ -165,6 +165,8 @@ export const routes = (
             <Route path="/group/create" component={GroupCreate}/>
             <Route path="/group/:group_id" component={Group}/>
             <Route path="/group/:group_id/*" component={Group}/>
+            <Route path="/groupadmin/:group_id" component={Group}/>
+            <Route path="/groupadmin/:group_id/*" component={Group}/>
             <Route path="/tournament/new/:group_id" component={Tournament}/>
             <Route path="/tournament/new" component={Tournament}/>
             <Route path="/tournament/:tournament_id" component={Tournament}/>
