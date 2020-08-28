@@ -20,6 +20,7 @@ import * as markdownit from "markdown-it";
 import * as sanitizeHtml from 'sanitize-html';
 //import * as moment from "moment";
 import * as moment from 'moment-timezone';
+import { profanity_filter } from "profanity_filter";
 import { localize_time_strings } from 'localize-time';
 
 interface MarkdownProps {
@@ -180,6 +181,9 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
 
     //
     preprocess(source: string): string {
+        // Profanity filter
+        source = profanity_filter(source);
+
         // Allow people to have #header style markdown for headers, markdownit requires a space between
         source = source.split('\n').map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
 
