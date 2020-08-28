@@ -70,6 +70,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 is_public: false,
                 require_invitation: false,
                 hide_details: false,
+                invitation_requests: [],
             },
             group_loaded: false,
             is_admin: false,
@@ -85,6 +86,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             new_news_body: "",
             invite_result: null,
             editing_news: null,
+            refresh: 0,
         };
     }
 
@@ -697,6 +699,38 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         />
                     </Card>
 
+
+                    {((group.invitation_requests && group.invitation_requests.length > 0) || null) &&
+                        <Card className="invitation-requests">
+                            <h4>{_("Invitation requests")}</h4>
+                            {group.invitation_requests.map((ir) => {
+                                let accept = () => {
+                                    group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
+                                    this.setState({'refresh': this.state.refresh + 1});
+                                    post("me/groups/invitations", { request_id: ir.id })
+                                    .then(() => console.log("Accepted invitation request", ir))
+                                    .catch(err => console.error(err));
+                                };
+                                let reject = () => {
+                                    group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
+                                    this.setState({'refresh': this.state.refresh + 1});
+                                    post("me/groups/invitations", { "delete": true, request_id: ir.id })
+                                    .then(() => console.log("Deleted invitation request", ir))
+                                    .catch(err => console.error(err));
+                                };
+
+                                return (
+                                    <div key={ir.id}>
+                                        <i className='fa fa-check' onClick={accept} />
+                                        <i className='fa fa-times' onClick={reject} />
+                                        <Player user={ir.user} />
+                                    </div>
+                                );
+                            })}
+                        </Card>
+                    }
+
+
                     <Card className='ladders'>
                         <div><Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link></div>
                         <div><Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link></div>
@@ -726,6 +760,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
 
         </div>
         );
+
+
     }
     renderExtraPlayerActions = (player_id: number, user: any) => {
         if (!this.state.is_admin && !data.get("user").is_moderator) {
