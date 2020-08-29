@@ -136,7 +136,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         try {
             this.return_url = (new URLSearchParams(window.location.search)).get('return') || undefined;
             console.log("Return url", this.return_url);
-        }catch (e) {
+        } catch (e) {
             console.error(e);
         }
 
