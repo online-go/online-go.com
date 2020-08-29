@@ -126,9 +126,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
     decide_black: () => void;
     decide_tie: () => void;
 
+    return_url?: string; // url to return to after a game is over
+    return_url_debounce: boolean = false;
+
     constructor(props) {
         super(props);
         window["Game"] = this;
+
+        try {
+            this.return_url = (new URLSearchParams(window.location.search)).get('return') || undefined;
+            console.log("Return url", this.return_url);
+        }catch (e) {
+            console.error(e);
+        }
 
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
@@ -1777,6 +1787,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             new_state.move_text = engine.cur_move && engine.cur_move.text ? engine.cur_move.text : "";
 
+            if (this.state.phase && engine.phase && this.state.phase !== engine.phase && engine.phase === "finished") {
+                if (this.return_url && !this.return_url_debounce) {
+                    this.return_url_debounce = true;
+                    console.log("Transition from ", this.state.phase, " to ", engine.phase);
+                    setTimeout(() => {
+                        if (confirm(interpolate(_("Would you like to return to {{url}}?"), {"url": this.return_url}))) {
+                            window.location.href = this.return_url;
+                        }
+                    }, 1500);
+                }
+            }
+
+
             /* review stuff */
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
@@ -2546,6 +2569,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 ))}
                             </div>
                         }
+
+                        {(this.return_url || null) &&
+                            <div className="return-url">
+                                <a href={this.return_url} rel="noopener">
+                                    {interpolate(pgettext("Link to where the user came from", "Return to {{url}}"), {"url": this.return_url})}
+                                </a>
+                            </div>
+                        }
+
                     </div>
                 }{/* } */}
                 {(this.state.phase === "stone removal" || null) &&  /* { */
