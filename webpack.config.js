@@ -5,11 +5,14 @@ let fs = require('fs');
 var webpack = require('webpack');
 const pkg = require('./package.json');
 const TerserPlugin = require('terser-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
 let plugins = [];
+
+plugins.push(new ForkTsCheckerWebpackPlugin());
 
 plugins.push(new webpack.BannerPlugin(
 `Copyright (C) 2012-2020  Online-Go.com
@@ -92,6 +95,9 @@ module.exports = (env, argv) => {
                     test: /\.tsx?$/,
                     loader: "ts-loader",
                     exclude: /node_modules/,
+                    options: {
+                        transpileOnly: true
+                    }
                 }
             ]
         },
@@ -138,8 +144,6 @@ module.exports = (env, argv) => {
             "swal": "swal", // can't seem to import anyways
         },
 
-
-
         devServer: {
             stats: {
                 assets: true,
@@ -154,6 +158,12 @@ module.exports = (env, argv) => {
             }
         },
     };
+
+    if (!production) {
+        config.optimization.removeAvailableModules = false;
+        config.optimization.removeEmptyChunks = false;
+        config.optimization.splitChunks = false;
+    }
 
     return config;
 };

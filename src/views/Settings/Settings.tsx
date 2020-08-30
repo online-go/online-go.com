@@ -23,10 +23,11 @@ import {ValidPreference} from "preferences";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del, abort_requests_in_flight} from "requests";
-import {errorAlerter, errorLogger, ignore} from "misc";
+import {errorAlerter, errorLogger, ignore, Timeout} from "misc";
 import {durationString} from "TimeControl";
 import {Card} from "material";
-import {sfx, SpritePack, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
+import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
+import {SpritePack} from "sfx_sprites";
 import {LanguagePicker} from "LanguagePicker";
 import {current_language, languages} from "translate";
 import {toast} from 'toast';
@@ -1585,7 +1586,7 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
 }
 
 
-let play_timeout:number | null = null;
+let play_timeout:Timeout | null = null;
 let play_emitter = new EventEmitter();
 
 function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element {

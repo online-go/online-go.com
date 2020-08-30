@@ -553,7 +553,7 @@ export class SFXManager {
 }
 
 
-export { sprite_packs, SpritePack } from './sfx_sprites';
+export { sprite_packs } from './sfx_sprites';
 export const sfx = new SFXManager();
 (window as any)['sfx'] = sfx;
 
