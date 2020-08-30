@@ -18,6 +18,10 @@
 import * as React from "react";
 import * as markdownit from "markdown-it";
 import * as sanitizeHtml from 'sanitize-html';
+//import * as moment from "moment";
+import * as moment from 'moment-timezone';
+import { profanity_filter } from "profanity_filter";
+import { localize_time_strings } from 'localize-time';
 
 interface MarkdownProps {
     source: string;
@@ -171,21 +175,28 @@ export class Markdown extends React.PureComponent<MarkdownProps, {html}> {
     constructor(props) {
         super(props);
         this.state = {
-            html: this.props.source ? sanitize(md.render(this.massage(this.props.source))) : ""
+            html: this.props.source ? sanitize(md.render(this.preprocess(this.props.source))) : ""
         };
     }
 
-    // This 'massage' appears to be allowing headers to be defined without whitespace after the #.
-    // Possibly 'massage' is a rather generic name for that!?
-    massage(source: string): string {
+    //
+    preprocess(source: string): string {
+        // Profanity filter
+        source = profanity_filter(source);
+
+        // Allow people to have #header style markdown for headers, markdownit requires a space between
         source = source.split('\n').map((l) => l.replace(/^(#+)([a-zA-Z0-9])/, "$1 $2")).join('\n');
+
+        // Support locale time replacements
+        source = localize_time_strings(source);
+
         return source;
     }
 
     UNSAFE_componentWillReceiveProps(next_props) {
         if (next_props.source !== this.props.source) {
             this.setState({
-                html: next_props.source ? sanitize(md.render(this.massage(next_props.source))) : ""
+                html: next_props.source ? sanitize(md.render(this.preprocess(next_props.source))) : ""
             });
         }
     }

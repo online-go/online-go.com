@@ -24,8 +24,6 @@
     max-width: 100%;
     align-items: baseline; /* needed for Game info modal */
 
-
-    //themed color primary
     &:hover {
         text-decoration: underline;
     }
@@ -42,15 +40,12 @@
         margin-left: 0.1rem;
     }
 
-
-
     &.with-flare:before {
         display: inline-block;
         width: 0.8rem;
         font-family: 'FontAwesome';
         font-size: 0.7rem;
         content: " ";
-        //text-shadow: 0 0 1px rgba(0,0,0,0.5);
     }
     &.with-flare.supporter:before {
         themed color supporter
@@ -69,10 +64,29 @@
         themed color admin
         content: fa-wrench-content;
     }
+    &.with-flare.dragon:before {
+        content: " ";
+        width: 0.75rem;
+        height: 0.75rem;
+        display: inline-block;
+        background-image: svg-load("../assets/dragon-icon.svg");
+        background-size: cover;
+        margin-left: -0.05rem;
+        margin-right: 0.05rem;
+    }
+    &.with-flare.aga:before {
+        content: " ";
+        width: 0.75rem;
+        height: 0.75rem;
+        display: inline-block;
+        background-image: url("https://cdn.online-go.com/assets/agaico1.png");
+        background-size: cover;
+        margin-left: -0.05rem;
+        margin-right: 0.05rem;
+    }
 
 
     &.timeout{
-        //color: @ogs-player-timeout  !important;
     }
     &.supporter {
         themed-important color supporter
@@ -91,6 +105,9 @@
     }
     &.moderator{
         themed-important color moderator
+    }
+    &.aga {
+        themed-important color aga-official
     }
     &.admin{
         themed-important color admin

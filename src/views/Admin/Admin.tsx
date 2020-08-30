@@ -115,6 +115,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
     unpauseLiveGames = () => this.promptAndPost("Un-Pause live games?", "admin/unpauseLiveGames");
     startWeekend     = () => this.promptAndPost("Start weekend?", "admin/startWeekend");
     stopWeekend      = () => this.promptAndPost("Stop weekend?", "admin/stopWeekend");
+    rebuildGameList  = () => this.promptAndPost("Rebuild game list?", "admin/rebuildGameList");
 
 
     render() {
@@ -136,6 +137,12 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
                         <div className="action-buttons">
                             <button onClick={this.startWeekend}>Start weekend</button>
                             <button onClick={this.stopWeekend}>Stop weekend</button>
+                        </div>
+                    </div>
+                    <h3>Maintenance</h3>
+                    <div>
+                        <div className="action-buttons">
+                            <button onClick={this.rebuildGameList}>Rebuild game list</button>
                         </div>
                     </div>
                 </div>

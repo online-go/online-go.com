@@ -16,12 +16,13 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
+import { _, pgettext, interpolate } from "translate";
 import * as preferences from "preferences";
-import {Goban} from "goban";
-import {termination_socket} from "sockets";
-import {MiniGoban} from "MiniGoban";
-import {GobanLineSummary} from "GobanLineSummary";
+import { Goban } from "goban";
+import { termination_socket } from "sockets";
+import { MiniGoban } from "MiniGoban";
+import { GobanLineSummary } from "GobanLineSummary";
+import { Player } from "Player";
 import * as data from "data";
 
 interface GameListProps {
@@ -29,6 +30,9 @@ interface GameListProps {
     player?: any;
     emptyMessage?: string;
     disableSort?: boolean;
+    miniGobanProps?: any;
+    namesByGobans?: boolean;
+    forceList?: boolean;
 }
 
 export class GameList extends React.PureComponent<GameListProps, any> {
@@ -150,7 +154,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
 
         if (lst.length === 0) {
             return <div className="container">{this.props.emptyMessage || ""}</div>;
-        } else if (lst.length > preferences.get("game-list-threshold")) {
+        } else if (this.props.forceList || lst.length > preferences.get("game-list-threshold")) {
             let sortable = this.props.disableSort && this.props.player ? '' : ' sortable ';
             let sort_order = this.state.sort_order;
             let move_number_sort      = sort_order === 'move-number'    ? 'sorted-desc' : sort_order === '-move-number'    ? 'sorted-asc' : '';
@@ -194,18 +198,42 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 </div>
             );
         } else {
-            return (
-                <div className="GameList">
-                    {lst.map((game) =>
-                        <MiniGoban key={game.id}
-                            id={game.id}
-                            black={game.black}
-                            white={game.white}
-                            width={game.width}
-                            height={game.height}
-                            />)}
-                </div>
-            );
+            if (this.props.namesByGobans) {
+                return (
+                    <div className="GameList">
+                        {lst.map((game) =>
+                            <div className='goban-with-names' key={game.id}>
+                                <div className='names'>
+                                    <div><Player user={game.black} disableCacheUpdate noextracontrols /></div>
+                                    <div><Player user={game.white} disableCacheUpdate noextracontrols /></div>
+                                </div>
+                                <MiniGoban
+                                    id={game.id}
+                                    black={game.black}
+                                    white={game.white}
+                                    width={game.width}
+                                    height={game.height}
+                                    {...(this.props.miniGobanProps || {})}
+                                    />
+                            </div>
+                        )}
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="GameList">
+                        {lst.map((game) =>
+                            <MiniGoban key={game.id}
+                                id={game.id}
+                                black={game.black}
+                                white={game.white}
+                                width={game.width}
+                                height={game.height}
+                                {...(this.props.miniGobanProps || {})}
+                                />)}
+                    </div>
+                );
+            }
         }
     }
 }

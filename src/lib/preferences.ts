@@ -49,6 +49,8 @@ let defaults = {
     "notify-on-incident-report": true,
     "observed-games-page-size": 9,
     "observed-games-viewing": "live",
+    "observed-games-filter": {},
+    "observed-games-force-list": false,
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
     "profanity-filter": {"en": true},

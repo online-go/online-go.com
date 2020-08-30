@@ -68,7 +68,8 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 "is_bot", "is_banned", "is_shadowbanned",
                 "bot_owner", "bot_ai", "username",
                 "supporter", "username", "password", "email",
-                "is_announcer", "ranking", "professional"
+                "is_announcer", "ranking", "professional",
+                "ui_class_extra"
             ];
 
             let settings: any = {};
@@ -99,6 +100,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setEmail = (ev) => this.setState({email: ev.target.value});
     setPassword = (ev) => this.setState({password: ev.target.value});
     setRanking = (ev) => this.setState({ranking: ev.target.value});
+    setUiClassExtra = (ev) => this.setState({ui_class_extra: ev.target.value});
 
     render() {
         let user = this.state;
@@ -132,6 +134,11 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                                 ))}
                                             </select>
                                         }
+                                    </dd>
+
+                                    <dt><label htmlFor="ui-class-extra">CSS Class</label></dt>
+                                    <dd>
+                                        <input type="text" id="ui-class-extra" value={user.ui_class_extra} onChange={this.setUiClassExtra} autoComplete="off"/>
                                     </dd>
 
                                     <dt><label htmlFor="bot">Bot</label></dt>

@@ -65,24 +65,27 @@ export class Team extends React.PureComponent<{}, any> {
         let gb = getLanguageFlag("gb", country, "gb");
         let se = getLanguageFlag("swedish", country, "se");
         let cz = getLanguageFlag("czech", country, "cz");
+        let nl = getLanguageFlag("netherlands", country, "nl");
+        let jp = getLanguageFlag("japan", country, "jp");
 
         let moderators = [
-            {"id": 784   , "username": "mlopezviedma" , "country": ["ar"] , "languages": [es, en]} ,
-            {"id": 781   , "username": "crodgers"     , "country": ["us"] , "languages": [en]} ,
-            {"id": 69627 , "username": "xhu98"        , "country": ["us"] , "languages": [cn, en]} ,
-            {"id": 4     , "username": "matburt"      , "country": ["us"] , "languages": [en]} ,
-            {"id": 1     , "username": "anoek"        , "country": ["us"] , "languages": [en]} ,
-            {"id": 52    , "username": "trohde"       , "country": ["de"] , "languages": [de, en]} ,
-            {"id": 64817 , "username": "mark5000"     , "country": ["us"] , "languages": [en]} ,
-            {"id": 66091 , "username": "Revar Isavé"  , "country": ["de"] , "languages": [de, gb]} ,
-            {"id": 441   , "username": "VincentCB"    , "country": ["ca"] , "languages": [en, fr]} ,
-            {"id": 55415 , "username": "sousys"       , "country": ["se"] , "languages": [se, en]} ,
-            {"id": 360861 , "username": "AdamR"       , "country": ["cz"] , "languages": [cz, en]} ,
-            {"id": 299041 , "username": "Razza99"     , "country": ["gb"] , "languages": [en]} ,
-            {"id": 412892 , "username": "Eugene" , "country": ["au"] , "languages": [en]} ,
-            {"id": 445315 , "username": "BHydden"     , "country": ["au"] , "languages": [en]} ,
+            {"id": 784    , "username": "mlopezviedma"   , "country": ["ar"] , "languages": [es, en]} ,
+            {"id": 781    , "username": "crodgers"       , "country": ["us"] , "languages": [en]} ,
+            {"id": 69627  , "username": "xhu98"          , "country": ["us"] , "languages": [cn, en]} ,
+            {"id": 4      , "username": "matburt"        , "country": ["us"] , "languages": [en]} ,
+            {"id": 1      , "username": "anoek"          , "country": ["us"] , "languages": [en]} ,
+            {"id": 52     , "username": "trohde"         , "country": ["de"] , "languages": [de, en]} ,
+            {"id": 64817  , "username": "mark5000"       , "country": ["us"] , "languages": [en]} ,
+            {"id": 66091  , "username": "Revar Isavé"    , "country": ["de"] , "languages": [de, gb]} ,
+            {"id": 441    , "username": "VincentCB"      , "country": ["ca"] , "languages": [en, fr]} ,
+            {"id": 55415  , "username": "entrpy"         , "country": ["se"] , "languages": [se, en]} ,
+            {"id": 360861 , "username": "AdamR"          , "country": ["cz"] , "languages": [cz, en]} ,
+            {"id": 299041 , "username": "Razza99"        , "country": ["gb"] , "languages": [en]} ,
+            {"id": 412892 , "username": "Eugene"         , "country": ["au"] , "languages": [en]} ,
+            {"id": 445315 , "username": "BHydden"        , "country": ["au"] , "languages": [en]} ,
             {"id": 391401 , "username": "Conrad Melville", "country": ["us"] , "languages": [en]} ,
-            {"id": 449941 , "username": "flovo"       , "country": ["eu"] , "languages": [de, en]} ,
+            {"id": 449941 , "username": "flovo"          , "country": ["eu"] , "languages": [de, en]} ,
+            {"id": 209826 , "username": "Vsotvep"        , "country": ["nl"] , "languages": [nl, en, jp]} ,
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},

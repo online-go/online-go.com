@@ -420,6 +420,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 });
             }).catch((r) => {
                 console.log("Node GET failed:", r);
+                this.setState({throb: false});
             });
 
             this.processNewMoves(node_id, this.cached_positions[node_id]);
@@ -449,6 +450,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 });
             }).catch((r) => {
                 console.log("Node GET failed:", r);
+                this.setState({throb: false});
             });
         }
     }

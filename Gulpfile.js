@@ -18,6 +18,9 @@ const tslint       = require('tslint');
 const html_minifier= require('html-minifier').minify;
 
 let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
+let SERVER = "beta.online-go.com";
+//SERVER = "online-go.com";
+
 
 gulp.task('watch_dist_js', watch_dist_js);
 gulp.task('watch_html', watch_html);
@@ -191,7 +194,7 @@ function dev_server(done) {
     devserver.use(express.static('dist'))
     devserver.use(express.static('assets'))
 
-    let beta_proxy = (prefix) => proxy('beta.online-go.com', {
+    let beta_proxy = (prefix) => proxy(SERVER, {
         https: true,
         proxyReqPathResolver: function(req) {
             let path = prefix + require('url').parse(req.url).path;
@@ -312,7 +315,7 @@ function dev_server(done) {
                     }
                 }
                 case 'EXTRA_CONFIG':
-                    return `<script>window['websocket_host'] = "https://beta.online-go.com";</script>`
+                    return `<script>window['websocket_host'] = "https://${SERVER}";</script>`
                 ;
             }
             return '{{' + parameter + '}}';

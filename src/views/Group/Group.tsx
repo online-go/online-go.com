@@ -35,7 +35,8 @@ import * as Dropzone from "react-dropzone";
 import {image_resizer} from "image_resizer";
 import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
-import {EmbeddedChat} from "Chat";
+import {EmbeddedChatCard} from "Chat";
+import { localize_time_strings } from 'localize-time';
 
 
 declare var swal;
@@ -69,6 +70,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 is_public: false,
                 require_invitation: false,
                 hide_details: false,
+                invitation_requests: [],
             },
             group_loaded: false,
             is_admin: false,
@@ -84,6 +86,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             new_news_body: "",
             invite_result: null,
             editing_news: null,
+            refresh: 0,
         };
     }
 
@@ -585,7 +588,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
                                                 ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
-                                                : <h2>{entry.title}</h2>
+                                                : <h2>{localize_time_strings(entry.title)}</h2>
                                             }
                                             <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
                                             {this.state.is_admin &&
@@ -608,7 +611,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     }
 
-                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChat channel={`group-${this.state.group.id}`} updateTitle={false} />}
+                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />}
 
                     <Card>
                         {(group.has_tournament_records || null) &&
@@ -696,8 +699,48 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         />
                     </Card>
 
+
+                    {((group.invitation_requests && group.invitation_requests.length > 0) || null) &&
+                        <Card className="invitation-requests">
+                            <h4>{_("Invitation requests")}</h4>
+                            {group.invitation_requests.map((ir) => {
+                                let accept = () => {
+                                    group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
+                                    this.setState({'refresh': this.state.refresh + 1});
+                                    post("me/groups/invitations", { request_id: ir.id })
+                                    .then(() => console.log("Accepted invitation request", ir))
+                                    .catch(err => console.error(err));
+                                };
+                                let reject = () => {
+                                    group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
+                                    this.setState({'refresh': this.state.refresh + 1});
+                                    post("me/groups/invitations", { "delete": true, request_id: ir.id })
+                                    .then(() => console.log("Deleted invitation request", ir))
+                                    .catch(err => console.error(err));
+                                };
+
+                                return (
+                                    <div key={ir.id}>
+                                        <i className='fa fa-check' onClick={accept} />
+                                        <i className='fa fa-times' onClick={reject} />
+                                        <Player user={ir.user} />
+                                    </div>
+                                );
+                            })}
+                        </Card>
+                    }
+
+
+                    <Card className='ladders'>
+                        <div><Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link></div>
+                        <div><Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link></div>
+                        <div><Link to={`/ladder/${group.ladder_ids[2]}`}>{_("19x19 Ladder")}</Link></div>
+                    </Card>
+
+                    {/*
                     {group.ladder_ids.map((ladder_id, idx) => (
                         <Card key={idx}>
+                            <Link
                             <LadderComponent
                                 pageSize={10}
                                 ladderId={ladder_id}
@@ -708,6 +751,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 />
                         </Card>
                     ))}
+                    */}
                 </div>
 
 
@@ -716,6 +760,8 @@ export class Group extends React.PureComponent<GroupProperties, any> {
 
         </div>
         );
+
+
     }
     renderExtraPlayerActions = (player_id: number, user: any) => {
         if (!this.state.is_admin && !data.get("user").is_moderator) {

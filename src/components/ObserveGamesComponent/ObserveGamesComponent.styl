@@ -1,0 +1,139 @@
+/*
+ * Copyright (C) 2012-2020  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+.ObserveGamesComponent {
+    text-align: center;
+    user-select: none;
+    // here
+
+    .games {
+        text-align: left;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+
+
+    @media only screen and (max-width: 340px) {
+        .header button {
+            font-size: font-size-small;
+        }
+    }
+
+    h3 {
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        white-space: nowrap;
+    }
+
+    .container {
+        margin-bottom: 1rem;
+    }
+
+
+
+    .page-controls {
+        display: inline-flex;
+        align-items: baseline;
+
+        .left {
+            display: inline-flex;
+            align-items: baseline;
+            flex:1;
+            margin-right: 1rem;
+            input {
+                //font-size: 0.7em;
+                padding: 0;
+                width: 2rem;
+                text-align: left;
+                border: 0;
+                margin-left: 0.5rem;
+                //border-bottom: 1px solid;
+                //background-color: transparent;
+                //themed color fg
+            }
+
+            .of {
+                //font-size: 0.7em;
+                margin-right: 0.5rem;
+                margin-left: 0.5rem;
+            }
+
+            .total {
+                display: inline-block;
+                //font-size: 0.7em;
+                min-width: 0.8rem;
+                text-align: right;
+                margin-right: 0.5rem;
+            }
+
+            .fa {
+                font-size: 0.9em;
+                width: 0.7rem;
+                cursor: pointer;
+            }
+        }
+        .right {
+            display: inline-flex;
+            flex:1;
+            text-align: right;
+            align-items: baseline;
+
+            .labelshow {
+                margin-left: 1rem;
+                margin-right: 0.5rem;
+                white-space: nowrap;
+            }
+            .show {
+                width: 4rem;
+            }
+        }
+    }
+
+    select {
+        //font-size: 0.7em;
+    }
+
+    .filters {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+
+        .filter-group-group {
+            display: inline-flex;
+            flex-direction: row;
+        }
+        .filter-group {
+            display: inline-flex;
+            flex-direction: column;
+            margin-right: 2rem;
+        }
+        .filter-option {
+            text-align: left;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 0.3rem;
+        }
+    }
+}

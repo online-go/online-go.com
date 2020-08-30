@@ -72,7 +72,7 @@ let rating_percentage = (rating: number) => {
 
 let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
 
-let inlineBlock = {display: "inline-block"};
+let inlineBlock = {display: "inline-flex", "align-items": "center"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
@@ -716,6 +716,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <div className='avatar-subtext'>
                                 {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
 
+                                {(user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0) && <div ><h4 style={inlineBlock}><img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")} </h4></div>}
+
                                 {(user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
 
                                 {(!user.is_superuser && user.is_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-gavel"></i> {_("Moderator")}</h3></div>}
@@ -871,7 +873,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                     </Card>
                 }
 
-                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")}</h2>}
+                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
                 <GameList list={this.state.active_games} player={user}/>
 
 
@@ -968,6 +970,21 @@ export class User extends React.PureComponent<UserProperties, any> {
                                             </a>
                                         ))}
                                     </div>
+                                }
+
+                                {(user.id === 519197 || null) &&
+                                    <React.Fragment>
+                                        <hr />
+                                        <div className="SpicyDragon-trophy">
+                                            <img src='https://cdn.online-go.com/spicydragon/spicydragon400.jpg' width={400} height={340} />
+                                            <div>
+                                                {pgettext("Special trophy for a professional go player", "1004 simultaneous correspondence games")}
+                                            </div>
+                                            <div>
+                                                {moment("2020-07-20T14:38:37").format("LLLL")}
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
                                 }
                             </Card>
                         }

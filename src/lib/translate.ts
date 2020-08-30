@@ -179,6 +179,7 @@ extended_countries.push(["_Somaliland", gettext("Somaliland")]);
 extended_countries.push(["_Tibet", gettext("Tibet")]);
 extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
+extended_countries.push(["_cat", gettext("Catalonia")]);
 
 let fantasy_countries = [];
 let fantasy_countries_cc = {};

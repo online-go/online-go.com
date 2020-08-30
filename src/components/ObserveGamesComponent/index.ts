@@ -15,24 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
 
-interface TabCompleteInputProperties {
-    id?:string;
-    placeholder: string;
-    disabled?: boolean;
-    onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
-    className?: string;
-    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
-    autoFocus?: boolean;
-}
-
-export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLProps<HTMLInputElement>>(
-    (props: TabCompleteInputProperties, ref): JSX.Element => {
-        React.useEffect(() => {
-            ($((ref as any).current) as any).nicknameTabComplete();
-        }, [(ref as any).current]);
-
-        return <input ref={ref} {...props} />;
-    }
-);
+export * from "./ObserveGamesComponent";

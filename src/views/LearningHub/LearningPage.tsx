@@ -22,6 +22,7 @@ import {sfx} from 'sfx';
 import {InstructionalGoban} from "./InstructionalGoban";
 import {browserHistory} from "ogsHistory";
 import {setSectionPageCompleted, getSectionPageCompleted} from './util';
+import {_} from "translate";
 
 interface LearningPageProperties {
     title:string;
@@ -242,13 +243,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                         <div className='text'>
                             {!correct && fail &&
                                 <div className='failed'>
-                                    <h1>Puzzle failed!</h1>
+                                    <h1>{ _("Puzzle failed!") }</h1>
                                     <button className='reject' onClick={this.reset} >Retry</button>
                                 </div>
                             }
                             {correct &&
                                 <div className='complete'>
-                                    <h1>Great job!</h1>
+                                    <h1>{ _("Great job!") }</h1>
                                 </div>
                             }
                             {!correct && !fail &&

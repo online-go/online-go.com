@@ -68,6 +68,7 @@ interface GameProperties {
         params: {
             game_id?: string,
             review_id?: string,
+            move_number?: string,
         }
     };
 }
@@ -91,6 +92,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     tournament_id: number;
     ai_review_selected: string | null = null;
     review_id: number;
+    move_number: number | null = null;
     goban_div: HTMLDivElement;
     goban: Goban;
     resize_debounce: any = null;
@@ -124,12 +126,26 @@ export class Game extends React.PureComponent<GameProperties, any> {
     decide_black: () => void;
     decide_tie: () => void;
 
+    return_url?: string; // url to return to after a game is over
+    return_url_debounce: boolean = false;
+
     constructor(props) {
         super(props);
         window["Game"] = this;
 
+        try {
+            this.return_url = (new URLSearchParams(window.location.search)).get('return') || undefined;
+            console.log("Return url", this.return_url);
+        } catch (e) {
+            console.error(e);
+        }
+
         this.game_id = this.props.match.params.game_id ? parseInt(this.props.match.params.game_id) : 0;
         this.review_id = this.props.match.params.review_id ? parseInt(this.props.match.params.review_id) : 0;
+        if ("move_number" in this.props.match.params) {
+            // 0 is a valid move number, and is different from a lack of move_number meaning load latest move.
+            this.move_number = parseInt(this.props.match.params.move_number);
+        }
         this.state = {
             view_mode: this.computeViewMode(),
             squashed: goban_view_squashed(),
@@ -573,6 +589,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             this.sync_state();
         });
+
+        if (this.move_number !== null) {
+            this.goban.once("gamedata", () => {
+                this.nav_goto_move(this.move_number);
+            });
+        }
 
         this.goban.on("auto-resign", (data) => {
             if (this.goban.engine && data.player_id === this.goban.engine.players.black.id) {
@@ -1765,6 +1787,19 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             new_state.move_text = engine.cur_move && engine.cur_move.text ? engine.cur_move.text : "";
 
+            if (this.state.phase && engine.phase && this.state.phase !== engine.phase && engine.phase === "finished") {
+                if (this.return_url && !this.return_url_debounce) {
+                    this.return_url_debounce = true;
+                    console.log("Transition from ", this.state.phase, " to ", engine.phase);
+                    setTimeout(() => {
+                        if (confirm(interpolate(_("Would you like to return to {{url}}?"), {"url": this.return_url}))) {
+                            window.location.href = this.return_url;
+                        }
+                    }, 1500);
+                }
+            }
+
+
             /* review stuff */
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
@@ -1773,6 +1808,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.setState(new_state);
     }
+
     createConditionalMoveTreeDisplay(root, cpath, blacks_move) {
         let goban = this.goban;
 
@@ -1953,7 +1989,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     private annul(tf:boolean):void {
         let moderation_note = null;
         do {
-            moderation_note = tf ? prompt("ANNULMENT - Moderator note:") : prompt("Un-annulment - Moderator note:");
+            moderation_note = tf ? prompt(_("ANNULMENT - Moderator note:")) : prompt(_("Un-annulment - Moderator note:"));
             if (moderation_note == null) {
                 return;
             }
@@ -1968,10 +2004,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         )
         .then(() => {
             if (tf) {
-                swal({text: _(`Game has been annulled`)});
+                swal({text: _("Game has been annulled")});
             } else {
-                swal({text: `Game ranking has been restored`});
+                swal({text: _("Game ranking has been restored")});
             }
+            this.setState({annulled: tf});
         })
         .catch(errorAlerter);
     }
@@ -2275,7 +2312,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {(this.state.view_mode === "portrait" && !this.state.zen_mode || null) && this.frag_ai_review()}
 
-                    {((this.state.view_mode === "portrait" && !this.state.zen_mode) || null) &&
+                    {((this.state.view_mode === "portrait") || null) &&
                         (review
                             ? this.frag_review_controls()
                             : this.frag_play_controls(false)
@@ -2532,6 +2569,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 ))}
                             </div>
                         }
+
+                        {(this.return_url || null) &&
+                            <div className="return-url">
+                                <a href={this.return_url} rel="noopener">
+                                    {interpolate(pgettext("Link to where the user came from", "Return to {{url}}"), {"url": this.return_url})}
+                                </a>
+                            </div>
+                        }
+
                     </div>
                 }{/* } */}
                 {(this.state.phase === "stone removal" || null) &&  /* { */
@@ -2849,7 +2895,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
     frag_timings = () => {
         if (this.goban &&
             this.goban.engine) {
-            return <GameTimings moves={this.goban.engine.config.moves}></GameTimings>;
+            return <GameTimings
+                moves={this.goban.engine.config.moves}
+                free_handicap_placement={this.goban.engine.config.free_handicap_placement}
+                handicap={this.goban.engine.config.handicap}/>;
         }
         return null;
     }
@@ -3109,9 +3158,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
 
-                {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a>}
-                {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel"></i> {"Remove annulment"}</a>}
-                {(annul && !annulable && !unannulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div>}
+                {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a> /* mod can annul this game */}
+                {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel unannulable"></i> {"Remove annulment"}</a> /* mod can't annul, presumably because it's already annulled */}
+                {(annul && !annulable && !unannulable) && <div><i className="fa fa-gavel greyed"></i> {_("Annul")}</div> /* What is this case?! */}
 
                 {(mod || annul) && <hr/>}
                 {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}

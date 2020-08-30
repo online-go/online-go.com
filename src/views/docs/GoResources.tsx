@@ -224,11 +224,13 @@ export let GoResources = (props) => {
                 <span><Flag country={eu}/> <a rel="noopener" href="http://www.eurogotv.com/index.php?menu=Video&log=trefwoordzoeken&trefwoord1=murugandi&pagina=5%20Murugandi">Murugandi</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/apetresc">Adrian Petrescu</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/longstridebaduk">LongstrideBaduk</a></span>,
-                <span><Flag country={es}/> <a rel="noopener" href="https://www.youtube.com/user/EscueladeGodeBilbao">EscueladeGodeBilbao</a></span>,
+                <span><Flag country={es}/> <a rel="noopener" href="https://www.youtube.com/goenbilbao">Escuela de Go en Bilbao</a></span>,
+                <span><Flag country={es}/> <a rel="noopener" href="https://www.youtube.com/gogoratugo">Gogoratu Go</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">In Sente</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">BenKyo</a></span>,
                 <span><Flag country={ar}/> <a rel="noopener" href="https://www.youtube.com/user/lucho4668 ">Luciano Zinni</a></span>,
                 <span><Flag country={it}/> <a rel="noopener" href="https://www.youtube.com/user/jejosamurai ">Diego Laurenti</a></span>,
+                <span><Flag country={es}/> <a rel="noopener" href="https://www.youtube.com/EstudiandoGoconIni">Estudiando Go con Ini</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/xhu98">Xhu98 Twitch</a> / <a rel="noopener" href="https://www.youtube.com/channel/UCohURdr4oSzrXL49qOQQpwg">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/odnihs">odnihs Twitch</a> / <a rel="noopener" href="https://www.youtube.com/user/Lightvolty">YouTube</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/danielml001">danielml001 Twitch</a> / <a rel="noopener" href="http://www.youtube.com/danielml01">YouTube</a></span>,
@@ -337,7 +339,8 @@ export let GoResources = (props) => {
                 <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
                 <span><Flag country={"mx"}/> <a rel="noopener" href="http://go.org.mx/ ">Mexican Association of Go</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>,
-                <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>
+                <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>,
+                <span><Flag country={"il"}/> <a rel="noopener" href="https://igo.org.il/">Israeli Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>

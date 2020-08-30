@@ -58,6 +58,7 @@ import { Styling } from "Styling";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
 import { GobanTest } from "GobanTest";
+import { global_channels } from "chat_manager";
 
 import * as docs from "docs";
 
@@ -93,9 +94,38 @@ export const routes = (
             <Route path="/overview" component={Overview}/>
 
             <Route path="/play" component={Play}/>
-            <Route path="/chat" component={ChatView}/>
+            <Route path="/chat/:channel" component={ChatView}/>
+            <Route path="/chat/:channel/*" component={ChatView}/>
+            <Route path="/chat/:channel/**/*" component={ChatView}/>
+            <Route path="/chat" render={() => {
+                let channel = data.get('chat.active_channel');
+                let joined = data.get("chat.joined") || {};
+
+                if (!channel) {
+                    if (Object.keys(joined).length) {
+                        for (let key of Object.keys(joined)) {
+                            channel = key;
+                            break;
+                        }
+                    } else {
+                        channel = "global-english";
+                        for (let chan of global_channels) {
+                            if (chan.primary_language) {
+                                channel = chan.id;
+                            }
+                        }
+                    }
+                }
+
+                // Make sure it shows up in the left panel
+                joined[channel] = 1;
+                data.set("chat.joined", joined);
+
+                return <Redirect to={`/chat/${channel}`}/>;
+            }}/>
             <Route path="/observe-games" component={ObserveGames}/>
             <Route path="/game/view/:game_id" component={Game}/>
+            <Route path="/game/:game_id/:move_number" component={Game}/>
             <Route path="/game/:game_id" component={Game}/>
             <Route path="/review/view/:review_id" exact component={Game}/>
             <Route path="/review/:review_id" component={Game}/>
@@ -135,6 +165,8 @@ export const routes = (
             <Route path="/group/create" component={GroupCreate}/>
             <Route path="/group/:group_id" component={Group}/>
             <Route path="/group/:group_id/*" component={Group}/>
+            <Route path="/groupadmin/:group_id" component={Group}/>
+            <Route path="/groupadmin/:group_id/*" component={Group}/>
             <Route path="/tournament/new/:group_id" component={Tournament}/>
             <Route path="/tournament/new" component={Tournament}/>
             <Route path="/tournament/:tournament_id" component={Tournament}/>

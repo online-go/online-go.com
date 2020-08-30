@@ -31,7 +31,7 @@ import * as moment from "moment";
 import * as Datetime from "react-datetime";
 import {UIPush} from "UIPush";
 import {Card} from "material";
-import {EmbeddedChat} from "Chat";
+import {EmbeddedChatCard} from "Chat";
 import * as data from "data";
 import {PaginatedTable} from "PaginatedTable";
 import {PersistentElement} from "PersistentElement";
@@ -1463,7 +1463,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
             {!loading && !tournament.started &&
                 <div className={"bottom-details not-started"}>
-                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+                    <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
                     {(!tournament.start_waiting || null) &&
                         <div className="signup-area" style={{textAlign: "center"}}>
@@ -1528,7 +1528,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
             {!loading && tournament.started &&
                 <div className="bottom-details">
-                    <EmbeddedChat channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+                    <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
                     <div className="results">
                     {this.state.use_elimination_trees ? <PersistentElement elt={this.elimination_tree_container[0]}/> :

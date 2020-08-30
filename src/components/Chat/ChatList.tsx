@@ -21,7 +21,6 @@ import { group_channels, tournament_channels, global_channels, ChatChannelProxy,
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { Flag } from "Flag";
-import { setActiveChannel } from "Chat";
 import { shouldOpenNewTab } from "misc";
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
@@ -267,7 +266,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         }
 
         popover({
-            elt: (<ChatDetails chatChannelId={channel} subscribale={!(channel.startsWith("global") || channel === "shadowban")} partFunc={(channel in this.channels ? this.state.partFunc : undefined)}/>),
+            elt: (<ChatDetails chatChannelId={channel} subscribable={!(channel.startsWith("global") || channel === "shadowban")} partFunc={(channel in this.channels ? this.state.partFunc : undefined)}/>),
             below: event.currentTarget,
             minWidth: 130,
         });
@@ -386,7 +385,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                             onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={chan.id}>
-                                <Flag country={chan.country} language={chan.language} user_country={user_country} /> {chan.name}
+                                <Flag country={chan.country} language={chan.language && (typeof(chan.language) === "string" ? chan.language : chan.language[0])} user_country={user_country} /> {chan.name}
                             </span>
                             {message_count(chan.id)}
                         </div>
@@ -395,4 +394,11 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             </div>
         );
     }
+}
+
+function setActiveChannel(channel: string) {
+    if (!channel) {
+        throw new Error(`Invalid channel ID: ${channel}`);
+    }
+    data.set("chat.active_channel", channel);
 }

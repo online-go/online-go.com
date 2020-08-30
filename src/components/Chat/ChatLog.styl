@@ -1,0 +1,253 @@
+
+.ChatLog {
+    display: flex;
+    flex-basis: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
+    max-width: 100%;
+
+    .split {
+        flex-basis: 100%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-height: 10rem;
+
+
+        .gutter-vertical {
+            themed background-color shade3
+            cursor: move;
+            cursor: ns-resize;
+        }
+    }
+    .game-list {
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        overflow: auto; 
+
+        .GameList {
+            text-align: left;
+        }
+
+        .MiniGoban {
+            width: 72px;
+            height: 72px;
+
+            .board {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.1rem;
+            }
+        }
+    }
+
+    .chat-lines {
+        flex-basis: 100%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        overflow-y: scroll;
+        border-bottom: 1px solid transparent;
+        themed border-bottom-color shade3
+        .Player {
+            themed color fg
+        }
+        word-wrap: break-word;
+    }
+
+    .timestamp {
+        @extend .monospace
+        font-size: 0.8rem;
+        font-style: normal !important;
+    }
+
+    .third-person {
+        font-style: italic;
+    }
+
+    .mentions .body {
+        themed color chat-mentions
+        //font-weight: bold;
+    }
+    /body.light .mentions .body {
+        font-weight: bold;
+    }
+    .self .body {
+        themed color chat-self-message
+    }
+
+
+    .system {
+        themed color chat-system
+        padding-left: 1rem;
+        border-top: 1px solid transparent;
+        themed border-top-color chat-system
+        padding-top: 0.5rem
+        padding-bottom: 0.5rem
+        margin-top: 0.5rem
+    }
+
+    .input-container {
+        display: flex;
+        align-items: center;
+        button {
+            margin: 0;
+            padding-bottom: 0;
+            padding-top: 0;
+            font-size: 0.85rem;
+        }
+        input {
+            flex: 1;
+            overflow: hidden;
+        }
+        .channel-toggle {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .users-toggle {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+
+    .chat-line {
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        white-space: normal;
+
+        .date {
+            font-size: 8pt;
+            font-family: 'Source Code Pro', monospace;
+            color: #666;
+        }
+    }
+
+    .Player {
+        themed color fg
+        font-weight: bold;
+    }
+}
+
+
+.ChatHeader {
+    border-bottom: 1px solid transparent;
+    themed border-bottom-color shade3
+    position: relative;
+    flex: 0;
+    height: 2.0rem;
+    min-height: 2.0rem;
+    max-height: 2.0rem;
+
+
+    background-size: cover;
+
+
+    .backdrop, .foreground {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+    .backdrop {
+        themed background-color bg
+        opacity: 0.5;
+        z-index: 1;
+    }
+    .foreground {
+        z-index: 2;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .header-icon {
+        flex: 0;
+        width: 2rem;
+        flex-basis: 2rem;
+        themed color fg-increased-contrast
+
+        &.active {
+            themed color primary
+        }
+    }
+
+    .channel-topic {
+        display: flex;
+        flex: 1;
+        flex-basis: 100%;
+        overflow: hidden;
+
+        font-weight: bold;
+        font-size: font-size-normal;
+
+        position: relative;
+
+        input {
+            flex: 1;
+            height: 2.0rem;
+            min-height: 2.0rem;
+            max-height: 2.0rem;
+            border: none;
+        }
+
+        .topic {
+            display: flex;
+            align-items: center;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
+            themed color fg-increased-contrast
+            padding-right: 0.5rem;
+            padding-left: 0.5rem;
+            overflow: hidden;
+
+            white-space: nowrap;
+            a {
+                padding-left: 0.3rem;
+                padding-right: 0.3rem;
+            }
+
+            .content {
+                flex: 1;
+            }
+        }
+    }
+
+    input {
+        themed background bg
+        padding: 0.5rem;
+    }
+
+    .channel-topic-edit {
+        flex: 1;
+        margin: 0;
+    }
+
+    .fa, .ogs-goban {
+        display: inline-flex;
+        flex: 0;
+        flex-basis: 2rem;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+
+        &:hover, &.active {
+            themed background-color primary
+            themed color colored-background-fg
+        }
+
+    }
+
+    .fa-pencil, .fa-save {
+        float: right;
+    }
+}
+
+.EmbeddedChatCard {
+}
