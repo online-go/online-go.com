@@ -32,7 +32,7 @@ after confirming that the dev server loaded as above.
 
 ## Getting Started
 * Sign up for a [GitHub account](https://github.com/signup/free).
-* Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the requrest for an enhancement exists.
+* Search the [issue tracker](https://github.com/online-go/online-go.com/issues) to see if the problem is already submitted or the request for an enhancement exists.
 * Submit an issue if one does not exist.  Please include as much of the below information as possible:
   * A clear summary.
   * Operating System tested on.
