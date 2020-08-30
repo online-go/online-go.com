@@ -358,7 +358,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else {
             win_rate = win_rates[move_number] || this.ai_review.win_rate;
             score = scores[move_number];
-            if (!score && score != 0) {
+            if (!score && score !== 0) {
               this.ai_review.scores ? this.ai_review.scores[-1] : 0;
             }
         }
