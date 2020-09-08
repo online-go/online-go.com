@@ -159,7 +159,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
                     <h3>Debug</h3>
                     <div>
                         <div className="action-buttons">
-                            <input type=text
+                            <input type='text'
                                 placeholder='Player id'
                                 value={this.state.notifications_player_id}
                                 onChange={(ev) => this.setState({notifications_player_id: ev.target.value})}
