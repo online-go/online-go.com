@@ -106,7 +106,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
                 this.appendResult(`ERROR: ${getPrintableError(err)}`);
                 this.appendResult("\n----------------\n");
             });
-        }
+        };
 
         if (txt) {
             swal({text: txt, showCancelButton: true})
@@ -169,7 +169,10 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
                     </div>
                 </div>
                 <div className="col-sm-6">
-                    <button className='primary' onClick={() => {this.results = []; this.setState({results: []});}}>Clear log</button>
+                    <button className='primary' onClick={() => {
+                        this.results = [];
+                        this.setState({results: []});
+                    }}>Clear log</button>
                     <div className="well">
                         {this.state.results.map((res, idx) => (
                             <pre key={idx}>{res}</pre>
