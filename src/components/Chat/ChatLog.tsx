@@ -465,7 +465,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
             onScroll={onScroll}
             onClick={focusInput}
             >
-            {proxy?.channel.chat_log.map((line, idx) => {
+            {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
                 let ll = last_line;
                 last_line = line;
                 return <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />;
