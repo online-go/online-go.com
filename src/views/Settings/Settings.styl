@@ -298,6 +298,50 @@
             margin-top: 3rem;
         }
     }
+
+    #LinkPreferences {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        .LinkPreferencesDescription {
+            display: inline-block;
+            max-width: 30rem;
+            text-align: justify;
+            margin-bottom: 5rem;
+        }
+
+
+        .PreferenceLine {
+            .PreferenceLineTitle {
+                width: 15rem;
+                min-width: 15rem;
+                select {
+                width: 14rem;
+                min-width: 14rem;
+
+                }
+            }
+            .PreferenceLineBody {
+                width: 20rem;
+                min-width: 20rem;
+
+                input[type="number"] {
+                    width: 7rem;
+                }
+                input[type="text"] {
+                    width: 7rem;
+                }
+
+                .RankSelect {
+                    margin-left: 1rem;
+                }
+            }
+        }
+
+    }
 }
 
 #SettingsContainer {

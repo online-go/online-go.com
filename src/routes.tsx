@@ -135,7 +135,13 @@ export const routes = (
             <Route path="/joseki/" exact component={Joseki}/> {/* this is equivalent to specifying pos = "root" */}
             <Route path="/joseki/:pos" component={Joseki}/>
 
-            <Route path="/player/settings" component={Settings}/>
+            <Route path="/settings/:category" component={Settings}/>
+            <Route path="/settings/:category/*" component={Settings}/>
+            <Route path="/settings/:category/**/*" component={Settings}/>
+            <Route path="/settings" render={SettingsRedirect}/>
+            <Route path="/user/settings" render={SettingsRedirect}/>
+            <Route path="/player/settings" render={SettingsRedirect}/>
+
             <Route path="/player/supporter" component={Supporter}/>
             <Route path="/player/:user_id" component={User}/>
             <Route path="/player/:user_id/*" component={User}/>
@@ -144,8 +150,6 @@ export const routes = (
             <Route path="/user/view/:user_id" component={User}/>
             <Route path="/user/view/:user_id/*" component={User}/>
             <Route path="/user/view/:user_id/**/*" component={User}/>
-            <Route path="/settings" component={Settings}/>
-            <Route path="/user/settings" component={Settings}/>
             <Route path="/user/supporter" component={Supporter}/>
             <Route path="/user/verifyEmail" component={VerifyEmail}/>
             <Route path="/u/:username" component={UserByName}/>
@@ -237,3 +241,7 @@ export const routes = (
 </Router>);
 
 
+function SettingsRedirect() {
+    const last_settings_page = data.get('settings.page-selected', 'general');
+    return <Redirect to={`/settings/${last_settings_page}`}/>;
+}

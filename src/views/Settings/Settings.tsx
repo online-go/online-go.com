@@ -23,8 +23,9 @@ import {ValidPreference} from "preferences";
 import {Link} from "react-router-dom";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, put, del, abort_requests_in_flight} from "requests";
-import {errorAlerter, errorLogger, ignore, Timeout} from "misc";
+import {errorAlerter, errorLogger, ignore, Timeout, dup} from "misc";
 import {durationString} from "TimeControl";
+import {allRanks, IRankInfo} from "rank_utils";
 import {Card} from "material";
 import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
 import {SpritePack} from "sfx_sprites";
@@ -38,6 +39,8 @@ import {EventEmitter} from 'eventemitter3';
 import {LineText} from 'misc-ui';
 import {Toggle} from 'Toggle';
 import {LoadingPage} from 'Loading';
+import {browserHistory} from "ogsHistory";
+import {IAssociation, associations} from "associations";
 import Select from 'react-select';
 import ITC from 'ITC';
 
@@ -98,25 +101,38 @@ interface SettingsState {
     notifications?: any;
     vacation_left?: string;
     hide_ui_class?: boolean;
+    self_reported_account_linkages?: any;
 }
 
 interface SettingGroupProps {
     state: SettingsState;
     vacation_base_time: number;
     refresh: () => () => void;
+    updateSelfReportedAccountLinkages: (link:any) => void;
 }
 
-export function Settings():JSX.Element {
-    const [selected, __select]:[string, (s: string) => void] = React.useState(data.get('settings.page-selected', 'general'));
-    const [settings_state, set_settings_state]:[SettingsState, (s: SettingsState) => void] = React.useState({});
+interface SettingsProperties {
+    match: {
+        params: {
+            category: string
+        }
+    };
+}
+
+
+export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Element {
+    const [settings_state, setSettingsState]:[SettingsState, (s: SettingsState) => void] = React.useState({});
     const [vacation_base_time, set_vacation_base_time]:[number, (s: number) => void] = React.useState(Date.now());
     const [loaded, set_loaded]:[number, (b: number) => void] = React.useState(0);
 
     React.useEffect(refresh, []);
 
+    const selected = category;
+    data.set('settings.page-selected', selected);
+
     function select(s: string): void {
-        __select(s);
         data.set('settings.page-selected', s);
+        browserHistory.push(`/settings/${s}`);
     }
 
     function refresh(): () => void {
@@ -126,11 +142,12 @@ export function Settings():JSX.Element {
         .then((settings) => {
             if (!canceled) {
                 set_vacation_base_time(Date.now());
-                set_settings_state({
+                setSettingsState({
                     profile: settings.profile,
                     notifications: settings.notifications,
                     vacation_left: durationString(settings.profile.vacation_left),
                     hide_ui_class: settings.site_preferences.hide_ui_class,
+                    self_reported_account_linkages: settings.self_reported_account_linkages,
                 });
                 set_loaded(1);
             }
@@ -152,6 +169,7 @@ export function Settings():JSX.Element {
         { key: 'vacation' , label: _("Vacation") },
         { key: 'email'    , label: _("Email Notifications") },
         { key: 'account'  , label: _("Account Settings") },
+        { key: 'link'     , label: _("Account Linking") },
         { key: 'logout'   , label: _("Logout") },
     ];
 
@@ -165,6 +183,7 @@ export function Settings():JSX.Element {
         case 'email'    : SelectedPage = EmailPreferences   ; break;
         case 'game'     : SelectedPage = GamePreferences    ; break;
         case 'general'  : SelectedPage = GeneralPreferences ; break;
+        case 'link'     : SelectedPage = LinkPreferences ; break;
         case 'chat'     : SelectedPage = ChatPreferences    ; break;
     }
 
@@ -172,6 +191,11 @@ export function Settings():JSX.Element {
         state: settings_state,
         vacation_base_time: vacation_base_time,
         refresh: refresh,
+        updateSelfReportedAccountLinkages: (new_link:any) => {
+            let ns = dup(settings_state);
+            ns.self_reported_account_linkages = new_link;
+            setSettingsState(ns);
+        }
     };
 
     return (
@@ -268,7 +292,7 @@ function PreferenceDropdown(props: PreferenceDropdownProps):JSX.Element {
     );
 }
 
-function PreferenceLine(props: {title: string, description?: string, children: React.ReactNode}):JSX.Element {
+function PreferenceLine(props: {title: (string | JSX.Element), description?: string, children: React.ReactNode}):JSX.Element {
     return (
         <div className='PreferenceLine'>
             <span className='PreferenceLineTitle'>
@@ -981,6 +1005,172 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                 </PreferenceLine>
             }
         </div>
+    );
+}
+
+let update_link_preferences_debounce:Timeout;
+
+function LinkPreferences(props:SettingGroupProps):JSX.Element {
+    let link = props.state.self_reported_account_linkages || {};
+
+    function set(key:string):((value: any) => void) {
+        return ((value: any) => {
+            if (typeof(value) === "object") {
+                value = value.target.value; // event
+            }
+
+            link[key] = value;
+            props.updateSelfReportedAccountLinkages(link);
+            if (update_link_preferences_debounce) {
+                clearTimeout(update_link_preferences_debounce);
+            }
+            update_link_preferences_debounce = setTimeout(() => {
+                clearTimeout(update_link_preferences_debounce);
+                update_link_preferences_debounce = undefined;
+                put('me/settings', {
+                    'self_reported_account_linkages': props.state.self_reported_account_linkages
+                })
+                .then((res) => console.log(res))
+                .catch(errorAlerter);
+            }, 500);
+        });
+    }
+
+    return (
+        <div id='LinkPreferences'>
+            <div className='LinkPreferencesDescription'>
+                {
+                    _("Here you can list other places you play and have a rating or a rank. You can choose to publically display this information or not. Providing this even if you don't want it publically known helps us tune our ranking algorithm and provide guidance on converting ranks between servers and organizations for the community, so the information is important and greatly appreciated.")
+                }
+            </div>
+
+            <PreferenceLine
+                title={_("Show this information on your profile page")}
+                >
+                <Toggle checked={!link.hidden} onChange={(tf) => set('hidden')(!tf)} />
+            </PreferenceLine>
+
+
+            <h2>{_("Associations")}</h2>
+
+            <PreferenceLine title={<AssociationSelect value={link.org1} onChange={set('org1')} />}>
+                <input type="text"
+                    placeholder={pgettext("Go association Identifier or PIN number", "ID or PIN")}
+                    value={link.org1_id || ""}
+                    onChange={set('org1_id')}
+                />
+                <RankSelect value={link.org1_rank} onChange={set('org1_rank')} />
+            </PreferenceLine>
+
+            <PreferenceLine title={<AssociationSelect value={link.org2} onChange={set('org2')} />}>
+                <input type="text"
+                    placeholder={pgettext("Go association Identifier or PIN number", "ID or PIN")}
+                    value={link.org2_id || ""}
+                    onChange={set('org2_id')}
+                />
+                <RankSelect value={link.org2_rank} onChange={set('org2_rank')} />
+            </PreferenceLine>
+
+            <PreferenceLine title={<AssociationSelect value={link.org3} onChange={set('org3')} />}>
+                <input type="text"
+                    placeholder={pgettext("Go association Identifier or PIN number", "ID or PIN")}
+                    value={link.org3_id || ""}
+                    onChange={set('org3_id')}
+                />
+                <RankSelect value={link.org3_rank} onChange={set('org3_rank')} />
+            </PreferenceLine>
+
+            <h2>{_("Servers")}</h2>
+            <PreferenceLine title={_("KGS")}>
+                <input type="text" placeholder={_("Username")} value={link.kgs_username || ""} onChange={set('kgs_username')} />
+                <RankSelect value={link.kgs_rank} onChange={set('kgs_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("IGS / PandaNet")}>
+                <input type="text" placeholder={_("Username")} value={link.igs_username || ""} onChange={set('igs_username')} />
+                <RankSelect value={link.igs_rank} onChange={set('igs_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("DGS")}>
+                <input type="text" placeholder={_("Username")} value={link.dgs_username || ""} onChange={set('dgs_username')} />
+                <RankSelect value={link.dgs_rank} onChange={set('dgs_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("Little Golem")}>
+                <input type="text" placeholder={_("Username")} value={link.golem_username || ""} onChange={set('golem_username')} />
+                <RankSelect value={link.golem_rank} onChange={set('golem_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("WBaduk")}>
+                <input type="text" placeholder={_("Username")} value={link.wbaduk_username || ""} onChange={set('wbaduk_username')} />
+                <RankSelect value={link.wbaduk_rank} onChange={set('wbaduk_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("Tygem")}>
+                <input type="text" placeholder={_("Username")} value={link.tygem_username || ""} onChange={set('tygem_username')} />
+                <RankSelect value={link.tygem_rank} onChange={set('tygem_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("Fox")}>
+                <input type="text" placeholder={_("Username")} value={link.fox_username || ""} onChange={set('fox_username')} />
+                <RankSelect value={link.fox_rank} onChange={set('fox_rank')} />
+            </PreferenceLine>
+            <PreferenceLine title={_("Yike Weiqi")}>
+                <input type="text" placeholder={_("Username")} value={link.yike_username || ""} onChange={set('yike_username')} />
+                <RankSelect value={link.yike_rank} onChange={set('yike_rank')} />
+            </PreferenceLine>
+        </div>
+    );
+}
+
+const rank_select_ranks = allRanks();
+function RankSelect({value, onChange}:{value: number, onChange: (value:number) => void}):JSX.Element {
+    return (
+        <select className='RankSelect' value={value} onChange={(ev) => onChange(parseInt(ev.target.value))}>
+            <option value={-999}>{_("-- Select Rank --")}</option>
+            {rank_select_ranks.map((rank:IRankInfo) =>
+                <option key={rank.rank} value={rank.rank}>{rank.label}</option>
+            )}
+        </select>
+    );
+}
+
+
+function AssociationSelect({value, onChange}:{value: string, onChange: (value:string) => void}):JSX.Element {
+    let user_countries = [];
+    try {
+        if (data.get('user').country) {
+            /* If there's an association for the user's country, we put it at the top of the list */
+            if (associations.filter(a => a.country === data.get('user').country).length > 0) {
+                user_countries.push(data.get('user').country);
+            }
+        }
+    } catch (err) {
+        // pass
+    }
+
+    if (user_countries.length === 0 || user_countries[0] === "un") {
+        /* Couldn't figure out a best assocation to put up top? Put the most common ones up on top */
+        user_countries = [
+            "us", "eu", "jp", "cn", "kr"
+        ];
+    }
+
+    associations.sort((a:IAssociation, b:IAssociation) => {
+        if (user_countries.indexOf(a.country) >= 0) {
+            if (user_countries.indexOf(b.country) >= 0) {
+                return a.name < b.name ? -1 : 1;
+            }
+            return -1;
+        }
+        if (user_countries.indexOf(b.country) >= 0) {
+            return 1;
+        }
+
+        return a.country < b.country ? -1 : 1;
+    });
+
+    return (
+        <select className='AssociationSelect' value={value} onChange={(ev) => onChange(ev.target.value)}>
+            <option value={''}>{_("-- Select Association --")}</option>
+            {associations.map((association:IAssociation) =>
+                <option key={association.country} value={association.country}>{association.name}</option>
+            )}
+        </select>
     );
 }
 

@@ -18,7 +18,7 @@
 import {_, interpolate, pgettext} from "translate";
 import { Interface } from "readline";
 
-interface IRankInfo {
+export interface IRankInfo {
     rank: number;
     label: string;
 }
