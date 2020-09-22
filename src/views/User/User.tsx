@@ -46,6 +46,7 @@ import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
 import {UIPush} from "UIPush";
+import {associations} from 'associations';
 
 declare let swal;
 
@@ -72,7 +73,7 @@ let rating_percentage = (rating: number) => {
 
 let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
 
-let inlineBlock = {display: "inline-flex", "align-items": "center"};
+let inlineBlock = {display: "inline-flex", "alignItems": "center"};
 let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
 let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
@@ -678,6 +679,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
         let global_user = data.get("config.user");
         let cdn_release = data.get("config.cdn_release");
+        let account_links = user.self_reported_account_linkages;
 
         return (
           <div className="User container">
@@ -743,6 +745,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
                             {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
 
+
                             {editing
                               ? <div className='country-line'>
                                     <Flag country={user.country} big/>
@@ -782,8 +785,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>{_("Ratings")}</h3>
                                 {this.renderRatingGrid()}
+
                             </div>
                         }
+
 
                     </div>
                 </div>
@@ -947,6 +952,15 @@ export class User extends React.PureComponent<UserProperties, any> {
                 <div className="col-sm-4">
                     {(!(user.professional)) &&
                         <div >
+
+                        {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings)
+                            && (!user.professional || global_user.id === user.id)
+                            && account_links
+                            &&
+                            <Card>
+                                <SelfReportedAccountLinkages links={account_links} />
+                            </Card>
+                        }
 
                         {(this.state.titles.length > 0 || this.state.trophies.length > 0 || null) &&
                             <Card>
@@ -1193,4 +1207,80 @@ export class User extends React.PureComponent<UserProperties, any> {
 
 function openNotes(notes) {
     openModal(<NotesModal notes={notes} fastDismiss />);
+}
+
+function SelfReportedAccountLinkages({links}: {links: any}):JSX.Element {
+    const has_association = links.org1 || links.org2 || links.org3;
+    let has_other_server = false;
+    for (let key in links) {
+        if (key !== "hidden" && !(key.indexOf('org') === 0) && links[key]) {
+            has_other_server = true;
+        }
+    }
+
+    return (
+        <div className='SelfReportedAccountLinkages'>
+            {has_association && <h3>{_("Associations")}</h3>}
+            <AssociationLink country={links.org1} id={links.org1_id} rank={links.org1_rank} />
+            <AssociationLink country={links.org2} id={links.org2_id} rank={links.org2_rank} />
+            <AssociationLink country={links.org3} id={links.org3_id} rank={links.org3_rank} />
+
+            {has_other_server && <h3>{_("Servers")}</h3>}
+            <ServerLink name={_("KGS")} id={links.kgs_username} rank={links.kgs_rank} />
+            <ServerLink name={_("IGS / PandaNet")} id={links.igs_username} rank={links.igs_rank} />
+            <ServerLink name={_("DGS")} id={links.dgs_username} rank={links.dgs_rank} />
+            <ServerLink name={_("Little Golem")} id={links.golem_username} rank={links.golem_rank} />
+            <ServerLink name={_("WBaduk")} id={links.wbaduk_username} rank={links.wbaduk_rank} />
+            <ServerLink name={_("Tygem")} id={links.tygem_username} rank={links.tygem_rank} />
+            <ServerLink name={_("Fox")} id={links.fox_username} rank={links.fox_rank} />
+            <ServerLink name={_("Yike Weiqi")} id={links.yike_username} rank={links.yike_rank} />
+        </div>
+    );
+
+}
+function AssociationLink({country, id, rank}: {country: string, id?: string, rank?: string}):JSX.Element {
+    try {
+        if (!country) {
+            return null;
+        }
+
+        let association = associations.filter(a => a.country === country)[0];
+        let linker:(id:string) => string;
+
+        if (country === "us") {
+            linker = (id:string) => `https://agagd.usgo.org/player/${id}/`;
+        }
+
+        if (country === "eu") {
+            linker = (id:string) => `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
+        }
+
+        return (
+            <div className='association-link'>
+                <Flag country={country} />
+                <span className='name'>{association.acronym || association.name}</span>
+                {(linker && id)
+                    ? <a className='id' href={linker(id)} rel="noopener">{id}</a>
+                    : <span className='id'>{id || ""}</span>
+                }
+                <span className='rank'>{rank ? rankString(rank) : ""}</span>
+            </div>
+        );
+    } catch (e) {
+        return <div>[invalid association]</div>;
+    }
+}
+
+function ServerLink({name, id, rank}: {name: string, id?: string, rank?: string}):JSX.Element {
+    if (!id && !rank) {
+        return null;
+    }
+
+    return (
+        <div className='server-link'>
+            <span className='name'>{name}</span>
+            <span className='id'>{id || ""}</span>
+            <span className='rank'>{rank ? rankString(rank) : ""}</span>
+        </div>
+    );
 }
