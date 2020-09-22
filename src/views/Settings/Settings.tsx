@@ -1113,6 +1113,10 @@ function LinkPreferences(props:SettingGroupProps):JSX.Element {
                 <input type="text" placeholder={_("Username")} value={link.yike_username || ""} onChange={set('yike_username')} />
                 <RankSelect value={link.yike_rank} onChange={set('yike_rank')} />
             </PreferenceLine>
+            <PreferenceLine title={_("GoQuest")}>
+                <input type="text" placeholder={_("Username")} value={link.goquest_username || ""} onChange={set('goquest_username')} />
+                <RankSelect value={link.goquest_rank} onChange={set('goquest_rank')} />
+            </PreferenceLine>
         </div>
     );
 }

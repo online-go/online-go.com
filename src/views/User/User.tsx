@@ -1234,6 +1234,7 @@ function SelfReportedAccountLinkages({links}: {links: any}):JSX.Element {
             <ServerLink name={_("Tygem")} id={links.tygem_username} rank={links.tygem_rank} />
             <ServerLink name={_("Fox")} id={links.fox_username} rank={links.fox_rank} />
             <ServerLink name={_("Yike Weiqi")} id={links.yike_username} rank={links.yike_rank} />
+            <ServerLink name={_("GoQuest")} id={links.goquest_username} rank={links.goquest_rank} />
         </div>
     );
 
