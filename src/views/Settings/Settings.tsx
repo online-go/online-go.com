@@ -1050,13 +1050,11 @@ function LinkPreferences(props:SettingGroupProps):JSX.Element {
                 <Toggle checked={!link.hidden} onChange={(tf) => set('hidden')(!tf)} />
             </PreferenceLine>
 
-            {!link.hidden &&
-                <PreferenceLine
-                    title={_("Only show ranks, not ids and usernames")}
-                    >
-                    <Toggle checked={link.hidden_ids} onChange={(tf) => set('hidden_ids')(tf)} />
-                </PreferenceLine>
-            }
+            <PreferenceLine
+                title={_("Only show ranks, not ids and usernames")}
+                >
+                <Toggle disabled={link.hidden} checked={link.hidden_ids && !link.hidden} onChange={(tf) => set('hidden_ids')(tf)} />
+            </PreferenceLine>
 
 
             <h2>{_("Associations")}</h2>
