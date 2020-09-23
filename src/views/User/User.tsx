@@ -1213,7 +1213,10 @@ function SelfReportedAccountLinkages({links}: {links: any}):JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (let key in links) {
-        if (key !== "hidden" && key !== "last_updated" && !(key.indexOf('org') === 0) && links[key]) {
+        if (key !== "hidden" &&
+            key !== "hidden_ids" &&
+            key !== "last_updated" &&
+            !(key.indexOf('org') === 0) && links[key]) {
             has_other_server = true;
         }
     }
