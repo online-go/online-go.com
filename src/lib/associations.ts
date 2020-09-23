@@ -92,7 +92,7 @@ export let associations:Array<IAssociation> = [
     {country: "es", name: "Asociación Española de Go"},
     {country: "se", name: "Svenska Goförbundet "},
     {country: "ch", name: "Swiss Go Association"},
-    {country: "tw", name: "Taiwan Chi Yuan "},
+    {country: "tw", name: "中華民國圍棋協會 (Taiwanese Go Association)"},
     {country: "th", name: "Thai Go Association "},
     {country: "tn", name: "Tunisia Go Association"},
     {country: "tr", name: "Turkish Go Players Association"},
