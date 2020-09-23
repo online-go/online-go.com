@@ -64,7 +64,7 @@ export let associations:Array<IAssociation> = [
     {country: "kz", name: "Kazakhstan Go Federation"},
     {country: "kp", name: "The Baduk Association of DPR Korea"},
     {country: "kr", name: "한국기원 (Korea Baduk Association)"},
-    {country: "lv", name: "Latvijas Go Federacija"},
+    {country: "lv", name: "Latvijas Go Federācija"},
     {country: "lt", name: "Lietuvos Go Asociacija"},
     {country: "lu", name: "Le Club de Go du Luxembourg "},
     {country: "mo", name: "Clube De Xandrez \"Wei Qi\" De Macau"},
