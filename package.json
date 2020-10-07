@@ -53,7 +53,8 @@
     "yarn": "^1.22.5"
   },
   "dependencies": {
-    "@sentry/browser": "^5.15.0",
+    "@sentry/browser": "^5.25.0",
+    "@sentry/tracing": "^5.25.0",
     "@types/d3": "^5.7.2",
     "@types/howler": "^2.1.2",
     "@types/jquery": "^2.0.34",

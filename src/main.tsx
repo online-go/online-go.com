@@ -18,6 +18,7 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
+import * as SentryTracing from '@sentry/tracing';
 import { configure_goban } from 'configure-goban';
 import { sfx } from 'sfx';
 sfx.sync();
@@ -38,8 +39,10 @@ if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) 
 
 try {
     Sentry.init({
-        dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
+        //dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
+        dsn: "https://dca0827fe9e34251b0e495ae55198ba7@sentry.online-go.com/5",
         release: ogs_version || 'dev',
+        tracesSampleRate: 1.0,
         whitelistUrls: [
             'online-go.com',
             'online-baduk.com',
@@ -58,7 +61,8 @@ try {
             }),
             new Sentry.Integrations.Breadcrumbs({
                 console: false
-            })
+            }),
+            new SentryTracing.Integrations.BrowserTracing(),
         ]
     });
 
