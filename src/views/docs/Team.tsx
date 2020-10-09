@@ -86,6 +86,7 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 391401 , "username": "Conrad Melville", "country": ["us"] , "languages": [en]} ,
             {"id": 449941 , "username": "flovo"          , "country": ["eu"] , "languages": [de, en]} ,
             {"id": 209826 , "username": "Vsotvep"        , "country": ["nl"] , "languages": [nl, en, jp]} ,
+            {"id": 683917 , "username": "RubyMineshaft"  , "country": ["us"] , "languages": [en, cn]} ,
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
