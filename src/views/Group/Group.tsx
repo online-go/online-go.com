@@ -396,6 +396,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         let editing = this.state.editing;
 
 
+        let group_website_href = group.website;
+        if (!(/[/][/]/.test(group_website_href))) {
+            // no protocol? Guess at http
+            group_website_href = 'http://' + group_website_href;
+        }
+
         return (
         <div className="Group container">
             <UIPush event="players-updated" channel={`group-${group.id}`} action={this.refreshPlayerList} />
@@ -496,9 +502,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 <div className="pad">
                                     {(editing || group.website || null) && <b>{_("Website")}: </b>}
                                     {((!editing && group.website) || null) && <span>{
-                                        <a target="_blank" href={
-                                            /^https?:\/\/[A-Za-z0-9.-]{2,256}(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?$/.test(group.website) ? group.website : ""
-                                        }>{group.website}</a>
+                                        <a target="_blank" href={group_website_href}>{group.website}</a>
                                     }</span>}
                                     {(editing || null) && <span>
                                         <input type="url" value={group.website} onChange={this.setWebsite} />
