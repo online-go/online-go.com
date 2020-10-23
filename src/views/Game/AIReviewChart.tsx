@@ -95,6 +95,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     shouldComponentUpdate(nextProps:AIReviewChartProperties, nextState:any) {
         return !deepCompare(nextProps.entries, this.props.entries) ||
+            this.props.updatecount !== nextProps.updatecount ||
             this.props.move_number !== nextProps.move_number ||
             this.props.use_score !== nextProps.use_score;
     }
@@ -249,6 +250,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.onResize();
     }
     plot() {
+        if (this.destroyed) {
+            return;
+        }
+
         let entries:Array<AIReviewEntry>;
 
         let use_score_safe = this.props.use_score
@@ -286,6 +291,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                     num_variations: 0
                 });
             }
+
             this.replot_timeout = setTimeout(() => this.plot(), 50);
         }
 
@@ -389,9 +395,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 .selectAll('circle')
                 .data(circle_coords) as d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
         // remove any data points that were removed
-        this.highlighted_move_circles.exit().remove();
+        let removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added
-        this.highlighted_move_circles .enter() .append('circle');
+        let adds = this.highlighted_move_circles.enter().append('circle');
         // update positions for our circles
         this.highlighted_move_circles
             .transition()
@@ -400,6 +406,17 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('cy', d => this.y(use_score_safe ? d.score : d.win_rate * 100))
             .attr('r', d => 3)
             .attr('fill', d => '#FF0000');
+
+
+        try {
+            // I'm not sure why this is needed, but without it, the first pass
+            // when we add circles doesn't actually display anything.
+            if ((removes as any)._groups[0].length !== (adds as any)._groups[0].length) {
+                setTimeout(() => this.plot(), 50);
+            }
+        } catch (e) {
+            // ignore
+        }
     }
     deinitialize() {
         this.destroyed = true;

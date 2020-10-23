@@ -29,7 +29,7 @@ import { Game } from './Game';
 import { close_all_popovers, popover } from "popover";
 import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
-import {Toggle} from 'Toggle';
+import { Toggle } from 'Toggle';
 import {
     GoMath,
     MoveTree,
@@ -291,7 +291,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         if (this.ai_review) {
             this.ai_review.error = data.body;
         } else {
-            console.error("Crap no ai review");
+            console.error("AI Review missing, cannot update error", data);
         }
         this.setState({
             updatecount: this.state.updatecount + 1,
@@ -882,6 +882,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 }
 
 function sanityCheck(ai_review:JGOFAIReview) {
+
     if (ai_review.moves['0']) {
         if (ai_review.moves['0'].move.x !== -1) {
             console.error("AI Review move '0' is not a pass move, was ", ai_review.moves['0'].move);
