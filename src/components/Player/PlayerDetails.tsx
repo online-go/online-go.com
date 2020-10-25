@@ -85,6 +85,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             ui_class: "...",
             country: "un",
             error: null,
+            show_rating_explanation: data.get("show-rating-explanation", true)
         };
     }
     resolve(player_id) {
@@ -226,6 +227,12 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         .then(() => termination_socket.send('chat/remove_all', {player_id: this.props.playerId}))
         .catch(() => 0);
     }
+
+    dismissRankingExplanation = () => {
+        data.set("show-rating-explanation", false);
+        this.setState({show_rating_explanation: false});
+    }
+
     render() {
         let user = data.get("user");
 
@@ -262,6 +269,10 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                             </div>
                         }
                     </div>
+                </div>
+                <div className={"rating-explanation " + (this.state.show_rating_explanation ? "" : "hide-rating-explanation")}>
+                        <a href="https://github.com/online-go/online-go.com/wiki/Ranking-System">How do ratings work?</a>
+                        <i className="fa fa-times-circle" onClick={this.dismissRankingExplanation}/>
                 </div>
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
