@@ -2503,7 +2503,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     }
 
                     {(state.mode === "play" && state.phase === "finished" || null) &&
-                        <span>
+                        <span style={{textDecoration: state.annulled ? 'line-through' : 'none' }}>
                             {state.winner
                                 ?
                                 (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
@@ -2514,6 +2514,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 (interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {"outcome": pgettext("Game outcome", this.goban.engine.outcome)}))
                             }
                         </span>
+                    }
+                </div>
+                <div className='annulled-indicator'>
+                    { state.annulled &&
+                        'GAME ANNULLED'
                     }
                 </div>
                 {/* } */}

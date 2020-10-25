@@ -29,13 +29,11 @@ import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
 import * as preferences from "preferences";
-import {updateDup, alertModerator, getGameResultText, ignore} from "misc";
+import {updateDup, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating, effective_outcome} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
-import {openSupporterAdminModal} from "SupporterAdmin";
 import {PaginatedTable} from "PaginatedTable";
-import {challenge} from "ChallengeModal";
 import {errorAlerter} from "misc";
 import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
@@ -60,23 +58,22 @@ interface UserProperties {
     // callback?: ()=>any,
 }
 
-let UserRating = (props: {rating: number}) => {
-    let wholeRating = Math.floor(props.rating);
-    return <span className="UserRating">{wholeRating}</span>;
-};
-
-let rating_percentage = (rating: number) => {
-    rating %= 100;
-    rating = rating >= 0 ? rating : rating + 100;
-    return rating;
-};
-
-let Rank = (props: {ranking: number, pro?: boolean}) => (<span>{rankString(props)}</span>);
-
 let inlineBlock = {display: "inline-flex", "alignItems": "center"};
-let marginRight0 = {marginRight: "0"};
 let marginBottom0 = {marginBottom: "0"};
-let nowrapAlignTop = {whiteSpace: "nowrap", verticalAlign: "top"};
+
+function getGameResultRichText(game) {
+    let result = getGameResultText(game);
+
+    if (game.ranked) {
+        result += ", ";
+        result += _("ranked");
+    }
+    if (game.annulled) {
+        result = <span><span style={{textDecoration: 'line-through'}}>{result}</span><span>, annulled</span></span>;
+    }
+
+    return result;
+}
 
 export class User extends React.PureComponent<UserProperties, any> {
     refs: {
@@ -531,7 +528,6 @@ export class User extends React.PureComponent<UserProperties, any> {
 
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
-        let domWorkScaleback = 1;
         let doDomWork = () => {
             try {
                 $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
@@ -541,12 +537,6 @@ export class User extends React.PureComponent<UserProperties, any> {
         };
         setTimeout(doDomWork, 0);
 
-        const rows = [
-            ["a1", "b1", "c1"],
-            ["a2", "b2", "c2"],
-            ["a3", "b3", "c3"],
-            // .... and more
-        ];
 
         let game_history_groomer = (results) => {
 
@@ -629,7 +619,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 }
 
                 item.href = "/game/" + item.id;
-                item.result = getGameResultText(r);
+                item.result = getGameResultRichText(r);
 
                 ret.push(item);
             }
@@ -906,7 +896,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) }</Link>},
                                         {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <React.Fragment><Player user={X.historical.black} disableCacheUpdate />{X.black_won ?  <i className="fa fa-trophy game-history-winner"/> : ""}</React.Fragment> },
                                         {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <React.Fragment><Player user={X.historical.white} disableCacheUpdate />{X.white_won ?  <i className="fa fa-trophy game-history-winner"/> : ""}</React.Fragment> },
-                                        {header: _("Result"), className: (X) => (X ? X.result_class : ""),            render: (X) => X.result},
+                                        {header: _("Result"), className: (X) => (X ? X.result_class : ""),        render: (X) => X.result},
                                     ]}
                                 />
                             </div>
