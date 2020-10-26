@@ -190,6 +190,7 @@ export function getOutcomeTranslation(outcome:string) {
 
     return outcome;
 }
+
 export function getGameResultText(game) {
     /* SGFs will encode the full result in the outcome */
     if (/[+]/.test(game.outcome)) {
@@ -211,16 +212,9 @@ export function getGameResultText(game) {
     game.outcome = game.outcome.replace(" points", "");
     result += winner + "+"  + getOutcomeTranslation(game.outcome);
 
-    if (game.ranked) {
-        result += ", ";
-        result += _("ranked");
-    }
-    if (game.annulled) {
-        result += ", ";
-        result += _("annulled");
-    }
     return result;
 }
+
 export function acceptGroupInvite(invite_id):Promise<any> {
     return post("me/groups/invitations", { request_id: invite_id }).catch(errorAlerter);
 }
