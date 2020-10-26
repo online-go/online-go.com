@@ -2518,7 +2518,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 </div>
                 <div className='annulled-indicator'>
                     { state.annulled &&
-                        'GAME ANNULLED'
+                        pgettext("Displayed to the user when the game is annulled", "Game Annulled")
                     }
                 </div>
                 {/* } */}

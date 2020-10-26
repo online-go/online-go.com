@@ -69,7 +69,10 @@ function getGameResultRichText(game) {
         result += _("ranked");
     }
     if (game.annulled) {
-        result = <span><span style={{textDecoration: 'line-through'}}>{result}</span><span>, annulled</span></span>;
+        result = <span>
+                     <span style={{textDecoration: 'line-through'}}>{result}</span>
+                     <span>, {pgettext("Game has been annulled", "annulled")}</span>
+                 </span>;
     }
 
     return result;
