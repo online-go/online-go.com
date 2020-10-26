@@ -21,6 +21,7 @@ import * as data from "data";
 import * as preferences from "preferences";
 import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
+import { AIReviewStream } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
 import { deepCompare, errorAlerter, dup, errorLogger } from 'misc';
 import { get, post } from 'requests';
@@ -164,6 +165,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         })
         .catch(errorLogger);
     }
+    /*
     getAIReview(ai_review_id:string) {
         let game_id = this.getGameId();
         if (!game_id) {
@@ -182,6 +184,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         })
         .catch(errorLogger);
     }
+    */
 
     handicapOffset():number {
         if (this.props.game
@@ -249,11 +252,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.setState({
             selected_ai_review: ai_review,
         });
+        /*
         if (ai_review) {
             this.getAIReview(ai_review.id);
         } else {
             this.clearAIReview();
         }
+        */
         this.props.onAIReviewSelected(ai_review);
     }
     startNewAIReview(analysis_type:"fast" | "full", engine:"leela_zero" | "katago") {
@@ -279,6 +284,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
+
+    ai_review_stream_update = (data:any) => {
+        console.log(`ai review stream: `, data);
+    }
+    /*
     ai_review_update_metadata = (data:any) => {
         this.ai_review = data.body as JGOFAIReview;
         sanityCheck(this.ai_review);
@@ -318,10 +328,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             console.error(`Unexpected review update key: ${data.key}`, data);
         }
     }
+    */
     ai_review_update = (data:any) => {
+        /*
         if ('ai_review_id' in data) {
             this.getAIReview(data.ai_review_id);
         }
+        */
         if ('refresh' in data) {
             this.getAIReviewList();
         }
@@ -594,8 +607,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return (
                 <div className='AIReview'>
                     <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
-                    <UIPush event="ai-review-metadata" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_metadata} />
-                    <UIPush event="ai-review-move" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_move} />
+                    <AIReviewStream uuid={this.state.selected_ai_review?.uuid} game={this.props.game.game_id} callback={this.ai_review_stream_update} />
                     { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
                         <div className='reviewing'>
                             <span>{_("Queing AI review")}</span>
@@ -650,9 +662,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
-                <UIPush event="ai-review-metadata" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_metadata} />
-                <UIPush event="ai-review-move" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_move} />
-                <UIPush event="ai-review-error" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update_error} />
+                <AIReviewStream uuid={this.state.selected_ai_review?.uuid} game={this.props.game.game_id} callback={this.ai_review_stream_update} />
 
                 { (this.state.ai_reviews.length >= 1 || null) &&
                     <Select

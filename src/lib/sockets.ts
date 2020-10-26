@@ -32,10 +32,31 @@ let io_config = {
     upgrade: false,
 };
 
+let ai_config = {
+    reconnection: true,
+    reconnectionDelay: 750,
+    reconnectionDelayMax: 10000,
+    transports: ["websocket"],
+    upgrade: false,
+};
+
 export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
 export const comm_socket = termination_socket;
 
+let ai_host = '';
+if (window.location.hostname.indexOf('beta') >= 0 || window.location.hostname.indexOf('dev') >= 0) {
+    ai_host = 'ai-beta.online-go.com';
+}
+else if (window.location.hostname.indexOf('online-go.com') >= 0) {
+    ai_host = 'ai.online-go.com';
+} else {
+    ai_host = window.location.hostname + ':13284';
+}
+
+export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
+
 termination_socket.send = termination_socket.emit;
+ai_socket.send = ai_socket.emit;
 
 termination_socket.on("connect", () => {
     debug.log("Connection to server established.");
@@ -48,6 +69,7 @@ termination_socket.on('hostinfo', (hostinfo) => {
 
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
+let last_ai_latency = 0.0;
 
 function ping() {
     if (termination_socket.connected) {
@@ -84,9 +106,30 @@ termination_socket.on("connect", send_client_info);
 setInterval(ping, 10000);
 
 
+
+function ai_ping() {
+    if (ai_socket.connected) {
+        ai_socket.send("net/ping", {
+            client: Date.now(),
+            latency: last_ai_latency,
+        });
+    }
+}
+function ai_handle_pong(data) {
+    let now = Date.now();
+    let latency = now - data.client;
+    last_ai_latency = latency;
+}
+
+ai_socket.on("connect", ai_ping);
+ai_socket.on("net/pong", ai_handle_pong);
+setInterval(ai_ping, 20000);
+
+
 export default {
     termination_socket: termination_socket,
     comm_socket: comm_socket,
+    ai_socket: ai_socket,
     get_clock_drift: get_clock_drift,
     get_network_latency: get_network_latency,
 };
