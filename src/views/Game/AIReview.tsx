@@ -23,7 +23,7 @@ import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
 import { AIReviewStream } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
-import { deepCompare, errorAlerter, dup, errorLogger } from 'misc';
+import { deepCompare, errorAlerter, dup, errorLogger, Timeout } from 'misc';
 import { get, post } from 'requests';
 import { _, pgettext, interpolate } from "translate";
 import { Game } from './Game';
@@ -165,26 +165,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         })
         .catch(errorLogger);
     }
-    /*
-    getAIReview(ai_review_id:string) {
-        let game_id = this.getGameId();
-        if (!game_id) {
-            return;
-        }
-
-        delete this.ai_review;
-        this.syncAIReview();
-
-        get(`/termination-api/game/${game_id}/ai_review/${ai_review_id}`)
-        .then((ai_review:JGOFAIReview) => {
-            sanityCheck(ai_review);
-            this.ai_review = ai_review;
-            this.props.onAIReviewSelected(ai_review);
-            this.syncAIReview();
-        })
-        .catch(errorLogger);
-    }
-    */
 
     handicapOffset():number {
         if (this.props.game
@@ -249,17 +229,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     setSelectedAIReview = (ai_review:JGOFAIReview) => {
         close_all_popovers();
+        this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
         });
-        /*
-        if (ai_review) {
-            this.getAIReview(ai_review.id);
-        } else {
-            this.clearAIReview();
-        }
-        */
         this.props.onAIReviewSelected(ai_review);
+        this.syncAIReview();
     }
     startNewAIReview(analysis_type:"fast" | "full", engine:"leela_zero" | "katago") {
         let user = data.get('user');
@@ -284,57 +259,80 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
-
-    ai_review_stream_update = (data:any) => {
-        console.log(`ai review stream: `, data);
-    }
-    /*
-    ai_review_update_metadata = (data:any) => {
-        this.ai_review = data.body as JGOFAIReview;
-        sanityCheck(this.ai_review);
+    updateAIReviewMetadata(ai_review:JGOFAIReview):void {
+        sanityCheck(ai_review);
+        if (!this.ai_review || this.ai_review.uuid !== ai_review.uuid) {
+            this.ai_review = ai_review;
+        } else {
+            for (let k in ai_review) {
+                console.log("Updating", k, ai_review[k]);
+                if (k !== 'moves' || !this.ai_review['moves']) {
+                    this.ai_review[k] = ai_review[k];
+                } else {
+                    for (let move in ai_review['moves']) {
+                        this.ai_review['moves'][move] = ai_review['moves'][move];
+                    }
+                }
+            }
+        }
         this.setState({
             updatecount: this.state.updatecount + 1,
         });
-        this.syncAIReview();
     }
-    ai_review_update_error = (data:any) => {
-        if (this.ai_review) {
-            this.ai_review.error = data.body;
-        } else {
-            console.error("AI Review missing, cannot update error", data);
-        }
-        this.setState({
-            updatecount: this.state.updatecount + 1,
-        });
-        this.syncAIReview();
-    }
-    ai_review_update_move = (data:any) => {
-        if (!this.ai_review) {
-            console.warn("AI Review move received but ai review not initialized yet");
-            return;
-        }
 
-        if (/move-[0-9]+/.test(data.key)) {
-            let m = data.key.match(/move-([0-9]+)/);
-            let move_number = parseInt(m[1]);
+    deferred_update_timeout?:Timeout;
+    deferred_queue?:{[key:string]: any};
 
-            this.ai_review.moves[move_number] = data.body;
-            sanityCheck(this.ai_review);
-            this.setState({
-                updatecount: this.state.updatecount + 1,
-            });
-            this.syncAIReview();
+    updateAiReview = (data:any) => {
+        if (this.deferred_queue) {
+            for (let key in data) {
+                this.deferred_queue[key] = data[key];
+            }
         } else {
-            console.error(`Unexpected review update key: ${data.key}`, data);
+            this.deferred_queue = data;
+            this.deferred_update_timeout = setTimeout(() => {
+                let data = this.deferred_queue;
+                delete this.deferred_update_timeout;
+                delete this.deferred_queue;
+
+                for (let key in data) {
+                    let value = data[key];
+                    if (key === 'metadata') {
+                        this.updateAIReviewMetadata(value as JGOFAIReview);
+                    }
+                    if (key === 'error') {
+                        if (this.ai_review) {
+                            this.ai_review.error = value;
+                        } else {
+                            console.error("AI Review missing, cannot update error", value);
+                        }
+                    }
+                    if (/move-[0-9]+/.test(key)) {
+                        if (!this.ai_review) {
+                            console.warn("AI Review move received but ai review not initialized yet");
+                            return;
+                        }
+
+                        if (/move-[0-9]+/.test(key)) {
+                            let m = key.match(/move-([0-9]+)/);
+                            let move_number = parseInt(m[1]);
+                            this.ai_review.moves[move_number] = value;
+                        } else {
+                            console.error(`Unexpected review update key: ${key}`, value);
+                        }
+                    }
+                }
+
+                sanityCheck(this.ai_review);
+                this.setState({
+                    updatecount: this.state.updatecount + 1,
+                });
+                this.syncAIReview();
+            }, 100);
         }
     }
-    */
+
     ai_review_update = (data:any) => {
-        /*
-        if ('ai_review_id' in data) {
-            this.getAIReview(data.ai_review_id);
-        }
-        */
         if ('refresh' in data) {
             this.getAIReviewList();
         }
@@ -607,7 +605,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return (
                 <div className='AIReview'>
                     <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
-                    <AIReviewStream uuid={this.state.selected_ai_review?.uuid} game={this.props.game.game_id} callback={this.ai_review_stream_update} />
+                    <AIReviewStream
+                        uuid={this.state.selected_ai_review?.uuid}
+                        game_id={this.props.game.game_id}
+                        ai_review_id={this.state.selected_ai_review?.id}
+                        callback={this.updateAiReview}
+                    />
                     { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
                         <div className='reviewing'>
                             <span>{_("Queing AI review")}</span>
@@ -662,7 +665,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
-                <AIReviewStream uuid={this.state.selected_ai_review?.uuid} game={this.props.game.game_id} callback={this.ai_review_stream_update} />
+                <AIReviewStream
+                    uuid={this.state.selected_ai_review?.uuid}
+                    game_id={this.props.game.game_id}
+                    ai_review_id={this.state.selected_ai_review?.id}
+                    callback={this.updateAiReview}
+                />
 
                 { (this.state.ai_reviews.length >= 1 || null) &&
                     <Select

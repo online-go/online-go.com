@@ -21,23 +21,21 @@ import { ai_socket } from "sockets";
 
 interface AIReviewStreamProperties {
     uuid?: string;
-    game?: number;
+    game_id?: number | string;
+    ai_review_id?: number | string;
     callback: (data: any) => any;
 }
 
-
-
-
-
 export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
     const uuid = props.uuid;
+    const game_id = props.game_id;
+    const ai_review_id = props.ai_review_id;
 
     React.useEffect(() => {
         if (!props.uuid) {
             console.log("No UUID for review stream");
             return;
         } else {
-            console.log("Connecting to AI review UUID", props.uuid);
             ai_socket.on('connect', onConnect);
             ai_socket.on(uuid, onMessage);
             if (ai_socket.connected) {
@@ -46,17 +44,14 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
         }
 
         function onConnect() {
-            console.info(`Subscribing to AI review `, uuid);
-            ai_socket.send('ai-review-connect', {uuid});
+            ai_socket.send('ai-review-connect', {uuid, game_id, ai_review_id});
         }
 
         function onMessage(data: any) {
-            console.info(`AI: `, data);
             props.callback(data);
         }
 
         return () => {
-            console.info(`Disconnected from AI review `, uuid);
             if (ai_socket.connected) {
                 ai_socket.send('ai-review-disconnect', {uuid});
             }
@@ -67,71 +62,3 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
 
     return null;
 }
-
-/*
-
-//export let push_manager = new AIReviewStreamManager();
-
-export class AIReviewStream extends React.Component<AIReviewStreamProperties, any> {
-    handler: Handler = null;
-    channel: string = null; // I'm here
-
-    constructor(props) {
-        super(props);
-    }
-
-    shouldComponentUpdate(next) {
-        if (this.props. === next.event &&
-            this.props.action === next.action &&
-            this.props.channel === next.channel
-        ) {
-            return false;
-        }
-        return true;
-    }
-
-    removeHandler() {
-        if (this.handler) {
-            push_manager.off(this.handler);
-            this.handler = null;
-        }
-    }
-    unsubscribe() {
-        if (this.channel) {
-            push_manager.unsubscribe(this.channel);
-            this.channel = null;
-        }
-    }
-
-    sync() {
-        if (this.handler) {
-            this.removeHandler();
-        }
-        if (this.props.event) {
-            this.handler = push_manager.on(this.props.event, this.props.action);
-        }
-
-        if (this.props.channel !== this.channel) {
-            this.unsubscribe();
-            this.channel = this.props.channel;
-            push_manager.subscribe(this.channel);
-        }
-    }
-
-    componentDidUpdate() {
-        this.sync();
-    }
-    componentDidMount() {
-        this.sync();
-    }
-    componentWillUnmount() {
-        this.removeHandler();
-        this.unsubscribe();
-    }
-
-
-    render() {
-        return null;
-    }
-}
-*/
