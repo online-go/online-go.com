@@ -57,7 +57,7 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
             }
             ai_socket.off('connect', onConnect);
             ai_socket.off(uuid, onMessage);
-        }
+        };
     }, [uuid]);
 
     return null;

@@ -170,7 +170,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             white_auto_resign_expiration: null,
             ai_review_enabled: preferences.get('ai-review-enabled'),
             show_score_breakdown: false,
-            selected_ai_review_id: null,
+            selected_ai_review_uuid: null,
             show_game_timing: false,
         };
 
@@ -2891,7 +2891,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             )
         ) {
             return <AIReview
-                onAIReviewSelected={r => this.setState({selected_ai_review_id: r?.id})}
+                onAIReviewSelected={r => this.setState({selected_ai_review_uuid: r?.uuid})}
                 game={this} move={this.goban.engine.cur_move} hidden={!this.state.ai_review_enabled} />;
         }
         return null;
@@ -3084,8 +3084,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         let sgf_with_ai_review_url = null;
         if (this.game_id) {
             sgf_url = api1(`games/${this.game_id}/sgf`);
-            if (this.state.selected_ai_review_id) {
-                sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=${this.state.selected_ai_review_id}`);
+            if (this.state.selected_ai_review_uuid) {
+                sgf_with_ai_review_url = api1(`games/${this.game_id}/sgf?ai_review=${this.state.selected_ai_review_uuid}`);
             }
         } else {
             sgf_url = api1(`reviews/${this.review_id}/sgf?without-comments=1`);
