@@ -44,28 +44,59 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         this.state = state;
     }
 
+    show_seconds_nicely = (duration) => (
+        duration < 60000 ?
+        `${moment.duration(duration).asSeconds().toFixed(1)}s` :
+        moment.duration(duration).format()
+    )
+
     public render():JSX.Element {
         let game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
         let black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
         let white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
         let game_elapseds: Array<ReturnType<typeof moment.duration>> = new Array(); // the time elapsed up to each move
 
-        // when there is free handicap placement, black plays handicap-1 moves before his actual first turn that white responds to...
+        let non_handicap_moves = this.props.moves;
+        let handicap_moves = [];
+        let handicap_move_offset = 0;
 
-        const handicap_moves = this.props.free_handicap_placement && this.props.handicap > 1 ?
-            this.props.moves.slice(0, this.props.handicap - 1) : [];
+        let white_first_turn = false;
+        let first_row = <React.Fragment></React.Fragment>;
 
-        const non_handicap_moves = this.props.free_handicap_placement && this.props.handicap > 1 ?
-            this.props.moves.slice(this.props.handicap - 1) :
-            this.props.moves;
+        if (this.props.handicap) {
+            if (this.props.free_handicap_placement) {
+                // when there is free handicap placement, black plays handicap-1 moves before his actual first turn that white responds to...
 
-        const handicap_move_offset = this.props.free_handicap_placement && this.props.handicap > 1 ?
-            this.props.handicap - 1 : 0;
+                handicap_moves = this.props.moves.slice(0, this.props.handicap - 1);
+                non_handicap_moves = this.props.moves.slice(this.props.handicap - 1);
+                handicap_move_offset = this.props.handicap - 1;
+            }
+            else {
+                // In fixed handicap placement, white goes first.  This needs a separate special row in the table to show just white's move
+
+                white_first_turn = true;
+                const first_move = non_handicap_moves.shift();
+                handicap_move_offset = 1;
+                const elapsed = first_move[2];
+                game_elapsed.add(elapsed);
+                game_elapseds.push(game_elapsed.clone());
+                white_elapsed.add(elapsed);
+                const move_string = this.show_seconds_nicely(elapsed);
+                first_row =
+                    <React.Fragment>
+                        <div>0</div>
+                        <div>-</div>
+                        <div>{move_string}</div>
+                        <div>{`${game_elapseds[0].format()}`}</div>
+                    </React.Fragment>;
+            }
+        }
 
         return (
             <div className='GameTimings'>
                 <div className='timings-header'>Game Timings</div>
                 <div>Move</div><div>Black</div><div>White</div><div>Elapsed Time</div>
+                {white_first_turn ? first_row : ""}
                 {
                     // Get the times from the moves array in a nice format, compute ongoing elapsed times
 
@@ -75,10 +106,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         game_elapsed.add(elapsed);
                         game_elapseds.push(game_elapsed.clone());
                         black_elapsed.add(elapsed);
-                        const move_string =
-                            elapsed < 60000 ?
-                            `${moment.duration(elapsed).asSeconds().toFixed(1)}s` :
-                            moment.duration(elapsed).format();
+                        const move_string = this.show_seconds_nicely(elapsed);
                         return(
                         <React.Fragment key={move_num}>
                             <div>{move_num + 1}</div>
@@ -102,9 +130,8 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                             white_elapsed.add(elapsed);
                         }
                         return(
-                            elapsed < 60000 ?
-                            `${moment.duration(elapsed).asSeconds().toFixed(1)}s` :
-                            moment.duration(elapsed).format());
+                            this.show_seconds_nicely(elapsed)
+                        );
                     })
                     // pair them up into black and white move pairs, along with the elapsed time to that point
                     .reduce((acc, value, index, orig) => {
