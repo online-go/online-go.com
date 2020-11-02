@@ -153,8 +153,6 @@ export function get_format(format_type) {
     }
 }
 
-
-
 //let original_countries=dup(countries);
 
 let extended_countries = [];
