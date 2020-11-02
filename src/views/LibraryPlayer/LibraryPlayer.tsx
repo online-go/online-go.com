@@ -416,7 +416,7 @@ function outcome_formatter(entry) {
 
         let outcome = getOutcomeTranslation(entry.outcome);
         if (/^[0-9.]+$/.test(outcome)) {
-            outcome = parseFloat(outcome);
+            outcome = parseFloat(outcome).toString();
         }
 
         ret += "+" + outcome;

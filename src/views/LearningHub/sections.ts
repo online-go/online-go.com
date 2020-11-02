@@ -84,7 +84,7 @@ export class Terminology extends LearningHubSection {
 }
 
 
-export let sections = [
+export let sections: [string, any[]][] = [
     [pgettext("Learning hub section title", "Fundamentals"),
         [Intro, Capture, Defend, /*Territory, */ EndingTheGame]],
     [pgettext("Learning hub section title", "Basics"),

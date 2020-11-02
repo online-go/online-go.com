@@ -37,7 +37,7 @@
         "noUnusedLocals": false,
 
         "sourceMap": true,
-        "jsx": "react"
+        "jsx": "react",
     },
     "files": [
         "./src/main.tsx"
