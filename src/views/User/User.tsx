@@ -542,7 +542,6 @@ export class User extends React.PureComponent<UserProperties, any> {
 
 
         let game_history_groomer = (results) => {
-
             let ret = [];
             for (let i = 0; i < results.length; ++i) {
                 let r = results[i];
@@ -556,10 +555,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.ranked = r.ranked;
                 item.handicap = r.handicap;
                 item.black = r.players.black;
-                item.black_won = !r.black_lost && r.white_lost;
+                item.black_won = !r.black_lost && r.white_lost && !r.annulled;
                 item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.white = r.players.white;
-                item.white_won = !r.white_lost && r.black_lost;
+                item.white_won = !r.white_lost && r.black_lost && !r.annulled;
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
