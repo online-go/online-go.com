@@ -134,7 +134,7 @@ export function npgettext(context: string, singular: string, plural: string, cou
     return debug_wrap(count === 1 ? singular : plural);
 }
 
-let gettext_formats: { [key: string]: string | string[] };
+let gettext_formats: { [key: string]: string | string[] } = {};
 
 gettext_formats["DATETIME_FORMAT"] = "N j, Y, P";
 gettext_formats["DATE_FORMAT"] = "N j, Y";
@@ -162,7 +162,7 @@ export function get_format(format_type: string) {
 
 //let original_countries=dup(countries);
 
-let extended_countries: [string, string][];
+let extended_countries: [string, string][] = [];
 extended_countries.push(["_African_Union", gettext("African Union")]);
 extended_countries.push(["_Arab_League", gettext("Arab League")]);
 extended_countries.push(["_ASEAN", gettext("ASEAN")]);
@@ -186,8 +186,8 @@ extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
 extended_countries.push(["_cat", gettext("Catalonia")]);
 
-let fantasy_countries: [string, string][];
-let fantasy_countries_cc: { [key: string]: boolean };
+let fantasy_countries: [string, string][] = [];
+let fantasy_countries_cc: { [key: string]: boolean } = {};
 fantasy_countries.push(["_Klingon", gettext("Klingon")]);
 fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federation of Planets")]);
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
