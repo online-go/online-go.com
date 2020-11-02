@@ -17,32 +17,39 @@
 
 import { setGobanTranslations } from 'goban';
 
-export let current_language = window["ogs_current_language"] || 'en';
-export let languages = window["ogs_languages"] || {'en': 'English'};
-export let countries = window["ogs_countries"] || {'en': {'us': 'United States'}};
-export let locales = window["ogs_locales"] || {'en': {}};
-export let sorted_locale_countries = [];
+let w = window as { [key: string]: any }; // Add index signature
+export let current_language: string = w["ogs_current_language"] as string || 'en';
+export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
+export let countries: { [key: string]: { [key: string]: string } } =
+    w["ogs_countries"] || { 'en': { 'us': 'United States' } };
+export let locales: { [key: string]: { [key: string]: string[] } } =
+    w["ogs_locales"] || { 'en': {} };
+export let sorted_locale_countries: { cc: string; name: string; }[] = [];
 
 
-let catalog;
+let catalog: { [key: string]: string[] };
 try {
     catalog = locales[current_language] || {};
 } catch (e) {
     catalog = {};
 }
 
-export function pluralidx(count) { return (count === 1) ? 0 : 1; }
+export function pluralidx(count: number) { return (count === 1) ? 0 : 1; }
 
-const debug_wrap = current_language === "debug" ? (s) => `[${s}]` : (s) => s;
+const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
-export function gettext(msgid) {
+/**
+ * 
+ * @param msgid 
+ */
+export function gettext(msgid: string) {
     if (msgid in catalog) {
         return catalog[msgid][0];
     }
     return debug_wrap(msgid);
 }
 
-export function ngettext(singular, plural, count) {
+export function ngettext(singular: string, plural: string, count: number) {
     let key = singular + "" + plural;
     if (key in catalog) {
         if (catalog[key].length === 1) {
@@ -74,7 +81,7 @@ export function ngettext(singular, plural, count) {
 }
 
 
-export function pgettext(context, msgid) {
+export function pgettext(context: string, msgid: string) {
     let key = context + "" + msgid;
     if (key in catalog) {
         return catalog[key][0];
@@ -82,7 +89,7 @@ export function pgettext(context, msgid) {
     return debug_wrap(msgid);
 }
 
-export function npgettext(context, singular, plural, count) {
+export function npgettext(context: string, singular: string, plural: string, count: number) {
     let key = context + "" + singular + "" + plural;
     let skey = context + "" + singular;
     let pkey = context + "" + plural;
@@ -127,7 +134,7 @@ export function npgettext(context, singular, plural, count) {
     return debug_wrap(count === 1 ? singular : plural);
 }
 
-let gettext_formats = {};
+let gettext_formats: { [key: string]: string | string[] };
 
 gettext_formats["DATETIME_FORMAT"] = "N j, Y, P";
 gettext_formats["DATE_FORMAT"] = "N j, Y";
@@ -144,25 +151,25 @@ gettext_formats["SHORT_DATE_FORMAT"] = "m/d/Y";
 gettext_formats["SHORT_DATETIME_FORMAT"] = "m/d/Y P";
 gettext_formats["DATETIME_INPUT_FORMATS"] = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M", "%m/%d/%y", "%Y-%m-%d %H:%M:%S.%f"];
 
-export function get_format(format_type) {
+export function get_format(format_type: string) {
     let value = gettext_formats[format_type];
-    if (typeof(value) === "undefined") {
-      return format_type;
+    if (typeof (value) === "undefined") {
+        return format_type;
     } else {
-      return value;
+        return value;
     }
 }
 
 //let original_countries=dup(countries);
 
-let extended_countries = [];
+let extended_countries: [string, string][];
 extended_countries.push(["_African_Union", gettext("African Union")]);
 extended_countries.push(["_Arab_League", gettext("Arab League")]);
 extended_countries.push(["_ASEAN", gettext("ASEAN")]);
 extended_countries.push(["_CARICOM", gettext("CARICOM")]);
-extended_countries.push(["_CIS",  gettext("CIS")]);
-extended_countries.push(["_Commonwealth",  gettext("Commonwealth")]);
-extended_countries.push(["_England",  gettext("England")]);
+extended_countries.push(["_CIS", gettext("CIS")]);
+extended_countries.push(["_Commonwealth", gettext("Commonwealth")]);
+extended_countries.push(["_England", gettext("England")]);
 extended_countries.push(["_Islamic_Conference", gettext("Islamic Conference")]);
 extended_countries.push(["_Kosovo", gettext("Kosovo")]);
 extended_countries.push(["_Lord_Howe_Island", gettext("Lord Howe Island")]);
@@ -179,8 +186,8 @@ extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
 extended_countries.push(["_cat", gettext("Catalonia")]);
 
-let fantasy_countries = [];
-let fantasy_countries_cc = {};
+let fantasy_countries: [string, string][];
+let fantasy_countries_cc: { [key: string]: boolean };
 fantasy_countries.push(["_Klingon", gettext("Klingon")]);
 fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federation of Planets")]);
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
@@ -222,8 +229,8 @@ export function interpolate(str: string, params: any): string {
             return params[idx++];
         });
     }
-    if (typeof(params) === "object") {
-        return str.replace(/{{([^}]+)}}/g,  (_, key, position) => {
+    if (typeof (params) === "object") {
+        return str.replace(/{{([^}]+)}}/g, (_, key, position) => {
             if (!(key in params)) {
                 //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
                 console.warn(`Missing interpolation key: ${key} for string: ${str}`);
@@ -233,11 +240,15 @@ export function interpolate(str: string, params: any): string {
     }
     return str.replace(/%[sd]/g, (_, __, position) => params);
 }
-export function _(str): string {
-    return gettext(str);
+
+/**
+ * Alias of gettext(msgid)
+ */
+export function _(msgid: string): string {
+    return gettext(msgid);
 }
 
-export function cc_to_country_name(country_code) {
+export function cc_to_country_name(country_code: string) {
     if (current_language in countries) {
         return countries[current_language][country_code];
     }
@@ -268,11 +279,11 @@ sorted_locale_countries.sort((a, b) => {
 });
 
 
-function sanitize(language_or_country:string):string {
+function sanitize(language_or_country: string): string {
     return language_or_country.replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
-export function getLanguageFlag(language, user_country, default_flag) {
+export function getLanguageFlag(language: string, user_country: string, default_flag: string) {
     if (language === "english" && ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >= 0) {
         return sanitize(user_country);
     }
@@ -299,16 +310,16 @@ export function getLanguageFlag(language, user_country, default_flag) {
 }
 
 
-export function getCountryFlagClass(country_code) {
-    if (!country_code)               { return "un"; }
-    if (country_code === "eu")       { return "_European_Union"; }
-    if (country_code === "un")       { return "_United_Nations"; }
-    if (parseInt(country_code) > 0 ) { return "_United_Nations"; }
-    if (country_code.length > 2)     { return sanitize(country_code); }
+export function getCountryFlagClass(country_code: string) {
+    if (!country_code) { return "un"; }
+    if (country_code === "eu") { return "_European_Union"; }
+    if (country_code === "un") { return "_United_Nations"; }
+    if (parseInt(country_code) > 0) { return "_United_Nations"; }
+    if (country_code.length > 2) { return sanitize(country_code); }
     return sanitize(country_code);
 }
 
-export function setCurrentLanguage(language_code) {
+export function setCurrentLanguage(language_code: string) {
     current_language = language_code;
 
     setGobanTranslations({
@@ -381,9 +392,9 @@ export default {
 _("Not allowed to access this game");
 _("Not allowed to access this review");
 
-window['gettext'] = gettext;
-window['pgettext'] = pgettext;
-window['ngettext'] = ngettext;
-window['npgettext'] = npgettext;
-window['get_format'] = get_format;
-window['interpolate'] = interpolate;
+w['gettext'] = gettext;
+w['pgettext'] = pgettext;
+w['ngettext'] = ngettext;
+w['npgettext'] = npgettext;
+w['get_format'] = get_format;
+w['interpolate'] = interpolate;
