@@ -39,8 +39,8 @@ export function pluralidx(count: number) { return (count === 1) ? 0 : 1; }
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
 /**
- * 
- * @param msgid 
+ *
+ * @param msgid
  */
 export function gettext(msgid: string) {
     if (msgid in catalog) {
