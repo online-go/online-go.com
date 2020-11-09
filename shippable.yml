@@ -12,6 +12,7 @@ build:
     - node_modules/.bin/gulp min_styl
     - node_modules/.bin/tslint --project tsconfig.json 
     - node_modules/.bin/webpack --optimize-minimize --devtool=source-map
+    - npx jest
 
   post_ci:
     - gzip -9 dist/ogs.min.js | wc -c

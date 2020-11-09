@@ -34,13 +34,91 @@ try {
     catalog = {};
 }
 
-export function pluralidx(count: number) { return (count === 1) ? 0 : 1; }
+function isInteger(n: number) {
+    return (n % 1) === 0;
+}
+
+// Range is inclusive
+function isInRange(n: number, min: number, max: number) {
+    return n >= min && n <= max;
+}
+
+// Define the bahavior of plurals for the current language
+// See http://cldr.unicode.org/index/cldr-spec/plural-rules
+export let pluralidx: (count: number) => number;
+function setPluralIdx(lang: string) {
+    switch (current_language) {
+        case 'vi':    // Vietnamese
+        case 'zh-tw': // Traditional Chinese
+        case 'zh-cn': // Simplified Chinese
+        case 'ja':    // Japanese
+        case 'ko':    // Korean
+            // No differentiation between singular and plural
+            pluralidx = (count: number) => 0;
+            break;
+        case 'cs':    // Czech
+            pluralidx = (count: number) => {
+                if (count === 1) { return 0; }
+                if (isInteger(count) && isInRange(count, 2, 4)) { return 1; }
+                if (!isInteger(count)) { return 2; }
+                return 3;
+            };
+            break;
+        case 'ru':    // Russian
+        case 'pl':    // Polish
+        case 'uk':    // Ukrainian
+        // Croatian and Serbian are not strictly the same as Russian and Polish, but since this function does not take a string,
+        // we cannot properly handle decimals.
+        // TODO: allow this function to take a string and handle this case accordingly
+        case 'hr':    // Croatian
+        case 'sr':    // Serbian
+            pluralidx = (count: number) => {
+                if (!isInteger(count)) { return 3; }
+
+                if ((count % 10) === 1 && (count % 100) !== 11) { return 0; }   // 1, 21, 31, 41, 51, 61...
+                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) { return 1; }   // 2, 3, 4, 22, 23, 24...
+                return 2;   // 0, 5, 6, 7, 8, 9
+            };
+            break;
+        case 'ro':    // Romanian
+            pluralidx = (count: number) => {
+                if (count === 1) { return 0; }
+                if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) { return 1; }
+                return 2;
+            };
+            break;
+        case 'fr':    // French
+            pluralidx = (count: number) => {
+                if (isInRange(Math.trunc(count), 0, 1)) { return 0; }
+                return 1;
+            };
+            break;
+        case 'da':    // Danish
+            pluralidx = (count: number) => {
+                if (count > 0 && count < 2) { return 0; }
+                return 1;
+            };
+            break;
+        case 'he':    // Hebrew
+            pluralidx = (count: number) => {
+                if (count === 1) { return 0; }
+                if (count === 2) { return 1; }
+                if (!isInRange(count, 0, 10) && (count % 10) === 0) { return 2; }
+                return 3;
+            };
+            break;
+        default:
+            pluralidx = (count: number) => (count === 1) ? 0 : 1;
+    }
+}
+setPluralIdx(current_language);
+
 
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
 /**
- *
- * @param msgid
+ * Returns the translation of msgid based on the current language. This function
+ * is usually aliased as _()
  */
 export function gettext(msgid: string) {
     if (msgid in catalog) {
@@ -49,9 +127,16 @@ export function gettext(msgid: string) {
     return debug_wrap(msgid);
 }
 
+/**
+ * Like gettext(), but for plural forms.
+ */
 export function ngettext(singular: string, plural: string, count: number) {
-    let key = singular + "" + plural;
+    let key = singular + '\u0005' + plural;
+
     if (key in catalog) {
+        const idx = pluralidx(count);
+        if (idx < catalog[key].length) { return catalog[key][idx]; }
+
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
              * translation but we do happen to have the plural translation as a
@@ -80,7 +165,10 @@ export function ngettext(singular: string, plural: string, count: number) {
     return debug_wrap(count === 1 ? singular : plural);
 }
 
-
+/**
+ * Like gettext(), but with context.  A translation entry for the combination of msgid and context must exist,
+ * or else pgettext() will return msgid.
+ */
 export function pgettext(context: string, msgid: string) {
     let key = context + "" + msgid;
     if (key in catalog) {
@@ -89,11 +177,17 @@ export function pgettext(context: string, msgid: string) {
     return debug_wrap(msgid);
 }
 
+/**
+ * Like pgettext() but for plural forms.
+ */
 export function npgettext(context: string, singular: string, plural: string, count: number) {
-    let key = context + "" + singular + "" + plural;
-    let skey = context + "" + singular;
-    let pkey = context + "" + plural;
+    let key = context + "\u0004" + singular + "\u0005" + plural;
+    let skey = context + "\u0004" + singular;
+    let pkey = context + "\u0004" + plural;
     if (key in catalog) {
+        const idx = pluralidx(count);
+        if (idx < catalog[key].length) { return catalog[key][idx]; }
+
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
              * translation but we do happen to have the plural translation as a
@@ -151,6 +245,7 @@ gettext_formats["SHORT_DATE_FORMAT"] = "m/d/Y";
 gettext_formats["SHORT_DATETIME_FORMAT"] = "m/d/Y P";
 gettext_formats["DATETIME_INPUT_FORMATS"] = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M", "%m/%d/%y", "%Y-%m-%d %H:%M:%S.%f"];
 
+// TODO: remove this function after confirming it is not used elsewhere.
 export function get_format(format_type: string) {
     let value = gettext_formats[format_type];
     if (typeof (value) === "undefined") {
@@ -217,8 +312,14 @@ try {
 }
 
 
-
-export function interpolate(str: string, params: any): string {
+/**
+ * Return str with any placeholders populated by the contents of params.
+ *
+ * @param str - A string containing placeholders
+ * @param params - If params is an array, interpolate() will replace instances of %s or %d.
+ *                 If params is an object, interpolate() will replace instances of {{key}} with the associated value.
+ */
+export function interpolate(str: string, params: Array<any> | { [key: string]: any }): string {
     if (Array.isArray(params)) {
         let idx = 0;
         return str.replace(/%[sd]/g, (_, __, position) => {
@@ -242,12 +343,15 @@ export function interpolate(str: string, params: any): string {
 }
 
 /**
- * Alias of gettext(msgid)
+ * Alias of gettext()
  */
 export function _(msgid: string): string {
     return gettext(msgid);
 }
 
+// TODO: The logic in here would be more straightforward if countries were just
+// {cc: country_name} instead of {current_language: {cc: country_name}}.
+// Updating this requires updating jsonify-po-files.js
 export function cc_to_country_name(country_code: string) {
     if (current_language in countries) {
         return countries[current_language][country_code];
@@ -367,6 +471,7 @@ export function setCurrentLanguage(language_code: string) {
         '%sm': pgettext("Short time (minutes)", "%sm"),
         '%ss': pgettext("Short time (seconds)", "%ss"),
     });
+    setPluralIdx(language_code);
 }
 setCurrentLanguage(current_language);
 
