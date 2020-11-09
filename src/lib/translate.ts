@@ -58,11 +58,11 @@ function setPluralIdx(lang: string) {
             break;
         case 'cs':    // Czech
             pluralidx = (count: number) => {
-                if (count === 1) return 0;
-                if (isInteger(count) && isInRange(count, 2, 4)) return 1;
-                if (!isInteger(count)) return 2;
+                if (count === 1) { return 0; }
+                if (isInteger(count) && isInRange(count, 2, 4)) { return 1; }
+                if (!isInteger(count)) { return 2; }
                 return 3;
-            }
+            };
             break;
         case 'ru':    // Russian
         case 'pl':    // Polish
@@ -73,42 +73,42 @@ function setPluralIdx(lang: string) {
         case 'hr':    // Croatian
         case 'sr':    // Serbian
             pluralidx = (count: number) => {
-                if (!isInteger(count)) return 3;
-    
-                if ((count % 10) === 1 && (count % 100) !== 11) return 0;   // 1, 21, 31, 41, 51, 61...
-                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) return 1;   // 2, 3, 4, 22, 23, 24...
+                if (!isInteger(count)) { return 3; }
+
+                if ((count % 10) === 1 && (count % 100) !== 11) { return 0; }   // 1, 21, 31, 41, 51, 61...
+                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) { return 1; }   // 2, 3, 4, 22, 23, 24...
                 return 2;   // 0, 5, 6, 7, 8, 9
-            }
+            };
             break;
         case 'ro':    // Romanian
             pluralidx = (count: number) => {
-                if (count === 1) return 0;
-                if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) return 1;
+                if (count === 1) { return 0; }
+                if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) { return 1; }
                 return 2;
-            }
+            };
             break;
         case 'fr':    // French
             pluralidx = (count: number) => {
-                if (isInRange(Math.trunc(count), 0, 1)) return 0;
+                if (isInRange(Math.trunc(count), 0, 1)) { return 0; }
                 return 1;
-            }
+            };
             break;
         case 'da':    // Danish
             pluralidx = (count: number) => {
-                if (count > 0 && count < 2) return 0;
+                if (count > 0 && count < 2) { return 0; }
                 return 1;
-            }
+            };
             break;
         case 'he':    // Hebrew
             pluralidx = (count: number) => {
-                if (count === 1) return 0;
-                if (count === 2) return 1;
-                if (!isInRange(count, 0, 10) && (count % 10) === 0) return 2;
+                if (count === 1) { return 0; }
+                if (count === 2) { return 1; }
+                if (!isInRange(count, 0, 10) && (count % 10) === 0) { return 2; }
                 return 3;
-            }
+            };
             break;
         default:
-            pluralidx = (count: number) => (count == 1) ? 0 : 1;
+            pluralidx = (count: number) => (count === 1) ? 0 : 1;
     }
 }
 setPluralIdx(current_language);
@@ -135,7 +135,7 @@ export function ngettext(singular: string, plural: string, count: number) {
 
     if (key in catalog) {
         const idx = pluralidx(count);
-        if (idx < catalog[key].length) return catalog[key][idx];
+        if (idx < catalog[key].length) { return catalog[key][idx]; }
 
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
@@ -186,7 +186,7 @@ export function npgettext(context: string, singular: string, plural: string, cou
     let pkey = context + "\u0004" + plural;
     if (key in catalog) {
         const idx = pluralidx(count);
-        if (idx < catalog[key].length) return catalog[key][idx];
+        if (idx < catalog[key].length) { return catalog[key][idx]; }
 
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
@@ -314,7 +314,7 @@ try {
 
 /**
  * Return str with any placeholders populated by the contents of params.
- * 
+ *
  * @param str - A string containing placeholders
  * @param params - If params is an array, interpolate() will replace instances of %s or %d.
  *                 If params is an object, interpolate() will replace instances of {{key}} with the associated value.
