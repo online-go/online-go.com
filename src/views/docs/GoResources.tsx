@@ -171,7 +171,8 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://eidogo.com/#search">Eidogo's Pattern Search</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://ps.waltheri.net/">Waltheri's Pattern Search</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://alphagoteach.deepmind.com/">AlphaGo Teaching Tool</a></span>,
-                <span><Flag country={en}/> <a rel="noopener" href="https://learn-go.net">Interactive Tutorial for Beginners</a></span>
+                <span><Flag country={en}/> <a rel="noopener" href="https://learn-go.net">Interactive Tutorial for Beginners</a></span>,
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.playgroundequipment.com/a-kids-guide-to-playing-go/">A Kid's Guide to Playing Go</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
             </dl>
