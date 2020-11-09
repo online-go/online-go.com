@@ -126,7 +126,7 @@
     td.date {
         width: 7em;
         text-align: left;
-        margin-right: 1em;
+        padding-right: 0.5em;
     }
 
     td.banned, th.banned {
@@ -414,7 +414,7 @@
     }
 
     .game-history-table, .review-history-table {
-        .name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
+        .game_name, .date, .player, .library-lost-result, .library-won-result, .library-tie-result, .library-lost-result-vs-weaker, .library-lost-result-vs-stronger, .library-won-result-vs-stronger, .library-won-result-vs-weaker, .library-won-result-unranked, .library-lost-result-unranked, .library-hidden-result {
             white-space: nowrap;
         }
 
@@ -450,20 +450,25 @@
           themed color strong-loss
         }
 
-        .name {
+        .game_name {
             max-width: 12rem;
             overflow: hidden;
         }
 
         .player {
-            max-width: 9rem;
+            max-width: 12rem;
             overflow: hidden;
         }
 
-        .game-history-winner {
+        .winner_marker {
             themed color winner-trophy;
             padding-left: 4px;
             vertical-align: middle;
+            padding-right: 4px;
+        }
+
+        .annulled {
+            opacity: 30%;
         }
     }
 
@@ -512,7 +517,7 @@
             display: flex;
             align-items: middle;
             justify-content: center;
-            
+
             .name {
                 display: inline-block;
                 margin-left: 0.5rem;
