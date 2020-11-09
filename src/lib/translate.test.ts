@@ -13,23 +13,33 @@ window["ogs_locales"] = {
 };
 window["ogs_countries"] = {'en': {'us': 'United States'}, 'test_language': {'test_cc': 'test_country'}};
 
-import { gettext, pluralidx, ngettext, pgettext, npgettext, interpolate, cc_to_country_name } from './translate'
+import { gettext, pluralidx, ngettext, pgettext, npgettext, interpolate, cc_to_country_name, setCurrentLanguage } from './translate'
 
 jest.mock('goban', () => ({
     setGobanTranslations: jest.fn(),
 }));
 
-test('pluralidx zero', () => {
-    expect(pluralidx(0)).toBeTruthy();
+test('pluralidx en', () => {
+    setCurrentLanguage('en');
+    // singular
+    expect(pluralidx(0)).toBe(1);
+
+    // zero
+    expect(pluralidx(1)).toBe(0);
+
+    // many
+    expect(pluralidx(2)).toBe(1);
+    expect(pluralidx(42)).toBe(1);
 });
 
-test('pluralidx one', () => {
-    expect(pluralidx(1)).toBeFalsy();
-});
-
-test('pluralidx many', () => {
-    expect(pluralidx(2)).toBeTruthy();
-    expect(pluralidx(42)).toBeTruthy();
+test('pluralidx ru', () => {
+    setCurrentLanguage('ru');
+    expect(pluralidx(1)).toBe(0);
+    expect(pluralidx(91)).toBe(0);
+    expect(pluralidx(2)).toBe(1);
+    expect(pluralidx(42)).toBe(1);
+    expect(pluralidx(6)).toBe(2);
+    expect(pluralidx(0)).toBe(2);
 });
 
 test('gettext', () => {
@@ -70,5 +80,7 @@ test('interpolate object', () => {
 })
 
 test('cc_to_country_name', () => {
+    // Setting the current language may not be necessary in the future. See TODO above cc_to_country_name
+    setCurrentLanguage('test_language');
     expect(cc_to_country_name('test_cc')).toBe('test_country');
 })
