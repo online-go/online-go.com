@@ -34,7 +34,81 @@ try {
     catalog = {};
 }
 
-export function pluralidx(count: number) { return (count === 1) ? 0 : 1; }
+function isInteger(n: number) {
+    return (n % 1) === 0;
+}
+
+// Range is inclusive
+function isInRange(n: number, min: number, max: number) {
+    return n >= min && n <= max;
+}
+
+// Define the bahavior of plurals for the current language
+// See http://cldr.unicode.org/index/cldr-spec/plural-rules
+export let pluralidx: (count: number) => number;
+switch (current_language) {
+    case 'vi':    // Vietnamese
+    case 'zh-tw': // Traditional Chinese
+    case 'zh-cn': // Simplified Chinese
+    case 'ja':    // Japanese
+    case 'ko':    // Korean
+        // No differentiation between singular and plural
+        pluralidx = (count: number) => 0;
+        break;
+    case 'cs':    // Czech
+        pluralidx = (count: number) => {
+            if (count === 1) return 0;
+            if (isInteger(count) && isInRange(count, 2, 4)) return 1;
+            if (!isInteger(count)) return 2;
+            return 3;
+        }
+        break;
+    case 'ru':    // Russian
+    case 'pl':    // Polish
+    case 'uk':    // Ukrainian
+    // Croatian and Serbian are not strictly the same as Russian and Polish, but since this function does not take a string,
+    // we cannot properly handle decimals.
+    // TODO: allow this function to take a string and handle this case accordingly
+    case 'hr':    // Croatian
+    case 'sr':    // Serbian
+        pluralidx = (count: number) => {
+            if (!isInteger(count)) return 3;
+
+            if ((count % 10) === 1 && (count % 100) !== 11) return 0;   // 1, 21, 31, 41, 51, 61...
+            if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) return 1;   // 2, 3, 4, 22, 23, 24...
+            return 2;   // 0, 5, 6, 7, 8, 9
+        }
+        break;
+    case 'ro':    // Romanian
+        pluralidx = (count: number) => {
+            if (count === 1) return 0;
+            if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) return 1;
+            return 2;
+        }
+        break;
+    case 'fr':    // French
+        pluralidx = (count: number) => {
+            if (isInRange(Math.trunc(count), 0, 1)) return 0;
+            return 1;
+        }
+        break;
+    case 'da':    // Danish
+        pluralidx = (count: number) => {
+            if (count > 0 && count < 2) return 0;
+            return 1;
+        }
+        break;
+    case 'he':    // Hebrew
+        pluralidx = (count: number) => {
+            if (count === 1) return 0;
+            if (count === 2) return 1;
+            if (!isInRange(count, 0, 10) && (count % 10) === 0) return 2;
+            return 3;
+        }
+        break;
+    default:
+        pluralidx = (count: number) => (count == 1) ? 0 : 1;
+}
 
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
