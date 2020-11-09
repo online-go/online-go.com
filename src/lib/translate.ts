@@ -131,8 +131,12 @@ export function gettext(msgid: string) {
  * Like gettext(), but for plural forms.
  */
 export function ngettext(singular: string, plural: string, count: number) {
-    let key = singular + "" + plural;
+    let key = singular + '\u0005' + plural;
+
     if (key in catalog) {
+        const idx = pluralidx(count);
+        if (idx < catalog[key].length) return catalog[key][idx];
+
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
              * translation but we do happen to have the plural translation as a
@@ -177,10 +181,13 @@ export function pgettext(context: string, msgid: string) {
  * Like pgettext() but for plural forms.
  */
 export function npgettext(context: string, singular: string, plural: string, count: number) {
-    let key = context + "" + singular + "" + plural;
-    let skey = context + "" + singular;
-    let pkey = context + "" + plural;
+    let key = context + "\u0004" + singular + "\u0005" + plural;
+    let skey = context + "\u0004" + singular;
+    let pkey = context + "\u0004" + plural;
     if (key in catalog) {
+        const idx = pluralidx(count);
+        if (idx < catalog[key].length) return catalog[key][idx];
+
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
              * translation but we do happen to have the plural translation as a
