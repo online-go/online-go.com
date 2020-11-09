@@ -39,8 +39,8 @@ export function pluralidx(count: number) { return (count === 1) ? 0 : 1; }
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
 /**
- *
- * @param msgid
+ * Returns the translation of msgid based on the current language. This function
+ * is usually aliased as _()
  */
 export function gettext(msgid: string) {
     if (msgid in catalog) {
@@ -49,6 +49,9 @@ export function gettext(msgid: string) {
     return debug_wrap(msgid);
 }
 
+/**
+ * Like gettext(), but for plural forms.
+ */
 export function ngettext(singular: string, plural: string, count: number) {
     let key = singular + "" + plural;
     if (key in catalog) {
@@ -80,7 +83,10 @@ export function ngettext(singular: string, plural: string, count: number) {
     return debug_wrap(count === 1 ? singular : plural);
 }
 
-
+/**
+ * Like gettext(), but with context.  A translation entry for the combination of msgid and context must exist,
+ * or else pgettext() will return msgid.
+ */
 export function pgettext(context: string, msgid: string) {
     let key = context + "" + msgid;
     if (key in catalog) {
@@ -89,6 +95,9 @@ export function pgettext(context: string, msgid: string) {
     return debug_wrap(msgid);
 }
 
+/**
+ * Like pgettext() but for plural forms.
+ */
 export function npgettext(context: string, singular: string, plural: string, count: number) {
     let key = context + "" + singular + "" + plural;
     let skey = context + "" + singular;
@@ -151,6 +160,7 @@ gettext_formats["SHORT_DATE_FORMAT"] = "m/d/Y";
 gettext_formats["SHORT_DATETIME_FORMAT"] = "m/d/Y P";
 gettext_formats["DATETIME_INPUT_FORMATS"] = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M", "%m/%d/%y", "%Y-%m-%d %H:%M:%S.%f"];
 
+// TODO: remove this function after confirming it is not used elsewhere.
 export function get_format(format_type: string) {
     let value = gettext_formats[format_type];
     if (typeof (value) === "undefined") {
@@ -217,8 +227,14 @@ try {
 }
 
 
-
-export function interpolate(str: string, params: any): string {
+/**
+ * Return str with any placeholders populated by the contents of params.
+ * 
+ * @param str - A string containing placeholders
+ * @param params - If params is an array, interpolate() will replace instances of %s or %d.
+ *                 If params is an object, interpolate() will replace instances of {{key}} with the associated value.
+ */
+export function interpolate(str: string, params: Array<any> | { [key: string]: any }): string {
     if (Array.isArray(params)) {
         let idx = 0;
         return str.replace(/%[sd]/g, (_, __, position) => {
@@ -242,12 +258,15 @@ export function interpolate(str: string, params: any): string {
 }
 
 /**
- * Alias of gettext(msgid)
+ * Alias of gettext()
  */
 export function _(msgid: string): string {
     return gettext(msgid);
 }
 
+// TODO: The logic in here would be more straightforward if countries were just
+// {cc: country_name} instead of {current_language: {cc: country_name}}.
+// Updating this requires updating jsonify-po-files.js
 export function cc_to_country_name(country_code: string) {
     if (current_language in countries) {
         return countries[current_language][country_code];
