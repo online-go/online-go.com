@@ -805,8 +805,12 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
                                 <select value={this.state.puzzle.width} onChange={this.setPuzzleSize}>
                                     <option value={19}>{_("19x19")}</option>
+                                    <option value={17}>{_("17x17")}</option>
+                                    <option value={15}>{_("15x15")}</option>
                                     <option value={13}>{_("13x13")}</option>
+                                    <option value={11}>{_("11x11")}</option>
                                     <option value={9}>{_("9x9")}</option>
+                                    <option value={7}>{_("7x7")}</option>
                                     <option value={5}>{_("5x5")}</option>
                                 </select>
 
