@@ -45,7 +45,7 @@ export const comm_socket = termination_socket;
 
 let ai_host = '';
 if (window.location.hostname.indexOf('beta') >= 0 || window.location.hostname.indexOf('dev') >= 0) {
-    ai_host = 'ai-beta.online-go.com';
+    ai_host = 'beta-ai.online-go.com';
 }
 else if (window.location.hostname.indexOf('online-go.com') >= 0) {
     ai_host = 'ai.online-go.com';
