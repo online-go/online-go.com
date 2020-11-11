@@ -2901,12 +2901,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.goban &&
             this.goban.engine) {
 
-            let config:any = this.goban.engine.config; // detyping because GoEngineConfig doesn't have start_time decleared, but it definitely has that attribute here!
-
             return <GameTimings
                 moves={this.goban.engine.config.moves}
-                start_time={config.start_time}
-                end_time={config.end_time}
+                start_time={this.goban.engine.config.start_time}
+                end_time={this.goban.engine.config.end_time}
                 free_handicap_placement={this.goban.engine.config.free_handicap_placement}
                 handicap={this.goban.engine.config.handicap}/>;
         }
