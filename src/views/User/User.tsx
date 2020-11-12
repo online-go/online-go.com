@@ -567,6 +567,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 if (item.white.id === this.user_id) /* played white */ {
                     item.played_black = false;
                     item.opponent = r.historical_ratings.black;
+                    item.player = r.historical_ratings.white;
                     item.player_won = item.white_won;
                     if (item.ranked && !preferences.get("hide-ranks")) {
                         if (item.white_won) /* player won */ {
@@ -580,6 +581,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 } else if (item.black.id === this.user_id) /* played black */ {
                     item.played_black = true;
                     item.opponent = r.historical_ratings.white;
+                    item.player = r.historical_ratings.black;
                     item.player_won = item.black_won;
                     if (item.ranked && !preferences.get("hide-ranks")) {
                         if (item.black_won) /* player won */ {
@@ -901,7 +903,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
                                     columns={[                                /* I wish we could set properties at the row level! */
-                                        {header: _(""),       className: (X) => ("color" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.played_black ? "⚫" : "⚪")},
+                                        {header: _("User"), className: (X) => ("color" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => ((X.played_black ? "⚫ " : "⚪ ")) + "[" + rankString(X.player) + "]"},
                                         {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
                                         {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),     render: (X) => moment(X.date).format("YYYY-MM-DD")},
                                         {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
