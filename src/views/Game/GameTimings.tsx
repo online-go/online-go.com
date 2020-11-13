@@ -26,6 +26,8 @@ declare var swal;
 
 interface GameTimingProperties {
     moves: any;
+    start_time: number;
+    end_time: number;
     free_handicap_placement: boolean;
     handicap: number;
 }
@@ -156,9 +158,12 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                     ))
                 }
                 <div>Totals:</div>
-                <div>{black_elapsed.asMinutes() < 1 ? `${black_elapsed.asSeconds().toFixed(1)}s` : black_elapsed.format()}</div>
-                <div>{white_elapsed.asMinutes() < 1 ? `${white_elapsed.asSeconds().toFixed(1)}s` : white_elapsed.format()}</div>
-                <div></div>
+                <div>{this.show_seconds_nicely(black_elapsed)}</div>
+                <div>{this.show_seconds_nicely(white_elapsed)}</div>
+                <div>{/* empty cell at end of row */}</div>
+                <div>Final action:</div>
+                <div>{this.show_seconds_nicely(moment.duration(this.props.end_time - this.props.start_time, "seconds").subtract(game_elapsed))}</div>
+                <div>{/* empty cell at end of row */}</div>
             </div>
         );
     }
