@@ -215,6 +215,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Video Channels")}</dt>
                 {scramble(
+                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCRJyagla1B5cxIfR4i2LdgA">Michael Redmond's Go TV</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/KNMeepsie">Jonathan Markowitz</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/nicksibicky/">Nick Sibicky</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA">Andrew Jackson</a></span>,

@@ -58,7 +58,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         let white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
         let game_elapseds: Array<ReturnType<typeof moment.duration>> = new Array(); // the time elapsed up to each move
 
-        let non_handicap_moves = this.props.moves;
+        let non_handicap_moves = [...this.props.moves];
         let handicap_moves = [];
         let handicap_move_offset = 0;
 
