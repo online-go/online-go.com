@@ -29,7 +29,6 @@ import {allRanks, IRankInfo} from "rank_utils";
 import {Card} from "material";
 import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
 import {SpritePack} from "sfx_sprites";
-import {LanguagePicker} from "LanguagePicker";
 import {current_language, setCurrentLanguage, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
@@ -816,21 +815,15 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         /* not all browsers support the Notification API */
     }
 
-    function updateProfanityFilter(lang, on) {
-        let new_profanity_settings = {};
+    function updateProfanityFilter(langs: {value: string, label: string}[]) {
+        let new_profanity_settings = {}
 
-        for (let l of profanity_filter) {
-            new_profanity_settings[l] = true;
-        }
-
-        if (on) {
-            new_profanity_settings[lang] = true;
-        } else {
-            delete new_profanity_settings[lang];
-        }
+        langs.forEach((lang) => {
+            new_profanity_settings[lang.value] = true
+        })
 
         preferences.set("profanity-filter", new_profanity_settings);
-        _setProfanityFilter(Object.keys(new_profanity_settings));
+        _setProfanityFilter(langs.map(lang => lang.value));
     }
 
     function updateGameListThreshold(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -933,10 +926,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
 
     const language_options = Object.entries(languages).map(lang_entry => ({
         'value': lang_entry[0], 'label': lang_entry[1]
-    })
-        );
-
-    console.log(language_options);
+    }));
 
     function setLanguage(language_code: string) {
             preferences.set("language", language_code);
@@ -947,7 +937,6 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     return (
         <div>
             <PreferenceLine title={_("Language")}>
-                {/*<LanguagePicker />*/}
                 <PreferenceDropdown
                     value={current_language}
                     options={language_options}
@@ -956,14 +945,15 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Profanity filter")}>
-                <Card className='ProfanityFilterCard'>
-                    {Object.keys(languages).filter(lang => lang in profanity_regex).map((lang) => (
-                        <div className='ProfanityFilterOption' key={lang}>
-                            <span className='ProfanityFilterOptionName'>{languages[lang]}</span>
-                            <Toggle onChange={on => updateProfanityFilter(lang, on)} checked={profanity_filter.indexOf(lang) >= 0} />
-                        </div>
-                    ))}
-                </Card>
+                <Select
+                    className = "ProfanityDropdown"
+                    defaultValue = {language_options.filter(lang =>
+                        profanity_filter.indexOf(lang.value) >= 0)}
+                    options = {language_options.filter(lang =>
+                        lang.value in profanity_regex)}
+                    onChange = {updateProfanityFilter}
+                    isMulti
+                    />
             </PreferenceLine>
 
             <PreferenceLine title={_("Game thumbnail list threshold")} description={_("Set to 0 to always show list.")}>
