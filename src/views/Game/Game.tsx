@@ -1681,7 +1681,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.goban && !this.goban.engine.config.original_sgf) {
             if (this.goban.mode === "score estimation") {
                 this.leaveScoreEstimation();
-            } else if (this.goban.mode === "analyze") {
+            } else if (this.goban.mode === "analyze" && this.game_id) {
                 this.goban.setMode("play");
                 this.sync_state();
             }
@@ -2487,20 +2487,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         </span>
                     }
 
-                    {(state.mode === "score estimation" || null) &&
-                        <span>
-                            {(state.score_estimate.winner || null) &&
-                                <span>
-                                    {interpolate(_("{{winner}} by {{score}}"), {"winner": this.goban.score_estimate.winner, "score": this.goban.score_estimate.amount})}
-                                </span>
-                            }
-                            {(!state.score_estimate.winner || null) &&
-                                <span>
-                                    {_("Estimating...")}
-                                </span>
-                            }
-                        </span>
-                    }
+                    {(state.mode === "score estimation" || null) && this.frag_estimate_score()}
 
                     {(state.mode === "play" && state.phase === "finished" || null) &&
                         <span style={{textDecoration: state.annulled ? 'line-through' : 'none' }}>
@@ -2726,56 +2713,91 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return (
             <div className="play-controls">
                 <div ref={el => this.ref_game_state_label = el} className="game-state">
-                    {_("Review by")}: <Player user={this.state.review_owner_id} />
-                    {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
+                    {(this.state.mode === "analyze" || null) &&
                         <div>
-                            {_("Review controller")}: <Player user={this.state.review_controller_id} />
+                            {_("Review by")}: <Player user={this.state.review_owner_id} />
+                            {((this.state.review_controller_id && this.state.review_controller_id !== this.state.review_owner_id) || null) &&
+                                <div>
+                                    {_("Review controller")}: <Player user={this.state.review_controller_id} />
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    {(this.state.mode === "score estimation" || null) &&
+                        <div>
+                            {this.frag_estimate_score()}
                         </div>
                     }
                 </div>
-                <div>
-                    {this.frag_analyze_button_bar()}
+                {(this.state.mode === "analyze" || null) &&
+                    <div>
+                        {this.frag_analyze_button_bar()}
 
-                    <div className="space-around">
-                        {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
-                            this.state.review_out_of_sync &&
-                            <button className="sm" onClick={this.syncToCurrentReviewMove}>
-                                {pgettext("Synchronize to current review position", "Sync")} <i className='fa fa-refresh'/>
-                            </button>
-                        }
-                    </div>
-
-                    <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
-
-                    <div style={{paddingLeft: "0.5em", paddingRight: "0.5em"}}>
-                        <textarea id="game-move-node-text" placeholder={_("Move comments...")}
-                            rows={5}
-                            className="form-control"
-                            value={this.state.move_text}
-                            disabled={this.state.review_controller_id !== data.get("user").id}
-                            onChange={this.updateMoveText}
-                            ></textarea>
-                    </div>
-
-                    <div style={{padding: "0.5em"}}>
-                        <div className="input-group">
-                            <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
-                                value={this.state.variation_name}
-                                onChange={this.updateVariationName}
-                                onKeyDown={this.variationKeyPress}
-                                disabled={user.anonymous}
-                                />
-                            <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>
+                        <div className="space-around">
+                            {(this.state.review_controller_id && this.state.review_controller_id !== user.id) &&
+                                this.state.review_out_of_sync &&
+                                <button className="sm" onClick={this.syncToCurrentReviewMove}>
+                                    {pgettext("Synchronize to current review position", "Sync")} <i className='fa fa-refresh'/>
+                                </button>
+                            }
                         </div>
-                    </div>
 
-                    {/*
-                    <div style={{padding: "0.5em", textAlign: "center"}}>
-                        {_("Voice Chat: ")} <VoiceChat channel={"review-" + this.review_id} hasVoice={ this.hasVoice(user.id) } />
+                        <Resizable id="move-tree-container" className="vertically-resizable" ref={this.setMoveTreeContainer} />
+
+                        <div style={{paddingLeft: "0.5em", paddingRight: "0.5em"}}>
+                            <textarea id="game-move-node-text" placeholder={_("Move comments...")}
+                                rows={5}
+                                className="form-control"
+                                value={this.state.move_text}
+                                disabled={this.state.review_controller_id !== data.get("user").id}
+                                onChange={this.updateMoveText}
+                                ></textarea>
+                        </div>
+
+                        <div style={{padding: "0.5em"}}>
+                            <div className="input-group">
+                                <input type="text" className={`form-control ${this.state.chat_log}`} placeholder={_("Variation name...")}
+                                    value={this.state.variation_name}
+                                    onChange={this.updateVariationName}
+                                    onKeyDown={this.variationKeyPress}
+                                    disabled={user.anonymous}
+                                    />
+                                <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>
+                            </div>
+                        </div>
+
+                        {/*
+                        <div style={{padding: "0.5em", textAlign: "center"}}>
+                            {_("Voice Chat: ")} <VoiceChat channel={"review-" + this.review_id} hasVoice={ this.hasVoice(user.id) } />
+                        </div>
+                        */}
                     </div>
-                    */}
-                </div>
+                }
+                {(this.state.mode === "score estimation" || null) &&
+                    <div className="analyze-mode-buttons">
+                        <span>
+                            <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Review")}</button>
+                        </span>
+                    </div>
+                }
             </div>
+        );
+    }
+    frag_estimate_score() {
+        return (
+            <span>
+                {(this.state.score_estimate.winner || null) &&
+                    <span>
+                        {interpolate(_("{{winner}} by {{score}}"), {"winner": this.goban.score_estimate.winner, "score": this.goban.score_estimate.amount})}
+                    </span>
+                }
+                {(!this.state.score_estimate.winner || null) &&
+                    <span>
+                        {_("Estimating...")}
+                    </span>
+                }
+            </span>
         );
     }
     frag_analyze_button_bar() {
@@ -3143,10 +3165,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
                 }
-                {game &&
-                    <a onClick={this.estimateScore} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
-                        <i className="fa fa-tachometer"></i> {_("Estimate score")}
-                    </a>}
+                <a onClick={this.estimateScore} className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}>
+                    <i className="fa fa-tachometer"></i> {_("Estimate score")}
+                </a>
                 <a onClick={this.fork}><i className="fa fa-code-fork"></i> {_("Fork game")}</a>
                 <a onClick={this.alertModerator}><i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}</a>
                 {((review && game_id) || null) && <Link to={`/game/${game_id}`}><i className="ogs-goban"/> {_("Original game")}</Link>}
