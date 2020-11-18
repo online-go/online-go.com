@@ -816,11 +816,11 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     }
 
     function updateProfanityFilter(langs: {value: string, label: string}[]) {
-        let new_profanity_settings = {}
+        let new_profanity_settings = {};
 
         langs.forEach((lang) => {
-            new_profanity_settings[lang.value] = true
-        })
+            new_profanity_settings[lang.value] = true;
+        });
 
         preferences.set("profanity-filter", new_profanity_settings);
         _setProfanityFilter(langs.map(lang => lang.value));
