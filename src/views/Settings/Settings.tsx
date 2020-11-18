@@ -30,7 +30,7 @@ import {Card} from "material";
 import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
 import {SpritePack} from "sfx_sprites";
 import {LanguagePicker} from "LanguagePicker";
-import {current_language, languages} from "translate";
+import {current_language, setCurrentLanguage, languages} from "translate";
 import {toast} from 'toast';
 import {profanity_regex} from 'profanity_filter';
 import {logout} from 'NavBar';
@@ -931,10 +931,28 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         setIncidentReportNotifications(checked);
     }
 
+    const language_options = Object.entries(languages).map(lang_entry => ({
+        'value': lang_entry[0], 'label': lang_entry[1]
+    })
+        );
+
+    console.log(language_options);
+
+    function setLanguage(language_code: string) {
+            preferences.set("language", language_code);
+            setCurrentLanguage(language_code);
+            window.location.reload();
+    }
+
     return (
         <div>
             <PreferenceLine title={_("Language")}>
-                <LanguagePicker />
+                {/*<LanguagePicker />*/}
+                <PreferenceDropdown
+                    value={current_language}
+                    options={language_options}
+                    onChange={setLanguage}
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Profanity filter")}>
