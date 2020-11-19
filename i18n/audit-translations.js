@@ -60,6 +60,12 @@ function main() {
 
                             if (label_replacements) {
                                 for (let replacement of label_replacements) {
+                                    if (replacement === "{{num}}" && msg.indexOf('{{') < 0) {
+                                        // {{num}} point often goes to "1" in the case where num == 1, this is a fine translation
+                                        // so allow this, but if we see any {{ in the string then it's probably likely that the
+                                        // translator actually translated "num", which is a problem.
+                                        continue;
+                                    }
                                     if (msg.indexOf(replacement) < 0) {
                                         console.log(`${conv}.po: label replacement for ${replacement} missing: ${str} -> ${msg}`);
                                         errors++;
