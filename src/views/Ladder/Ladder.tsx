@@ -206,7 +206,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             return this.requests_in_flight[page].then(() => this.cache[idx]);
         }
 
-        this.requests_in_flight[page] = new Promise((resolve, reject) => {
+        this.requests_in_flight[page] = new Promise<void>((resolve, reject) => {
             get(`ladders/${this.props.match.params.ladder_id}/players`, {page, page_size: PAGE_SIZE})
             .then((obj) => {
                 delete this.requests_in_flight[page];

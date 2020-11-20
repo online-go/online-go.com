@@ -296,7 +296,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         window.document.title = _("Support OGS");
 
         if (!DEPRECATED_stripe_checkout_js_promise) {
-            DEPRECATED_stripe_checkout_js_promise = new Promise((resolve, reject) => {
+            DEPRECATED_stripe_checkout_js_promise = new Promise<void>((resolve, reject) => {
                 let script = document.createElement("script");
                 script.src = "https://checkout.stripe.com/checkout.js";
                 script.async = true;
@@ -310,7 +310,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 document.head.appendChild(script);
             });
 
-            stripe_checkout_js_promise = new Promise((resolve, reject) => {
+            stripe_checkout_js_promise = new Promise<void>((resolve, reject) => {
                 let script = document.createElement("script");
                 script.src = "https://js.stripe.com/v3";
                 script.async = true;
