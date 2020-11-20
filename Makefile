@@ -22,14 +22,14 @@ mincss:
 	@echo 'gzipped ogs.min.css: ' `gzip -9 dist/ogs.min.css -c | wc -c`
 
 minjs:
-	npm run webpack -- --mode production --optimize-minimize --devtool=source-map --display-modules
+	npm run webpack -- --mode production --optimization-minimize --devtool=source-map
 	@echo 'gzipped ogs.min.js: ' `gzip -9 dist/ogs.min.js -c | wc -c`
 	@echo 'gzipped vendor.min.js: ' `gzip -9 dist/vendor.min.js -c | wc -c`
 
 analyze:
 	ANALYZE=true npm run analyze
 
-#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimize-minimize --devtool=source-map --profile --json > analyze.json
+#NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimization-minimize --devtool=source-map --profile --json > analyze.json
 #npm run webpack-bundle-analyzer dist/ analyze.json
 
 .PHONY: dev lint tslint min minjs mincss

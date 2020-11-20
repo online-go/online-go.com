@@ -14,7 +14,7 @@
     "tslint": "tslint",
     "gulp": "gulp",
     "minify-index": "gulp minify-index --silent",
-    "analyze": "webpack --mode production --profile --optimize-minimize --devtool=source-map"
+    "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
   },
   "browserslist": [
     "defaults"

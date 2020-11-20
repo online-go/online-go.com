@@ -8,7 +8,7 @@ OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
 
 
 stats:
-	npm run webpack -- --mode production --optimize-minimize --devtool=source-map --display-modules --output-filename 'ogs.min.js' --json > webpack-stats.json
+	npm run webpack -- --mode production --optimization-minimize --devtool=source-map --output-filename 'ogs.min.js' --json > webpack-stats.json
 	cat webpack-stats.json
 
 todo:
@@ -87,10 +87,10 @@ purge-cdn-files:
 	rm -Rf deployment-staging-area
 
 dist/ogs.min.js: dist/ogs.js
-	npm run webpack -- --mode=production --optimize-minimize --devtool=source-map
+	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
 
 dist/vendor.min.js: dist/vendor.js
-	npm run webpack -- --mode=production --optimize-minimize --devtool=source-map
+	npm run webpack -- --mode=production --optimization-minimize --devtool=source-map
 
 dist/ogs.$(VERSION).css: 
 	npm run gulp min_styl
