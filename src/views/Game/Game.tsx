@@ -58,9 +58,6 @@ import {GameTimings} from "./GameTimings";
 
 declare var swal;
 
-let Perf = (React as any).addons ? (React as any).addons.Perf : null;
-window["Perf"] = Perf;
-
 let win = $(window);
 
 interface GameProperties {
@@ -1445,9 +1442,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
     }
     togglePortraitTab() {
-        if (Perf) {
-            Perf.start();
-        }
         let portrait_tab = null;
         switch (this.state.portrait_tab) {
             case "game":
@@ -1465,14 +1459,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.setState({portrait_tab: portrait_tab});
         this.onResize();
-        if (Perf) {
-        setTimeout(() => {
-            Perf.stop();
-            window["p"] = Perf.getLastMeasurements();
-            Perf.printExclusive(Perf.getLastMeasurements());
-            Perf.printWasted(Perf.getLastMeasurements());
-        }, 500);
-        }
     }
     setPencilColor(ev) {
         let color = (ev.target as HTMLInputElement).value;
