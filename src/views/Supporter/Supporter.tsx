@@ -327,7 +327,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
 
-
         if (!data.get('user').anonymous) {
             DEPRECATED_stripe_checkout_js_promise.then(() => {
                 get("me/supporter")

@@ -17,7 +17,12 @@ const gulpTsLint   = require('gulp-tslint');
 const tslint       = require('tslint');
 const html_minifier= require('html-minifier').minify;
 
-let ts_sources = ['src/**/*.ts', 'src/**/*.tsx'];
+let ts_sources = [
+    'src/**/*.ts',
+    'src/**/*.tsx',
+    '!src/**/*.test.ts',
+    '!src/**/*.test.tsx',
+];
 let SERVER = "beta.online-go.com";
 //SERVER = "online-go.com";
 
