@@ -816,6 +816,9 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     }
 
     function updateProfanityFilter(langs: {value: string, label: string}[]) {
+        if (!langs)
+            langs = [];
+
         let new_profanity_settings = {};
 
         langs.forEach((lang) => {
