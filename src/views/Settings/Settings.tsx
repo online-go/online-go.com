@@ -947,6 +947,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
             <PreferenceLine title={_("Profanity filter")}>
                 <Select
                     className = "ProfanityDropdown"
+                    classNamePrefix = "ogs-react-select"
                     defaultValue = {language_options.filter(lang =>
                         profanity_filter.indexOf(lang.value) >= 0)}
                     options = {language_options.filter(lang =>
