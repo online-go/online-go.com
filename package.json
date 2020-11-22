@@ -44,7 +44,7 @@
     "prettier": "1.19.1",
     "pump": "^3.0.0",
     "source-map-loader": "^0.2.4",
-    "stylus": "^0.54.7",
+    "stylus": "0.54.7",
     "supervisor": "^0.12.0",
     "ts-jest": "^26.4.3",
     "ts-loader": "^8.0.11",
