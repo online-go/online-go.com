@@ -1664,7 +1664,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.toggleZenMode();
         }
 
-        if (this.goban && !this.goban.engine.config.original_sgf) {
+        if (this.goban) {
             if (this.goban.mode === "score estimation") {
                 this.leaveScoreEstimation();
             } else if (this.goban.mode === "analyze" && this.game_id) {
@@ -2875,7 +2875,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 </button>
             </div>
              <div className="analyze-mode-buttons">
-                 {(state.mode === "analyze" && !this.goban.engine.config.original_sgf || null) &&
+                 {(state.mode === "analyze" || null) &&
                  <span>
                      {(!this.review_id || null) &&
                         <button className="sm primary bold" onClick={this.goban_setModeDeferredPlay}>{_("Back to Game")}</button>
