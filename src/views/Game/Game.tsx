@@ -1438,6 +1438,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 move_tree.clearMarks();
             }
             this.goban.redraw();
+            this.sync_state();
         }
         this.setState({ ai_review_enabled: !this.state.ai_review_enabled });
     }
@@ -1886,7 +1887,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             estimating_score: false
         });
         this.goban.setScoringMode(false);
-        this.goban.engine.clearRemoved();
         this.goban.hideScores();
         this.goban.score_estimate = null;
         this.sync_state();
@@ -1945,7 +1945,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         this.setState({estimating_score: false});
         let ret = this.goban.setScoringMode(false);
-        this.goban.engine.clearRemoved();
         this.goban.hideScores();
         this.goban.score_estimate = null;
         //goban.engine.cur_move.clearMarks();
@@ -2682,7 +2681,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {(state.mode === "score estimation" || null) &&
                 <div className="analyze-mode-buttons">
                     <span>
-                        <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Game")}</button>
+                        <button className="sm primary bold" onClick={this.stopEstimatingScore}>{_("Back to Board")}</button>
                     </span>
                 </div>
                 }
