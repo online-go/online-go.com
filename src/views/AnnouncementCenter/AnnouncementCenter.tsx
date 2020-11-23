@@ -25,7 +25,7 @@ import {Card} from "material";
 import {UIPush} from "UIPush";
 import {errorAlerter} from "misc";
 import {Player} from "Player";
-import * as Datetime from "react-datetime";
+import Datetime from "react-datetime";
 import * as moment from "moment";
 
 declare var swal;

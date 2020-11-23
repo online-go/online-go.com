@@ -36,8 +36,10 @@
         "strictPropertyInitialization": false,
         "noUnusedLocals": false,
 
+        "allowSyntheticDefaultImports": true,
+
         "sourceMap": true,
-        "jsx": "react",
+        "jsx": "react"
     },
     "files": [
         "./src/main.tsx"

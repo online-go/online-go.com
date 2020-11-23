@@ -28,7 +28,7 @@ import {timeControlDescription} from "TimeControl";
 import {Markdown} from "Markdown";
 import {Player, setExtraActionCallback} from "Player";
 import * as moment from "moment";
-import * as Datetime from "react-datetime";
+import Datetime from "react-datetime";
 import {UIPush} from "UIPush";
 import {Card} from "material";
 import {EmbeddedChatCard} from "Chat";

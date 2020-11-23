@@ -23,7 +23,7 @@ import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import {toast} from "toast";
 import {VoiceChat} from "VoiceChat";
-import * as Datetime from "react-datetime";
+import Datetime from "react-datetime";
 import {StarRating} from "StarRating";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {GroupAutocomplete} from "GroupAutocomplete";
