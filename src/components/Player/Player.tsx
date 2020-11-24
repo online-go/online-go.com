@@ -165,7 +165,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             else if (player_id && player_id <= 0) {
                 // do nothing
             }
-            else if (username && username !== '...') {
+            else if (username && username !== "...") {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (this.unmounted) {
                         return;
