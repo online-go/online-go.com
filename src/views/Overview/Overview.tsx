@@ -70,6 +70,7 @@ export class Overview extends React.Component<{}, any> {
         }
 
         this.state = {
+            user: data.get("config.user"),
             overview: {
                 active_games: [],
             },
@@ -91,6 +92,7 @@ export class Overview extends React.Component<{}, any> {
     componentDidMount() {
         this.setTitle();
         notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
+        data.watch("config.user", (user) => this.setState({"user": user}));
         this.refresh().then(ignore).catch(ignore);
     }
 
@@ -115,7 +117,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        let user = data.get("config.user");
+        let user = this.state.user;
 
         return (
         <div id="Overview-Container">
