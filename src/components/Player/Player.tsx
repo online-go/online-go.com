@@ -92,7 +92,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             else if (player_id && player_id <= 0) {
                 // do nothing
             }
-            else if (username) {
+            else if (username && username !== "...") {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (this.unmounted) {
                         return;
@@ -142,7 +142,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
         if (!new_props.disableCacheUpdate) {
             let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-            let username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
+            let username = typeof(new_props.user) !== "object" ? null : new_props.user.username ;
 
             if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
@@ -165,7 +165,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             else if (player_id && player_id <= 0) {
                 // do nothing
             }
-            else if (username) {
+            else if (username && username !== "...") {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (this.unmounted) {
                         return;
