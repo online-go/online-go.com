@@ -76,7 +76,6 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     blankState() {
         return {
             resolved: false,
-            resolving: 0,
             username: "...",
             //icon: data.get('config.cdn_release') + '/img/default-user.svg',
             icon: "",
@@ -101,11 +100,11 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             ]
         )
         .then((player) => {
-            this.setState(Object.assign({resolved: true}, player as any));
+            this.setState(Object.assign({}, player as any, {resolved: true}));
         })
         .catch((err) => {
             if (player_id === this.props.playerId) {
-                this.setState({resolved: true, error: _("Error loading player information")});
+                this.setState({resolved: false, error: _("Error loading player information")});
                 console.error(err);
             }
         });
@@ -266,18 +265,18 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 {!user.anonymous && (user.id !== this.props.playerId || null) &&
                     <div className="actions">
                         {!this.props.nochallenge &&
-                            <button className="xs noshadow primary" disabled={this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
+                            <button className="xs noshadow primary" disabled={!this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         }
                         {!this.props.nochallenge &&
                             <div style={{width: '48%'}}></div>
                         }
-                        <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
+                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
                         {friends[this.props.playerId]
-                            ? <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
-                            : <button className="xs noshadow success" disabled={this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
+                            ? <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
+                            : <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.addFriend}><i className="fa fa-smile-o"/>{_("Add friend")}</button>
                         }
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
-                        <button className="xs noshadow reject" disabled={this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.report}><i className="fa fa-exclamation-triangle"/>{_("Report")}</button>
+                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.block}><i className="fa fa-ban"/>{_("Block")}</button>
                     </div>
                 }
                 {!user.anonymous && !this.props.noextracontrols && extraActionCallback && extraActionCallback(this.props.playerId, this.state)}
