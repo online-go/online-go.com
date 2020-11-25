@@ -92,12 +92,16 @@ export class Overview extends React.Component<{}, any> {
     componentDidMount() {
         this.setTitle();
         notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
-        data.watch("config.user", (user) => this.setState({"user": user}));
+        data.watch("config.user", this.updateUser);
         this.refresh().then(ignore).catch(ignore);
     }
 
     componentDidUpdate() {
         this.setTitle();
+    }
+
+    updateUser = (user) => {
+        this.setState({"user": user});
     }
 
     refresh() {
@@ -114,6 +118,7 @@ export class Overview extends React.Component<{}, any> {
         abort_requests_in_flight("ui/overview");
         notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
         window.document.title = Overview.defaultTitle;
+        data.unwatch("config.user", this.updateUser);
     }
 
     render() {
