@@ -132,7 +132,7 @@ const global_replacements: TextReplacement[] = [
     {split: /(https?:\/\/[^<> ]+)/gi, pattern: /(https?:\/\/[^<> ]+)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>)},
 ];
 
-export function chat_markup(body: string, extra_pattern_replacements?: Array<{split: RegExp; pattern: RegExp; replacement: ((m: any, idx: number) => any)}>): Array<JSX.Element> {
+export function chat_markup(body: string, extra_pattern_replacements?: Array<TextReplacement>): Array<JSX.Element> {
     let replacements = global_replacements;
 
     if (body.length > 1024) {
@@ -150,7 +150,7 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<{sp
         }));
     }
 
-    let ret = fragments.map( (fragment, i) => {
+    return fragments.map( (fragment, i) => {
         for (let r of replacements) {
             let m = r.pattern.exec(fragment);
             if (m) {
@@ -159,6 +159,4 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<{sp
         }
         return <span key={i}>{fragment}</span>;
     });
-
-    return ret;
 }
