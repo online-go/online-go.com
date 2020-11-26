@@ -21,11 +21,17 @@ import { Link } from "react-router-dom";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
 
-const global_replacements = [
+export class TextReplacement {
+    split: RegExp;
+    pattern: RegExp;
+    replacement: (m: RegExpExecArray, idx: number) => JSX.Element;
+}
+
+const global_replacements: TextReplacement[] = [
     // spam mitigation
     // replace tsumegodojo.worldpress.com urls with tsumegododo.worldpress.com as spam mitigation
     {split: /(https?:\/\/\S*tsumegodojo\S*)/gi, pattern: /(https?:\/\/[^\s\/]*)(tsumegodojo)(\S*)/gi, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1] + "tsumegododo" + m[3]}>{m[1] + "tsumegododo" + m[3]}</a>)},
-    {split: /(\S*tsumegodojo\S*)/gi, pattern: /(\S*)(tsumegodojo)(\S*)/gi, replacement: (m, idx) => (m[1] + "tsumegododo" + m[3])},
+{split: /(\S*tsumegodojo\S*)/gi, pattern: /(\S*)(tsumegodojo)(\S*)/gi, replacement: (m, idx) => (<span key={idx}>{m[1] + "tsumegododo" + m[3]}</span>)},
     // Match github
     {split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/gi,
         pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/([0-9]+)(?:\/|\b))/gi,
@@ -144,22 +150,15 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<{sp
         }));
     }
 
-    let ret = [];
-    for (let i = 0; i < fragments.length; ++i) {
-        let fragment = fragments[i];
-        let matched = false;
+    let ret = fragments.map( (fragment, i) => {
         for (let r of replacements) {
             let m = r.pattern.exec(fragment);
             if (m) {
-                ret.push(r.replacement(m, i));
-                matched = true;
-                break;
+                return r.replacement(m, i);
             }
         }
-        if (!matched) {
-            ret.push(<span key={i}>{fragment}</span>);
-        }
-    }
+        return <span key={i}>{fragment}</span>;
+    });
 
     return ret;
 }
