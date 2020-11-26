@@ -137,26 +137,27 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<{sp
         replacements = replacements.concat(extra_pattern_replacements);
     }
 
-    let ret = [profanity_filter(body)];
+    let fragments = [profanity_filter(body)];
     for (let r of replacements) {
-        ret = [].concat.apply([], ret.map((text_fragment) => {
+        fragments = [].concat.apply([], fragments.map((text_fragment) => {
             return text_fragment.split(r.split);
         }));
     }
 
-    for (let i = 0; i < ret.length; ++i) {
-        let fragment = ret[i];
+    let ret = [];
+    for (let i = 0; i < fragments.length; ++i) {
+        let fragment = fragments[i];
         let matched = false;
         for (let r of replacements) {
             let m = r.pattern.exec(fragment);
             if (m) {
-                ret[i] = r.replacement(m, i);
+                ret.push(r.replacement(m, i));
                 matched = true;
                 break;
             }
         }
         if (!matched) {
-            ret[i] = <span key={i}>{ret[i]}</span>;
+            ret.push(<span key={i}>{fragment}</span>);
         }
     }
 
