@@ -150,6 +150,8 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<Tex
         }));
     }
 
+    fragments = fragments.filter((value: string) => (value != ''));
+
     return fragments.map( (fragment, i) => {
         for (let r of replacements) {
             let m = r.pattern.exec(fragment);
