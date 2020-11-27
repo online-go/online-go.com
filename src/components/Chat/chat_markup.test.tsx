@@ -36,7 +36,7 @@ test('E-mail', () => {
 });
 
 // Because of the @ symbol, these URLs have a tendency to get caught by the e-mail RegExp
-test('Google Maps link not parsed as e-mail', () =>
+test('Google Maps link not parsed as e-mail', () => {
     expect_singular_markup("https://www.google.com/maps/@50.7006874,-3.0915427,13.75z",
         <a key={0} target="_blank" href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}>{"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}</a>)
-)
+});
