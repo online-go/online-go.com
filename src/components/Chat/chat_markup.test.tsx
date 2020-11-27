@@ -30,8 +30,13 @@ test('GitHub', () => {
         <a key={0} target="_blank" href={"https://github.com/online-go/online-go.com/issues/4"}>{"GH-4"}</a>);
 });
 
-// Uncomment when bug #1251 has been fixed
-// test('Google Maps link not parsed as e-mail', () => 
-//     expect_singular_markup("https://www.google.com/maps/@50.7006874,-3.0915427,13.75z",
-//     <a key={0} target="_blank" href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}>{"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}</a>)
-// )
+test('E-mail', () => {
+    expect_singular_markup("john.doe@emailhost.com",
+        <a key={0} target="_blank" href={"mailto:john.doe@emailhost.com"}>{"john.doe@emailhost.com"}</a>);
+});
+
+// Because of the @ symbol, these URLs have a tendency to get caught by the e-mail RegExp
+test('Google Maps link not parsed as e-mail', () =>
+    expect_singular_markup("https://www.google.com/maps/@50.7006874,-3.0915427,13.75z",
+        <a key={0} target="_blank" href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}>{"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}</a>)
+)

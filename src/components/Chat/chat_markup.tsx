@@ -173,8 +173,12 @@ const global_replacements: TextReplacement[] = [
         pattern: /\b(https?:\/\/senseis\.xmp\.net\/\?([^\/<> ]+)(?:\/|\b))/i,
         replacement: (m, idx) => (<a key={idx} target='_blank' href={m[1]}>{"senseis: " + m[2]}</a>)
     },
-    // mails
-    { split: /([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)/i, pattern: /([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)/i, replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>) },
+    // e-mail addresses
+    {
+        split: /\b([A-Za-z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?:\/|\b))/i,
+        pattern: /\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?:\/|\b))/i,
+        replacement: (m, idx) => (<a key={idx} target="_blank" href={"mailto:" + m[1]}>{m[1]}</a>)
+    },
     // general urls
     // replaces any url not matched above
     { split: /(https?:\/\/[^<> ]+)/i, pattern: /(https?:\/\/[^<> ]+)/i, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>) },
