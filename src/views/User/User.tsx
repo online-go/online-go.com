@@ -523,8 +523,6 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.moderator_note.value = "";
     }
 
-    // I think ideally this would be handled in rank_utils, except I'm not sure about polluting that with preferences
-    // It'd also likely be a big refactor to get right across the board...
     maskedRank = (rank: string): string => (
         preferences.get('hide-ranks') ? "" : rank
     )
