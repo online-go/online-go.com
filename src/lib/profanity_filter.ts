@@ -16,14 +16,13 @@
  */
 
 import * as preferences from "preferences";
-import {current_language} from "translate";
 
-let filters: any = {};
-export let profanity_regex: any = {};
+let filters: { [key:string]: boolean} = {};
+export let profanity_regex: { [key: string]: RegExp } = {};
 
-export function profanity_filter(str) {
+export function profanity_filter(str: string) {
     for (let lang in filters) {
-        str = str.replace(profanity_regex[lang], "$*!%", str);
+        str = str.replace(profanity_regex[lang], "$*!%");
     }
     return str;
 }
