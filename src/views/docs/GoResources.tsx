@@ -125,7 +125,7 @@ export let GoResources = (props) => {
                         <span style={{marginLeft: "1.7em"}}>
                             <Flag country={en}/><a rel="noopener" href="https://cdn.online-go.com/81_little_lions.pdf">2015 Edition (pdf)</a>
                         </span>
-                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Françisa d'Alsace</span>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Immanuel deVillers</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Lucas Félix de Oliveira Santana</span>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Рочев Антон</span>
                     </span>,
