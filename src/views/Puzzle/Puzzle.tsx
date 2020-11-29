@@ -606,7 +606,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             ;
 
         return (
-        <div className={`Puzzle ${view_mode} ${squashed}`}>
+        <div className={`Puzzle ${view_mode} ${squashed ? "squashed" : ""}`}>
             <KBShortcut shortcut="escape" action={this.doReset} />
             <KBShortcut shortcut="left" action={this.undo} />
 

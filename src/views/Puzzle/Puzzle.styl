@@ -31,6 +31,10 @@ puzzle-controls-width=400px
     overflow: hidden;
 
 
+    @media screen and (max-width: 800px) {
+        flex-direction: column;
+        overflow-y: auto;
+    }
 
     .left-col {
     }
@@ -43,17 +47,27 @@ puzzle-controls-width=400px
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        overflow: hidden;
-        //justify-content: stretch;
 
+        @media screen and (max-width: 800px) {
+            height: 100vw;
+            max-height: 100vw;  // firefox needs this
+            flex-basis: 99%;
+            overflow-y: visible;
+        }
     }
 
     .left-col, .right-col {
-        width: puzzle-controls-width
+        max-width: puzzle-controls-width
         overflow-y: auto;
         overflow-x: hidden;
         min-height: auto;
         padding: 0.5rem;
+
+        @media screen and (max-width: 800px) {
+            overflow-y: visible;
+            overflow-x: visible;
+            align-self: center;
+        }
     }
 
     .btn-container {
