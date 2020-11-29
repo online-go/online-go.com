@@ -10,5 +10,13 @@ module.exports = {
         "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "moduleFileExtensions": ["js", "json", "jsx", "ts", "tsx", "d.ts", "node"],
-    "modulePaths": ["src/lib", "node_modules"],
+    "modulePaths": [
+        "src/lib",
+        "src/components",
+        "src/views",
+        "src/data",
+        "src/compatibility",
+        "src",
+        "node_modules"
+    ],
 }
