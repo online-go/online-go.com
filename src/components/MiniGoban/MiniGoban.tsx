@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
-import {_, ngettext, interpolate} from "translate";
+import {_, npgettext, interpolate} from "translate";
 import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
@@ -113,8 +113,9 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         const black_points = score.black.prisoners + score.black.komi;
         const white_points = score.white.prisoners + score.white.komi;
         this.setState({
-            black_points: interpolate(ngettext("1 point", "{{num}} points", black_points), {num: black_points}),
-            white_points: interpolate(ngettext("1 point", "{{num}} points", white_points), {num: white_points}),
+            // note, we need to say {{num}} point here as the singular form is used for multiple values in some languages (such as french, they say 0 point, 1 point, 2 points)
+            black_points: interpolate(npgettext("Plural form 0 is the singular form, Plural form 1 is the plural form", "{{num}} point", "{{num}} points", black_points), {num: black_points}),
+            white_points: interpolate(npgettext("Plural form 0 is the singular form, Plural form 1 is the plural form", "{{num}} point", "{{num}} points", white_points), {num: white_points}),
 
             black_name: (typeof(black) === "object" ? (black.username) : black),
             white_name: (typeof(white) === "object" ? (white.username) : white),
