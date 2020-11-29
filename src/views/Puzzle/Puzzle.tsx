@@ -612,7 +612,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
             <div className={"center-col"}>
                 <div ref="goban_container" className="goban-container">
-                    <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                    <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                     <PersistentElement className="Goban" elt={this.goban_div}/>
                 </div>
             </div>

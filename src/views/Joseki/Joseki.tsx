@@ -1043,7 +1043,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                 <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
                     <div ref={(e) => this.goban_container = e} className="goban-container">
-                        <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                        <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                         <PersistentElement ref={(e) => this.goban_persistent_element = e} className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
