@@ -47,12 +47,14 @@ puzzle-controls-width=400px
         display: flex;
         flex-direction: column;
         align-items: stretch;
+        overflow: hidden;
     }
     &.portrait .center-col {
         height: 100vw;
         max-height: 100vw;  // firefox needs this
         flex-basis: 99%;
         overflow-y: visible;
+        overflow-x: visible;
     }
 
     .left-col, .right-col {
