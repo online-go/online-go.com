@@ -499,7 +499,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     render() {
         return (
             <div ref={this.setContainer} className="AIReviewChart">
-                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                 <PersistentElement elt={this.chart_div}/>
             </div>
         );
