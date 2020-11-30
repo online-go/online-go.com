@@ -31,7 +31,7 @@ puzzle-controls-width=400px
     overflow: hidden;
 
 
-    @media screen and (max-width: 800px) {
+    &.portrait {
         flex-direction: column;
         overflow-y: auto;
     }
@@ -47,13 +47,12 @@ puzzle-controls-width=400px
         display: flex;
         flex-direction: column;
         align-items: stretch;
-
-        @media screen and (max-width: 800px) {
-            height: 100vw;
-            max-height: 100vw;  // firefox needs this
-            flex-basis: 99%;
-            overflow-y: visible;
-        }
+    }
+    &.portrait .center-col {
+        height: 100vw;
+        max-height: 100vw;  // firefox needs this
+        flex-basis: 99%;
+        overflow-y: visible;
     }
 
     .left-col, .right-col {
@@ -62,12 +61,11 @@ puzzle-controls-width=400px
         overflow-x: hidden;
         min-height: auto;
         padding: 0.5rem;
-
-        @media screen and (max-width: 800px) {
-            overflow-y: visible;
-            overflow-x: visible;
-            align-self: center;
-        }
+    }
+    &.portrait .right-col {
+        overflow-y: visible;
+        overflow-x: visible;
+        align-self: center;
     }
 
     .btn-container {

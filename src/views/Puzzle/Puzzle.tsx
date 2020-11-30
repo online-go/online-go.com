@@ -86,6 +86,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.editor  = new PuzzleEditor(this, this.transform);
 
         this.state = {
+            view_mode: goban_view_mode(),
+            squashed: goban_view_squashed(),
             loaded: false,
             edit_step: "setup",
             setup_color: "black",
@@ -141,6 +143,13 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     onResize = (no_debounce?: boolean) => {
         if (!this.refs.goban_container) {
             return;
+        }
+
+        if (goban_view_mode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
+            this.setState({
+                squashed: goban_view_squashed(),
+                view_mode: goban_view_mode(),
+            });
         }
 
         if (this.goban) {
@@ -575,19 +584,11 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             return <div/>;
         }
 
-        let view_mode = goban_view_mode();
-        let squashed = goban_view_squashed();
+        let view_mode = this.state.view_mode;
+        let squashed = this.state.squashed;
         let puzzle = this.state;
         let goban = this.goban;
         let difficulty = longRankString(puzzle.rank);
-
-        let next_id = 0;
-        for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
-            if (this.state.puzzle_collection_summary[i].id === puzzle.id) {
-                next_id = this.state.puzzle_collection_summary[i + 1].id;
-            }
-        }
-
 
         let show_correct = this.state.show_correct;
         if (this.goban.engine.move_tree.findBranchesWithCorrectAnswer().length === 0) {
@@ -616,107 +617,156 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                     <PersistentElement className="Goban" elt={this.goban_div}/>
                 </div>
             </div>
-            <div className={"right-col"}>
-                <dl className="horizontal">
-                    <dt>{_("Puzzle")}</dt>
-                    <dd>
-                        <select value={this.props.match.params.puzzle_id} onChange={this.jumpToPuzzle} id="selected_puzzle" >
-                            {this.state.puzzle_collection_summary.map((puzzle, idx) => (
-                                <option key={idx} value={puzzle.id}>{puzzle.name}</option>
-                            ))}
-                        </select>
-                    </dd>
-                    <dt>{_("Collection")}</dt>
-                    <dd>{puzzle.collection.name}</dd>
-                    <dt>{_("Difficulty")}</dt>
-                    <dd>{difficulty}</dd>
-                    <dt>{_("Rating")}</dt>
-                    <dd><StarRating value={this.state.rated ? this.state.my_rating : this.state.rating} rated={this.state.rated} onChange={this.ratePuzzle} /></dd>
-                    <dt>{_("Author")}</dt>
-                    <dd><Player user={this.state.owner} icon rank /></dd>
-                </dl>
 
-                <div className="btn-container">
-                    <div className="btn-group">
-                        <button type="button" className={this.state.transform_x ? "active" : ""} onClick={this.toggle_transform_x}>
-                            <i className="fa fa-expand"></i>
-                        </button>
-                        <button type="button" className={this.state.transform_h ? "active" : ""} onClick={this.toggle_transform_h}>
-                            <i className="fa fa-arrows-h"></i>
-                        </button>
-                        <button type="button" className={this.state.transform_v ? "active" : ""} onClick={this.toggle_transform_v}>
-                            <i className="fa fa-arrows-v"></i>
-                        </button>
-                        <button type="button" className={this.state.transform_color ? "active" : ""} onClick={this.toggle_transform_color}>
-                            <i className="fa fa-adjust"/>
-                        </button>
-                        {(this.state.zoomable || null) &&
-                            <button type="button" className={this.state.zoom ? "active" : ""} onClick={this.toggle_transform_zoom}>
-                                <i className="fa fa-arrows-alt"></i>
-                            </button>
-                        }
+            {((view_mode !== "portrait") || null) &&
+                <div className={"right-col"}>
+                    {this.frag_puzzle_info()}
 
-                        <button type="button" onClick={this.openPuzzleSettings}>
-                            <i className="fa fa-gear"/>
-                        </button>
+                    {this.frag_layout_buttons()}
 
-                        {(puzzle.owner.id === data.get("user").id || null) &&
-                            <button onClick={this.edit}><i className="fa fa-pencil"></i></button>
-                        }
-                        <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} >{_("Hint")}</button>
-                    </div>
+                    <hr/>
+
+                    {this.frag_undo_reset_buttons()}
+
+                    {(have_content || null) && this.frag_puzzle_content()}
                 </div>
+            }
+            {((view_mode === "portrait") || null) &&
+                <div className={"right-col"}>
+                    {this.frag_layout_buttons()}
 
+                    <hr/>
 
-                <hr/>
+                    {this.frag_undo_reset_buttons()}
 
-                {(goban.engine.cur_move.parent || null) &&
-                    <div>
-                        <button className="btn btn-default" onClick={this.undo} ><i className="fa fa-step-backward"></i> {_("Undo")}</button>
-                        <button className="btn btn-warning pull-right" onClick={this.doReset} ><i className="fa fa-refresh"></i> {_("Reset")}</button>
+                    {(have_content || null) && this.frag_puzzle_content()}
+
+                    {this.frag_puzzle_info()}
+                </div>
+            }
+        </div>
+        );
+    }
+    frag_puzzle_info() {
+        let puzzle = this.state;
+        let difficulty = longRankString(puzzle.rank);
+
+        return (
+            <dl className="horizontal">
+                <dt>{_("Puzzle")}</dt>
+                <dd>
+                    <select value={this.props.match.params.puzzle_id} onChange={this.jumpToPuzzle} id="selected_puzzle" >
+                        {this.state.puzzle_collection_summary.map((puzzle, idx) => (
+                            <option key={idx} value={puzzle.id}>{puzzle.name}</option>
+                        ))}
+                    </select>
+                </dd>
+                <dt>{_("Collection")}</dt>
+                <dd>{puzzle.collection.name}</dd>
+                <dt>{_("Difficulty")}</dt>
+                <dd>{difficulty}</dd>
+                <dt>{_("Rating")}</dt>
+                <dd><StarRating value={this.state.rated ? this.state.my_rating : this.state.rating} rated={this.state.rated} onChange={this.ratePuzzle} /></dd>
+                <dt>{_("Author")}</dt>
+                <dd><Player user={this.state.owner} icon rank /></dd>
+            </dl>
+        );
+    }
+    frag_layout_buttons() {
+        let puzzle = this.state;
+
+        return (
+            <div className="btn-container">
+                <div className="btn-group">
+                    <button type="button" className={this.state.transform_x ? "active" : ""} onClick={this.toggle_transform_x}>
+                        <i className="fa fa-expand"></i>
+                    </button>
+                    <button type="button" className={this.state.transform_h ? "active" : ""} onClick={this.toggle_transform_h}>
+                        <i className="fa fa-arrows-h"></i>
+                    </button>
+                    <button type="button" className={this.state.transform_v ? "active" : ""} onClick={this.toggle_transform_v}>
+                        <i className="fa fa-arrows-v"></i>
+                    </button>
+                    <button type="button" className={this.state.transform_color ? "active" : ""} onClick={this.toggle_transform_color}>
+                        <i className="fa fa-adjust"/>
+                    </button>
+                    {(this.state.zoomable || null) &&
+                        <button type="button" className={this.state.zoom ? "active" : ""} onClick={this.toggle_transform_zoom}>
+                            <i className="fa fa-arrows-alt"></i>
+                        </button>
+                    }
+
+                    <button type="button" onClick={this.openPuzzleSettings}>
+                        <i className="fa fa-gear"/>
+                    </button>
+
+                    {(puzzle.owner.id === data.get("user").id || null) &&
+                        <button onClick={this.edit}><i className="fa fa-pencil"></i></button>
+                    }
+                    <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} >{_("Hint")}</button>
+                </div>
+            </div>
+        );
+    }
+    frag_undo_reset_buttons() {
+        let goban = this.goban;
+
+        return (
+            <div style={{visibility: goban.engine.cur_move.parent ? "visible" : "hidden"}}>
+                <button className="btn btn-default" onClick={this.undo} ><i className="fa fa-step-backward"></i> {_("Undo")}</button>
+                <button className="btn btn-warning pull-right" onClick={this.doReset} ><i className="fa fa-refresh"></i> {_("Reset")}</button>
+            </div>
+        );
+    }
+    frag_puzzle_content() {
+        let puzzle = this.state;
+        let goban = this.goban;
+        let show_correct = this.state.show_correct;
+
+        let next_id = 0;
+        for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
+            if (this.state.puzzle_collection_summary[i].id === puzzle.id) {
+                next_id = this.state.puzzle_collection_summary[i + 1].id;
+            }
+        }
+
+        return (
+            <div className='puzzle-node-content'>
+                {(show_correct || null) &&
+                    <div className='success'>
+                        <i className="fa fa-check-circle-o"></i> {_("Correct!")}
                     </div>
                 }
 
-                {(have_content || null) &&
-                    <div className='puzzle-node-content'>
-                        {(show_correct || null) &&
-                            <div className='success'>
-                                <i className="fa fa-check-circle-o"></i> {_("Correct!")}
-                            </div>
+                {(this.state.show_wrong || null) &&
+                    <div className='incorrect'>
+                        <i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}
+                    </div>
+                }
+
+                <div className='content'>
+                    {(goban.engine.cur_move.parent == null || null) &&
+                        <Markdown source={goban.engine.puzzle_description} />
+                    }
+                    {(goban.engine.cur_move.text || null) &&
+                        <Markdown source={goban.engine.cur_move.text} />
+                    }
+                </div>
+
+                {(show_correct || null) &&
+                    <div className='actions'>
+                        {(next_id !== 0 && next_id !== puzzle.id || null) &&
+                            <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
                         }
-
-                        {(this.state.show_wrong || null) &&
-                            <div className='incorrect'>
-                                <i className="fa fa-times-circle-o reject-text"></i> {_("Incorrect")}
-                            </div>
-                        }
-
-                        <div className='content'>
-                            {(goban.engine.cur_move.parent == null || null) &&
-                                <Markdown source={goban.engine.puzzle_description} />
-                            }
-                            {(goban.engine.cur_move.text || null) &&
-                                <Markdown source={goban.engine.cur_move.text} />
-                            }
-                        </div>
-
-                        {(show_correct || null) &&
-                            <div className='actions'>
-                                {(next_id !== 0 && next_id !== puzzle.id || null) &&
-                                    <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
-                                }
-                                {(next_id === 0 || null) &&
-                                    <div>
-                                        <h3>{_("You have reached the end of this collection")}</h3>
-                                        <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
-                                    </div>
-                                }
+                        {(next_id === 0 || null) &&
+                            <div>
+                                <h3>{_("You have reached the end of this collection")}</h3>
+                                <Link to="/puzzles/" className="primary">{_("Back to Puzzle List")}</Link>
                             </div>
                         }
                     </div>
                 }
             </div>
-        </div>
         );
     }
     renderEdit() {
@@ -724,8 +774,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             return <div/>;
         }
 
-        let view_mode = goban_view_mode();
-        let squashed = goban_view_squashed();
+        let view_mode = this.state.view_mode;
+        let squashed = this.state.squahsed;
         let puzzle = this.state;
         let goban = this.goban;
         let difficulty = longRankString(puzzle.rank);
@@ -739,7 +789,7 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
 
         return (
-        <div className={`Puzzle ${view_mode} ${squashed}`}>
+        <div className={`Puzzle ${view_mode} ${squashed ? "squashed" : ""}`}>
             <KBShortcut shortcut="up" action={this.navigation.nav_up}/>
             <KBShortcut shortcut="down" action={this.navigation.nav_down}/>
             <KBShortcut shortcut="left" action={this.navigation.nav_prev}/>
