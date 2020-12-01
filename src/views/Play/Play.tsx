@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as moment from "moment";
 import ReactResizeDetector from 'react-resize-detector';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
@@ -38,6 +39,8 @@ import {bot_count} from "bots";
 import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
+import { openModal } from "Modal";
+import { EscaperWarningModal } from "EscaperWarningModal";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -84,6 +87,8 @@ export class Play extends React.Component<PlayProperties, any> {
         automatch_manager.on('entry', this.onAutomatchEntry);
         automatch_manager.on('start', this.onAutomatchStart);
         automatch_manager.on('cancel', this.onAutomatchCancel);
+
+        this.checkForEscaper();
     }
 
     componentWillUnmount() {
@@ -117,6 +122,41 @@ export class Play extends React.Component<PlayProperties, any> {
         if (w === 0 || h === 0) { // Wait for positive size
             setTimeout(this.onResize, 500);
         }
+    }
+
+    checkForEscaper = () => {
+        const id = data.get("config.user").id;
+
+        if (!id) { return; }
+
+        get(`players/${id}/games/`, {
+            // (I got these parameters by looking at what Paginated Table sends during Game History render)
+            ended__isnull: false,
+            ordering: "-ended",
+            page: 1,
+            page_size: 25,
+            source: 'play'
+        })
+        .then((res) => {
+            const users_disconnects = res.results.filter( (game: any) => (
+                game.outcome === "Disconnection" &&
+                ((game.black === id && game.black_lost) || (game.white === id && game.white_lost)
+            )));
+            if (users_disconnects.length > 0) {
+                const latest_disconnect = moment(users_disconnects[0].ended);
+                let latest_warning = data.get("latest_escape_warning");
+                const game_id = users_disconnects[0].id;
+
+                if (!latest_warning || latest_disconnect.isAfter(latest_warning)) {
+                    openModal(<EscaperWarningModal/>).on("close", () => {
+                        data.set("latest_escape_warning", latest_disconnect);
+                    } );
+                }
+            }
+        })
+        .catch((err) => {
+            console.log("escape game list fetch error:", err);
+        });
     }
 
     updateChallenges = (challenges) => {
