@@ -988,7 +988,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                     : this.state.nodata
                         ? <div className='nodata'>{_("No rated games played yet")}</div>
                         : <div className='ratings-graph'>
-                            <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                            <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                             <PersistentElement elt={this.chart_div}/>
                         </div>
                 }

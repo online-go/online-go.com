@@ -31,6 +31,10 @@ puzzle-controls-width=400px
     overflow: hidden;
 
 
+    &.portrait {
+        flex-direction: column;
+        overflow-y: auto;
+    }
 
     .left-col {
     }
@@ -44,16 +48,26 @@ puzzle-controls-width=400px
         flex-direction: column;
         align-items: stretch;
         overflow: hidden;
-        //justify-content: stretch;
-
+    }
+    &.portrait .center-col {
+        height: 100vw;
+        max-height: 100vw;  // firefox needs this
+        flex-basis: 99%;
+        overflow-y: visible;
+        overflow-x: visible;
     }
 
     .left-col, .right-col {
-        width: puzzle-controls-width
+        max-width: puzzle-controls-width
         overflow-y: auto;
         overflow-x: hidden;
         min-height: auto;
         padding: 0.5rem;
+    }
+    &.portrait .right-col {
+        overflow-y: visible;
+        overflow-x: visible;
+        align-self: center;
     }
 
     .btn-container {

@@ -207,12 +207,14 @@ export class SFXSprite {
     public readonly name: string;
     public readonly group_name: string;
     private _volume: number;
+    private last_time_played: number;
 
     constructor(howl: Howl, group_name: string, sprite_name: string) {
         this.howl = howl;
         this.group_name = group_name;
         this.name = sprite_name;
         this._volume = 1.0;
+        this.last_time_played = new Date(0).getTime();
     }
 
     get volume():number {
@@ -232,16 +234,25 @@ export class SFXSprite {
         }
     }
 
-    public play():void {
-        if (this.volume >= 0.01) {
-            console.debug('Playing sound bite: ', this.name, ' at volume: ', this.volume);
-            let id = this.howl.play(this.name);
-            this.howl.volume(this.volume, id);
-            this.id = id;
-            this.then(() => delete this.id);
-        } else {
-            console.log('*NOT* Playing sound bite: ', this.name, ', volume was ', this.volume);
+    public play(repeat_breaker_ms?: number):void {
+        if (this.volume < 0.01) {
+            console.log('*NOT* Playing sound bite:', this.name, 'volume was', this.volume);
+            return;
         }
+
+        if (repeat_breaker_ms && Date.now() - this.last_time_played < repeat_breaker_ms) {
+            console.log('*NOT* Playing sound bite:', this.name,
+                        'as it was already played within the last',
+                        repeat_breaker_ms, 'ms');
+            return;
+        }
+
+        console.debug('Playing sound bite:', this.name, 'at volume:', this.volume);
+        let id = this.howl.play(this.name);
+        this.howl.volume(this.volume, id);
+        this.id = id;
+        this.then(() => delete this.id);
+        this.last_time_played = Date.now();
     }
     public then(fn: () => void): void {
         if (this.id) {
@@ -316,7 +327,7 @@ export class SFXManager {
         }
         return false;
     }
-    public play(sound_name: ValidSound):SFXSprite | null {
+    public play(sound_name: ValidSound, repeat_breaker_ms?: number):SFXSprite | null {
         try {
             if (!this.getSpriteEnabled(sound_name)) {
                 return null;
@@ -328,12 +339,12 @@ export class SFXManager {
 
             if (this.getSpriteVoiceEnabled(sound_name) && sound_name in this.sprites) {
                 let ret = this.sprites[sound_name];
-                ret.play();
+                ret.play(repeat_breaker_ms);
                 return ret;
             }
             else if (sound_name in this.effectSprites) {
                 let ret = this.effectSprites[sound_name];
-                ret.play();
+                ret.play(repeat_breaker_ms);
                 return ret;
             }
             else {

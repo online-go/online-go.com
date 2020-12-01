@@ -183,7 +183,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
         return (
             <div className="LadderComponent">
-                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
 
                 <UIPush event="players-updated" channel={`ladder-${this.props.ladderId}`} action={this.updatePlayers} />
 

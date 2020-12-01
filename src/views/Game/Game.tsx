@@ -2286,7 +2286,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
-                            <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                            <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                             <PersistentElement className="Goban" elt={this.goban_div}/>
                         </div>
                     }

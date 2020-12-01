@@ -417,7 +417,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='col-sm-6'>
                         <Card>
                             <div ref={el => this.ref_container = el} className="seek-graph-container">
-                                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                                 <PersistentElement elt={this.canvas}/>
                             </div>
                         </Card>
