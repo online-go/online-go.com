@@ -96,12 +96,10 @@ export class PuzzleTransform {
                 txt = txt
                         .replace(c1r, Tt)
                         .replace(c1, Tt)
-                        .replace(c1.toUpperCase(), TT)
                         .replace(c1ru, TT)
                         .replace(c1caser, tt)
                         .replace(c2r, c1)
                         .replace(c2, c1)
-                        .replace(c2.toUpperCase(), c1.toUpperCase())
                         .replace(c2ru, c1.toUpperCase())
                         .replace(c2caser, c1case)
                         .replace(ttr, c2case)
