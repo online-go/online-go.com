@@ -69,16 +69,24 @@ export class PuzzleTransform {
             };
 
 
-            let t = "tttttttttttt";
-            let T = "TTTTTTTTTTTT";
-            let tr = /tttttttttttt/g;
-            let Tr = /TTTTTTTTTTTT/g;
+            let tt = "tttttttttttt";
+            let Tt = "Tttttttttttt";
+            let TT = "TTTTTTTTTTTT";
+            let ttr = /tttttttttttt/g;
+            let Ttr = /Tttttttttttt/g;
+            let TTr = /TTTTTTTTTTTT/g;
             for (let c1 in colors) {
                 let c2 = colors[c1];
 
+                // Replace first-letter-capitalized color.
                 let c1r = new RegExp("\\b" + c1 + "\\b", "gm");
                 let c2r = new RegExp("\\b" + c2 + "\\b", "gm");
 
+                // Replace all caps color.
+                let c1ru = new RegExp("\\b" + c1.toUpperCase() + "\\b", "gm");
+                let c2ru = new RegExp("\\b" + c2.toUpperCase() + "\\b", "gm");
+
+                // Replace any other type of capitalization with all lowercase color.
                 let c1caser = new RegExp("\\b" + c1 + "\\b", "gmi");
                 let c2caser = new RegExp("\\b" + c2 + "\\b", "gmi");
 
@@ -86,22 +94,25 @@ export class PuzzleTransform {
                 let c2case = c2.toLowerCase();
 
                 txt = txt
-                        .replace(c1r, T)
-                        .replace(c1, T)
-                        .replace(c1caser, t)
+                        .replace(c1r, Tt)
+                        .replace(c1, Tt)
+                        .replace(c1ru, TT)
+                        .replace(c1caser, tt)
                         .replace(c2r, c1)
                         .replace(c2, c1)
+                        .replace(c2ru, c1.toUpperCase())
                         .replace(c2caser, c1case)
-                        .replace(tr, c2case)
-                        .replace(Tr, c2);
+                        .replace(ttr, c2case)
+                        .replace(TTr, c2.toUpperCase())
+                        .replace(Ttr, c2);
             }
             for (let c1 in utf8_colors) {
                 let c2 = utf8_colors[c1];
 
                 txt = txt
-                        .replace(c1, T)
+                        .replace(c1, TT)
                         .replace(c2, c1)
-                        .replace(Tr, c2);
+                        .replace(TTr, c2);
             }
         }
 

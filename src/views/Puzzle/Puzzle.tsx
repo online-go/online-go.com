@@ -66,7 +66,13 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         name;
         puzzle_type;
     };
-    ref_move_tree_container:HTMLElement;
+    ref_move_tree_container: HTMLElement;
+
+    ref_transform_x_button: React.RefObject<HTMLButtonElement>;
+    ref_transform_h_button: React.RefObject<HTMLButtonElement>;
+    ref_transform_v_button: React.RefObject<HTMLButtonElement>;
+    ref_transform_color_button: React.RefObject<HTMLButtonElement>;
+    ref_transform_zoom_button: React.RefObject<HTMLButtonElement>;
 
     goban: Goban;
     goban_div: HTMLDivElement;
@@ -94,6 +100,12 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             puzzle_collection_summary: [],
             hintsOn: false,
         };
+
+        this.ref_transform_x_button = React.createRef<HTMLButtonElement>();
+        this.ref_transform_h_button = React.createRef<HTMLButtonElement>();
+        this.ref_transform_v_button = React.createRef<HTMLButtonElement>();
+        this.ref_transform_color_button = React.createRef<HTMLButtonElement>();
+        this.ref_transform_zoom_button = React.createRef<HTMLButtonElement>();
 
         this.goban_div = document.createElement("div");
         this.goban_div.className = "Goban";
@@ -346,25 +358,28 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             }
         }
 
-       this.transform.settings.log();
+        this.transform.settings.log();
 
-        $("#selected_puzzle").focus().blur(); /* otherwise last button unselected will look kinda like it's selected still */
-        this.reset();
-        this.onResize();
+        this.doReset();
     }
     toggle_transform_x = () => {
+        this.ref_transform_x_button.current.blur();
         this.setTransformation("x");
     }
     toggle_transform_h = () => {
+        this.ref_transform_h_button.current.blur();
         this.setTransformation("h");
     }
     toggle_transform_v = () => {
+        this.ref_transform_v_button.current.blur();
         this.setTransformation("v");
     }
     toggle_transform_color = () => {
+        this.ref_transform_color_button.current.blur();
         this.setTransformation("color");
     }
     toggle_transform_zoom = () => {
+        this.ref_transform_zoom_button.current.blur();
         this.setTransformation("zoom");
     }
 
@@ -678,20 +693,20 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         return (
             <div className="btn-container">
                 <div className="btn-group">
-                    <button type="button" className={this.state.transform_x ? "active" : ""} onClick={this.toggle_transform_x}>
+                    <button type="button" className={this.state.transform_x ? "active" : ""} onClick={this.toggle_transform_x} ref={this.ref_transform_x_button}>
                         <i className="fa fa-expand"></i>
                     </button>
-                    <button type="button" className={this.state.transform_h ? "active" : ""} onClick={this.toggle_transform_h}>
+                    <button type="button" className={this.state.transform_h ? "active" : ""} onClick={this.toggle_transform_h} ref={this.ref_transform_h_button}>
                         <i className="fa fa-arrows-h"></i>
                     </button>
-                    <button type="button" className={this.state.transform_v ? "active" : ""} onClick={this.toggle_transform_v}>
+                    <button type="button" className={this.state.transform_v ? "active" : ""} onClick={this.toggle_transform_v} ref={this.ref_transform_v_button}>
                         <i className="fa fa-arrows-v"></i>
                     </button>
-                    <button type="button" className={this.state.transform_color ? "active" : ""} onClick={this.toggle_transform_color}>
+                    <button type="button" className={this.state.transform_color ? "active" : ""} onClick={this.toggle_transform_color} ref={this.ref_transform_color_button}>
                         <i className="fa fa-adjust"/>
                     </button>
                     {(this.state.zoomable || null) &&
-                        <button type="button" className={this.state.zoom ? "active" : ""} onClick={this.toggle_transform_zoom}>
+                        <button type="button" className={this.state.zoom ? "active" : ""} onClick={this.toggle_transform_zoom} ref={this.ref_transform_zoom_button}>
                             <i className="fa fa-arrows-alt"></i>
                         </button>
                     }
