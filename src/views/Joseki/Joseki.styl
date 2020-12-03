@@ -62,9 +62,9 @@
         }
         padding-top: 1em;
 
-        @media screen and (max-width: 801px) {
+        @media screen and (max-width: 800px) {
             height: 100vw;
-            max-height: 100vw;  // firefox needs this
+            min-height: 100vw;  // firefox needs this
             flex-basis: 99%;
         }
     }
@@ -339,6 +339,10 @@
             margin-top: 3em;
             margin-bottom: 1em;
             margin-left: 1em;
+
+            @media screen and (max-width: 800px) {
+                margin-left: 0rem;
+            }
 
             @media screen and (max-width: 1160px) {
                 margin-right 1em;
