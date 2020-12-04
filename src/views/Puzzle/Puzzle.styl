@@ -32,7 +32,6 @@ puzzle-controls-width=400px
 
     &.portrait {
         flex-direction: column;
-        overflow-x: hidden;
     }
 
     .left-col {
@@ -52,9 +51,8 @@ puzzle-controls-width=400px
     &.portrait .center-col {
         height: 100vw;
         min-height: 100vw;  // firefox needs this
+        max-height: 100vw;  // firefox needs this
         flex-basis: 99%;
-        overflow-y: visible;
-        overflow-x: visible;
     }
 
     .left-col, .right-col {
