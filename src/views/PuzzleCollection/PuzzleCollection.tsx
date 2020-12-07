@@ -53,7 +53,7 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
     return (
         <div className="page-width">
             <div id='PuzzleCollection'>
-                <dl>
+                <dl className="horizontal">
                     <dt>{_("Puzzle collection")}</dt>
                     <dd><input value={name} onChange={ev => setName(ev.target.value)} placeholder={_('Name')} /></dd>
 
@@ -70,8 +70,10 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
                     }
                 </dl>
 
-                <button className='btn reject' onClick={remove}>{_("Delete")}</button>
-                <button className='btn primary' onClick={save}>{_("Save")}</button>
+                <div className="update">
+                    <button className='btn reject' onClick={remove}>{_("Delete")}</button>
+                    <button className='btn primary' onClick={save}>{_("Save")}</button>
+                </div>
 
                 <div className='center'>
                     <div style={{'textAlign': 'center', 'margin': '1rem'}}>
