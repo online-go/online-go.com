@@ -73,6 +73,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     ref_transform_v_button: React.RefObject<HTMLButtonElement>;
     ref_transform_color_button: React.RefObject<HTMLButtonElement>;
     ref_transform_zoom_button: React.RefObject<HTMLButtonElement>;
+    ref_settings_button: React.RefObject<HTMLButtonElement>;
+    ref_edit_button: React.RefObject<HTMLButtonElement>;
+    ref_hint_button: React.RefObject<HTMLButtonElement>;
 
     goban: Goban;
     goban_div: HTMLDivElement;
@@ -106,6 +109,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         this.ref_transform_v_button = React.createRef<HTMLButtonElement>();
         this.ref_transform_color_button = React.createRef<HTMLButtonElement>();
         this.ref_transform_zoom_button = React.createRef<HTMLButtonElement>();
+        this.ref_settings_button = React.createRef<HTMLButtonElement>();
+        this.ref_edit_button = React.createRef<HTMLButtonElement>();
+        this.ref_hint_button = React.createRef<HTMLButtonElement>();
 
         this.goban_div = document.createElement("div");
         this.goban_div.className = "Goban";
@@ -413,6 +419,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
         }
     }
     edit = () => {
+        this.ref_edit_button.current.blur();
+
         get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
         .then((collections) => {
             this.setState({
@@ -430,6 +438,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
 
         let randomize_transform = preferences.get("puzzle.randomize.transform");
         let randomize_color = preferences.get("puzzle.randomize.color");
+
+        this.ref_settings_button.current.blur();
 
         puzzle_settings.on("close", () => {
             if (randomize_transform !== preferences.get("puzzle.randomize.transform")  ||
@@ -569,6 +579,8 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
     }
 
     showHint = () => {
+        this.ref_hint_button.current.blur();
+
         if (this.state.hintsOn) {
             this.removeHints();
         } else if (!this.goban.engine.cur_move.correct_answer) {
@@ -711,14 +723,18 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
                         </button>
                     }
 
-                    <button type="button" onClick={this.openPuzzleSettings}>
+                    <button type="button" onClick={this.openPuzzleSettings} ref={this.ref_settings_button}>
                         <i className="fa fa-gear"/>
                     </button>
 
                     {(puzzle.owner.id === data.get("user").id || null) &&
-                        <button onClick={this.edit}><i className="fa fa-pencil"></i></button>
+                        <button onClick={this.edit} ref={this.ref_edit_button}>
+                            <i className="fa fa-pencil"></i>
+                        </button>
                     }
-                    <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} >{_("Hint")}</button>
+                    <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} ref={this.ref_hint_button}>
+                        {_("Hint")}
+                    </button>
                 </div>
             </div>
         );
