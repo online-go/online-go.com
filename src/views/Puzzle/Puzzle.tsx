@@ -320,7 +320,9 @@ export class Puzzle extends React.Component<PuzzleProperties, any> {
             show_wrong: false,
         });
         setTimeout(() => {
+            let position = $(window).scrollTop();
             $(this.refs.next_link).focus();
+            $(window).scrollTop(position);
         }, 1);
     }
     jumpToPuzzle = (ev) => {
