@@ -164,7 +164,11 @@ export function rankString(r, with_tenths?:boolean) {
 
         let ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
-            return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
+            if (ranking > 900) {
+                return interpolate(pgettext("Pro", "%sp"), [(((ranking - 1000) - 36))]);
+            } else {
+                return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
+            }
         }
         if ('ratings' in r) {
             r = overall_rank(r);
