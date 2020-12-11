@@ -613,6 +613,7 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
     const [dynamic_title, _setDynamicTitle]:[boolean, (x: boolean) => void] = React.useState(preferences.get('dynamic-title'));
     const [function_keys_enabled, _setFunctionKeysEnabled]:[boolean, (x: boolean) => void] = React.useState(preferences.get('function-keys-enabled'));
     const [autoplay_delay, _setAutoplayDelay]:[number, (x: number) => void] = React.useState(preferences.get('autoplay-delay') / 1000);
+    const [variation_stone_transparency, _setVariationStoneTransparency]:[number, (x: number) => void] = React.useState(preferences.get("variation-stone-transparency"));
 
     function setDockDelay(ev) {
         let new_delay = parseFloat(ev.target.value);
@@ -677,6 +678,14 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
     }
     function setCorrSubmitMode(value) {
         setSubmitMode("correspondence", value);
+    }
+    function setVariationStoneTransparency(ev) {
+        let value = parseFloat(ev.target.value);
+
+        if (value >= 0.0 && value <= 1.0) {
+            _setVariationStoneTransparency(value);
+            preferences.set("variation-stone-transparency", value);
+        }
     }
     function setBoardLabeling(value) {
         preferences.set('board-labeling', value);
@@ -777,6 +786,12 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
                 description={_("This will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
                 >
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat}/>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Variation stone transparency")}
+                description={_("Choose the level of transparency for stones shown in variations. 0.0 is transparent and 1.0 is opaque.")}
+                >
+                <input type="number" step="0.1" min="0.0" max="1.0" onChange={setVariationStoneTransparency} value={variation_stone_transparency} />
             </PreferenceLine>
         </div>
     );
