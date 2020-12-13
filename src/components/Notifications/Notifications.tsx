@@ -239,6 +239,7 @@ class NotificationManager {
         this.auth = data.get("config.notification_auth");
         this.connect();
     }
+
     advanceToNextBoard(ev?) {
         let game_id = getCurrentGameId() || 0;
         let board_ids = [];
@@ -275,7 +276,9 @@ class NotificationManager {
         }
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
-        if (ev && shouldOpenNewTab(ev)) {
+        if (ev && shouldOpenNewTab(ev) ||
+            // If we're on a live game, and there are other games, then open the next one in a new tab, so we don't disconnect from this one...
+            (window["global_goban"] && isLiveGame(window["global_goban"].engine.time_control) && board_ids.length > 1)) {
             ++this.turn_offset;
             window.open("/game/" + board_ids[idx], "_blank");
         } else {
@@ -285,6 +288,7 @@ class NotificationManager {
             }
         }
     }
+
     deleteNotification(notification, dont_rebuild?: boolean) {
         comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
         delete this.notifications[notification.id];
