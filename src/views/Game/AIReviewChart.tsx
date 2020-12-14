@@ -87,7 +87,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.initialize();
     }
     componentDidUpdate(prevProps:AIReviewChartProperties, prevState:any) {
-        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
         this.onResize();
     }
     componentWillUnmount() {
@@ -480,6 +479,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('width', this.width);
 
         this.full_crosshair?.attr('x1', this.width);
+
+        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
 
         this.plot();
     }
