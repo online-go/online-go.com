@@ -256,8 +256,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let entries:Array<AIReviewEntry>;
 
         let use_score_safe = this.props.use_score
-          && this.props.ai_review.scores != null
-          && !this.props.ai_review.scores.includes(0);
+          && this.props.ai_review.scores != null;
 
         if (this.props.entries.length > 0) {
             entries = this.props.entries.map((x, i) => {
@@ -344,7 +343,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let gradient_transition_point = 50;
         if (use_score_safe) {
             let yRange = this.max_score - this.min_score;
-            gradient_transition_point = (this.max_score / yRange) * 100;
+            if (yRange !== 0) {
+                gradient_transition_point = (this.max_score / yRange) * 100;
+            }
         }
         this.svg.select("linearGradient").remove();
         this.svg.append("linearGradient")
