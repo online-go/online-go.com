@@ -216,6 +216,7 @@ function dev_server(done) {
     devserver.use('/complete', beta_proxy('/complete'));
     devserver.use('/disconnect', beta_proxy('/disconnect'));
     devserver.use('/OGSScoreEstimator', beta_proxy('/OGSScoreEstimator'));
+    devserver.use('/godojo', beta_proxy('/godojo'));
 
     devserver.get('/locale/*', (req, res) => {
         let options = {
