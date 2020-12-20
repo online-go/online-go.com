@@ -46,11 +46,24 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         this.state = state;
     }
 
-    show_seconds_nicely = (duration) => (
-        duration < 60000 ?
+    show_seconds_nicely = (duration: moment.Duration) => (
+        duration < moment.duration(60000) ?
         `${moment.duration(duration).asSeconds().toFixed(1)}s` :
         moment.duration(duration).format()
     )
+
+    // needed because end_time and start_time are only to the nearest second
+    show_seconds_resolution = (duration: moment.Duration) => {
+        if (duration < moment.duration(1000)) {
+            return ">1s";  // we don't have better resolution than this.
+        }
+        else if (duration < moment.duration(60000)) {
+           return `${moment.duration(duration).asSeconds().toFixed(0)}s`;
+        }
+        else {
+            return  moment.duration(duration).format("d:h:m:s");
+        }
+    }
 
     public render():JSX.Element {
         let game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
@@ -162,7 +175,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                 <div>{this.show_seconds_nicely(white_elapsed)}</div>
                 <div>{/* empty cell at end of row */}</div>
                 <div>Final action:</div>
-                <div>{this.show_seconds_nicely(moment.duration(this.props.end_time - this.props.start_time, "seconds").subtract(game_elapsed))}</div>
+                <div>{this.show_seconds_resolution(moment.duration(this.props.end_time - this.props.start_time, "seconds").subtract(game_elapsed))}</div>
                 <div>{/* empty cell at end of row */}</div>
             </div>
         );
