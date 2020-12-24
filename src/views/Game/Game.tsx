@@ -2245,7 +2245,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "engine": "katago",
             "type": analysis_type,
         })
-        .then((res) => swal("Analysis started"))
+        .then((res) => swal(_("Analysis started")))
         .catch(errorAlerter);
     }
 
