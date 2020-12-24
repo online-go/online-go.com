@@ -2080,7 +2080,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (this.goban.engine.cur_move.trunk) {
-            swal({text: _(`The current position is not an explored branch, so there is nothing to delete`)});
+            swal({text: _("The current position is not an explored branch, so there is nothing to delete")});
         } else {
             swal({text: _("Are you sure you wish to remove this move branch?"), showCancelButton: true})
             .then(() => {
@@ -2245,7 +2245,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "engine": "katago",
             "type": analysis_type,
         })
-        .then((res) => swal("Analysis started"))
+        .then((res) => swal(_("Analysis started")))
         .catch(errorAlerter);
     }
 
