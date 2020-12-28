@@ -614,6 +614,7 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
     const [function_keys_enabled, _setFunctionKeysEnabled]:[boolean, (x: boolean) => void] = React.useState(preferences.get('function-keys-enabled'));
     const [autoplay_delay, _setAutoplayDelay]:[number, (x: number) => void] = React.useState(preferences.get('autoplay-delay') / 1000);
     const [variation_stone_transparency, _setVariationStoneTransparency]:[number, (x: number) => void] = React.useState(preferences.get("variation-stone-transparency"));
+    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]:[boolean, (x: boolean) => void] = React.useState(preferences.get("visual-undo-request-indicator"));
 
     function setDockDelay(ev) {
         let new_delay = parseFloat(ev.target.value);
@@ -686,6 +687,10 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
             _setVariationStoneTransparency(value);
             preferences.set("variation-stone-transparency", value);
         }
+    }
+    function setVisualUndoRequestIndicator(checked) {
+        preferences.set("visual-undo-request-indicator", checked);
+        _setVisualUndoRequestIndicator(checked);
     }
     function setBoardLabeling(value) {
         preferences.set('board-labeling', value);
@@ -770,6 +775,12 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
                 description={_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
                 >
                 <Toggle checked={always_disable_analysis} onChange={setAlwaysDisableAnalysis} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Visual undo request indicator")}
+                description={_("This will cause an undo request to be indicated by a mark on your opponent's last move.")}
+                >
+                <Toggle checked={visual_undo_request_indicator} onChange={setVisualUndoRequestIndicator} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Dynamic title")}

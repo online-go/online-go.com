@@ -36,6 +36,7 @@ let defaults = {
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "variation-stone-transparency": 0.6,
+    "visual-undo-request-indicator": false,
     "dynamic-title": true,
     "function-keys-enabled": false,
     "game-list-threshold": 10,

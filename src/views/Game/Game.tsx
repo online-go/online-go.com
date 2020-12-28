@@ -581,6 +581,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     this.goban.double_click_submit = preferences.get("double-click-submit-correspondence");
                 }
                 this.goban.variation_stone_transparency = preferences.get("variation-stone-transparency");
+                this.goban.visual_undo_request_indicator = preferences.get("visual-undo-request-indicator");
             } catch (e) {
                 console.error(e.stack);
             }
