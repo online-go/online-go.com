@@ -381,6 +381,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
             "display_width": Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight),
+            "visual_undo_request_indicator": preferences.get("visual-undo-request-indicator"),
         };
 
         if (opts.display_width <= 0) {
