@@ -155,7 +155,6 @@ try {
                 let chan_lang_list = typeof(chan.language) === "string" ? [chan.language] : chan.language;
                 for (let chan_lang of chan_lang_list) {
                     if (chan_lang === language && !chan.navigator_language) {
-                        console.log("Found", chan);
                         chan.navigator_language = true;
                         if (primary_language) {
                             chan.primary_language = primary_language;
