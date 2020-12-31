@@ -16,18 +16,13 @@
  */
 
 import * as React from "react";
-import * as moment from "moment";
-import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
+import {_} from "translate";
 import {post, get, del} from "requests";
 import {openModal, Modal} from "Modal";
-import {timeControlDescription} from "TimeControl";
-import {GoEngine} from "goban";
 import {Player} from "Player";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {GroupAutocomplete} from "GroupAutocomplete";
 import {errorAlerter, rulesText} from "misc";
-import {handicapText} from "GameAcceptModal";
 
 interface Events {
 }
