@@ -276,9 +276,7 @@ function old_getTimeControlText(time_control_system, time_per_move) { /* This is
     }
     return time_control_text;
 }
-export function getTimeControlText(time_control_system, time_per_move) {
-    return timeControlDescription(time_control_system, time_per_move);
-}
+
 export function timeControlDescription(time_control, old_time_per_move?) {
     if (old_time_per_move) {
         return old_getTimeControlText(time_control, old_time_per_move);
