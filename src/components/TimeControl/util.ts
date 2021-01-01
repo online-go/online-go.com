@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
 import { computeAverageMoveTime } from 'goban';
 import {_, pgettext, ngettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
@@ -234,54 +233,8 @@ export function timeControlText(time_control) {
     }
     return "[unknown]";
 }
-function old_computeTimeControl(system, time_per_move) { /* This is old but STILL NEEDED (for archived games)  */
-    switch (system) {
-        case "simple":
-            return {"initial": 0, "per_move": time_per_move, "moves": 0, "max": 0};
-        case "fischer":
-            return {"initial": time_per_move * 3, "per_move": time_per_move, "moves": 0, "max": Math.min(3600 * 24 * 21, time_per_move * 6)};
-        case "canadian":
-            return {"initial": Math.min(3600 * 24 * 21, time_per_move * 120), "per_move": time_per_move, "moves": 20, "max": 0};
-        case "absolute":
-            return {"initial": time_per_move * 180, "per_move": time_per_move, "moves": 0, "max": 0};
-        case "none":
-            return {"initial": 0, "per_move": 0, "moves": 0, "max": 0};
-    }
-}
-function old_getTimeControlText(time_control_system, time_per_move) { /* This is old but STILL NEEDED (for archived games)  */
-    let time_control_text = "";
-    let time = old_computeTimeControl(time_control_system, time_per_move);
-    switch (time_control_system) {
-        case "simple":
-            time_control_text = interpolate(_("%s per move"), [durationString(time.per_move)]);
-            break;
-        case "fischer":
-            time_control_text = interpolate(_("%s starting time<br/>plus %s per move<br/> up to a maximum of %s"), [
-                                    durationString(time.initial),
-                                    durationString(time.per_move),
-                                    durationString(time.max)]);
-            break;
-        case "canadian":
-            time_control_text = interpolate(_("%s thinking time<br/>%s per %s moves after that"),
-                                    [durationString(time.initial), durationString(Math.min(86400 * 21, time.per_move * time.moves)), time.moves]);
-            break;
-        case "absolute":
-            time_control_text = interpolate(_("%s total play time per player"), [durationString(time.initial)]);
-            break;
-        case "none":
-            $("#time_per_move").attr("disabled", "disabled");
-            time_control_text = _("No time limits.");
-            break;
 
-    }
-    return time_control_text;
-}
-
-export function timeControlDescription(time_control, old_time_per_move?) {
-    if (old_time_per_move) {
-        return old_getTimeControlText(time_control, old_time_per_move);
-    }
-
+export function timeControlDescription(time_control) {
     let ret = "";
 
     switch (time_control && (time_control.system || time_control.time_control)) {
@@ -499,7 +452,7 @@ export function isLiveGame(time_control) {
     return average_move_time > 0 && average_move_time < 3600;
 }
 
-export function durationString(seconds): string {
+export function durationString(seconds: number): string {
     let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
