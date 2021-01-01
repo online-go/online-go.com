@@ -16,14 +16,10 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import {_} from "translate";
 import {openModal, Modal} from "Modal";
-import {timeControlDescription} from "TimeControl";
 import {Goban} from "goban";
 import {Player} from "Player";
-import {errorAlerter, rulesText} from "misc";
-import {handicapText} from "GameAcceptModal";
 
 interface Events {
 }
@@ -88,8 +84,4 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
 
 export function openGameLinkModal(goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
-}
-
-function yesno(tf: boolean) {
-    return tf ? _("Yes") : _("No");
 }
