@@ -16,7 +16,7 @@
  */
 
 import { computeAverageMoveTime } from 'goban';
-import {_, pgettext, ngettext, interpolate} from "translate";
+import {_, pgettext, ngettext, npgettext, interpolate} from "translate";
 import {TimeControl, TimeControlTypes} from "./TimeControl";
 
 const times = [
@@ -458,40 +458,50 @@ export function durationString(seconds: number): string {
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
-    function plurality(num, single, plural): string {
-        num = Math.round(num);
-        if (num > 0) {
-            if (num === 1) {
-                return " " + num + " " + single;
-            }
-            return " " + num + " " + plural;
-        }
-        return "";
-    }
-
     let ret: string = "";
     if (weeks) {
-        ret += plurality(weeks, _("Week"), _("Weeks"));
-        ret += plurality(days, _("Day"), _("Days"));
+        ret = interpolate(ngettext("{num_weeks} week", "{num_weeks} weeks", weeks), {num_weeks: weeks});
+        if (days) {
+            ret = interpolate(
+                npgettext("e.g. 1 week 3 days", "{weeks} {num_days} day", "{weeks} {num_days} days", days),
+                { weeks: ret, num_days: days });
+        }
     }
     else if (days) {
-        ret += plurality(days, _("Day"), _("Days"));
-        ret += plurality(hours, _("Hour"), _("Hours"));
+        ret = interpolate(ngettext("{num_days} day", "{num_days} days", days), {num_days: days});
+        if (hours) {
+            ret = interpolate(
+                npgettext("e.g. 1 week 3 hours", "{days} {num_hours} hour", "{days} {num_hours} hours", hours),
+                { days: ret, num_hours: hours });
+        }
     }
     else if (hours) {
-        ret += plurality(hours, _("Hour"), _("Hours"));
-        ret += plurality(minutes, _("Minute"), _("Minutes"));
+        ret = interpolate(ngettext("{num_hours} hour", "{num_hours} hours", hours), { num_hours: hours });
+        if (minutes) {
+            ret = interpolate(
+                npgettext("e.g. 1 hour 3 minutes",
+                    "{hours} {num_minutes} minute", "{hours} {num_minutes} minutes",
+                    minutes),
+                { hours: ret, num_minutes: minutes });
+        }
     }
     else if (minutes) {
-        ret += plurality(minutes, _("Minute"), _("Minutes"));
-        ret += plurality(seconds, _("Second"), _("Seconds"));
+        ret = interpolate(ngettext("{num_minutes} minute", "{num_minutes} minutes", minutes), {num_minutes: minutes});
+        if (seconds) {
+            ret = interpolate(
+                npgettext("e.g. 1 week 3 seconds",
+                    "{minutes} {num_seconds} second", "{minutes} {num_seconds} seconds",
+                    seconds),
+                { minutes: ret, num_seconds: seconds });
+        }
     }
     else {
-        ret += plurality(seconds, _("Second"), _("Seconds"));
+        ret = interpolate(ngettext("{num_seconds} seconds", "{num_seconds} seconds", seconds), {num_seconds: seconds});
     }
 
-    return ret.trim();
+    return ret;
 }
+
 export function daysOnlyDurationString(seconds): string {
     let days = Math.floor(seconds / 86400);
 
