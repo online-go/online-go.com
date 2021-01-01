@@ -499,30 +499,6 @@ export function isLiveGame(time_control) {
     return average_move_time > 0 && average_move_time < 3600;
 }
 
-export function fullDurationString(seconds) {
-    let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
-    let days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
-
-    function plurality(num, single, plural) {
-        num = Math.round(num);
-        if (num > 0) {
-            if (num === 1) {
-                return num + " " + single;
-            }
-            return num + " " + plural;
-        }
-        return "";
-    }
-
-    return "" +
-        (weeks ? " " + plurality(weeks, _("Week"), _("Weeks")) : "") +
-        (days ? " " + plurality(days, _("Day"), _("Days")) : "") +
-        (hours ? " " + plurality(hours, _("Hour"), _("Hours")) : "") +
-        (minutes ? " " + plurality(minutes, _("Minute"), _("Minutes")) : "") +
-        (seconds ? " " + plurality(seconds, _("Second"), _("Seconds")) : "");
-}
 export function durationString(seconds): string {
     let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
     let days = Math.floor(seconds / 86400); seconds -= days * 86400;
