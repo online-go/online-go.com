@@ -460,43 +460,43 @@ export function durationString(seconds: number): string {
 
     let ret: string = "";
     if (weeks) {
-        ret = interpolate(ngettext("{num_weeks} week", "{num_weeks} weeks", weeks), {num_weeks: weeks});
+        ret = interpolate(ngettext("{{num_weeks}} week", "{{num_weeks}} weeks", weeks), {num_weeks: weeks});
         if (days) {
             ret = interpolate(
-                npgettext("e.g. 1 week 3 days", "{weeks} {num_days} day", "{weeks} {num_days} days", days),
+                npgettext("e.g. 1 week 3 days", "{{weeks}} {{num_days}} day", "{{weeks}} {{num_days}} days", days),
                 { weeks: ret, num_days: days });
         }
     }
     else if (days) {
-        ret = interpolate(ngettext("{num_days} day", "{num_days} days", days), {num_days: days});
+        ret = interpolate(ngettext("{{num_days}} day", "{{num_days}} days", days), {num_days: days});
         if (hours) {
             ret = interpolate(
-                npgettext("e.g. 1 week 3 hours", "{days} {num_hours} hour", "{days} {num_hours} hours", hours),
+                npgettext("e.g. 1 week 3 hours", "{{days}} {{num_hours}} hour", "{{days}} {{num_hours}} hours", hours),
                 { days: ret, num_hours: hours });
         }
     }
     else if (hours) {
-        ret = interpolate(ngettext("{num_hours} hour", "{num_hours} hours", hours), { num_hours: hours });
+        ret = interpolate(ngettext("{{num_hours}} hour", "{{num_hours}} hours", hours), { num_hours: hours });
         if (minutes) {
             ret = interpolate(
                 npgettext("e.g. 1 hour 3 minutes",
-                    "{hours} {num_minutes} minute", "{hours} {num_minutes} minutes",
+                    "{{hours}} {{num_minutes}} minute", "{{hours}} {{num_minutes}} minutes",
                     minutes),
                 { hours: ret, num_minutes: minutes });
         }
     }
     else if (minutes) {
-        ret = interpolate(ngettext("{num_minutes} minute", "{num_minutes} minutes", minutes), {num_minutes: minutes});
+        ret = interpolate(ngettext("{{num_minutes}} minute", "{{num_minutes}} minutes", minutes), {num_minutes: minutes});
         if (seconds) {
             ret = interpolate(
                 npgettext("e.g. 1 week 3 seconds",
-                    "{minutes} {num_seconds} second", "{minutes} {num_seconds} seconds",
+                    "{{minutes}} {{num_seconds}} second", "{{minutes}} {{num_seconds}} seconds",
                     seconds),
                 { minutes: ret, num_seconds: seconds });
         }
     }
     else {
-        ret = interpolate(ngettext("{num_seconds} seconds", "{num_seconds} seconds", seconds), {num_seconds: seconds});
+        ret = interpolate(ngettext("{{num_seconds}} seconds", "{{num_seconds}} seconds", seconds), {num_seconds: seconds});
     }
 
     return ret;
