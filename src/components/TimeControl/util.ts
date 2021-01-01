@@ -239,32 +239,32 @@ export function timeControlDescription(time_control) {
 
     switch (time_control && (time_control.system || time_control.time_control)) {
         case "simple":
-            ret = interpolate(_("Simple: %s per move."), [durationString(time_control.per_move).toLowerCase()]);
+            ret = interpolate(_("Simple: %s per move."), [durationString(time_control.per_move)]);
             break;
         case "fischer":
             ret = interpolate(_("Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s."), [
-                                    durationString(time_control.initial_time).toLowerCase(),
-                                    durationString(time_control.time_increment).toLowerCase(),
-                                    durationString(time_control.max_time).toLowerCase()
+                                    durationString(time_control.initial_time),
+                                    durationString(time_control.time_increment),
+                                    durationString(time_control.max_time)
                                 ]);
             break;
         case "byoyomi":
             ret = interpolate(_("Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods."), [
-                                    durationString(time_control.main_time).toLowerCase(),
+                                    durationString(time_control.main_time),
                                     time_control.periods,
-                                    durationString(time_control.period_time).toLowerCase()
+                                    durationString(time_control.period_time)
                                 ]);
 
             break;
         case "canadian":
             ret = interpolate(_("Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones."), [
-                                    durationString(time_control.main_time).toLowerCase(),
-                                    durationString(time_control.period_time).toLowerCase(),
+                                    durationString(time_control.main_time),
+                                    durationString(time_control.period_time),
                                     time_control.stones_per_period
                                 ]);
             break;
         case "absolute":
-            ret = interpolate(_("Absolute: %s total play time per player."), [durationString(time_control.total_time).toLowerCase()]);
+            ret = interpolate(_("Absolute: %s total play time per player."), [durationString(time_control.total_time)]);
             break;
         case "none":
             ret = _("No time limits.");
@@ -291,28 +291,28 @@ export function shortTimeControl(time_control) {
 
     switch (time_control.system || time_control.time_control) {
         case "simple":
-            return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [durationString(time_control.per_move).toLowerCase()]);
+            return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [durationString(time_control.per_move)]);
         case "fischer":
             return interpolate(pgettext("Fischer time", "%s+%s/move, max %s"), [
-                                    durationString(time_control.initial_time).toLowerCase(),
-                                    durationString(time_control.time_increment).toLowerCase(),
-                                    durationString(time_control.max_time).toLowerCase()
+                                    durationString(time_control.initial_time),
+                                    durationString(time_control.time_increment),
+                                    durationString(time_control.max_time)
                                 ]);
         case "byoyomi":
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
-                                    durationString(time_control.main_time).toLowerCase(),
+                                    durationString(time_control.main_time),
                                     time_control.periods,
-                                    durationString(time_control.period_time).toLowerCase().trim()
+                                    durationString(time_control.period_time)
                                 ]);
 
         case "canadian":
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
-                                    durationString(time_control.main_time).toLowerCase(),
-                                    durationString(time_control.period_time).toLowerCase(),
+                                    durationString(time_control.main_time),
+                                    durationString(time_control.period_time),
                                     time_control.stones_per_period
                                 ]);
         case "absolute":
-            return durationString(time_control.total_time).toLowerCase();
+            return durationString(time_control.total_time);
         case "none":
             return _("None");
         default:
@@ -330,27 +330,27 @@ export function shortShortTimeControl(time_control) {
 
     switch (time_control.system || time_control.time_control) {
         case "simple":
-            return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [shortDurationString(time_control.per_move).toLowerCase()]);
+            return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [shortDurationString(time_control.per_move)]);
         case "fischer":
             return interpolate(pgettext("Fischer time", "%s+%s up to %s"), [
-                                    shortDurationString(time_control.initial_time).toLowerCase(),
-                                    shortDurationString(time_control.time_increment).toLowerCase(),
-                                    shortDurationString(time_control.max_time).toLowerCase()
+                                    shortDurationString(time_control.initial_time),
+                                    shortDurationString(time_control.time_increment),
+                                    shortDurationString(time_control.max_time)
                                 ]);
         case "byoyomi":
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
-                                    shortDurationString(time_control.main_time).toLowerCase(),
+                                    shortDurationString(time_control.main_time),
                                     time_control.periods,
-                                    shortDurationString(time_control.period_time).toLowerCase().trim()
+                                    shortDurationString(time_control.period_time)
                                 ]);
         case "canadian":
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
-                                    shortDurationString(time_control.main_time).toLowerCase(),
-                                    shortDurationString(time_control.period_time).toLowerCase(),
+                                    shortDurationString(time_control.main_time),
+                                    shortDurationString(time_control.period_time),
                                     time_control.stones_per_period
                                 ]);
         case "absolute":
-            return shortDurationString(time_control.total_time).toLowerCase();
+            return shortDurationString(time_control.total_time);
         case "none":
             return _("None");
         default:
