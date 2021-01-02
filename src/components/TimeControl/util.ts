@@ -458,48 +458,38 @@ export function durationString(seconds: number): string {
     let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
-    let ret: string = "";
-    if (weeks) {
-        ret = interpolate(ngettext("{{num_weeks}} week", "{{num_weeks}} weeks", weeks), {num_weeks: weeks});
-        if (days) {
-            ret = interpolate(
-                npgettext("e.g. 1 week 3 days", "{{weeks}} {{num_days}} day", "{{weeks}} {{num_days}} days", days),
-                { weeks: ret, num_days: days });
+    let coarse_fine_time_template = pgettext("Duration strings using two units (e.g. \"1 week 3 days\", \"2 hours 45 minutes\"). This is localizable because some languages may need to change the order of the coarse and fine times.",
+                                             "{{coarse} {{fine}}");
+    let weeks_string = ngettext("%s week", "%s weeks", weeks);
+    let days_string = ngettext("%s day", "%s days", days);
+    let hours_string = ngettext("%s hour", "%s hours", hours);
+    let minutes_string = ngettext("%s minute", "%s minutes", minutes);
+    let seconds_string = ngettext("%s second", "%s seconds", seconds);
+
+    let coarsest_to_finest: {value: number, template: string}[] =
+        [
+            {value: weeks, template: weeks_string},
+            {value: days, template: days_string},
+            {value: hours, template: hours_string},
+            {value: minutes, template: minutes_string},
+            {value: seconds, template: seconds_string},
+        ];
+
+    for (let i = 0; i < coarsest_to_finest.length - 1; i++) {
+        let coarse = coarsest_to_finest[i];
+        let fine = coarsest_to_finest[i + 1];
+
+        if (!coarse.value) { continue; }
+
+        if (fine.value) {
+            return interpolate(coarse_fine_time_template,
+                { coarse: interpolate(coarse.template, [coarse.value]),
+                    fine: interpolate(fine.template, [fine.value]) });
         }
-    }
-    else if (days) {
-        ret = interpolate(ngettext("{{num_days}} day", "{{num_days}} days", days), {num_days: days});
-        if (hours) {
-            ret = interpolate(
-                npgettext("e.g. 1 week 3 hours", "{{days}} {{num_hours}} hour", "{{days}} {{num_hours}} hours", hours),
-                { days: ret, num_hours: hours });
-        }
-    }
-    else if (hours) {
-        ret = interpolate(ngettext("{{num_hours}} hour", "{{num_hours}} hours", hours), { num_hours: hours });
-        if (minutes) {
-            ret = interpolate(
-                npgettext("e.g. 1 hour 3 minutes",
-                    "{{hours}} {{num_minutes}} minute", "{{hours}} {{num_minutes}} minutes",
-                    minutes),
-                { hours: ret, num_minutes: minutes });
-        }
-    }
-    else if (minutes) {
-        ret = interpolate(ngettext("{{num_minutes}} minute", "{{num_minutes}} minutes", minutes), {num_minutes: minutes});
-        if (seconds) {
-            ret = interpolate(
-                npgettext("e.g. 1 week 3 seconds",
-                    "{{minutes}} {{num_seconds}} second", "{{minutes}} {{num_seconds}} seconds",
-                    seconds),
-                { minutes: ret, num_seconds: seconds });
-        }
-    }
-    else {
-        ret = interpolate(ngettext("{{num_seconds}} seconds", "{{num_seconds}} seconds", seconds), {num_seconds: seconds});
+        return interpolate(coarse.template, [coarse.value]);
     }
 
-    return ret;
+    return interpolate(seconds_string, [seconds]);
 }
 
 export function daysOnlyDurationString(seconds): string {
