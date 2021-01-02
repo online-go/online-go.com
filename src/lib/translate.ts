@@ -155,10 +155,10 @@ export function ngettext(singular: string, plural: string, count: number) {
 
     /* If we don't have a ngettext translation entry at all, but
      * we do have some stand alone translations, use those */
-    if ((count !== 1 || !(singular in catalog)) && plural in catalog) {
+    if (count !== 1 && plural in catalog) {
         return catalog[plural][0];
     }
-    if (singular in catalog) {
+    if (count === 1 && singular in catalog) {
         return catalog[singular][0];
     }
 
