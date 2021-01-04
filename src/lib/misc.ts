@@ -66,7 +66,9 @@ export function rulesText(rules) {
     }
     return "[unknown]";
 }
-export function dup(obj: any): any {
+
+// Create a deep copy of obj
+export function dup<T>(obj: T): T {
 
     let ret;
     if (typeof(obj) === "object") {
@@ -90,6 +92,7 @@ export function dup(obj: any): any {
     }
     return ret;
 }
+
 export function deepEqual(a: any, b: any) {
     if (typeof(a) !== typeof(b)) { return false; }
 
