@@ -662,6 +662,9 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "timecop":
             case "gameEnteredStoneRemoval":
             case "gameResumedFromStoneRemoval":
+                if (notification.game_id === undefined) {
+                    console.error("Notification Error: game_id not found", notification);
+                }
                 return `/game/${notification.game_id}`;
 
             case "friendAccepted":
