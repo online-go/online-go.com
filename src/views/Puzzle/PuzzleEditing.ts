@@ -253,7 +253,7 @@ export class PuzzleEditor {
     }
 
 
-    getBounds(puzzle, width, height) {
+    getBounds(puzzle: PuzzleConfig, width: number, height: number) {
         let ret = {
             top: 9999,
             bottom: 0,
