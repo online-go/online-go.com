@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import {_} from "translate";
+import {post} from "requests";
 import {openModal, Modal} from "Modal";
 import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
