@@ -1224,7 +1224,42 @@ export function challenge_text_description(challenge) {
     return details_html;
 }
 
-export let blitz_config = {
+interface ChallengeConfig {
+    challenger_color: string;
+    game: {
+        name: string;
+        rules: string;
+        ranked: boolean;
+        handicap: number;
+        komi_auto: string;
+        disable_analysis: boolean;
+        initial_state: any;
+        private: boolean;
+        width?: number;
+        height?: number;
+    };
+    min_ranking?: number;
+    max_ranking?: number;
+}
+
+interface TimeControlConfig {
+    system: "fischer" | "byoyomi";
+    speed: "blitz" | "live" | "correspondence";
+    initial_time?: number;
+    main_time?: number;
+    time_increment?: number;
+    max_time?: number;
+    period_time?: number;
+    periods?: number;
+    pause_on_weekends: boolean;
+}
+interface GameConfig {
+    conf: { restrict_rank: boolean };
+    challenge: ChallengeConfig;
+    time_control: TimeControlConfig;
+}
+
+export let blitz_config: GameConfig = {
     conf: {
         restrict_rank: true,
     },
@@ -1250,7 +1285,7 @@ export let blitz_config = {
         pause_on_weekends: false,
     }
 };
-export let live_config = {
+export let live_config: GameConfig = {
     conf: {
         restrict_rank: true,
     },
@@ -1276,7 +1311,7 @@ export let live_config = {
         pause_on_weekends: false,
     }
 };
-export let correspondence_config = {
+export let correspondence_config: GameConfig = {
     conf: {
         restrict_rank: true,
     },

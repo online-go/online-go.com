@@ -16,17 +16,16 @@
  */
 
 import {
-    Goban,
     GobanCanvasConfig,
     GoMath,
     PuzzleConfig,
     PuzzlePlacementSetting,
 } from "goban";
-import {errorAlerter, dup, ignore} from "misc";
-import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
+import {errorAlerter, dup} from "misc";
+import {PuzzleTransform} from './PuzzleTransform';
 import {Puzzle} from './Puzzle';
 import * as data from "data";
-import {abort_requests_in_flight, post, get, put, del} from "requests";
+import {abort_requests_in_flight, post, get} from "requests";
 import * as preferences from "preferences";
 
 
@@ -225,27 +224,28 @@ export class PuzzleEditor {
         let opts:GobanCanvasConfig = Object.assign({
             "board_div": goban_div,
             "interactive": true,
-            "mode": "puzzle",
+            "mode": "puzzle" as "puzzle",
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "getPuzzlePlacementSetting": () => ({ "mode": "play" }),
+            "getPuzzlePlacementSetting": () => ({ "mode": "play" as "play"}),
             "bounds": bounds,
             "player_id": 0,
             "server_socket": null,
             "square_size": 4
         }, puzzle);
 
-        let newState = null;
-
         if (editing) {
             opts.getPuzzlePlacementSetting = replacementSettingsFunction;
             opts.puzzle_opponent_move_mode = "automatic";
             opts.puzzle_player_move_mode = "free";
-            opts.puzzle_rank = puzzle && puzzle.puzzle_rank ? puzzle.puzzle_rank : 0;
-            opts.puzzle_collection = (puzzle && puzzle.collection ? puzzle.collection.id : 0);
-            opts.puzzle_type = (puzzle && puzzle.type ? puzzle.type : "");
+            if (puzzle) {
+                opts.puzzle_rank = puzzle.puzzle_rank || 0;
+                opts.puzzle_collection = puzzle.puzzle_collection || 0;
+                opts.puzzle_type = puzzle.puzzle_type || "";
+            }
+
             opts.move_tree_container = document.getElementById("move-tree-container");
         }
 
@@ -253,7 +253,7 @@ export class PuzzleEditor {
     }
 
 
-    getBounds(puzzle, width, height) {
+    getBounds(puzzle: PuzzleConfig, width: number, height: number) {
         let ret = {
             top: 9999,
             bottom: 0,
