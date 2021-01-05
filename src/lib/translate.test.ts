@@ -51,7 +51,7 @@ test('ngettext', () => {
     expect(ngettext('singular', 'plural', 0)).toBe('tr_plural');
     expect(ngettext('singular', 'plural', 1)).toBe('tr_singular');
     expect(ngettext('singular2', 'plural2', 1)).toBe('tr_one_form');
-    expect(ngettext('msgid_1', 'plural', 0)).toBe('translation_1');
+    expect(ngettext('msgid_1', 'plural', 1)).toBe('translation_1');
     expect(ngettext('singular', 'msgid_2', 0)).toBe('translation_2');
 });
 
