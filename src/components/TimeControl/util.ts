@@ -459,7 +459,7 @@ export function durationString(seconds: number): string {
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
     let coarse_fine_time_template = pgettext("Duration strings using two units (e.g. \"1 week 3 days\", \"2 hours 45 minutes\"). This is localizable because some languages may need to change the order of the coarse and fine times.",
-                                             "{{coarse} {{fine}}");
+                                             "{{coarse}} {{fine}}");
     let weeks_string = ngettext("%s week", "%s weeks", weeks);
     let days_string = ngettext("%s day", "%s days", days);
     let hours_string = ngettext("%s hour", "%s hours", hours);
