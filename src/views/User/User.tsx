@@ -944,9 +944,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         }}
                                         orderBy={["-created"]}
                                         groom={review_history_groomer}
+                                        onRowClick={(ref, ev) => shouldOpenNewTab(ev) ? window.open(ref.href, "_blank") : browserHistory.push(ref.href)}
                                         columns={[
                                             {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                            {header: _("Name"),   className: () => "name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
+                                            {header: _("Name"),   className: () => "name",                            render: (X) => X.name},
                                             {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
                                             {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
                                         ]}
