@@ -25,6 +25,7 @@ import {UIPush} from "UIPush";
 import {SearchInput} from "misc-ui";
 import {Player} from "Player";
 import * as moment from "moment";
+import { chat_markup } from "Chat";
 
 declare var swal;
 
@@ -145,8 +146,8 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                          render: (X) => (
                             <div>
                                 <div>
-                                    <i>{_("Note")}: </i>{X.note}
-                                </div>
+                                    <i>{_("Note")}: </i>{chat_markup(X.note)}
+                                    </div>
                                 <div>
                                     <i>{_("Action")}: </i>{X.action}
                                 </div>
