@@ -46,6 +46,7 @@ import {RatingsChart} from 'RatingsChart';
 import {UIPush} from "UIPush";
 import {associations} from 'associations';
 import {browserHistory} from "ogsHistory";
+import {chat_markup} from "Chat";
 
 declare let swal;
 
@@ -865,7 +866,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                                 <i> {X.incident_report.moderator_note}</i>
                                             </div>
                                         }
-                                        <pre>{X.note}</pre>
+                                        <pre>{chat_markup(X.note)}</pre>
                                     </div>
                                 },
                             ]}
