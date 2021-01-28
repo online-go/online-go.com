@@ -49,13 +49,15 @@ export const PROVISIONAL_RATING_CUTOFF = 160;
 
 const MIN_RATING = 100;
 const MAX_RATING = 6000;
+const A = 525;
+const C = 23.15;
 
 export function rank_to_rating(rank:number) {
-    return 850 * Math.exp(0.032 * rank);
+    return A * Math.exp(rank / C);
 }
 
 export function rating_to_rank(rating:number) {
-    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / 850.0) / 0.032;
+    return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
 export function get_handicap_adjustment(rating:number, handicap:number):number {
