@@ -915,7 +915,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
                                         {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),     render: (X) => `${X.width}x${X.height}`},
-                                        {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username}) },
+                                        {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link href={X.ref}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
                                         {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""),    render: (X) => X.result},
                                     ]}
                                 />
@@ -947,7 +947,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         onRowClick={(ref, ev) => shouldOpenNewTab(ev) ? window.open(ref.href, "_blank") : browserHistory.push(ref.href)}
                                         columns={[
                                             {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                            {header: _("Name"),   className: () => "name",                            render: (X) => X.name},
+                                            {header: _("Name"),   className: () => "game_name",                            render: (X) => <Link href={X.ref}>{X.name}</Link>},
                                             {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
                                             {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
                                         ]}
