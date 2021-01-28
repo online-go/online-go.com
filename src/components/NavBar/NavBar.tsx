@@ -276,7 +276,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             </span>
 
 
-            <section className="left">
+            <section className="left nav-items">
                 {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
                 {user && <Link to="/play">{_("Play")}</Link>}
                 <Link to="/observe-games">{_("Games")}</Link>

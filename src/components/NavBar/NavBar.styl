@@ -19,7 +19,7 @@ navbar-width= 17rem;
 
 #NavBar {
     display: flex;
-    margin-bottom: 0.2rem;
+    margin-bottom: 1rem;
     height: navbar-height;
     user-select: none;
     themed background-color navbar-background-color
@@ -73,6 +73,15 @@ navbar-width= 17rem;
             margin-right: 0.5rem;
         }
         overflow: hidden;
+    }
+
+     .nav-items a {
+        padding: 0 1rem;
+        margin: 0;
+        &:hover {
+            text-decoration: none;
+            background-color: hsla(0, 0, 50, 0.15)
+        }
     }
 
     .right {
