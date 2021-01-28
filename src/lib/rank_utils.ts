@@ -60,6 +60,10 @@ export function rating_to_rank(rating:number) {
     return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
+export function rank_deviation(rating:number, deviation:number) {
+    return rating_to_rank(rating + deviation) - rating_to_rank(rating);
+}
+
 export function get_handicap_adjustment(rating:number, handicap:number):number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }

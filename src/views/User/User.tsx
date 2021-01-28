@@ -30,7 +30,7 @@ import {GameList} from "GameList";
 import {Player} from "Player";
 import * as preferences from "preferences";
 import {updateDup, getGameResultText, ignore} from "misc";
-import {longRankString, rankString, getUserRating, humble_rating, effective_outcome} from "rank_utils";
+import {longRankString, rankString, getUserRating, humble_rating, effective_outcome, rating_to_rank, boundedRankString, rank_deviation} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
 import {PaginatedTable} from "PaginatedTable";
@@ -1208,7 +1208,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                  onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
                 >
                 <div className='rating'>
-                    <span className='left'>{humble_rating(r.rating, r.deviation).toFixed(0)}</span>&plusmn;<span className='right'>{r.deviation.toFixed(0)}</span>
+                    <span className='left'>{boundedRankString(rating_to_rank(humble_rating(r.rating, r.deviation)), true)}</span>&plusmn;<span className='right'>{rank_deviation(r.rating, r.deviation).toFixed(1)}</span>
                 </div>
             </div>
         );
