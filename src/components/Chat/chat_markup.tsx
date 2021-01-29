@@ -187,10 +187,6 @@ const global_replacements: TextReplacement[] = [
 export function chat_markup(body: string, extra_pattern_replacements?: Array<TextReplacement>): Array<JSX.Element> {
     let replacements = global_replacements;
 
-    if (body.length > 1024) {
-        return [<span key="message-too-long">&lt;{_("Message too long")}&gt;</span>];
-    }
-
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
     }
