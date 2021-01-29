@@ -897,7 +897,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                                 <i> {X.incident_report.moderator_note}</i>
                                             </div>
                                         }
-                                        <pre>{chat_markup(X.note, undefined, 1024*128)}</pre>
+                                        <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
                                     </div>
                                 },
                             ]}
