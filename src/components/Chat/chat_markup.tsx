@@ -184,9 +184,13 @@ const global_replacements: TextReplacement[] = [
     { split: /(https?:\/\/[^<> ]+)/i, pattern: /(https?:\/\/[^<> ]+)/i, replacement: (m, idx) => (<a key={idx} target="_blank" href={m[1]}>{m[1]}</a>) },
 ];
 
-export function chat_markup(body: string, extra_pattern_replacements?: Array<TextReplacement>): Array<JSX.Element> {
+export function chat_markup(body: string, extra_pattern_replacements?: Array<TextReplacement>, lengthLimit?: integer): Array<JSX.Element> {
     let replacements = global_replacements;
 
+    if (lengthLimit && body.length > lengthLimit) {
+        return [<span key="message-too-long">&lt;{_("Message too long")}&gt;</span>];	
+    }	
+        
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
     }
