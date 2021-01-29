@@ -377,7 +377,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                         return (<span key={idx} className="position" onMouseEnter={highlight_position} onMouseLeave={unhighlight_position}>{m[1]}</span>);
                     }
                 },
-            ], 1024);
+            ]);
         } else {
             try {
                 switch (body.type) {

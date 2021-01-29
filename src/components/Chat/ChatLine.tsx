@@ -113,7 +113,7 @@ export function ChatLine(props: ChatLineInterface):JSX.Element {
             {show_date}
             {(ts) && <span className="timestamp">[{timestamp_str}]</span>}
             {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
-            <span className="body">{chat_markup(body, undefined, 1024)}</span>
+            <span className="body">{chat_markup(body)}</span>
         </div>
     );
 }
