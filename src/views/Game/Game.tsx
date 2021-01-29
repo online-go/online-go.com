@@ -1981,7 +1981,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             if (moderation_note == null) {
                 return;
             }
-            moderation_note = moderation_note.trim();
+            moderation_note = moderation_note.trim().replace(/(black)\b/g, `player ${this.goban.engine.players.black.id}`).replace(/(white)\b/g, `player ${this.goban.engine.players.white.id}`);
         } while (moderation_note === "");
 
         post("games/%%/annul", this.game_id,
