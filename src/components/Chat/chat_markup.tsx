@@ -188,9 +188,9 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<Tex
     let replacements = global_replacements;
 
     if (lengthLimit && body.length > lengthLimit) {
-        return [<span key="message-too-long">&lt;{_("Message too long")}&gt;</span>];	
-    }	
-        
+        return [<span key="message-too-long">&lt;{_("Message too long")}&gt;</span>];
+    }
+
     if (extra_pattern_replacements) {
         replacements = replacements.concat(extra_pattern_replacements);
     }
