@@ -80,6 +80,24 @@ function getGameResultRichText(game) {
     return result;
 }
 
+function openUrlIfALinkWasNotClicked(ev, url: string) {
+    if (ev.target.nodeName === "A") {
+        /* if a link was clicked, let the browser handle that. */
+        return;
+    }
+
+    /* Only navigate on left and middle clicks */
+    if (ev.button !== 0 && ev.button !== 1) {
+        return;
+    }
+
+    if (shouldOpenNewTab(ev)) {
+        window.open(url, "_blank");
+    } else {
+        browserHistory.push(url);
+    }
+}
+
 export class User extends React.PureComponent<UserProperties, any> {
     refs: {
         vacation_left;
@@ -908,7 +926,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     }}
                                     orderBy={["-ended"]}
                                     groom={game_history_groomer}
-                                    onRowClick={(ref, ev) => shouldOpenNewTab(ev) ? window.open(ref.href, "_blank") : browserHistory.push(ref.href)}
+                                    onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                                     columns={[                                /* I wish we could set properties at the row level! */
                                         {header: _("User"),   className: (X) => ("user_info" +         ((X && X.annulled) ? " annulled" : "")), render: (X) => (<React.Fragment>{(X.played_black ? <span>⚫</span> : <span>⚪</span>)}{this.maskedRank(`[${rankString(X.player)}]`)}</React.Fragment>)},
                                         {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
@@ -916,7 +934,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
                                         {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
                                         {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),     render: (X) => `${X.width}x${X.height}`},
-                                        {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link href={X.ref}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
+                                        {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
                                         {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""),    render: (X) => X.result},
                                     ]}
                                 />
@@ -945,10 +963,10 @@ export class User extends React.PureComponent<UserProperties, any> {
                                         }}
                                         orderBy={["-created"]}
                                         groom={review_history_groomer}
-                                        onRowClick={(ref, ev) => shouldOpenNewTab(ev) ? window.open(ref.href, "_blank") : browserHistory.push(ref.href)}
+                                        onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                                         columns={[
                                             {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                            {header: _("Name"),   className: () => "game_name",                            render: (X) => <Link href={X.ref}>{X.name}</Link>},
+                                            {header: _("Name"),   className: () => "game_name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
                                             {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
                                             {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
                                         ]}
