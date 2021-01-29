@@ -69,6 +69,7 @@ let defaults = {
     "show-move-numbers": true,
     "show-offline-friends": true,
     "hide-ranks": false,
+    "show-ratings-in-rating-grid": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
 

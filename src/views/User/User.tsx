@@ -47,6 +47,7 @@ import {UIPush} from "UIPush";
 import {associations} from 'associations';
 import {browserHistory} from "ogsHistory";
 import {chat_markup} from "Chat";
+import {Toggle} from 'Toggle';
 
 declare let swal;
 
@@ -134,6 +135,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             selected_size: 0,
             resolved: false,
             temporary_show_ratings: false,
+            show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
         };
 
         this.show_mod_log = parse(this.props.location.search)['show_mod_log'] === '1';
@@ -810,9 +812,20 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                         {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                             <div className='ratings-container'>{/* Ratings  */}
-                                <h3 className='ratings-title'>{_("Ratings")}</h3>
-                                {this.renderRatingGrid()}
-
+                                <h3 className='ratings-title'>
+                                    {_("Ratings")}
+                                    <Toggle
+                                        height={14}
+                                        width={30}
+                                        checked={this.state.show_ratings_in_rating_grid}
+                                        id='show-ratings-or-ranks'
+                                        onChange={(checked, ev, id) => {
+                                            this.setState({'show_ratings_in_rating_grid': checked});
+                                            preferences.set('show-ratings-in-rating-grid', checked);
+                                        }}
+                                        />
+                                </h3>
+                                {this.renderRatingGrid(this.state.show_ratings_in_rating_grid)}
                             </div>
                         }
 
@@ -1187,7 +1200,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
 
-    renderRatingGrid() {
+    renderRatingGrid(show_ratings: boolean) {
         return (
             <div className='ratings-grid'>
                 <div className='title-row'>
@@ -1210,7 +1223,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
                         {['overall', 'blitz', 'live', 'correspondence'].map((speed) => (
                             <span key={speed} className='cell'>
-                                {this.renderRating(speed, size)}
+                                {this.renderRatingOrRank(speed, size, show_ratings)}
                             </span>
                         ))}
                     </div>
@@ -1219,7 +1232,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             </div>
         );
     }
-    renderRating(speed, size) {
+    renderRatingOrRank(speed, size, show_rating: boolean):JSX.Element {
         let r = getUserRating(this.state.user, speed, size);
 
         return (
@@ -1227,7 +1240,15 @@ export class User extends React.PureComponent<UserProperties, any> {
                  onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
                 >
                 <div className='rating'>
-                    <span className='left'>{boundedRankString(rating_to_rank(humble_rating(r.rating, r.deviation)), true)}</span>&plusmn;<span className='right'>{rank_deviation(r.rating, r.deviation).toFixed(1)}</span>
+                    <span className='left'>{
+                        show_rating
+                        ? humble_rating(r.rating, r.deviation).toFixed(0)
+                        : boundedRankString(rating_to_rank(humble_rating(r.rating, r.deviation)), true)
+                    }</span>&plusmn;<span className='right'>{
+                        show_rating
+                        ? r.deviation.toFixed(0)
+                        : rank_deviation(r.rating, r.deviation).toFixed(1)
+                    }</span>
                 </div>
             </div>
         );
