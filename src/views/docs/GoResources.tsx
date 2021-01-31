@@ -182,6 +182,7 @@ export let GoResources = (props) => {
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="https://internetgoschool.com/index.vhtml.com">Guo Juans Internet Go School</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.yunguseng.com/">Yunguseng Dojang's Online Go School</a></span>,
+                <span><Flag country={en}/><Flag country={ru}/> <a rel="noopener" href="https://gomagic.org/">Go Magic</a></span>,
                 <span><Flag country={"jp"}/> <a rel="noopener" href="https://www.hoenkikaku.co.jp/">Hoenkikaku Co, Ltd.</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
