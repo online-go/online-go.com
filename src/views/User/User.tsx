@@ -1310,6 +1310,10 @@ function AssociationLink({country, id, rank}: {country: string, id?: string, ran
             linker = (id:string) => `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
         }
 
+        if (country === "ru") {
+            linker = (id:string) => `https://gofederation.ru/players/${id}`;
+        }
+
         return (
             <div className='association-link'>
                 <Flag country={country} />
