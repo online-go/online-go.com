@@ -146,7 +146,7 @@ export class Moderator extends React.PureComponent<ModeratorProperties, any> {
                          render: (X) => (
                             <div>
                                 <div>
-                                    <i>{_("Note")}: </i>{chat_markup(X.note)}
+                                    <i>{_("Note")}: </i>{chat_markup(X.note, undefined, 1024 * 128)}
                                 </div>
                                 <div>
                                     <i>{_("Action")}: </i>{X.action}
