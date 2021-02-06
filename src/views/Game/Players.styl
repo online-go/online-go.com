@@ -331,7 +331,9 @@
         .main-time {
             font-size: font-size-small;
         }
-        .period-moves, .period-time {
+        .byo-yomi-container,
+        .canadian-container
+        {
             font-size: font-size-extra-small;
         }
     }
@@ -390,15 +392,10 @@ body.light .MainGobanView.zen .players {
 	}
 	.Clock {
 		min-height: 80px;
-		.byo-yomi-periods,
-		.canadian-periods,
-		.periods-delimiter,
-		.period-moves,
 		.pause-text {
 			display: none;
-		}
-		.main-time,
-		.period-time {
+        }
+		.main-time {
 			line-height: 50px;
 			font-size: 26pt;
 			text-align: center;
@@ -406,10 +403,11 @@ body.light .MainGobanView.zen .players {
 		.byo-yomi-container,
 		.canadian-clock-container {
 			display: block;
+            font-size: font-size-mid
 			flex-grow: 1;
 		}
 	}
-	.Clock:not(.in-overtime) {
+    .Clock:not(.in-overtime) {
 		.byo-yomi-container,
 		.canadian-clock-container {
 			display: none;
