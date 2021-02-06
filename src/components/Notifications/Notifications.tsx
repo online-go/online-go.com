@@ -278,8 +278,8 @@ class NotificationManager {
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
 
-        // open a new tab if the user asked for it, or if we must protect against disconnection
-        // (there's no point in opoening a new tab if they only have one game, because it will be this same game)
+        // open a new tab if the user asked for it, or if we must protect against disconnection from a live game
+        // (there's no point in opening a new tab if they only have one game, because it will be this same game)
         if (ev && shouldOpenNewTab(ev) || (this.lookingAtOurLiveGame() && board_ids.length > 1)) {
             ++this.turn_offset;
             window.open("/game/" + board_ids[idx], "_blank");
@@ -292,7 +292,7 @@ class NotificationManager {
     }
 
     lookingAtOurLiveGame = (): boolean => {
-        // If we're playing a live game, then open the next one in a new tab, so we don't disconnect from this one...
+        // Is the current page looking at a game we are live playing in...
         const goban = window["global_goban"] as Goban;
         const player_id = goban.config.player_id;
         return (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && (player_id === goban.config.black_player_id || player_id === goban.config.white_player_id));
