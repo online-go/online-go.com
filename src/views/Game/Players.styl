@@ -340,110 +340,110 @@
 }
 
 body.dark .MainGobanView.zen .players {
-	.white {
-		&.player-container {
-			background: linear-gradient(#2C2C2C 0%, #383838 100%);
-			border: 1px solid #181818;
-			color: #DDD;
-		}
-	}
-	#game-white-clock,
-	.white .score-container {
-		color: #DDD;
-	}
+    .white {
+        &.player-container {
+            background: linear-gradient(#2C2C2C 0%, #383838 100%);
+            border: 1px solid #181818;
+            color: #DDD;
+        }
+    }
+    #game-white-clock,
+    .white .score-container {
+        color: #DDD;
+    }
 
-	.black {
-		&.player-container {
-			background: linear-gradient(#111111 0%, #1A1A1A 100%);
-			// background: none;
-			background-color: #111111;
-			border: 1px solid #181818;
-			color: #BBB;
-		}
-	}
-	#game-black-clock,
-	.black .score-container {
-		color: #BBB;
-	}
+    .black {
+        &.player-container {
+            background: linear-gradient(#111111 0%, #1A1A1A 100%);
+            // background: none;
+            background-color: #111111;
+            border: 1px solid #181818;
+            color: #BBB;
+        }
+    }
+    #game-black-clock,
+    .black .score-container {
+        color: #BBB;
+    }
 }
 body.light .MainGobanView.zen .players {
-	.white.player-container {
-	}
-	.black.player-container {
-		background: linear-gradient(#666 0%, #181818 100%);
-	}
+    .white.player-container {
+    }
+    .black.player-container {
+        background: linear-gradient(#666 0%, #181818 100%);
+    }
 }
 .MainGobanView.zen .play-controls{
-	.game-state {
-		display: none;
-	}
+    .game-state {
+        display: none;
+    }
 }
 .MainGobanView.zen .players {
-	.black.player-container {
-		border-top: none;
-	}
-	.player-container {
-		justify-content: center;
-		min-width: 150px;
-	}
-	.player-icon-clock-row {
-		width: auto;
-		flex-grow: 1;
-	}
-	.Clock {
-		min-height: 80px;
-		.pause-text {
-			display: none;
+    .black.player-container {
+        border-top: none;
+    }
+    .player-container {
+        justify-content: center;
+        min-width: 150px;
+    }
+    .player-icon-clock-row {
+        width: auto;
+        flex-grow: 1;
+    }
+    .Clock {
+        min-height: 80px;
+        .pause-text {
+            display: none;
         }
-		.main-time {
-			line-height: 50px;
-			font-size: 26pt;
-			text-align: center;
-		}
-		.byo-yomi-container,
-		.canadian-clock-container {
-			display: block;
+        .main-time {
+            line-height: 50px;
+            font-size: 26pt;
+            text-align: center;
+        }
+        .byo-yomi-container,
+        .canadian-clock-container {
+            display: block;
             font-size: font-size-mid
-			flex-grow: 1;
-		}
-	}
+            flex-grow: 1;
+        }
+    }
     .Clock:not(.in-overtime) {
-		.byo-yomi-container,
-		.canadian-clock-container {
-			display: none;
-		}
-	}
-	.captures {
-		display: flex;
-		justify-content: center;
-		flex-basis: 70%;
-	}
-	.score-container {
-		margin: 0px;
-		justify-content: center;
-		flex-grow: 0;
-	}
-	.num-captures-container {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-direction: row;
-		flex-grow: 1;
-		.stone-image {
-			width: 14px;
-			height: 14px;
-		}
-		.num-captures-stone {
-			margin-left: 3px;
-			margin-right: 3px;
-		}
-	}
-	.player-icon-container,
-	.player-name-container,
-	.player-name-plain,
-	.score-details,
-	.komi {
-		display: none;
-	}
+        .byo-yomi-container,
+        .canadian-clock-container {
+            display: none;
+        }
+    }
+    .captures {
+        display: flex;
+        justify-content: center;
+        flex-basis: 70%;
+    }
+    .score-container {
+        margin: 0px;
+        justify-content: center;
+        flex-grow: 0;
+    }
+    .num-captures-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        flex-grow: 1;
+        .stone-image {
+            width: 14px;
+            height: 14px;
+        }
+        .num-captures-stone {
+            margin-left: 3px;
+            margin-right: 3px;
+        }
+    }
+    .player-icon-container,
+    .player-name-container,
+    .player-name-plain,
+    .score-details,
+    .komi {
+        display: none;
+    }
 }
 
