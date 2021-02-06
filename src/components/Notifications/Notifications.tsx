@@ -280,7 +280,7 @@ class NotificationManager {
         const goban = window["global_goban"];
         if (ev && shouldOpenNewTab(ev) ||
             // If we're on a live game, and there are other games, then open the next one in a new tab, so we don't disconnect from this one...
-            (goban && goban.phase !== "finished" && isLiveGame(goban.engine.time_control) && board_ids.length > 1)) {
+            (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && board_ids.length > 1)) {
             ++this.turn_offset;
             window.open("/game/" + board_ids[idx], "_blank");
         } else {
