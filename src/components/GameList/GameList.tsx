@@ -144,6 +144,21 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                         }
                     });
                     break;
+
+                case '-size' :
+                case 'size' :
+                    lst.sort((a, b) => {
+                        try {
+                            let a_size = a.goban ? a.goban.width * a.goban.height : 0;
+                            let b_size = b.goban ? b.goban.width * b.goban.height : 0;
+
+                            return a_size - b_size || a.id - b.id;
+                        } catch (e) {
+                            console.error(a, b, e);
+                            return 0;
+                        }
+                    });
+                    break;
             }
 
             if (this.state.sort_order[0] === '-') {
