@@ -149,8 +149,10 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'size' :
                     lst.sort((a, b) => {
                         try {
-                            let a_size = a.goban ? a.goban.width * a.goban.height : 0;
-                            let b_size = b.goban ? b.goban.width * b.goban.height : 0;
+                            // sort by number of intersection
+                            // for non-square boards with the same number of intersections, the wider board is concidered larger
+                            let a_size = a.width * a.height * 100 + a.width;
+                            let b_size = b.width * b.height * 100 + b.width;
 
                             return a_size - b_size || a.id - b.id;
                         } catch (e) {
