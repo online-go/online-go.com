@@ -294,6 +294,9 @@ class NotificationManager {
     lookingAtOurLiveGame = (): boolean => {
         // Is the current page looking at a game we are live playing in...
         const goban = window["global_goban"] as Goban;
+        if (!goban) {
+            return false;
+        }
         const player_id = goban.config.player_id;
         return (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && (player_id === goban.config.black_player_id || player_id === goban.config.white_player_id));
     }
