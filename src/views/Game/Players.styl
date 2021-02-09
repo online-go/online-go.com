@@ -187,7 +187,7 @@
         margin-top: 0.2em;
     }
 
-
+    // This is the chat presence indicator in the avatar on the game page
     .ChatPresenceIndicator {
         position: absolute;
         display: inline-block;
@@ -198,11 +198,11 @@
 
         &.online {
             themed color indicate-online
-            text-shadow: -1px -1px 0 #afa,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+            themed text-shadow indicate-online-shadow
         }
     }
 
-    // note: I have not been able to find a place that generates a online-status-indicator class
+    // note: I have not been able to find a place that generates an online-status-indicator class
     // if there is one, then this should be themed properly.
     .white.player-container {
         .online-status-indicator.online {
