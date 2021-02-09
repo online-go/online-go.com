@@ -93,12 +93,17 @@
               justify-content: center;
               flex-direction: column;
           }
+
           body.dark {
               background-color: #1A1A1A;
           }
           body.light {
               background-color: #ffffff;
           }
+          body.accessible {
+              background-color: #1A1A1A;
+          }
+
       </style>
       {{EXTRA_CONFIG}}
   </head>
@@ -112,7 +117,7 @@
                 if (window.matchMedia("(prefers-color-scheme: dark)").matches) { /* if OS theme set to dark */
                     document.body.className = "dark";
                     localStorage.setItem('ogs.theme', '"dark"');
-                } else { 
+                } else {
                     document.body.className = "light";
                     localStorage.setItem('ogs.theme', '"light"');
                 }

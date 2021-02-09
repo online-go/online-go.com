@@ -45,7 +45,7 @@ function _update_theme(theme) {
     if (body.hasClass(theme)) {
         return;
     }
-    body.removeClass("light dark");
+    body.removeClass("light dark accessible");
     body.addClass(theme);
 }
 
@@ -62,12 +62,16 @@ function setTheme(theme) {
 function toggleTheme() {
     if (data.get("theme") === "dark") {
         setTheme("light");
+    } else if (data.get("theme") === "light") {
+        setTheme("accessible");
     } else {
         setTheme("dark");
     }
 }
 let setThemeLight = setTheme.bind(null, "light");
 let setThemeDark = setTheme.bind(null, "dark");
+let setThemeAccessible = setTheme.bind(null, "accessible");
+
 export function logout() {
     get("/api/v0/logout").then((config) => {
         data.set(cached.config, config);
@@ -347,6 +351,9 @@ export class NavBar extends React.PureComponent<{}, any> {
                     <button className="theme-button dark"
                         onClick={setThemeDark}
                         ><i className="fa fa-moon-o"/></button>
+                    <button className="theme-button accessible"
+                        onClick={setThemeAccessible}
+                        ><i className="fa fa-eye"/></button>
                 </div>
 
                 <div className="theme-selectors">
