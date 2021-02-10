@@ -2274,6 +2274,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
         const review = !!this.review_id;
 
+        const game_metadata = {"game-id": this.game_id, "ladder-id": this.ladder_id, "tournament-id": this.tournament_id};
+
         return (
             <div>
              <div className={"Game MainGobanView " + (this.state.zen_mode ? "zen " : "") + this.state.view_mode + " " + (this.state.squashed ? "squashed" : "")}>
@@ -2290,7 +2292,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     {((this.state.view_mode !== "portrait" || this.state.portrait_tab === "game") || null) &&
                         <div ref={el => this.ref_goban_container = el} className="goban-container">
                             <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
-                            <PersistentElement className="Goban" elt={this.goban_div}/>
+                            <PersistentElement className="Goban" extra_props={game_metadata} elt={this.goban_div}/>
                         </div>
                     }
 
