@@ -20,7 +20,7 @@ import * as React from "react";
 interface PersistentElementProps {
     elt: HTMLElement;
     className?: string;
-    extra_props?: any;  // hash of new props to put on the element
+    extra_props?: object;  // hash of new props to put on the element
 }
 
 export class PersistentElement extends React.Component<PersistentElementProps, any> {
@@ -34,7 +34,6 @@ export class PersistentElement extends React.Component<PersistentElementProps, a
     }
 
     render() {
-
         return <div className={this.props.className || ""} {...this.props.extra_props} ref={e => this.container = e} />;
     }
 }
