@@ -123,6 +123,11 @@ navbar-width= 17rem;
         transform: rotate(180deg);
     }
 
+    // Since accessible is based on dark, I assume it needs this (not clear what this is specifically for, though the general idea is clear)
+    /body.accessible .fa-adjust {
+        transform: rotate(180deg);
+    }
+
     .sign-in {
         padding-right: 1.0rem;
     }
@@ -325,6 +330,15 @@ body.dark #NavBar button.theme-button.dark {
     background-color: dark.primary
     border-color: darken(dark.primary, 8%)
     i.fa.fa-moon-o {
+        color: #fff;
+    }
+}
+
+// do for accessible what we do for dark...
+body.accessible #NavBar button.theme-button.accessible {
+    background-color: accessible.primary
+    border-color: darken(accessible.primary, 8%)
+    i.fa.fa-eye {
         color: #fff;
     }
 }

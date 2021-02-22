@@ -490,7 +490,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
 
-        let axis_color = $(document.body).hasClass("dark") ? "#dddddd" : "#000000";
+        // assumes "accessible" is similar to "dark"
+        let axis_color = $(document.body).hasClass("light") ? "#000000" : "#dddddd";
 
         /* Rank */
         ctx.save();

@@ -355,20 +355,21 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr("x2", 0).attr("y2", this.height)
             .selectAll("stop")
             .data(
-                data.get('theme') === 'dark'
+                // assuming "accessible" and "dark" are similar
+                data.get('theme') === 'light'
                     ? [
-                        {offset: "0%", color: "#000000"},
-                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333"},
-                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
-                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090"},
-                        {offset: "100%", color: "#999999"}
-                      ]
-                    : [
                         {offset: "0%", color: "#222222"},
                         {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444"},
                         {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
                         {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#cccccc"},
                         {offset: "100%", color: "#eeeeee"}
+                      ]
+                    : [
+                        {offset: "0%", color: "#000000"},
+                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333"},
+                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
+                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090"},
+                        {offset: "100%", color: "#999999"}
                       ]
             )
             .enter()

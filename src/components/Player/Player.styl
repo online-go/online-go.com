@@ -122,7 +122,8 @@
         font-weight: bold;
     }
 
-
+    // ---
+    // This is the chat presence indicator in the PM chat dialog box
     &.online, &.offline{
         &:before {
             display: inline-block;
@@ -131,7 +132,7 @@
             width: 0.5rem;
             font-family: 'FontAwesome';
             content: fa-circle-content;
-            color: #888;
+            themed color chat-offline;
             text-shadow: 0 0 1px rgba(0,0,0,0.5);
             vertical-align: middle;
             padding-bottom: 0.5rem;
@@ -143,8 +144,9 @@
     }
 
     &.online:before {
-        color: #33FF33;
+        themed color indicate-online
     }
+    // ---
 
     .Player-username {
         flex: 1;

@@ -65,6 +65,7 @@ function StatsChart(props: JosekiStatsModalProperties) {
           showPoints: false
         };
 
+    // Accessible TBD - assumes dark for now
     const label_colour = data.get("theme") === "light" ? false : true;
 
     return (

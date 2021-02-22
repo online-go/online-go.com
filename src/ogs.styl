@@ -67,13 +67,19 @@ z = {
     superchat          : 50010,
 }
 
-
-
 light = {}
 dark = {}
+accessible = {}
+
+themes = {}
+themes.light = light
+themes.dark = dark
+themes.accessible = accessible
+
 
 light.clear = transparent
 dark.clear = transparent
+accessible.clear = transparent
 
 
 /*************/
@@ -115,6 +121,11 @@ light.chart-area                        = #E6F6FE
 light.chart-line                        = #184A6B
 light.error-boundary-bg                 = lighten(light.reject, 50%)
 light.error-boundary-fg                 = darken(light.reject, 50%)
+
+light.indicate-online                   = #6f6
+light.indicate-online-shadow            = -1px -1px 0 #afa,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+light.chat-offline                      = #ccc
+light.chat-offline-shadow               = -1px -1px 0 #ccc,  1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
 
 //light.supporter                         = #fdd017;
 light.user                              = #3070A7
@@ -232,7 +243,6 @@ dark.toast-fg                           = dark.bg
 dark.link-color                         = #539bff
 dark.link-color-active                  = darken(dark.link-color, 20%)
 
-
 dark.default-button                     = lighten(dark.bg, 10%)
 dark.default-button-color               = dark.fg
 dark.primary                            = darken(light.primary, core-color-darken-amount)
@@ -249,6 +259,11 @@ dark.chart-area                         = #092D3E
 dark.chart-line                         = #329BE0
 dark.error-boundary-bg                  = darken(light.reject, 50%)
 dark.error-boundary-fg                  = lighten(light.reject, 50%)
+
+dark.indicate-online                    = #6f6
+dark.indicate-online-shadow             = -1px -1px 0 #fff,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+dark.chat-offline                       = #ccc
+dark.chat-offline-shadow                = -1px -1px 0 #ccc,  1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
 
 dark.user                               = #9dc6ff
 dark.supporter                          = light.supporter; // because it ends up against a light background in player-container
@@ -342,15 +357,147 @@ dark.player-black-paused-clock          = #928A99;
 
 dark.joseki-ideal                       = #DBAF00;
 
+/******************/
+/*** ACCESSIBLE ***/
+/******************/
+
+/* this is based on "dark" */
+
+core-color-darken-amount = 20%
+
+accessible.bg                                 = #1a1a1a
+accessible.fg                                 = #bbbbbb
+accessible.fg-increased-contrast              = #ffffff
+accessible.mix-base                           = #777
+accessible.background-color                   = accessible.bg
+accessible.card-background-color              = lighten(accessible.bg, 7%)
+accessible.text-color                         = accessible.fg
+accessible.spectator-text-color               = #8987FC
+accessible.text-color-active                  = lighten(accessible.text-color, 50%)
+accessible.toast-bg                           = accessible.fg
+accessible.toast-fg                           = accessible.bg
+accessible.link-color                         = #539bff
+accessible.link-color-active                  = darken(accessible.link-color, 20%)
+
+accessible.default-button                     = lighten(accessible.bg, 10%)
+accessible.default-button-color               = accessible.fg
+accessible.primary                            = darken(light.primary, core-color-darken-amount)
+accessible.danger                             = darken(light.danger, core-color-darken-amount)
+accessible.success                            = darken(light.success, core-color-darken-amount)
+accessible.info                               = darken(light.info, core-color-darken-amount)
+accessible.reject                             = darken(light.reject, core-color-darken-amount + 10%)
+accessible.colored-background-fg              = #eeeeee
+accessible.malkovich-bg                       = #597053
+accessible.variation                          = #00aaff
+accessible.variation-hover                    = #1A93D0
+accessible.email-banner                       = #2A492B
+accessible.chart-area                         = #092D3E
+accessible.chart-line                         = #329BE0
+accessible.error-boundary-bg                  = darken(light.reject, 50%)
+accessible.error-boundary-fg                  = lighten(light.reject, 50%)
+
+accessible.indicate-online                    = #70b3ff
+accessible.indicate-online-shadow             = -1px -1px 0 #000,  1px -1px 0 #111, -1px 1px 0 #222, 1px 1px 0 #111;
+accessible.chat-offline                       = accessible.bg;
+accessible.chat-offline-shadow                = -1px -1px 0 #ccc,  1px -1px 0 #ccc, -1px 1px 0 #ddd, 1px 1px 0 #ccc;
+
+accessible.user                               = #9dc6ff
+accessible.supporter                          = light.supporter; // because it ends up against a light background in player-container
+accessible.aga-official                       = light.aga-official;
+accessible.professional                       = green;
+accessible.bot                                = light.bot
+accessible.moderator                          = lighten(light.moderator, 20%)
+accessible.admin                              = lighten(light.admin, 20%)
+accessible.ambassador                         = light.ambassador
+accessible.teacher                            = light.teacher
+
+accessible.shade0                             = lighten(accessible.bg, 70%)
+accessible.shade1                             = lighten(accessible.bg, 50%)
+accessible.shade2                             = lighten(accessible.bg, 35%)
+accessible.shade3                             = lighten(accessible.bg, 25%)
+accessible.shade4                             = lighten(accessible.bg, 20%)
+accessible.shade5                             = lighten(accessible.bg, 13%)
+
+accessible.search-highlight                  = #554E00
+
+accessible.chat-mentions                      = #E36497 // pink
+accessible.chat-self-message                  = #8AB1E6
+accessible.chat-system                        = lighten(light.chat-system, 20%)
+accessible.private-chat-user                  = #eeeeee
+
+
+accessible.win                                = desaturate(darken(light.win, 30%), 20%)
+accessible.loss                               = desaturate(darken(light.loss, 30%), 20%)
+
+accessible.strong-win                         = lighten(accessible.win, 25%)
+accessible.strong-loss                        = lighten(accessible.loss, 25%)
+
+accessible.weak-win                           = darken(accessible.win, 25%)
+accessible.weak-loss                          = darken(accessible.loss, 25%)
+
+accessible.strong-w-text                      = accessible.bg
+accessible.strong-l-text                      = accessible.bg
+accessible.weak-w-text                        = accessible.fg
+accessible.weak-l-text                        = accessible.fg
+
+accessible.winner-trophy                     = #e6b500
+accessible.annul-opacity                    = 0.3
+
+/** React Select colors **/
+
+accessible.react-select-bg                   = accessible.shade4
+accessible.react-select-border               = accessible.shade5
+accessible.react-select-selected-bg          = #2684FF
+accessible.react-select-selected-fg          = #FFFFFF
+accessible.react-select-focused-bg           = #435B80
+accessible.react-select-focused-fg           = #ffffff
+
+/** Navbar **/
+
+accessible.navbar-highlight-background-color  = #333
+accessible.navbar-background-color            = lighten(accessible.bg, 5%)
+accessible.logo-svg                           = svg-load("../assets/ogs_dark.svg")
+
+
+/** Input **/
+
+accessible.input-bg                           = lighten(accessible.bg, 30%)
+accessible.input-border                       = lighten(accessible.bg, 30%)
+accessible.input-fg                           = accessible.fg
+
+
+/** MiniBoards **/
+
+accessible.goban-shadow                       = none
+accessible.goban-shadow-borderless            = none
+accessible.miniboard-to-move                  = #2B4029
+accessible.miniboard-to-move-border           = darken(accessible.miniboard-to-move, 60%)
+accessible.miniboard-hover                    = #578588
+accessible.miniboard-hover-border             = darken(accessible.miniboard-hover, 30%)
+accessible.miniboard-stone-removal            = #5B4810
+accessible.miniboard-stone-removal-border     = darken(accessible.miniboard-stone-removal, 45%)
+accessible.miniboard-stone-removal-hover      = darken(accessible.miniboard-stone-removal, 45%)
+accessible.miniboard-stone-removal-hover-border= darken(accessible.miniboard-stone-removal-hover, 45%)
+accessible.player-black-background            = linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
+accessible.player-white-background            = linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
+accessible.inactive-support-gradient          = linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
+accessible.active-support-gradient            = linear-gradient(to bottom, darken(accessible.supporter, 30%) 0%, darken(accessible.supporter, 60%) 100%);
+accessible.player-black-fg                    = accessible.fg
+accessible.player-white-fg                    = darken(accessible.fg, 90%)
+accessible.player-black-name                  = accessible.user
+accessible.player-white-name                  = darken(accessible.user, 60%)
+accessible.player-black-clock                 = lighten(accessible.player-black-fg, 50%)
+accessible.player-white-clock                 = #000
+accessible.player-white-paused-clock          = #5F4A71;
+accessible.player-black-paused-clock          = #928A99;
+
+accessible.joseki-ideal                       = #DBAF00;
+
+
 
 /************/
 /************/
 /************/
-
-themes = {}
-themes.light = light
-themes.dark = dark
-
 
 card1()
     box-shadow: 2px 5px 6px rgba(0,0,0,0.3)
