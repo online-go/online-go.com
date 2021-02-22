@@ -195,7 +195,7 @@
         margin-top: 0.2em;
     }
 
-
+    // This is the chat presence indicator in the avatar on the game page
     .ChatPresenceIndicator {
         position: absolute;
         display: inline-block;
@@ -205,14 +205,17 @@
         vertical-align: text-top;
 
         &.online {
-            color: #6f6;
-            text-shadow: -1px -1px 0 #afa,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
+            themed color indicate-online
+            themed text-shadow indicate-online-shadow
         }
     }
 
+    // note: I have not been able to find a place that generates an online-status-indicator class
+    // if there is one, then this should be themed properly.
     .white.player-container {
         .online-status-indicator.online {
-            color: #00ff00;
+            // color: #00ff00;
+            color: pink;  /// flush it out if it is being used
         }
     }
 
@@ -373,6 +376,34 @@ body.dark .MainGobanView.zen .players {
     .black .score-container {
         color: #BBB;
     }
+}
+
+body.accessible .MainGobanView.zen .players {
+	.white {
+		&.player-container {
+			background: linear-gradient(#2C2C2C 0%, #383838 100%);
+			border: 1px solid #181818;
+			color: #DDD;
+		}
+	}
+	#game-white-clock,
+	.white .score-container {
+		color: #DDD;
+	}
+
+	.black {
+		&.player-container {
+			background: linear-gradient(#111111 0%, #1A1A1A 100%);
+			// background: none;
+			background-color: #111111;
+			border: 1px solid #181818;
+			color: #BBB;
+		}
+	}
+	#game-black-clock,
+	.black .score-container {
+		color: #BBB;
+	}
 }
 body.light .MainGobanView.zen .players {
     .black.player-container {

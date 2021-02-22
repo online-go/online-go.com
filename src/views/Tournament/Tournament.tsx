@@ -1531,7 +1531,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
                     <div className="results">
-                    {this.state.use_elimination_trees ? <PersistentElement elt={this.elimination_tree_container[0]}/> :
+                    {this.state.use_elimination_trees ? <PersistentElement elt={this.elimination_tree_container[0] as HTMLDivElement}/> :
                         <div>
 
                             {this.state.rounds.length > 1 &&
