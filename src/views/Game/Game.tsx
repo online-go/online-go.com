@@ -448,6 +448,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.on("clock", (clock:JGOFClock) => {
             /* This is the code that draws the count down number on the "hover
              * stone" for the current player if they are running low on time */
+
             let user = data.get('user');
 
             if (!clock) {
@@ -475,7 +476,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
             }
 
-
             let seconds = Math.ceil((ms_left - 1) / 1000);
 
             const every_second_start = preferences.get('sound.countdown.every-second.start') as number;
@@ -491,7 +491,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 const count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
 
-
                 if (count_direction_computed === 'up') {
                     if (seconds < every_second_start) {
                         this.goban.setByoYomiLabel((every_second_start - seconds).toString());
@@ -502,7 +501,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             } else {
                 this.goban.setByoYomiLabel(null);
             }
-
 
         /*
         if (minutes === 0 && seconds <= 10) {
@@ -539,9 +537,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         }
         */
-
-
         });
+
         this.goban.on("move-made", this.autoadvance);
         this.goban.on("title", (title) => this.setState({title: title}));
         this.goban.on("update", () => this.sync_state());
@@ -719,9 +716,25 @@ export class Game extends React.PureComponent<GameProperties, any> {
                     historical_black: game.historical_ratings.black,
                     historical_white: game.historical_ratings.white,
                 });
+
+                this.goban_div.setAttribute("data-game-id", this.game_id.toString());
+
+                if (this.ladder_id) {
+                    this.goban_div.setAttribute("data-ladder-id", this.ladder_id.toString());
+                }
+                else {
+                    this.goban_div.removeAttribute("data-ladder-id");
+                }
+                if (this.tournament_id) {
+                    this.goban_div.setAttribute("data-tournament-id", this.tournament_id.toString());
+                }
+                else {
+                    this.goban_div.removeAttribute("data-tournament-id");
+                }
             })
             .catch(ignore);
         }
+
         if (this.review_id) {
             get("reviews/%%", this.review_id)
             .then((review) => {
@@ -735,6 +748,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             .catch(ignore);
         }
     }
+
     private bindAudioEvents():void { // called by init
         let user = data.get('user');
         //this.goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));

@@ -17,7 +17,13 @@
 
 import * as React from "react";
 
-export class PersistentElement extends React.Component<{elt; className?}, any> {
+interface PersistentElementProps {
+    elt: HTMLElement;
+    className?: string;
+    extra_props?: object;  // hash of new props to put on the element
+}
+
+export class PersistentElement extends React.Component<PersistentElementProps, any> {
     container:HTMLDivElement;
 
     componentDidMount() {
@@ -28,6 +34,6 @@ export class PersistentElement extends React.Component<{elt; className?}, any> {
     }
 
     render() {
-        return <div className={this.props.className || ""} ref={e => this.container = e} />;
+        return <div className={this.props.className || ""} {...this.props.extra_props} ref={e => this.container = e} />;
     }
 }
