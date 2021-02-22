@@ -386,7 +386,7 @@ accessible.danger                             = darken(light.danger, core-color-
 accessible.success                            = darken(light.success, core-color-darken-amount)
 accessible.info                               = darken(light.info, core-color-darken-amount)
 accessible.reject                             = darken(light.reject, core-color-darken-amount + 10%)
-accessible.colored-background-fg              = #eeeeee
+accessible.colored-background-fg              = #eee
 accessible.malkovich-bg                       = #597053
 accessible.variation                          = #00aaff
 accessible.variation-hover                    = #1A93D0
@@ -426,14 +426,14 @@ accessible.chat-system                        = lighten(light.chat-system, 20%)
 accessible.private-chat-user                  = #eeeeee
 
 
-accessible.win                                = desaturate(darken(light.win, 30%), 20%)
-accessible.loss                               = desaturate(darken(light.loss, 30%), 20%)
+accessible.win                                = #0072B2  // blue from https://www.nature.com/articles/nmeth.1618/figures/2
+accessible.loss                               = #D55E00  // vermillion from there ^^
 
-accessible.strong-win                         = lighten(accessible.win, 25%)
-accessible.strong-loss                        = lighten(accessible.loss, 25%)
+accessible.strong-win                         = accessible.win
+accessible.strong-loss                        = accessible.loss
 
-accessible.weak-win                           = darken(accessible.win, 25%)
-accessible.weak-loss                          = darken(accessible.loss, 25%)
+accessible.weak-win                           = darken(accessible.win, 35%)
+accessible.weak-loss                          = darken(accessible.loss, 35%)
 
 accessible.strong-w-text                      = accessible.bg
 accessible.strong-l-text                      = accessible.bg
