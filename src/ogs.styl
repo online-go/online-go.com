@@ -67,6 +67,8 @@ z = {
     superchat          : 50010,
 }
 
+supporter-gold = #dfba00
+
 light = {}
 dark = {}
 accessible = {}
@@ -122,14 +124,14 @@ light.chart-line                        = #184A6B
 light.error-boundary-bg                 = lighten(light.reject, 50%)
 light.error-boundary-fg                 = darken(light.reject, 50%)
 
+
 light.indicate-online                   = #6f6
 light.indicate-online-shadow            = -1px -1px 0 #afa,  1px -1px 0 #8c8, -1px 1px 0 #8c8, 1px 1px 0 #6a6;
 light.chat-offline                      = #ccc
 light.chat-offline-shadow               = -1px -1px 0 #ccc,  1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
 
-//light.supporter                         = #fdd017;
 light.user                              = #3070A7
-light.supporter                         = #DBAF00;
+light.supporter                         = #A48200;  // Approximately darker(supporter-gold, 30%)
 light.aga-official                      = #B95200;
 light.professional                      = green;
 light.bot                               = #888;
@@ -214,7 +216,7 @@ light.miniboard-stone-removal-hover-border= darken(light.miniboard-stone-removal
 light.player-black-background           = linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
 light.player-white-background           = linear-gradient(to bottom, #cccccc 0%, #eeeeee 30%, #ffffff 100%);
 light.inactive-support-gradient         = linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
-light.active-support-gradient           = linear-gradient(to bottom, #ffffff 0%, lighten(light.supporter, 70%) 100%);
+light.active-support-gradient           = linear-gradient(to bottom, #ffffff 0%, lighten(supporter-gold, 70%) 100%);
 light.player-black-fg                   = #eeeeee
 light.player-white-fg                   = light.fg
 light.player-black-name                 = lighten(light.user, 60%)
@@ -266,7 +268,7 @@ dark.chat-offline                       = #ccc
 dark.chat-offline-shadow                = -1px -1px 0 #ccc,  1px -1px 0 #ccc, -1px 1px 0 #ccc, 1px 1px 0 #ccc;
 
 dark.user                               = #9dc6ff
-dark.supporter                          = light.supporter; // because it ends up against a light background in player-container
+dark.supporter                          = supporter-gold;
 dark.aga-official                       = light.aga-official;
 dark.professional                       = green;
 dark.bot                                = light.bot
@@ -345,7 +347,7 @@ dark.miniboard-stone-removal-hover-border= darken(dark.miniboard-stone-removal-h
 dark.player-black-background            = linear-gradient(to bottom, #7d7d7d 0%, #333333 50%, #0c0c0c 100%);
 dark.player-white-background            = linear-gradient(to bottom, #888888 0%, #efefef 50%, #efefef 100%);
 dark.inactive-support-gradient          = linear-gradient(to bottom, #7d7d7d 0%, #333333 100%);
-dark.active-support-gradient            = linear-gradient(to bottom, darken(dark.supporter, 30%) 0%, darken(dark.supporter, 60%) 100%);
+dark.active-support-gradient            = linear-gradient(to bottom, darken(supporter-gold, 30%) 0%, darken(supporter-gold, 60%) 100%);
 dark.player-black-fg                    = dark.fg
 dark.player-white-fg                    = darken(dark.fg, 90%)
 dark.player-black-name                  = dark.user
