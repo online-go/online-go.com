@@ -69,6 +69,17 @@ z = {
 
 supporter-gold = #dfba00
 
+special-type-priority = {
+    supporter: 'supporter'
+    professional: 'professional'
+    ambassador: 'ambassador'
+    teacher: 'teacher'
+    bot: 'bot'
+    moderator: 'moderator'
+    aga-official: 'aga'
+    admin: 'admin'
+}
+
 light = {}
 dark = {}
 accessible = {}
@@ -219,8 +230,6 @@ light.inactive-support-gradient         = linear-gradient(to bottom, #ffffff 0%,
 light.active-support-gradient           = linear-gradient(to bottom, #ffffff 0%, lighten(supporter-gold, 70%) 100%);
 light.player-black-fg                   = #eeeeee
 light.player-white-fg                   = light.fg
-light.player-black-name                 = lighten(light.user, 60%)
-light.player-white-name                 = light.user
 light.player-black-clock                = lighten(light.player-black-fg, 50%)
 light.player-white-clock                = light.player-white-fg
 light.player-black-paused-clock          = #ABA8AD;
@@ -350,8 +359,6 @@ dark.inactive-support-gradient          = linear-gradient(to bottom, #7d7d7d 0%,
 dark.active-support-gradient            = linear-gradient(to bottom, darken(supporter-gold, 30%) 0%, darken(supporter-gold, 60%) 100%);
 dark.player-black-fg                    = dark.fg
 dark.player-white-fg                    = darken(dark.fg, 90%)
-dark.player-black-name                  = dark.user
-dark.player-white-name                  = darken(dark.user, 60%)
 dark.player-black-clock                 = lighten(dark.player-black-fg, 50%)
 dark.player-white-clock                 = #000
 dark.player-white-paused-clock          = #5F4A71;
@@ -486,8 +493,6 @@ accessible.inactive-support-gradient          = linear-gradient(to bottom, #7d7d
 accessible.active-support-gradient            = linear-gradient(to bottom, darken(accessible.supporter, 30%) 0%, darken(accessible.supporter, 60%) 100%);
 accessible.player-black-fg                    = accessible.fg
 accessible.player-white-fg                    = darken(accessible.fg, 90%)
-accessible.player-black-name                  = accessible.user
-accessible.player-white-name                  = darken(accessible.user, 60%)
 accessible.player-black-clock                 = lighten(accessible.player-black-fg, 50%)
 accessible.player-white-clock                 = #000
 accessible.player-white-paused-clock          = #5F4A71;
