@@ -20,7 +20,7 @@
 }
 
 
-.MainGobanView .players {
+.MainGobanView .players
     flex-shrink: 0;
     flex-grow: 0;
     display: flex;
@@ -112,7 +112,7 @@
     }
 
 
-    .white.player-container {
+    .white.player-container
         box-shadow: 0 2px 5px rgba(50,50,50,.51);
         themed background player-white-background
         themed color player-white-fg
@@ -121,12 +121,14 @@
             themed color player-white-paused-clock
         }
 
-        .white.player-name-container .supporter {
-            color: light.supporter!important;
-        }
-    }
+        // Use the light mode color for names in the white player box
+        .white.player-name-container .Player
+            color light.user
+        for color-attr, class-attr in special-player-type-priority
+            .white.player-name-container .Player.{class-attr}
+                color: light[color-attr]!important
 
-    .black.player-container {
+    .black.player-container
         themed background player-black-background
         themed color player-black-fg
         border-top: 1px solid #202020;
@@ -136,14 +138,12 @@
             themed color player-black-paused-clock
         }
 
-        .player-name {
-            color: #00B8FF;
-        }
-
-        .black.player-name-container .supporter {
-            color: dark.supporter!important;
-        }
-    }
+        // Use the dark mode color for names in the black player box
+        .black.player-name-container .Player
+            color dark.user
+        for color-attr, class-attr in special-player-type-priority
+            .black.player-name-container .Player.{class-attr}
+                color: dark[color-attr]!important
 
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;
@@ -177,17 +177,6 @@
         overflow: hidden;
         text-align: left;
     }
-    .black.player-name-container{
-        .Player {
-            themed color player-black-name;
-        }
-    }
-    .white.player-name-container{
-        .Player {
-            themed color player-white-name;
-        }
-    }
-
 
     .player-name {
         display: inline-block;
@@ -304,7 +293,6 @@
 
         }
     }
-}
 
 
 .MainGobanView.portrait .players {
