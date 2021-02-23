@@ -124,7 +124,7 @@
         // Use the light mode color for names in the white player box
         .white.player-name-container .Player
             color light.user
-        for color-attr, class-attr in special-type-priority
+        for color-attr, class-attr in special-player-type-priority
             .white.player-name-container .Player.{class-attr}
                 color: light[color-attr]!important
 
@@ -141,7 +141,7 @@
         // Use the dark mode color for names in the black player box
         .black.player-name-container .Player
             color dark.user
-        for color-attr, class-attr in special-type-priority
+        for color-attr, class-attr in special-player-type-priority
             .black.player-name-container .Player.{class-attr}
                 color: dark[color-attr]!important
 
