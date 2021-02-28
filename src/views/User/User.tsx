@@ -82,7 +82,7 @@ function getGameResultRichText(game) {
 }
 
 function openUrlIfALinkWasNotClicked(ev, url: string) {
-    if (ev.target.nodeName === "A") {
+    if (ev.target.nodeName === "A" || ev.target.parentNode.nodeName === "A") {
         /* if a link was clicked, let the browser handle that. */
         return;
     }
