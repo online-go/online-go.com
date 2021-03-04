@@ -67,6 +67,7 @@ module.exports = (env, argv) => {
         mode: production ? 'production' : 'development',
         entry: {
             'ogs': './src/main.tsx',
+            'sw': './src/sw.ts',
         },
         resolve: {
             modules: [

@@ -293,3 +293,20 @@ ReactDOM.render(routes, document.getElementById("main-content"));
 window['data'] = data;
 window['preferences'] = preferences;
 window['player_cache'] = player_cache;
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load',  () => {
+        navigator.serviceWorker.getRegistrations()
+            .then(regs => {
+                for (let reg of regs) {
+                    reg.unregister();
+                }
+                navigator.serviceWorker.register('./sw.js')
+                    .then(( registration ) => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch((e) => {
+                        console.warn('ServiceWorker registration failed: ', e);
+                    });
+            });
+    });
+}
