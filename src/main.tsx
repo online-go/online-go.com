@@ -298,7 +298,7 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations()
             .then(regs => {
                 for (let reg of regs) {
-                    reg.unregister().then(console.log);
+                    reg.unregister().then(console.log).catch(console.log);
                 }
                 navigator.serviceWorker.register('./sw.js')
                     .then(( registration ) => {
@@ -307,6 +307,8 @@ if ('serviceWorker' in navigator) {
                     .catch((e) => {
                         console.warn('ServiceWorker registration failed: ', e);
                     });
-            });
+            }).catch(e => {
+                console.log('getRegistrations Fail', e);
+        });
     });
 }
