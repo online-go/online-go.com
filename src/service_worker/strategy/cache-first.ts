@@ -40,7 +40,7 @@ export function cacheFirst({
         if (response == null) {
             response = await fetch(request, fetchOptions);
             const clone = response.clone();
-            // 将请求响应结果存入本地缓存
+            // cache response
             if (cache) {
                 if (response.status === 200) {
                     cache.put(requestClone, clone);

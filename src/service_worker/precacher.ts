@@ -35,25 +35,23 @@ export class Precacher {
     }) {
         this.cacheName = cacheName;
         this.searchKey = searchKey;
-        // 存储资源信息的列表
         this.resources = [];
-        // 初始化事件监听
         this.initEventListener();
     }
 
     initEventListener() {
-        // 在 `install` 事件回调执行预缓存资源加载
+        // in `install` callback cache then resources
         self.addEventListener('install', (event: SWEvent.InstallEvent) => {
             event.waitUntil(
-                // 缓存新增/变化的资源
+                // cache new/change resources
                 cacheResources(this.cacheName, this.resources)
             );
         });
-        // 添加 activate 事件监听清理旧资源
+        // in `activate` callback clean old resources
         self.addEventListener('activate', (event: SWEvent.ActivateEvent) => {
             console.log('service worker activate', location.href, location.hostname);
             event.waitUntil(
-                // 清理旧缓存
+                // clean old cache
                 clearOldResources(this.cacheName, this.resources)
             );
         });
@@ -68,7 +66,7 @@ export class Precacher {
     }
 
     addRoute() {
-        // addRoute() 方法只需执行一次
+        // addRoute() should call only once
         if (this.hasAdded) {
             return;
         }
@@ -94,7 +92,6 @@ export class Precacher {
             }
         );
     }
-    // 将 precache() 和 addRoute() 合成一个方法
     precacheAndRoute(resources: Array<PrecacherResourceItem | string>) {
         this.precache(resources);
         this.addRoute();
@@ -103,28 +100,29 @@ export class Precacher {
 
 async function cacheResources(cacheName: string, resources: Array<PrecacherResourceItem>) {
     let urls = resources.map(resource => resource.cacheKey);
-    // 首先打开并缓存 CacheStorage 对象
+    // open CacheStorage
     let cache = await caches.open(cacheName);
-    // 获取已存储的所有资源键值信息
+    // get all keys
     let requests = await cache.keys();
-    // 获取已存储的资源 URL
+    // get cached resource URL
     let cachedURLs = requests.map(request => request.url);
-    // 找出新增资源里面未存储过的资源 URL
+    // get new resource without cache URL
     let updateURLs = urls.filter(url => !cachedURLs.includes(url));
-    // 最后调用 cache.addAll() 缓存新增资源
+    // call cache.addAll() to cache new resources
     await cache.addAll(updateURLs);
 }
 
 function formatResource(searchKey: string, resource: string | PrecacherResourceItem) {
     let originURL: URL;
     let cacheKeyURL: URL;
-    // 当资源信息为字符串时，说明资源 URL 已经具有唯一性
-    // 因此可以直接拿 URL 作为资源的存储键值
+    // if resource is string type, means it's unique
+    // so use url as key to cache
     if (typeof resource === 'string') {
         originURL = new URL(resource, location.href);
         cacheKeyURL = new URL(resource, location.href);
     }
-    // 当资源信息为对象时，需要使用 revision 来生成资源存储键值
+    // if resource is object
+    // use revision to generate cache key
     else {
         originURL = new URL(resource.url, location.href);
         cacheKeyURL = new URL(resource.url, location.href);
@@ -139,15 +137,14 @@ function formatResource(searchKey: string, resource: string | PrecacherResourceI
 
 async function clearOldResources(cacheName: string, resources: Array<PrecacherResourceItem>) {
     let urls = resources.map(resource => resource.cacheKey);
-    // 首先打开并缓存 CacheStorage 对象
+    // open CacheStorage
     let cache = await caches.open(cacheName);
-    // 获取已存储的所有资源键值信息
+    // get all keys
     let requests = await cache.keys();
-    // 找出新增的 URL
-    // 获取已存储的资源 URL
+    // get cached resource URL
     let cachedURLs = requests.map(request => request.url);
-    // 找出不在资源列表信息当中的 URL
+    // get old resource not passing by resources param
     let oldURLs = cachedURLs.filter(url => !urls.includes(url));
-    // 最后调用 cache.delete() 删除旧资源
+    // call cache.delete() to delete old resource
     await Promise.all(oldURLs.map(url => cache.delete(url)));
 }

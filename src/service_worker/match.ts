@@ -18,16 +18,16 @@ import { SWEvent } from "./interface";
 
 export function match(rule: SWEvent.Rule, request: Request) {
   switch (Object.prototype.toString.call(rule)) {
-    // url 文本匹配
+    // url text match
     case '[object String]':
-      // 使用 URL() 将匹配规则传入的路径补全
+      // use URL() to complete url path
       return request.url === new URL((rule as string), location.href).href;
 
-    // url 正则匹配
+    // url RegExp match
     case '[object RegExp]':
       return request.url.match((rule as RegExp));
 
-    // 支持自定义匹配
+    // function match
     case '[object Function]':
       return (rule as Function)(request);
   }

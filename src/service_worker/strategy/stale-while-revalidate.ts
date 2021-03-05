@@ -35,7 +35,7 @@ export function staleWhileRevalidate({
             let requestClone = request.clone();
             let response = await fetch(request, fetchOptions);
             const clone = response.clone();
-            // 将请求响应结果存入本地缓存
+            // cache response
             if (cache && response.status === 200) {
                 await cache.put(requestClone, clone);
             }

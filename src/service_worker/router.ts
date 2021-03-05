@@ -24,15 +24,18 @@ export class Router {
         handler: (req: Request) => Promise<Response> | Response;
     }>;
     constructor() {
-        // 存放路由规则
         this.routes = [];
-        // 注册 fetch 事件拦截
         this.initProxy();
     }
 
+    /**
+     * register fetch event listener
+     */
     initProxy() {
         self.addEventListener('fetch', (event: SWEvent.FetchEvent) => {
-            // 当拦截到资源请求时，会遍历已注册的路由规则，并执行相应规则所对应的策略
+            // when proxy fetch request
+            // loop registered routes
+            // if match, do the strategy
             for (let route of this.routes) {
                 // 使用前面封装好的 match 函数进行路由规则匹配
                 if (match(route.rule, event.request)) {

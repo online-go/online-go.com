@@ -60,18 +60,10 @@ router.registerRoute(
     Strategy.networkFirst(cacheFirstParam)
 );
 
+// register other resources
 router.registerRoute(
     (req: Request) => new RegExp(location.hostname).test(req.url) && !(/api/.test(req.url)) && req.method.toUpperCase() === 'GET',
     Strategy.staleWhileRevalidate(networkFirstParam)
 );
 
-// router.registerRoute(
-//     url => /\.js$/.test(url) && new RegExp(location.hostname).test(url), Strategy.networkFirst(networkFirstParam));
-// router.registerRoute(
-//     url => /\.json$/.test(url) && new RegExp(location.hostname).test(url), Strategy.networkFirst(networkFirstParam));
-// router.registerRoute(
-//     url => /\.css$/.test(url) && new RegExp(location.hostname).test(url), Strategy.networkFirst(networkFirstParam));
-
-// router.registerRoute(/\.wasm$/, Strategy.networkFirst(networkFirstParam));
-// router.registerRoute('/', Strategy.networkFirst(networkFirstParam));
 
