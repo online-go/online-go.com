@@ -197,7 +197,7 @@ $(() => {
                 /* Allow escape through to other handlers, such as SWAL to close modals */
                 return true;
             }
-            
+
             if (shortcut === "ctrl-c") {
                 /* Allow copy text on Ctrl+C in modal */
                 document.execCommand("copy");
