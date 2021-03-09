@@ -41,8 +41,8 @@ export function AchievementList({list}:AchievementListProps): JSX.Element {
 }
 
 function render_achievement_entry(entry:AchievementEntry): JSX.Element {
-    var title = '';
-    var description = '';
+    let title = '';
+    let description = '';
 
     switch (entry.name) {
         case 'wdc2021':
