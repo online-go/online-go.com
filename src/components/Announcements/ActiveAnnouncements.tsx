@@ -17,14 +17,8 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {UIPush} from "UIPush";
-import {errorLogger} from "misc";
+import {_} from "translate";
 import {Card} from 'material';
-import * as moment from "moment";
-import ITC from "ITC";
-import * as data from "data";
 
 import {active_announcements, announcement_event_emitter} from './Announcements';
 
