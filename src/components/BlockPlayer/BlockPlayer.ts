@@ -22,8 +22,16 @@ import ITC from "ITC";
 import cached from 'cached';
 import * as player_cache from "player_cache";
 
-let ignores = {};
-let block_state = {};
+class BlockState {
+    blocked?: number; // player id
+
+    block_chat = false;
+    block_games = false;
+    block_announcements = false;
+}
+
+let ignores: {[player_id: number]: boolean} = {};
+let block_states: {[player_id: number]: BlockState} = {};
 
 export function setIgnore(player_id: number, tf: boolean) {
     if (tf) {
@@ -33,10 +41,10 @@ export function setIgnore(player_id: number, tf: boolean) {
     }
 
     if (player_id > 0) {
-        if (!(player_id in block_state)) {
-            block_state[player_id] = {};
+        if (!(player_id in block_states)) {
+            block_states[player_id] = new BlockState();
         }
-        block_state[player_id].block_chat = tf;
+        block_states[player_id].block_chat = tf;
         put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
@@ -44,12 +52,19 @@ export function setIgnore(player_id: number, tf: boolean) {
         .catch(errorAlerter);
     }
 }
+
+// For now, we hijack the "ignore chat" functionality, pending block_announcements
+// support on the backend
+export function setIgnoreAnnounce(player_id: number, tf: boolean) {
+    setIgnore(player_id, tf);
+}
+
 export function setGameBlock(player_id: number, tf: boolean) {
     if (player_id > 0) {
-        if (!(player_id in block_state)) {
-            block_state[player_id] = {};
+        if (!(player_id in block_states)) {
+            block_states[player_id] = new BlockState();
         }
-        block_state[player_id].block_games = tf;
+        block_states[player_id].block_games = tf;
         put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
         .then(() => {
             ITC.send("update-blocks", true);
@@ -58,18 +73,15 @@ export function setGameBlock(player_id: number, tf: boolean) {
     }
 }
 
-export function getBlocks(player_id: number) {
-    return block_state[player_id] || {
-        block_chat: false,
-        block_games: false,
-    };
+export function getBlocks(player_id: number): BlockState {
+    let ret = block_states[player_id] || new BlockState();
+    ret.block_announcements = ret.block_chat;  // announcement block uses the block chat field for now
+    return ret;
 }
 
 export function player_is_ignored(user_id) {
     return user_id in ignores;
 }
-
-
 
 function ignoreUser(uid, dont_fetch = false) {
     if (dont_fetch) {
@@ -94,16 +106,16 @@ function unIgnoreUser(uid) {
 }
 
 
-data.watch(cached.blocks, (blocks) => {
+data.watch(cached.blocks, (blocks: BlockState[]) => {
     try {
         if (!blocks) {
             return;
         }
 
-        block_state = {};
-        let new_ignores = {};
+        block_states = {};
+        let new_ignores: {[player_id: number]: boolean} = {};
         for (let entry of blocks) {
-            block_state[entry.blocked] = entry;
+            block_states[entry.blocked] = entry;
             if (entry.block_chat) {
                 new_ignores[entry.blocked] = true;
             }
