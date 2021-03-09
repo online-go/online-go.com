@@ -20,7 +20,7 @@ import {Link} from "react-router-dom";
 import {_} from "translate";
 import {Card} from 'material';
 
-import {active_announcements, announcement_event_emitter} from './Announcements';
+import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
 
 interface ActiveAnnouncementsProperties {
 
@@ -43,7 +43,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
     }
 
     render() {
-        let lst = [];
+        let lst: Announcement[] = [];
 
         for (let announcement_id in active_announcements) {
             let announcement = active_announcements[announcement_id];
@@ -67,6 +67,11 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                               )
                             : <span>{announcement.text}</span>
                         }
+                        <button className="announcement-menu-btn">Three dots</button>
+                        <div className="announcement-menu">
+                            <button>Hide this announcement</button>
+                            <button>Hide all from {announcement.creator.username}</button>
+                        </div>
                     </div>
                 ))}
             </Card>

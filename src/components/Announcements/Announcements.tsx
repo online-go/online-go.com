@@ -31,14 +31,28 @@ interface Events {
     "announcement-cleared": any;
 }
 
+export interface Announcement {
+    id: number;
+    expiration:number;
+    type: string;
+    creator: {
+        id: number;
+        username: string;
+    };
+    clear?: () => void;
+    link?: string;
+    text: string;
+}
+
 export let announcement_event_emitter = new TypedEventEmitter<Events>();
-export let active_announcements = {};
+export let active_announcements: {[id: number]: Announcement} = {};
 
 interface AnnouncementsProperties {
 }
 
-let announced = {};
-let cleared_announcements = data.get("announcements.cleared", {});
+let announced: {[id: number]: Announcement} = {};
+// Holds the expirations dates of cleared announcements
+let cleared_announcements: {[id: number]: number} = data.get("announcements.cleared", {});
 for (let k in cleared_announcements) {
     if (cleared_announcements[k] < Date.now()) {
         delete cleared_announcements[k];
@@ -76,7 +90,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     retract = (announcement) => {
         this.clearAnnouncement(announcement.id, true);
     }
-    announce = (announcement) => {
+    announce = (announcement: Announcement) => {
         active_announcements[announcement.id] = announcement;
 
         if (announcement.id in announced) {
