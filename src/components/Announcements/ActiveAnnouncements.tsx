@@ -17,10 +17,13 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_} from "translate";
+import {interpolate, _} from "translate";
 import {Card, PopupMenu, PopupMenuItem} from 'material';
 
 import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
+import { setIgnoreAnnounce } from "../BlockPlayer";
+
+declare var swal;
 
 interface ActiveAnnouncementsProperties {
 
@@ -61,10 +64,26 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         return (
             <Card className="ActiveAnnouncements">
                 {lst.map((announcement, idx) => {
-
+                    let username = announcement.creator.username;
                     let announcement_actions: PopupMenuItem[] = [
-                        {title: _('Hide this announcement'), onClick: () => { return; }},
-                        {title: 'Hide all from ' + announcement.creator.username, onClick: () => { return; }}
+                        {title: _('Hide this announcement'), onClick: () => {
+                            return;
+                        }},
+                        {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
+                            swal({
+                                "text": interpolate(_("Are you sure you want to block communications from {{name}}?"),
+                                             {name: announcement.creator.username}),
+                                "showCancelButton": true,
+                                "confirmButtonText": _("Block user"),
+                                "cancelButtonText": _("Cancel"),
+                            })
+                            .then(() => {
+                                setIgnoreAnnounce(announcement.creator.id, true);
+                            })
+                            .catch(() => 0);
+                            setIgnoreAnnounce(announcement.creator.id, true);
+                            return;
+                        }}
                     ];
 
                     return (
