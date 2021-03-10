@@ -25,6 +25,7 @@ import {errorLogger} from "misc";
 import * as moment from "moment";
 import ITC from "ITC";
 import * as data from "data";
+import { getBlocks } from "../BlockPlayer";
 
 interface Events {
     "announcement": any;
@@ -155,8 +156,14 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
             <UIPush event="retract"  action={this.retract}/>
             <UIPush event="announcement" action={this.announce}/>
 
-            {this.state.announcements.map((announcement, idx) => (
-                <div className="announcement" key={idx}>
+            {this.state.announcements.map((announcement, idx) => {
+                let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+
+                if (creator_blocked) {
+                    return (null);
+                }
+
+                return <div className="announcement" key={idx}>
                     <i className="fa fa-times-circle" onClick={announcement.clear}/>
                     {/*
                     {(announcement.type === 'tournament' || null) &&
@@ -172,8 +179,8 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                           )
                         : <span>{announcement.text}</span>
                     }
-                </div>
-            ))}
+                </div>;
+            })}
         </div>
         );
     }

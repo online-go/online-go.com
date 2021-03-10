@@ -21,13 +21,24 @@ import {interpolate, _} from "translate";
 import {Card, PopupMenu, PopupMenuItem} from 'material';
 
 import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
-import { setIgnoreAnnounce } from "../BlockPlayer";
+import { getBlocks, setIgnoreAnnounce } from "../BlockPlayer";
+
+import * as data from 'data';
 
 declare var swal;
 
 interface ActiveAnnouncementsProperties {
 
 }
+
+// Holds the expirations dates of cleared announcements
+let hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
+for (let k in hard_cleared_announcements) {
+    if (hard_cleared_announcements[k] < Date.now()) {
+        delete hard_cleared_announcements[k];
+    }
+}
+data.set("announcements.cleared", hard_cleared_announcements);
 
 export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncementsProperties, any> {
     constructor(props) {
@@ -49,8 +60,11 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         let lst: Announcement[] = [];
 
         for (let announcement_id in active_announcements) {
+            console.log(announcement_id, typeof(announcement_id));
             let announcement = active_announcements[announcement_id];
-            if (announcement.type !== "tournament") {
+            let is_hidden = announcement_id in hard_cleared_announcements;
+            let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+            if (announcement.type !== "tournament" && !is_hidden && !creator_blocked) {
                 lst.push(announcement);
             }
         }
@@ -64,9 +78,19 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         return (
             <Card className="ActiveAnnouncements">
                 {lst.map((announcement, idx) => {
-                    let username = announcement.creator.username;
                     let announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => {
+                            swal({
+                                "text": _("Are you sure you want to hide this announement? This action cannot be undone."),
+                                "showCancelButton": true,
+                                "confirmButtonText": _("Hide"),
+                                "cancelButtonText": _("Cancel"),
+                            })
+                            .then(() => {
+                                hard_cleared_announcements[announcement.id] = Date.now() + 30 * 24 * 3600 * 1000;
+                                this.forceUpdate;
+                            })
+                            .catch(() => 0);
                             return;
                         }},
                         {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
@@ -79,9 +103,9 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                             })
                             .then(() => {
                                 setIgnoreAnnounce(announcement.creator.id, true);
+                                this.forceUpdate();
                             })
                             .catch(() => 0);
-                            setIgnoreAnnounce(announcement.creator.id, true);
                             return;
                         }}
                     ];
