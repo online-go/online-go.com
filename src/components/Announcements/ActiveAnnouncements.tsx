@@ -18,7 +18,7 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {_} from "translate";
-import {Card} from 'material';
+import {Card, PopupMenu, PopupMenuItem} from 'material';
 
 import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
 
@@ -56,9 +56,18 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
             return null;
         }
 
+
+
         return (
             <Card className="ActiveAnnouncements">
-                {lst.map((announcement, idx) => (
+                {lst.map((announcement, idx) => {
+
+                    let announcement_actions: PopupMenuItem[] = [
+                        {title: _('Hide this announcement'), onClick: () => { return; }},
+                        {title: 'Hide all from ' + announcement.creator.username, onClick: () => { return; }}
+                    ]
+                    
+                    return (
                     <div className="announcement" key={idx}>
                         {announcement.link
                             ? (announcement.link.indexOf("://") > 0
@@ -67,13 +76,10 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                               )
                             : <span>{announcement.text}</span>
                         }
-                        <button className="announcement-menu-btn">Three dots</button>
-                        <div className="announcement-menu">
-                            <button>Hide this announcement</button>
-                            <button>Hide all from {announcement.creator.username}</button>
-                        </div>
+                        <PopupMenu list={announcement_actions}></PopupMenu>
                     </div>
-                ))}
+                    )}
+                )}
             </Card>
         );
     }
