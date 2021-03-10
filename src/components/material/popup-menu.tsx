@@ -77,8 +77,6 @@ export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: bool
                 isListOpen: false,
             });
         }
-
-        console.log("closed");
     }
 
     componentDidUpdate() {
