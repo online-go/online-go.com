@@ -1,0 +1,28 @@
+.popup-menu
+  .popup-menu-button
+    background-color transparent
+    border-color transparent
+    box-shadow none
+    i
+      color black
+      &:before
+          color black
+
+  .popup-menu-list
+    position absolute
+    padding 0
+    padding-top 3px
+    padding-bottom 3px
+    border-radius: 3px
+    themed background-color react-select-bg
+
+    .popup-menu-item
+      width 100%
+      border-radius 0
+      margin 0
+      background inherit
+      border-width 0
+      box-shadow: none
+
+      &:hover
+        themed background-color react-select-focused-bg
