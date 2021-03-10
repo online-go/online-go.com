@@ -39,6 +39,7 @@ export interface Announcement {
     creator: {
         id: number;
         username: string;
+        ui_class: string;
     };
     clear?: () => void;
     link?: string;

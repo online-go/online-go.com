@@ -56,11 +56,16 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         this.forceUpdate();
     }
 
+    clearAnnouncement(id) {
+        hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
+        data.set("announcements.hard_cleared", hard_cleared_announcements);
+        this.forceUpdate();
+    }
+
     render() {
         let lst: Announcement[] = [];
 
         for (let announcement_id in active_announcements) {
-            console.log(announcement_id, typeof(announcement_id));
             let announcement = active_announcements[announcement_id];
             let is_hidden = announcement_id in hard_cleared_announcements;
             let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
@@ -73,11 +78,14 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
             return null;
         }
 
-
-
         return (
             <Card className="ActiveAnnouncements">
                 {lst.map((announcement, idx) => {
+                    let user = data.get("user");
+                    let can_block_user = !user.anonymous &&
+                        (user.id !== announcement.creator.id) &&
+                        announcement.creator.ui_class.indexOf('moderator') < 0;
+
                     let announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => {
                             swal({
@@ -87,28 +95,31 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                                 "cancelButtonText": _("Cancel"),
                             })
                             .then(() => {
-                                hard_cleared_announcements[announcement.id] = Date.now() + 30 * 24 * 3600 * 1000;
-                                this.forceUpdate;
+                                this.clearAnnouncement(announcement.id);
                             })
                             .catch(() => 0);
                             return;
-                        }},
-                        {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
-                            swal({
-                                "text": interpolate(_("Are you sure you want to block communications from {{name}}?"),
-                                             {name: announcement.creator.username}),
-                                "showCancelButton": true,
-                                "confirmButtonText": _("Block user"),
-                                "cancelButtonText": _("Cancel"),
-                            })
-                            .then(() => {
-                                setIgnoreAnnounce(announcement.creator.id, true);
-                                this.forceUpdate();
-                            })
-                            .catch(() => 0);
-                            return;
-                        }}
-                    ];
+                        }}];
+
+                    if (can_block_user) {
+                        announcement_actions.push(
+                            {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
+                                swal({
+                                    "text": interpolate(_("Are you sure you want to block communications from {{name}}? This will block chat messages from this user as well."),
+                                                 {name: announcement.creator.username}),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Block user"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    setIgnoreAnnounce(announcement.creator.id, true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
 
                     return (
                     <div className="announcement" key={idx}>
