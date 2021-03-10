@@ -65,8 +65,8 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                     let announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => { return; }},
                         {title: 'Hide all from ' + announcement.creator.username, onClick: () => { return; }}
-                    ]
-                    
+                    ];
+
                     return (
                     <div className="announcement" key={idx}>
                         {announcement.link
@@ -78,8 +78,8 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                         }
                         <PopupMenu list={announcement_actions}></PopupMenu>
                     </div>
-                    )}
-                )}
+                    );
+                })}
             </Card>
         );
     }
