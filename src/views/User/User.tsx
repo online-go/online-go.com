@@ -48,6 +48,7 @@ import {associations} from 'associations';
 import {browserHistory} from "ogsHistory";
 import {chat_markup} from "Chat";
 import {Toggle} from 'Toggle';
+import {AchievementList} from 'Achievements';
 
 declare let swal;
 
@@ -1002,6 +1003,13 @@ export class User extends React.PureComponent<UserProperties, any> {
                             &&
                             <Card>
                                 <SelfReportedAccountLinkages links={account_links} />
+                            </Card>
+                        }
+
+                        {(this.state.achievements.length > 0 || null) &&
+                            <Card>
+                                <h3>{_("Achievements")}</h3>
+                                <AchievementList list={this.state.achievements} />
                             </Card>
                         }
 

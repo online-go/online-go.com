@@ -34,8 +34,6 @@ interface LibraryPlayerProperties {
     };
 }
 
-// TODO: Implement LibraryPlayer
-
 export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, any> {
     refs: {
         dropzone;
@@ -248,12 +246,6 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         .catch(errorAlerter);
         this.setState({"games_checked": {}});
     }
-    /*
-    toggleLock = (collection) => {
-        collection['private'] = !collection['private'];
-        this.forceUpdate();
-    }
-    */
     toggleAllGamesChecked = () => {
         let collection = this.state.collections[this.state.collection_id];
         let all_games_checked = true;
@@ -377,8 +369,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                                     }
                                     <span className="date">{moment(game.started).format("ll")}</span>
                                     <span className="name"><Link to={`/game/${game.game_id}`}>{game.name}</Link></span>
-                                    <span className="black"><Player user={game.black}/></span>
-                                    <span className="white"><Player user={game.white}/></span>
+                                    <span className="black"><Player user={game.black} disableCacheUpdate={true}/></span>
+                                    <span className="white"><Player user={game.white} disableCacheUpdate={true}/></span>
                                     <span className="outcome">{outcome_formatter(game)}</span>
                                 </div>
                             ))}
