@@ -161,9 +161,13 @@ export class PuzzleEditor {
         .then((arr) => {
             let rating = arr[2];
             let puzzle = arr[0].puzzle;
+            let collection = arr[0].collection;
 
             let randomize_transform = preferences.get("puzzle.randomize.transform"); /* only randomize when we are getting a new puzzle */
             let randomize_color = preferences.get("puzzle.randomize.color"); /* only randomize when we are getting a new puzzle */
+
+            randomize_transform &= collection.position_transform_enabled;
+            randomize_color &= collection.color_transform_enabled;
 
             this.transform.settings.zoom = preferences.get("puzzle.zoom");
 
@@ -178,6 +182,7 @@ export class PuzzleEditor {
                 my_rating: rating.rating,
                 rated: !("error" in rating),
                 zoom: this.transform.settings.zoom,
+                collection: collection,
                 transform_color: this.transform.settings.transform_color,
                 transform_h: this.transform.settings.transform_h,
                 transform_v: this.transform.settings.transform_v,

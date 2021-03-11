@@ -30,12 +30,16 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
     let [collection, setCollection] = React.useState(null);
     let [name, setName] = React.useState(null);
     let [puzzle_is_private, setPrivate] = React.useState(false);
+    let [color_transform_enabled, setColorTransformEnabled] = React.useState(false);
+    let [position_transform_enabled, setPositionTransformEnabled] = React.useState(false);
 
     React.useEffect(() => {
         get(`puzzles/collections/${collection_id}`)
         .then((collection) => {
             setName(collection.name);
             setPrivate(collection['private']);
+            setColorTransformEnabled(collection['color_transform_enabled']);
+            setPositionTransformEnabled(collection['position_transform_enabled']);
             setCollection(collection);
             console.log(collection);
         })
@@ -63,6 +67,22 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
                     <dd>
                         <input type='checkbox' id='private' checked={puzzle_is_private} onChange={ev => setPrivate(ev.target.checked)} />
                     </dd>
+
+                    <dt>
+                        <label htmlFor='color_transform_enabled'>{pgettext("For a puzzle, enable or disable the swapping of black/white colors", "Color transform enabled")}</label>
+                    </dt>
+                    <dd>
+                        <input type='checkbox' id='color_transform_enabled' checked={color_transform_enabled} onChange={ev => setColorTransformEnabled(ev.target.checked)} />
+                    </dd>
+
+                    <dt>
+                        <label htmlFor='position_transform_enabled'>{pgettext("For a puzzle, enable or disable rotating and flipping of the board", "Position transform enabled")}</label>
+                    </dt>
+                    <dd>
+                        <input type='checkbox' id='position_transform_enabled' checked={position_transform_enabled} onChange={ev => setPositionTransformEnabled(ev.target.checked)} />
+                    </dd>
+
+
                     {puzzle_is_private &&
                         <dd>
                             <button className='success' onClick={() => openACLModal({puzzle_collection_id: collection_id})}>{pgettext("Control who can access the game or review", "Access settings")}</button>
@@ -91,6 +111,8 @@ export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params
         put(`puzzles/collections/${collection_id}`, {
             'name': name,
             'private': puzzle_is_private,
+            'color_transform_enabled': color_transform_enabled,
+            'position_transform_enabled': position_transform_enabled,
         })
         .then(() => {
             swal("Changes saved").then(ignore).catch(ignore);
