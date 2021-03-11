@@ -22,8 +22,17 @@ import ITC from "ITC";
 import cached from 'cached';
 import * as player_cache from "player_cache";
 
+class BlockState {
+    blocked?: number; // player id
+
+    block_chat = false;
+    block_games = false;
+    block_announcements = false;
+}
+
 let ignores = {};
-let block_state = {};
+let block_state:{[player_id:string]: BlockState} = {};
+
 
 export function setIgnore(player_id: number, tf: boolean) {
     if (tf) {
@@ -34,7 +43,7 @@ export function setIgnore(player_id: number, tf: boolean) {
 
     if (player_id > 0) {
         if (!(player_id in block_state)) {
-            block_state[player_id] = {};
+            block_state[player_id] = new BlockState();
         }
         block_state[player_id].block_chat = tf;
         put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
@@ -47,7 +56,7 @@ export function setIgnore(player_id: number, tf: boolean) {
 export function setGameBlock(player_id: number, tf: boolean) {
     if (player_id > 0) {
         if (!(player_id in block_state)) {
-            block_state[player_id] = {};
+            block_state[player_id] = new BlockState();
         }
         block_state[player_id].block_games = tf;
         put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
@@ -58,11 +67,22 @@ export function setGameBlock(player_id: number, tf: boolean) {
     }
 }
 
-export function getBlocks(player_id: number) {
-    return block_state[player_id] || {
-        block_chat: false,
-        block_games: false,
-    };
+export function setAnnouncementBlock(player_id: number, tf: boolean) {
+    if (player_id > 0) {
+        if (!(player_id in block_state)) {
+            block_state[player_id] = new BlockState();
+        }
+        block_state[player_id].block_announcements = tf;
+        put("players/%%/block", player_id, {block_announcements: tf ? 1 : 0})
+        .then(() => {
+            ITC.send("update-blocks", true);
+        })
+        .catch(errorAlerter);
+    }
+}
+
+export function getBlocks(player_id: number):BlockState {
+    return block_state[player_id] || new BlockState();
 }
 
 export function player_is_ignored(user_id) {
