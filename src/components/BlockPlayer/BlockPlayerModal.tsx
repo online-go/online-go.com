@@ -19,7 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {PopOver, popover, close_all_popovers} from "popover";
-import {getBlocks, setIgnore, setGameBlock} from "./BlockPlayer";
+import {getBlocks, setIgnore, setGameBlock, setAnnouncementBlock} from "./BlockPlayer";
 
 
 
@@ -48,6 +48,11 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
         this.setState({block_games: !this.state.block_games});
     }
 
+    toggleAnnouncementBlock = () => {
+        setAnnouncementBlock(this.props.playerId, !this.state.block_announcements);
+        this.setState({block_announcements: !this.state.block_announcements});
+    }
+
     render() {
         return (
             <div className="BlockPlayerModal">
@@ -59,6 +64,10 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
                     <div className="block-option">
                         <input id="block-game" type="checkbox" checked={this.state.block_games}  onChange={this.toggleGameBlock} />
                         <label htmlFor="block-game">{_("Block user from accepting my open games")}</label>
+                    </div>
+                    <div className="block-option">
+                        <input id="block-announcements" type="checkbox" checked={this.state.block_announcements}  onChange={this.toggleAnnouncementBlock} />
+                        <label htmlFor="block-announcements">{_("Block announcements from this person")}</label>
                     </div>
                 </div>
             </div>
