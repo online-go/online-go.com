@@ -15,32 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.BlockPlayerModal {
-    box-shadow: 0px 2px 3px rgba(0,0,0,0.2);
-    border: 1px solid transparent;
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.16), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
-    themed background-color shade4
-    themed border-color shade3
-
-    .details {
-        display: flex;
-        flex-direction: column;
-
-        input[type="checkbox"] {
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-        label {
-            flex-grow: 1;
-            user-select: none;
-            font-size: smaller;
-            cursor: pointer;
-        }
-
-        .block-option {
-            display: flex;
-            align-items: center;
-            margin: 0.4rem;
-        }
-    }
-}
+export * from "./AchievementList";

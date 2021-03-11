@@ -73,9 +73,22 @@ export function setGameBlock(player_id: number, tf: boolean) {
     }
 }
 
+export function setAnnouncementBlock(player_id: number, tf: boolean) {
+    if (player_id > 0) {
+        if (!(player_id in block_states)) {
+            block_states[player_id] = new BlockState();
+        }
+        block_states[player_id].block_announcements = tf;
+        put("players/%%/block", player_id, {block_announcements: tf ? 1 : 0})
+        .then(() => {
+            ITC.send("update-blocks", true);
+        })
+        .catch(errorAlerter);
+    }
+}
+
 export function getBlocks(player_id: number): BlockState {
     let ret = block_states[player_id] || new BlockState();
-    ret.block_announcements = ret.block_chat;  // announcement block uses the block chat field for now
     return ret;
 }
 
