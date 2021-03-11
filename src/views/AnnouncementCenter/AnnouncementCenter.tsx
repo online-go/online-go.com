@@ -41,10 +41,11 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         super(props);
         let exp = new Date();
         exp.setSeconds(exp.getSeconds() + 300);
+        let user = data.get('user');
 
         this.state = {
             announcements: [],
-            type: "system",
+            type: user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),
             expiration_date: exp,
             expiration: moment(exp).toISOString(),
             text: "",
@@ -88,6 +89,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             return;
         }
+        data.set("announcement.last-type", this.state.type);
 
         post("announcements", {
             "type": this.state.type,
@@ -133,16 +135,32 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
             <UIPush event="refresh" channel="announcement-center" action={this.refresh}/>
             <Card>
                 <dl className="horizontal">
-                    {(user.is_superuser || null) && <dt>Type</dt> }
-                    {(user.is_superuser || null) &&
-                        <dd>
-                            <select>
-                                <option value="system">System</option>
-                                <option value="tournament">Tournament</option>
-                                <option value="non-supporter">Non-Supporters</option>
-                                <option value="uservoice">Uservoice</option>
-                            </select>
-                        </dd>
+                    <dt>Type</dt>
+                    {user.is_superuser
+                        ? <dd>
+                              <select value={this.state.type} onChange={this.setType}>
+                                  <option value="system">System</option>
+                                  <option value="stream">Stream</option>
+                                  <option value="event">Event</option>
+                                  <option value="tournament">Tournament</option>
+                                  <option value="non-supporter">Non-Supporters</option>
+                                  <option value="uservoice">Uservoice</option>
+                              </select>
+                          </dd>
+                        : user.is_moderator
+                            ? <dd>
+                                  <select value={this.state.type} onChange={this.setType}>
+                                      <option value="system">System</option>
+                                      <option value="stream">Stream</option>
+                                      <option value="event">Event</option>
+                                  </select>
+                              </dd>
+                            : <dd>
+                                  <select value={this.state.type} onChange={this.setType}>
+                                      <option value="stream">Stream</option>
+                                      <option value="event">Event</option>
+                                  </select>
+                              </dd>
                     }
 
                     <dt>{_("Expiration")}</dt>
