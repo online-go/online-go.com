@@ -108,7 +108,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
                     if (can_block_user) {
                         announcement_actions.push(
-                            {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
+                            {title: interpolate(_("Hide all from {{username}}"), {username: announcement.creator.username}), onClick: () => {
                                 swal({
                                     "text": interpolate(_("Are you sure you want to mute all announcements from {{name}}? {{undo_text}}"),
                                                  {name: announcement.creator.username, undo_text: undo_text}),
@@ -128,7 +128,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
                     if (announcement.type === "stream") {
                         announcement_actions.push(
-                            {title: 'Hide stream announcements', onClick: () => {
+                            {title: _('Hide stream announcements'), onClick: () => {
                                 swal({
                                     "text": interpolate(_("Are you sure you want to mute all announcements for streamers? {{undo_text}}"), {undo_text: undo_text}),
                                     "showCancelButton": true,
@@ -147,7 +147,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
                     if (announcement.type === "event") {
                         announcement_actions.push(
-                            {title: 'Hide event announcements', onClick: () => {
+                            {title: _('Hide event announcements'), onClick: () => {
                                 swal({
                                     "text": interpolate(_("Are you sure you want to mute all event announcements? {{undo_text}}"), {undo_text: undo_text}),
                                     "showCancelButton": true,
