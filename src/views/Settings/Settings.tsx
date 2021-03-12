@@ -18,33 +18,36 @@
 import * as React from "react";
 import * as preferences from "preferences";
 import * as data from "data";
+import * as moment from "moment";
 
-import {ValidPreference} from "preferences";
-import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, put, del, abort_requests_in_flight} from "requests";
-import {errorAlerter, errorLogger, ignore, Timeout, dup} from "misc";
-import {durationString} from "TimeControl";
-import {allRanks, IRankInfo} from "rank_utils";
-import {Card} from "material";
-import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
-import {SpritePack} from "sfx_sprites";
-import {current_language, setCurrentLanguage, languages} from "translate";
-import {toast} from 'toast';
-import {profanity_regex} from 'profanity_filter';
-import {logout} from 'NavBar';
-import {Flag} from "Flag";
-import {EventEmitter} from 'eventemitter3';
-import {LineText} from 'misc-ui';
-import {Toggle} from 'Toggle';
-import {LoadingPage} from 'Loading';
-import {browserHistory} from "ogsHistory";
-import {IAssociation, associations} from "associations";
 import Select from 'react-select';
 import ITC from 'ITC';
+import { ValidPreference } from "preferences";
+import { Link } from "react-router-dom";
+import { _, pgettext, interpolate } from "translate";
+import { post, get, put, del, abort_requests_in_flight } from "requests";
+import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
+import { durationString } from "TimeControl";
+import { allRanks, IRankInfo } from "rank_utils";
+import { Card } from "material";
+import { sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup } from "sfx";
+import { SpritePack } from "sfx_sprites";
+import { current_language, setCurrentLanguage, languages } from "translate";
+import { toast } from 'toast';
+import { profanity_regex } from 'profanity_filter';
+import { logout } from 'NavBar';
+import { Flag } from "Flag";
+import { EventEmitter } from 'eventemitter3';
+import { LineText } from 'misc-ui';
+import { Toggle } from 'Toggle';
+import { LoadingPage } from 'Loading';
+import { browserHistory } from "ogsHistory";
+import { IAssociation, associations } from "associations";
 import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 import { object } from "prop-types";
 import { Player } from "Player";
+import { PaginatedTable } from "PaginatedTable";
+
 
 declare var swal;
 export const MAX_DOCK_DELAY = 3.0;
@@ -657,8 +660,6 @@ function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
         .catch(errorAlerter);
     }, []);
 
-
-
     const [mute_stream_announcements, _muteStreamAnnouncements]:[boolean, (x: boolean) => void] =
         React.useState(preferences.get("mute-stream-announcements"));
     const [mute_event_announcements, _muteEventAnnouncements]:[boolean, (x: boolean) => void] =
@@ -674,19 +675,48 @@ function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
         _muteEventAnnouncements(checked);
     }
 
-
     return (
         <div id="AnnouncementPreferences">
             <br/>
-            <h2>{_("Muted Announcements")}</h2>
+            <h2>{_("Announcements")}</h2>
             <div>
-                <PreferenceLine title={_("Mute stream announcements")}>
+                <PreferenceLine title={_("Hide stream announcements")}>
                     <Toggle checked={mute_stream_announcements} onChange={toggleMuteStreamAnnouncements} />
                 </PreferenceLine>
-                <PreferenceLine title={_("Mute event announcements")}>
+                <PreferenceLine title={_("Hide event announcements")}>
                     <Toggle checked={mute_event_announcements} onChange={toggleMuteEventAnnouncements} />
                 </PreferenceLine>
             </div>
+
+            <h2>{_("Announcement History")}</h2>
+
+            <PaginatedTable
+                className="announcement-history"
+                source={`announcements/history`}
+                orderBy={["-timestamp"]}
+                columns={[
+                    {header: "Time"      , className: "announcement-time ", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
+                    {header: "Duration"  , className: "", render: (a) => {
+                            let ms = moment(a.expiration).diff(moment(a.timestamp));
+                            let d = moment.duration(ms);
+                            return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                            //.format('HH:mm')
+                        }
+                    },
+                    {header: "Type"      , className: "announcement-type ", render: (a) => {
+                        switch (a.type) {
+                            case "system": return pgettext("Announcement type", "System");
+                            case "event": return pgettext("Announcement type", "Event");
+                            case "stream": return pgettext("Announcement type (video stream)", "Stream");
+                        }
+                        return a.type;
+                    }},
+                    {header: "Player"    , className: "", render: (a) => <Player user={a.creator} />},
+                    {header: "Message"   , className: "announcement-message", render: (a) => a.text},
+                    {header: "Link"      , className: "announcement-link", render: (a) => <a href={a.link}>{a.link}</a>},
+                ]}
+            />
+
             {blocked_players && blocked_players.length > 0 &&
                 <div>
                     <h2>{_("Blocked players")}</h2>
