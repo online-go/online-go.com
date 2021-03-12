@@ -23,12 +23,16 @@ import cached from 'cached';
 import * as player_cache from "player_cache";
 
 class BlockState {
-    blocked?: number; // player id
+    blocked: number; // player id
     username?: string;
 
     block_chat = false;
     block_games = false;
     block_announcements = false;
+
+    constructor(blocked:number) {
+        this.blocked = blocked;
+    }
 }
 
 let ignores: {[player_id: number]: boolean} = {};
@@ -43,7 +47,7 @@ export function setIgnore(player_id: number, tf: boolean) {
 
     if (player_id > 0) {
         if (!(player_id in block_states)) {
-            block_states[player_id] = new BlockState();
+            block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_chat = tf;
         put("players/%%/block", player_id, {block_chat: tf ? 1 : 0})
@@ -57,7 +61,7 @@ export function setIgnore(player_id: number, tf: boolean) {
 export function setGameBlock(player_id: number, tf: boolean) {
     if (player_id > 0) {
         if (!(player_id in block_states)) {
-            block_states[player_id] = new BlockState();
+            block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_games = tf;
         put("players/%%/block", player_id, {block_games: tf ? 1 : 0})
@@ -71,7 +75,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
 export function setAnnouncementBlock(player_id: number, tf: boolean) {
     if (player_id > 0) {
         if (!(player_id in block_states)) {
-            block_states[player_id] = new BlockState();
+            block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_announcements = tf;
         put("players/%%/block", player_id, {block_announcements: tf ? 1 : 0})
@@ -83,7 +87,7 @@ export function setAnnouncementBlock(player_id: number, tf: boolean) {
 }
 
 export function getBlocks(player_id: number): BlockState {
-    return block_states[player_id] || new BlockState();
+    return block_states[player_id] || new BlockState(player_id);
 }
 
 export function getAllBlocks(): BlockState[] {
@@ -95,7 +99,7 @@ export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
 
     return (
         Promise.all(
-            ret.map(
+            ret.filter(bs => bs.blocked).map(
                 bs => player_cache.fetch(bs.blocked, ['username'])
                                    .then((player => bs.username = player.username))
             )

@@ -642,6 +642,9 @@ function BlockedPlayerPreferences(props:SettingGroupProps):JSX.Element {
                         </div>
                     );
                 })}
+
+                {blocked_players.length === 0
+                    ? <div>{_("You have not blocked any players")}</div> : null }
             </div>
             <br/>
         </div>
