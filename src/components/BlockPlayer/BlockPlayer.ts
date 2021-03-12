@@ -53,12 +53,6 @@ export function setIgnore(player_id: number, tf: boolean) {
     }
 }
 
-// For now, we hijack the "ignore chat" functionality, pending block_announcements
-// support on the backend
-export function setIgnoreAnnounce(player_id: number, tf: boolean) {
-    setIgnore(player_id, tf);
-}
-
 export function setGameBlock(player_id: number, tf: boolean) {
     if (player_id > 0) {
         if (!(player_id in block_states)) {

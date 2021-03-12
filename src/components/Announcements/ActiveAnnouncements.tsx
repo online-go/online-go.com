@@ -21,7 +21,7 @@ import {interpolate, _} from "translate";
 import {Card, PopupMenu, PopupMenuItem} from 'material';
 
 import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
-import { getBlocks, setIgnoreAnnounce } from "../BlockPlayer";
+import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
 import * as data from 'data';
 
@@ -112,7 +112,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                                     "cancelButtonText": _("Cancel"),
                                 })
                                 .then(() => {
-                                    setIgnoreAnnounce(announcement.creator.id, true);
+                                    setAnnouncementBlock(announcement.creator.id, true);
                                     this.forceUpdate();
                                 })
                                 .catch(() => 0);
