@@ -91,6 +91,8 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
                     let announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => {
+                            this.clearAnnouncement(announcement.id);
+                            /*
                             swal({
                                 "text": _("Are you sure you want to hide this announement? This action cannot be undone."),
                                 "showCancelButton": true,
@@ -101,19 +103,18 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                                 this.clearAnnouncement(announcement.id);
                             })
                             .catch(() => 0);
+                            */
                             return;
                         }}];
-
-                    let undo_text = _("This action can be undone in Settings > Mute and Block.");
 
                     if (can_block_user) {
                         announcement_actions.push(
                             {title: interpolate(_("Hide all from {{username}}"), {username: announcement.creator.username}), onClick: () => {
                                 swal({
-                                    "text": interpolate(_("Are you sure you want to mute all announcements from {{name}}? {{undo_text}}"),
-                                                 {name: announcement.creator.username, undo_text: undo_text}),
+                                    "text": interpolate(_("Are you sure you want to hide all announcements from {{name}}?"),
+                                                 {name: announcement.creator.username}),
                                     "showCancelButton": true,
-                                    "confirmButtonText": _("Mute"),
+                                    "confirmButtonText": _("Yes"),
                                     "cancelButtonText": _("Cancel"),
                                 })
                                 .then(() => {
@@ -130,9 +131,9 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                         announcement_actions.push(
                             {title: _('Hide stream announcements'), onClick: () => {
                                 swal({
-                                    "text": interpolate(_("Are you sure you want to mute all announcements for streamers? {{undo_text}}"), {undo_text: undo_text}),
+                                    "text": _("Are you sure you want to hide all announcements for streamers?"),
                                     "showCancelButton": true,
-                                    "confirmButtonText": _("Mute"),
+                                    "confirmButtonText": _("Yes"),
                                     "cancelButtonText": _("Cancel"),
                                 })
                                 .then(() => {
@@ -149,9 +150,9 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                         announcement_actions.push(
                             {title: _('Hide event announcements'), onClick: () => {
                                 swal({
-                                    "text": interpolate(_("Are you sure you want to mute all event announcements? {{undo_text}}"), {undo_text: undo_text}),
+                                    "text": _("Are you sure you want to hide all event announcements?"),
                                     "showCancelButton": true,
-                                    "confirmButtonText": _("Mute"),
+                                    "confirmButtonText": _("Yes"),
                                     "cancelButtonText": _("Cancel"),
                                 })
                                 .then(() => {
