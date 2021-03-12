@@ -19,12 +19,14 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {PopOver, popover, close_all_popovers} from "popover";
-import {getBlocks, setIgnore, setGameBlock} from "./BlockPlayer";
+import {getBlocks, setIgnore, setGameBlock, setAnnouncementBlock} from "./BlockPlayer";
 
 
 
 interface BlockPlayerModalProperties {
     playerId: number;
+    inline?: boolean;
+    onlyAnnouncements?: boolean; // only show block announcements line
 }
 
 export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProperties, any> {
@@ -48,18 +50,38 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
         this.setState({block_games: !this.state.block_games});
     }
 
+    toggleAnnouncementBlock = () => {
+        setAnnouncementBlock(this.props.playerId, !this.state.block_announcements);
+        this.setState({block_announcements: !this.state.block_announcements});
+    }
+
+
     render() {
+        let show_block_chat = !this.props.onlyAnnouncements;
+        let show_block_game = !this.props.onlyAnnouncements;
+        let show_block_announcements = true;
+
         return (
-            <div className="BlockPlayerModal">
+            <div className={"BlockPlayerModal" + (this.props.inline ? " inline" : "")}>
                 <div className="details">
-                    <div className="block-option">
-                        <input id="block-chat" type="checkbox" checked={this.state.block_chat} onChange={this.toggleChatBlock} />
-                        <label htmlFor="block-chat">{_("Ignore chats and private messages")}</label>
-                    </div>
-                    <div className="block-option">
-                        <input id="block-game" type="checkbox" checked={this.state.block_games}  onChange={this.toggleGameBlock} />
-                        <label htmlFor="block-game">{_("Block user from accepting my open games")}</label>
-                    </div>
+                    {show_block_chat &&
+                        <div className="block-option">
+                            <input id={"block-chat-" + this.props.playerId} type="checkbox" checked={this.state.block_chat} onChange={this.toggleChatBlock} />
+                            <label htmlFor={"block-chat-" + this.props.playerId}>{_("Ignore chats and private messages")}</label>
+                        </div>
+                    }
+                    {show_block_game &&
+                        <div className="block-option">
+                            <input id={"block-game-" + this.props.playerId} type="checkbox" checked={this.state.block_games}  onChange={this.toggleGameBlock} />
+                            <label htmlFor={"block-game-" + this.props.playerId}>{_("Block user from accepting my open games")}</label>
+                        </div>
+                    }
+                    {show_block_announcements &&
+                        <div className="block-option">
+                            <input id={"block-announcements-" + this.props.playerId} type="checkbox" checked={this.state.block_announcements}  onChange={this.toggleAnnouncementBlock} />
+                            <label htmlFor={"block-announcements-" + this.props.playerId}>{_("Block announcements from this person")}</label>
+                        </div>
+                    }
                 </div>
             </div>
         );

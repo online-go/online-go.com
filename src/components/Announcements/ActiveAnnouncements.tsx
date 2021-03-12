@@ -17,20 +17,29 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {UIPush} from "UIPush";
-import {errorLogger} from "misc";
-import {Card} from 'material';
-import * as moment from "moment";
-import ITC from "ITC";
-import * as data from "data";
+import {interpolate, _} from "translate";
+import {Card, PopupMenu, PopupMenuItem} from 'material';
 
-import {active_announcements, announcement_event_emitter} from './Announcements';
+import {active_announcements, announcement_event_emitter, Announcement, announcementTypeMuted} from './Announcements';
+import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
+
+import * as data from 'data';
+import * as preferences from "preferences";
+
+declare var swal;
 
 interface ActiveAnnouncementsProperties {
 
 }
+
+// Holds the expirations dates of cleared announcements
+let hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
+for (let k in hard_cleared_announcements) {
+    if (hard_cleared_announcements[k] < Date.now()) {
+        delete hard_cleared_announcements[k];
+    }
+}
+data.set("announcements.cleared", hard_cleared_announcements);
 
 export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncementsProperties, any> {
     constructor(props) {
@@ -48,12 +57,22 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         this.forceUpdate();
     }
 
+    clearAnnouncement(id) {
+        hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
+        data.set("announcements.hard_cleared", hard_cleared_announcements);
+        this.forceUpdate();
+    }
+
     render() {
-        let lst = [];
+        let lst: Announcement[] = [];
 
         for (let announcement_id in active_announcements) {
             let announcement = active_announcements[announcement_id];
-            if (announcement.type !== "tournament") {
+            let is_hidden = announcement_id in hard_cleared_announcements;
+            let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+            let type_muted = announcementTypeMuted(announcement);
+
+            if (announcement.type !== "tournament" && !is_hidden && !creator_blocked && !type_muted) {
                 lst.push(announcement);
             }
         }
@@ -64,7 +83,89 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
         return (
             <Card className="ActiveAnnouncements">
-                {lst.map((announcement, idx) => (
+                {lst.map((announcement, idx) => {
+                    let user = data.get("user");
+                    let can_block_user = !user.anonymous &&
+                        (user.id !== announcement.creator.id) &&
+                        announcement.creator.ui_class.indexOf('moderator') < 0;
+
+                    let announcement_actions: PopupMenuItem[] = [
+                        {title: _('Hide this announcement'), onClick: () => {
+                            this.clearAnnouncement(announcement.id);
+                            /*
+                            swal({
+                                "text": _("Are you sure you want to hide this announement? This action cannot be undone."),
+                                "showCancelButton": true,
+                                "confirmButtonText": _("Hide"),
+                                "cancelButtonText": _("Cancel"),
+                            })
+                            .then(() => {
+                                this.clearAnnouncement(announcement.id);
+                            })
+                            .catch(() => 0);
+                            */
+                            return;
+                        }}];
+
+                    if (can_block_user) {
+                        announcement_actions.push(
+                            {title: interpolate(_("Hide all from {{username}}"), {username: announcement.creator.username}), onClick: () => {
+                                swal({
+                                    "text": interpolate(_("Are you sure you want to hide all announcements from {{name}}?"),
+                                                 {name: announcement.creator.username}),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Yes"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    setAnnouncementBlock(announcement.creator.id, true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
+                    if (announcement.type === "stream") {
+                        announcement_actions.push(
+                            {title: _('Hide stream announcements'), onClick: () => {
+                                swal({
+                                    "text": _("Are you sure you want to hide all announcements for streamers?"),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Yes"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    preferences.set("mute-stream-announcements", true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
+                    if (announcement.type === "event") {
+                        announcement_actions.push(
+                            {title: _('Hide event announcements'), onClick: () => {
+                                swal({
+                                    "text": _("Are you sure you want to hide all event announcements?"),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Yes"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    preferences.set("mute-event-announcements", true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
+                    return (
                     <div className="announcement" key={idx}>
                         {announcement.link
                             ? (announcement.link.indexOf("://") > 0
@@ -73,8 +174,10 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                               )
                             : <span>{announcement.text}</span>
                         }
+                        <PopupMenu list={announcement_actions}></PopupMenu>
                     </div>
-                ))}
+                    );
+                })}
             </Card>
         );
     }

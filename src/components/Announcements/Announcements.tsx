@@ -17,28 +17,55 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import {_} from "translate";
+import {get} from "requests";
 import {UIPush} from "UIPush";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {errorLogger} from "misc";
 import * as moment from "moment";
 import ITC from "ITC";
 import * as data from "data";
+import { getBlocks } from "../BlockPlayer";
+import * as preferences from 'preferences';
 
 interface Events {
     "announcement": any;
     "announcement-cleared": any;
 }
 
+export interface Announcement {
+    id: number;
+    expiration:number;
+    type: string;
+    creator: {
+        id: number;
+        username: string;
+        ui_class: string;
+    };
+    clear?: () => void;
+    link?: string;
+    text: string;
+}
+
 export let announcement_event_emitter = new TypedEventEmitter<Events>();
-export let active_announcements = {};
+export let active_announcements: {[id: number]: Announcement} = {};
+
+export function announcementTypeMuted(announcement: Announcement): boolean {
+    if (announcement.type === 'stream' && preferences.get("mute-stream-announcements")) {
+        return true;
+    }
+    if (announcement.type === 'event' && preferences.get("mute-event-announcements")) {
+        return true;
+    }
+    return false;
+}
 
 interface AnnouncementsProperties {
 }
 
-let announced = {};
-let cleared_announcements = data.get("announcements.cleared", {});
+let announced: {[id: number]: Announcement} = {};
+// Holds the expirations dates of cleared announcements
+let cleared_announcements: {[id: number]: number} = data.get("announcements.cleared", {});
 for (let k in cleared_announcements) {
     if (cleared_announcements[k] < Date.now()) {
         delete cleared_announcements[k];
@@ -76,7 +103,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
     retract = (announcement) => {
         this.clearAnnouncement(announcement.id, true);
     }
-    announce = (announcement) => {
+    announce = (announcement: Announcement) => {
         active_announcements[announcement.id] = announcement;
 
         if (announcement.id in announced) {
@@ -141,8 +168,15 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
             <UIPush event="retract"  action={this.retract}/>
             <UIPush event="announcement" action={this.announce}/>
 
-            {this.state.announcements.map((announcement, idx) => (
-                <div className="announcement" key={idx}>
+            {this.state.announcements.map((announcement, idx) => {
+                let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                let type_muted = announcementTypeMuted(announcement);
+
+                if (creator_blocked || type_muted) {
+                    return (null);
+                }
+
+                return <div className="announcement" key={idx}>
                     <i className="fa fa-times-circle" onClick={announcement.clear}/>
                     {/*
                     {(announcement.type === 'tournament' || null) &&
@@ -158,8 +192,8 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                           )
                         : <span>{announcement.text}</span>
                     }
-                </div>
-            ))}
+                </div>;
+            })}
         </div>
         );
     }

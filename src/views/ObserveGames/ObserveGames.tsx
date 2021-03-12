@@ -16,12 +16,7 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import * as preferences from "preferences";
-import {GameList} from "GameList";
-import {ActiveAnnouncements} from "Announcements";
-import {comm_socket} from "sockets";
+import {_} from "translate";
 import { ObserveGamesComponent } from 'ObserveGamesComponent';
 
 interface ObserveGamesProperties {

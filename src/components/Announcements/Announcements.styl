@@ -16,19 +16,30 @@
  */
 
 .Announcements {
-    position: fixed;
+    position: absolute;
     top: navbar-height;
     right: 0;
     z-index: z.announcements;
+    display: inline-flex;
+    flex-direction: column;
+    width: 17rem;
+    max-width: 100vw;
 
     .announcement {
-        width: 13rem;
+        width: 17rem;
+        display: inline-flex;
+        max-width: 100vw;
+        padding-top: .2rem;
+        padding-bottom: .2rem;
+        padding-left: .2rem;
         themed background-color bg
+        align-items: center;
         box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
         overflow: hidden;
         .fa-times-circle {
-            padding: 0.3rem;
+            padding: 0.5rem;
             cursor: pointer;
+            font-size: 1.2rem;
         }
     }
 }

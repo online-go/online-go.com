@@ -1,0 +1,37 @@
+.popup-menu
+  position: relative
+
+  .popup-menu-button
+    padding 0
+    background-color transparent
+    border-color transparent
+    box-shadow none
+    height 20px
+    width 20px
+    i
+      &:before
+          themed color shade2
+
+  .popup-menu-list
+    position absolute
+    padding 0
+    padding-top 3px
+    padding-bottom 3px
+    border-radius: 3px
+    min-width: 16em;
+    themed background-color react-select-bg
+    top 30px
+    transform translateX(-60%)
+    box-shadow 0px 2px 10px 0px rgba(0,0,0,0.16), 0px 2px 5px 0px rgba(0,0,0,0.15)
+    z-index 10
+
+    .popup-menu-item
+      width 100%
+      border-radius 0
+      margin 0
+      background inherit
+      border-width 0
+      box-shadow: none
+
+      &:hover
+        themed background-color react-select-focused-bg

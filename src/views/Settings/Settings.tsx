@@ -18,30 +18,36 @@
 import * as React from "react";
 import * as preferences from "preferences";
 import * as data from "data";
+import * as moment from "moment";
 
-import {ValidPreference} from "preferences";
-import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, put, del, abort_requests_in_flight} from "requests";
-import {errorAlerter, errorLogger, ignore, Timeout, dup} from "misc";
-import {durationString} from "TimeControl";
-import {allRanks, IRankInfo} from "rank_utils";
-import {Card} from "material";
-import {sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup} from "sfx";
-import {SpritePack} from "sfx_sprites";
-import {current_language, setCurrentLanguage, languages} from "translate";
-import {toast} from 'toast';
-import {profanity_regex} from 'profanity_filter';
-import {logout} from 'NavBar';
-import {Flag} from "Flag";
-import {EventEmitter} from 'eventemitter3';
-import {LineText} from 'misc-ui';
-import {Toggle} from 'Toggle';
-import {LoadingPage} from 'Loading';
-import {browserHistory} from "ogsHistory";
-import {IAssociation, associations} from "associations";
 import Select from 'react-select';
 import ITC from 'ITC';
+import { ValidPreference } from "preferences";
+import { Link } from "react-router-dom";
+import { _, pgettext, interpolate } from "translate";
+import { post, get, put, del, abort_requests_in_flight } from "requests";
+import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
+import { durationString } from "TimeControl";
+import { allRanks, IRankInfo } from "rank_utils";
+import { Card } from "material";
+import { sfx, SpriteGroups, sprite_packs, ValidSound, ValidSoundGroup } from "sfx";
+import { SpritePack } from "sfx_sprites";
+import { current_language, setCurrentLanguage, languages } from "translate";
+import { toast } from 'toast';
+import { profanity_regex } from 'profanity_filter';
+import { logout } from 'NavBar';
+import { Flag } from "Flag";
+import { EventEmitter } from 'eventemitter3';
+import { LineText } from 'misc-ui';
+import { Toggle } from 'Toggle';
+import { LoadingPage } from 'Loading';
+import { browserHistory } from "ogsHistory";
+import { IAssociation, associations } from "associations";
+import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
+import { object } from "prop-types";
+import { Player } from "Player";
+import { PaginatedTable } from "PaginatedTable";
+
 
 declare var swal;
 export const MAX_DOCK_DELAY = 3.0;
@@ -161,29 +167,33 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
 
 
     let groups:Array<{key:string, label:string}> = [
-        { key: 'general'  , label: _("General Preferences") },
-        { key: 'sound'    , label: _("Sound Preferences") },
-        { key: 'game'     , label: _("Game Preferences") },
-        { key: 'chat'     , label: _("Chat Preferences")},
-        { key: 'vacation' , label: _("Vacation") },
-        { key: 'email'    , label: _("Email Notifications") },
-        { key: 'account'  , label: _("Account Settings") },
-        { key: 'link'     , label: _("Account Linking") },
-        { key: 'logout'   , label: _("Logout") },
+        { key: 'general'         , label: _("General Preferences") },
+        { key: 'sound'           , label: _("Sound Preferences") },
+        { key: 'game'            , label: _("Game Preferences") },
+        { key: 'chat'            , label: _("Chat Preferences")},
+        { key: 'vacation'        , label: _("Vacation") },
+        { key: 'email'           , label: _("Email Notifications") },
+        { key: 'announcement'    , label: _("Announcements Preferences") },
+        { key: 'blocked_players' , label: _("Blocked Players") },
+        { key: 'account'         , label: _("Account Settings") },
+        { key: 'link'            , label: _("Account Linking") },
+        { key: 'logout'          , label: _("Logout") },
     ];
 
     let SelectedPage:(props:SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
     switch (selected) {
-        case 'sound'    : SelectedPage = SoundPreferences   ; break;
-        case 'vacation' : SelectedPage = VacationSettings      ; break;
-        case 'account'  : SelectedPage = AccountSettings    ; break;
-        case 'logout'   : SelectedPage = LogoutPreferences  ; break;
-        case 'email'    : SelectedPage = EmailPreferences   ; break;
-        case 'game'     : SelectedPage = GamePreferences    ; break;
-        case 'general'  : SelectedPage = GeneralPreferences ; break;
-        case 'link'     : SelectedPage = LinkPreferences ; break;
-        case 'chat'     : SelectedPage = ChatPreferences    ; break;
+        case 'sound'           : SelectedPage = SoundPreferences        ; break ;
+        case 'vacation'        : SelectedPage = VacationSettings        ; break ;
+        case 'account'         : SelectedPage = AccountSettings         ; break ;
+        case 'logout'          : SelectedPage = LogoutPreferences       ; break ;
+        case 'email'           : SelectedPage = EmailPreferences        ; break ;
+        case 'announcement'    : SelectedPage = AnnouncementPreferences ; break ;
+        case 'blocked_players' : SelectedPage = BlockedPlayerPreferences  ; break ;
+        case 'game'            : SelectedPage = GamePreferences         ; break ;
+        case 'general'         : SelectedPage = GeneralPreferences      ; break ;
+        case 'link'            : SelectedPage = LinkPreferences         ; break ;
+        case 'chat'            : SelectedPage = ChatPreferences         ; break ;
     }
 
     let props:SettingGroupProps = {
@@ -596,6 +606,134 @@ function EmailPreferences(props:SettingGroupProps):JSX.Element {
             {Object.keys(props.state.notifications).map((k, idx) =>
                 <EmailNotificationToggle key={k} name={_(props.state.notifications[k].description)} notification={k} state={props.state} />
             )}
+        </div>
+    );
+}
+
+function BlockedPlayerPreferences(props:SettingGroupProps):JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+
+    React.useEffect(() => {
+        getAllBlocksWithUsernames()
+        .then((blocks) => setBlockedPlayers(blocks))
+        .catch(errorAlerter);
+    }, []);
+
+    if (blocked_players === null) {
+        return (
+            <div id="BlockedPlayers">
+            </div>
+        );
+    }
+
+    return (
+        <div id="BlockedPlayers">
+            <h2>{_("Blocked players")}</h2>
+            <div>
+                {blocked_players.map((block_state) => {
+                    let user_id = block_state.blocked;
+                    if (!user_id) {
+                        return (null);
+                    }
+                    return (
+                        <div key={user_id} className='blocked-player-row'>
+                            <span className='blocked-player'>{block_state.username}</span>
+                            <BlockPlayerModal playerId={user_id} inline={true} />
+                        </div>
+                    );
+                })}
+            </div>
+            <br/>
+        </div>
+    );
+}
+
+function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+
+    React.useEffect(() => {
+        getAllBlocksWithUsernames()
+        .then((blocks) => {
+            blocks = blocks.filter(bs => bs.block_announcements);
+            setBlockedPlayers(blocks);
+        })
+        .catch(errorAlerter);
+    }, []);
+
+    const [mute_stream_announcements, _muteStreamAnnouncements]:[boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-stream-announcements"));
+    const [mute_event_announcements, _muteEventAnnouncements]:[boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-event-announcements"));
+
+    function toggleMuteStreamAnnouncements(checked) {
+        preferences.set("mute-stream-announcements", checked);
+        _muteStreamAnnouncements(checked);
+    }
+
+    function toggleMuteEventAnnouncements(checked) {
+        preferences.set("mute-event-announcements", checked);
+        _muteEventAnnouncements(checked);
+    }
+
+    return (
+        <div id="AnnouncementPreferences">
+            <br/>
+            <h2>{_("Announcements")}</h2>
+            <div>
+                <PreferenceLine title={_("Hide stream announcements")}>
+                    <Toggle checked={mute_stream_announcements} onChange={toggleMuteStreamAnnouncements} />
+                </PreferenceLine>
+                <PreferenceLine title={_("Hide event announcements")}>
+                    <Toggle checked={mute_event_announcements} onChange={toggleMuteEventAnnouncements} />
+                </PreferenceLine>
+            </div>
+
+            <h2>{_("Announcement History")}</h2>
+
+            <PaginatedTable
+                className="announcement-history"
+                source={`announcements/history`}
+                orderBy={["-timestamp"]}
+                columns={[
+                    {header: "Time"      , className: "announcement-time ", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
+                    {header: "Duration"  , className: "", render: (a) => {
+                            let ms = moment(a.expiration).diff(moment(a.timestamp));
+                            let d = moment.duration(ms);
+                            return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                            //.format('HH:mm')
+                        }
+                    },
+                    {header: "Type"      , className: "announcement-type ", render: (a) => {
+                        switch (a.type) {
+                            case "system": return pgettext("Announcement type", "System");
+                            case "event": return pgettext("Announcement type", "Event");
+                            case "stream": return pgettext("Announcement type (video stream)", "Stream");
+                        }
+                        return a.type;
+                    }},
+                    {header: "Player"    , className: "", render: (a) => <Player user={a.creator} />},
+                    {header: "Message"   , className: "announcement-message", render: (a) => a.text},
+                    {header: "Link"      , className: "announcement-link", render: (a) => <a href={a.link}>{a.link}</a>},
+                ]}
+            />
+
+            {blocked_players && blocked_players.length > 0 &&
+                <div>
+                    <h2>{_("Blocked players")}</h2>
+                    {blocked_players.map((block_state) => {
+                        let user_id = block_state.blocked;
+                        if (!user_id) {
+                            return (null);
+                        }
+                        return (
+                            <div key={user_id} className='blocked-player-row'>
+                                <span className='blocked-player'>{block_state.username}</span>
+                                <BlockPlayerModal playerId={user_id} inline={true} onlyAnnouncements={true} />
+                            </div>
+                        );
+                    })}
+                </div>
+            }
         </div>
     );
 }

@@ -16,3 +16,4 @@
  */
 
 export * from './material';
+export * from './popup-menu';

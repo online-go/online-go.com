@@ -41,10 +41,11 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         super(props);
         let exp = new Date();
         exp.setSeconds(exp.getSeconds() + 300);
+        let user = data.get('user');
 
         this.state = {
             announcements: [],
-            type: "system",
+            type: user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),
             expiration_date: exp,
             expiration: moment(exp).toISOString(),
             text: "",
@@ -88,6 +89,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             return;
         }
+        data.set("announcement.last-type", this.state.type);
 
         post("announcements", {
             "type": this.state.type,
@@ -133,16 +135,32 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
             <UIPush event="refresh" channel="announcement-center" action={this.refresh}/>
             <Card>
                 <dl className="horizontal">
-                    {(user.is_superuser || null) && <dt>Type</dt> }
-                    {(user.is_superuser || null) &&
-                        <dd>
-                            <select>
-                                <option value="system">System</option>
-                                <option value="tournament">Tournament</option>
-                                <option value="non-supporter">Non-Supporters</option>
-                                <option value="uservoice">Uservoice</option>
-                            </select>
-                        </dd>
+                    <dt>Type</dt>
+                    {user.is_superuser
+                        ? <dd>
+                              <select value={this.state.type} onChange={this.setType}>
+                                  <option value="system">System</option>
+                                  <option value="stream">Stream</option>
+                                  <option value="event">Event</option>
+                                  <option value="tournament">Tournament</option>
+                                  <option value="non-supporter">Non-Supporters</option>
+                                  <option value="uservoice">Uservoice</option>
+                              </select>
+                          </dd>
+                        : user.is_moderator
+                            ? <dd>
+                                  <select value={this.state.type} onChange={this.setType}>
+                                      <option value="system">System</option>
+                                      <option value="stream">Stream</option>
+                                      <option value="event">Event</option>
+                                  </select>
+                              </dd>
+                            : <dd>
+                                  <select value={this.state.type} onChange={this.setType}>
+                                      <option value="stream">Stream</option>
+                                      <option value="event">Event</option>
+                                  </select>
+                              </dd>
                     }
 
                     <dt>{_("Expiration")}</dt>
@@ -192,28 +210,36 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                 </div>
             </Card>
 
-            {(user.is_superuser || null) &&
-                <Card>
-                    <h3>Announcement History</h3>
+            <Card>
+                <h3>{_("Announcement History")}</h3>
 
-                    <PaginatedTable
-                        className="announcement-history"
-                        source={`announcements/history`}
-                        orderBy={["-timestamp"]}
-                        columns={[
-                            {header: "Time"      , className: "", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
-                            {header: "Duration"  , className: "", render: (a) =>
-                                moment.utc(
-                                    moment(a.expiration).diff(moment(a.timestamp))
-                                ).format('HH:mm')
-                            },
-                            {header: "Player"    , className: "", render: (a) => <Player user={a.creator} />},
-                            {header: "Message"   , className: "", render: (a) => a.text},
-                            {header: "Link"      , className: "", render: (a) => <a href={a.link}>{a.link}</a>},
-                        ]}
-                    />
-                </Card>
-            }
+                <PaginatedTable
+                    className="announcement-history"
+                    source={`announcements/history`}
+                    orderBy={["-timestamp"]}
+                    columns={[
+                        {header: "Time"      , className: "", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
+                        {header: "Duration"  , className: "", render: (a) => {
+                                let ms = moment(a.expiration).diff(moment(a.timestamp));
+                                let d = moment.duration(ms);
+                                return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                                //.format('HH:mm')
+                            }
+                        },
+                        {header: "Type"      , className: "announcement-type ", render: (a) => {
+                            switch (a.type) {
+                                case "system": return pgettext("Announcement type", "System");
+                                case "event": return pgettext("Announcement type", "Event");
+                                case "stream": return pgettext("Announcement type (video stream)", "Stream");
+                            }
+                            return a.type;
+                        }},
+                        {header: "Player"    , className: "", render: (a) => <Player user={a.creator} />},
+                        {header: "Message"   , className: "", render: (a) => a.text},
+                        {header: "Link"      , className: "", render: (a) => <a href={a.link}>{a.link}</a>},
+                    ]}
+                />
+            </Card>
         </div>
         );
     }
