@@ -17,8 +17,8 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import {_} from "translate";
+import {get} from "requests";
 import {UIPush} from "UIPush";
 import {TypedEventEmitter} from "TypedEventEmitter";
 import {errorLogger} from "misc";
@@ -26,6 +26,7 @@ import * as moment from "moment";
 import ITC from "ITC";
 import * as data from "data";
 import { getBlocks } from "../BlockPlayer";
+import * as preferences from 'preferences';
 
 interface Events {
     "announcement": any;
@@ -48,6 +49,16 @@ export interface Announcement {
 
 export let announcement_event_emitter = new TypedEventEmitter<Events>();
 export let active_announcements: {[id: number]: Announcement} = {};
+
+export function announcementTypeMuted(announcement: Announcement): boolean {
+    if (announcement.type === 'stream' && preferences.get("mute-stream-announcements")) {
+        return true;
+    }
+    if (announcement.type === 'event' && preferences.get("mute-event-announcements")) {
+        return true;
+    }
+    return false;
+}
 
 interface AnnouncementsProperties {
 }
@@ -159,8 +170,9 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
 
             {this.state.announcements.map((announcement, idx) => {
                 let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                let type_muted = announcementTypeMuted(announcement);
 
-                if (creator_blocked) {
+                if (creator_blocked || type_muted) {
                     return (null);
                 }
 

@@ -20,7 +20,7 @@ import {Link} from "react-router-dom";
 import {interpolate, _} from "translate";
 import {Card, PopupMenu, PopupMenuItem} from 'material';
 
-import {active_announcements, announcement_event_emitter, Announcement} from './Announcements';
+import {active_announcements, announcement_event_emitter, Announcement, announcementTypeMuted} from './Announcements';
 import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
 import * as data from 'data';
@@ -70,14 +70,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
             let announcement = active_announcements[announcement_id];
             let is_hidden = announcement_id in hard_cleared_announcements;
             let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-            let type_muted = false;
-
-            if (announcement.type === 'stream' && preferences.get("mute-stream-announcements")) {
-                type_muted = true;
-            }
-            if (announcement.type === 'event' && preferences.get("mute-event-announcements")) {
-                type_muted = true;
-            }
+            let type_muted = announcementTypeMuted(announcement);
 
             if (announcement.type !== "tournament" && !is_hidden && !creator_blocked && !type_muted) {
                 lst.push(announcement);
