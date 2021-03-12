@@ -82,8 +82,11 @@ export function setAnnouncementBlock(player_id: number, tf: boolean) {
 }
 
 export function getBlocks(player_id: number): BlockState {
-    let ret = block_states[player_id] || new BlockState();
-    return ret;
+    return block_states[player_id] || new BlockState();
+}
+
+export function getAllBlocks() {
+    return Object.keys(block_states).map(k => block_states[k]);
 }
 
 export function player_is_ignored(user_id) {
