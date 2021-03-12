@@ -607,9 +607,26 @@ function EmailPreferences(props:SettingGroupProps):JSX.Element {
 
 function BlockPreferences(props:SettingGroupProps):JSX.Element {
     let blocks = getAllBlocks();
+
+    const [mute_stream_announcements, _muteStreamAnnouncements]:[boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-stream-announcements"));
+    const [mute_event_announcements, _muteEventAnnouncements]:[boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-event-announcements"));
+
+    function toggleMuteStreamAnnouncements(checked) {
+        preferences.set("mute-stream-announcements", checked);
+        _muteStreamAnnouncements(checked);
+    }
+
+    function toggleMuteEventAnnouncements(checked) {
+        preferences.set("mute-event-announcements", checked);
+        _muteEventAnnouncements(checked);
+    }
+
+
     return (
         <div className={"block-settings"}>
-            <h3>{_("Blocked players")}</h3>
+            <h2>{_("Blocked players")}</h2>
             <div>
                 {blocks.length ? blocks.map((block_state) => {
                         let user_id = block_state.blocked;
@@ -622,6 +639,16 @@ function BlockPreferences(props:SettingGroupProps):JSX.Element {
                             <BlockPlayerModal playerId={user_id} />
                         </div>);
                     }) : "You have not blocked any players."}
+            </div>
+            <br/>
+            <h2>{_("Muted Announcements")}</h2>
+            <div>
+                <PreferenceLine title={_("Mute stream announcements")}>
+                    <Toggle checked={mute_stream_announcements} onChange={toggleMuteStreamAnnouncements} />
+                </PreferenceLine>
+                <PreferenceLine title={_("Mute event announcements")}>
+                    <Toggle checked={mute_event_announcements} onChange={toggleMuteEventAnnouncements} />
+                </PreferenceLine>
             </div>
         </div>
     );

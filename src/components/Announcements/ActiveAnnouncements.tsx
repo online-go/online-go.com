@@ -24,6 +24,7 @@ import {active_announcements, announcement_event_emitter, Announcement} from './
 import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
 import * as data from 'data';
+import * as preferences from "preferences";
 
 declare var swal;
 
@@ -69,7 +70,16 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
             let announcement = active_announcements[announcement_id];
             let is_hidden = announcement_id in hard_cleared_announcements;
             let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-            if (announcement.type !== "tournament" && !is_hidden && !creator_blocked) {
+            let type_muted = false;
+
+            if (announcement.type === 'stream' && preferences.get("mute-stream-announcements")) {
+                type_muted = true;
+            }
+            if (announcement.type === 'event' && preferences.get("mute-event-announcements")) {
+                type_muted = true;
+            }
+
+            if (announcement.type !== "tournament" && !is_hidden && !creator_blocked && !type_muted) {
                 lst.push(announcement);
             }
         }
@@ -101,18 +111,58 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                             return;
                         }}];
 
+                    let undo_text = _("This action can be undone in Settings > Mute and Block.");
+
                     if (can_block_user) {
                         announcement_actions.push(
                             {title: 'Hide all from ' + announcement.creator.username, onClick: () => {
                                 swal({
-                                    "text": interpolate(_("Are you sure you want to block communications from {{name}}? This will block chat messages from this user as well."),
-                                                 {name: announcement.creator.username}),
+                                    "text": interpolate(_("Are you sure you want to mute all announcements from {{name}}? {{undo_text}}"),
+                                                 {name: announcement.creator.username, undo_text: undo_text}),
                                     "showCancelButton": true,
-                                    "confirmButtonText": _("Block user"),
+                                    "confirmButtonText": _("Mute"),
                                     "cancelButtonText": _("Cancel"),
                                 })
                                 .then(() => {
                                     setAnnouncementBlock(announcement.creator.id, true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
+                    if (announcement.type === "stream") {
+                        announcement_actions.push(
+                            {title: 'Hide stream announcements', onClick: () => {
+                                swal({
+                                    "text": interpolate(_("Are you sure you want to mute all announcements for streamers? {{undo_text}}"), {undo_text: undo_text}),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Mute"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    preferences.set("mute-stream-announcements", true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
+                    if (announcement.type === "event") {
+                        announcement_actions.push(
+                            {title: 'Hide event announcements', onClick: () => {
+                                swal({
+                                    "text": interpolate(_("Are you sure you want to mute all event announcements? {{undo_text}}"), {undo_text: undo_text}),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Mute"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    preferences.set("mute-event-announcements", true);
                                     this.forceUpdate();
                                 })
                                 .catch(() => 0);

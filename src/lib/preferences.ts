@@ -102,6 +102,8 @@ let defaults = {
     "chat-subscribe-tournament-chat-unread": true,
     "chat-subscribe-tournament-mentions": true,
 
+    "mute-stream-announcements": false,
+    "mute-event-announcements": false,
 };
 
 defaults['profanity-filter'][current_language] = true;
