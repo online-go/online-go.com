@@ -25,6 +25,7 @@ import {getBlocks, setIgnore, setGameBlock, setAnnouncementBlock} from "./BlockP
 
 interface BlockPlayerModalProperties {
     playerId: number;
+    inline?: boolean;
 }
 
 export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProperties, any> {
@@ -55,7 +56,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
 
     render() {
         return (
-            <div className="BlockPlayerModal">
+            <div className={"BlockPlayerModal" + (this.props.inline ? " inline" : "")}>
                 <div className="details">
                     <div className="block-option">
                         <input id="block-chat" type="checkbox" checked={this.state.block_chat} onChange={this.toggleChatBlock} />
