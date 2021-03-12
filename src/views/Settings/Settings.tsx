@@ -42,7 +42,7 @@ import {browserHistory} from "ogsHistory";
 import {IAssociation, associations} from "associations";
 import Select from 'react-select';
 import ITC from 'ITC';
-import { BlockPlayerModal, getAllBlocks } from "BlockPlayer";
+import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 import { object } from "prop-types";
 import { Player } from "Player";
 
@@ -164,31 +164,33 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
 
 
     let groups:Array<{key:string, label:string}> = [
-        { key: 'general'  , label: _("General Preferences") },
-        { key: 'sound'    , label: _("Sound Preferences") },
-        { key: 'game'     , label: _("Game Preferences") },
-        { key: 'chat'     , label: _("Chat Preferences")},
-        { key: 'vacation' , label: _("Vacation") },
-        { key: 'email'    , label: _("Email Notifications") },
-        { key: 'block'    , label: _("Mute and Block") },
-        { key: 'account'  , label: _("Account Settings") },
-        { key: 'link'     , label: _("Account Linking") },
-        { key: 'logout'   , label: _("Logout") },
+        { key: 'general'         , label: _("General Preferences") },
+        { key: 'sound'           , label: _("Sound Preferences") },
+        { key: 'game'            , label: _("Game Preferences") },
+        { key: 'chat'            , label: _("Chat Preferences")},
+        { key: 'vacation'        , label: _("Vacation") },
+        { key: 'email'           , label: _("Email Notifications") },
+        { key: 'announcement'    , label: _("Announcements Preferences") },
+        { key: 'blocked_players' , label: _("Blocked Players") },
+        { key: 'account'         , label: _("Account Settings") },
+        { key: 'link'            , label: _("Account Linking") },
+        { key: 'logout'          , label: _("Logout") },
     ];
 
     let SelectedPage:(props:SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
     switch (selected) {
-        case 'sound'    : SelectedPage = SoundPreferences   ; break;
-        case 'vacation' : SelectedPage = VacationSettings      ; break;
-        case 'account'  : SelectedPage = AccountSettings    ; break;
-        case 'logout'   : SelectedPage = LogoutPreferences  ; break;
-        case 'email'    : SelectedPage = EmailPreferences   ; break;
-        case 'block'    : SelectedPage = BlockPreferences   ; break;
-        case 'game'     : SelectedPage = GamePreferences    ; break;
-        case 'general'  : SelectedPage = GeneralPreferences ; break;
-        case 'link'     : SelectedPage = LinkPreferences ; break;
-        case 'chat'     : SelectedPage = ChatPreferences    ; break;
+        case 'sound'           : SelectedPage = SoundPreferences        ; break ;
+        case 'vacation'        : SelectedPage = VacationSettings        ; break ;
+        case 'account'         : SelectedPage = AccountSettings         ; break ;
+        case 'logout'          : SelectedPage = LogoutPreferences       ; break ;
+        case 'email'           : SelectedPage = EmailPreferences        ; break ;
+        case 'announcement'    : SelectedPage = AnnouncementPreferences ; break ;
+        case 'blocked_players' : SelectedPage = BlockedPlayerPreferences  ; break ;
+        case 'game'            : SelectedPage = GamePreferences         ; break ;
+        case 'general'         : SelectedPage = GeneralPreferences      ; break ;
+        case 'link'            : SelectedPage = LinkPreferences         ; break ;
+        case 'chat'            : SelectedPage = ChatPreferences         ; break ;
     }
 
     let props:SettingGroupProps = {
@@ -605,8 +607,57 @@ function EmailPreferences(props:SettingGroupProps):JSX.Element {
     );
 }
 
-function BlockPreferences(props:SettingGroupProps):JSX.Element {
-    let blocks = getAllBlocks();
+function BlockedPlayerPreferences(props:SettingGroupProps):JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+
+    React.useEffect(() => {
+        getAllBlocksWithUsernames()
+        .then((blocks) => setBlockedPlayers(blocks))
+        .catch(errorAlerter);
+    }, []);
+
+    if (blocked_players === null) {
+        return (
+            <div id="BlockedPlayers">
+            </div>
+        );
+    }
+
+    return (
+        <div id="BlockedPlayers">
+            <h2>{_("Blocked players")}</h2>
+            <div>
+                {blocked_players.map((block_state) => {
+                    let user_id = block_state.blocked;
+                    if (!user_id) {
+                        return (null);
+                    }
+                    return (
+                        <div key={user_id} className='blocked-player-row'>
+                            <span className='blocked-player'>{block_state.username}</span>
+                            <BlockPlayerModal playerId={user_id} inline={true} />
+                        </div>
+                    );
+                })}
+            </div>
+            <br/>
+        </div>
+    );
+}
+
+function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+
+    React.useEffect(() => {
+        getAllBlocksWithUsernames()
+        .then((blocks) => {
+            blocks = blocks.filter(bs => bs.block_announcements);
+            setBlockedPlayers(blocks);
+        })
+        .catch(errorAlerter);
+    }, []);
+
+
 
     const [mute_stream_announcements, _muteStreamAnnouncements]:[boolean, (x: boolean) => void] =
         React.useState(preferences.get("mute-stream-announcements"));
@@ -625,21 +676,7 @@ function BlockPreferences(props:SettingGroupProps):JSX.Element {
 
 
     return (
-        <div className={"block-settings"}>
-            <h2>{_("Blocked players")}</h2>
-            <div>
-                {blocks.length ? blocks.map((block_state) => {
-                        let user_id = block_state.blocked;
-                        if (!user_id) {
-                            return (null);
-                        }
-                        return (
-                            <div>
-                            <Player user={user_id} />
-                            <BlockPlayerModal playerId={user_id} />
-                        </div>);
-                    }) : "You have not blocked any players."}
-            </div>
+        <div id="AnnouncementPreferences">
             <br/>
             <h2>{_("Muted Announcements")}</h2>
             <div>
@@ -650,6 +687,23 @@ function BlockPreferences(props:SettingGroupProps):JSX.Element {
                     <Toggle checked={mute_event_announcements} onChange={toggleMuteEventAnnouncements} />
                 </PreferenceLine>
             </div>
+            {blocked_players && blocked_players.length > 0 &&
+                <div>
+                    <h2>{_("Blocked players")}</h2>
+                    {blocked_players.map((block_state) => {
+                        let user_id = block_state.blocked;
+                        if (!user_id) {
+                            return (null);
+                        }
+                        return (
+                            <div key={user_id} className='blocked-player-row'>
+                                <span className='blocked-player'>{block_state.username}</span>
+                                <BlockPlayerModal playerId={user_id} inline={true} onlyAnnouncements={true} />
+                            </div>
+                        );
+                    })}
+                </div>
+            }
         </div>
     );
 }

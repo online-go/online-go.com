@@ -24,6 +24,7 @@ import * as player_cache from "player_cache";
 
 class BlockState {
     blocked?: number; // player id
+    username?: string;
 
     block_chat = false;
     block_games = false;
@@ -87,6 +88,22 @@ export function getBlocks(player_id: number): BlockState {
 
 export function getAllBlocks(): BlockState[] {
     return Object.keys(block_states).map(k => block_states[k]);
+}
+
+export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
+    let ret = Object.keys(block_states).map(k => block_states[k]);
+
+    return (
+        Promise.all(
+            ret.map(
+                bs => player_cache.fetch(bs.blocked, ['username'])
+                                   .then((player => bs.username = player.username))
+            )
+        ).then(() => {
+            ret.sort((a, b) => a.username.localeCompare(b.username));
+            return ret;
+        })
+    );
 }
 
 export function player_is_ignored(user_id) {
