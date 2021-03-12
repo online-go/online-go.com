@@ -56,8 +56,9 @@ export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: bool
                 role="list"
                 className="popup-menu-list"
               >
-                {list.map((item: PopupMenuItem) => (
+                {list.map((item: PopupMenuItem, idx) => (
                   <button
+                    key={idx}
                     type="button"
                     className="popup-menu-item"
                     onClick={item.onClick}
