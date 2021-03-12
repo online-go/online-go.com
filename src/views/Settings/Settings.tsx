@@ -42,6 +42,9 @@ import {browserHistory} from "ogsHistory";
 import {IAssociation, associations} from "associations";
 import Select from 'react-select';
 import ITC from 'ITC';
+import { BlockPlayerModal, getAllBlocks } from "BlockPlayer";
+import { object } from "prop-types";
+import { Player } from "Player";
 
 declare var swal;
 export const MAX_DOCK_DELAY = 3.0;
@@ -167,6 +170,7 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
         { key: 'chat'     , label: _("Chat Preferences")},
         { key: 'vacation' , label: _("Vacation") },
         { key: 'email'    , label: _("Email Notifications") },
+        { key: 'block'    , label: _("Mute and Block") },
         { key: 'account'  , label: _("Account Settings") },
         { key: 'link'     , label: _("Account Linking") },
         { key: 'logout'   , label: _("Logout") },
@@ -180,6 +184,7 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
         case 'account'  : SelectedPage = AccountSettings    ; break;
         case 'logout'   : SelectedPage = LogoutPreferences  ; break;
         case 'email'    : SelectedPage = EmailPreferences   ; break;
+        case 'block'    : SelectedPage = BlockPreferences   ; break;
         case 'game'     : SelectedPage = GamePreferences    ; break;
         case 'general'  : SelectedPage = GeneralPreferences ; break;
         case 'link'     : SelectedPage = LinkPreferences ; break;
@@ -596,6 +601,28 @@ function EmailPreferences(props:SettingGroupProps):JSX.Element {
             {Object.keys(props.state.notifications).map((k, idx) =>
                 <EmailNotificationToggle key={k} name={_(props.state.notifications[k].description)} notification={k} state={props.state} />
             )}
+        </div>
+    );
+}
+
+function BlockPreferences(props:SettingGroupProps):JSX.Element {
+    let blocks = getAllBlocks();
+    return (
+        <div className={"block-settings"}>
+            <h3>{_("Blocked players")}</h3>
+            <div>
+                {blocks.length ? blocks.map((block_state) => {
+                        let user_id = block_state.blocked;
+                        if (!user_id) {
+                            return (null);
+                        }
+                        return (
+                            <div>
+                            <Player user={user_id} />
+                            <BlockPlayerModal playerId={user_id} />
+                        </div>);
+                    }) : "You have not blocked any players."}
+            </div>
         </div>
     );
 }

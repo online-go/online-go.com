@@ -85,7 +85,7 @@ export function getBlocks(player_id: number): BlockState {
     return block_states[player_id] || new BlockState();
 }
 
-export function getAllBlocks() {
+export function getAllBlocks(): BlockState[] {
     return Object.keys(block_states).map(k => block_states[k]);
 }
 
