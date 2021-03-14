@@ -39,7 +39,7 @@ for (let k in hard_cleared_announcements) {
         delete hard_cleared_announcements[k];
     }
 }
-data.set("announcements.cleared", hard_cleared_announcements);
+data.set("announcements.hard_cleared", hard_cleared_announcements);
 
 export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncementsProperties, any> {
     constructor(props) {
