@@ -318,13 +318,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         this.ai_review.moves[move_number] = value;
                     }
                     else if (/variation-([0-9]+)-([a-z]+)/.test(key)) {
+                        if (!this.ai_review.analyzed_variations) {
+                            this.ai_review.analyzed_variations = {};
+                        }
                         if (!this.ai_review) {
                             console.warn("AI Review move received but ai review not initialized yet");
                             return;
                         }
                         let m = key.match(/variation-([0-9a-zA-Z-]+)/);
                         let varkey = m[1];
-                        this.ai_review.moves[varkey] = value;
+                        this.ai_review.analyzed_variations[varkey] = value;
                     }
                     else {
                         console.warn(`Unrecognized key in updateAiReview data: ${key}`, value);
@@ -366,10 +369,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let varkey = `${trunk_move.move_number}-${varstring}`;
         let have_variation_results = false;
 
-        if (varkey in this.ai_review.moves) { // if we have an interactive review move, display that
+        // if we have an interactive review move, display that
+        if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
             have_variation_results = true;
-            ai_review_move = this.ai_review.moves[varkey];
-        } else { // otherwise look for one that came from the normal review
+            ai_review_move = this.ai_review.analyzed_variations[varkey];
+        }
+        // otherwise look for one that came from the normal review
+        else {
             if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
                 ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
             }
@@ -711,6 +717,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         }) || [];
 
+        let cur_move = this.props.move;
+        let trunk_move = cur_move.getBranchPoint();
+        let move_number = trunk_move.move_number;
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -826,7 +836,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
                                     updatecount={this.state.updatecount}
-                                    move_number={this.props.move.move_number}
+                                    move_number={move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
                                     />
