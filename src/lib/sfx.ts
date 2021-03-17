@@ -247,7 +247,7 @@ export class SFXSprite {
             return;
         }
 
-        console.debug('Playing sound bite:', this.name, 'at volume:', this.volume);
+        //console.debug('Playing sound bite:', this.name, 'at volume:', this.volume);
         let id = this.howl.play(this.name);
         this.howl.volume(this.volume, id);
         this.id = id;
