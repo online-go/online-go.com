@@ -564,14 +564,30 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private requestAnalysisOfVariation(cur_move:MoveTree, trunk_move:MoveTree):boolean {
+        if (!this.props.game) {
+            return false;
+        }
+
         let user = data.get('user');
+        if (user.anonymous) {
+            //console.debug("Anonymous user, not performing analysis of variation");
+            return false;
+        }
         if (!user.supporter) {
-            console.warn("user is not a supporter");
+            //console.debug("user is not a supporter");
+            return false;
+        }
+
+        let black_id = this.props.game.goban?.engine?.config?.black_player_id;
+        let white_id = this.props.game.goban?.engine?.config?.white_player_id;
+        let creator_id = this.props.game.creator_id;
+
+        if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
+            //console.debug("Not performing analysis of variation for non player");
             return false;
         }
 
         if (!this.ai_review) {
-
             console.warn("ai_review not set");
             return false;
         }
