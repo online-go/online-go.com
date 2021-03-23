@@ -17,7 +17,12 @@
 
 
 import * as React from "react";
+import * as data from "data";
 import { ai_socket } from "sockets";
+import { MoveTree } from "goban";
+
+
+let analysis_requests_made:{[id:string]: boolean} = {};
 
 interface AIReviewStreamProperties {
     uuid?: string;
@@ -43,8 +48,24 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
             }
         }
 
+        function onJwtChange() {
+            let user = data.get('config.user');
+            let user_jwt = data.get('config.user_jwt');
+            if (!user.anonymous && user_jwt) {
+                ai_socket.send('authenticate', {jwt: user_jwt});
+            }
+        }
+
+        function watch_jwt() {
+            data.watch('config.user_jwt', onJwtChange);
+        }
+        function unwatch_jwt() {
+            data.unwatch('config.user_jwt', onJwtChange);
+        }
+
         function onConnect() {
             ai_socket.send('ai-review-connect', {uuid, game_id, ai_review_id});
+            watch_jwt();
         }
 
         function onMessage(data: any) {
@@ -57,8 +78,35 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
             }
             ai_socket.off('connect', onConnect);
             ai_socket.off(uuid, onMessage);
+            unwatch_jwt();
         };
     }, [uuid]);
 
     return null;
+}
+
+export function ai_request_variation_analysis(uuid, game_id, ai_review_id, cur_move:MoveTree, trunk_move: MoveTree):void {
+    if (!ai_socket.connected) {
+        console.warn("Not sending request for variation analysis since we wern't connected to the AI server");
+        return;
+    }
+
+    let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+    let cur_move_string = cur_move.getMoveStringToThisPoint();
+    let variation = cur_move_string.slice(trunk_move_string.length);
+
+    let key = `${uuid}-${game_id}-${ai_review_id}-${trunk_move.move_number}-${variation}`;
+    if (key in analysis_requests_made) {
+        return;
+    }
+    analysis_requests_made[key] = true;
+
+    let req = {
+        uuid: uuid,
+        game_id: game_id,
+        ai_review_id: ai_review_id,
+        from: trunk_move.move_number,
+        variation: variation,
+    };
+    ai_socket.send("ai-analyze-variation", req);
 }

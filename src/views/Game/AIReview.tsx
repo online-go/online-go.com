@@ -21,7 +21,7 @@ import * as data from "data";
 import * as preferences from "preferences";
 import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
-import { AIReviewStream } from "AIReviewStream";
+import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
 import { deepCompare, errorAlerter, dup, errorLogger, Timeout } from 'misc';
 import { get, post } from 'requests';
@@ -265,7 +265,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.ai_review = ai_review;
         } else {
             for (let k in ai_review) {
-                console.log("Updating", k, ai_review[k]);
+                //console.log("Updating", k, ai_review[k]);
                 if (k !== 'moves' || !this.ai_review['moves']) {
                     this.ai_review[k] = ai_review[k];
                 } else {
@@ -300,26 +300,37 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     if (key === 'metadata') {
                         this.updateAIReviewMetadata(value as JGOFAIReview);
                     }
-                    if (key === 'error') {
+                    else if (key === 'error') {
                         if (this.ai_review) {
                             this.ai_review.error = value;
                         } else {
                             console.error("AI Review missing, cannot update error", value);
                         }
                     }
-                    if (/move-[0-9]+/.test(key)) {
+                    else if (/move-[0-9]+/.test(key)) {
                         if (!this.ai_review) {
                             console.warn("AI Review move received but ai review not initialized yet");
                             return;
                         }
 
-                        if (/move-[0-9]+/.test(key)) {
-                            let m = key.match(/move-([0-9]+)/);
-                            let move_number = parseInt(m[1]);
-                            this.ai_review.moves[move_number] = value;
-                        } else {
-                            console.error(`Unexpected review update key: ${key}`, value);
+                        let m = key.match(/move-([0-9]+)/);
+                        let move_number = parseInt(m[1]);
+                        this.ai_review.moves[move_number] = value;
+                    }
+                    else if (/variation-([0-9]+)-([a-z]+)/.test(key)) {
+                        if (!this.ai_review.analyzed_variations) {
+                            this.ai_review.analyzed_variations = {};
                         }
+                        if (!this.ai_review) {
+                            console.warn("AI Review move received but ai review not initialized yet");
+                            return;
+                        }
+                        let m = key.match(/variation-([0-9a-zA-Z-]+)/);
+                        let varkey = m[1];
+                        this.ai_review.analyzed_variations[varkey] = value;
+                    }
+                    else {
+                        console.warn(`Unrecognized key in updateAiReview data: ${key}`, value);
                     }
                 }
 
@@ -352,12 +363,26 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let move_number = trunk_move.move_number;
         let next_move_pretty_coords:string = '';
 
-        if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
-            ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
-        }
+        let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+        let cur_move_string = cur_move.getMoveStringToThisPoint();
+        let varstring = cur_move_string.slice(trunk_move_string.length);
+        let varkey = `${trunk_move.move_number}-${varstring}`;
+        let have_variation_results = false;
 
-        if (this.ai_review.moves[move_number + 1]) {
-            next_ai_review_move = this.ai_review.moves[move_number + 1];
+        // if we have an interactive review move, display that
+        if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
+            have_variation_results = true;
+            ai_review_move = this.ai_review.analyzed_variations[varkey];
+        }
+        // otherwise look for one that came from the normal review
+        else {
+            if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
+                ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
+            }
+
+            if (this.ai_review.moves[move_number + 1]) {
+                next_ai_review_move = this.ai_review.moves[move_number + 1];
+            }
         }
 
         let win_rates = this.ai_review?.win_rates || [];
@@ -386,7 +411,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let colored_circles = [];
         let heatmap:Array<Array<number>> | null = null;
         try {
-            if (cur_move.trunk && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
+            if ((cur_move.trunk || have_variation_results) && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
                 next_move = cur_move.trunk_next;
                 let branches = ai_review_move.branches.slice(0, 6);
                 //let branches = ai_review_move.branches;
@@ -473,7 +498,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
-                        this.props.game.goban.setMark(mv.x, mv.y, key, true);
+                        this.props.game.goban.setSubscriptMark(mv.x, mv.y, key, true);
                     }
 
                     let circle:ColoredCircle = {
@@ -483,6 +508,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                         this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
+                        this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
 
                         circle.border_width = 0.1;
                         circle.border_color = 'rgb(0, 0, 0)';
@@ -493,14 +519,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         }
                         colored_circles.push(circle);
                     }
-                    else if (i === 0) { //
+                    else if (i === 0) { // blue move, not what player made
+                        this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;
                         circle.border_color = 'rgb(0, 130, 255)';
                         circle.color = 'rgba(0, 130, 255, 0.7)';
                         colored_circles.push(circle);
                     }
                 }
-            } else { /* if not on trunk move which was ai reviewed */
+            } else { /* if not on trunk move which was ai reviewed, see if we have some reviewed data */
+                if (!cur_move.trunk) {
+                    this.requestAnalysisOfVariation(cur_move, trunk_move);
+                }
                 this.fillAIMarksBacktracking(cur_move, trunk_move, marks); /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
             }
 
@@ -535,11 +565,53 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         ];
     }
 
-    fillAIMarksBacktracking(cur_move, trunk_move, marks) {
-        /* this method attempts to match our cur_move sequence with any of the AI generated sequences starting from the nearest trunk move (iterating through previous trunk moves if necessary) and breaks out as soon as it finds a match */
-        /* the reason why we iterate through previous trunk moves is to solve the problem when the trunk moves happen to coincide with the AI generated sequence */
-        /* once match is found we fill marks object with the remaining AI sequence */
+    private requestAnalysisOfVariation(cur_move:MoveTree, trunk_move:MoveTree):boolean {
+        if (!this.props.game) {
+            return false;
+        }
 
+        let user = data.get('user');
+        if (user.anonymous) {
+            //console.debug("Anonymous user, not performing analysis of variation");
+            return false;
+        }
+        if (!user.supporter) {
+            //console.debug("user is not a supporter");
+            return false;
+        }
+
+        let black_id = this.props.game.goban?.engine?.config?.black_player_id;
+        let white_id = this.props.game.goban?.engine?.config?.white_player_id;
+        let creator_id = this.props.game.creator_id;
+
+        if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
+            //console.debug("Not performing analysis of variation for non player");
+            return false;
+        }
+
+        if (!this.ai_review) {
+            console.warn("ai_review not set");
+            return false;
+        }
+
+        if (!this.state.selected_ai_review?.id) {
+            console.warn("selected_ai_review?.id was not set");
+            return false;
+        }
+
+        ai_request_variation_analysis(this.ai_review.uuid, this.props.game.game_id, this.state.selected_ai_review?.id, cur_move, trunk_move);
+    }
+
+    /** This method attempts to match our cur_move sequence with any of the AI
+     * generated sequences starting from the nearest trunk move (iterating
+     * through previous trunk moves if necessary) and breaks out as soon as it
+     * finds a match. The reason why we iterate through previous trunk moves is
+     * to solve the problem when the trunk moves happen to coincide with the AI
+     * generated sequence once match is found we fill marks object with the
+     * remaining AI sequence.
+     * @returns true if we found some data, false otherwise
+     */
+    private fillAIMarksBacktracking(cur_move:MoveTree, trunk_move:MoveTree, marks):boolean {
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             let ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
@@ -582,10 +654,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 if (white) {
                     marks["white"] = white;
                 }
-                break; /* match found, no need to check previous trunk moves anymore, return */
+                return true; /* match found, no need to check previous trunk moves anymore, return */
             }
-
         }
+
+        return false;
     }
 
     public render():JSX.Element {
@@ -661,6 +734,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
             };
         }) || [];
+
+        let cur_move = this.props.move;
+        let trunk_move = cur_move.getBranchPoint();
+        let move_number = trunk_move.move_number;
 
         return (
             <div className='AIReview'>
@@ -777,7 +854,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
                                     updatecount={this.state.updatecount}
-                                    move_number={this.props.move.move_number}
+                                    move_number={move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
                                     />
