@@ -498,7 +498,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
-                        this.props.game.goban.setMark(mv.x, mv.y, key, true);
+                        this.props.game.goban.setSubscriptMark(mv.x, mv.y, key, true);
                     }
 
                     let circle:ColoredCircle = {
@@ -508,6 +508,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                         this.props.game.goban.setMark(mv.x, mv.y, "sub_triangle", true);
+                        this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
 
                         circle.border_width = 0.1;
                         circle.border_color = 'rgb(0, 0, 0)';
@@ -518,7 +519,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         }
                         colored_circles.push(circle);
                     }
-                    else if (i === 0) { //
+                    else if (i === 0) { // blue move, not what player made
+                        this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;
                         circle.border_color = 'rgb(0, 130, 255)';
                         circle.color = 'rgba(0, 130, 255, 0.7)';
