@@ -27,12 +27,13 @@ import { deepCompare, errorAlerter, dup, errorLogger } from 'misc';
 import { JGOFAIReview, } from 'goban';
 
 interface AIReviewChartProperties {
-    entries     : Array<AIReviewEntry>;
-    ai_review   : JGOFAIReview;
-    updatecount : number;
-    move_number : number;
-    setmove     : (move_number:number) => void;
-    use_score   : boolean;
+    entries               : Array<AIReviewEntry>;
+    ai_review             : JGOFAIReview;
+    updatecount           : number;
+    move_number           : number;
+    variation_move_number : number;
+    setmove               : (move_number: number) => void;
+    use_score             : boolean;
 }
 
 const bisector = d3.bisector((d:AIReviewEntry) => { return d.move_number; }).left;
@@ -65,6 +66,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     mouse?:number;
     mouse_rect?:d3.Selection<SVGRectElement, unknown, null, undefined>;
     move_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
+    variation_move_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
     cursor_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
     full_crosshair?:d3.Selection<SVGLineElement, unknown, null, undefined>;
     x:d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
@@ -96,6 +98,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         return !deepCompare(nextProps.entries, this.props.entries) ||
             this.props.updatecount !== nextProps.updatecount ||
             this.props.move_number !== nextProps.move_number ||
+            this.props.variation_move_number !== nextProps.variation_move_number ||
             this.props.use_score !== nextProps.use_score;
     }
 
@@ -158,7 +161,16 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('x1', 0)
             .attr('y1', this.height);
 
+        this.variation_move_crosshair = this.prediction_graph.append('g')
+            .attr('class', 'variation move crosshairs')
+            .append('line')
+            .attr('x0', 0)
+            .attr('y0', 0)
+            .attr('x1', 0)
+            .attr('y1', this.height);
+
         this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
+        this.variation_move_crosshair.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
 
         this.cursor_crosshair = this.prediction_graph.append('g')
             .attr('class', 'cursor crosshairs')
@@ -483,6 +495,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.full_crosshair?.attr('x1', this.width);
 
         this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
+        this.variation_move_crosshair?.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
 
         this.plot();
     }

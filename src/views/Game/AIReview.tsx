@@ -738,6 +738,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
+        let variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
         return (
             <div className='AIReview'>
@@ -855,6 +856,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     entries={ai_review_chart_entries}
                                     updatecount={this.state.updatecount}
                                     move_number={move_number}
+                                    variation_move_number={variation_move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
                                     />
