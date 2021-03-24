@@ -349,6 +349,36 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
     }
 
+    private getVariationReviewEntries():Array<AIReviewEntry> {
+        let ret:Array<AIReviewEntry> = [];
+        let cur_move = this.props.move;
+        let trunk_move = cur_move.getBranchPoint();
+        let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+
+        while (cur_move.id !== trunk_move.id) {
+            let cur_move_string = cur_move.getMoveStringToThisPoint();
+            let varstring = cur_move_string.slice(trunk_move_string.length);
+            let varkey = `${trunk_move.move_number}-${varstring}`;
+
+            // if we have an interactive review move, that's what we're interested in
+            if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
+                let analysis = this.ai_review.analyzed_variations[varkey];
+                ret.push({
+                    move_number: analysis.move_number,
+                    win_rate: analysis.win_rate,
+                    score: analysis.score | 0,
+                    num_variations: analysis.branches.length,
+                });
+            }
+
+            cur_move = cur_move.parent;
+        }
+
+        ret.reverse();
+
+        return ret;
+    }
+
     public updateHighlightsMarksAndHeatmaps() {
         let ai_review_move:JGOFAIReviewMove;
         let next_ai_review_move:JGOFAIReviewMove;
@@ -735,6 +765,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         }) || [];
 
+        let ai_review_chart_variation_entries:Array<AIReviewEntry> = this.getVariationReviewEntries();
+
         let cur_move = this.props.move;
         let trunk_move = cur_move.getBranchPoint();
         let move_number = trunk_move.move_number;
@@ -854,6 +886,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <AIReviewChart
                                     ai_review={this.ai_review}
                                     entries={ai_review_chart_entries}
+                                    variation_entries={ai_review_chart_variation_entries}
                                     updatecount={this.state.updatecount}
                                     move_number={move_number}
                                     variation_move_number={variation_move_number}

@@ -32,6 +32,7 @@ interface AIReviewChartProperties {
     updatecount           : number;
     move_number           : number;
     variation_move_number : number;
+    variation_entries     : Array<AIReviewEntry>;
     setmove               : (move_number: number) => void;
     use_score             : boolean;
 }
@@ -57,8 +58,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     height?:number;
     max_score?:number;
     min_score?:number;
-    win_rate_line_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_area_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
+    variation_win_rate_line_container?:d3.Selection<SVGPathElement, unknown, null, undefined>;
     win_rate_line?: d3.Line<AIReviewEntry>;
     win_rate_area?: d3.Area<AIReviewEntry>;
     x_axis?:d3.Selection<SVGGElement, unknown, null, undefined>;
@@ -96,6 +97,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
     shouldComponentUpdate(nextProps:AIReviewChartProperties, nextState:any) {
         return !deepCompare(nextProps.entries, this.props.entries) ||
+            !deepCompare(nextProps.variation_entries, this.props.variation_entries) ||
             this.props.updatecount !== nextProps.updatecount ||
             this.props.move_number !== nextProps.move_number ||
             this.props.variation_move_number !== nextProps.variation_move_number ||
@@ -130,10 +132,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.win_rate_area_container = this.prediction_graph.append('path')
             .attr('class', 'win-rate-area');
 
-/*
-        this.win_rate_line_container = this.prediction_graph.append('path')
-            .attr('class', 'win-rate-line');
-            */
+        this.variation_win_rate_line_container = this.prediction_graph.append('path')
+            .attr('class', 'variation-win-rate-line');
 
         this.x = d3.scaleLinear().rangeRound([0, this.width]);
         this.y = d3.scaleLinear().rangeRound([this.height, 0]);
@@ -266,6 +266,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         }
 
         let entries:Array<AIReviewEntry>;
+        let variation_entries:Array<AIReviewEntry> = [];
 
         let use_score_safe = this.props.use_score
           && this.props.ai_review.scores != null;
@@ -305,10 +306,32 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             this.replot_timeout = setTimeout(() => this.plot(), 50);
         }
 
+        if (this.props.variation_entries.length > 0 && entries.length > this.props.move_number + 1) {
+            variation_entries = this.props.variation_entries.map((x, i) => {
+                return {
+                    win_rate: x.win_rate,
+                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    move_number: x.move_number,
+                    num_variations: x.num_variations,
+                };
+            });
+            variation_entries.unshift(entries[this.props.move_number + 1]); // start line from trunk move
+            variation_entries.push({
+                win_rate: 0.5,
+                score: 0.0,
+                move_number: variation_entries[variation_entries.length - 1].move_number,
+                num_variations: 0
+            });
+        }
+
         this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
         if (use_score_safe) {
             this.max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
             this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
+            if (variation_entries && variation_entries.length > 0) {
+                this.max_score = Math.max(this.max_score, Math.max(... variation_entries.map(e => e.score)));
+                this.min_score = Math.min(this.min_score, Math.max(... variation_entries.map(e => e.score)));
+            }
 
             this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
         } else {
@@ -333,8 +356,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             ?.datum(entries)
             .attr('d', this.win_rate_area as any);
 
-        this.win_rate_line_container
-            ?.datum(entries)
+        this.variation_win_rate_line_container
+            ?.datum(variation_entries)
             .attr('d', this.win_rate_line as any);
 
         let show_all = Object.keys(this.props.ai_review.moves).length <= 3;
@@ -474,12 +497,21 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             num_variations: 0
         });
 
+        let variation_entries = this.props.variation_entries.map(x => x);
+        variation_entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
+        variation_entries.push({
+            win_rate: 0.5,
+            score: 0.0,
+            move_number: this.props.variation_entries?.length >= 1 ? this.props.variation_entries[this.props.variation_entries.length - 1].move_number : 0,
+            num_variations: 0
+        });
+
         this.win_rate_area_container
             ?.datum(entries)
             .attr('d', this.win_rate_area as any);
 
-        this.win_rate_line_container
-            ?.datum(entries)
+        this.variation_win_rate_line_container
+            ?.datum(variation_entries)
             .attr('d', this.win_rate_line as any);
 
         this.x_axis
