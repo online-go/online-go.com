@@ -81,6 +81,7 @@ let keymap = {
     34: "page-down",
     35: "end",
     36: "home",
+    67: "c",
     112: "f1",
     113: "f2",
     114: "f3",
@@ -194,6 +195,11 @@ $(() => {
 
             if (shortcut === "esc") {
                 /* Allow escape through to other handlers, such as SWAL to close modals */
+                return true;
+            }
+
+            if (shortcut === "ctrl-c" || shortcut === "meta-c") {
+                /* Allow copy text on Ctrl+C in modal */
                 return true;
             }
 
