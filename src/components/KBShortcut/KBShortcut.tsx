@@ -198,9 +198,9 @@ $(() => {
                 return true;
             }
 
-            if (shortcut === "ctrl-c") {
+            if (shortcut === "ctrl-c" || shortcut === "meta-c") {
                 /* Allow copy text on Ctrl+C in modal */
-                document.execCommand("copy");
+                return true;
             }
 
             if (e.stopPropagation) {
