@@ -330,7 +330,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
             if (variation_entries && variation_entries.length > 0) {
                 this.max_score = Math.max(this.max_score, Math.max(... variation_entries.map(e => e.score)));
-                this.min_score = Math.min(this.min_score, Math.max(... variation_entries.map(e => e.score)));
+                this.min_score = Math.min(this.min_score, Math.min(... variation_entries.map(e => e.score)));
             }
 
             this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
