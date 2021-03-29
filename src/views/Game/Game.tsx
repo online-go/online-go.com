@@ -2073,6 +2073,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     analysis_pass = () => {
         this.goban.pass();
+        this.forceUpdate()
     }
     undo() {
         if (data.get("user").id === this.goban.engine.playerNotToMove() && this.goban.engine.undo_requested !== this.goban.engine.getMoveNumber()) {
