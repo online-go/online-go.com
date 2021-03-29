@@ -20,6 +20,7 @@ import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
 import * as SentryTracing from '@sentry/tracing';
 import { configure_goban } from 'configure-goban';
+import { GoMath } from 'goban';
 import { sfx } from 'sfx';
 sfx.sync();
 
@@ -293,3 +294,4 @@ ReactDOM.render(routes, document.getElementById("main-content"));
 window['data'] = data;
 window['preferences'] = preferences;
 window['player_cache'] = player_cache;
+window['GoMath'] = GoMath;
