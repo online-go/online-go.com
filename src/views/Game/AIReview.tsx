@@ -856,16 +856,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 return (
                                     <components.MenuList {...props}>
                                         {props.children}
-                                        <div className='ai-review-new-review'>
-                                            <button onClick={() => this.startNewAIReview("full", "katago")}>
-                                                <i className='fa fa-plus' /> KataGo
-                                            </button>
-                                            {((goban.width === 19 && goban.height === 19) || null) &&
-                                                <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
-                                                    <i className='fa fa-plus' /> Leela Zero
+                                        {show_full_ai_review_button &&
+                                            <div className='ai-review-new-review'>
+                                                <button onClick={() => this.startNewAIReview("full", "katago")}>
+                                                    <i className='fa fa-plus' /> KataGo
                                                 </button>
-                                            }
-                                        </div>
+                                                {((goban.width === 19 && goban.height === 19) || null) &&
+                                                    <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
+                                                        <i className='fa fa-plus' /> Leela Zero
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
                                     </components.MenuList>
                                 );
                             },

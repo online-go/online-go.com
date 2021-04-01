@@ -3081,7 +3081,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     frag_dock() {
         let goban = this.goban;
-        let supporter_ai_review_ready = (goban && (data.get("user").supporter || data.get("user").is_moderator) && goban.engine.phase === "finished" || null);
         let superuser_ai_review_ready = (goban && data.get("user").is_superuser && goban.engine.phase === "finished" || null);
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
@@ -3197,9 +3196,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {(mod || annul) && <hr/>}
                 {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}
 
-                {(supporter_ai_review_ready) && <hr/>}
+                {(superuser_ai_review_ready) && <hr/>}
                 {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI Review"}</a>}
-                {(supporter_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {_("Full AI Review")}</a>}
+                {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("full")}><i className="fa fa-area-chart"></i> {_("Full AI Review")}</a>}
                 {(superuser_ai_review_ready) && <a onClick={this.delete_ai_reviews}><i className="fa fa-trash"></i> {"Delete AI reviews"}</a>}
             </Dock>
         );
