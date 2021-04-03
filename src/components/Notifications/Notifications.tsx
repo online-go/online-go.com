@@ -278,6 +278,7 @@ class NotificationManager {
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
 
+
         // open a new tab if the user asked for it, or if we must protect against disconnection from a live game
         // (there's no point in opening a new tab if they only have one game, because it will be this same game)
         if (ev && shouldOpenNewTab(ev) || (this.lookingAtOurLiveGame() && board_ids.length > 1)) {
@@ -526,7 +527,7 @@ export class TurnIndicator extends React.Component<{}, any> {
 
     render() {
         return (
-            <span className="turn-indicator" onClick={this.advanceToNextBoard}>
+            <span className="turn-indicator" onAuxClick={this.advanceToNextBoard} onClick={this.advanceToNextBoard}>
                 <span className={this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"}><span>{this.state.count}</span></span>
             </span>
        );
