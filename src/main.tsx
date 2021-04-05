@@ -85,6 +85,7 @@ try {
 }
 
 import * as data from "data";
+import * as remote_storage from "remote_storage";
 import * as preferences from "preferences";
 
 data.setDefault("theme", "light");
@@ -292,6 +293,7 @@ svg_loader.parentNode.removeChild(svg_loader);
 ReactDOM.render(routes, document.getElementById("main-content"));
 
 window['data'] = data;
+window['remote_storage'] = remote_storage;
 window['preferences'] = preferences;
 window['player_cache'] = player_cache;
 window['GoMath'] = GoMath;
