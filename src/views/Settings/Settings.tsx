@@ -554,7 +554,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
 
                                 <form method='POST' action={`/disconnect/${account.provider}/`}>
                                     <input type='hidden' name='csrfmiddlewaretoken' value={getCookie("csrftoken")} />
-                                    <button type='submit'>Unlink</button>
+                                    {settings.password_is_set && <button type='submit'>Unlink</button>}
                                 </form>
                             </div>
                             </div>
