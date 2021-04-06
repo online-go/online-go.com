@@ -156,6 +156,7 @@ data.watch(cached.config, (config) => {
     }
 });
 
+let last_username: string | null = null;
 data.watch("config.user", (user) => {
     try {
         Sentry.setUser({
@@ -169,6 +170,12 @@ data.watch("config.user", (user) => {
     player_cache.update(user);
     data.set("user", user);
     window["user"] = user;
+
+    if (last_username && last_username !== user.username) {
+        last_username = user.username;
+        forceReactUpdate();
+    }
+    last_username = user.username;
 });
 
 /***
@@ -290,7 +297,17 @@ init_tabcomplete();
 /* Initialization done, render!! */
 let svg_loader = document.getElementById('loading-svg-container');
 svg_loader.parentNode.removeChild(svg_loader);
-ReactDOM.render(routes, document.getElementById("main-content"));
+
+let forceReactUpdate:() => void = () => {};
+
+function ForceReactUpdateWrapper(props):JSX.Element {
+    let [update, setUpdate] = React.useState(1);
+    forceReactUpdate = () => {
+        setUpdate(update + 1);
+    };
+    return <React.Fragment key={update}>{props.children}</React.Fragment>;
+}
+ReactDOM.render(<ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>, document.getElementById("main-content"));
 
 window['data'] = data;
 window['remote_storage'] = remote_storage;

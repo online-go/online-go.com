@@ -46,10 +46,13 @@ export let cached = {
     group_invitations: 'cached.group_invitations',
 
     refresh: {
-        config: () => {
+        config: (cb?:() => void) => {
             get('ui/config').then((config) => {
                 data.set(cached.config, config);
                 data.set('config', config);
+                if (cb) {
+                    cb();
+                }
             }).catch((err) => {
                 console.error("Error retrieving friends list: ", err);
             });

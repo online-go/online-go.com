@@ -59,30 +59,63 @@ import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
 import { GobanTest } from "GobanTest";
 import { global_channels } from "chat_manager";
+import { ForceUsernameChange } from "ForceUsernameChange";
 
 import * as docs from "docs";
 
 
 /*** Layout our main view and routes ***/
-const Main = props => (
-    <div>
-        <ErrorBoundary>
-            <NavBar/>
-        </ErrorBoundary>
-        <ErrorBoundary>
-            <Announcements/>
-        </ErrorBoundary>
-        <ErrorBoundary>
-            {props.children}
-        </ErrorBoundary>
-    </div>
-);
+function Main(props):JSX.Element {
+    if (username_needs_to_be_updated()) {
+        return (
+            <div>
+                <ErrorBoundary>
+                    <ForceUsernameChange />;
+                </ErrorBoundary>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <ErrorBoundary>
+                <NavBar/>
+            </ErrorBoundary>
+            <ErrorBoundary>
+                <Announcements/>
+            </ErrorBoundary>
+            <ErrorBoundary>
+                {props.children}
+            </ErrorBoundary>
+        </div>
+    );
+}
 const PageNotFound = (props, state) => (<div style={{display: "flex", flex: "1", alignItems: "center", justifyContent: "center"}}>{_("Page not found")}</div>);
-const Default = () => (
-    data.get("config.user").anonymous
-        ?  <ObserveGames/>
-        :  <Overview/>
-);
+
+function Default():JSX.Element {
+    const user = data.get("config.user");
+
+    if (user.anonymous) {
+        return <ObserveGames/>;
+    }
+
+    return <Overview/>;
+}
+
+function username_needs_to_be_updated():boolean {
+    const user = data.get("config.user");
+    if (user.anonymous) {
+        return false;
+    }
+
+    // ends in a long random hex number? Change that please.
+    if (/.*[a-fA-f0-9.]{16,}$/.test(user.username)) {
+        return true;
+    }
+
+    return false;
+}
+
 
 
 export const routes = (
