@@ -466,7 +466,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
     }
 
     function savePassword():void {
-        if (props.state.profile.no_password_set) { // social auth account
+        if (!settings.password_is_set) { // social auth account
             post("/api/v0/changePassword", {
                 "new_password": password1,
                 "old_password": "!",
