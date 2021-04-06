@@ -429,16 +429,18 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
     const [message, setMessage]:[string, (x: string) => void] = React.useState('');
     const [settings, setSettings]:[any, (x: any) => void] = React.useState({});
 
-    React.useEffect(() => {
+    React.useEffect(refreshAccountSettings, []);
+
+    let user = data.get('user');
+
+    function refreshAccountSettings() {
         get(`me/account_settings`)
         .then((settings) => {
             console.log(settings);
             setSettings(settings);
         })
         .catch(errorLogger);
-    }, []);
-
-    let user = data.get('user');
+    }
 
     function setEmail(s:string):void {
         __setEmail(s);
@@ -473,6 +475,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
             })
             .then((obj) => {
                 props.refresh();
+                refreshAccountSettings();
                 swal(_("Password updated successfully!"));
             })
             .catch(errorAlerter);
