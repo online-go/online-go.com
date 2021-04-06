@@ -25,7 +25,7 @@ import ITC from 'ITC';
 import { ValidPreference } from "preferences";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
-import { post, get, put, del, abort_requests_in_flight } from "requests";
+import { post, get, put, del, abort_requests_in_flight, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
 import { durationString } from "TimeControl";
 import { allRanks, IRankInfo } from "rank_utils";
@@ -47,6 +47,7 @@ import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 import { object } from "prop-types";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
+import { SocialLoginButtons } from "SignIn";
 
 
 declare var swal;
@@ -426,6 +427,16 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
     const [email, __setEmail]:[string, (x: string) => void] = React.useState(props.state.profile.email);
     const [email_changed, setEmailChanged]:[boolean, (x: boolean) => void] = React.useState();
     const [message, setMessage]:[string, (x: string) => void] = React.useState('');
+    const [settings, setSettings]:[any, (x: any) => void] = React.useState({});
+
+    React.useEffect(() => {
+        get(`me/account_settings`)
+        .then((settings) => {
+            console.log(settings);
+            setSettings(settings);
+        })
+        .catch(errorLogger);
+    }, []);
 
     let user = data.get('user');
 
@@ -526,6 +537,33 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
                             </button>
                         }
                     </div>
+                </dd>
+
+                <dt>{_("Social account linking")}</dt>
+                {settings.social_auth_accounts &&
+                    <dd>
+                        {settings.social_auth_accounts.map((account, idx) =>
+                            <div key={account.provider}>
+                            <div className='social-link'>
+                                {account.provider === "google-oauth2" && <span className="google google-oauth2-icon" />}
+                                {account.provider === "facebook" && <span className="facebook facebook-icon" />}
+                                {account.provider === "twitter" && <i className="twitter twitter-icon fa fa-twitter" />}
+                                {account.provider === "apple-id" && <i className="apple apple-id-icon fa fa-apple" />}
+
+                                {account.uid}
+
+                                <form method='POST' action={`/disconnect/${account.provider}/`}>
+                                    <input type='hidden' name='csrfmiddlewaretoken' value={getCookie("csrftoken")} />
+                                    <button type='submit'>Unlink</button>
+                                </form>
+                            </div>
+                            </div>
+                        )}
+                    </dd>
+                }
+
+                <dd>
+                    <SocialLoginButtons />
                 </dd>
             </dl>
 

@@ -144,13 +144,11 @@ export class Register extends React.PureComponent<{}, any> {
                     </form>
 
                     <div className="social-buttons">
-                        <LineText>{
-                            _("or log in to your account:") /* translators: username or password, or sign in to your account */
-                        }</LineText>
                         <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Login with Email")}</Link>
-                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span  className="google google-icon" /> {_("Login with Google")}</a>
+                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span  className="google google-oauth2-icon" /> {_("Login with Google")}</a>
                         <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
                         <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
+                        <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="twitter apple-id-icon fa fa-apple" />{_("Login with Apple")}</a>
                     </div>
                 </Card>
             </div>

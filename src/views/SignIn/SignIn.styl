@@ -83,29 +83,30 @@
     margin-bottom: 1rem;
   }
 
-  .social-buttons {
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  a.md-icon {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    width: 100%;
+    height: 2.4rem;
+    cursor: pointer;
 
-    a.md-icon {
-      display: flex;
-      align-items: center;
-      padding: 0.5rem;
-      background-color: #ffffff;
-      width: 100%;
-      height: 2.4rem;
-      cursor: pointer;
-
-      &+ a.md-icon {
-        margin-top: .5rem;
-      }
+    &+ a.md-icon {
+      margin-top: .5rem;
     }
   }
 }
 
 
-.email-icon, .google-icon, .twitter-icon, .facebook-icon {
+.email-icon, .google-oauth2-icon, .twitter-icon, .facebook-icon, .apple-id-icon {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -114,7 +115,7 @@
     margin-right: 0.5rem;
 }
 
-.google-icon {
+.google-oauth2-icon {
     background-image: svg-load("../assets/google-icon.svg");
 }
 .facebook-icon {
@@ -122,6 +123,10 @@
 }
 .twitter-icon.fa-twitter {
     color: #1DA1F2;
+    margin-right: 0.5rem;
+}
+.apple-id-icon.fa-apple {
+    color: #888;
     margin-right: 0.5rem;
 }
 .email-icon.fa-envelope-o {
