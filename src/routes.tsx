@@ -109,7 +109,7 @@ function username_needs_to_be_updated():boolean {
     }
 
     // ends in a long random hex number? Change that please.
-    if (/.*[a-fA-f0-9.]{16,}$/.test(user.username)) {
+    if (/.*[a-fA-F0-9.]{16,}$/.test(user.username)) {
         return true;
     }
 
