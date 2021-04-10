@@ -85,5 +85,6 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
 
 export function openPlayerNotesModal(player_id: number) {
-    return openModal(<PlayerNotesModal playerId={player_id} />);  // Don't fast dismiss this, because they could well be mouse-dragging in this window
+    // Note: this modal is deliberately not fastDismiss, because we don't want to accidentally dismiss while drag-selecting a large area of text.
+    return openModal(<PlayerNotesModal playerId={player_id} />);
 }
