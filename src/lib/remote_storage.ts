@@ -43,7 +43,7 @@ export function get(key:string):Promise<StorableValue> {
                     } else {
                         reject(res.error);
                     }
-                } catch(err) {
+                } catch (err) {
                     reject(res.error);
                 }
             } else {
