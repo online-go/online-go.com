@@ -33,11 +33,19 @@ export function set(key:string, value:StorableValue):Promise<void> {
     });
 }
 
-export function get(key:string, value:StorableValue):Promise<StorableValue> {
+export function get(key:string):Promise<StorableValue> {
     return new Promise<StorableValue>((resolve, reject) => {
         termination_socket.send('remote_storage/get', {key}, (res:any) => {
             if (res.error) {
-                reject(res.error);
+                try {
+                    if (res.error.indexOf("not found") > 0) {
+                        resolve(undefined);
+                    } else {
+                        reject(res.error);
+                    }
+                } catch(err) {
+                    reject(res.error);
+                }
             } else {
                 resolve(res.value);
             }
@@ -45,9 +53,9 @@ export function get(key:string, value:StorableValue):Promise<StorableValue> {
     });
 }
 
-export function remove(key:string, value:StorableValue):Promise<void> {
+export function remove(key:string):Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        termination_socket.send('remote_storage/remove', {key, value}, (res:any) => {
+        termination_socket.send('remote_storage/remove', {key}, (res:any) => {
             if (res.error) {
                 reject(res.error);
             } else {
