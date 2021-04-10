@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2021  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,7 @@ import {termination_socket} from "sockets";
 import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
+import {openModal} from 'Modal';
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {challenge} from "ChallengeModal";
@@ -37,6 +38,7 @@ import {Player} from "./Player";
 import * as preferences from "preferences";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
+import {openPlayerNotesModal} from 'PlayerNotesModal';
 
 declare var swal;
 
@@ -46,7 +48,7 @@ interface PlayerDetailsProperties {
     gameChatId?: string;
     reviewChatId?: string;
     noextracontrols?: boolean;
-    nochallenge?: boolean;
+    nochallenge?: boolean; // don't show challenge options for this player - typically due to ladder considerations
 }
 
 let friends = {};
@@ -174,6 +176,12 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
     }
+
+    editPlayerNotes = () => {
+        this.close_all_modals_and_popovers();
+        openPlayerNotesModal(this.props.playerId);
+    }
+
     addFriend = () => {
         toast(<div>{_("Sent friend request")}</div>, 5000);
         this.close_all_modals_and_popovers();
@@ -267,9 +275,12 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         {!this.props.nochallenge &&
                             <button className="xs noshadow primary" disabled={!this.state.resolved} onClick={this.challenge}><i className="ogs-goban"/>{_("Challenge")}</button>
                         }
-                        {!this.props.nochallenge &&
+                        {this.props.nochallenge &&
                             <div style={{width: '48%'}}></div>
                         }
+
+                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.editPlayerNotes}><i className="fa fa-clipboard"/>{_("Player notes")}</button>
+
                         <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
                         {friends[this.props.playerId]
                             ? <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.removeFriend}><i className="fa fa-frown-o"/>{_("Remove friend")}</button>
