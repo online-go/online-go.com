@@ -22,6 +22,7 @@ import * as data from "data";
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
+import { TypedEventEmitter } from "TypedEventEmitter";
 import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore, errorLogger} from "misc";
 import {LineText} from "misc-ui";
 import {challenge, createDemoBoard} from "ChallengeModal";
@@ -42,6 +43,7 @@ import {ChatIndicator} from "Chat";
 let body = $(document.body);
 
 function _update_theme(theme) {
+    console.log("update theme:", theme);
     if (body.hasClass(theme)) {
         return;
     }
@@ -56,8 +58,8 @@ function exitThemePreview() {
     _update_theme(data.get("theme"));
 }
 function setTheme(theme) {
-    data.set("theme", theme);
-    _update_theme(theme);
+    data.set("theme", theme, true /* persist theme choice */);
+    // _update_theme(theme);  we do this via data.watch
 }
 function toggleTheme() {
     if (data.get("theme") === "dark") {
@@ -115,6 +117,8 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleLeftNav = this.toggleLeftNav.bind(this);
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
+
+        data.watch("theme", _update_theme);
     }
 
     UNSAFE_componentWillMount() {
