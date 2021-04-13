@@ -22,7 +22,7 @@ import * as SentryTracing from '@sentry/tracing';
 import { configure_goban } from 'configure-goban';
 import { GoMath } from 'goban';
 import { sfx } from 'sfx';
-sfx.sync()
+sfx.sync();
 
 declare var ogs_current_language;
 declare var ogs_version;
