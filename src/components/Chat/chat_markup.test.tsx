@@ -8,6 +8,10 @@ jest.mock('translate', () => ({
 
 jest.mock('Player', () => 'Player');
 
+jest.mock('profanity_filter', () => ({
+    profanity_filter: jest.fn(x => x),
+}));
+
 function expect_singular_markup(input: string, output: JSX.Element) {
     expect(chat_markup(input)).toEqual([output]);
 }
