@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2021  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,9 +26,17 @@ interface Events {
 let defaults = {};
 let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
-let persisting = false;
+let remote_persisting = false;
 let to_be_persisted = {}; // not-yet confirmed-persisted key value pairs
-let last_id = 0;
+let hydrating_from_remote_storage = false;
+
+// keys in this list will be persisted remotely when written by set()
+const remote_persist_list = new Set([
+    "theme"
+]);
+
+// (note - setWithoutEmit, which is effectively setWithoutEmitAndWithoutRemotePersist ;), does not do any remote persisting,
+//         because the only use case for setWithoutEmit immediately goes and then sets them all again anyhow, in main.tsx.)
 
 export function setWithoutEmit(key: string, value: any | undefined): any {
     if (value === undefined) {
@@ -46,36 +54,37 @@ export function setWithoutEmit(key: string, value: any | undefined): any {
     return value;
 }
 
-export function set(key: string, value: any | undefined, persist: boolean = false): any {
+export function set(key: string, value: any | undefined): any {
     setWithoutEmit(key, value);
     event_emitter.emit(key, value);
-    if (persist) {
-        if (!persisting) {
+
+    if (remote_persist_list.has(key) && !hydrating_from_remote_storage) {
+        if (!remote_persisting) {
             // we're not already underway persisting something, so we have to first read the remote values, then update and write back the new...
             // ... taking into account that we might get asked to persist more values while this is happening...
-            persisting = true;
+            remote_persisting = true;
             to_be_persisted[key] = value;
             remote_storage.get("persisted-local-storage").then(
                 (remote_values) => {
                     remote_values = remote_values || {};
                     for (const persist_item in to_be_persisted) {
-                        remote_values[persist_item] = to_be_persisted[persist_item];
+                        remote_values[persist_item] = to_be_persisted[persist_item]; // overwriting the new values to be written into the current remote hash
                     }
                     remote_storage.set("persisted-local-storage", remote_values).then(
                         () => {
-                            console.log("persisted local data:", to_be_persisted);
-                            to_be_persisted = {};
+                            if (!remote_persisting) { // remote_persisting could be true if another set() came in while the remote_storage.set() was in flight... in which case we still have new values to write.
+                                to_be_persisted = {};
+                            }
                         },
                         (err) => { console.error("error persisting local data:", to_be_persisted, err); }
                     );
-                    persisting = false; // we can't add any more values to the list to be saved now.
-                    // note, we can end up with two remote_storage.set calls in parallel as a result ... which is needed if a new
-                    // call to set() comes in while this remote_storage.set() is pending.
+                    remote_persisting = false;
+                    // note, we can end up with two remote_storage.set calls in parallel, if a new set() comes in while the above remote_storage.set is still in flight
                 },
-                (err) => { persisting = false; console.error("error getting persisted local storage values while trying to write", to_be_persisted, err); }
+                (err) => { remote_persisting = false; console.error("error getting persisted local storage values while trying to write", to_be_persisted, err); }
             );
         } else {
-            // in this case we are waiting for the remote get to come back, so we just add the new value to be saved
+            // in this case we are in the process of "remote_persisting", waiting for the remote_storage.get to come back, so we just add the new value to be saved
             to_be_persisted[key] = value;
         }
     }
@@ -186,7 +195,6 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
 
 // initialize local data store from localStorage
 try {
-    console.log("loading localStorage to store...");
     for (let i = 0; i < localStorage.length; ++i) {
         let key = localStorage.key(i);
         if (key.indexOf("ogs.") === 0) {
@@ -211,22 +219,16 @@ try {
     remote_storage.get('persisted-local-storage')
     .then(
         (persisted) => {
+            hydrating_from_remote_storage = true;
             for (const key in persisted as {}) {
-                store[key] = persisted[key];
-                try {
-                    localStorage.setItem(`ogs.${key}`, JSON.stringify(persisted[key]));
-                    console.log("Updated localStorage with persisted value", key);
-                } catch (e) {
-                    console.warn(`Failed to save setting ogs.${key}, LocalStorage is probably disabled. If you are using Safari, the most likely cause of this is being in Private Browsing Mode.`);
-                }
-                console.log("emitting", key, persisted[key]);
-                event_emitter.emit(key, persisted[key]);
+                set(key, persisted[key]);
             }
-            console.log("hydrated persisted storage:", persisted);
+            hydrating_from_remote_storage = false;
         },
         (err) => { console.error("Error retrieving persisted local storage settings:", err); }
     );
 } catch (e) {
     console.error(e);
+    hydrating_from_remote_storage = false;
 }
 
