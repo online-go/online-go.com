@@ -28,7 +28,6 @@ let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
 let remote_persisting = false;
 let to_be_persisted = {}; // not-yet confirmed-persisted key value pairs
-let hydrating_from_remote_storage = false;
 
 // keys in this list will be persisted remotely when written by set()
 const remote_persist_list = new Set([
@@ -55,10 +54,14 @@ export function setWithoutEmit(key: string, value: any | undefined): any {
 }
 
 export function set(key: string, value: any | undefined): any {
+    _set(key, value, false); // external callers don't get to decide what is persisted
+}
+
+function _set(key: string, value: any | undefined, disable_remote_persist: boolean) {
     setWithoutEmit(key, value);
     event_emitter.emit(key, value);
 
-    if (remote_persist_list.has(key) && !hydrating_from_remote_storage) {
+    if (remote_persist_list.has(key) && !disable_remote_persist) {
         if (!remote_persisting) {
             // we're not already underway persisting something, so we have to first read the remote values, then update and write back the new...
             // ... taking into account that we might get asked to persist more values while this is happening...
@@ -219,16 +222,13 @@ try {
     remote_storage.get('persisted-local-storage')
     .then(
         (persisted) => {
-            hydrating_from_remote_storage = true;
             for (const key in persisted as {}) {
-                set(key, persisted[key]);
+                _set(key, persisted[key], true /* don't try to remote persist this value we just read from remote! */);
             }
-            hydrating_from_remote_storage = false;
         },
         (err) => { console.error("Error retrieving persisted local storage settings:", err); }
     );
 } catch (e) {
     console.error(e);
-    hydrating_from_remote_storage = false;
 }
 
