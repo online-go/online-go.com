@@ -18,10 +18,52 @@
 import { TypedEventEmitter } from 'TypedEventEmitter';
 import { uuid } from 'misc';
 import { termination_socket } from 'sockets';
+import ITC from 'ITC';
+import * as data from 'data';
+
+
+/**
+ * Usage notes
+ *
+ * Remote storage stores data on the server and is synchronized to all other
+ * devices for the currently logged in player.
+ *
+ * Set will immediately update our local copy of the key and send the update to
+ * the server which will then sychronize to other devices pretty quickly.
+ *
+ * Get will immediately return the local copy of our key, and relies on our
+ * synchronzation system to take care of updating our local copy so it's ready
+ * when we need it.
+ *
+ * Remove will immediately remove our local copy of the key and clear the value
+ * from other devices.
+ *
+ * Remote storage only returns meaningful values when the user is authenticated,
+ * otherwise all gets will return undefined.
+ *
+ *
+ * KNOWN BUGS:
+ *
+ *   Right now we set our local state so we can access it immediately, however
+ *   if the send doesn't happen correctly we can end up with clients being out
+ *   of sync with one client having the local state set but the remote storage
+ *   having never received that data. I think we *do* want the local set to happen
+ *   immediately for UI convenience, which means I think the item on the TODO to
+ *   fix this is to have persistent queue for sets and removes that gets retried
+ *   when we reconnect to the server.
+ */
+
 
 type StorableValue = number | string | boolean | undefined | {[key:string]: StorableValue};
 
 export function set(key:string, value:StorableValue):Promise<void> {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        return Promise.reject('user is not authenticated');
+    }
+
+    data.set(`remote-storage.${user.id}.${key}`, value);
+
     return new Promise<void>((resolve, reject) => {
         termination_socket.send('remote_storage/set', {key, value}, (res:any) => {
             if (res.error) {
@@ -33,27 +75,23 @@ export function set(key:string, value:StorableValue):Promise<void> {
     });
 }
 
-export function get(key:string):Promise<StorableValue> {
-    return new Promise<StorableValue>((resolve, reject) => {
-        termination_socket.send('remote_storage/get', {key}, (res:any) => {
-            if (res.error) {
-                try {
-                    if (res.error.indexOf("not found") > 0) {
-                        resolve(undefined);
-                    } else {
-                        reject(res.error);
-                    }
-                } catch (err) {
-                    reject(res.error);
-                }
-            } else {
-                resolve(res.value);
-            }
-        });
-    });
+export function get(key:string):StorableValue {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        return undefined;
+    }
+
+    return data.get(`remote-storage.${user.id}.${key}`);
 }
 
 export function remove(key:string):Promise<void> {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        return Promise.reject('user is not authenticated');
+    }
+
+    data.remove(`remote-storage.${user.id}.${key}`);
+
     return new Promise<void>((resolve, reject) => {
         termination_socket.send('remote_storage/remove', {key}, (res:any) => {
             if (res.error) {
@@ -65,3 +103,48 @@ export function remove(key:string):Promise<void> {
     });
 }
 
+
+
+// we'll get this when a tab updates a value. We'll then send a request to the
+// server for any new updates since the last update we got.
+ITC.register('remote_storage/sync_needed', () => {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        console.error("User is not logged in but received remote_storage/sync for some reason, ignoring");
+        return;
+    }
+
+    let last_modified = data.get(`remote-storage.last-modified.${user.id}`, "2000-01-01T00:00:00.000Z") ;
+    termination_socket.send('remote_storage/sync', last_modified);
+});
+
+// After we've sent a synchronization request, we'll get these update messages
+// for each key that's updated since the timestamp we sent
+termination_socket.on('remote_storage/update', (row:{key:string, value: StorableValue, modified: any}) => {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        console.error("User is not logged in but received remote_storage/update for some reason, ignoring");
+        return;
+    }
+
+    data.set(`remote-storage.${user.id}.${row.key}`, row.value);
+    let last_modified = data.get(`remote-storage.last-modified.${user.id}`);
+    if (!last_modified || last_modified < row.modified) {
+        data.set(`remote-storage.last-modified.${user.id}`, row.modified);
+    }
+});
+
+// Whenever we connect or reconnect to the server, sync
+termination_socket.on('connect', () => {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        return;
+    }
+
+    // wait a tick for other connect handlers to fire, this includes our
+    // authentication handler which we need to trigger before we do anything.
+    setTimeout(() => {
+        let last_modified = data.get(`remote-storage.last-modified.${user.id}`, "2000-01-01T00:00:00.000Z") ;
+        termination_socket.send('remote_storage/sync', last_modified);
+    }, 1);
+});
