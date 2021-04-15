@@ -151,6 +151,23 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     console.table(ret);
 }
 
+export function getPrefix(key_prefix:string = "", strip_prefix?: boolean):{[key:string]: any} {
+    if (!key_prefix) {
+        key_prefix = "";
+    }
+    let ret = {};
+    let data = Object.assign({}, defaults, store);
+    let keys = Object.keys(data);
+
+    keys.sort().map((key) => {
+        if (key.indexOf(key_prefix) === 0) {
+            let k = strip_prefix ? key.substr(key_prefix.length) : key;
+            ret[k] = data[key];
+        }
+    });
+    return ret;
+}
+
 
 try {
     for (let i = 0; i < localStorage.length; ++i) {

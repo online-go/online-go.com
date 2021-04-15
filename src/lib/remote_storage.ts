@@ -41,38 +41,23 @@ import * as data from 'data';
  * Remote storage only returns meaningful values when the user is authenticated,
  * otherwise all gets will return undefined.
  *
- *
- * KNOWN BUGS:
- *
- *   Right now we set our local state so we can access it immediately, however
- *   if the send doesn't happen correctly we can end up with clients being out
- *   of sync with one client having the local state set but the remote storage
- *   having never received that data. I think we *do* want the local set to happen
- *   immediately for UI convenience, which means I think the item on the TODO to
- *   fix this is to have persistent queue for sets and removes that gets retried
- *   when we reconnect to the server.
  */
 
 
 type StorableValue = number | string | boolean | undefined | {[key:string]: StorableValue};
 
-export function set(key:string, value:StorableValue):Promise<void> {
+export function set(key:string, value:StorableValue):void {
     let user = data.get('config.user');
     if (user.anonymous) {
-        return Promise.reject('user is not authenticated');
+        throw new Error('user is not authenticated');
     }
 
-    data.set(`remote-storage.${user.id}.${key}`, value);
+    if (data.get(`remote-storage.${user.id}.${key}`) === value) {
+        return;
+    }
 
-    return new Promise<void>((resolve, reject) => {
-        termination_socket.send('remote_storage/set', {key, value}, (res:any) => {
-            if (res.error) {
-                reject(res.error);
-            } else {
-                resolve();
-            }
-        });
-    });
+    _enqueue_set(user.id, key, value);
+    data.set(`remote-storage.${user.id}.${key}`, value);
 }
 
 export function get(key:string):StorableValue {
@@ -84,25 +69,129 @@ export function get(key:string):StorableValue {
     return data.get(`remote-storage.${user.id}.${key}`);
 }
 
-export function remove(key:string):Promise<void> {
+export function remove(key:string):void {
     let user = data.get('config.user');
     if (user.anonymous) {
-        return Promise.reject('user is not authenticated');
+        throw new Error('user is not authenticated');
     }
 
-    data.remove(`remote-storage.${user.id}.${key}`);
+    if (data.get(`remote-storage.${user.id}.${key}`) === undefined) {
+        return;
+    }
 
-    return new Promise<void>((resolve, reject) => {
-        termination_socket.send('remote_storage/remove', {key}, (res:any) => {
-            if (res.error) {
-                reject(res.error);
-            } else {
-                resolve();
-            }
-        });
-    });
+    _enqueue_remove(user.id, key);
+    data.remove(`remote-storage.${user.id}.${key}`);
 }
 
+export function watch(key: string, cb: (d: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        throw new Error('user is not authenticated');
+    }
+
+    data.watch(`remote-storage.${user.id}.${key}`, cb, call_on_undefined, dont_call_immediately);
+}
+export function unwatch(key: string, cb: (d: any) => void): void {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        throw new Error('user is not authenticated');
+    }
+
+    data.unwatch(`remote-storage.${user.id}.${key}`, cb);
+}
+export function dump(): void {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        throw new Error('user is not authenticated');
+    }
+
+    data.dump(`remote-storage.${user.id}.`, true);
+}
+
+export function dumpWAL(): void {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        throw new Error('user is not authenticated');
+    }
+
+    data.dump(`remote-storage.wal.${user.id}.`, true);
+}
+
+
+// Our write ahead log ensures that if we have a connection problem while we
+// are writing a value to our remote storage, we retry when we re-establish
+// our connection. This is a "last to write wins" system.
+
+function _enqueue_set(user_id:number, key:string, value: StorableValue):void {
+    data.set(`remote-storage.wal.${user_id}.${key}`, {key: key, value: value});
+    _process_write_ahead_log(user_id);
+}
+
+function _enqueue_remove(user_id:number, key:string):void {
+    data.set(`remote-storage.wal.${user_id}.${key}`, {key: key});
+    _process_write_ahead_log(user_id);
+}
+
+let currently_processing:{[k:string]: boolean} = {};
+
+function _process_write_ahead_log(user_id:number):void {
+    let wal = data.getPrefix(`remote-storage.wal.${user_id}.`);
+
+
+    for (let data_key in wal) {
+        let kv = wal[data_key];
+
+        if (currently_processing[kv.key]) {
+            // already writing this key. We'll check when we return from our
+            // current write to see if it's changed since our write and re-write
+            // if necessary.
+            continue;
+        }
+
+        currently_processing[kv.key] = true;
+
+        let cb = () => {
+            delete currently_processing[kv.key];
+            let current_value = get(kv.key);
+            if (current_value !== kv.value) { // value updated since we wrote?
+                _process_write_ahead_log(user_id); // write the updated value
+            } else {
+                // otherwise we're done, remove this from the wal
+                data.remove(`remote-storage.wal.${user_id}.${kv.key}`);
+            }
+        };
+
+        if (kv.value) {
+            termination_socket.send('remote_storage/set', {key: kv.key, value: kv.value}, cb);
+            // this set is not redundant, if we received an update from the server, if we still
+            // have something in our WAL we will try and write that out.
+            if (data.get(`remote-storage.${user_id}.${kv.key}`) !== kv.value) {
+                data.set(`remote-storage.${user_id}.${kv.key}`, kv.value);
+            }
+        } else {
+            termination_socket.send('remote_storage/remove', {key: kv.key}, cb);
+            if (data.get(`remote-storage.${user_id}.${kv.key}`) !== undefined) {
+                data.remove(`remote-storage.${user_id}.${kv.key}`);
+            }
+        }
+    }
+}
+
+termination_socket.on('connect', () => {
+    let user = data.get('config.user');
+    if (user.anonymous) {
+        return;
+    }
+
+    // wait a tick for other connect handlers to fire, this includes our
+    // authentication handler which we need to trigger before we do anything.
+    setTimeout(() => {
+        _process_write_ahead_log(user.id);
+        let last_modified = data.get(`remote-storage.last-modified.${user.id}`, "2000-01-01T00:00:00.000Z") ;
+        termination_socket.send('remote_storage/sync', last_modified);
+    }, 1);
+});
+termination_socket.on('disconnect', () => currently_processing = {});
 
 
 // we'll get this when a tab updates a value. We'll then send a request to the
@@ -132,19 +221,4 @@ termination_socket.on('remote_storage/update', (row:{key:string, value: Storable
     if (!last_modified || last_modified < row.modified) {
         data.set(`remote-storage.last-modified.${user.id}`, row.modified);
     }
-});
-
-// Whenever we connect or reconnect to the server, sync
-termination_socket.on('connect', () => {
-    let user = data.get('config.user');
-    if (user.anonymous) {
-        return;
-    }
-
-    // wait a tick for other connect handlers to fire, this includes our
-    // authentication handler which we need to trigger before we do anything.
-    setTimeout(() => {
-        let last_modified = data.get(`remote-storage.last-modified.${user.id}`, "2000-01-01T00:00:00.000Z") ;
-        termination_socket.send('remote_storage/sync', last_modified);
-    }, 1);
 });
