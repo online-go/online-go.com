@@ -24,6 +24,7 @@ import * as preferences from "preferences";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 import cached from 'cached';
+import { openPlayerNotesModal } from "../PlayerNotesModal";
 
 
 interface FriendListProperties {
@@ -85,6 +86,11 @@ export class FriendList extends React.PureComponent<{}, any> {
     eat = (ev) => {
         ev.stopPropagation();
     }
+
+    openPlayerNotes = (ev) => {
+         openPlayerNotesModal(ev.target.getAttribute("data-id"));
+    }
+
     render() {
         return (
             <div className="FriendList">
@@ -94,6 +100,7 @@ export class FriendList extends React.PureComponent<{}, any> {
                 {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
                     <div className="friend-entry" key={friend.id} >
                         <Player user={friend} online rank noextracontrols />
+                        {data.get(`player-notes.${friend.id}`) ? <i className="fa fa-clipboard" onClick={this.openPlayerNotes} data-id={friend.id} /> : ""}
                     </div>
                 ))}
                 {(this.state.friends.length === 0 || null) &&
