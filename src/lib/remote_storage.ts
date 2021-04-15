@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { TypedEventEmitter } from 'TypedEventEmitter';
-import { uuid } from 'misc';
+
 import { termination_socket } from 'sockets';
 import ITC from 'ITC';
 import * as data from 'data';
@@ -31,9 +30,8 @@ import * as data from 'data';
  * Set will immediately update our local copy of the key and send the update to
  * the server which will then sychronize to other devices pretty quickly.
  *
- * Get will immediately return the local copy of our key, and relies on our
- * synchronzation system to take care of updating our local copy so it's ready
- * when we need it.
+ * Synchronisation is done by a call to data.set() to provide the updated value locally
+ *  => all gets should be done with data.get(), using the locally stored value.
  *
  * Remove will immediately remove our local copy of the key and clear the value
  * from other devices.
@@ -75,22 +73,11 @@ export function set(key:string, value:StorableValue):Promise<void> {
     });
 }
 
-export function get(key:string):StorableValue {
-    let user = data.get('config.user');
-    if (user.anonymous) {
-        return undefined;
-    }
-
-    return data.get(`remote-storage.${user.id}.${key}`);
-}
-
 export function remove(key:string):Promise<void> {
     let user = data.get('config.user');
     if (user.anonymous) {
         return Promise.reject('user is not authenticated');
     }
-
-    data.remove(`remote-storage.${user.id}.${key}`);
 
     return new Promise<void>((resolve, reject) => {
         termination_socket.send('remote_storage/remove', {key}, (res:any) => {
@@ -127,7 +114,10 @@ termination_socket.on('remote_storage/update', (row:{key:string, value: Storable
         return;
     }
 
-    data.set(`remote-storage.${user.id}.${row.key}`, row.value);
+    /* Set the local version of this key, so that data.get gets this value, and watches fire */
+
+    data.set(row.key, row.value, true /* don't try to re-persist remotely this! */);
+
     let last_modified = data.get(`remote-storage.last-modified.${user.id}`);
     if (!last_modified || last_modified < row.modified) {
         data.set(`remote-storage.last-modified.${user.id}`, row.modified);

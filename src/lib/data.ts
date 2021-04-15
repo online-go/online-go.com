@@ -53,43 +53,15 @@ export function setWithoutEmit(key: string, value: any | undefined): any {
     return value;
 }
 
-export function set(key: string, value: any | undefined): any {
-    _set(key, value, false); // external callers don't get to decide what is persisted
-}
-
-function _set(key: string, value: any | undefined, disable_remote_persist: boolean) {
+export function set(key: string, value: any | undefined, disable_remote_persist: boolean = false) {
     setWithoutEmit(key, value);
     event_emitter.emit(key, value);
 
     if (remote_persist_list.has(key) && !disable_remote_persist) {
-        if (!remote_persisting) {
-            // we're not already underway persisting something, so we have to first read the remote values, then update and write back the new...
-            // ... taking into account that we might get asked to persist more values while this is happening...
-            remote_persisting = true;
-            to_be_persisted[key] = value;
-            remote_storage.get("persisted-local-storage").then(
-                (remote_values) => {
-                    remote_values = remote_values || {};
-                    for (const persist_item in to_be_persisted) {
-                        remote_values[persist_item] = to_be_persisted[persist_item]; // overwriting the new values to be written into the current remote hash
-                    }
-                    remote_storage.set("persisted-local-storage", remote_values).then(
-                        () => {
-                            if (!remote_persisting) { // remote_persisting could be true if another set() came in while the remote_storage.set() was in flight... in which case we still have new values to write.
-                                to_be_persisted = {};
-                            }
-                        },
-                        (err) => { console.error("error persisting local data:", to_be_persisted, err); }
-                    );
-                    remote_persisting = false;
-                    // note, we can end up with two remote_storage.set calls in parallel, if a new set() comes in while the above remote_storage.set is still in flight
-                },
-                (err) => { remote_persisting = false; console.error("error getting persisted local storage values while trying to write", to_be_persisted, err); }
-            );
-        } else {
-            // in this case we are in the process of "remote_persisting", waiting for the remote_storage.get to come back, so we just add the new value to be saved
-            to_be_persisted[key] = value;
-        }
+        remote_storage.set(key, value).then(
+            () => { /* woot it worked */},
+            (err) => { console.error("Error persisting value", key, err); }
+        );
     }
     return value;
 }
@@ -215,20 +187,3 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-// update local data store from persisted values (which may have been modified by other devices)
-
-try {
-    remote_storage.get('persisted-local-storage')
-    .then(
-        (persisted) => {
-            for (const key in persisted as {}) {
-                _set(key, persisted[key], true /* don't try to remote persist this value we just read from remote! */);
-            }
-        },
-        (err) => { console.error("Error retrieving persisted local storage settings:", err); }
-    );
-} catch (e) {
-    console.error(e);
-}
-
