@@ -31,7 +31,8 @@ let to_be_persisted = {}; // not-yet confirmed-persisted key value pairs
 
 // keys in this list will be persisted remotely when written by set()
 const remote_persist_list = new Set([
-    "theme"
+    "theme",
+    "player-notes"
 ]);
 
 // (note - setWithoutEmit, which is effectively setWithoutEmitAndWithoutRemotePersist ;), does not do any remote persisting,
@@ -57,9 +58,11 @@ export function set(key: string, value: any | undefined, disable_remote_persist:
     setWithoutEmit(key, value);
     event_emitter.emit(key, value);
 
-    if (remote_persist_list.has(key) && !disable_remote_persist) {
+    const primary_key = key.replace(/\..*/, ''); // support persisting all keys in a namespace with a dot separator
+
+    if (remote_persist_list.has(primary_key) && !disable_remote_persist) {
         remote_storage.set(key, value).then(
-            () => { /* woot it worked */},
+            () => { /* console.log("remote set success", key, value); */},
             (err) => { console.error("Error persisting value", key, err); }
         );
     }

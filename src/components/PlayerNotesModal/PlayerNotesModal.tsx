@@ -18,7 +18,8 @@
 import * as React from "react";
 import {_} from 'translate';
 import {Modal, openModal} from "Modal";
-import { get, set } from "remote_storage";
+import * as data from "data";
+
 declare let swal;
 
 interface Events {
@@ -30,8 +31,6 @@ interface PlayerNotesModalProperties {
 
 export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, any> {
 
-    playerNotes = {};
-
     constructor(props) {
         super(props);
         this.state = {
@@ -41,18 +40,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
     componentDidMount = () => {
         super.componentDidMount(); /* this.close() doesn't work if you don't do this */
-        get("player-notes")
-        .then(
-            (player_notes) => {
-                this.playerNotes = player_notes || {};
-                if (player_notes && player_notes[this.props.playerId]) {
-                    this.setState({ notes: player_notes[this.props.playerId]});
-                }
-            },
-            (err) => {
-                console.log("Player notes fetch error: ", err);
-            }
-        );
+        this.setState({ notes: data.get(`player-notes.${this.props.playerId}`) });
     }
 
     updateNotes = (ev) => {
@@ -60,11 +48,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     }
 
     saveNotes = () => {
-        this.playerNotes[this.props.playerId] = this.state.notes;
-        set("player-notes", this.playerNotes)
-        .then(
-            () => {console.log("Saved player notes..."); },
-            (err) => {console.log("Whoa, error writing player notes!", err); });
+        data.set(`player-notes.${this.props.playerId}`, this.state.notes);
         this.close();
     }
 
