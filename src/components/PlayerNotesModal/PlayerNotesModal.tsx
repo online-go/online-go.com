@@ -20,8 +20,6 @@ import {_} from 'translate';
 import {Modal, openModal} from "Modal";
 import * as data from "data";
 
-declare let swal;
-
 interface Events {
 }
 
@@ -44,7 +42,10 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     }
 
     updateNotes = (ev) => {
-        this.setState({notes: ev.target.value});
+        const new_notes = ev.target.value;
+        if (new_notes.length < 5000) {
+            this.setState({notes: ev.target.value});
+        }
     }
 
     saveNotes = () => {
@@ -66,7 +67,6 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
         );
     }
 }
-
 
 export function openPlayerNotesModal(player_id: number) {
     // Note: this modal is deliberately not fastDismiss, because we don't want to accidentally dismiss while drag-selecting a large area of text.

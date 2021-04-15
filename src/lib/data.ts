@@ -26,8 +26,6 @@ interface Events {
 let defaults = {};
 let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
-let remote_persisting = false;
-let to_be_persisted = {}; // not-yet confirmed-persisted key value pairs
 
 // keys in this list will be persisted remotely when written by set()
 const remote_persist_list = new Set([

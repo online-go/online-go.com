@@ -238,6 +238,8 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
 
         let rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
 
+        const add_note_label = data.get(`player-notes.${this.props.playerId}`) ? _('Player notes') : _('Add notes');
+
         return (
             <div className="PlayerDetails">
                 <div className="details">
@@ -279,7 +281,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                             <div style={{width: '48%'}}></div>
                         }
 
-                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.editPlayerNotes}><i className="fa fa-clipboard"/>{_("Player notes")}</button>
+                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.editPlayerNotes}><i className="fa fa-clipboard"/>{add_note_label}</button>
 
                         <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}><i className="fa fa-comment-o"/>{_("Message")}</button>
                         {friends[this.props.playerId]
