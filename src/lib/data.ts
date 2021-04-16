@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as remote_storage from "remote_storage";
 import { TypedEventEmitter } from 'TypedEventEmitter';
 import { GroupList, ActiveTournamentList } from './types';
 
@@ -26,15 +25,7 @@ interface Events {
 let defaults = {};
 let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
-
-// keys in this list will be persisted remotely when written by set()
-const remote_persist_list = new Set([
-    "theme",
-    "player-notes"
-]);
-
-// (note - setWithoutEmit, which is effectively setWithoutEmitAndWithoutRemotePersist ;), does not do any remote persisting,
-//         because the only use case for setWithoutEmit immediately goes and then sets them all again anyhow, in main.tsx.)
+let last_id = 0;
 
 export function setWithoutEmit(key: string, value: any | undefined): any {
     if (value === undefined) {
@@ -52,18 +43,9 @@ export function setWithoutEmit(key: string, value: any | undefined): any {
     return value;
 }
 
-export function set(key: string, value: any | undefined, disable_remote_persist: boolean = false) {
+export function set(key: string, value: any | undefined): any {
     setWithoutEmit(key, value);
     event_emitter.emit(key, value);
-
-    const primary_key = key.replace(/\..*/, ''); // support persisting all keys in a namespace with a dot separator
-
-    if (remote_persist_list.has(primary_key) && !disable_remote_persist) {
-        remote_storage.set(key, value).then(
-            () => { /* console.log("remote set success", key, value); */},
-            (err) => { console.error("Error persisting value", key, err); }
-        );
-    }
     return value;
 }
 
@@ -169,7 +151,24 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     console.table(ret);
 }
 
-// initialize local data store from localStorage
+export function getPrefix(key_prefix:string = "", strip_prefix?: boolean):{[key:string]: any} {
+    if (!key_prefix) {
+        key_prefix = "";
+    }
+    let ret = {};
+    let data = Object.assign({}, defaults, store);
+    let keys = Object.keys(data);
+
+    keys.sort().map((key) => {
+        if (key.indexOf(key_prefix) === 0) {
+            let k = strip_prefix ? key.substr(key_prefix.length) : key;
+            ret[k] = data[key];
+        }
+    });
+    return ret;
+}
+
+
 try {
     for (let i = 0; i < localStorage.length; ++i) {
         let key = localStorage.key(i);
