@@ -290,6 +290,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
                     {username}{rank}
+                    {(this.props.shownotesindicator || null) && player_note_indicator}
                 </span>
             );
         } else {
