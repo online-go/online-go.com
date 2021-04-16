@@ -19,7 +19,7 @@ import * as React from "react";
 import * as moment from "moment";
 import {Chart} from 'react-charts';
 
-import * as data from "data";
+import * as remote_storage from "remote_storage";
 
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
@@ -66,7 +66,7 @@ function StatsChart(props: JosekiStatsModalProperties) {
         };
 
     // Accessible TBD - assumes dark for now
-    const label_colour = data.get("theme") === "light" ? false : true;
+    const label_colour = remote_storage.get("theme") === "light" ? false : true;
 
     return (
         <Chart

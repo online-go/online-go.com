@@ -18,7 +18,7 @@
 import * as React from "react";
 import {_} from 'translate';
 import {Modal, openModal} from "Modal";
-import * as data from "data";
+import * as remote_storage from "remote_storage";
 
 interface Events {
 }
@@ -38,7 +38,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
     componentDidMount = () => {
         super.componentDidMount(); /* this.close() doesn't work if you don't do this */
-        this.setState({ notes: data.get(`player-notes.${this.props.playerId}`) });
+        this.setState({ notes: remote_storage.get(`player-notes.${this.props.playerId}`) });
     }
 
     updateNotes = (ev) => {
@@ -49,7 +49,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     }
 
     saveNotes = () => {
-        data.set(`player-notes.${this.props.playerId}`, this.state.notes);
+        remote_storage.set(`player-notes.${this.props.playerId}`, this.state.notes);
         this.close();
     }
 

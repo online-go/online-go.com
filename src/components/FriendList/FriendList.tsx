@@ -20,6 +20,7 @@ import {_, pgettext, interpolate} from "translate";
 import {errorAlerter} from "misc";
 import online_status from "online_status";
 import * as data from "data";
+import * as remote_storage from "remote_storage";
 import * as preferences from "preferences";
 import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
@@ -100,7 +101,7 @@ export class FriendList extends React.PureComponent<{}, any> {
                 {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
                     <div className="friend-entry" key={friend.id} >
                         <Player user={friend} online rank noextracontrols />
-                        {data.get(`player-notes.${friend.id}`) ? <i className="fa fa-clipboard" onClick={this.openPlayerNotes} data-id={friend.id} /> : ""}
+                        {remote_storage.get(`player-notes.${friend.id}`) ? <i className="fa fa-clipboard" onClick={this.openPlayerNotes} data-id={friend.id} /> : ""}
                     </div>
                 ))}
                 {(this.state.friends.length === 0 || null) &&

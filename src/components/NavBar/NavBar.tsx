@@ -18,7 +18,10 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
+
 import * as data from "data";
+import * as remote_storage from "remote_storage";
+
 import {_, current_language, languages} from "translate";
 import {PlayerIcon} from "PlayerIcon";
 import {post, get, abort_requests_in_flight} from "requests";
@@ -54,19 +57,20 @@ function previewTheme(theme) {
     _update_theme(theme);
 }
 function exitThemePreview() {
-    _update_theme(data.get("theme"));
+    _update_theme(remote_storage.get("theme"));
 }
 
 // ---
 // TBD - ideally these functions should be in a theme management module, along with the data.watch('theme')
 //       (this is a NavBar, there might be ... and now are... other places that can change the theme, not related to NavBar)
+
 function setTheme(theme) {
-    data.set("theme", theme); // causes _update_theme to be called via the data.watch() in constructor
+    remote_storage.set("theme", theme); // causes _update_theme to be called via the remote_storage.watch() in constructor
 }
 function toggleTheme() {
-    if (data.get("theme") === "dark") {
+    if (remote_storage.get("theme") === "dark") {
         setTheme("light");
-    } else if (data.get("theme") === "light") {
+    } else if (remote_storage.get("theme") === "light") {
         setTheme("accessible");
     } else {
         setTheme("dark");
@@ -122,7 +126,7 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
 
-        data.watch("theme", _update_theme);  // here we are watching in case 'theme' is updated by the remote-storage update mechanism, which doesn't call setTheme()
+        remote_storage.watch("theme", _update_theme);  // here we are watching in case 'theme' is updated by the remote-storage update mechanism, which doesn't call setTheme()
     }
 
     UNSAFE_componentWillMount() {

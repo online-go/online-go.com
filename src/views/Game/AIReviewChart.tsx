@@ -19,7 +19,7 @@ import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
 import * as JSNoise from 'js-noise';
-import * as data from "data";
+import * as remote_storage from "remote_storage";
 import ReactResizeDetector from 'react-resize-detector';
 import { AIReviewEntry } from './AIReview';
 import { PersistentElement } from 'PersistentElement';
@@ -391,7 +391,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .selectAll("stop")
             .data(
                 // assuming "accessible" and "dark" are similar
-                data.get('theme') === 'light'
+                remote_storage.get('theme') === 'light'
                     ? [
                         {offset: "0%", color: "#222222"},
                         {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444"},

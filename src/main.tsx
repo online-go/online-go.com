@@ -88,7 +88,8 @@ import * as data from "data";
 import * as remote_storage from "remote_storage";
 import * as preferences from "preferences";
 
-data.setDefault("theme", "light");
+remote_storage.setDefault("theme", "light");
+
 data.setDefault("config", {
     "user": {
         "anonymous": true,

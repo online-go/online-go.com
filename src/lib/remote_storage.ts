@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { TypedEventEmitter } from 'TypedEventEmitter';
-import { uuid } from 'misc';
 import { termination_socket } from 'sockets';
 import ITC from 'ITC';
 import * as data from 'data';
@@ -46,6 +44,8 @@ import * as data from 'data';
 
 type StorableValue = number | string | boolean | undefined | {[key:string]: StorableValue};
 
+let defaults = {};
+
 export function set(key:string, value:StorableValue):void {
     let user = data.get('config.user');
     if (user.anonymous) {
@@ -66,7 +66,16 @@ export function get(key:string):StorableValue {
         return undefined;
     }
 
-    return data.get(`remote-storage.${user.id}.${key}`);
+    let value = data.get(`remote-storage.${user.id}.${key}`);
+
+    if (value !== undefined) {
+        return value;
+    }
+    if (key in defaults) {
+        return defaults[key];
+    }
+
+    return undefined;
 }
 
 export function remove(key:string):void {
@@ -81,6 +90,10 @@ export function remove(key:string):void {
 
     _enqueue_remove(user.id, key);
     data.remove(`remote-storage.${user.id}.${key}`);
+}
+
+export function setDefault(key: string, value: StorableValue): void {
+    defaults[key] = value;
 }
 
 export function watch(key: string, cb: (d: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
