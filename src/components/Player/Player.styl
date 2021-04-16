@@ -123,10 +123,12 @@
     }
 
     // ---
-    // This is the chat presence indicator in the PM chat dialog box
+    // This is the chat presence indicator in the PM chat dialog box ...
+    // ... and in the Friends list, where it is currently not aligned properly, despite vertical-align: middle !
+
     &.online, &.offline{
         &:before {
-            display: inline-block;
+            display: flex;
             font-size: 0.5rem;
 
             width: 0.5rem;
@@ -160,6 +162,12 @@
         font-size: 0.7em;
         padding-left: 0.35em;
         align-self: center;
+    }
+
+    &.fa-clipboard {
+        transform: scale(0.7);
+        padding-left: 3px;
+        vertical-align: middle;
     }
 }
 
