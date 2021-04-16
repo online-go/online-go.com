@@ -121,8 +121,8 @@ export function get(key: ValidPreference): any {
     }
     return data.get(`preferences.${key}`);
 }
-export function set(key: string, value: any): any {
-    return data.set(`preferences.${key}`, value);
+export function set(key: string, value: any, replication?: data.Replication): any {
+    return data.set(`preferences.${key}`, value, replication);
 }
 export function watch(key: string, cb: (d: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
     data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
