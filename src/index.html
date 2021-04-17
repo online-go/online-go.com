@@ -110,7 +110,21 @@
   <body>
       <script>
         try {
-            var theme = localStorage.getItem('ogs.theme');
+            var remote_theme = null;
+            try {
+                var user = JSON.parse(localStorage.getItem('ogs.config.user') || "null");
+                if (user && !user.anonymous) {
+                  remote_theme = 
+                      JSON.stringify(
+                          JSON.parse(
+                            localStorage.getItem('ogs-remote-storage-store.' + user.id + '.theme')
+                          ).value
+                      );
+                }
+            } catch (e) {
+                /* ignore */
+            }
+            var theme = localStorage.getItem('ogs.theme') || remote_theme;
             if (theme) { /* user has been on the site before */
                 document.body.className = JSON.parse(theme);
             } else { /* first time user is on the site, so set initial theme according to his operating system theme. */
