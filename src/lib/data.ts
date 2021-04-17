@@ -281,6 +281,7 @@ function safeLocalStorageRemove(key) {
     }
 }
 
+
 /* Load previously saved data from localStorage */
 
 try {
