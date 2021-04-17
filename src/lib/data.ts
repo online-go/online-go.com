@@ -353,7 +353,7 @@ function remote_set(key:string, value:RemoteStorableValue, replication: Replicat
         throw new Error('user is not authenticated');
     }
 
-    if (remote_get(key) === value) {
+    if (remote_store[key]?.value === value && remote_store[key]?.replication === replication) {
         return;
     }
 
@@ -374,11 +374,7 @@ function remote_remove(key:string, replication: Replication):void {
 
     delete remote_store[key];
     _enqueue_remove(user.id, key, replication);
-    try {
-        localStorage.removeItem(`ogs-remote-storage-store.${user.id}.${key}`);
-    } catch (e) {
-        console.error(e);
-    }
+    safeLocalStorageRemove(`ogs-remote-storage-store.${user.id}.${key}`);
 }
 
 function remote_get(key:string):RemoteStorableValue {
@@ -416,8 +412,8 @@ function _process_write_ahead_log(user_id:number):void {
 
         if (wal_currently_processing[kv.key]) {
             // already writing this key. We'll check when we return from our
-            // current write to see if it's changed since our write and re-write
-            // if necessary.
+            // current write to see if it's changed since our write, and
+            // re-write if necessary.
             continue;
         }
 
@@ -425,23 +421,18 @@ function _process_write_ahead_log(user_id:number):void {
 
         let cb = () => {
             delete wal_currently_processing[kv.key];
-            let current_value = remote_get(kv.key);
-            if (current_value !== kv.value) { // value updated since we wrote?
-                console.log("Value updated, retrying ", kv);
-                if (kv.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
-                    set(kv.key, kv.value, kv.replication);
-                } else {
-                    remote_set(kv.key, kv.value, kv.replication);
-                }
-                //_process_write_ahead_log(user_id); // write the updated value
+            if (wal[data_key].value !== kv.value || wal[data_key].replication !== kv.replication) {
+                // if we updated the value since we wrote, re-write
+                _process_write_ahead_log(user_id);
             } else {
-                // otherwise we're done, remove this from the wal
+                // welse we're all set, value has been written, remove from wal
                 safeLocalStorageRemove(`ogs-remote-storage-wal.${user_id}.${kv.key}`);
                 delete wal[kv.key];
+                remote_sync();
             }
         };
 
-        if (kv.value) {
+        if ('value' in kv) {
             termination_socket.send('remote_storage/set', {key: kv.key, value: kv.value, replication: kv.replication}, cb);
         } else {
             termination_socket.send('remote_storage/remove', {key: kv.key, replication: kv.replication}, cb);
@@ -449,6 +440,36 @@ function _process_write_ahead_log(user_id:number):void {
     }
 }
 
+
+let currently_synchronizing = false;
+let need_another_synchronization_call = false;
+
+function remote_sync() {
+    let user = store['config.user'];
+    if (!user || user.anonymous) {
+        return;
+    }
+
+    if (currently_synchronizing) {
+        need_another_synchronization_call = true;
+        return;
+    }
+
+    currently_synchronizing = true;
+    need_another_synchronization_call = false;
+
+    termination_socket.send('remote_storage/sync', last_modified, (ret) => {
+        if (ret.error) {
+            console.error(ret.error);
+        } else {
+            // success
+        }
+        currently_synchronizing = false;
+        if (need_another_synchronization_call) {
+            remote_sync();
+        }
+    });
+}
 
 // Whenever we connect to the server, process anything pending in our WAL and synchronize
 termination_socket.on('connect', () => {
@@ -460,26 +481,28 @@ termination_socket.on('connect', () => {
     // wait a tick for other connect handlers to fire, this includes our
     // authentication handler which we need to trigger before we do anything.
     setTimeout(() => {
-        _process_write_ahead_log(user.id);
-        termination_socket.send('remote_storage/sync', last_modified);
+        remote_sync();
     }, 1);
 });
-termination_socket.on('disconnect', () => wal_currently_processing = {});
 
+// When we get disconnected from the server, reset the state we used to track
+// what actions were in flight
+termination_socket.on('disconnect', () => {
+    wal_currently_processing = {};
+    currently_synchronizing = false;
+    need_another_synchronization_call = false;
+});
 
 // we'll get this when a client updates a value. We'll then send a request to the
 // server for any new updates since the last update we got.
 ITC.register('remote_storage/sync_needed', () => {
     let user = store['config.user'];
     if (!user || user.anonymous) {
-        console.error("User is not logged in but received remote_storage/sync for some reason, ignoring");
+        console.error("User is not logged in but received remote_storage/sync_needed for some reason, ignoring");
         return;
     }
 
-    // TODO: We should probably only send this out if one isn't currently in
-    // flight, and then flag for a followup sync after the current update gets
-    // back.
-    termination_socket.send('remote_storage/sync', last_modified);
+    remote_sync();
 });
 
 // After we've sent a synchronization request, we'll get these update messages
@@ -540,7 +563,6 @@ function load_from_local_storage_and_sync() {
         for (let i = 0; i < localStorage.length; ++i) {
             let full_key = localStorage.key(i);
 
-
             if (full_key.indexOf(store_prefix) === 0) {
                 let key = full_key.substr(store_prefix.length);
                 try {
@@ -568,7 +590,7 @@ function load_from_local_storage_and_sync() {
     }
 
     _process_write_ahead_log(user.id);
-    termination_socket.send('remote_storage/sync', last_modified);
+    remote_sync();
 }
 
 
