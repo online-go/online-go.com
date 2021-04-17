@@ -19,11 +19,13 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import { routes } from 'routes';
 import {browserHistory} from "ogsHistory";
+import * as data from "data";
 import {shouldOpenNewTab, errorLogger, unicodeFilter} from "misc";
 import {rankString, getUserRating, is_novice, PROVISIONAL_RATING_CUTOFF} from "rank_utils";
 import {close_all_popovers, popover} from "popover";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import {PlayerDetails} from "./PlayerDetails";
+import {openPlayerNotesModal} from "PlayerNotesModal";
 import {Flag} from "Flag";
 import {PlayerIcon} from "PlayerIcon";
 import * as player_cache from "player_cache";
@@ -47,6 +49,7 @@ interface PlayerProperties {
     nodetails?: boolean; /* don't open the detials box, instead just open player page */
     nochallenge?: boolean; /* don't show the challenge button in the details box */
     noextracontrols?: boolean; /* Disable extra controls */
+    shownotesindicator?: boolean; /* add the notes icon if the player has notes */
     disableCacheUpdate?: boolean;
 }
 
@@ -190,6 +193,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.syncUpdateOnline(null);
     }
 
+    openPlayerNotes = (ev) => {
+        openPlayerNotesModal(ev.target.getAttribute("data-id"));
+   }
+
     render() {
         if (!this.state.user) {
             if (typeof(this.props.user) === "number") {
@@ -275,6 +282,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         let username_string = unicodeFilter(player.username || player.name);
         let username = <span className='Player-username'>{username_string}</span>;
 
+        const player_note_indicator = data.get(`player-notes.${player.id}`) ? <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} /> : "";
 
         if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return (
@@ -282,6 +290,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
                     {username}{rank}
+                    {(this.props.shownotesindicator || null) && player_note_indicator}
                 </span>
             );
         } else {
@@ -289,11 +298,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             let uri:string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
-                <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
-                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                    {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}{rank}
-                </a>
+                <span>
+                    <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
+                        {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
+                        {(props.flag || null) && <Flag country={player.country}/>}
+                        {username}{rank}
+                    </a>
+                    {(this.props.shownotesindicator || null) && player_note_indicator}
+                </span>
             );
         }
     }

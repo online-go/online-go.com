@@ -347,6 +347,7 @@ let last_modified:string = "2000-01-01T00:00:00.000Z";
 let loaded_user_id:number | null = null; // user id we've currently loaded data for
 
 function remote_set(key:string, value:RemoteStorableValue, replication: Replication):void {
+    console.log("remote set", key);
     let user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error('user is not authenticated');
@@ -441,6 +442,7 @@ function _process_write_ahead_log(user_id:number):void {
         };
 
         if (kv.value) {
+            console.log("remote writing", kv.key, kv.value, kv.replication);
             termination_socket.send('remote_storage/set', {key: kv.key, value: kv.value, replication: kv.replication}, cb);
         } else {
             termination_socket.send('remote_storage/remove', {key: kv.key, replication: kv.replication}, cb);
@@ -469,6 +471,7 @@ termination_socket.on('disconnect', () => wal_currently_processing = {});
 // we'll get this when a client updates a value. We'll then send a request to the
 // server for any new updates since the last update we got.
 ITC.register('remote_storage/sync_needed', () => {
+    console.log("recieved remote storage sync request");
     let user = store['config.user'];
     if (!user || user.anonymous) {
         console.error("User is not logged in but received remote_storage/sync for some reason, ignoring");
@@ -484,16 +487,19 @@ ITC.register('remote_storage/sync_needed', () => {
 // After we've sent a synchronization request, we'll get these update messages
 // for each key that's updated since the timestamp we sent
 termination_socket.on('remote_storage/update', (row:RemoteKV) => {
+    console.log("remote update:", row);
     let user = store['config.user'];
     if (!user || user.anonymous) {
         console.error("User is not logged in but received remote_storage/update for some reason, ignoring");
         return;
     }
 
-    let current_data_value = get(row.key);
+    let previous_data_value = store[row.key];
+    console.log("pdv:", previous_data_value);
 
-    if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
+    if (/* need row to contain replication for this: row.replication === Replication.REMOTE_OVERWRITES_LOCAL && */ row.value !== previous_data_value) {
         store[row.key] = row.value;
+        emitForKey(row.key);
     }
 
     remote_store[row.key] = row;
@@ -502,12 +508,6 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     if (last_modified < row.modified) {
         safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
         last_modified = row.modified;
-    }
-
-    if (get(row.key) !== current_data_value) {
-        // if our having updated the remote storage key changed what get
-        // evaluates to, emit an update for that data key
-        emitForKey(row.key);
     }
 });
 

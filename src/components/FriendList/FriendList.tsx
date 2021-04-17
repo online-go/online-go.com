@@ -25,7 +25,6 @@ import {post, get, abort_requests_in_flight} from "requests";
 import {Player} from "Player";
 import cached from 'cached';
 
-
 interface FriendListProperties {
     // id?: any,
     // user?: any,
@@ -85,6 +84,7 @@ export class FriendList extends React.PureComponent<{}, any> {
     eat = (ev) => {
         ev.stopPropagation();
     }
+
     render() {
         return (
             <div className="FriendList">
@@ -93,7 +93,7 @@ export class FriendList extends React.PureComponent<{}, any> {
                 </div>
                 {this.state.friends.map((friend) => (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
                     <div className="friend-entry" key={friend.id} >
-                        <Player user={friend} online rank noextracontrols />
+                        <Player user={friend} online rank noextracontrols shownotesindicator/>
                     </div>
                 ))}
                 {(this.state.friends.length === 0 || null) &&
