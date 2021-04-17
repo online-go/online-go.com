@@ -522,6 +522,7 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${row.key}`, JSON.stringify(row));
 
     if (last_modified < row.modified) {
+        safeLocalStorageSet(`ogs.${row.key}`, row.value);
         safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
         last_modified = row.modified;
     }
