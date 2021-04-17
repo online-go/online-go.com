@@ -298,7 +298,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             let uri:string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
-                <span>
+                // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
+                <span style={{display: "flex", alignItems: "center"}}>
                     <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
                         {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                         {(props.flag || null) && <Flag country={player.country}/>}

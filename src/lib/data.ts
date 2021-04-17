@@ -290,7 +290,7 @@ try {
                 let item = localStorage.getItem(`ogs.${key}`);
                 store[key] = JSON.parse(item);
             } catch (e) {
-                console.error(`Data storage system failed to load ${key}. Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
+                console.error(`Data storage system failed to load ${key} . Value was: `, typeof(localStorage.getItem(`ogs.${key}`)), localStorage.getItem(`ogs.${key}`));
                 console.error(e);
                 localStorage.removeItem(`ogs.${key}`);
             }
@@ -345,7 +345,6 @@ let last_modified:string = "2000-01-01T00:00:00.000Z";
 let loaded_user_id:number | null = null; // user id we've currently loaded data for
 
 function remote_set(key:string, value:RemoteStorableValue, replication: Replication):void {
-    console.log("remote set", key);
     let user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error('user is not authenticated');
@@ -407,7 +406,6 @@ function _enqueue_remove(user_id:number, key:string, replication: Replication):v
     _process_write_ahead_log(user_id);
 }
 
-
 function _process_write_ahead_log(user_id:number):void {
     for (let data_key in wal) {
         let kv = wal[data_key];
@@ -425,7 +423,6 @@ function _process_write_ahead_log(user_id:number):void {
             delete wal_currently_processing[kv.key];
             let current_value = remote_get(kv.key);
             if (current_value !== kv.value) { // value updated since we wrote?
-                console.log("Value updated, retrying ", kv);
                 if (kv.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
                     set(kv.key, kv.value, kv.replication);
                 } else {
@@ -448,7 +445,6 @@ function _process_write_ahead_log(user_id:number):void {
     }
 }
 
-
 // Whenever we connect to the server, process anything pending in our WAL and synchronize
 termination_socket.on('connect', () => {
     let user = store['config.user'];
@@ -469,7 +465,6 @@ termination_socket.on('disconnect', () => wal_currently_processing = {});
 // we'll get this when a client updates a value. We'll then send a request to the
 // server for any new updates since the last update we got.
 ITC.register('remote_storage/sync_needed', () => {
-    console.log("recieved remote storage sync request");
     let user = store['config.user'];
     if (!user || user.anonymous) {
         console.error("User is not logged in but received remote_storage/sync for some reason, ignoring");
@@ -485,7 +480,6 @@ ITC.register('remote_storage/sync_needed', () => {
 // After we've sent a synchronization request, we'll get these update messages
 // for each key that's updated since the timestamp we sent
 termination_socket.on('remote_storage/update', (row:RemoteKV) => {
-    console.log("remote update:", row);
     let user = store['config.user'];
     if (!user || user.anonymous) {
         console.error("User is not logged in but received remote_storage/update for some reason, ignoring");
@@ -493,9 +487,8 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     }
 
     let current_data_value = get(row.key);
-    console.log("cdv:", current_data_value);
 
-    if (1 /*row.replication === Replication.REMOTE_OVERWRITES_LOCAL*/) { // FIX ME when row.replication is populated
+    if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
         store[row.key] = row.value;
     }
 
@@ -503,12 +496,13 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${row.key}`, JSON.stringify(row));
 
     if (last_modified < row.modified) {
+        safeLocalStorageSet(`ogs.${row.key}`, row.value);
         safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
         last_modified = row.modified;
     }
 
     if (get(row.key) !== current_data_value) {
-        // if our having updated the remote storage key changed what get
+        // if our having updated locally changes what get
         // evaluates to, emit an update for that data key
         emitForKey(row.key);
     }
