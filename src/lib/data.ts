@@ -115,8 +115,6 @@ export enum Replication {
 let defaults = {};
 let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
-let last_id = 0;
-
 
 
 export function setWithoutEmit(key: string, value: any | undefined): any {
@@ -494,12 +492,11 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
         return;
     }
 
-    let previous_data_value = store[row.key];
-    console.log("pdv:", previous_data_value);
+    let current_data_value = get(row.key);
+    console.log("cdv:", current_data_value);
 
-    if (/* need row to contain replication for this: row.replication === Replication.REMOTE_OVERWRITES_LOCAL && */ row.value !== previous_data_value) {
+    if (1 /*row.replication === Replication.REMOTE_OVERWRITES_LOCAL*/) { // FIX ME when row.replication is populated
         store[row.key] = row.value;
-        emitForKey(row.key);
     }
 
     remote_store[row.key] = row;
@@ -508,6 +505,12 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     if (last_modified < row.modified) {
         safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
         last_modified = row.modified;
+    }
+
+    if (get(row.key) !== current_data_value) {
+        // if our having updated the remote storage key changed what get
+        // evaluates to, emit an update for that data key
+        emitForKey(row.key);
     }
 });
 
