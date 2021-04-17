@@ -114,6 +114,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     ref_settings_button: React.RefObject<HTMLButtonElement>;
     ref_edit_button: React.RefObject<HTMLButtonElement>;
     ref_hint_button: React.RefObject<HTMLButtonElement>;
+    ref_toggle_coordinates_button: React.RefObject<HTMLButtonElement>;
 
     goban: Goban;
     goban_div: HTMLDivElement;
@@ -649,7 +650,27 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             (this.goban as GobanCanvas).setMoveTreeContainer(this.ref_move_tree_container);
         }
     }
+    toggleCoordinates = () => {
+        let goban = this.goban;
 
+        let label_position = preferences.get("label-positioning");
+        switch (label_position) {
+            case "all": label_position = "none"; break;
+            case "none": label_position = "top-left"; break;
+            case "top-left": label_position = "top-right"; break;
+            case "top-right": label_position = "bottom-right"; break;
+            case "bottom-right": label_position = "bottom-left"; break;
+            case "bottom-left": label_position = "all"; break;
+        }
+        preferences.set("label-positioning", label_position);
+
+        goban.draw_top_labels = label_position === "all" || label_position.indexOf("top") >= 0;
+        goban.draw_left_labels = label_position === "all" || label_position.indexOf("left") >= 0;
+        goban.draw_right_labels = label_position === "all" || label_position.indexOf("right") >= 0;
+        goban.draw_bottom_labels = label_position === "all" || label_position.indexOf("bottom") >= 0;
+        this.onResize(true);
+        goban.redraw(true);
+    }
 
     render() {
         if (this.state.editing) {
@@ -804,8 +825,11 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                         <i className="fa fa-pencil"></i>
                         </button>
                     }
-                    <button className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} ref={this.ref_hint_button}>
+                    <button type="button" className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} ref={this.ref_hint_button}>
                     {_("Hint")}
+                    </button>
+                    <button type="button" onClick={this.toggleCoordinates} ref={this.ref_toggle_coordinates_button}>
+                    {_("Toggle Coordinates")}
                     </button>
                 </div>
             </div>
