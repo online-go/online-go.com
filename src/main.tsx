@@ -87,7 +87,12 @@ try {
 import * as data from "data";
 import * as preferences from "preferences";
 
-data.setDefault("theme", "light");
+try {
+    // default_theme is set in index.html based on looking at the OS theme
+    data.setDefault("theme", window["default_theme"]);
+} catch (e) {
+    data.setDefault("theme", "light");
+}
 data.setDefault("config", {
     "user": {
         "anonymous": true,
