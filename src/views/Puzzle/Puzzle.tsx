@@ -815,10 +815,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     <i className="fa fa-adjust"/>
                     </button>
                     {(this.state.zoomable || null) &&
-                        <button type="button" 
-                            title="Toggle Zoom" 
-                            className={this.state.zoom ? "active" : ""} 
-                            onClick={this.toggle_transform_zoom} 
+                        <button type="button"
+                            title="Toggle Zoom"
+                            className={this.state.zoom ? "active" : ""}
+                            onClick={this.toggle_transform_zoom}
                             ref={this.ref_transform_zoom_button}
                         >
                         <i className="fa fa-arrows-alt"></i>
@@ -838,7 +838,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     {_("Hint")}
                     </button>
                     <button type="button" title="Toggle Coordinates" onClick={this.toggleCoordinates} ref={this.ref_toggle_coordinates_button}>
-                    <i className="ogs-coordinates"></i> 
+                    <i className="ogs-coordinates"></i>
                     </button>
                 </div>
             </div>
