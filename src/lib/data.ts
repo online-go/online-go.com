@@ -236,7 +236,11 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
         key_prefix = "";
     }
     let ret = {};
-    let data = Object.assign({}, defaults, store);
+    let remote_values = {};
+    for (let k in remote_store) {
+        remote_values[k] = remote_store[k].value;
+    }
+    let data = Object.assign({}, defaults, remote_values, store);
     let keys = Object.keys(data);
 
     keys.sort().map((key) => {
@@ -253,7 +257,11 @@ export function getPrefix(key_prefix:string = "", strip_prefix?: boolean):{[key:
         key_prefix = "";
     }
     let ret = {};
-    let data = Object.assign({}, defaults, store);
+    let remote_values = {};
+    for (let k in remote_store) {
+        remote_values[k] = remote_store[k].value;
+    }
+    let data = Object.assign({}, defaults, remote_values, store);
     let keys = Object.keys(data);
 
     keys.sort().map((key) => {
@@ -316,7 +324,9 @@ try {
  * retrieving any updated data since the last timestamp we have. We also
  * maintain a write-ahead-log of any changes this client has made, and replay
  * those sets/removes when we re-establish a connection. Conflicts are resolved
- * by a "last-to-write" strategy.
+ * by a "last-to-write" strategy. The order of updates for different keys is
+ * not guaranteed, however if the same key is updated multiple times, the last
+ * update will win.
  *
  * Every device will have a copy of all remote data stored. Lookups are fast,
  * but may be stale.
@@ -346,6 +356,7 @@ let wal:{[key:string]: {key: string, value?: any, replication: Replication}} = {
 let wal_currently_processing:{[k:string]: boolean} = {};
 let last_modified:string = "2000-01-01T00:00:00.000Z";
 let loaded_user_id:number | null = null; // user id we've currently loaded data for
+
 
 function remote_set(key:string, value:RemoteStorableValue, replication: Replication):void {
     let user = store["config.user"];
@@ -420,12 +431,17 @@ function _process_write_ahead_log(user_id:number):void {
         wal_currently_processing[kv.key] = true;
 
         let cb = () => {
+            if (loaded_user_id !== user_id) {
+                console.warn("User changed while we were synchronizing our remote storage write ahead log, bailing from further updates.");
+                return;
+            }
+
             delete wal_currently_processing[kv.key];
             if (wal[data_key].value !== kv.value || wal[data_key].replication !== kv.replication) {
                 // if we updated the value since we wrote, re-write
                 _process_write_ahead_log(user_id);
             } else {
-                // welse we're all set, value has been written, remove from wal
+                // else value has been written, remove from wal
                 safeLocalStorageRemove(`ogs-remote-storage-wal.${user_id}.${kv.key}`);
                 delete wal[kv.key];
                 remote_sync();
@@ -439,6 +455,11 @@ function _process_write_ahead_log(user_id:number):void {
         }
     }
 }
+// When we get disconnected from the server, reset our write ahead processing state
+// so we retry everything that's in our wal when we reconnect
+termination_socket.on('disconnect', () => {
+    wal_currently_processing = {};
+});
 
 
 let currently_synchronizing = false;
@@ -470,28 +491,13 @@ function remote_sync() {
         }
     });
 }
-
-// Whenever we connect to the server, process anything pending in our WAL and synchronize
-termination_socket.on('connect', () => {
-    let user = store['config.user'];
-    if (!user || user.anonymous) {
-        return;
-    }
-
-    // wait a tick for other connect handlers to fire, this includes our
-    // authentication handler which we need to trigger before we do anything.
-    setTimeout(() => {
-        remote_sync();
-    }, 1);
-});
-
-// When we get disconnected from the server, reset the state we used to track
-// what actions were in flight
+// When we get disconnected from the server, reset the our remote_sync state in the
+// event that we were mid-sync
 termination_socket.on('disconnect', () => {
-    wal_currently_processing = {};
     currently_synchronizing = false;
     need_another_synchronization_call = false;
 });
+
 
 // we'll get this when a client updates a value. We'll then send a request to the
 // server for any new updates since the last update we got.
@@ -506,7 +512,7 @@ ITC.register('remote_storage/sync_needed', () => {
 });
 
 // After we've sent a synchronization request, we'll get these update messages
-// for each key that's updated since the timestamp we sent
+// for each key that's been updated since the timestamp we sent
 termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     let user = store['config.user'];
     if (!user || user.anonymous) {
@@ -517,8 +523,7 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     let current_data_value = get(row.key);
 
     if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
-        store[row.key] = row.value;
-        safeLocalStorageSet(`ogs.${row.key}`, JSON.stringify(row.value));
+        setWithoutEmit(row.key, row.value);
     }
 
     remote_store[row.key] = row;
@@ -536,6 +541,21 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     }
 });
 
+// Whenever we connect to the server, process anything pending in our WAL and synchronize
+termination_socket.on('connect', () => {
+    let user = store['config.user'];
+    if (!user || user.anonymous) {
+        return;
+    }
+
+    // wait a tick for other connect handlers to fire, this includes our
+    // authentication handler which we need to trigger before we do anything.
+    setTimeout(() => {
+        _process_write_ahead_log(user.id);
+        remote_sync();
+    }, 1);
+});
+
 
 function load_from_local_storage_and_sync() {
     let user = store['config.user'];
@@ -549,9 +569,6 @@ function load_from_local_storage_and_sync() {
     loaded_user_id = user.id;
 
     remote_store = {};
-    /* if we're currently processing stuff, I don't think this is safe if we
-     * were to change users in mid sync.. but I don't think we do that without
-     * refreshing.  */
     wal = {};
     wal_currently_processing = {};
     last_modified = "2000-01-01T00:00:00.000Z";
