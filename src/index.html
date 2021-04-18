@@ -110,18 +110,29 @@
   <body>
       <script>
         try {
-            var theme = localStorage.getItem('ogs.theme');
-            if (theme) { /* user has been on the site before */
-                document.body.className = JSON.parse(theme);
-            } else { /* first time user is on the site, so set initial theme according to his operating system theme. */
-                if (window.matchMedia("(prefers-color-scheme: dark)").matches) { /* if OS theme set to dark */
-                    document.body.className = "dark";
-                    localStorage.setItem('ogs.theme', '"dark"');
-                } else {
-                    document.body.className = "light";
-                    localStorage.setItem('ogs.theme', '"light"');
+            var remote_theme = null;
+            try {
+                var user = JSON.parse(localStorage.getItem('ogs.config.user') || "null");
+                if (user && !user.anonymous) {
+                  remote_theme = 
+                      JSON.parse(
+                          localStorage.getItem('ogs-remote-storage-store.' + user.id + '.theme')
+                      ).value;
                 }
+            } catch (e) {
+                /* ignore errors, expected if user is not logged in */
             }
+
+            var default_theme = null;
+            if (window.matchMedia("(prefers-color-scheme: dark)").matches) { /* if OS theme set to dark */
+                default_theme = "dark";
+            } else {
+                default_theme = "light";
+            }
+            window['default_theme'] = default_theme;
+
+            var theme = localStorage.getItem('ogs.theme') || JSON.stringify(remote_theme || default_theme);
+            document.body.className = JSON.parse(theme);
         } catch (e) {
             console.error(e);
             document.body.className = "light";

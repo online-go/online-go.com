@@ -85,10 +85,14 @@ try {
 }
 
 import * as data from "data";
-import * as remote_storage from "remote_storage";
 import * as preferences from "preferences";
 
-data.setDefault("theme", "light");
+try {
+    // default_theme is set in index.html based on looking at the OS theme
+    data.setDefault("theme", window["default_theme"]);
+} catch (e) {
+    data.setDefault("theme", "light");
+}
 data.setDefault("config", {
     "user": {
         "anonymous": true,
@@ -310,7 +314,6 @@ function ForceReactUpdateWrapper(props):JSX.Element {
 ReactDOM.render(<ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>, document.getElementById("main-content"));
 
 window['data'] = data;
-window['remote_storage'] = remote_storage;
 window['preferences'] = preferences;
 window['player_cache'] = player_cache;
 window['GoMath'] = GoMath;
