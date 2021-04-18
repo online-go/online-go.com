@@ -516,13 +516,13 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
 
     if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
         store[row.key] = row.value;
+        safeLocalStorageSet(`ogs.${row.key}`, row.value);
     }
 
     remote_store[row.key] = row;
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${row.key}`, JSON.stringify(row));
 
     if (last_modified < row.modified) {
-        safeLocalStorageSet(`ogs.${row.key}`, row.value);
         safeLocalStorageSet(`ogs-remote-storage-last-modified.${user.id}`, row.modified);
         last_modified = row.modified;
     }
