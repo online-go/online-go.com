@@ -430,13 +430,29 @@ function _process_write_ahead_log(user_id:number):void {
 
         wal_currently_processing[kv.key] = true;
 
-        let cb = () => {
+        let cb = (res) => {
             if (loaded_user_id !== user_id) {
                 console.warn("User changed while we were synchronizing our remote storage write ahead log, bailing from further updates.");
                 return;
             }
 
             delete wal_currently_processing[kv.key];
+
+            if (res.error) {
+                console.error(res.error);
+                // unexpected errors (internal exceptions) will set a retry flag, in which case
+                // we should retry this after a short while.
+                if (res.retry) {
+                    setTimeout(() => _process_write_ahead_log(user_id), 3000 + 3000 * Math.random());
+                    return;
+                }
+                // otherwise, this was an error such as we've set too many keys
+                // or the key/data is too long.  In those cases, we want to
+                // just dump this attempt from our wal so the client doesn't
+                // keep trying to send updates to the server which will never
+                // succeed.
+            }
+
             if (wal[data_key].value !== kv.value || wal[data_key].replication !== kv.replication) {
                 // if we updated the value since we wrote, re-write
                 _process_write_ahead_log(user_id);
