@@ -516,7 +516,7 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
 
     if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
         store[row.key] = row.value;
-        safeLocalStorageSet(`ogs.${row.key}`, row.value);
+        safeLocalStorageSet(`ogs.${row.key}`, JSON.stringify(row.value));
     }
 
     remote_store[row.key] = row;
