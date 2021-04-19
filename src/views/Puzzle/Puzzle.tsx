@@ -90,6 +90,7 @@ interface PuzzleState {
     transform_h: boolean;
     transform_v: boolean;
     transform_x: boolean;
+    label_positioning: string;
 }
 
 let ranks = rankList(0, 38, false);
@@ -153,6 +154,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             transform_h: false,
             transform_v: false,
             transform_x: false,
+            label_positioning: preferences.get("label-positioning-puzzles"),
         };
 
         this.ref_transform_x_button = React.createRef<HTMLButtonElement>();
@@ -416,9 +418,6 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 preferences.set("puzzle.zoom", this.transform.settings.zoom);
             }
         }
-
-        this.transform.settings.log();
-
         this.doReset();
     }
     toggle_transform_x = () => {
@@ -653,21 +652,23 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     toggleCoordinates = () => {
         let goban = this.goban;
 
-        let label_position = preferences.get("label-positioning");
+        let label_position = preferences.get("label-positioning-puzzles");
         switch (label_position) {
             case "all": label_position = "none"; break;
-            case "none": label_position = "top-left"; break;
-            case "top-left": label_position = "top-right"; break;
-            case "top-right": label_position = "bottom-right"; break;
-            case "bottom-right": label_position = "bottom-left"; break;
-            case "bottom-left": label_position = "all"; break;
+            //case "none": label_position = "top-left"; break;
+            //case "top-left": label_position = "top-right"; break;
+            //case "top-right": label_position = "bottom-right"; break;
+            //case "bottom-right": label_position = "bottom-left"; break;
+            //case "bottom-left": label_position = "all"; break;
+            default: label_position = "all";
         }
-        preferences.set("label-positioning", label_position);
+        preferences.set("label-positioning-puzzles", label_position);
 
         goban.draw_top_labels = label_position === "all" || label_position.indexOf("top") >= 0;
         goban.draw_left_labels = label_position === "all" || label_position.indexOf("left") >= 0;
         goban.draw_right_labels = label_position === "all" || label_position.indexOf("right") >= 0;
         goban.draw_bottom_labels = label_position === "all" || label_position.indexOf("bottom") >= 0;
+        this.setState({"label_positioning": label_position});
         this.onResize(true);
         goban.redraw(true);
     }
@@ -779,54 +780,63 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             <div className="btn-container">
                 <div className="btn-group">
                     <button type="button"
-                        title={_("Flip Diagonal")}
+                        title={pgettext("Transform the stone positions in a puzzle", "Flip diagonally")}
                         className={this.state.transform_x ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_x}
                         ref={this.ref_transform_x_button}
                     >
-                    <i className="fa fa-expand"></i>
+                        <i className="fa fa-expand"></i>
                     </button>
                     <button type="button"
-                        title={_("Flip Horizontal")}
+                        title={pgettext("Transform the stone positions in a puzzle", "Flip horizontally")}
                         className={this.state.transform_h ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_h}
                         ref={this.ref_transform_h_button}
                     >
-                    <i className="fa fa-arrows-h"></i>
+                        <i className="fa fa-arrows-h"></i>
                     </button>
                     <button type="button"
-                        title={_("Flip Vertical")}
+                        title={pgettext("Transform the stone positions in a puzzle", "Flip vertically")}
                         className={this.state.transform_v ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_v}
                         ref={this.ref_transform_v_button}
                     >
-                    <i className="fa fa-arrows-v"></i>
+                        <i className="fa fa-arrows-v"></i>
                     </button>
                     <button type="button"
-                        title={_("Reverse Colors")}
+                        title={pgettext("Transform the colors of the stones in a puzzle", "Reverse colors")}
                         className={this.state.transform_color ? "active" : ""}
                         disabled={!this.state.collection.color_transform_enabled}
                         onClick={this.toggle_transform_color}
                         ref={this.ref_transform_color_button}
                     >
-                    <i className="fa fa-adjust"/>
+                        <i className="fa fa-adjust"/>
                     </button>
                     {(this.state.zoomable || null) &&
                         <button type="button"
-                            title={_("Toggle Zoom")}
+                            title={pgettext("Toggle zoom when viewing a puzzle (whole board or only some stones)", "Toggle zoom")}
                             className={this.state.zoom ? "active" : ""}
                             onClick={this.toggle_transform_zoom}
                             ref={this.ref_transform_zoom_button}
                         >
-                        <i className="fa fa-arrows-alt"></i>
+                            <i className="fa fa-arrows-alt"></i>
                         </button>
                     }
 
-                    <button type="button" title={_("Open Puzzle Settings")} onClick={this.openPuzzleSettings} ref={this.ref_settings_button}>
-                    <i className="fa fa-gear"/>
+                    <button type="button"
+                        title={pgettext("Show or hide coordinates when viewing a puzzle", "Toggle coordinates")}
+                        className={this.state.label_positioning === "all" ? "active" : ""}
+                        onClick={this.toggleCoordinates}
+                        ref={this.ref_toggle_coordinates_button}
+                        >
+                            <i className="ogs-coordinates"></i>
+                    </button>
+
+                    <button type="button" title={_("Open puzzle settings")} onClick={this.openPuzzleSettings} ref={this.ref_settings_button}>
+                        <i className="fa fa-gear"/>
                     </button>
 
                     {(puzzle.owner.id === data.get("user").id || null) &&
@@ -835,10 +845,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                         </button>
                     }
                     <button type="button" className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} ref={this.ref_hint_button}>
-                    {_("Hint")}
-                    </button>
-                    <button type="button" title={_("Toggle Coordinates")} onClick={this.toggleCoordinates} ref={this.ref_toggle_coordinates_button}>
-                    <i className="ogs-coordinates"></i>
+                        {pgettext("Recieve a puzzle hint", "Hint")}
                     </button>
                 </div>
             </div>

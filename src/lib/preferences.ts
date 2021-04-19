@@ -44,6 +44,7 @@ let defaults = {
     "goban-theme-board": null,
     "goban-theme-white": null,
     "label-positioning": "all",
+    "label-positioning-puzzles": "all",
     "language": "auto",
     "move-tree-numbering": "move-number",
     "new-game-board-size": 19,

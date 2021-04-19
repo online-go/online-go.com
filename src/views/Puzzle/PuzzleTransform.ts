@@ -33,16 +33,6 @@ export class TransformSettings {
         this.transform_x = false;
         this.zoom = false;
     }
-
-    log() {
-        console.log(
-            this.transform_x
-           , this.transform_h
-           , this.transform_v
-           , this.transform_color,
-           this.zoom
-       );
-    }
 }
 
 export class PuzzleTransform {

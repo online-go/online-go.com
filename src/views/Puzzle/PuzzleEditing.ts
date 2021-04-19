@@ -220,7 +220,7 @@ export class PuzzleEditor {
             bounds = null;
         }
 
-        let label_position = preferences.get("label-positioning");
+        let label_position = preferences.get("label-positioning-puzzles");
 
         while (goban_div.firstChild) {
             goban_div.removeChild(goban_div.firstChild);
