@@ -115,8 +115,6 @@ export enum Replication {
 let defaults = {};
 let store = {};
 let event_emitter = new TypedEventEmitter<Events>();
-let last_id = 0;
-
 
 
 export function setWithoutEmit(key: string, value: any | undefined): any {
@@ -551,7 +549,7 @@ termination_socket.on('remote_storage/update', (row:RemoteKV) => {
     }
 
     if (get(row.key) !== current_data_value) {
-        // if our having updated the remote storage key changed what get
+        // if our having updated locally changes what get
         // evaluates to, emit an update for that data key
         emitForKey(row.key);
     }
