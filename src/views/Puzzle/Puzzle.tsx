@@ -779,7 +779,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             <div className="btn-container">
                 <div className="btn-group">
                     <button type="button"
-                        title="Flip Diagonal"
+                        title={_("Flip Diagonal")}
                         className={this.state.transform_x ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_x}
@@ -788,7 +788,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     <i className="fa fa-expand"></i>
                     </button>
                     <button type="button"
-                        title="Flip Horizontal"
+                        title={_("Flip Horizontal")}
                         className={this.state.transform_h ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_h}
@@ -797,7 +797,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     <i className="fa fa-arrows-h"></i>
                     </button>
                     <button type="button"
-                        title="Flip Vertical"
+                        title={_("Flip Vertical")}
                         className={this.state.transform_v ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_v}
@@ -806,7 +806,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     <i className="fa fa-arrows-v"></i>
                     </button>
                     <button type="button"
-                        title="Reverse Colors"
+                        title={_("Reverse Colors")}
                         className={this.state.transform_color ? "active" : ""}
                         disabled={!this.state.collection.color_transform_enabled}
                         onClick={this.toggle_transform_color}
@@ -816,7 +816,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     </button>
                     {(this.state.zoomable || null) &&
                         <button type="button"
-                            title="Toggle Zoom"
+                            title={_("Toggle Zoom")}
                             className={this.state.zoom ? "active" : ""}
                             onClick={this.toggle_transform_zoom}
                             ref={this.ref_transform_zoom_button}
@@ -825,19 +825,19 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                         </button>
                     }
 
-                    <button type="button" title="Open Puzzle Settings" onClick={this.openPuzzleSettings} ref={this.ref_settings_button}>
+                    <button type="button" title={_("Open Puzzle Settings")} onClick={this.openPuzzleSettings} ref={this.ref_settings_button}>
                     <i className="fa fa-gear"/>
                     </button>
 
                     {(puzzle.owner.id === data.get("user").id || null) &&
-                        <button title="Edit" onClick={this.edit} ref={this.ref_edit_button}>
+                        <button title={_("Edit")} onClick={this.edit} ref={this.ref_edit_button}>
                         <i className="fa fa-pencil"></i>
                         </button>
                     }
                     <button type="button" className={this.state.hintsOn ? "active" : ""} onClick={this.showHint} ref={this.ref_hint_button}>
                     {_("Hint")}
                     </button>
-                    <button type="button" title="Toggle Coordinates" onClick={this.toggleCoordinates} ref={this.ref_toggle_coordinates_button}>
+                    <button type="button" title={_("Toggle Coordinates")} onClick={this.toggleCoordinates} ref={this.ref_toggle_coordinates_button}>
                     <i className="ogs-coordinates"></i>
                     </button>
                 </div>
