@@ -434,7 +434,6 @@ button, a.btn, .btn {
     line-height: font-size-normal;
 
     themed background-color default-button
-    themed-darken border-color default-button border-darken-amount
     themed color default-button-color
 
     transition: background-color 0.3s ease;
@@ -539,7 +538,6 @@ for cls in primary danger info reject
 display: inline-block;
     margin: 0.15em;
     button, a.btn, .btn {
-        margin: 0;
         border-radius: 0;
 
         &:first-child {
@@ -553,6 +551,7 @@ display: inline-block;
 
         &.active {
             themed background-color shade2
+            themed border-color shade2
         }
     }
 }
