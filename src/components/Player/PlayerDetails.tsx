@@ -238,7 +238,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
 
         let rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
 
-        const add_note_label = data.get(`player-notes.${this.props.playerId}`) ? _('Player notes') : _('Add notes');
+        const add_note_label = data.get(`player-notes.${user.id}.${this.props.playerId}`) ? _('Player notes') : _('Add notes');
 
         return (
             <div className="PlayerDetails">
