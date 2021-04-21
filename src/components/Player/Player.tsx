@@ -65,10 +65,11 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     constructor(props) {
         super(props);
         let user = data.get('config.user');
+        let viewed_user = typeof(props.user) === "object" ? props.user : null;
         this.state = {
             is_online: false,
-            user: typeof(props.user) === "object" ? props.user : null,
-            has_notes: !!data.get(`player-notes.${user.id}.${props.user.id}`),
+            user: viewed_user,
+            has_notes: viewed_user && !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
         };
     }
 
