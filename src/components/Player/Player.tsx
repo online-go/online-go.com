@@ -67,6 +67,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.state = {
             is_online: false,
             user: typeof(props.user) === "object" ? props.user : null,
+            has_notes: !!data.get(`player-notes.${props.user.id}`),
         };
     }
 
@@ -111,6 +112,16 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
         this.syncUpdateOnline(this.props.user);
+        if (this.props.shownotesindicator) {
+            data.watch(`player-notes.${this.props.user.id}`, this.updateHasNotes);
+        }
+    }
+
+    updateHasNotes = () => {
+        let tf = !!data.get(`player-notes.${this.props.user.id}`);
+        if (tf !== this.state.has_notes) {
+            this.setState({has_notes: tf});
+        }
     }
 
     updateOnline = (_player_id, tf) => {
@@ -137,10 +148,18 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     UNSAFE_componentWillReceiveProps(new_props) {
+        if (this.props.shownotesindicator) {
+            data.unwatch(`player-notes.${this.state.user.id}`, this.updateHasNotes);
+        }
+
         if (typeof(new_props.user) === "object") {
             this.setState({user: new_props.user});
         } else {
             this.setState({user: null});
+        }
+
+        if (new_props.shownotesindicator) {
+            data.watch(`player-notes.${new_props.user.id}`, this.updateHasNotes);
         }
 
         if (!new_props.disableCacheUpdate) {
@@ -191,6 +210,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     componentWillUnmount() {
         this.unmounted = true;
         this.syncUpdateOnline(null);
+        if (this.props.shownotesindicator) {
+            data.unwatch(`player-notes.${this.state.user.id}`, this.updateHasNotes);
+        }
     }
 
     openPlayerNotes = (ev) => {
@@ -282,7 +304,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         let username_string = unicodeFilter(player.username || player.name);
         let username = <span className='Player-username'>{username_string}</span>;
 
-        const player_note_indicator = data.get(`player-notes.${player.id}`) ? <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} /> : "";
+        const player_note_indicator = (this.props.shownotesindicator && this.state.has_notes)
+            ? <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} />
+            : null;
 
         if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
             return (
@@ -290,7 +314,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
                     {(props.flag || null) && <Flag country={player.country}/>}
                     {username}{rank}
-                    {(this.props.shownotesindicator || null) && player_note_indicator}
+                    {player_note_indicator}
                 </span>
             );
         } else {
@@ -305,7 +329,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                         {(props.flag || null) && <Flag country={player.country}/>}
                         {username}{rank}
                     </a>
-                    {(this.props.shownotesindicator || null) && player_note_indicator}
+                    {player_note_indicator}
                 </span>
             );
         }

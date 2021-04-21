@@ -28,7 +28,6 @@ interface PlayerNotesModalProperties {
 }
 
 export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, any> {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -49,7 +48,12 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     }
 
     saveNotes = () => {
-        data.set(`player-notes.${this.props.playerId}`, this.state.notes, data.Replication.REMOTE_OVERWRITES_LOCAL);
+        let notes = this.state.notes.trim();
+        if (notes) {
+            data.set(`player-notes.${this.props.playerId}`, notes, data.Replication.REMOTE_OVERWRITES_LOCAL);
+        } else {
+            data.remove(`player-notes.${this.props.playerId}`, data.Replication.REMOTE_OVERWRITES_LOCAL);
+        }
         this.close();
     }
 
