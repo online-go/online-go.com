@@ -64,14 +64,17 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     constructor(props) {
         super(props);
+        let user = data.get('config.user');
+        let viewed_user = typeof(props.user) === "object" ? props.user : null;
         this.state = {
             is_online: false,
-            user: typeof(props.user) === "object" ? props.user : null,
-            has_notes: !!data.get(`player-notes.${props.user.id}`),
+            user: viewed_user,
+            has_notes: viewed_user && !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
         };
     }
 
     componentDidMount() {
+        let user = data.get('config.user');
         if (!this.props.disableCacheUpdate) {
             if (this.state.user && this.state.user.id > 0) {
                 player_cache.update(this.state.user);
@@ -113,12 +116,13 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
         this.syncUpdateOnline(this.props.user);
         if (this.props.shownotesindicator) {
-            data.watch(`player-notes.${this.props.user.id}`, this.updateHasNotes);
+            data.watch(`player-notes.${user.id}.${this.props.user.id}`, this.updateHasNotes);
         }
     }
 
     updateHasNotes = () => {
-        let tf = !!data.get(`player-notes.${this.props.user.id}`);
+        let user = data.get('config.user');
+        let tf = !!data.get(`player-notes.${user.id}.${this.props.user.id}`);
         if (tf !== this.state.has_notes) {
             this.setState({has_notes: tf});
         }
@@ -148,8 +152,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     UNSAFE_componentWillReceiveProps(new_props) {
+        let user = data.get('config.user');
         if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${this.state.user.id}`, this.updateHasNotes);
+            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
         }
 
         if (typeof(new_props.user) === "object") {
@@ -159,7 +164,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
         if (new_props.shownotesindicator) {
-            data.watch(`player-notes.${new_props.user.id}`, this.updateHasNotes);
+            data.watch(`player-notes.${user.id}.${new_props.user.id}`, this.updateHasNotes);
         }
 
         if (!new_props.disableCacheUpdate) {
@@ -208,10 +213,11 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.syncUpdateOnline(this.props.user);
     }
     componentWillUnmount() {
+        let user = data.get('config.user');
         this.unmounted = true;
         this.syncUpdateOnline(null);
         if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${this.state.user.id}`, this.updateHasNotes);
+            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
         }
     }
 
