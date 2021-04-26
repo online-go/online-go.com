@@ -110,7 +110,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         return (
             <div className='GameTimings'>
                 <div className='timings-header'>Game Timings</div>
-                <div>Move</div><div>Black</div><div>White</div><div>Elapsed Time</div>
+                <div>Move</div><div>Black (blur)</div><div>White (blur)</div><div>Elapsed Time</div>
                 {white_first_turn ? first_row : ""}
                 {
                     // Get the times from the moves array in a nice format, compute ongoing elapsed times
@@ -122,13 +122,14 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         game_elapseds.push(game_elapsed.clone());
                         black_elapsed.add(elapsed);
                         const move_string = this.show_seconds_nicely(elapsed);
-                        return(
-                        <React.Fragment key={move_num}>
-                            <div>{move_num + 1}</div>
-                            <div>{move_string}</div>
-                            <div>-</div>
-                            <div>{`${game_elapseds[move_num].format()}`}</div>
-                        </React.Fragment>);
+                        return (
+                            <React.Fragment key={move_num}>
+                                <div>{move_num + 1}</div>
+                                <div>{move_string}</div>
+                                <div>-</div>
+                                <div>{`${game_elapseds[move_num].format()}`}</div>
+                            </React.Fragment>
+                        );
                     })
                 }
                 {
@@ -156,7 +157,15 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                                 this.props.handicap - 1 + index : index;
                             // if white didn't play (therefore has no elapsed) then the elapsed up to here is black's elapsed
                             const total_elapsed = game_elapseds[elapseds_index + 1] ? game_elapseds[elapseds_index + 1] : game_elapseds[elapseds_index];
-                            acc.push([orig[index], orig[index + 1] ? orig[index + 1]  : "-" , total_elapsed]);
+                            const blur1 = non_handicap_moves?.[index]?.[4]?.blur;
+                            const blur2 = non_handicap_moves?.[index + 1]?.[4]?.blur;
+                            acc.push([
+                                orig[index],
+                                orig[index + 1] ? orig[index + 1]  : "-" ,
+                                total_elapsed,
+                                blur1,
+                                blur2,
+                            ]);
                         }
                         return acc;
                     }, [])
@@ -164,20 +173,35 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                     .map((move_pair, idx) => (
                         <React.Fragment key={idx}>
                             <div>{idx * 2 + 1 + handicap_move_offset}</div>
-                            <div>{move_pair[0]}</div>
-                            <div>{move_pair[1]}</div>
+                            <div>{move_pair[0]}{blurDurationFormat(move_pair[3])}</div>
+                            <div>{move_pair[1]}{blurDurationFormat(move_pair[4])}</div>
                             <div>{`${move_pair[2].format()}`}</div>
                         </React.Fragment>
                     ))
                 }
+                <div className='span-4'>
+                    <hr />
+                </div>
                 <div>Totals:</div>
                 <div>{this.show_seconds_nicely(black_elapsed)}</div>
                 <div>{this.show_seconds_nicely(white_elapsed)}</div>
                 <div>{/* empty cell at end of row */}</div>
-                <div>Final action:</div>
+                <div className='span-3' >Final action:</div>
                 <div>{this.show_seconds_resolution(moment.duration(this.props.end_time - this.props.start_time, "seconds").subtract(game_elapsed))}</div>
                 <div>{/* empty cell at end of row */}</div>
             </div>
         );
     }
+}
+
+function blurDurationFormat(blur_ms: number | undefined):string | null {
+    if (!blur_ms || blur_ms < 100) {
+        return null;
+    }
+
+    if (blur_ms > 100 && blur_ms < 10000) {
+        return " (" + (blur_ms / 1000).toFixed(1) + "s" + ")";
+    }
+
+    return " (" + moment.duration(blur_ms).format() + ")";
 }
