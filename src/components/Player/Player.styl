@@ -20,7 +20,7 @@
     themed color user
     cursor: pointer;
     white-space: nowrap;
-    display: inline-flex;
+    display: inline-flex !important;
     max-width: 100%;
     align-items: baseline; /* needed for Game info modal */
 
@@ -127,21 +127,23 @@
     // ... and in the Friends list, where it is currently not aligned properly, despite vertical-align: middle !
 
     &.online, &.offline{
+        position: relative;
+        padding-left: 0.6rem;
         &:before {
-            display: inline-block;
+            display: inline-flex;
+            align-items: flex-start;
             font-size: 0.5rem;
+            height: 1rem;
 
             width: 0.5rem;
             font-family: 'FontAwesome';
             content: fa-circle-content;
             themed color chat-offline;
             text-shadow: 0 0 1px rgba(0,0,0,0.5);
-            vertical-align: middle;
-            padding-bottom: 0.5rem;
             padding-right: 0.25rem;
-            //position: absolute;
-            //top: 0.35em;
-            //left: -1.1em;
+            position: absolute;
+            top: 0.35em;
+            left: 0em;
         }
     }
 
