@@ -276,7 +276,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         for (let round of rounds) {
             if (!round.groupify) {
                 for (let match of round.matches) {
-                    match.player = players[match.player.id];
+                    if (match?.player?.id) {
+                        match.player = players[match.player.id];
+                    }
                 }
             }
         }
