@@ -159,7 +159,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             variation_name: "",
             strict_seki_mode: false,
             player_icons: {},
-            volume: preferences.get("sound-volume"),
+            volume: sfx.getVolumeOverride(),
             historical_black: null,
             historical_white: null,
             annulled: false,
@@ -171,7 +171,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             show_game_timing: false,
         };
 
-        sfx.setVolumeOverride(this.state.volume);
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
         this.goban_div = document.createElement('div');
         this.goban_div.className = 'Goban';
@@ -297,7 +296,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.onResize();
     }
     componentWillUnmount() {
-        sfx.clearVolumeOverride();
         this.deinitialize();
         setActiveGameView(null);
         setExtraActionCallback(null);
@@ -2230,7 +2228,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         this.setState({
             volume: volume,
-            sound_enabled: enabled,
         });
         let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
 
@@ -2239,9 +2236,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.volume_sound_debounce = setTimeout(() => sfx.playStonePlacementSound(5, 5, 9, 9, 'white'), 250);
-
-        preferences.set("sound-volume", volume);
-        preferences.set("sound-enabled", enabled);
     }
 
     /* Review stuff */

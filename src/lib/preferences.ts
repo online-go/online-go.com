@@ -74,10 +74,8 @@ let defaults = {
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
 
-    "sound-enabled": true,
     "sound-voice-countdown-main" : false,
     "sound-voice-countdown": true,
-    "sound-volume": 0.5,
 
     "sound.volume.master": 1.0,
 

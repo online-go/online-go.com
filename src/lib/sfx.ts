@@ -220,10 +220,6 @@ export class SFXSprite {
     get volume():number {
         let master_volume = sfx.getVolume('master');
 
-        if (sfx.volume_override >= 0) {
-            master_volume = sfx.volume_override;
-        }
-
         return this._volume * master_volume;
     }
 
@@ -274,8 +270,7 @@ export class SFXSprite {
 
 export class SFXManager {
     private enabled:boolean = false;
-    private synced:boolean = false;
-    public volume_override?:number;
+    private synced: boolean = false;
     public howls:{
         [group_name:string]: Howl;
     } = {};
@@ -301,9 +296,6 @@ export class SFXManager {
         }
 
         let vol = this.getVolume('master');
-        if (this.volume_override >= 0) {
-            vol = this.volume_override;
-        }
 
         if (vol) {
             this.synced = true;
@@ -526,13 +518,10 @@ export class SFXManager {
     }
 
     public setVolumeOverride(volume:number) {
-        this.volume_override = volume;
-    }
-    public clearVolumeOverride() {
-        delete this.volume_override;
+        this.setVolume('master', volume);
     }
     public getVolumeOverride():number {
-        return this.volume_override;
+        return this.getVolume('master');
     }
     public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
         try {

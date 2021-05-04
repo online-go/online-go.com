@@ -85,8 +85,8 @@ export function configure_goban() {
         getShowVariationMoveNumbers: ():boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: ():"none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
         getCDNReleaseBase: ():string => data.get('config.cdn_release'),
-        getSoundEnabled: ():boolean => !!preferences.get('sound-enabled'),
-        getSoundVolume: ():number => preferences.get('sound-volume') as number,
+        getSoundEnabled: (): boolean => data.get('sound.volume.master') > 0,
+        getSoundVolume: (): number => data.get('sound.volume.master'),
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
