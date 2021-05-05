@@ -40,10 +40,10 @@ if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) 
 
 try {
     Sentry.init({
-        //dsn: 'https://91e6858af48a40e7954e5b7548aa2e08@sentry.io/250615',
-        dsn: "https://dca0827fe9e34251b0e495ae55198ba7@sentry.online-go.com/5",
+        dsn: 'https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726',
+        //dsn: "https://dca0827fe9e34251b0e495ae55198ba7@sentry.online-go.com/5",
         release: ogs_version || 'dev',
-        tracesSampleRate: 1.0,
+        tracesSampleRate: 0.01,
         whitelistUrls: [
             'online-go.com',
             'online-baduk.com',
