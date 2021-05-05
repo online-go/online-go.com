@@ -159,7 +159,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             variation_name: "",
             strict_seki_mode: false,
             player_icons: {},
-            volume: sfx.getVolumeOverride(),
+            volume: sfx.getVolume('master'),
             historical_black: null,
             historical_white: null,
             annulled: false,
@@ -2224,7 +2224,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     _setVolume(volume) {
         let enabled = volume > 0;
 
-        sfx.setVolumeOverride(volume);
+        sfx.setVolume('master', volume);
 
         this.setState({
             volume: volume,

@@ -517,12 +517,6 @@ export class SFXManager {
         return data.get(`sound.voice-enabled.${sprite_name}`, true);
     }
 
-    public setVolumeOverride(volume:number) {
-        this.setVolume('master', volume);
-    }
-    public getVolumeOverride():number {
-        return this.getVolume('master');
-    }
     public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'):void {
         try {
             let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.3;
