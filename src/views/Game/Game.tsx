@@ -2222,8 +2222,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this._setVolume(new_volume);
     }
     _setVolume(volume) {
-        let enabled = volume > 0;
-
         sfx.setVolume('master', volume);
 
         this.setState({
