@@ -103,7 +103,7 @@
     "react-table": "^6.10.0",
     "react-virtualized": "^9.21.2",
     "redux": "^3.7.2",
-    "sanitize-html": "^1.22.1",
+    "sanitize-html": "^2.3.2",
     "ts-md5": "^1.2.7",
     "valid-url": "^1.0.9",
     "whatwg-fetch": "^3.0.0"
