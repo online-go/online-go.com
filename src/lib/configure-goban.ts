@@ -20,6 +20,8 @@ import * as data from "data";
 import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
 import {_, interpolate, pgettext, current_language} from "translate";
 import {Goban, GoEngine, GoThemes} from 'goban';
+import {sfx} from "sfx";
+
 
 window['Goban'] = Goban;
 window['GoThemes'] = GoThemes;
@@ -85,8 +87,8 @@ export function configure_goban() {
         getShowVariationMoveNumbers: ():boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: ():"none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
         getCDNReleaseBase: ():string => data.get('config.cdn_release'),
-        getSoundEnabled: (): boolean => data.get('sound.volume.master') > 0,
-        getSoundVolume: (): number => data.get('sound.volume.master'),
+        getSoundEnabled: (): boolean => sfx.getVolume('master') > 0,
+        getSoundVolume: (): number => sfx.getVolume('master'),
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
