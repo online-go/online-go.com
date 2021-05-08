@@ -22,7 +22,7 @@
     white-space: nowrap;
     display: inline-flex !important;
     max-width: 100%;
-    align-items: baseline; /* needed for Game info modal */
+    align-items: center; // This centers not only the name, icon and rank, but also the presence indicator
 
     &:hover {
         text-decoration: underline;
@@ -40,8 +40,11 @@
         margin-left: 0.1rem;
     }
 
+    &.with-flare {
+        align-items: baseline;  // if we have flare, then we don't have presence indicator, and it's better to line up the baselines (looks better in chat)
+    }
+
     &.with-flare:before {
-        display: inline-block;
         width: 0.8rem;
         font-family: 'FontAwesome';
         font-size: 0.7rem;
@@ -131,7 +134,7 @@
         padding-left: 0.6rem;
         &:before {
             display: inline-flex;
-            align-items: flex-start;
+            align-items: center;
             font-size: 0.5rem;
             height: 1rem;
 
@@ -141,9 +144,6 @@
             themed color chat-offline;
             text-shadow: 0 0 1px rgba(0,0,0,0.5);
             padding-right: 0.25rem;
-            position: absolute;
-            top: -0.35em;
-            left: 0.25em;
         }
     }
 
