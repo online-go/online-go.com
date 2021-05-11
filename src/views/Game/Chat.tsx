@@ -40,6 +40,7 @@ interface GameChatProperties {
     chatlog: Array<any>;
     gameview: Game;
     userIsPlayer: boolean;
+    userColor: string;
     onChatLogChanged: (c) => void;
     channel: string;
 }
@@ -82,12 +83,26 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             }
             else {
                 let input = event.target as HTMLInputElement;
-                this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
+                this.sendChat(input.value);
                 input.value = "";
                 return false;
             }
         }
     }
+
+    sendChat(chat_text: string) {
+        this.props.gameview.goban.sendChat(chat_text, this.state.chat_log);
+        console.log(this.props.gameview.state.phase);
+
+        if (this.props.gameview.state.phase === "finished") {
+            ["black", "white"].map((color: 'black' | 'white', idx) => {
+                if (!this.props.gameview.ref_presences[color].current.state.online && !(this.props.userIsPlayer && (this.props.userColor === color))) {
+                    console.log("setup notification for", color);
+                }
+            } );
+        }
+    }
+
 
     onFocus(event) {
         this.hideQCOptions();
@@ -235,7 +250,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             ? _("Login to chat")
                             : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
                                 : (this.state.chat_log === "malkovich"
-                                    ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
+                                    ? pgettext("Malkovich logs are only visible to your opponent after the game has ended", "Visible after the game")
                                     : _("Say hi!")
                                   )
                         }

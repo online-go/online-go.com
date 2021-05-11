@@ -55,6 +55,7 @@ import {toast} from "toast";
 import {Clock} from "Clock";
 import {JGOFClock} from "goban";
 import {GameTimings} from "./GameTimings";
+import { StratifyOperator, thresholdSturges } from "d3";
 
 declare var swal;
 
@@ -82,6 +83,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     ref_game_state_label;
     ref_chat;
     ref_move_tree_container:HTMLElement;
+
+    ref_presences: {[color: string]: React.RefObject<ChatPresenceIndicator>} = {};  // Chat.tsx reads these, to determine if the opponent saw the message
 
     game_id: number;
     creator_id: number;
@@ -143,6 +146,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
             // 0 is a valid move number, and is different from a lack of move_number meaning load latest move.
             this.move_number = parseInt(this.props.match.params.move_number);
         }
+
+        this.ref_presences['black'] = React.createRef<ChatPresenceIndicator>();
+        this.ref_presences['white'] = React.createRef<ChatPresenceIndicator>();
+
         this.state = {
             view_mode: this.computeViewMode(),
             squashed: goban_view_squashed(),
@@ -1694,6 +1701,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             game_id: this.game_id,
             review_id: this.review_id,
             user_is_player: false,
+            user_color: undefined
         };
         let goban: Goban = this.goban;
         let engine: GoEngine = goban ? goban.engine : null;
@@ -1704,6 +1712,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 for (let color in this.goban.engine.players) {
                     if (this.goban.engine.players[color].id === data.get("user").id) {
                         new_state.user_is_player = true;
+                        new_state.user_color = color;
                         break;
                     }
                 }
@@ -2277,7 +2286,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     render() {
         const CHAT = <GameChat ref={el => this.ref_chat = el} chatlog={this.chat_log} onChatLogChanged={this.setChatLog}
-                         gameview={this} userIsPlayer={this.state.user_is_player}
+                         gameview={this} userIsPlayer={this.state.user_is_player} userColor={this.state.user_color}
                          channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} />;
         const review = !!this.review_id;
 
@@ -2979,7 +2988,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                         </div>
                                     }
                                     <div className="player-flag"><Flag country={engine.players[color].country}/></div>
-                                    <ChatPresenceIndicator channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
+                                    <ChatPresenceIndicator ref={this.ref_presences[color]} channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`} userId={engine.players[color].id} />
                                 </div>
                             }
 
