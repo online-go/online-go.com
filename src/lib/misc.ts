@@ -764,3 +764,16 @@ export function unitify(num: number): string {
     }
     return num.toString();
 }
+
+export function insert_into_sorted_list<T>(sorted_list: Array<T>, comparator: (a: T, b: T) => number, new_item: T) {
+    let insertion_index = sorted_list.findIndex((existing_item) => comparator(existing_item, new_item) > 0);
+
+    // If findIndex couldn't find any such index, it'll return -1.
+    // In that case we want to insert at the beginning of the array,
+    // so set insertionIndex to zero
+    if (insertion_index === -1) {
+        insertion_index = 0;
+    }
+
+    sorted_list.splice(insertion_index, 0, new_item);
+}
