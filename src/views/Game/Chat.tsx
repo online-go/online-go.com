@@ -181,7 +181,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }
 
     sendQuickChat = (msg: string) => {
-        this.props.gameview.goban.sendChat(msg, this.state.chat_log);
+        this.sendChat(msg);
         this.hideQCOptions();
     }
 
