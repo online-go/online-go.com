@@ -27,7 +27,7 @@ import { ActiveTournamentList, GroupList } from 'types';
 import {_, interpolate } from "translate";
 import { shadowban } from "src/views/Moderator";
 import { getBlocks } from "BlockPlayer";
-import { string_splitter, n2s, dup, Timeout } from "misc";
+import { insert_into_sorted_list, string_splitter, n2s, dup, Timeout } from "misc";
 
 
 export interface ChatMessage {
@@ -448,10 +448,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
         for (let user of users) {
             if (!(user.id in this.user_list)) {
                 this.user_count++;
+                this._insert_into_sorted_lists(user);
             }
             this.user_list[user.id] = user;
         }
-        this._update_sorted_lists();
 
         try {
             this.emit("join", users);
@@ -463,9 +463,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
     handlePart(user): void {
         if (user.id in this.user_list) {
             this.user_count--;
+            this._remove_from_sorted_lists(user);
             delete this.user_list[user.id];
         }
-        this._update_sorted_lists();
 
         try {
             this.emit("part", user);
@@ -473,15 +473,23 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
-    _update_sorted_lists() {
-        this.users_by_name = [];
-        this.users_by_rank = [];
-        for (let id in this.user_list) {
-            this.users_by_name.push(this.user_list[id]);
-            this.users_by_rank.push(this.user_list[id]);
-        }
-        this.users_by_name.sort((a, b) => a.username.localeCompare(b.username));
-        this.users_by_rank.sort(users_by_rank);
+
+    _insert_into_sorted_lists(new_user) {
+        insert_into_sorted_list(
+            this.users_by_name,
+            (a, b) => a.username.localeCompare(b.username),
+            new_user);
+
+        insert_into_sorted_list(
+            this.users_by_rank,
+            users_by_rank,
+            new_user
+        );
+    }
+
+    _remove_from_sorted_lists(user) {
+        this.users_by_name = this.users_by_name.filter((existing_user) => existing_user.id !== user.id);
+        this.users_by_rank = this.users_by_rank.filter((existing_user) => existing_user.id !== user.id);
     }
 
 

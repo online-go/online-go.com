@@ -139,7 +139,11 @@ export class User extends React.PureComponent<UserProperties, any> {
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
         };
 
-        this.show_mod_log = parse(this.props.location.search)['show_mod_log'] === '1';
+        try {
+            this.show_mod_log = parse(this.props.location.search)['show_mod_log'] === '1';
+        } catch (e) {
+            this.show_mod_log = false;
+        }
     }
 
     componentDidMount() {

@@ -116,6 +116,11 @@ export type ValidPreference = keyof typeof defaults;
 
 export function get(key: ValidPreference): any {
     if (!(key in defaults)) {
+        if ((key as string) === "sound-volume") {
+            console.error("You have an extension installed that is not using the newer sound system, volume will not be controllable");
+            return 1.0;
+        }
+
         throw new Error(`Undefined default: ${key}`);
     }
     return data.get(`preferences.${key}`);

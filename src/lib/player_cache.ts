@@ -20,7 +20,6 @@ import {Batcher} from "batcher";
 import {Publisher, Subscriber as RealSubscriber} from "pubsub";
 
 import Debug from "debug";
-import { reject } from "q";
 const debug = new Debug("player_cache");
 
 // The player cache's Subscriber is just like a vanilla Subscriber, but can

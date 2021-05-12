@@ -280,6 +280,8 @@ class PrivateChat {
         }
     }
     updateModeratorBanner() {
+        if (!this.banner) { return; }
+
         if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
             this.banner.removeClass("banner-inactive");
             this.banner.empty();
