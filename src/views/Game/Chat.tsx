@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import device from "device";
+import {comm_socket} from "sockets";
 import * as preferences from "preferences";
 import * as React from "react";
 import * as moment from "moment";
@@ -57,6 +57,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     qc_editableMsgs = null;
 
     scrolled_to_bottom: boolean = true;
+    username: string = "";
 
     constructor(props) {
         super(props);
@@ -90,14 +91,28 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         }
     }
 
+    chatbase = Math.floor(Math.random() * 100000).toString(36);
+    chatnum = 0;
+
     sendChat(chat_text: string) {
         this.props.gameview.goban.sendChat(chat_text, this.state.chat_log);
-        console.log(this.props.gameview.state.phase);
 
+        console.log(this.props.gameview);
+        // Let the players know if they missed chat on their finished game
         if (this.props.gameview.state.phase === "finished") {
             ["black", "white"].map((color: 'black' | 'white', idx) => {
                 if (!this.props.gameview.ref_presences[color].current.state.online && !(this.props.userIsPlayer && (this.props.userColor === color))) {
-                    console.log("setup notification for", color);
+                    console.log("missed chat notification for", color);
+                    comm_socket.send("chat/pm", {
+                        "player_id": this.props.gameview.goban.engine.config[`${color}_player_id`],
+                        "username": "", // << doesn't seem to do anything :(
+                        "uid": this.chatbase + "." + (++this.chatnum).toString(36),
+                        "message": `(FYI: a chat message from ${this.username} was left in your finished game #${this.props.gameview.goban.engine.game_id})`
+                    }, (line) => {
+                        // PrivateChat.tsx says we're gonna get these echoed back to us in various cases
+                        // but I guess we don't care
+                        // this.received_messages[(line.message.i + " " + line.message.t + " " + line.from.username)] = true;
+                    });
                 }
             } );
         }
@@ -110,7 +125,10 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
     componentDidMount() {
         this.autoscroll();
+        let user = data.get("user");
+        this.username = user.username;
     }
+
     componentDidUpdate() {
         this.autoscroll();
         if (this.qc_editableMsgs !== null && this.qc_editableMsgs[0] !== null) {
