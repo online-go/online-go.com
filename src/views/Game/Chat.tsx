@@ -101,11 +101,13 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         // Let the players know if they missed chat on their finished game
         if (this.props.gameview.state.phase === "finished") {
             ["black", "white"].map((color: 'black' | 'white', idx) => {
-                if (!this.props.gameview.ref_presences[color].current.state.online && !(this.props.userIsPlayer && (this.props.userColor === color))) {
+                const target_player_id = this.props.gameview.goban.engine.config[`${color}_player_id`];
+                if (!this.props.gameview.ref_presences[color].current.state.online && !(this.props.userIsPlayer && (this.props.userColor === color)) &&
+                    target_player_id !== undefined) {
                     console.log("missed chat notification for", color);
                     comm_socket.send("chat/pm", {
-                        "player_id": this.props.gameview.goban.engine.config[`${color}_player_id`],
-                        "username": "", // << doesn't seem to do anything :(
+                        "player_id": target_player_id,
+                        "username": "", // << doesn't seem to do anything :(  Would be nice to put "(system)"
                         "uid": this.chatbase + "." + (++this.chatnum).toString(36),
                         "message": `(FYI: a chat message from ${this.username} was left in your finished game #${this.props.gameview.goban.engine.game_id})`
                     }, (line) => {
