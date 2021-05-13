@@ -1954,7 +1954,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return false;
         }
         this.setState({estimating_score: true});
-        this.goban.setScoringMode(true, !is_player || this.goban.engine.phase=="finished");
+        this.goban.setScoringMode(true, !is_player || this.goban.engine.phase === "finished");
         this.sync_state();
         return true;
     }
