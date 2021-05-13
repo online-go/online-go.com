@@ -167,6 +167,25 @@
       </noscript>
 
       <script>
+        try {
+            var script = document.createElement('script');
+            script.id = "ogs_score_estimator_script";
+            try {
+                new WebAssembly.Memory({ initial: 0 });
+                console.log("WASM support detected, score estimator will be fast");
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
+            } catch (error) {
+                console.warn(error);
+                console.log("No WASM support detected, score estimator falling back to ASM.js mode");
+                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
+            }
+            document.head.appendChild(script);
+        } catch (e) {
+            console.error(e);
+        }
+      </script>
+
+      <script>
           var loadDeferredStyles = function() {
             var addStylesNode = document.getElementById("deferred-styles");
             var replacement = document.createElement("div");
