@@ -43,14 +43,14 @@ let ai_config = {
 export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
 export const comm_socket = termination_socket;
 
-let ai_host = '';
+export let ai_host = '';
 if (window.location.hostname.indexOf('beta') >= 0 || window.location.hostname.indexOf('dev') >= 0) {
     ai_host = 'https://beta-ai.online-go.com';
 }
 else if (window.location.hostname.indexOf('online-go.com') >= 0) {
     ai_host = 'https://ai.online-go.com';
 } else {
-    ai_host = window.location.hostname + ':13284';
+    ai_host = `${window.location.protocol}//${window.location.hostname}:13284`;
 }
 
 export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);

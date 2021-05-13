@@ -20,8 +20,10 @@ import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from '@sentry/browser';
 import * as SentryTracing from '@sentry/tracing';
 import { configure_goban } from 'configure-goban';
-import { GoMath } from 'goban';
+import { GoMath, init_score_estimator, set_remote_scorer, ScoreEstimateRequest, ScoreEstimateResponse } from 'goban';
 import { sfx } from 'sfx';
+import { post } from 'requests';
+import { ai_host } from 'sockets';
 sfx.sync();
 
 declare var ogs_current_language;
@@ -252,6 +254,21 @@ data.watch("config.user", (user) => {
 });
 sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
+/*** Setup remote score estimation */
+set_remote_scorer(remote_score_estimator);
+function remote_score_estimator(req:ScoreEstimateRequest):Promise<ScoreEstimateResponse> {
+    return new Promise<ScoreEstimateResponse>((resolve, reject) => {
+        req.jwt = data.get('config.user_jwt');
+        resolve(
+            post(`${ai_host}/api/score`, req)
+        );
+    });
+}
+init_score_estimator().then((tf) => {
+    // console.log('SE Initialized');
+})
+.catch(err => console.error(err));
+
 
 /*** Generic error handling from the server ***/
 sockets.termination_socket.on("ERROR", errorAlerter);
@@ -259,7 +276,6 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 
 /*** Google analytics ***/
 declare var gtag;
-
 
 browserHistory.listen(location => {
     try {

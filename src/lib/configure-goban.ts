@@ -110,10 +110,11 @@ export function configure_goban() {
             }
         },
 
+        /*
         updateScoreEstimation: (est_winning_color:"black"|"white", number_of_points:number):void => {
             let color = est_winning_color === "black" ? _("Black") : _("White");
             $("#score-estimation").text(interpolate(pgettext("Score estimation result", "Estimation: %s by %s"), [color, number_of_points.toFixed(1)]));
         },
-
+        */
     });
 }
