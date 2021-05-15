@@ -448,7 +448,7 @@ export function alertModerator(obj) {
             _("Please provide a clear description of the problem"),
         input: "textarea",
         showCancelButton: true,
-        closeOnClickOutside: false // folk are accidentally losing their typing.  Shame this doesn't actually work.
+        allowOutsideClick: false // folk are accidentally losing their typing.
     }).then((description) => {
         if (description.length < 5) {
             alertModerator(obj);
