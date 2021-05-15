@@ -1122,11 +1122,11 @@ export function challengeRematch(goban, player, original_game_meta) {
     config.challenge.game.ranked = conf.ranked;
     config.challenge.game.width = conf.width;
     config.challenge.game.height = conf.height;
-	if (`${conf.width}x${conf.height}` in standard_board_sizes) {
-		config.conf.selected_board_size = conf.width + "x" + conf.height;
-	} else {
-		config.conf.selected_board_size = "custom";
-	}
+    if (`${conf.width}x${conf.height}` in standard_board_sizes) {
+        config.conf.selected_board_size = conf.width + "x" + conf.height;
+    } else {
+        config.conf.selected_board_size = "custom";
+    }
 
     config.challenge.game.komi_auto = "custom";
     config.challenge.game.komi = conf.komi;
