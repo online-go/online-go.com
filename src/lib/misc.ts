@@ -445,9 +445,10 @@ export function n2s(n?: number) {
 export function alertModerator(obj) {
     swal({
         text: (obj.user ? _("Report user:") + " " : "") +
-            _("Please provide a brief description of the problem"),
-        input: "text",
+            _("Please provide a clear description of the problem"),
+        input: "textarea",
         showCancelButton: true,
+        allowOutsideClick: false // folk are accidentally losing their typing.
     }).then((description) => {
         if (description.length < 5) {
             alertModerator(obj);

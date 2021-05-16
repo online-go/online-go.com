@@ -531,7 +531,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }
     cancelPaypal = () => {
         swal({
-            html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please log in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
+            html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please sign in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
         });
     }
 

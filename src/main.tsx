@@ -213,7 +213,7 @@ try {
 } catch (e) {
     toast(
         <div>
-            {_("It looks like localStorage is disabled on your browser. Unfortunately you won't be able to login without enabling it first.")}
+            {_("It looks like localStorage is disabled on your browser. Unfortunately you won't be able to sign in without enabling it first.")}
         </div>
     );
 }

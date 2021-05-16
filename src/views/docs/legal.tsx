@@ -403,7 +403,7 @@ export let PrivacyPolicy = (props) => (
 
 
     <h5>Information Collected Upon Registration:</h5>
-    When you create or reconfigure a Online-Go.com account, or log in via a 3rd
+    When you create or reconfigure a Online-Go.com account, or sign in via a 3rd
     party authentication service (such as Google or Facebook), you provide
     some profile information, such as your username, password, and email
     address. Your username is listed publicly on our Services, including

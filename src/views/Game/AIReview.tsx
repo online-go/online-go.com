@@ -240,7 +240,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let user = data.get('user');
 
         if (user.anonymous) {
-            swal(_("Please login first"));
+            swal(_("Please sign in first"));
         } else {
 
             if (user.supporter || user.professional || user.is_moderator) {

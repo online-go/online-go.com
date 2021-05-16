@@ -232,7 +232,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         className={`chat-input  ${this.state.chat_log}`}
                         disabled={user.anonymous || !data.get('user').email_validated}
                         placeholder={user.anonymous
-                            ? _("Login to chat")
+                            ? _("Sign in to chat")
                             : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
                                 : (this.state.chat_log === "malkovich"
                                     ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
