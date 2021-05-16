@@ -107,7 +107,14 @@ export function makeRatingEntry(d:any):RatingEntry {
         outcome = effective_outcome(opponent_rating, rating, handicap);
     }
 
-    return new RatingEntry({
+    if (extra?.special === "initial rating") {
+        // The initial rating has an invalid value of outcome, hence won and lost are invalid
+        // The intial rating does not represent a win or a loss.
+        won = 0;
+        lost = 0;
+    }
+
+    let new_rating_entry = new RatingEntry({
         ended              : new Date(parseInt(d.ended) * 1000),
         game_id            : parseInt(d.game_id),
         played_black       : played_black,
@@ -130,4 +137,7 @@ export function makeRatingEntry(d:any):RatingEntry {
         weak_wins          : (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? won : 0,
         weak_losses        : (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? lost : 0,
     });
+
+    //console.log(new_rating_entry);
+    return new_rating_entry;
 }
