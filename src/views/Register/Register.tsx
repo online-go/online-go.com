@@ -144,11 +144,11 @@ export class Register extends React.PureComponent<{}, any> {
                     </form>
 
                     <div className="social-buttons">
-                        <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Login with Email")}</Link>
-                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span  className="google google-oauth2-icon" /> {_("Login with Google")}</a>
-                        <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
-                        <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
-                        <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="twitter apple-id-icon fa fa-apple" />{_("Login with Apple")}</a>
+                        <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Sign in with Email")}</Link>
+                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span  className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>
+                        <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a>
+                        <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Sign in with Twitter")}</a>
+                        <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="twitter apple-id-icon fa fa-apple" />{_("Sign in with Apple")}</a>
                     </div>
                 </Card>
             </div>
