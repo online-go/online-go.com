@@ -178,7 +178,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                         </form>
 
                         <LineText>{
-                            _("or log in using another account:") /* translators: username or password, or sign in with social authentication */
+                            _("or sign in using another account:") /* translators: username or password, or sign in with social authentication */
                         }</LineText>
                         <SocialLoginButtons />
                     </Card>
@@ -200,10 +200,10 @@ export class SignIn extends React.PureComponent<{}, any> {
 export function SocialLoginButtons():JSX.Element {
     return (
         <div className="social-buttons">
-            <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-oauth2-icon" /> {_("Login with Google")}</a>
-            <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Login with Facebook")}</a>
-            <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Login with Twitter")}</a>
-            <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="apple apple-id-icon fa fa-apple" />{_("Login with AppleID")}</a>
+            <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>
+            <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a>
+            <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Sign in with Twitter")}</a>
+            <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="apple apple-id-icon fa fa-apple" />{_("Sign in with Apple")}</a>
         </div>
     );
 }
