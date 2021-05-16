@@ -24,7 +24,7 @@ let ts_sources = [
     '!src/**/*.test.tsx',
 ];
 let SERVER = "beta.online-go.com";
-SERVER = "online-go.com";
+//SERVER = "online-go.com";
 
 
 gulp.task('watch_dist_js', watch_dist_js);
