@@ -65,15 +65,11 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             qc_visible: false,
             qc_editing: false,
         };
-        this.chat_log_filter = this.chat_log_filter.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
         this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
     }
 
-    chat_log_filter(line) {
-        return true;
-    }
     onKeyPress(event) {
         if (event.charCode === 13) {
             if (event.target.className === "qc-option") {
@@ -197,12 +193,15 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 <div className={"log-player-container" + (this.state.show_player_list ? " show-player-list" : "")}>
                     <div className="chat-log-container">
                         <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
-                            {this.props.chatlog.filter(this.chat_log_filter).map((line, idx) => {
+                            {this.props.chatlog.map((line, idx) => {
                                 let ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
                                 return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
                             })}
+                            {this.props.chatlog.length === 0 &&
+                                <div className='chat-log-please-be-nice'>{_("Please be nice in chat.")}</div>
+                            }
                         </div>
                     </div>
                     {(this.state.show_player_list || null) &&
@@ -236,7 +235,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
                                 : (this.state.chat_log === "malkovich"
                                     ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
-                                    : _("Say hi!")
+                                    : pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: "..."}))
                                   )
                         }
                         onKeyPress={this.onKeyPress}
