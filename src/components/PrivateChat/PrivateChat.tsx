@@ -18,7 +18,7 @@
 import {comm_socket} from "sockets";
 import {challenge} from "ChallengeModal";
 import {createModeratorNote} from "ModNoteModal";
-import {_} from 'translate';
+import {_, pgettext, interpolate} from 'translate';
 import * as data from "data";
 import ITC from "ITC";
 import {splitOnBytes, unicodeFilter} from "misc";
@@ -280,8 +280,6 @@ class PrivateChat {
         }
     }
     updateModeratorBanner() {
-        if (!this.banner) { return; }
-
         if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
             this.banner.removeClass("banner-inactive");
             this.banner.empty();
@@ -305,7 +303,9 @@ class PrivateChat {
             this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
             this.input.attr("disabled", "disabled");
         } else {
-            this.input.removeAttr("placeholder");
+            this.input.attr("placeholder",
+                pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: this.player.username}))
+            );
             this.input.removeAttr("disabled");
         }
     }

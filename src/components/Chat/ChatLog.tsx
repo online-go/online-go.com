@@ -35,7 +35,8 @@ import {
     ChatMessage,
     TopicMessage,
     ChannelInformation,
-    resolveChannelInformation
+    resolveChannelInformation,
+    cachedChannelInformation,
 } from 'chat_manager';
 import { ChatLine } from './ChatLine';
 import { TabCompleteInput } from "TabCompleteInput";
@@ -481,10 +482,15 @@ function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
     let input = useRef(null);
     let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
     let [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
+    let [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 
     useEffect(() => {
         let proxy = chat_manager.join(channel);
         setProxy(proxy);
+
+        resolveChannelInformation(channel).then((info) => {
+            set_channel_name(info.name);
+        }).catch(err => 0);
     }, [channel]);
 
     const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>):boolean => {
@@ -513,7 +519,7 @@ function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
             autoFocus={autoFocus}
             placeholder={
                 !user.email_validated ? _("Chat will be enabled once your email address has been validated") :
-                show_say_hi_placeholder ? _("Say hi!") : ""
+                show_say_hi_placeholder ? pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: channel_name || "..."})) : ""
             }
             disabled={user.anonymous || !data.get('user').email_validated}
             onKeyPress={onKeyPress}

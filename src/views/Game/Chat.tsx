@@ -236,7 +236,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                             : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
                                 : (this.state.chat_log === "malkovich"
                                     ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
-                                    : _("Please be nice in chat.")
+                                    : pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: "..."}))
                                   )
                         }
                         onKeyPress={this.onKeyPress}
