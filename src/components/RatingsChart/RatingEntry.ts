@@ -96,6 +96,8 @@ export function makeRatingEntry(d:any):RatingEntry {
     let extra = JSON.parse(d.extra);
 
     if (d.opponent_id <= 0) {
+        // the initial rating entry has an invalid id like this
+        won = 0;
         lost = 0;
     }
 
@@ -105,13 +107,6 @@ export function makeRatingEntry(d:any):RatingEntry {
     }
     else {
         outcome = effective_outcome(opponent_rating, rating, handicap);
-    }
-
-    if (extra?.special === "initial rating") {
-        // The initial rating has an invalid value of outcome, hence won and lost are invalid
-        // The intial rating does not represent a win or a loss.
-        won = 0;
-        lost = 0;
     }
 
     let new_rating_entry = new RatingEntry({
