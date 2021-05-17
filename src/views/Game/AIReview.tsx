@@ -716,7 +716,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     />
                     { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
                         <div className='reviewing'>
-                            <span>{_("Queing AI review")}</span>
+                            <span>{_("Queuing AI review")}</span>
                             <i className='fa fa-desktop slowstrobe'></i>
                         </div>
                     }
