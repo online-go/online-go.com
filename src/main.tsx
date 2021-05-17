@@ -28,6 +28,7 @@ import { get_bid } from 'SignIn';
 sfx.sync();
 
 declare var ogs_current_language;
+declare var ogs_language_version;
 declare var ogs_version;
 
 let sentry_env = "production";

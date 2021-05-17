@@ -3313,6 +3313,6 @@ export function goban_view_squashed(): boolean {
 
 const shared_ip_with_player_map:{[game_id: number]: boolean} = { };
 
-termination_socket.on('score-estimator-enabled-state', (state:{game_id: number,shared_ip_with_player: boolean}) => {
+termination_socket.on('score-estimator-enabled-state', (state: {game_id: number, shared_ip_with_player: boolean}) => {
     shared_ip_with_player_map[state.game_id] = state.shared_ip_with_player;
 });
