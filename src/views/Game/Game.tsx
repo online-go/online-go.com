@@ -71,7 +71,6 @@ interface GameProperties {
 }
 
 export type ViewMode = "portrait"|"wide"|"square";
-type AdClass = 'no-ads' | 'block' | 'goban-banner' | 'outer-banner' | 'mobile-banner';
 
 export class Game extends React.PureComponent<GameProperties, any> {
     ref_goban;
@@ -1943,7 +1942,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     estimateScore():boolean {
         let user = data.get("user");
-        let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
+        let is_player = (
+            user.id === this.goban.engine.players.black.id ||
+            user.id === this.goban.engine.players.white.id ||
+            shared_ip_with_player_map[this.game_id]
+        );
 
         if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
             return null;
@@ -3307,3 +3310,9 @@ export function goban_view_squashed(): boolean {
     /* This value needs to match the "dock-inline-height" found in Dock.styl */
     return win.height() <= 500;
 }
+
+const shared_ip_with_player_map:{[game_id: number]: boolean} = { };
+
+termination_socket.on('score-estimator-enabled-state', (state:{game_id: number,shared_ip_with_player: boolean}) => {
+    shared_ip_with_player_map[state.game_id] = state.shared_ip_with_player;
+});

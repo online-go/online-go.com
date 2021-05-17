@@ -30,9 +30,14 @@ import {Md5} from 'ts-md5/dist/md5';
 window['Md5'] = Md5;
 declare var swal;
 
-export function get_ebi() {
+export function get_bid() {
     let bid = data.get("bid") || `${Math.random()}`.split(".")[1];
     data.set("bid", bid);
+    return bid;
+}
+
+export function get_ebi() {
+    let bid = get_bid();
 
     let plugin_hash = "xxx";
     let user_agent_hash = "xxx";

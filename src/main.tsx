@@ -24,6 +24,7 @@ import { GoMath, init_score_estimator, set_remote_scorer, ScoreEstimateRequest, 
 import { sfx } from 'sfx';
 import { post } from 'requests';
 import { ai_host } from 'sockets';
+import { get_bid } from 'SignIn';
 sfx.sync();
 
 declare var ogs_current_language;
@@ -229,6 +230,11 @@ data.watch("config.user", (user) => {
                 player_id: user.id,
                 username: user.username,
                 jwt: data.get('config.user_jwt'),
+                bid: get_bid(),
+                useragent: navigator.userAgent,
+                language: ogs_current_language,
+                language_version: ogs_language_version,
+                client_version: ogs_version,
             });
             sockets.comm_socket.send("chat/connect", {
                 auth: data.get("config.chat_auth"),
