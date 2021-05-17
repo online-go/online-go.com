@@ -1993,6 +1993,23 @@ export class Game extends React.PureComponent<GameProperties, any> {
              }
         ).catch(errorAlerter);
     }
+    force_autoscore = () => {
+        let moderation_note = null;
+        do {
+            moderation_note = prompt("Autoscoring game - Moderator note:");
+            if (moderation_note == null) {
+                return;
+            }
+            moderation_note = moderation_note.trim();
+        } while (moderation_note === "");
+
+        post("games/%%/moderate", this.game_id,
+             {
+                 "autoscore": true,
+                 "moderation_note": moderation_note,
+             }
+        ).catch(errorAlerter);
+    }
     private annul(tf:boolean):void {
         let moderation_note = null;
         do {
@@ -3187,6 +3204,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 {mod && <a onClick={this.decide_black}><i className="fa fa-gavel"></i> {_("Black Wins")}</a>}
                 {mod && <a onClick={this.decide_white}><i className="fa fa-gavel"></i> {_("White Wins")}</a>}
                 {mod && <a onClick={this.decide_tie}><i className="fa fa-gavel"></i> {_("Tie")}</a>}
+                {mod && <a onClick={this.force_autoscore}><i className="fa fa-gavel"></i> {_("Auto-score")}</a>}
 
                 {(annul && annulable) && <a onClick={() => this.annul(true)}><i className="fa fa-gavel"></i> {_("Annul")}</a> /* mod can annul this game */}
                 {(annul && unannulable) && <a onClick={() => this.annul(false)}><i className="fa fa-gavel unannulable"></i> {"Remove annulment"}</a> /* mod can't annul, presumably because it's already annulled */}
