@@ -2808,7 +2808,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             <span>
                 {(this.state.score_estimate.winner || null) &&
                     <span>
-                        {interpolate(_("{{winner}} by {{score}}"), {"winner": this.goban.score_estimate.winner, "score": this.goban.score_estimate.amount})}
+                        {interpolate(_("{{winner}} by {{score}}"), {"winner": this.goban.score_estimate.winner, "score": this.goban.score_estimate.amount.toFixed(1)})}
                     </span>
                 }
                 {(!this.state.score_estimate.winner || null) &&
