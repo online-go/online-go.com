@@ -100,13 +100,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             loading: true,
             tournament: {
                 id: tournament_id,
-                name: "",
+                //name: "",
+                name: "Culture: join 4",
                 director: tournament_id === 0 ? data.get("user") : {},
-                time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
+                //time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
+                time_start: moment(new Date()).add(1, "minute").format(),
 
                 board_size: "19",
                 rules: "japanese",
-                description: "",
+                //description: "",
+                description: "culture culture culture culture culture culture culture",
                 handicap: "0",
                 time_control_parameters: {
                     system: "fischer",
@@ -115,15 +118,20 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     max_time: 7 * 86400,
                     time_increment: 86400,
                 },
-                tournament_type: "mcmahon",
+                //tournament_type: "mcmahon",
+                tournament_type: "manual",
                 min_ranking: "5",
                 max_ranking: "38",
                 analysis_enabled: true,
                 exclude_provisional: true,
                 auto_start_on_max: false,
+                //scheduled_rounds: false,
+                scheduled_rounds: true,
                 exclusivity: "open",
-                first_pairing_method: "slide",
-                subsequent_pairing_method: "slaughter",
+                first_pairing_method: "manual",
+                subsequent_pairing_method: "manual",
+                //first_pairing_method: "slide",
+                //subsequent_pairing_method: "slaughter",
                 players_start: 4,
                 settings: {
                     lower_bar: "10",
@@ -134,12 +142,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 },
                 lead_time_seconds: 1800,
                 base_points: 10.0,
-
-
             },
+            rounds: {},
             editing: tournament_id === 0,
             raw_rounds: [],
-            rounds: [],
+            //round_start_times: [],
+            round_start_times: (new Array(12).fill(0).map((t, i) => moment(new Date(Date.now() + (i + 1) * 180000)).utc().format())),
             selected_round: 0,
             sorted_players: [],
             players: {},
@@ -973,6 +981,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         tournament.time_control_parameters.time_control = tournament.time_control_parameters.system;
 
         delete tournament.settings.active_round;
+        tournament.round_start_times = this.state.round_start_times;
 
         if (this.state.tournament.id) {
             put(`tournaments/${this.state.tournament.id}`, tournament)
@@ -993,7 +1002,36 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
         }
     }
-    setTournamentType  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
+    setRoundStartTime  = (idx, t)  => {
+        if (t && t.format) {
+            let arr = dup(this.state.round_start_times);
+            arr[idx] = t.format();
+            this.setState({round_start_times: arr});
+        }
+    }
+    getRoundStartTime  = (idx) => {
+        if (idx < this.state.round_start_times.length) {
+            return new Date(this.state.round_start_times[idx]);
+        } else {
+            //return new Date();
+            return null;
+        }
+    }
+    setTournamentType  = (ev) => {
+        let update:any = {
+            tournament_type: ev.target.value
+        };
+        if (ev.target.value === "manual") {
+            update.first_pairing_method = "manual";
+            update.subsequent_pairing_method = "manual";
+        } else {
+            if (this.state.tournament.first_pairing_method === "manual" || this.state.tournament.subsequent_pairing_method === "manual") {
+                update.first_pairing_method = "slide";
+                update.subsequent_pairing_method = "slaughter";
+            }
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
     setLowerBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {lower_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
@@ -1008,8 +1046,25 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
     setAutoStartOnMax          = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
-    setFirstPairingMethod      = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
-    setSubsequentPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {subsequent_pairing_method: ev.target.value})});
+    setFirstPairingMethod      = (ev) => {
+        let update:any = {
+            first_pairing_method: ev.target.value
+        };
+        if (ev.target.value === "manual" || this.state.tournament.subsequent_pairing_method === "manual") {
+            update.subsequent_pairing_method = ev.target.value;
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
+
+    setSubsequentPairingMethod = (ev) => {
+        let update:any = {
+            subsequent_pairing_method: ev.target.value
+        };
+        if (ev.target.value === "manual" || this.state.tournament.first_pairing_method === "manual") {
+            update.first_pairing_method = ev.target.value;
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
     setTournamentExclusivity   = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
 
     setNumberOfRounds  = (ev) => {
@@ -1027,6 +1082,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     setMinRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
     setMaxRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
     setExcludeProvisionalPlayers = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclude_provisional: !ev.target.checked})});
+    setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
     setDescription     = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
     setTimeControl     = (tc) => {
         console.log(tc);
@@ -1080,6 +1136,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
         let provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
         let analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+        let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
         let min_bar = "";
         let max_bar = "";
@@ -1137,6 +1194,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             setTimeout(() => this.updateEliminationTrees(), 1);
         }
 
+        let manual = this.state.tournament.tournament_type === "manual";
+        let has_fixed_number_of_rounds = (tournament.tournament_type === "mcmahon" || tournament.tournament_type === "s_mcmahon" || tournament.tournament_type === "manual" || null);
 
         return (
         <div className="Tournament page-width">
@@ -1240,6 +1299,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <option value="swiss">{_("Swiss")}</option>
                                     <option value="elimination">{_("Single Elimination")}</option>
                                     <option value="double_elimination">{_("Double Elimination")}</option>
+                                    <option value="manual">{pgettext("Tournament type where the tournament director does all pairing", "Manual")}</option>
                                  </select>
                             }
                             </td>
@@ -1304,10 +1364,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.first_pairing_method}
                                             onChange={this.setFirstPairingMethod}
                                             >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={manual} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={manual} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={manual} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={manual} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!manual} value="manual">{pgettext("Tournament director will pair opponents manually", "Manual")}</option>
                                           </select>
 
 
@@ -1325,23 +1386,28 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.subsequent_pairing_method}
                                             onChange={this.setSubsequentPairingMethod}
                                             >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={manual} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={manual} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={manual} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={manual} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!manual} value="manual">{pgettext("Tournament director will pair opponents manually", "Manual")}</option>
                                           </select>
                                     }
                                 </td>
                             </tr>
                         }
-                        {(tournament.tournament_type === "mcmahon" || tournament.tournament_type === "s_mcmahon" || null) &&
+                        {has_fixed_number_of_rounds &&
                             <tr>
                                  <th>{_("Number of Rounds")}</th>
                                  <td>
                                     {!editing
                                         ? num_rounds
                                         : <select value={tournament.settings.num_rounds} onChange={this.setNumberOfRounds}>
-                                            {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((v) => (
+                                            {
+                                                (tournament.tournament_type === "manual"
+                                                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                    : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                ).map((v) => (
                                                 <option key={v} value={v}>{v}</option>
                                             ))}
                                           </select>
@@ -1446,6 +1512,44 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        {has_fixed_number_of_rounds &&
+                            <React.Fragment>
+                                <tr>
+
+                                    <th>
+                                        <label
+                                            htmlFor="scheduled_rounds"
+                                            title={_("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.")}>
+                                                {pgettext("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.", "Scheduled rounds")}
+                                        </label>
+                                    </th>
+                                    <td>
+                                        {!editing
+                                            ? scheduled_rounds_text
+                                            : <input type="checkbox" id="scheduled_rounds" checked={tournament.scheduled_rounds} onChange={this.setScheduledRounds} />
+                                        }
+                                    </td>
+                                </tr>
+                            </React.Fragment>
+                        }
+                        {has_fixed_number_of_rounds && this.state.tournament.scheduled_rounds &&
+                            <React.Fragment>
+                                {(new Array(parseInt(tournament.settings.num_rounds))).fill(0).map((elt:any, idx:number) => (
+                                    <tr key={idx}>
+                                        <th>
+                                            {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
+                                        </th>
+                                        <td>
+                                            <Datetime
+                                                inputProps={{
+                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
+                                                }}
+                                                onChange={(d) => this.setRoundStartTime(idx, d)} value={this.getRoundStartTime(idx)}/>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </React.Fragment>
+                        }
                         </tbody>
                     </table>
                 </div>
@@ -1907,12 +2011,14 @@ export const TOURNAMENT_TYPE_NAMES = {
     "swiss": _("Swiss"),
     "elimination": _("Single Elimination"),
     "double_elimination": _("Double Elimination"),
+    "manual": pgettext("Tournament type where the tournament director does all pairing", "Manual"),
 };
 export const  TOURNAMENT_PAIRING_METHODS = {
     "random": pgettext("Tournament type", "Random"),
     "slaughter": pgettext("Tournament type", "Slaughter"),
     "strength": pgettext("Tournament type", "Strength"),
     "slide": pgettext("Tournament type", "Slide"),
+    "manual": pgettext("Tournament director will pair opponents manually", "Manual"),
 };
 
 function fromNow(t) {
