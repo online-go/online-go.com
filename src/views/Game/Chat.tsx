@@ -199,9 +199,11 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
                                 return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
                             })}
-                            {this.props.chatlog.length === 0 &&
+
+                            {/*
+                                this.props.chatlog.length === 0 &&
                                 <div className='chat-log-please-be-nice'>{_("Please be nice in chat.")}</div>
-                            }
+                            */}
                         </div>
                     </div>
                     {(this.state.show_player_list || null) &&
