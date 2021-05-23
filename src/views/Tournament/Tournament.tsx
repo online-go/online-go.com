@@ -43,6 +43,8 @@ import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import {computeAverageMoveTime} from 'goban';
 import * as d3 from "d3";
+import * as Dropzone from "react-dropzone";
+
 
 
 declare var swal;
@@ -119,7 +121,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     time_increment: 86400,
                 },
                 //tournament_type: "mcmahon",
-                tournament_type: "manual",
+                tournament_type: "opengotha",
                 min_ranking: "5",
                 max_ranking: "38",
                 analysis_enabled: true,
@@ -128,8 +130,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 //scheduled_rounds: false,
                 scheduled_rounds: true,
                 exclusivity: "open",
-                first_pairing_method: "manual",
-                subsequent_pairing_method: "manual",
+                first_pairing_method: "opengotha",
+                subsequent_pairing_method: "opengotha",
                 //first_pairing_method: "slide",
                 //subsequent_pairing_method: "slaughter",
                 players_start: 4,
@@ -203,8 +205,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
             window.document.title = tournament.name;
 
-            while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
-                rounds.pop(); /* account for server bugs that can create empty last rounds */
+            if (tournament.tournament_type !== 'opengotha') {
+                while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
+                    rounds.pop(); /* account for server bugs that can create empty last rounds */
+                }
             }
 
             let use_elimination_trees = false;
@@ -1021,11 +1025,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let update:any = {
             tournament_type: ev.target.value
         };
-        if (ev.target.value === "manual") {
-            update.first_pairing_method = "manual";
-            update.subsequent_pairing_method = "manual";
+        if (ev.target.value === "opengotha") {
+            update.first_pairing_method = "opengotha";
+            update.subsequent_pairing_method = "opengotha";
         } else {
-            if (this.state.tournament.first_pairing_method === "manual" || this.state.tournament.subsequent_pairing_method === "manual") {
+            if (this.state.tournament.first_pairing_method === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
                 update.first_pairing_method = "slide";
                 update.subsequent_pairing_method = "slaughter";
             }
@@ -1050,7 +1054,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let update:any = {
             first_pairing_method: ev.target.value
         };
-        if (ev.target.value === "manual" || this.state.tournament.subsequent_pairing_method === "manual") {
+        if (ev.target.value === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
             update.subsequent_pairing_method = ev.target.value;
         }
         this.setState({tournament: Object.assign({}, this.state.tournament, update)});
@@ -1060,7 +1064,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let update:any = {
             subsequent_pairing_method: ev.target.value
         };
-        if (ev.target.value === "manual" || this.state.tournament.first_pairing_method === "manual") {
+        if (ev.target.value === "opengotha" || this.state.tournament.first_pairing_method === "opengotha") {
             update.first_pairing_method = ev.target.value;
         }
         this.setState({tournament: Object.assign({}, this.state.tournament, update)});
@@ -1194,8 +1198,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             setTimeout(() => this.updateEliminationTrees(), 1);
         }
 
-        let manual = this.state.tournament.tournament_type === "manual";
-        let has_fixed_number_of_rounds = (tournament.tournament_type === "mcmahon" || tournament.tournament_type === "s_mcmahon" || tournament.tournament_type === "manual" || null);
+        let opengotha = this.state.tournament.tournament_type === "opengotha";
+        let has_fixed_number_of_rounds = (
+            tournament.tournament_type === "mcmahon" ||
+            tournament.tournament_type === "s_mcmahon" ||
+            tournament.tournament_type === "opengotha" ||
+            null
+        );
 
         return (
         <div className="Tournament page-width">
@@ -1208,6 +1217,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         ? <h2><i className="fa fa-trophy"></i> {tournament.name}</h2>
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
+
+                    {tournament.tournament_type === "opengotha" && <OpenGothaTournamentUploadNewPairing tournament={tournament} />}
+
                     {!editing && !loading &&
                         <div>
                             {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
@@ -1299,7 +1311,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <option value="swiss">{_("Swiss")}</option>
                                     <option value="elimination">{_("Single Elimination")}</option>
                                     <option value="double_elimination">{_("Double Elimination")}</option>
-                                    <option value="manual">{pgettext("Tournament type where the tournament director does all pairing", "Manual")}</option>
+                                    <option value="opengotha">{pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha")}</option>
                                  </select>
                             }
                             </td>
@@ -1364,11 +1376,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.first_pairing_method}
                                             onChange={this.setFirstPairingMethod}
                                             >
-                                             <option disabled={manual} value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option disabled={manual} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option disabled={manual} value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option disabled={manual} value="strength">{pgettext("Tournament type", "Strength")}</option>
-                                             <option disabled={!manual} value="manual">{pgettext("Tournament director will pair opponents manually", "Manual")}</option>
+                                             <option disabled={opengotha} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={opengotha} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={opengotha} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={opengotha} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!opengotha} value="opengotha">{pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha")}</option>
                                           </select>
 
 
@@ -1386,11 +1398,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.subsequent_pairing_method}
                                             onChange={this.setSubsequentPairingMethod}
                                             >
-                                             <option disabled={manual} value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option disabled={manual} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option disabled={manual} value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option disabled={manual} value="strength">{pgettext("Tournament type", "Strength")}</option>
-                                             <option disabled={!manual} value="manual">{pgettext("Tournament director will pair opponents manually", "Manual")}</option>
+                                             <option disabled={opengotha} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={opengotha} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={opengotha} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={opengotha} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!opengotha} value="opengotha">{pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha")}</option>
                                           </select>
                                     }
                                 </td>
@@ -1404,7 +1416,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                         ? num_rounds
                                         : <select value={tournament.settings.num_rounds} onChange={this.setNumberOfRounds}>
                                             {
-                                                (tournament.tournament_type === "manual"
+                                                (tournament.tournament_type === "opengotha"
                                                     ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                                                     : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                                                 ).map((v) => (
@@ -1632,7 +1644,25 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 </div>
             }
 
-            {!loading && tournament.started &&
+            {!loading && tournament.started && tournament.tournament_type === "opengotha" &&
+                <div className="bottom-details">
+                    <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+
+                    <div className="results">
+                        <div>
+                            <Steps
+                                completed={this.state.rounds.length}
+                                total={this.state.rounds.length}
+                                selected={this.state.selected_round}
+                                onChange={this.setSelectedRound}
+                                />
+                            <OpenGothaTournamentRound tournament={tournament} selectedRound={this.state.selected_round} players={this.state.sorted_players} />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            {!loading && tournament.started && tournament.tournament_type !== "opengotha" &&
                 <div className="bottom-details">
                     <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
@@ -1972,6 +2002,46 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 }
 
 
+
+function OpenGothaTournamentRound({tournament, selectedRound, players}:{tournament: any, selectedRound: number, players:Array<any>}):JSX.Element {
+    const round_started = false;
+
+    if (round_started) {
+
+
+    } else {
+        return (
+            <div className='OpenGothaTournamentRound'>
+                <h3>{_("Unpaired players")}</h3>
+                <select size={5}>
+                    {players.map((p, idx) => <option key={p.id}>{p.username}</option>)}
+                </select>
+            </div>
+        );
+    }
+}
+
+function OpenGothaTournamentUploadNewPairing({tournament}:{tournament: any}):JSX.Element {
+
+    function uploadFile(files) {
+        put("tournaments/%%/opengotha", tournament.id, files[0])
+        .then((res) => {
+            console.log("Upload successful", res);
+        })
+        .catch(errorAlerter);
+    }
+
+
+    return (
+        <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
+            {_("Update tournament by uploading the updated OpenGotha tournament file here")}
+        </Dropzone>
+
+    );
+}
+
+
+
 export function rankRestrictionText(min_ranking, max_ranking) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
@@ -2011,14 +2081,14 @@ export const TOURNAMENT_TYPE_NAMES = {
     "swiss": _("Swiss"),
     "elimination": _("Single Elimination"),
     "double_elimination": _("Double Elimination"),
-    "manual": pgettext("Tournament type where the tournament director does all pairing", "Manual"),
+    "opengotha": pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha"),
 };
 export const  TOURNAMENT_PAIRING_METHODS = {
     "random": pgettext("Tournament type", "Random"),
     "slaughter": pgettext("Tournament type", "Slaughter"),
     "strength": pgettext("Tournament type", "Strength"),
     "slide": pgettext("Tournament type", "Slide"),
-    "manual": pgettext("Tournament director will pair opponents manually", "Manual"),
+    "opengotha": pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha"),
 };
 
 function fromNow(t) {
