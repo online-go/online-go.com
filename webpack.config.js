@@ -12,7 +12,19 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 let plugins = [];
 
-plugins.push(new ForkTsCheckerWebpackPlugin());
+plugins.push(
+    new ForkTsCheckerWebpackPlugin({
+        typescript: {
+            diagnosticOptions: { 
+                syntactic: true, 
+                semantic: true, 
+                declaration: true, 
+                global: true 
+            }
+        }
+    })
+);
+
 
 plugins.push(new webpack.BannerPlugin(
 `Copyright (C) 2012-2020  Online-Go.com
@@ -93,11 +105,25 @@ module.exports = (env, argv) => {
                 // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
                 {
                     test: /\.tsx?$/,
-                    loader: "ts-loader",
                     exclude: /node_modules/,
-                    options: {
-                        transpileOnly: true
-                    }
+                    use: [
+                        { loader: 'cache-loader' },
+                        {
+                            loader: 'thread-loader',
+                            options: {
+                                poolTimeout: Infinity,
+                                name: 'TypeScript compiler',
+                            }
+                        },
+                        {
+                            loader: "ts-loader",
+                            options: {
+                                configFile: 'tsconfig.json',
+                                transpileOnly: true,
+                                happyPackMode: true
+                            }
+                        }
+                    ]
                 }
             ]
         },

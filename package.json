@@ -26,7 +26,7 @@
     "cssnano": "^5.0.2",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
-    "fork-ts-checker-webpack-plugin": "^5.1.0",
+    "fork-ts-checker-webpack-plugin": "^6.2.10",
     "goban": "=0.5.52",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -53,6 +53,8 @@
     "webpack": "^5.37.0",
     "webpack-bundle-analyzer": "^4.1.1",
     "webpack-cli": "^4.7.0",
+    "thread-loader": "^3.0.4",
+    "cache-loader": "^4.1.0",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.22.10"
   },
