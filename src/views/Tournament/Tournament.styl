@@ -292,13 +292,68 @@
 }
 
 
-.ManualTournamentRound {
+.OpenGothaTournamentRound {
     dispay: flex;
     flex-direciton: row;
+    align-items: center;
+
+    h3 {
+        text-align: center;
+    }
 
     select {
         min-width: 20rem;
         max-width: 100vw;
+    }
+
+
+    .scheduled-matches {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .scheduled-match {
+            display: block;
+            > span:first-child {
+                text-align: right;
+            }
+            > span {
+                display: inline-block;
+                max-width: 40vw;
+                overflow: hidden;
+                margin-right: 1rem;
+                margin-left: 1rem;
+            }
+        }
+    }
+
+    .round-td-controls {
+        text-align: center;
+        margin: 1rem;
+    }
+
+    .round-group {
+        margin-top: 2rem !important;
+    }
+}
+
+.OpenGothaUploadDownload {
+    display: flex;
+    flex-direction: row;
+    margin: 1rem;
+    > div {
+        flex: 50;
+        display: flex;
+        flex-direction column;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .fa {
+        font-size: 4rem;
+        margin: 1rem;
     }
 }
 

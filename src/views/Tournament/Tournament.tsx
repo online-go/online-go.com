@@ -42,9 +42,9 @@ import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import {computeAverageMoveTime} from 'goban';
+import {openMergeReportModal} from 'MergeReportModal';
 import * as d3 from "d3";
 import * as Dropzone from "react-dropzone";
-
 
 
 declare var swal;
@@ -145,7 +145,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 lead_time_seconds: 1800,
                 base_points: 10.0,
             },
-            rounds: {},
+            rounds: [],
             editing: tournament_id === 0,
             raw_rounds: [],
             //round_start_times: [],
@@ -225,7 +225,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 tournament: tournament,
                 raw_rounds: raw_rounds,
                 rounds: rounds,
-                selected_round: rounds.length - 1,
+                //selected_round: rounds.length - 1,
+                selected_round: (tournament.settings.active_round || 1) - 1,
                 use_elimination_trees: use_elimination_trees,
             });
         })
@@ -987,14 +988,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         delete tournament.settings.active_round;
         tournament.round_start_times = this.state.round_start_times;
 
+        let onError = (err:any) => {
+            this.setState({editing: true});
+            errorAlerter(err);
+        };
+
         if (this.state.tournament.id) {
             put(`tournaments/${this.state.tournament.id}`, tournament)
             .then(() => this.resolve(this.state.tournament_id))
-            .catch(errorAlerter);
+            .catch(onError);
         } else {
             post("tournaments/", tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
-            .catch(errorAlerter);
+            .catch(onError);
         }
 
 
@@ -1218,7 +1224,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
 
-                    {tournament.tournament_type === "opengotha" && <OpenGothaTournamentUploadNewPairing tournament={tournament} />}
+                    {tournament.tournament_type === "opengotha" && <OpenGothaTournamentUploadDownload tournament={tournament} reloadCallback={this.reloadTournament}/>}
 
                     {!editing && !loading &&
                         <div>
@@ -1656,7 +1662,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 selected={this.state.selected_round}
                                 onChange={this.setSelectedRound}
                                 />
-                            <OpenGothaTournamentRound tournament={tournament} selectedRound={this.state.selected_round} players={this.state.sorted_players} />
+                            <OpenGothaTournamentRound
+                                tournament={tournament}
+                                selectedRound={this.state.selected_round + 1}
+                                players={this.state.sorted_players}
+                                rounds={this.state.rounds}
+                                />
                         </div>
                     </div>
                 </div>
@@ -2003,40 +2014,175 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
 
 
-function OpenGothaTournamentRound({tournament, selectedRound, players}:{tournament: any, selectedRound: number, players:Array<any>}):JSX.Element {
-    const round_started = false;
+function OpenGothaTournamentRound({tournament, selectedRound, players, rounds}:{tournament: any, selectedRound: number, players:Array<any>, rounds:Array<any>}):JSX.Element {
+    window['rounds'] = rounds;
+    const round_started = !!(rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0);
+    console.log("Selected round: ", selectedRound);
+
+
+    function startRound() {
+        console.log("ok");
+        swal({
+            text: interpolate(
+                pgettext("Start the tournament round now? Leave {{num}} as it is, it is a placeholder for the round number.", "Start round {{num}} now?"),
+                {num: selectedRound}
+            ),
+            showCancelButton: true,
+            //focusCancel: true
+        })
+        .then(() => {
+            post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`)
+            .then(ignore)
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+
+    let selected_round = rounds[selectedRound - 1];
 
     if (round_started) {
-
-
-    } else {
         return (
             <div className='OpenGothaTournamentRound'>
-                <h3>{_("Unpaired players")}</h3>
-                <select size={5}>
-                    {players.map((p, idx) => <option key={p.id}>{p.username}</option>)}
-                </select>
+                <div className="round-group">
+                    <table>
+                        <tbody>
+                        <tr>
+                            {(tournament.ended || null) && <th>{_("Rank")}</th>}
+                            <th>{_("Player")}</th>
+                            <th>{_("Opponent")}</th>
+                            <th>{_("Result")}</th>
+                            <th>{_("Points")}</th>
+                            {(tournament.ended || null) && <th className="rotated-title"><span className="rotated">&Sigma; {_("Opponent Scores")}</span></th>}
+                            {(tournament.ended || null) && <th className="rotated-title"><span className="rotated">&Sigma; {_("Defeated Scores")}</span></th>}
+                            <th></th>
+                        </tr>
+                        {selected_round.matches.map((m, idx) => {
+                            let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
+                            if (pxo === "error-invalid-player-or-opponent") {
+                                if (!logspam_debounce) {
+                                    logspam_debounce = setTimeout(() => {
+                                        console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                        logspam_debounce = undefined;
+                                    }, 10);
+                                }
+                            }
+
+                            return (
+                            <tr key={idx} >
+                                {(tournament.ended || null) && <td className="rank">{m.player?.rank}</td>}
+                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
+                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+
+                                <td className={"result " + selected_round.colors[pxo]}>
+                                    <Link to={`/game/${selected_round.game_ids[pxo]}`}>
+                                        {selected_round.results[pxo]}
+                                    </Link>
+                                </td>
+
+                                <td className="points">{m.player && m.player.points}</td>
+                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sos}</td>}
+                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sodos}</td>}
+                                <td className="notes">{m.player && m.player.notes}</td>
+                            </tr>
+                            );
+                        })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
+    } else {
+        let roundMatches = tournament.settings?.["opengotha-staged-games"]?.[selectedRound] || {};
+        let matches:Array<any> = [];
+
+        for (let k in roundMatches) {
+            matches.push(roundMatches[k]);
+        }
+        console.log(selectedRound);
+        console.log(tournament.settings?.["opengotha-staged-games"]);
+        console.log(roundMatches);
+
+        /*
+        matches.sort((a, b) => {
+            return b.white.ranking - a.white.ranking;
+        });
+        */
+
+        return (
+            <div className='OpenGothaTournamentRound'>
+                {(tournament.can_administer || null) &&
+                    <div className='round-td-controls'>
+                        <button className='primary' onClick={startRound}>{pgettext("Start a round of games in a tournament", "Start round")}</button>
+                    </div>
+                }
+
+                <h3>{pgettext("Tournament games that are scheduled to take place", "Scheduled matches")}</h3>
+
+                <div className='scheduled-matches'>
+                    {matches.map((match, idx) => (
+                        <div className='scheduled-match' key={`${match.black.id}v${match.white.id}`}>
+                            <Player user={match.black} disable-cache-update />
+                            <Player user={match.white} disable-cache-update />
+                            {(match.handicap !== 0 || null) &&
+                                <span className='handicap'>HC {match.handicap}</span>
+                            }
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        /*
+            <h3>{_("Unpaired players")}</h3>
+            <select size={5}>
+                {players.map((p, idx) => <option key={p.id}>{p.username}</option>)}
+            </select>
+        */
+
     }
 }
 
-function OpenGothaTournamentUploadNewPairing({tournament}:{tournament: any}):JSX.Element {
+function OpenGothaTournamentUploadDownload({tournament, reloadCallback}:{tournament: any, reloadCallback: () => void}):JSX.Element {
+    if (!tournament.can_administer) {
+        return null;
+    }
 
     function uploadFile(files) {
         put("tournaments/%%/opengotha", tournament.id, files[0])
         .then((res) => {
             console.log("Upload successful", res);
+            openMergeReportModal(res.merge_report);
+            reloadCallback();
         })
-        .catch(errorAlerter);
+        .catch((res) => {
+            console.error(res);
+            try {
+                openMergeReportModal(res.responseJSON.merge_report);
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
+
+    function download() {
+        window.open(`/api/v1/tournaments/${tournament.id}/opengotha`, '_blank');
     }
 
 
     return (
-        <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
-            {_("Update tournament by uploading the updated OpenGotha tournament file here")}
-        </Dropzone>
-
+        <Card>
+            <h3>{pgettext("Area to upload and download OpenGotha files to", "OpenGotha File Area")}</h3>
+            <div className='OpenGothaUploadDownload'>
+                <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
+                    <i className='fa fa-upload' />
+                    {pgettext("Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com", "Upload to Online-Go.com ")}
+                </Dropzone>
+                <div onClick={download} >
+                    <i className='fa fa-download' />
+                    {pgettext("Download an updated XML file for use with OpenGotha", "Download to OpenGotha")}
+                </div>
+            </div>
+        </Card>
     );
 }
 
