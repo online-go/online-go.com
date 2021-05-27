@@ -109,13 +109,6 @@ module.exports = (env, argv) => {
                     use: [
                         { loader: 'cache-loader' },
                         {
-                            loader: 'thread-loader',
-                            options: {
-                                poolTimeout: Infinity,
-                                name: 'TypeScript compiler',
-                            }
-                        },
-                        {
                             loader: "ts-loader",
                             options: {
                                 configFile: 'tsconfig.json',

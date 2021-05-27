@@ -53,7 +53,6 @@
     "webpack": "^5.37.0",
     "webpack-bundle-analyzer": "^4.1.1",
     "webpack-cli": "^4.7.0",
-    "thread-loader": "^3.0.4",
     "cache-loader": "^4.1.0",
     "xgettext-js": "^1.1.0",
     "yarn": "^1.22.10"
