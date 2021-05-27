@@ -83,10 +83,10 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 299041 , "username": "Razza99"        , "country": ["gb"] , "languages": [en]} ,
             {"id": 412892 , "username": "Eugene"         , "country": ["au"] , "languages": [en]} ,
             {"id": 445315 , "username": "BHydden"        , "country": ["au"] , "languages": [en]} ,
-            {"id": 391401 , "username": "Conrad Melville", "country": ["us"] , "languages": [en]} ,
             {"id": 449941 , "username": "flovo"          , "country": ["eu"] , "languages": [de, en]} ,
             {"id": 209826 , "username": "Vsotvep"        , "country": ["nl"] , "languages": [nl, en, jp]} ,
             {"id": 683917 , "username": "RubyMineshaft"  , "country": ["us"] , "languages": [en, cn]} ,
+            {"id": 497519 , "username": "Kosh"           , "country": ["au"] , "languages": [en]} ,
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
