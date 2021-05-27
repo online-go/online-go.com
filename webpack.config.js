@@ -139,8 +139,8 @@ module.exports = (env, argv) => {
             },
             minimizer: [
                 new TerserPlugin({
+                    parallel: true,
                     terserOptions: {
-                      safari10: true,
                     },
                 }),
             ],
