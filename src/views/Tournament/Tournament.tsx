@@ -109,7 +109,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 time_start: moment(new Date()).add(1, "minute").format(),
 
                 board_size: "19",
-                rules: "japanese",
+                //rules: "japanese",
+                rules: "aga",
                 //description: "",
                 description: "culture culture culture culture culture culture culture",
                 handicap: "0",
@@ -1034,6 +1035,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         if (ev.target.value === "opengotha") {
             update.first_pairing_method = "opengotha";
             update.subsequent_pairing_method = "opengotha";
+            update.rules = "aga";
         } else {
             if (this.state.tournament.first_pairing_method === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
                 update.first_pairing_method = "slide";
@@ -1097,6 +1099,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     setTimeControl     = (tc) => {
         console.log(tc);
         this.setState({tournament: Object.assign({}, this.state.tournament, {time_control_parameters: tc})});
+    }
+    updateNotes        = (data) => {
+        let newSettings = Object.assign({}, this.state.tournament.settings, data);
+        this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
 
     render() {
@@ -1216,6 +1222,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         <div className="Tournament page-width">
             <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
             <UIPush event="reload-tournament" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
+            <UIPush event="update-round-notes" channel={`tournament-${this.state.tournament_id}`} action={this.updateNotes}/>
 
             <div className="top-details">
                 <div >
@@ -1234,7 +1241,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             }
 
                             {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
-                                <button className="danger xs" onClick={this.startTournament}>{_("Start Tournament Now")}</button>
+                                <button className="danger xs" onClick={this.startTournament}>{
+                                    tournament.tournament_type === "opengotha"
+                                    ?  pgettext("Close tournament registration", "Close registration")
+                                    : _("Start Tournament Now")
+                                }</button>
                             }
                             {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
                                 <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
@@ -1347,6 +1358,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             </tr>
                         }
 
+                        {(tournament.tournament_type !== "opengotha") &&
                         <tr>
                             <th >{_("Players")}</th>
                             <td>
@@ -1363,16 +1375,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
-                        <tr>
-                            <th><label htmlFor="autostart">{_("Start when full")}</label></th>
-                            <td>
-                                {!editing
-                                    ? <span>{tournament.auto_start_on_max ? _("Yes") : _("No")}</span>
-                                    : <input type="checkbox" id="autostart" checked={tournament.auto_start_on_max} onChange={this.setAutoStartOnMax} />
-                                }
-                            </td>
-                        </tr>
-                        {(tournament.tournament_type !== "roundrobin") &&
+                        }
+                        {(tournament.tournament_type !== "opengotha") &&
+                            <tr>
+                                <th><label htmlFor="autostart">{_("Start when full")}</label></th>
+                                <td>
+                                    {!editing
+                                        ? <span>{tournament.auto_start_on_max ? _("Yes") : _("No")}</span>
+                                        : <input type="checkbox" id="autostart" checked={tournament.auto_start_on_max} onChange={this.setAutoStartOnMax} />
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        {(tournament.tournament_type !== "roundrobin" && tournament.tournament_type !== "opengotha") &&
                             <tr>
                                 <th >{_("Initial Pairing Method")}</th>
                                 <td >
@@ -1394,7 +1409,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 </td>
                             </tr>
                         }
-                        {(tournament.tournament_type !== "roundrobin") &&
+                        {(tournament.tournament_type !== "roundrobin" && tournament.tournament_type !== "opengotha") &&
                             <tr>
                                 <th >{_("Subsequent Pairing Method")}</th>
                                 <td >
@@ -1530,6 +1545,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        {/*
                         {has_fixed_number_of_rounds &&
                             <React.Fragment>
                                 <tr>
@@ -1568,6 +1584,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 ))}
                             </React.Fragment>
                         }
+                        */}
                         </tbody>
                     </table>
                 </div>
@@ -1656,18 +1673,30 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
                     <div className="results">
                         <div>
-                            <Steps
-                                completed={this.state.rounds.length}
-                                total={this.state.rounds.length}
-                                selected={this.state.selected_round}
-                                onChange={this.setSelectedRound}
-                                />
-                            <OpenGothaTournamentRound
-                                tournament={tournament}
-                                selectedRound={this.state.selected_round + 1}
-                                players={this.state.sorted_players}
-                                rounds={this.state.rounds}
-                                />
+                            <div className='roster-rounds-line'>
+                                <button
+                                    className={this.state.selected_round === 'roster' ? 'primary' : 'default'}
+                                    onClick={() => this.setState({'selected_round': 'roster'})}
+                                >
+                                    {pgettext("Tournament participant roster", "Roster")}
+                                </button>
+                                <Steps
+                                    completed={this.state.rounds.length}
+                                    total={this.state.rounds.length}
+                                    selected={this.state.selected_round}
+                                    onChange={this.setSelectedRound}
+                                    />
+                            </div>
+                            {this.state.selected_round === 'roster'
+                                ? <OpenGothaRoster tournament={tournament} players={this.state.sorted_players} />
+                                : <OpenGothaTournamentRound
+                                    tournament={tournament}
+                                    roundNotes={tournament.settings['notes-round-' + (this.state.selected_round + 1)] || ""}
+                                    selectedRound={this.state.selected_round + 1}
+                                    players={this.state.sorted_players}
+                                    rounds={this.state.rounds}
+                                    />
+                            }
                         </div>
                     </div>
                 </div>
@@ -2013,12 +2042,48 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 }
 
 
+function OpenGothaRoster({tournament, players}:{tournament: any, players:Array<any>}):JSX.Element {
+    window['players'] = players;
+    players.sort((a, b) => a.username.localeCompare(b.username));
+    return (
+        <div className='OpenGothaRoster'>
+            <table>
+                <tbody>
+                    {players.map((player, idx) =>
+                        <tr key={player.id} >
+                            <td>
+                                <Player user={player} disable-cache-update rank={false} />
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
+}
 
-function OpenGothaTournamentRound({tournament, selectedRound, players, rounds}:{tournament: any, selectedRound: number, players:Array<any>, rounds:Array<any>}):JSX.Element {
+function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, players, rounds}:{tournament: any, roundNotes: string, selectedRound: number, players:Array<any>, rounds:Array<any>}):JSX.Element {
+    //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
+    let [notes, _set_notes]:[string, (s) => void] = React.useState(roundNotes);
+    let [notes_updated, set_notes_updated]:[boolean, (b) => void] = React.useState(false);
     window['rounds'] = rounds;
     const round_started = !!(rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0);
-    console.log("Selected round: ", selectedRound);
 
+    React.useEffect(() => {
+        _set_notes(roundNotes);
+    }, [roundNotes]);
+
+    function set_notes(ev) {
+        _set_notes(ev.target.value);
+        set_notes_updated(true);
+    }
+    function save_notes() {
+        set_notes_updated(false);
+        let up:any = {};
+        put(`tournaments/${tournament.id}/rounds/${selectedRound}`, { 'notes': notes })
+        .then(() => console.log("Notes saved"))
+        .catch(errorAlerter);
+    }
 
     function startRound() {
         console.log("ok");
@@ -2098,9 +2163,6 @@ function OpenGothaTournamentRound({tournament, selectedRound, players, rounds}:{
         for (let k in roundMatches) {
             matches.push(roundMatches[k]);
         }
-        console.log(selectedRound);
-        console.log(tournament.settings?.["opengotha-staged-games"]);
-        console.log(roundMatches);
 
         /*
         matches.sort((a, b) => {
@@ -2110,6 +2172,17 @@ function OpenGothaTournamentRound({tournament, selectedRound, players, rounds}:{
 
         return (
             <div className='OpenGothaTournamentRound'>
+                <div className='round-notes'>
+                    {(tournament.can_administer || null)
+                        ?  <div className='round-notes-edit'>
+                                <textarea value={notes} onChange={set_notes} placeholder={pgettext("Notes about a tournament round that are publically visible", "Round notes (everyone can see this)")}/>
+                                {(notes_updated || null) &&
+                                    <button className='primary' onClick={save_notes}>{_("Save")}</button>
+                                }
+                            </div>
+                        : <Markdown source={notes} />
+                    }
+                </div>
                 {(tournament.can_administer || null) &&
                     <div className='round-td-controls'>
                         <button className='primary' onClick={startRound}>{pgettext("Start a round of games in a tournament", "Start round")}</button>
