@@ -382,10 +382,14 @@ export class SFXManager {
         let sprite_pack = sprite_packs[pack_id];
         let release_base:string = data.get('config.cdn_release');
         let howl = new Howl({
-            src: [
+            src: (window as any).safari !== undefined  // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
+            ?  [
+                `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
+                ]
+            :  [
                 `${release_base}/sound/${sprite_pack.filename_prefix}.webm`,
                 `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
-            ],
+               ],
             autoplay: false,
             sprite: sprite_pack.definitions as {[id:string]: [number, number]},
         });

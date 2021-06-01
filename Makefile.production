@@ -56,6 +56,7 @@ push: push-cdn
 
 push-cdn: prepare-cdn-files
 	gsutil -m rsync -r deployment-staging-area/$(RELEASE) gs://ogs-site-files/$(RELEASE)/
+	gsutil -m setmeta -h "Content-Type:audio/webm" 'gs://ogs-site-files/$(RELEASE)/sound/*.webm'
 
 sync-translations:
 	cd i18n/locale/; ssh pootle@45.76.254.197 "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
