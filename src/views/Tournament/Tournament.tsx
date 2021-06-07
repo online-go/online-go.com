@@ -1246,6 +1246,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
 
+                    {editing && tournament.tournament_type &&
+                        <h3>Please note, the OpenGotha tournament is a manually managed tournament. Please read the <a href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>documentation</a> before creating this type of tournament.
+                        </h3>
+                    }
+
+
+
                     {(tournament.tournament_type === "opengotha" && tournament.can_administer && tournament.started && !tournament.ended) &&
                         <button className="reject xs" onClick={this.endTournament}>{_("End Tournament")}</button>
                     }
@@ -2144,6 +2151,16 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
 
     let selected_round = rounds[selectedRound - 1];
 
+    let round_seen = {};
+    function dedup(m) {
+        const pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
+        const oxp = (m.player && m.opponent && (`${m.opponent.id}x${m.player.id}`)) || "error-invalid-player-or-opponent";
+        let ret = !(pxo in round_seen) &&  !(oxp in round_seen);
+        round_seen[pxo] = true;
+        round_seen[oxp] = true;
+        return ret;
+    }
+
     if (round_started) {
         return (
             <div className='OpenGothaTournamentRound'>
@@ -2151,13 +2168,11 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                     <table>
                         <tbody>
                         <tr>
-                            {(tournament.ended || null) && <th>{_("Rank")}</th>}
-                            <th>{_("Player")}</th>
-                            <th>{_("Opponent")}</th>
+                            <th colSpan={2}>{_("Game")}</th>
                             <th>{_("Result")}</th>
                             <th></th>
                         </tr>
-                        {selected_round.matches.map((m, idx) => {
+                        {selected_round.matches.filter(dedup).map((m, idx) => {
                             let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
                             if (pxo === "error-invalid-player-or-opponent") {
                                 if (!logspam_debounce) {
@@ -2170,7 +2185,6 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
 
                             return (
                             <tr key={idx} >
-                                {(tournament.ended || null) && <td className="rank">{m.player?.rank}</td>}
                                 {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
                                 {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
 
@@ -2277,7 +2291,9 @@ function OpenGothaTournamentUploadDownload({tournament, reloadCallback}:{tournam
 
     return (
         <Card>
-            <h3>{pgettext("Area to upload and download OpenGotha files to", "OpenGotha File Area")}</h3>
+            <h3>{pgettext("Area to upload and download OpenGotha files to", "OpenGotha File Area")}
+                <a className='pull-right' href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>{_("Documentation")}</a>
+            </h3>
             <div className='OpenGothaUploadDownload'>
                 <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
                     <i className='fa fa-upload' />
