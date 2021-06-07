@@ -92,7 +92,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                 white_first_turn = true;
                 const first_move = non_handicap_moves.shift();
                 handicap_move_offset = 1;
-                const elapsed = first_move[2];
+                const elapsed = first_move?.[2];
                 game_elapsed.add(elapsed);
                 game_elapseds.push(game_elapsed.clone());
                 white_elapsed.add(elapsed);

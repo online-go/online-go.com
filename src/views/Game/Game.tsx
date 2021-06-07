@@ -44,6 +44,7 @@ import {ChatPresenceIndicator} from "ChatPresenceIndicator";
 import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
+import {openGameLogModal} from "./GameLogModal";
 //import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "ACLModal";
 import {sfx, SFXSprite, ValidSound} from "sfx";
@@ -1404,6 +1405,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.setState({show_game_timing: !this.state.show_game_timing});
     }
 
+    showLogModal = () => {
+        openGameLogModal(
+            this.goban.config,
+            this.state[`historical_black`] || this.goban.engine.players.black,
+            this.state[`historical_white`] || this.goban.engine.players.white
+        );
+    }
     showLinkModal() {
         openGameLinkModal(this.goban);
     }
@@ -3212,6 +3220,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                 {(mod || annul) && <hr/>}
                 {(mod || annul) && <a onClick={this.toggleShowTiming}><i className="fa fa-clock-o"></i> {_("Timing")}</a>}
+                {(mod || annul) && <a onClick={this.showLogModal}><i className="fa fa-list-alt"></i> {"Log"}</a>}
 
                 {(superuser_ai_review_ready) && <hr/>}
                 {(superuser_ai_review_ready) && <a onClick={() => this.force_ai_review("fast")}><i className="fa fa-line-chart"></i> {"Fast AI Review"}</a>}
