@@ -125,8 +125,10 @@ function LogData({config, event, data}:{config:any, event:string, data:any}):JSX
     if (data) {
         try {
             for (let k in data) {
-                if (k === 'player_id' || k === 'winner') {
+                if (k === 'player_id') {
                     ret.push(<span key={k} className='field'><Player user={data[k]} /></span>);
+                } else if (k === 'winner') {
+                    ret.push(<span key={k} className='field'>Winner: <Player user={data[k]} /></span>);
                 } else if (k === 'stones') {
                     let stones =
                         GoMath.decodeMoves(data[k], config.width, config.height)
