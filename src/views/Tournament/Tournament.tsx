@@ -346,6 +346,21 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         })
         .catch(ignore);
     }
+    endTournament = () => {
+        swal({
+            text: _("End this tournament?"),
+            showCancelButton: true,
+            focusCancel: true
+        })
+        .then(() => {
+            post("tournaments/%%/end", this.state.tournament.id, {})
+            .then(() => {
+                this.reloadTournament();
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
     setUserToInvite = (user) => {
         this.setState({user_to_invite: user});
     }
@@ -1231,6 +1246,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
 
+                    {(tournament.tournament_type === "opengotha" && tournament.can_administer && tournament.started && !tournament.ended) &&
+                        <button className="reject xs" onClick={this.endTournament}>{_("End Tournament")}</button>
+                    }
+
                     {tournament.tournament_type === "opengotha" && <OpenGothaTournamentUploadDownload tournament={tournament} reloadCallback={this.reloadTournament}/>}
 
                     {!editing && !loading &&
@@ -1240,15 +1259,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
 
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
+                            {(tournament.started == null && tournament.can_administer || null) &&
                                 <button className="danger xs" onClick={this.startTournament}>{
                                     tournament.tournament_type === "opengotha"
                                     ?  pgettext("Close tournament registration", "Close registration")
                                     : _("Start Tournament Now")
                                 }</button>
                             }
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
-                                <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
+                            {(tournament.started == null && tournament.can_administer || null) &&
+                                <button className="reject xs" onClick={this.deleteTournament}>{_("End Tournament")}</button>
                             }
 
                             {(tournament.started && !tournament.ended && this.state.is_joined || null) &&
@@ -1674,28 +1693,40 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     <div className="results">
                         <div>
                             <div className='roster-rounds-line'>
-                                <button
-                                    className={this.state.selected_round === 'roster' ? 'primary' : 'default'}
-                                    onClick={() => this.setState({'selected_round': 'roster'})}
-                                >
-                                    {pgettext("Tournament participant roster", "Roster")}
-                                </button>
+                                {tournament.opengotha_standings
+                                    ?  <button
+                                            className={this.state.selected_round === 'standings' ? 'primary' : 'default'}
+                                            onClick={() => this.setState({'selected_round': 'standings'})}
+                                        >
+                                            {pgettext("Tournament standings", "Standings")}
+                                        </button>
+                                    :  <button
+                                            className={this.state.selected_round === 'roster' ? 'primary' : 'default'}
+                                            onClick={() => this.setState({'selected_round': 'roster'})}
+                                        >
+                                            {pgettext("Tournament participant roster", "Roster")}
+                                        </button>
+                                }
                                 <Steps
                                     completed={this.state.rounds.length}
                                     total={this.state.rounds.length}
                                     selected={this.state.selected_round}
                                     onChange={this.setSelectedRound}
                                     />
+
                             </div>
                             {this.state.selected_round === 'roster'
                                 ? <OpenGothaRoster tournament={tournament} players={this.state.sorted_players} />
-                                : <OpenGothaTournamentRound
-                                    tournament={tournament}
-                                    roundNotes={tournament.settings['notes-round-' + (this.state.selected_round + 1)] || ""}
-                                    selectedRound={this.state.selected_round + 1}
-                                    players={this.state.sorted_players}
-                                    rounds={this.state.rounds}
-                                    />
+                                : (this.state.selected_round === 'standings'
+                                    ? <OpenGothaStandings tournament={tournament} />
+                                    : <OpenGothaTournamentRound
+                                        tournament={tournament}
+                                        roundNotes={tournament.settings['notes-round-' + (this.state.selected_round + 1)] || ""}
+                                        selectedRound={this.state.selected_round + 1}
+                                        players={this.state.sorted_players}
+                                        rounds={this.state.rounds}
+                                        />
+                                )
                             }
                         </div>
                     </div>
@@ -2062,6 +2093,14 @@ function OpenGothaRoster({tournament, players}:{tournament: any, players:Array<a
     );
 }
 
+function OpenGothaStandings({tournament}:{tournament: any}):JSX.Element {
+    return (
+        <div className='OpenGothaStandings'>
+            <Markdown source={tournament.opengotha_standings} />
+        </div>
+    );
+}
+
 function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, players, rounds}:{tournament: any, roundNotes: string, selectedRound: number, players:Array<any>, rounds:Array<any>}):JSX.Element {
     //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
     let [notes, _set_notes]:[string, (s) => void] = React.useState(roundNotes);
@@ -2116,9 +2155,6 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                             <th>{_("Player")}</th>
                             <th>{_("Opponent")}</th>
                             <th>{_("Result")}</th>
-                            <th>{_("Points")}</th>
-                            {(tournament.ended || null) && <th className="rotated-title"><span className="rotated">&Sigma; {_("Opponent Scores")}</span></th>}
-                            {(tournament.ended || null) && <th className="rotated-title"><span className="rotated">&Sigma; {_("Defeated Scores")}</span></th>}
                             <th></th>
                         </tr>
                         {selected_round.matches.map((m, idx) => {
@@ -2144,9 +2180,6 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                                     </Link>
                                 </td>
 
-                                <td className="points">{m.player && m.player.points}</td>
-                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sos}</td>}
-                                {(tournament.ended || null) && <td className="points">{m.player && m.player.sodos}</td>}
                                 <td className="notes">{m.player && m.player.notes}</td>
                             </tr>
                             );
@@ -2230,7 +2263,7 @@ function OpenGothaTournamentUploadDownload({tournament, reloadCallback}:{tournam
         .catch((res) => {
             console.error(res);
             try {
-                openMergeReportModal(res.responseJSON.merge_report);
+                openMergeReportModal(res.responseJSON.merge_report, res.responseJSON.error);
             } catch (e) {
                 console.error(e);
             }
