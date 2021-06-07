@@ -54,6 +54,9 @@
             padding-right: 0.6rem;
         }
 
+        //  These are vertically aligned with each other by flex's align-centre, so top/bottom margin/padding should not be required.
+        // (Also, I think that ideally these icons would be in their own div, pushed to the right and flex-spaced within that.  But right now they are
+        //  horizontally spaced manually ... a job for another day maybe.)
         .fa, .ogs-goban {
             flex: 0;
             color: #666;
@@ -68,7 +71,6 @@
         }
 
         .fa-bullhorn {
-            margin-top: 0.145em;
             margin-right: 1.00em;
             font-size: 1.0em;
             margin-left: 0.5em;
@@ -78,32 +80,27 @@
         }
 
         .fa-clipboard {
-            //margin-top: -0.20em;
-            margin-top: 0.10em;
             margin-right: 0.75em;
             font-size: 1.0em;
         }
 
         .ogs-goban {
-            //margin-top: -0.20em;
-            margin-top: 0.10em;
             margin-right: 0.75em;
             font-size: 1.0em;
         }
 
         .fa-info-circle {
-            margin-top: 0.145em;
             margin-right: 0.75em;
             font-size: 1.0em;
         }
 
         .fa-minus {
-            margin-top: 0.215em;
+            // can you believe that fa-minus icon is not vertically centered within its bounding box!?  It's true!
+            padding-top: .17em;  // compensates for fa-minus being placed high in it's bounding box.
             margin-right: 0.75em;
             font-size: 1.1em;
         }
         .fa-times {
-            //margin-top: 0.15em;
             margin-right: 0.5em;
             font-size: 1.2em;
 
