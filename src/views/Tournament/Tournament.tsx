@@ -227,7 +227,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 raw_rounds: raw_rounds,
                 rounds: rounds,
                 //selected_round: rounds.length - 1,
-                selected_round: (tournament.settings.active_round || 1) - 1,
+                selected_round:
+                    tournament.ended && tournament.tournament_type === "opengotha" && tournament.opengotha_standings ? 'standings' :
+                    (tournament.settings.active_round || 1) - 1,
                 use_elimination_trees: use_elimination_trees,
             });
         })
@@ -2238,17 +2240,22 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
 
                 <h3>{pgettext("Tournament games that are scheduled to take place", "Scheduled matches")}</h3>
 
-                <div className='scheduled-matches'>
+                <table className='scheduled-matches'>
+                    <tbody>
                     {matches.map((match, idx) => (
-                        <div className='scheduled-match' key={`${match.black.id}v${match.white.id}`}>
-                            <Player user={match.black} disable-cache-update />
-                            <Player user={match.white} disable-cache-update />
-                            {(match.handicap !== 0 || null) &&
-                                <span className='handicap'>HC {match.handicap}</span>
+                        <tr  key={`${match.black.id}v${match.white.id}`}>
+                            <td className='player1'><Player user={match.black} disable-cache-update /></td>
+                            <td className='player2'><Player user={match.white} disable-cache-update /></td>
+                            <td className='handicap'>
+                            {(match.handicap !== 0 || null)
+                                ? <span className='handicap'>HC {match.handicap}</span>
+                                : <span className='handicap'></span>
                             }
-                        </div>
+                            </td>
+                        </tr>
                     ))}
-                </div>
+                    </tbody>
+                </table>
             </div>
         );
 

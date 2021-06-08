@@ -293,6 +293,8 @@
         dispay: flex;
         flex-direciton: row;
         align-items: center;
+        justify-content: center;
+        align-content: center;
 
         h3 {
             text-align: center;
@@ -305,22 +307,20 @@
 
 
         .scheduled-matches {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: auto;
 
-            .scheduled-match {
-                display: block;
-                > span:first-child {
-                    text-align: right;
-                }
-                > span {
-                    display: inline-block;
-                    max-width: 40vw;
-                    overflow: hidden;
-                    margin-right: 1rem;
-                    margin-left: 1rem;
-                }
+            .player1, .player2 {
+                width: 7rem; 
+                overflow: hidden;
+                padding-right: 1rem;
+                padding-left: 1rem;
+            }
+            .player1 {
+                padding-left: 8rem;
+            }
+            .handicap {
+                display: inline-block;
+                width: 4rem;
             }
         }
 
