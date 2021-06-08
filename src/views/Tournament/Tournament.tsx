@@ -102,17 +102,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             loading: true,
             tournament: {
                 id: tournament_id,
-                //name: "",
-                name: "Culture: join 4",
+                name: "",
                 director: tournament_id === 0 ? data.get("user") : {},
-                //time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
-                time_start: moment(new Date()).add(1, "minute").format(),
+                time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
 
                 board_size: "19",
-                //rules: "japanese",
-                rules: "aga",
-                //description: "",
-                description: "culture culture culture culture culture culture culture",
+                rules: "japanese",
+                description: "",
                 handicap: "0",
                 time_control_parameters: {
                     system: "fischer",
@@ -121,20 +117,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     max_time: 7 * 86400,
                     time_increment: 86400,
                 },
-                //tournament_type: "mcmahon",
-                tournament_type: "opengotha",
+                tournament_type: "mcmahon",
                 min_ranking: "5",
                 max_ranking: "38",
                 analysis_enabled: true,
                 exclude_provisional: true,
                 auto_start_on_max: false,
-                //scheduled_rounds: false,
-                scheduled_rounds: true,
+                //scheduled_rounds: true,
                 exclusivity: "open",
-                first_pairing_method: "opengotha",
-                subsequent_pairing_method: "opengotha",
-                //first_pairing_method: "slide",
-                //subsequent_pairing_method: "slaughter",
+                first_pairing_method: "slide",
+                subsequent_pairing_method: "slaughter",
                 players_start: 4,
                 settings: {
                     lower_bar: "10",
@@ -150,7 +142,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             editing: tournament_id === 0,
             raw_rounds: [],
             //round_start_times: [],
-            round_start_times: (new Array(12).fill(0).map((t, i) => moment(new Date(Date.now() + (i + 1) * 180000)).utc().format())),
             selected_round: 0,
             sorted_players: [],
             players: {},
@@ -158,6 +149,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             invite_result: null,
             elimination_tree: null,
         };
+
+        if (false) {
+            // This is just for quick testing when I'm working on a particular
+            // part of the tournament testing process. This is never intended
+            // for production.
+            this.state.tournament.name = "Culture: join 4";
+            this.state.tournament.time_start = moment(new Date()).add(1, "minute").format();
+            this.state.tournament.rules = "japanese";
+            this.state.tournament.description = "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
+            this.state.tournament.tournament_type = "opengotha";
+            this.state.tournament.first_pairing_method = "opengotha";
+            this.state.tournament.subsequent_pairing_method = "opengotha";
+        }
 
         this.elimination_tree_container.append(this.elimination_tree);
     }
@@ -954,7 +958,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             groupify: max_len > 2,
             results: result_map,
             game_ids: game_id_map,
-            colors: color_map
+            colors: color_map,
+            match_map: match_map,
         };
 
         } catch (e) {
@@ -1004,7 +1009,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         tournament.time_control_parameters.time_control = tournament.time_control_parameters.system;
 
         delete tournament.settings.active_round;
-        tournament.round_start_times = this.state.round_start_times;
+        //tournament.round_start_times = this.state.round_start_times;
 
         let onError = (err:any) => {
             this.setState({editing: true});
@@ -1030,6 +1035,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
         }
     }
+    /*
     setRoundStartTime  = (idx, t)  => {
         if (t && t.format) {
             let arr = dup(this.state.round_start_times);
@@ -1045,6 +1051,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             return null;
         }
     }
+    */
     setTournamentType  = (ev) => {
         let update:any = {
             tournament_type: ev.target.value
@@ -1111,7 +1118,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     setMinRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
     setMaxRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
     setExcludeProvisionalPlayers = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclude_provisional: !ev.target.checked})});
-    setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
+    //setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
     setDescription     = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
     setTimeControl     = (tc) => {
         console.log(tc);
@@ -1169,7 +1176,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
         let provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
         let analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
-        let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
+        //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
         let min_bar = "";
         let max_bar = "";
@@ -2174,9 +2181,9 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                         <tr>
                             <th colSpan={2}>{_("Game")}</th>
                             <th>{_("Result")}</th>
-                            <th></th>
                         </tr>
                         {selected_round.matches.filter(dedup).map((m, idx) => {
+
                             let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
                             if (pxo === "error-invalid-player-or-opponent") {
                                 if (!logspam_debounce) {
@@ -2187,18 +2194,40 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                                 }
                             }
 
+
+                            let black = null;
+                            let white = null;
+                            let white_won = '';
+                            let black_won = '';
+
+                            try {
+                                let match = selected_round.match_map[m.player.id].matches[m.opponent.id];
+
+                                black = match.black === m.player.id ? m.player : m.opponent;
+                                white = match.black === m.player.id ? m.opponent : m.player;
+                                if (match.result[0] === 'W') {
+                                    white_won = 'win';
+                                }
+                                if (match.result[0] === 'B') {
+                                    black_won = 'win';
+                                }
+                            } catch (e) {
+
+                            }
+
                             return (
                             <tr key={idx} >
-                                {(m.player || null) && <td className="player"><Player user={m.player} icon/></td>}
-                                {(m.opponent || null) && <td className="player"><Player user={m.opponent} icon/></td>}
+                                {white && <td className={`player ${white_won}`}><Player disable-cache-update user={white} icon/></td>}
+                                {black && <td className={`player ${black_won}`}><Player disable-cache-update user={black} icon/></td>}
 
-                                <td className={"result " + selected_round.colors[pxo]}>
-                                    <Link to={`/game/${selected_round.game_ids[pxo]}`}>
-                                        {selected_round.results[pxo]}
-                                    </Link>
-                                </td>
 
-                                <td className="notes">{m.player && m.player.notes}</td>
+                                {black && white &&
+                                    <td className={"result"}>
+                                        <Link to={`/game/${selected_round.game_ids[pxo]}`}>
+                                            {selected_round.match_map[m.player.id].matches[m.opponent.id].result}
+                                        </Link>
+                                    </td>
+                                }
                             </tr>
                             );
                         })}
