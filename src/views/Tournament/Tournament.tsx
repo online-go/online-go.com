@@ -1520,6 +1520,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        {(tournament.tournament_type !== "opengotha" || null) &&
                         <tr>
                             <th>{_("Handicap")}</th>
                             <td>
@@ -1532,6 +1533,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        }
                         <tr>
                             <th><label htmlFor="analysis">{_("Conditional Moves & Analysis")}</label></th>
                             <td>
