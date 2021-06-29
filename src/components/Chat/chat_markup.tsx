@@ -86,9 +86,9 @@ const global_replacements: TextReplacement[] = [
         replacement: (m, idx) => (<Link key={idx} to={`/game/${m[2]}`}>{m[1] + '-' + m[2]}</Link>)
     },
     {
-        split: /\b((?:game )?https?:\/\/online-go\.com\/game(?:\/view)?\/[0-9]+(?:\/|\b))/i,
-        pattern: /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+)(?:\/|\b))/i,
-        replacement: (m, idx) => (<Link key={idx} to={`/game/${m[3]}`}>{(m[2] ? m[2] : "game ") + m[3]}</Link>)
+        split: /\b((?:game )?https?:\/\/online-go\.com\/game(?:\/view)?\/[0-9]+(?:\/[0-9]+)?(?:\/|\b))/i,
+        pattern: /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+)\/?([0-9]+)?(?:\/|\b))/i,
+        replacement: (m, idx) => (<Link key={idx} to={`/game/${m[3]}${Number(m[4]) >= 0 ? "/" + m[4] : ""}`}>{(m[2] ? m[2] : "game ") + m[3] + (Number(m[4]) >= 0 ? " move " + m[4] : "")}</Link>)
     },
     // reviews
     {
