@@ -1255,8 +1255,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
 
-                    {editing && tournament.tournament_type &&
-                        <h3>Please note, the OpenGotha tournament is a manually managed tournament. Please read the <a href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>documentation</a> before creating this type of tournament.
+                    {editing && tournament.tournament_type === "opengotha" &&
+                        <h3>Please note, the OpenGotha tournament is a manually managed tournament. Please read the <a href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>documentation</a> before creating this type of tournament. <i>This is a new tournament type, please report any issues experience.</i>
                         </h3>
                     }
 
@@ -1363,7 +1363,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <option value="swiss">{_("Swiss")}</option>
                                     <option value="elimination">{_("Single Elimination")}</option>
                                     <option value="double_elimination">{_("Double Elimination")}</option>
-                                    <option value="opengotha">{pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha")}</option>
+                                    <option value="opengotha">{pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha")} (beta)</option>
                                  </select>
                             }
                             </td>
