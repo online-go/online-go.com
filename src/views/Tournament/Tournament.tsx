@@ -42,7 +42,9 @@ import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
 import {computeAverageMoveTime} from 'goban';
+import {openMergeReportModal} from 'MergeReportModal';
 import * as d3 from "d3";
+import * as Dropzone from "react-dropzone";
 
 
 declare var swal;
@@ -121,6 +123,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 analysis_enabled: true,
                 exclude_provisional: true,
                 auto_start_on_max: false,
+                //scheduled_rounds: true,
                 exclusivity: "open",
                 first_pairing_method: "slide",
                 subsequent_pairing_method: "slaughter",
@@ -134,12 +137,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 },
                 lead_time_seconds: 1800,
                 base_points: 10.0,
-
-
             },
+            rounds: [],
             editing: tournament_id === 0,
             raw_rounds: [],
-            rounds: [],
+            //round_start_times: [],
             selected_round: 0,
             sorted_players: [],
             players: {},
@@ -147,6 +149,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             invite_result: null,
             elimination_tree: null,
         };
+
+        if (false) {
+            // This is just for quick testing when I'm working on a particular
+            // part of the tournament testing process. This is never intended
+            // for production.
+            this.state.tournament.name = "Culture: join 4";
+            this.state.tournament.time_start = moment(new Date()).add(1, "minute").format();
+            this.state.tournament.rules = "japanese";
+            this.state.tournament.description = "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
+            this.state.tournament.tournament_type = "opengotha";
+            this.state.tournament.first_pairing_method = "opengotha";
+            this.state.tournament.subsequent_pairing_method = "opengotha";
+        }
 
         this.elimination_tree_container.append(this.elimination_tree);
     }
@@ -195,8 +210,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
             window.document.title = tournament.name;
 
-            while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
-                rounds.pop(); /* account for server bugs that can create empty last rounds */
+            if (tournament.tournament_type !== 'opengotha') {
+                while (rounds.length && rounds[rounds.length - 1].matches.length === 0) {
+                    rounds.pop(); /* account for server bugs that can create empty last rounds */
+                }
             }
 
             let use_elimination_trees = false;
@@ -213,7 +230,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 tournament: tournament,
                 raw_rounds: raw_rounds,
                 rounds: rounds,
-                selected_round: rounds.length - 1,
+                //selected_round: rounds.length - 1,
+                selected_round:
+                    tournament.ended && tournament.tournament_type === "opengotha" && tournament.opengotha_standings ? 'standings' :
+                    (tournament.settings.active_round || 1) - 1,
                 use_elimination_trees: use_elimination_trees,
             });
         })
@@ -327,6 +347,21 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             del("tournaments/%%", this.state.tournament.id)
             .then(() => {
                 browserHistory.push("/");
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+    endTournament = () => {
+        swal({
+            text: _("End this tournament?"),
+            showCancelButton: true,
+            focusCancel: true
+        })
+        .then(() => {
+            post("tournaments/%%/end", this.state.tournament.id, {})
+            .then(() => {
+                this.reloadTournament();
             })
             .catch(errorAlerter);
         })
@@ -923,7 +958,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             groupify: max_len > 2,
             results: result_map,
             game_ids: game_id_map,
-            colors: color_map
+            colors: color_map,
+            match_map: match_map,
         };
 
         } catch (e) {
@@ -973,15 +1009,21 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         tournament.time_control_parameters.time_control = tournament.time_control_parameters.system;
 
         delete tournament.settings.active_round;
+        //tournament.round_start_times = this.state.round_start_times;
+
+        let onError = (err:any) => {
+            this.setState({editing: true});
+            errorAlerter(err);
+        };
 
         if (this.state.tournament.id) {
             put(`tournaments/${this.state.tournament.id}`, tournament)
             .then(() => this.resolve(this.state.tournament_id))
-            .catch(errorAlerter);
+            .catch(onError);
         } else {
             post("tournaments/", tournament)
             .then((res) => browserHistory.push(`/tournament/${res.id}`))
-            .catch(errorAlerter);
+            .catch(onError);
         }
 
 
@@ -993,7 +1035,39 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             this.setState({tournament: Object.assign({}, this.state.tournament, {time_start: t.format()})});
         }
     }
-    setTournamentType  = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {tournament_type: ev.target.value})});
+    /*
+    setRoundStartTime  = (idx, t)  => {
+        if (t && t.format) {
+            let arr = dup(this.state.round_start_times);
+            arr[idx] = t.format();
+            this.setState({round_start_times: arr});
+        }
+    }
+    getRoundStartTime  = (idx) => {
+        if (idx < this.state.round_start_times.length) {
+            return new Date(this.state.round_start_times[idx]);
+        } else {
+            //return new Date();
+            return null;
+        }
+    }
+    */
+    setTournamentType  = (ev) => {
+        let update:any = {
+            tournament_type: ev.target.value
+        };
+        if (ev.target.value === "opengotha") {
+            update.first_pairing_method = "opengotha";
+            update.subsequent_pairing_method = "opengotha";
+            update.rules = "aga";
+        } else {
+            if (this.state.tournament.first_pairing_method === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
+                update.first_pairing_method = "slide";
+                update.subsequent_pairing_method = "slaughter";
+            }
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
     setLowerBar        = (ev) => {
         let newSettings = Object.assign({}, this.state.tournament.settings, {lower_bar: ev.target.value});
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
@@ -1008,8 +1082,25 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
     setAutoStartOnMax          = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {auto_start_on_max: ev.target.checked})});
-    setFirstPairingMethod      = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {first_pairing_method: ev.target.value})});
-    setSubsequentPairingMethod = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {subsequent_pairing_method: ev.target.value})});
+    setFirstPairingMethod      = (ev) => {
+        let update:any = {
+            first_pairing_method: ev.target.value
+        };
+        if (ev.target.value === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
+            update.subsequent_pairing_method = ev.target.value;
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
+
+    setSubsequentPairingMethod = (ev) => {
+        let update:any = {
+            subsequent_pairing_method: ev.target.value
+        };
+        if (ev.target.value === "opengotha" || this.state.tournament.first_pairing_method === "opengotha") {
+            update.first_pairing_method = ev.target.value;
+        }
+        this.setState({tournament: Object.assign({}, this.state.tournament, update)});
+    }
     setTournamentExclusivity   = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclusivity: ev.target.value})});
 
     setNumberOfRounds  = (ev) => {
@@ -1027,10 +1118,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
     setMinRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {min_ranking: ev.target.value})});
     setMaxRank         = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {max_ranking: ev.target.value})});
     setExcludeProvisionalPlayers = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {exclude_provisional: !ev.target.checked})});
+    //setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
     setDescription     = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {description: ev.target.value})});
     setTimeControl     = (tc) => {
         console.log(tc);
         this.setState({tournament: Object.assign({}, this.state.tournament, {time_control_parameters: tc})});
+    }
+    updateNotes        = (data) => {
+        let newSettings = Object.assign({}, this.state.tournament.settings, data);
+        this.setState({tournament: Object.assign({}, this.state.tournament, {settings: newSettings})});
     }
 
     render() {
@@ -1080,6 +1176,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
         let rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
         let provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
         let analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+        //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
         let min_bar = "";
         let max_bar = "";
@@ -1137,11 +1234,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             setTimeout(() => this.updateEliminationTrees(), 1);
         }
 
+        let opengotha = this.state.tournament.tournament_type === "opengotha";
+        let has_fixed_number_of_rounds = (
+            tournament.tournament_type === "mcmahon" ||
+            tournament.tournament_type === "s_mcmahon" ||
+            tournament.tournament_type === "opengotha" ||
+            null
+        );
 
         return (
         <div className="Tournament page-width">
             <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
             <UIPush event="reload-tournament" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
+            <UIPush event="update-round-notes" channel={`tournament-${this.state.tournament_id}`} action={this.updateNotes}/>
 
             <div className="top-details">
                 <div >
@@ -1149,6 +1254,20 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                         ? <h2><i className="fa fa-trophy"></i> {tournament.name}</h2>
                         : <input ref="tournament_name" className="fill big" value={tournament.name} placeholder={_("Tournament Name")} onChange={this.setTournamentName} />
                     }
+
+                    {editing && tournament.tournament_type === "opengotha" &&
+                        <h3>Please note, the OpenGotha tournament is a manually managed tournament. Please read the <a href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>documentation</a> before creating this type of tournament. <i>This is a new tournament type, please report any issues experience.</i>
+                        </h3>
+                    }
+
+
+
+                    {(tournament.tournament_type === "opengotha" && tournament.can_administer && tournament.started && !tournament.ended) &&
+                        <button className="reject xs" onClick={this.endTournament}>{_("End Tournament")}</button>
+                    }
+
+                    {tournament.tournament_type === "opengotha" && <OpenGothaTournamentUploadDownload tournament={tournament} reloadCallback={this.reloadTournament}/>}
+
                     {!editing && !loading &&
                         <div>
                             {(((data.get("user").is_tournament_moderator || data.get("user").id === tournament.director.id)
@@ -1156,11 +1275,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <button className="xs" onClick={this.startEditing}>{_("Edit Tournament")}</button>
                             }
 
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
-                                <button className="danger xs" onClick={this.startTournament}>{_("Start Tournament Now")}</button>
+                            {(tournament.started == null && tournament.can_administer || null) &&
+                                <button className="danger xs" onClick={this.startTournament}>{
+                                    tournament.tournament_type === "opengotha"
+                                    ?  pgettext("Close tournament registration", "Close registration")
+                                    : _("Start Tournament Now")
+                                }</button>
                             }
-                            {(tournament.started == null && (data.get("user").is_tournament_moderator || tournament.director.id === data.get("user").id) || null) &&
-                                <button className="reject xs" onClick={this.deleteTournament}>{_("Delete Tournament")}</button>
+                            {(tournament.started == null && tournament.can_administer || null) &&
+                                <button className="reject xs" onClick={this.deleteTournament}>{_("End Tournament")}</button>
                             }
 
                             {(tournament.started && !tournament.ended && this.state.is_joined || null) &&
@@ -1240,6 +1363,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     <option value="swiss">{_("Swiss")}</option>
                                     <option value="elimination">{_("Single Elimination")}</option>
                                     <option value="double_elimination">{_("Double Elimination")}</option>
+                                    <option value="opengotha">{pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha")} (beta)</option>
                                  </select>
                             }
                             </td>
@@ -1269,6 +1393,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                             </tr>
                         }
 
+                        {(tournament.tournament_type !== "opengotha") &&
                         <tr>
                             <th >{_("Players")}</th>
                             <td>
@@ -1285,16 +1410,19 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
-                        <tr>
-                            <th><label htmlFor="autostart">{_("Start when full")}</label></th>
-                            <td>
-                                {!editing
-                                    ? <span>{tournament.auto_start_on_max ? _("Yes") : _("No")}</span>
-                                    : <input type="checkbox" id="autostart" checked={tournament.auto_start_on_max} onChange={this.setAutoStartOnMax} />
-                                }
-                            </td>
-                        </tr>
-                        {(tournament.tournament_type !== "roundrobin") &&
+                        }
+                        {(tournament.tournament_type !== "opengotha") &&
+                            <tr>
+                                <th><label htmlFor="autostart">{_("Start when full")}</label></th>
+                                <td>
+                                    {!editing
+                                        ? <span>{tournament.auto_start_on_max ? _("Yes") : _("No")}</span>
+                                        : <input type="checkbox" id="autostart" checked={tournament.auto_start_on_max} onChange={this.setAutoStartOnMax} />
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        {(tournament.tournament_type !== "roundrobin" && tournament.tournament_type !== "opengotha") &&
                             <tr>
                                 <th >{_("Initial Pairing Method")}</th>
                                 <td >
@@ -1304,10 +1432,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.first_pairing_method}
                                             onChange={this.setFirstPairingMethod}
                                             >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={opengotha} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={opengotha} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={opengotha} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={opengotha} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!opengotha} value="opengotha">{pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha")}</option>
                                           </select>
 
 
@@ -1315,7 +1444,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 </td>
                             </tr>
                         }
-                        {(tournament.tournament_type !== "roundrobin") &&
+                        {(tournament.tournament_type !== "roundrobin" && tournament.tournament_type !== "opengotha") &&
                             <tr>
                                 <th >{_("Subsequent Pairing Method")}</th>
                                 <td >
@@ -1325,23 +1454,28 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                             value={tournament.subsequent_pairing_method}
                                             onChange={this.setSubsequentPairingMethod}
                                             >
-                                             <option value="random">{pgettext("Tournament type", "Random")}</option>
-                                             <option value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
-                                             <option value="slide">{pgettext("Tournament type", "Slide")}</option>
-                                             <option value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={opengotha} value="random">{pgettext("Tournament type", "Random")}</option>
+                                             <option disabled={opengotha} value="slaughter">{pgettext("Tournament type", "Slaughter")}</option>
+                                             <option disabled={opengotha} value="slide">{pgettext("Tournament type", "Slide")}</option>
+                                             <option disabled={opengotha} value="strength">{pgettext("Tournament type", "Strength")}</option>
+                                             <option disabled={!opengotha} value="opengotha">{pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha")}</option>
                                           </select>
                                     }
                                 </td>
                             </tr>
                         }
-                        {(tournament.tournament_type === "mcmahon" || tournament.tournament_type === "s_mcmahon" || null) &&
+                        {has_fixed_number_of_rounds &&
                             <tr>
                                  <th>{_("Number of Rounds")}</th>
                                  <td>
                                     {!editing
                                         ? num_rounds
                                         : <select value={tournament.settings.num_rounds} onChange={this.setNumberOfRounds}>
-                                            {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((v) => (
+                                            {
+                                                (tournament.tournament_type === "opengotha"
+                                                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                    : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                ).map((v) => (
                                                 <option key={v} value={v}>{v}</option>
                                             ))}
                                           </select>
@@ -1393,6 +1527,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        {(tournament.tournament_type !== "opengotha" || null) &&
                         <tr>
                             <th>{_("Handicap")}</th>
                             <td>
@@ -1405,6 +1540,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        }
                         <tr>
                             <th><label htmlFor="analysis">{_("Conditional Moves & Analysis")}</label></th>
                             <td>
@@ -1446,6 +1582,46 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 }
                             </td>
                         </tr>
+                        {/*
+                        {has_fixed_number_of_rounds &&
+                            <React.Fragment>
+                                <tr>
+
+                                    <th>
+                                        <label
+                                            htmlFor="scheduled_rounds"
+                                            title={_("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.")}>
+                                                {pgettext("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.", "Scheduled rounds")}
+                                        </label>
+                                    </th>
+                                    <td>
+                                        {!editing
+                                            ? scheduled_rounds_text
+                                            : <input type="checkbox" id="scheduled_rounds" checked={tournament.scheduled_rounds} onChange={this.setScheduledRounds} />
+                                        }
+                                    </td>
+                                </tr>
+                            </React.Fragment>
+                        }
+                        {has_fixed_number_of_rounds && this.state.tournament.scheduled_rounds &&
+                            <React.Fragment>
+                                {(new Array(parseInt(tournament.settings.num_rounds))).fill(0).map((elt:any, idx:number) => (
+                                    <tr key={idx}>
+                                        <th>
+                                            {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
+                                        </th>
+                                        <td>
+                                            <Datetime
+                                                inputProps={{
+                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
+                                                }}
+                                                onChange={(d) => this.setRoundStartTime(idx, d)} value={this.getRoundStartTime(idx)}/>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </React.Fragment>
+                        }
+                        */}
                         </tbody>
                     </table>
                 </div>
@@ -1528,7 +1704,54 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 </div>
             }
 
-            {!loading && tournament.started &&
+            {!loading && tournament.started && tournament.tournament_type === "opengotha" &&
+                <div className="bottom-details">
+                    <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+
+                    <div className="results">
+                        <div>
+                            <div className='roster-rounds-line'>
+                                {tournament.opengotha_standings
+                                    ?  <button
+                                            className={this.state.selected_round === 'standings' ? 'primary' : 'default'}
+                                            onClick={() => this.setState({'selected_round': 'standings'})}
+                                        >
+                                            {pgettext("Tournament standings", "Standings")}
+                                        </button>
+                                    :  <button
+                                            className={this.state.selected_round === 'roster' ? 'primary' : 'default'}
+                                            onClick={() => this.setState({'selected_round': 'roster'})}
+                                        >
+                                            {pgettext("Tournament participant roster", "Roster")}
+                                        </button>
+                                }
+                                <Steps
+                                    completed={this.state.rounds.length}
+                                    total={this.state.rounds.length}
+                                    selected={this.state.selected_round}
+                                    onChange={this.setSelectedRound}
+                                    />
+
+                            </div>
+                            {this.state.selected_round === 'roster'
+                                ? <OpenGothaRoster tournament={tournament} players={this.state.sorted_players} />
+                                : (this.state.selected_round === 'standings'
+                                    ? <OpenGothaStandings tournament={tournament} />
+                                    : <OpenGothaTournamentRound
+                                        tournament={tournament}
+                                        roundNotes={tournament.settings['notes-round-' + (this.state.selected_round + 1)] || ""}
+                                        selectedRound={this.state.selected_round + 1}
+                                        players={this.state.sorted_players}
+                                        rounds={this.state.rounds}
+                                        />
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            {!loading && tournament.started && tournament.tournament_type !== "opengotha" &&
                 <div className="bottom-details">
                     <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
 
@@ -1868,6 +2091,263 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 }
 
 
+function OpenGothaRoster({tournament, players}:{tournament: any, players:Array<any>}):JSX.Element {
+    window['players'] = players;
+    players.sort((a, b) => a.username.localeCompare(b.username));
+    return (
+        <div className='OpenGothaRoster'>
+            <table>
+                <tbody>
+                    {players.map((player, idx) =>
+                        <tr key={player.id} >
+                            <td>
+                                <Player user={player} disable-cache-update rank={false} />
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function OpenGothaStandings({tournament}:{tournament: any}):JSX.Element {
+    return (
+        <div className='OpenGothaStandings'>
+            <Markdown source={tournament.opengotha_standings} />
+        </div>
+    );
+}
+
+function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, players, rounds}:{tournament: any, roundNotes: string, selectedRound: number, players:Array<any>, rounds:Array<any>}):JSX.Element {
+    //let [notes, _set_notes]:[string, (s) => void] = React.useState(tournament.settings[`notes-round-${selectedRound}`] || "");
+    let [notes, _set_notes]:[string, (s) => void] = React.useState(roundNotes);
+    let [notes_updated, set_notes_updated]:[boolean, (b) => void] = React.useState(false);
+    window['rounds'] = rounds;
+    const round_started = !!(rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0);
+
+    React.useEffect(() => {
+        _set_notes(roundNotes);
+    }, [roundNotes]);
+
+    function set_notes(ev) {
+        _set_notes(ev.target.value);
+        set_notes_updated(true);
+    }
+    function save_notes() {
+        set_notes_updated(false);
+        let up:any = {};
+        put(`tournaments/${tournament.id}/rounds/${selectedRound}`, { 'notes': notes })
+        .then(() => console.log("Notes saved"))
+        .catch(errorAlerter);
+    }
+
+    function startRound() {
+        console.log("ok");
+        swal({
+            text: interpolate(
+                pgettext("Start the tournament round now? Leave {{num}} as it is, it is a placeholder for the round number.", "Start round {{num}} now?"),
+                {num: selectedRound}
+            ),
+            showCancelButton: true,
+            //focusCancel: true
+        })
+        .then(() => {
+            post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`)
+            .then(ignore)
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+
+    let selected_round = rounds[selectedRound - 1];
+
+    let round_seen = {};
+    function dedup(m) {
+        const pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
+        const oxp = (m.player && m.opponent && (`${m.opponent.id}x${m.player.id}`)) || "error-invalid-player-or-opponent";
+        let ret = !(pxo in round_seen) &&  !(oxp in round_seen);
+        round_seen[pxo] = true;
+        round_seen[oxp] = true;
+        return ret;
+    }
+
+    if (round_started) {
+        return (
+            <div className='OpenGothaTournamentRound'>
+                <div className="round-group">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <th colSpan={2}>{_("Game")}</th>
+                            <th>{_("Result")}</th>
+                        </tr>
+                        {selected_round.matches.filter(dedup).map((m, idx) => {
+
+                            let pxo = (m.player && m.opponent && (`${m.player.id}x${m.opponent.id}`)) || "error-invalid-player-or-opponent";
+                            if (pxo === "error-invalid-player-or-opponent") {
+                                if (!logspam_debounce) {
+                                    logspam_debounce = setTimeout(() => {
+                                        console.error("invalid player or opponent", m, selected_round.matches, selected_round);
+                                        logspam_debounce = undefined;
+                                    }, 10);
+                                }
+                            }
+
+
+                            let black = null;
+                            let white = null;
+                            let white_won = '';
+                            let black_won = '';
+
+                            try {
+                                let match = selected_round.match_map[m.player.id].matches[m.opponent.id];
+
+                                black = match.black === m.player.id ? m.player : m.opponent;
+                                white = match.black === m.player.id ? m.opponent : m.player;
+                                if (match.result[0] === 'W') {
+                                    white_won = 'win';
+                                }
+                                if (match.result[0] === 'B') {
+                                    black_won = 'win';
+                                }
+                            } catch (e) {
+
+                            }
+
+                            return (
+                            <tr key={idx} >
+                                {white && <td className={`player ${white_won}`}><Player disable-cache-update user={white} icon/></td>}
+                                {black && <td className={`player ${black_won}`}><Player disable-cache-update user={black} icon/></td>}
+
+
+                                {black && white &&
+                                    <td className={"result"}>
+                                        <Link to={`/game/${selected_round.game_ids[pxo]}`}>
+                                            {selected_round.match_map[m.player.id].matches[m.opponent.id].result}
+                                        </Link>
+                                    </td>
+                                }
+                            </tr>
+                            );
+                        })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    } else {
+        let roundMatches = tournament.settings?.["opengotha-staged-games"]?.[selectedRound] || {};
+        let matches:Array<any> = [];
+
+        for (let k in roundMatches) {
+            matches.push(roundMatches[k]);
+        }
+
+        /*
+        matches.sort((a, b) => {
+            return b.white.ranking - a.white.ranking;
+        });
+        */
+
+        return (
+            <div className='OpenGothaTournamentRound'>
+                <div className='round-notes'>
+                    {(tournament.can_administer || null)
+                        ?  <div className='round-notes-edit'>
+                                <textarea value={notes} onChange={set_notes} placeholder={pgettext("Notes about a tournament round that are publically visible", "Round notes (everyone can see this)")}/>
+                                {(notes_updated || null) &&
+                                    <button className='primary' onClick={save_notes}>{_("Save")}</button>
+                                }
+                            </div>
+                        : <Markdown source={notes} />
+                    }
+                </div>
+                {(tournament.can_administer || null) &&
+                    <div className='round-td-controls'>
+                        <button className='primary' onClick={startRound}>{pgettext("Start a round of games in a tournament", "Start round")}</button>
+                    </div>
+                }
+
+                <h3>{pgettext("Tournament games that are scheduled to take place", "Scheduled matches")}</h3>
+
+                <table className='scheduled-matches'>
+                    <tbody>
+                    {matches.map((match, idx) => (
+                        <tr  key={`${match.black.id}v${match.white.id}`}>
+                            <td className='player1'><Player user={match.black} disable-cache-update /></td>
+                            <td className='player2'><Player user={match.white} disable-cache-update /></td>
+                            <td className='handicap'>
+                            {(match.handicap !== 0 || null)
+                                ? <span className='handicap'>HC {match.handicap}</span>
+                                : <span className='handicap'></span>
+                            }
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+
+        /*
+            <h3>{_("Unpaired players")}</h3>
+            <select size={5}>
+                {players.map((p, idx) => <option key={p.id}>{p.username}</option>)}
+            </select>
+        */
+
+    }
+}
+
+function OpenGothaTournamentUploadDownload({tournament, reloadCallback}:{tournament: any, reloadCallback: () => void}):JSX.Element {
+    if (!tournament.can_administer) {
+        return null;
+    }
+
+    function uploadFile(files) {
+        put("tournaments/%%/opengotha", tournament.id, files[0])
+        .then((res) => {
+            console.log("Upload successful", res);
+            openMergeReportModal(res.merge_report);
+            reloadCallback();
+        })
+        .catch((res) => {
+            console.error(res);
+            try {
+                openMergeReportModal(res.responseJSON.merge_report, res.responseJSON.error);
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    }
+
+    function download() {
+        window.open(`/api/v1/tournaments/${tournament.id}/opengotha`, '_blank');
+    }
+
+
+    return (
+        <Card>
+            <h3>{pgettext("Area to upload and download OpenGotha files to", "OpenGotha File Area")}
+                <a className='pull-right' href='https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments' target='_blank'>{_("Documentation")}</a>
+            </h3>
+            <div className='OpenGothaUploadDownload'>
+                <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
+                    <i className='fa fa-upload' />
+                    {pgettext("Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com", "Upload to Online-Go.com ")}
+                </Dropzone>
+                <div onClick={download} >
+                    <i className='fa fa-download' />
+                    {pgettext("Download an updated XML file for use with OpenGotha", "Download to OpenGotha")}
+                </div>
+            </div>
+        </Card>
+    );
+}
+
+
+
 export function rankRestrictionText(min_ranking, max_ranking) {
     if (min_ranking <= 0) {
         if (max_ranking >= 36) {
@@ -1907,12 +2387,14 @@ export const TOURNAMENT_TYPE_NAMES = {
     "swiss": _("Swiss"),
     "elimination": _("Single Elimination"),
     "double_elimination": _("Double Elimination"),
+    "opengotha": pgettext("Tournament type where the tournament director does all pairing with the OpenGotha software", "OpenGotha"),
 };
 export const  TOURNAMENT_PAIRING_METHODS = {
     "random": pgettext("Tournament type", "Random"),
     "slaughter": pgettext("Tournament type", "Slaughter"),
     "strength": pgettext("Tournament type", "Strength"),
     "slide": pgettext("Tournament type", "Slide"),
+    "opengotha": pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha"),
 };
 
 function fromNow(t) {

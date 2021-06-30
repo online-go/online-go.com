@@ -216,72 +216,182 @@
         height: 20rem;
     }
 
-}
-
-.tournament-elimination-container {
-    position: relative;
-
-    .matchdiv, .byediv {
-        position: absolute;
-        height: 2.5em;
-        width: 12em;
+    .Dropzone {
+        border: 2px dashed #888;
+        padding: 2rem;
+        text-align: center;
     }
 
-    .black, .white, .bye {
-        //border: 1px solid mix(@body-bg, #888, 30%);
-        white-space: nowrap;
-        overflow: hidden;
-    }
+    .tournament-elimination-container {
+        position: relative;
 
-    .black {
+        .matchdiv, .byediv {
+            position: absolute;
+            height: 2.5em;
+            width: 12em;
+        }
 
-    }
+        .black, .white, .bye {
+            //border: 1px solid mix(@body-bg, #888, 30%);
+            white-space: nowrap;
+            overflow: hidden;
+        }
 
-    .white {
+        .black {
 
-    }
+        }
 
-    .bye {
+        .white {
 
-    }
+        }
 
-    .winner {
-    }
+        .bye {
 
-    .matchdiv {
+        }
 
-    }
+        .winner {
+        }
 
-    .byediv {
+        .matchdiv {
 
-    }
+        }
 
-    svg {
-        z-index: -1;
-    }
+        .byediv {
 
-    .user_icon{
-        margin-top: -4px;
-    }
+        }
 
-    .elimination-player-hover {
-        themed background-color success
-        .Player.player-name.clickable span {
-            themed color colored-background-fg !important
+        svg {
+            z-index: -1;
+        }
+
+        .user_icon{
+            margin-top: -4px;
+        }
+
+        .elimination-player-hover {
+            themed background-color success
+            .Player.player-name.clickable span {
+                themed color colored-background-fg !important
+            }
+        }
+
+        .ogs-goban {
+            themed color fg
+            text-decoration: none;
+            position: absolute;
+            margin-top: 2px;
+        }
+
+        a.elimination-game {
+            position: relative;
+            padding-right: 1.3em;
         }
     }
 
-    .ogs-goban {
-        themed color fg
-        text-decoration: none;
-        position: absolute;
-        margin-top: 2px;
+
+    .OpenGothaTournamentRound {
+        dispay: flex;
+        flex-direciton: row;
+        align-items: center;
+        justify-content: center;
+        align-content: center;
+
+        h3 {
+            text-align: center;
+        }
+
+        select {
+            min-width: 20rem;
+            max-width: 100vw;
+        }
+
+
+        .scheduled-matches {
+            margin: auto;
+
+            .player1, .player2 {
+                width: 7rem; 
+                overflow: hidden;
+                padding-right: 1rem;
+                padding-left: 1rem;
+            }
+            .player1 {
+                padding-left: 8rem;
+            }
+            .handicap {
+                display: inline-block;
+                width: 4rem;
+            }
+        }
+
+        .round-td-controls {
+            text-align: center;
+            margin: 1rem;
+        }
+
+        .round-group {
+            margin-top: 2rem !important;
+        }
     }
 
-    a.elimination-game {
-        position: relative;
-        padding-right: 1.3em;
+    .OpenGothaUploadDownload {
+        display: flex;
+        flex-direction: row;
+        margin: 1rem;
+        > div {
+            flex: 50;
+            display: flex;
+            flex-direction column;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .fa {
+            font-size: 4rem;
+            margin: 1rem;
+        }
+    }
+
+    .roster-rounds-line {
+        display: flex;
+        align-content: center;
+        margin-top: 0.5rem;
+        button {
+            flex: 0;
+            flex-basis: 7rem;
+        }
+        .Steps {
+            flex: 1;
+            margin-right: 7rem;
+        }
+    }
+
+    .OpenGothaRoster {
+        display: flex;
+        padding: 1rem;
+        justify-content: center;
+    }
+
+
+    .round-notes {
+        p, h1, h2, h3, h4, h5 {
+            text-align: center;
+        }
+
+        .round-notes-edit {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            justify-content: center;
+            align-items: center;
+
+            textarea {
+                width: 20rem;
+                max-width: 100vw;
+            }
+        }
     }
 
 }
-
