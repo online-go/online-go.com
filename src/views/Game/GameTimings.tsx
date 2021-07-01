@@ -30,6 +30,8 @@ interface GameTimingProperties {
     end_time: number;
     free_handicap_placement: boolean;
     handicap: number;
+    black_id: number;
+    white_id: number;
 }
 
 interface GameTimingState {
@@ -159,25 +161,62 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                             const total_elapsed = game_elapseds[elapseds_index + 1] ? game_elapseds[elapseds_index + 1] : game_elapseds[elapseds_index];
                             const blur1 = non_handicap_moves?.[index]?.[4]?.blur;
                             const blur2 = non_handicap_moves?.[index + 1]?.[4]?.blur;
+                            const black_sgf_download =
+                                (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.black_id) >= 0
+                             || (non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.black_id) >= 0;
+                            const white_sgf_download =
+                                (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.white_id) >= 0
+                             || (non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.white_id) >= 0;
+                            let other_sgf_download = false;
+                            for (let player_id of non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []) {
+                                if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
+                                    other_sgf_download = true;
+                                }
+                            }
+                            for (let player_id of non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []) {
+                                if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
+                                    other_sgf_download = true;
+                                }
+                            }
                             acc.push([
                                 orig[index],
                                 orig[index + 1] ? orig[index + 1]  : "-" ,
                                 total_elapsed,
                                 blur1,
                                 blur2,
+                                black_sgf_download,
+                                white_sgf_download,
+                                other_sgf_download,
                             ]);
                         }
                         return acc;
                     }, [])
                     // render them in a move pair per row
-                    .map((move_pair, idx) => (
-                        <React.Fragment key={idx}>
-                            <div>{idx * 2 + 1 + handicap_move_offset}</div>
-                            <div>{move_pair[0]}{blurDurationFormat(move_pair[3])}</div>
-                            <div>{move_pair[1]}{blurDurationFormat(move_pair[4])}</div>
-                            <div>{`${move_pair[2].format()}`}</div>
-                        </React.Fragment>
-                    ))
+                    .map((move_pair, idx) => {
+                        const black_move_time = move_pair[0];
+                        const white_move_time = move_pair[1];
+                        const total_elapsed = move_pair[2];
+                        const black_blur = move_pair[3];
+                        const white_blur = move_pair[4];
+                        const black_download_sgf = move_pair[5];
+                        const white_download_sgf = move_pair[6];
+                        const other_download_sgf = move_pair[7];
+
+                        return (
+                            <React.Fragment key={idx}>
+                                <div>{idx * 2 + 1 + handicap_move_offset}</div>
+                                <div>{black_move_time}{blurDurationFormat(black_blur)}
+                                    {black_download_sgf ? <i className='fa fa-download' /> : null}
+                                </div>
+                                <div>{white_move_time}{blurDurationFormat(white_blur)}
+                                    {white_download_sgf ? <i className='fa fa-download' /> : null}
+                                </div>
+                                <div>{`${total_elapsed.format()}`}
+                                    {other_download_sgf ? <i className='fa fa-download' /> : null}
+                                </div>
+                            </React.Fragment>
+                        );
+                    })
                 }
                 <div className='span-4'>
                     <hr />

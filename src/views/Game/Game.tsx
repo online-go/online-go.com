@@ -2955,7 +2955,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 start_time={this.goban.engine.config.start_time}
                 end_time={this.goban.engine.config.end_time}
                 free_handicap_placement={this.goban.engine.config.free_handicap_placement}
-                handicap={this.goban.engine.config.handicap}/>;
+                handicap={this.goban.engine.config.handicap}
+                black_id={this.goban.engine.config.black_player_id}
+                white_id={this.goban.engine.config.white_player_id}
+                />;
         }
         return null;
     }
