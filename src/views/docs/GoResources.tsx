@@ -166,7 +166,6 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Learning Resources")}</dt>
                 {scramble(
-                <span><Flag country={un}/> <a rel="noopener" href="http://www.playgo.to/iwtg/">The Interactive Way To Go</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://www.josekipedia.com/">Josekipedia</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://eidogo.com/#search">Eidogo's Pattern Search</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://ps.waltheri.net/">Waltheri's Pattern Search</a></span>,
