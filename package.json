@@ -54,7 +54,7 @@
     "webpack-bundle-analyzer": "^4.1.1",
     "webpack-cli": "^4.7.0",
     "cache-loader": "^4.1.0",
-    "xgettext-js": "^1.1.0",
+    "xgettext-js": "^3.0.0",
     "yarn": "^1.22.10"
   },
   "dependencies": {
