@@ -635,7 +635,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             </span>
                         </div>
                     </div>
-                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 30 ? 'active' : '')} onClick={() => this.setSupportLevel(30)}>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 25 ? 'active' : '')} onClick={() => this.setSupportLevel(25)}>
                         <div className='title'>
                             <span>{_("Insei Supporter")}</span>
                         </div>
@@ -644,7 +644,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         </div>
                         <div className='price'>
                             <span>
-                                {formatMoney(this.state.currency, 30 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                                {formatMoney(this.state.currency, 25 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
                             </span>
                         </div>
                     </div>
