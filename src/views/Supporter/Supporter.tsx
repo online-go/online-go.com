@@ -49,6 +49,7 @@ let amount_steps = {
         15.0,
         20.0,
         25.0,
+        30.0,
         50.0,
         0,
     ],
@@ -107,6 +108,8 @@ let currency_map = {};
 for (let x of currency_list) {
     currency_map[x.iso] = x;
 }
+
+let active_currency_list = currency_list.filter(currency => currency.iso !== 'ARS' && currency.iso !== 'INR');
 
 data.watch('config.supporter_currency_scale', (scales) => {
     for (let i = 0; i < currency_list.length; ++i) {
@@ -278,8 +281,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 processing: false,
                 disable_payment_buttons: false,
                 show_update_cc: false,
-                amount_step: 2,
-                amount: amount_steps[preferences.get('supporter.interval')][2],
+                //amount_step: 2,
+                amount: amount_steps[preferences.get('supporter.interval')][1],
                 custom_amount: 50.0,
                 currency: guessCurrency(),
                 interval: preferences.get('supporter.interval'),
@@ -348,6 +351,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     }
 
+    /*
     setAmountByStep = (ev) => {
         let step = parseInt(ev.target.value);
         let amount = amount_steps[this.state.interval][parseInt(ev.target.value)];
@@ -358,6 +362,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             custom_amount: amount ? this.state.custom_amount : amount_steps[this.state.interval][amount_steps[this.state.interval].length - 2] * 2 * getCurrencyScale(this.state.currency)
         });
     }
+    */
     setCurrency = (currency_option) => {
         console.log(currency_option);
         const currency = currency_option.iso;
@@ -465,42 +470,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         })
         .catch(errorAlerter);
     }
-
-    /*
-    DEPRECATEDupdateCC = () => {
-        if (!this.validateCC()) {
-            return;
-        }
-
-        if (this.state.processing) {
-            console.log("Already clicked");
-            return;
-        }
-        this.setState({processing: true});
-
-        let ccnum = this.state.card_number_spaced.replace(/[^0-9]/g, "");
-        let m = this.state.card_exp_spaced.match(/^([0-9]+)\s+[\/]\s+([0-9]+)$/);
-        let exp_month = parseInt(m[1]);
-        let exp_year = parseInt("20" + m[2]);
-
-        return put("me/payment_methods/%%", this.state.payment_method.id, {
-            "first_name": this.state.fname.trim(),
-            "last_name": this.state.lname.trim(),
-            "email": this.state.email,
-            "number": braintree.encrypt(ccnum),
-            "expiration_month": braintree.encrypt(exp_month),
-            "expiration_year": braintree.encrypt(exp_year),
-            "cvv": braintree.encrypt(this.state.cvc),
-        })
-        .then((res) => {
-            //console.log(res);
-            //this.setState({processing: false});
-            window.location.reload();
-        })
-        .catch(errorAlerter);
-    }
-    */
-    /**** END DEPRECATED BRAINTREE CODE ****/
 
     processPaypal = () => {
         if (this.state.disable_payment_buttons) {
@@ -624,39 +593,68 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let processing = this.state.processing;
         let cdn_release = data.get("config.cdn_release");
 
-        let supporter_text = (
-            <div id='supporter-text-container'>
+        let supporter_level = (
+            <div className='supporter-text-container'>
                 <div id='supporter-ai-perks' >
-                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 3 ? 'active' : '')} onClick={() => this.setSupportLevel(3)}>
-                        <div className='title'><span>{_("Kyu Supporter")}</span><span>
-                            {formatMoney(this.state.currency, 3 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
-                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
-                        </span></div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 3 ? 'active' : '')} onClick={() => this.setSupportLevel(3)}>
+                        <div className='title'>
+                            <span>{_("Kyu Supporter")}</span>
+                        </div>
                         <div className='text'>
-                            <div>{_("Professional level AI reviews for all of your games")}<sup>*</sup></div>
+                            <div>{_("Professional strength AI reviews")}</div>
+                        </div>
+                        <div className='price'>
+                            <span>
+                                {formatMoney(this.state.currency, 3 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                            </span>
                         </div>
                     </div>
-                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 5 ? 'active' : '')} onClick={() => this.setSupportLevel(5)}>
-                        <div className='title'><span>{_("Dan Supporter")}</span><span>
-                            {formatMoney(this.state.currency, 5 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
-                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
-                        </span></div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 5 ? 'active' : '')} onClick={() => this.setSupportLevel(5)}>
+                        <div className='title'>
+                            <span>{_("Dan Supporter")}</span>
+                        </div>
                         <div className='text'>
-                            <div>{_("Strong professional level AI reviews for all of your games")}<sup>*</sup></div>
+                            <div>{_("Moderately deep reading in your AI reviews")}</div>
+                        </div>
+                        <div className='price'>
+                            <span>
+                                {formatMoney(this.state.currency, 5 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                            </span>
                         </div>
                     </div>
-                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() >= 10 ? 'active' : '')} onClick={() => this.setSupportLevel(10)}>
-                        <div className='title'><span>{_("Pro Supporter")}</span><span>
-                            {formatMoney(this.state.currency, 10 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)}
-                            /{this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
-                        </span></div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 10 ? 'active' : '')} onClick={() => this.setSupportLevel(10)}>
+                        <div className='title'>
+                            <span>{_("Pro Supporter")}</span>
+                        </div>
                         <div className='text'>
-                            <div>{_("Even stronger cutting edge AI reviews for all of your games")}<sup>*</sup></div>
+                            <div>{_("Deep reading, very good analysis in most situations")}</div>
+                        </div>
+                        <div className='price'>
+                            <span>
+                                {formatMoney(this.state.currency, 10 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 30 ? 'active' : '')} onClick={() => this.setSupportLevel(30)}>
+                        <div className='title'>
+                            <span>{_("Insei Supporter")}</span>
+                        </div>
+                        <div className='text'>
+                            <div>{_("Very deep reading, intended for the most serious students")}</div>
+                        </div>
+                        <div className='price'>
+                            <span>
+                                {formatMoney(this.state.currency, 30 * getCurrencyScale(this.state.currency) * getIntervalScale(this.state.interval), true)} / {this.state.interval === 'one time' ? _("year") : _(this.state.interval)}
+                            </span>
                         </div>
                     </div>
                 </div>
+            </div>
+        );
 
-                <div id='supporter-text'>
+        let supporter_text = (
+            <div className='supporter-text-container'>
+                <div className='supporter-text'>
                     <SiteSupporterText />
                 </div>
             </div>
@@ -671,6 +669,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                         <i>Please <Link to='/sign-in#/user/supporter' className='btn primary'>{_("Sign In")}</Link> to donate</i>
                     </h1>
 
+                    {supporter_level}
+
                     {supporter_text}
                 </div>
             );
@@ -682,22 +682,16 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 {this.state.recurring_donations.length > 0 && <span> {_("Thank you for your support!")}</span>}
             </h2>
 
-
-
             <div id="supporter-payment-block-container">
-                {this.state.recurring_donations.length > 0
-                  ? <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                        {_("Make an additional donation")}
-                    </p>
-                  : <p style={{fontSize: "1.4em", textAlign: "center", fontWeight: "bold"}}>
-                        {_("How much would you like to donate?")}
-                    </p>
-                }
+                {supporter_level}
+
                 <div id="supporter-payment-block">
                     <div id='supporter-input-amount'>
+                        {/*
                         <div>
                             <input type="range" value={this.state.amount_step} onChange={this.setAmountByStep} min={0} max={amount_steps[this.state.interval].length - 1} step={1}/>
                         </div>
+                        */}
                         <div>
                             {this.state.amount === 0
                                 ? <div className='donation-summary'>
@@ -724,12 +718,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                             }
                         </div>
                         <div className='supporter-payment-buttons'>
-                            {/*
-                                <button className="primary" onClick={this.processStripeDEPRECATED} disabled={this.state.disable_payment_buttons || this.state.processing}>
-                                    {_("Donate with Card")}
-                                </button#67478A>#67478A
-                            */}
-
                             <div className='stripe'>
 
                                 <button className="stripe-button" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
@@ -777,7 +765,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 </div>
             </div>
 
-            <div id='supporter-text'>
+            <div className='supporter-text'>
                 {supporter_text}
             </div>
 
@@ -889,7 +877,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 classNamePrefix='ogs-react-select'
                 value={currency_map[this.state.currency]}
                 onChange={this.setCurrency}
-                options={currency_list}
+                options={active_currency_list}
                 isClearable={false}
                 isSearchable={true}
                 blurInputOnSelect={true}
@@ -944,51 +932,6 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         );
     }
 
-    processStripeDEPRECATED = () => {
-        this.setState({disable_payment_buttons: true});
-
-
-        checkout = StripeCheckout.configure({
-            key: data.get('config').stripe_pk,
-            image: 'https://cdn.online-go.com/icons/android-chrome-192x192.png',
-            locale: 'auto',
-            token: (token) => {
-                this.setState({processing: true});
-                console.log(token);
-
-                post("me/process_stripe", {
-                    'interval': this.state.interval,
-                    'currency': this.state.currency,
-                    'amount': this.getAmount(),
-                    'stripe_amount': this.getStripeAmount(),
-                    'payment_method_token': token
-                })
-                .then(() => {
-                    this.setState({processing: false});
-                    window.location.reload();
-                })
-                .catch(errorAlerter);
-            },
-            closed: () => {
-                console.log("Closed");
-                this.setState({disable_payment_buttons: false});
-            }
-        });
-        window['checkout'] = checkout;
-
-        checkout.open({
-            name: 'Online-Go.com',
-            description: interval_description[this.state.interval],
-            currency: this.state.currency,
-            amount: this.getStripeAmount(),
-        });
-
-
-        // Close Checkout on page navigation:
-        window.addEventListener('popstate', () => {
-            checkout.close();
-        });
-    }
 
     updateStripePaymentMethod = (order_id:string) => {
         this.setState({disable_payment_buttons: true});

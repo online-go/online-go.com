@@ -74,7 +74,7 @@ supporter-page-width=60rem;
 
     }
 
-    #supporter-text-container {
+    .supporter-text-container {
         margin: auto;
         max-width: supporter-page-width;
         display: flex;
@@ -82,7 +82,7 @@ supporter-page-width=60rem;
         justify-content: center;
     }
 
-    #supporter-text {
+    .supporter-text {
         text-align: justify;
 
         .SiteSupporterText {
@@ -222,6 +222,7 @@ supporter-page-width=60rem;
     }
 
     #supporter-payment-block {
+        margin-top: 3rem;
     }
     #supporter-input-amount {
         text-align: center;
@@ -268,7 +269,7 @@ supporter-page-width=60rem;
 
 
         .supporter-perk-box {
-            width: 15rem;
+            width: 10rem;
             max-width: 100vw;
             display: inline-flex;
             height: 10rem;
@@ -293,24 +294,20 @@ supporter-page-width=60rem;
             }
 
             .title {
-                flex: 0 0 auto;
                 font-weight: bold;
                 font-size: font-size-mid;
-                display: flex;
                 margin-bottom: 0.5rem;
-                flex-flow: row wrap;
-                justify-content: space-between;
+                text-align: center;
+            }
+            .price {
+                font-weight: bold;
+                font-size: font-size-mid;
+                margin-bottom: 0.5rem;
+                text-align: center;
             }
             .text {
                 flex: 1;
-                display: flex;
-                justify-content: space-between;
-                flex-direction: column;
-
-                .learn-more {
-                    margin-top: 1rem;
-                    text-align: right;
-                }
+                text-align: center;
             }
         }
 

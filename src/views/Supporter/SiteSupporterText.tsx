@@ -40,33 +40,49 @@ export function SiteSupporterText(props) {
                             <th>
                             </th>
                             <th>
-                                {pgettext("Number of playouts our neural network does to review a game", "Playouts")}
+                                {_("NPOps / move")}<sup>†</sup>
                             </th>
+                            <th>
+                                {pgettext("Number of playouts our neural network does to review a game", "Playouts")}<sup>‡</sup>
+                            </th>
+                            {/*
                             <th>
                                 {pgettext("Strength of our artificial intelligence review engine", "Approximate strength")}
                             </th>
+                            */}
                         </tr>
                     </thead>
                     <tbody>
+                        {/*
                         <tr>
                             <th>{_("Supporter")}</th>
                             <td>125</td>
                             <td>{pgettext("How strong an AI engine is", "Amateur Dan level player")}</td>
                         </tr>
+                        */}
                         <tr>
                             <th>{_("Kyu Supporter")}</th>
-                            <td>300</td>
-                            <td>{pgettext("How strong an AI engine is", "Professional level player")}</td>
+                            <td>2M</td>
+                            <td>400</td>
+                            {/* <td>{pgettext("How strong an AI engine is", "Professional level player")}</td> */}
                         </tr>
                         <tr>
                             <th>{_("Dan Supporter")}</th>
-                            <td>800</td>
-                            <td>{pgettext("How strong an AI engine is", "Strong professional level player")}</td>
+                            <td>5M</td>
+                            <td>1000</td>
+                            {/* <td>{pgettext("How strong an AI engine is", "Strong professional level player")}</td> */}
                         </tr>
                         <tr>
                             <th>{_("Pro Supporter")}</th>
-                            <td>2000</td>
-                            <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td>
+                            <td>15M</td>
+                            <td>3000</td>
+                            {/* <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td> */}
+                        </tr>
+                        <tr>
+                            <th>{_("Insei Supporter")}</th>
+                            <td>60M</td>
+                            <td>12000</td>
+                            {/* <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td> */}
                         </tr>
                     </tbody>
                 </table>
@@ -74,6 +90,12 @@ export function SiteSupporterText(props) {
 
             <p className='fineprint'>
                 <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
+            </p>
+            <p className='fineprint'>
+                <sup>†</sup>{_("Node Playout Operations (NPOps) is computed by multiplying the number of playouts by the block size of the neural network. For example, using a 20x256 node network at 1000 playouts would be 20*256*1000 = 5120000 NPOps, or about 5M NPOps.")}
+            </p>
+            <p className='fineprint'>
+                <sup>‡</sup>{_("Go AI engines are under constant improvement. Some engine-network combinations perform better with larger networks and less playouts, while others perform better with more playouts on a smaller network. The NPOps (which roughly corresponds to how much processing time is taken by our servers) remains about the same, but as engines and networks evolve we will tweak the network size and number of playouts used to give you the best possible review for the given number of NPOps.")}
             </p>
         </div>
     );

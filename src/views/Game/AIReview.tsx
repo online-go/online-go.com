@@ -1035,7 +1035,11 @@ function ReviewStrengthIcon({review}:{review:JGOFAIReview}):JSX.Element {
         strength = 'ai-review-fast';
         content = '';
     } else {
-        if (review.strength >= 1600) {
+        if (review.strength >= 10000) {
+            strength = 'ai-review-strength-4';
+            content = 'IV';
+        }
+        else if (review.strength >= 1600) {
             strength = 'ai-review-strength-3';
             content = 'III';
         }
