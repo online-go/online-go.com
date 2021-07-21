@@ -273,6 +273,7 @@ export let GoResources = (props) => {
                 <dt>{_("Blogs")}</dt>
                 {scramble(
                 <span><Flag country={en}/> <a rel="noopener" href="https://blog.seferi.org/">Seferi's Blog</a></span>,
+                <span><Flag country={en}/><Flag country={br}/> <a rel="noopener" href="https://fanaro.io/">Fanaro's Site</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://write.as/fraze/">A Baduk Blog</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://twitter.com/yikego_en">Yike Weiqi</a></span>,
                 <span><Flag country={fr}/> <a rel="noopener" href="https://artdugo.fr">Art du Go</a></span>,
