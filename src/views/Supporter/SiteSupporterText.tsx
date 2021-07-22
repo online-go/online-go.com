@@ -79,7 +79,7 @@ export function SiteSupporterText(props) {
                             {/* <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td> */}
                         </tr>
                         <tr>
-                            <th>{_("Insei Supporter")}</th>
+                            <th>{pgettext("Meijin is a Japanese word meaning master, expert, or virtuoso. It was reserved for the single strongest go player.", "Meijin Supporter")}</th>
                             <td>60M</td>
                             <td>12000</td>
                             {/* <td>{pgettext("How strong an AI engine is", "Beyond most professional level players")}</td> */}

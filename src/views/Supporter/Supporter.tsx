@@ -595,13 +595,19 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         let supporter_level = (
             <div className='supporter-text-container'>
+
+        <div className='SiteSupporterText'>
+                <div className='supporter-header'>
+                    {_("Becoming a supporter gives you the benefit of having your games automatically analysed by a very strong artificial intelligence engine at the end of your game to help discover better moves that could have been made. The engine has professional strength intuition for all supporter levels, the difference between the plans is in how many times the servers \"play out\" your game, which gives you deeper readings and will sometimes discover less obvious but really great moves.")}
+                </div>
+            </div>
                 <div id='supporter-ai-perks' >
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 3 ? 'active' : '')} onClick={() => this.setSupportLevel(3)}>
                         <div className='title'>
                             <span>{_("Kyu Supporter")}</span>
                         </div>
                         <div className='text'>
-                            <div>{_("Professional strength AI reviews")}</div>
+                            <div>{_("AI reviews are already quite strong, reads a few moves deep")}</div>
                         </div>
                         <div className='price'>
                             <span>
@@ -637,7 +643,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                     </div>
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 25 ? 'active' : '')} onClick={() => this.setSupportLevel(25)}>
                         <div className='title'>
-                            <span>{_("Insei Supporter")}</span>
+                            <span>{pgettext("Meijin is a Japanese word meaning master, expert, or virtuoso. It was reserved for the single strongest go player.", "Meijin Supporter")}</span>
                         </div>
                         <div className='text'>
                             <div>{_("Very deep reading, intended for the most serious students")}</div>
