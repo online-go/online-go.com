@@ -298,6 +298,7 @@ fantasy_countries.push(["_GoT_Stark", gettext("House Stark")]);
 fantasy_countries.push(["_GoT_Targaryen", gettext("House Targaryen")]);
 fantasy_countries.push(["_GoT_Tully", gettext("House Tully")]);
 fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
+fantasy_countries.push(["_LGBT", gettext("LGBT+ Pride")]);
 
 try {
     for (let e of fantasy_countries) {
