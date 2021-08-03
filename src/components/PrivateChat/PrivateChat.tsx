@@ -430,13 +430,17 @@ class PrivateChat {
         }
     }
 
-    createModNote = () => {
-        let moderator_note = "";
-        this.lines.forEach((line) => {
-            moderator_note += line[0].textContent + "\n";
+    getConversation = () => {
+        let conversation = "";
+        this.lines.forEach(line => {
+            conversation += line[0].textContent + "\n";
         });
 
-        createModeratorNote(this.user_id, moderator_note);
+        return conversation;
+    }
+
+    createModNote = () => {
+        createModeratorNote(this.user_id, this.getConversation());
     }
 
     hilight() {
