@@ -115,10 +115,6 @@ class PrivateChat {
             .append(this.player_dom)
         ;
 
-        title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
-            this.report();
-        }));
-
         if (data.get("user").is_moderator) {
             let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
                 this.superchat_enabled = !this.superchat_enabled;
@@ -154,6 +150,10 @@ class PrivateChat {
             }));
         }
         else {
+            title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
+                this.report();
+            }));
+            
             title.append($("<i>").addClass("ogs-goban").click(() => {
                 challenge(this.user_id);
             }));
