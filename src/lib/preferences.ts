@@ -43,6 +43,7 @@ let defaults = {
     "goban-theme-black": null,
     "goban-theme-board": null,
     "goban-theme-white": null,
+    "hide-ranks": false,
     "label-positioning": "all",
     "label-positioning-puzzles": "all",
     "language": "auto",
@@ -69,8 +70,8 @@ let defaults = {
     "show-other-boardsize-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
-    "hide-ranks": false,
     "show-ratings-in-rating-grid": false,
+    "show-ratings-graph-by-game": false,
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
 

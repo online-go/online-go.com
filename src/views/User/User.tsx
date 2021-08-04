@@ -43,6 +43,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
+import {RatingsChartByGame} from 'RatingsChartByGame';
 import {UIPush} from "UIPush";
 import {associations} from 'associations';
 import {browserHistory} from "ogsHistory";
@@ -137,6 +138,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
+            show_ratings_graph_by_game: preferences.get('show-ratings-graph-by-game'),
         };
 
         try {
@@ -843,7 +845,20 @@ export class User extends React.PureComponent<UserProperties, any> {
             {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
-                        <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                        {this.state.show_ratings_graph_by_game ?
+                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} /> :
+                            <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                        }
+                        <Toggle
+                            height={14}
+                            width={30}
+                            checked={this.state.show_ratings_graph_by_game}
+                            id='show-ratings-in-days'
+                            onChange={(checked, ev, id) => {
+                                this.setState({'show_ratings_graph_by_game': checked});
+                                preferences.set('show-ratings-graph-by-game', checked);
+                            }}
+                            />
                     </div>
                 </div>
             }

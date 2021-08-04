@@ -30,15 +30,13 @@ import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
 import {errorLogger} from 'misc';
 import {
-    rank_to_rating,
     rating_to_rank,
-    get_handicap_adjustment,
     rankString,
-    is_novice,
     is_rank_bounded,
     humble_rating,
     bounded_rank
 } from 'rank_utils';
+import { elementType } from "prop-types";
 
 type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
 
@@ -48,78 +46,63 @@ interface RatingsChartProperties {
     size: 0 | 9 | 13 | 19;
 }
 
-
-const date_bisector = d3.bisector((d:RatingEntry) => { return d.ended; }).left;
-let format_date = (d:Date) => moment(d).format('ll');
-let format_month = (d:Date) => moment(d).format('MMM YYYY');
 const margin   = {top: 30, right: 20, bottom: 100, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
 const chart_height = 283;
 const date_legend_width = 70;
 const win_loss_bars_start_y = 155;
-const win_loss_bars_height = 65;
-const height   = chart_height - margin.top - margin.bottom;
-const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-export class RatingsChart extends React.Component<RatingsChartProperties, any> {
+const height   = chart_height - margin.top - margin.bottom;
+
+export class RatingsChartByGame extends React.Component<RatingsChartProperties, any> {
     container = null;
     chart_div;
     svg;
     clip;
     resize_debounce;
-    rating_graph;   // The main graph ( which does happen to be a timeline :o )
-    timeline_graph; // The secondary graph, where a slice of timeline can be selected to display on the main graph
+    rating_graph;
+
     legend;
-    dateLegend;
+
+    dateLegend;   //  ** TBD - remove?
     dateLegendBackground;
     dateLegendText;
+
     range_label;
     legend_label;
-    date_extents;
+
+    date_extents;  // ** TBD - remove?
+
     win_loss_aggregate;
     win_loss_graphs:Array<any> = [];
     win_loss_bars:Array<any> = [];
     game_entries:Array<RatingEntry>;
-    games_by_month:Array<RatingEntry>;
-    games_by_day:Array<RatingEntry>;
-    max_games_played_in_a_month:number;
+
     destroyed = false;
 
     show_pie;
     win_loss_pie;
 
-    ratings_x      = d3.scaleTime();
-    timeline_x     = d3.scaleTime();
-
+    ratings_x      = d3.scaleLinear();
     ratings_y      = d3.scaleLinear();
-    timeline_y     = d3.scaleLinear();
-    outcomes_y     = d3.scaleLinear();  // Win-loss bar graph y-axis scale (I think!)
 
     selected_axis  = d3.axisBottom(this.ratings_x);
-    timeline_axis  = d3.axisBottom(this.timeline_x);
     rating_axis    = d3.axisLeft(this.ratings_y);
     rank_axis      = d3.axisRight(this.ratings_y);
 
     rating_line    = d3.line<RatingEntry>()
                        //.curve(d3.curveLinear)
                        .curve(d3.curveMonotoneX)
-                       .x((d:RatingEntry) => this.ratings_x(d.ended))
+                       .x((d:RatingEntry) => this.ratings_x(d.index))
                        .y((d:RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
 
     deviation_area = d3.area<RatingEntry>()
                        .curve(d3.curveBasis)
-                       .x0((d:RatingEntry) => this.ratings_x(d.ended))
-                       .x1((d:RatingEntry) => this.ratings_x(d.ended))
+                       .x0((d:RatingEntry) => this.ratings_x(d.index))
+                       .x1((d:RatingEntry) => this.ratings_x(d.index))
                        .y0((d:RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
                        .y1((d:RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
-
-    timeline_area  = d3.area<RatingEntry>()
-                       .curve(d3.curveMonotoneX)
-                       .x((d:RatingEntry) => this.timeline_x(d.ended))
-                       .y0(secondary_charts_height)
-                       //.y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
-                       .y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
 
     deviation_chart;
     rating_chart;
@@ -130,7 +113,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     helperText;
     ratingTooltip;
     mouseArea;
-    //verticalCrosshairLine;
+
     horizontalCrosshairLine;
     timeline_chart;
     timeline_axis_labels;
@@ -145,9 +128,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.state = {
             loading: true,
             nodata: false,
-            hovered_date: null,
-            hovered_month: null,
-            date_extents: [],
+            hovered_date: null,  // ** Fix TBD
+            hovered_month: null, // ** Fix TBD
+            date_extents: [],    // ** Fix TBD
         };
         this.chart_div = $("<div>")[0];
     }
@@ -191,37 +174,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return true;
         }
 
-
-        /* Otherwise, we only need to update if our win/loss stats needs updating */
-        if (this.state.hovered_date !== null && nextState.hovered_date !== null) {
-            if (this.state.hovered_date.getTime() !== nextState.hovered_date.getTime()) {
-                return true;
-            }
-        }
-        else if (this.state.hovered_date !== nextState.hovered_date) {
-            return true;
-        }
-        else if (this.state.hovered_month !== null && nextState.hovered_month !== null) {
-            if (is_same_month(this.state.hovered_month, nextState.hovered_month)) {
-                return true;
-            }
-        }
-        else if (this.state.hovered_month !== nextState.hovered_month) {
-            return true;
-        }
-        else {
-            if (this.state.date_extents.length !== nextState.date_extents.length) {
-                return true;
-            }
-            if (this.state.date_extents.length === 2) {
-                if (this.state.date_extents[0].getTime() !== nextState.date_extents[0].getTime()
-                    || this.state.date_extents[1].getTime() !== nextState.date_extents[1].getTime()
-                ) {
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
     shouldDisplayRankInformation():boolean {
@@ -247,10 +199,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.height = height;
 
         this.ratings_x.range([0, this.graph_width]);
-        this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
-        this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([win_loss_bars_height, 0]);
     }
 
     initialize() {
@@ -277,14 +226,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .append('svg')
             .attr('class', 'chart')
             .attr('width', this.width + margin.left + margin.right)
-            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
+            .attr('height', height + margin.top + margin.bottom);
 
         this.clip = this.svg.append('defs')
             .append('clipPath')
             .attr('id', 'clip')
             .append('rect')
             .attr('width', width)
-            .attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
+            .attr('height', height + margin.top + margin.bottom);
 
         this.rating_graph = this.svg.append('g')
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -296,61 +245,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
            We need to create this even if show_pie is false, because it might become true from resizing */
         this.win_loss_pie = this.svg.append('g')
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
-
-        /* Win-loss bar graphs */
-        for (let i = 0; i < 5; ++i) {
-            this.win_loss_graphs.push(this.svg.append('g')
-                .attr('clip-path', 'url(#clip)')
-                .attr('transform', 'translate(' + margin.left + ',' + (margin.top + win_loss_bars_height + 20) + ')')
-                .on('mouseover', () => {
-                    this.helper.style('display', null);
-                    this.dateLegend.style('display', null);
-                })
-                .on('mouseout', () => {
-                    this.helper.style('display', 'none');
-                    this.dateLegend.style('display', 'none');
-                    this.setState({hovered_month: null});
-                })
-                .on('mousemove', function() {
-                    /* tslint:disable */
-                    let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                    /* tslint:enable */
-
-                    let d = null;
-
-                    for (let entry of self.games_by_month) {
-                        if (is_same_month(x0, entry.ended)) {
-                            d = new Date(entry.ended);
-                            break;
-                        }
-                    }
-
-                    if (!d) {
-                        return;
-                    }
-
-                    let startOfMonth = new Date(d);
-                    let endOfMonth = new Date(d);
-                    startOfMonth.setDate(1);
-                    startOfMonth.setHours(0, 0, 0, 0);
-                    endOfMonth.setDate(1);
-                    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
-                    endOfMonth.setDate(-1);
-                    endOfMonth.setHours(23, 59, 59, 0);
-                    let midDate = new Date(startOfMonth.getTime() + (endOfMonth.getTime() - startOfMonth.getTime()) / 2);
-
-                    self.helperText.text(format_month(new Date(d)));
-                    self.dateLegendText.text(format_month(new Date(d)));
-                    self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(midDate)) + margin.left)  + ',' + (margin.top + win_loss_bars_start_y + win_loss_bars_height + 23) + ')');
-
-                    self.setState({hovered_month: d});
-                })
-            );
-        }
-
-        this.timeline_graph = this.svg.append('g')
-            .attr('class', 'timeline')
-            .attr('transform', 'translate(' + margin2.left + ',' + (margin2.top + win_loss_bars_height) + ')');
 
         this.legend = this.svg.append('g')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
@@ -383,6 +277,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .style('text-anchor', 'end')
             .attr('transform', 'translate(' + width + ', 0)');
 
+
         this.deviation_chart = this.rating_graph.append('path')
             .attr('clip-path', 'url(#clip)')
             .attr('class', 'deviation-area');
@@ -408,7 +303,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.helperText = this.helper.append('text');
 
-        /*
+        /*   We might want this...
         this.verticalCrosshairLine = this.rating_graph.append('g')
             .attr('class', 'crosshairs')
             .append('line')
@@ -459,9 +354,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             })
             .on('mousemove', function() {
                 /* tslint:disable */
+                // 'this' is the mouse area, in this context
                 let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+
+                console.log("Mouse at:", x0, this);
                 /* tslint:enable */
 
+                /*
                 let i = date_bisector(self.games_by_day, x0, 1);
                 let d0 = self.games_by_day[i - 1];
                 let d1 = self.games_by_day[i];
@@ -495,24 +394,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
 
                 self.setState({hovered_date: new Date(d.ended)});
+                */
             });
-
-        this.timeline_chart = this.timeline_graph.append('path')
-            .attr('class', 'area');
-
-        this.timeline_axis_labels = this.timeline_graph.append('g')
-            .attr('class', 'x axis')
-            .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')')
-            .attr('y', 0);
-
-        this.brush = d3.brushX()
-            .extent([[0, 0], [width, secondary_charts_height]])
-            .on('brush', this.onTimelineBrush)
-            .on('end', this.onTimelineBrush);
-
-        this.timeline_graph.append('g')
-            .attr('class', 'x brush')
-            .call(this.brush);
 
         this.refreshData();
     }
@@ -564,7 +447,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let width = this.graph_width;
 
         this.svg.attr('width', this.width + margin.left + margin.right);
-        this.svg.attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
+        this.svg.attr('height', height + margin.top + margin.bottom);
         this.clip.attr('width', width);
         //this.clip.attr('height', height);
 
@@ -584,21 +467,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.horizontalCrosshairLine.attr('x1', width);
         this.mouseArea.attr('width', width);
         this.mouseArea.attr('height', height);
-        this.timeline_axis_labels.attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
-        this.timeline_axis_labels.call(this.timeline_axis);
-        this.brush.extent([[0, 0], [width, secondary_charts_height]]);
 
         let graph_right_side = this.graph_width + margin.left + margin.right;
         this.win_loss_pie
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
-
-        if (this.games_by_day) {
-            this.timeline_chart
-                .datum(this.games_by_day)
-                .attr('d', this.timeline_area as any);
-
-            this.onTimelineBrush();
-        }
     }
 
     plotWinLossPie = () => {
@@ -693,6 +565,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
+            // Note that the following causes a render, before the subsequent "Plot Graph" code.  There is no render after the "Plot Graph" code
             this.setState({
                 loading: false,
                 nodata: true,
@@ -707,266 +580,36 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.game_entries = data || [];
         this.game_entries.reverse();
 
-        /* Group into days and process information like starting/ended rating/rank, increase/decrease, etc */
-        this.games_by_day = new Array<RatingEntry>();
-        this.games_by_month = new Array<RatingEntry>();
-        const daykey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
-        const monthkey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
-        this.max_games_played_in_a_month = 0;
-
-        if (this.game_entries.length > 0) {
-            let last_month_key = '';
-            let last_day_key = '';
-            let cur_day:RatingEntry = null;
-            let cur_month:RatingEntry = null;
-            for (let d of this.game_entries) {
-                let day_key = daykey(d.ended);
-                if (last_day_key !== day_key) {
-                    last_day_key = day_key;
-                    cur_day = d.copy();
-                    cur_day.starting_rating = cur_day.rating;
-                    cur_day.starting_deviation = cur_day.deviation;
-                    cur_day.count = 1;
-                    cur_day.increase = null;
-                    this.games_by_day.push(cur_day);
-                } else {
-                    cur_day.merge(d);
-                }
-
-                if (this.games_by_day.length >= 2) {
-                    cur_day.increase = this.games_by_day[this.games_by_day.length - 2].rating < cur_day.rating;
-                }
-
-                let month_key = monthkey(d.ended);
-                if (last_month_key !== month_key) {
-                    last_month_key = month_key;
-                    cur_month = d.copy();
-                    this.games_by_month.push(cur_month);
-                } else {
-                    cur_month.merge(d);
-                }
-                if (this.games_by_month.length >= 2) {
-                    cur_month.increase = this.games_by_month[this.games_by_month.length - 2].rating < cur_month.rating;
-                } else {
-                    cur_month.increase = null;
-                }
-
-                this.max_games_played_in_a_month = Math.max(this.max_games_played_in_a_month, cur_month.count);
-            }
-        }
+        this.game_entries.forEach((entry, index) => { entry.index = index; });
 
         /* Plot graph */
-        let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
-        date_range[0] = new Date(date_range[0].getUTCFullYear(), date_range[0].getUTCMonth());
-        date_range[1] = new Date(date_range[1].getUTCFullYear(), date_range[1].getUTCMonth());
-        date_range[1].setMonth(date_range[1].getMonth() + 1);
+        let x_range:any = [0, this.game_entries.length];
 
-        this.ratings_x.domain(date_range);
+        this.ratings_x.domain(x_range);
         let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
         let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
-        let game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
-        game_count_extent[0] = 0;
-        this.outcomes_y.domain(d3.extent(game_count_extent));
-        this.timeline_x.domain(this.ratings_x.domain());
-        this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
-        this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
-        this.setState({date_extents: this.date_extents.slice()});
-        this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
+
+        this.range_label.text("range_label");
+
         this.deviation_chart
-            .datum(this.games_by_day)
+            .datum(this.game_entries)
             .attr('d', this.deviation_area as any);
         this.rating_chart
-            .datum(this.games_by_day)
+            .datum(this.game_entries)
             .attr('d', this.rating_line as any);
         if (this.width < 768) {
             this.selected_axis.tickArguments([4]); // avoid crammed up tick labels
-            this.timeline_axis.tickArguments([4]);
         }
         this.x_axis_date_labels.call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
 
-        this.timeline_chart
-            .datum(this.games_by_day)
-            .attr('d', this.timeline_area as any);
-        this.timeline_axis_labels
-            .call(this.timeline_axis);
-
+        this.computeWinLossNumbers();
 
         if (this.show_pie) {
             this.plotWinLossPie();
         }
-
-        this.plotWinLossBars();
-    }
-
-    plotWinLossBars = () => {
-        const W = (d:RatingEntry, alpha:number) => {
-            let w = this.getUTCMonthWidth(d.ended) * alpha;
-            return isFinite(w) ? w : 0;
-        };
-        const X = (d:RatingEntry, alpha:number) => {
-            let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
-            let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
-            end.setMonth(end.getMonth() + 1);
-            let s = start.getTime();
-            let e = end.getTime();
-            let x = this.ratings_x(s * (1 - alpha) + e * alpha);
-            return isFinite(x) ? x : 0;
-        };
-        const H = (count:number) => {
-            return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
-        };
-        const Y = (count:number) => {
-            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.outcomes_y(count));
-        };
-
-        for (let bars of this.win_loss_bars) {
-            bars.remove();
-        }
-        this.win_loss_bars.length = 0;
-
-        this.win_loss_bars.push(
-            this.win_loss_graphs[0].selectAll('rect')
-                .data(this.games_by_month)
-                .enter().append('rect')
-                .attr('class', 'win-loss-bar weak-wins')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
-        );
-        this.win_loss_bars.push(
-            this.win_loss_graphs[1].selectAll('rect')
-                .data(this.games_by_month)
-                .enter().append('rect')
-                .attr('class', 'win-loss-bar weak-losses')
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
-        );
-        this.win_loss_bars.push(
-            this.win_loss_graphs[2].selectAll('rect')
-                .data(this.games_by_month)
-                .enter().append('rect')
-                .attr('class', 'win-loss-bar strong-losses')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
-        );
-        this.win_loss_bars.push(
-            this.win_loss_graphs[3].selectAll('rect')
-                .data(this.games_by_month)
-                .enter().append('rect')
-                .attr('class', 'win-loss-bar strong-wins')
-                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
-        );
-        this.win_loss_bars.push(
-            this.win_loss_graphs[4].selectAll('rect')
-                .data(this.games_by_month)
-                .enter().append('rect')
-                .attr('class', 'win-loss-bar transparent')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
-                .attr('width', (d:RatingEntry) => W(d, 0.999))
-                .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
-        );
-    }
-
-    getUTCMonthWidth(d:Date):number {
-        let days_in_month;
-
-        /*
-        let today = new Date();
-        today.setHours(23, 59, 59);
-        if (is_same_month(d, today)) {
-            days_in_month = ((today.getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-        } else {
-            days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-        }
-        */
-        days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-
-        let s = this.date_extents[0];
-        let e = this.date_extents[1];
-        s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
-        e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
-        /*
-        if (e.getTime() > Date.now()) {
-            e = new Date();
-        }
-        */
-        //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
-        let days_in_range = ((e.getTime() - s.getTime()) / 86400);
-
-        return this.graph_width * (days_in_month / days_in_range);
-    }
-    onTimelineBrush = () => {
-        this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
-        this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
-        this.date_extents[0].setHours(0, 0, 0, 0);    /* start of day */
-        this.date_extents[1].setHours(23, 59, 59, 0); /* end of day   */
-        this.setState({date_extents: this.date_extents.slice()});
-
-        this.ratings_x.domain(this.date_extents);
-
-        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
-
-        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
-        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
-        this.ratings_y.domain([l * 0.95, u * 1.05]);
-
-        this.range_label.text(format_date(new Date(this.date_extents[0])) + ' - ' + format_date(new Date(this.date_extents[1])));
-
-        const W = (d:RatingEntry, alpha:number) => {
-            let w = this.getUTCMonthWidth(d.ended) * alpha;
-            return isFinite(w) ? w : 0;
-        };
-        const X = (d:RatingEntry, alpha:number) => {
-            let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
-            let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
-            end.setMonth(end.getMonth() + 1);
-
-            /*
-            let today = new Date();
-            if (is_same_month(d.ended, today)) {
-                end = today;
-                end.setHours(23, 59, 59);
-            }
-            */
-
-            let s = start.getTime();
-            let e = end.getTime();
-            let x = this.ratings_x(s * (1 - alpha) + e * alpha);
-            return isFinite(x) ? x : 0;
-        };
-
-
-        this.win_loss_bars[0]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
-        this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
-        this.win_loss_bars[2]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
-        this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
-
-        this.rating_chart.attr('d', this.rating_line as any);
-        this.deviation_chart.attr('d', this.deviation_area as any);
-        this.rating_graph.select('.x.axis').call(this.selected_axis);
-        this.y_axis_rating_labels.call(this.rating_axis);
-        this.y_axis_rank_labels.call(this.rank_axis);
     }
 
     setContainer = (e) => {
@@ -978,10 +621,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     render() {
-        this.computeWinLossNumbers();
-        if (!this.state.loading && this.show_pie) {
-            this.plotWinLossPie();
-        }
         return (
             <div ref={this.setContainer} className="RatingsChart">
                 {this.state.loading
@@ -999,48 +638,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     computeWinLossNumbers() {
-        let date_extents = [];
-
-        if (this.state.hovered_date) {
-            date_extents[0] = new Date(this.state.hovered_date);
-            date_extents[1] = new Date(this.state.hovered_date);
-            date_extents[0].setHours(0, 0, 0, 0);
-            date_extents[1].setHours(23, 59, 59, 0);
-        }
-        else if (this.state.hovered_month) {
-            date_extents[0] = new Date(this.state.hovered_month);
-            date_extents[1] = new Date(this.state.hovered_month);
-
-            date_extents[0].setDate(1);
-            date_extents[0].setHours(0, 0, 0, 0);
-
-            date_extents[1].setDate(1);
-            date_extents[1].setMonth(date_extents[1].getMonth() + 1);
-            date_extents[1].setDate(-1);
-            date_extents[1].setHours(23, 59, 59, 0);
-        }
-        else {
-            if (this.state.date_extents && this.state.date_extents.length === 2) {
-                date_extents = this.state.date_extents;
-            } else {
-                date_extents[0] = new Date(0);
-                date_extents[1] = new Date();
-            }
-        }
-
         let agg = null;
-        let start_time = date_extents[0].getTime();
-        let end_time = date_extents[1].getTime();
-
         if (!this.state.loading && !this.state.nodata && this.game_entries) {
             for (let entry of this.game_entries) {
-                let time = entry.ended.getTime();
-                if (time >= start_time && time <= end_time) {
-                    if (!agg) {
-                        agg = new RatingEntry(entry);
-                    } else {
-                        agg.merge(entry);
-                    }
+                if (!agg) {
+                    agg = new RatingEntry(entry);
+                } else {
+                    agg.merge(entry);
                 }
             }
         }

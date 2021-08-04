@@ -1,0 +1,178 @@
+/*
+ * Copyright (C) 2012-2020  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+rating-chart-height=380px;
+
+.RatingsChartByGame {
+    height: rating-chart-height;
+    max-width: calc(100vw - 2em);
+
+    // Uncomment this to make charts resize.  But only when they support that.
+    // max-width: calc(100vw - 2em);
+
+    svg {
+        font-size: font-size-smaller;
+    }
+
+    .area {
+        fill: rgba(255,100,100,0.5)
+        clip-path: url("#clip")
+        themed fill chart-area
+        stroke: #3587BC
+    }
+
+    .axis path, .axis line {
+        fill: none
+        themed stroke shade3
+        shape-rendering: crispEdges
+    }
+
+    .brush {
+        .selection {
+            themed stroke shade1
+            themed fill shade1
+            fill-opacity 0.200
+            shape-rendering crispEdges
+        }
+    }
+
+    .loading, .nodata {
+        height: rating-chart-height;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        themed color shade2
+    }
+
+
+
+    .chart {
+        text {
+            fill: #7F8FAF
+        }
+        .line {
+            fill: none
+            stroke-width: 1.2px
+            clip-path: url("#clip")
+        }
+        .rating.line {
+            stroke-width: 2px
+            themed stroke chart-line
+        }
+        .overlay {
+            opacity: 0
+            pointer-events: all
+        }
+        .data-point-circle {
+            fill: red
+            stroke: red
+        }
+        .crosshairs {
+            themed stroke shade3;
+            stroke-width: 1px;
+            shape-rendering: crispEdges;
+        }
+        .win-loss-bar {
+            shape-rendering: crispEdges;
+        }
+    }
+
+    .deviation-area {
+        themed fill chart-area
+    }
+
+    .timeline .axis {
+        path, line {
+            display: none;
+        }
+    }
+
+    .y.axis {
+        .tick {
+            text {
+                text-anchor: start !important
+                fill: #7F8FAF
+            }
+            line {
+                display: none
+            }
+        }
+        path {
+            display: none
+        }
+    }
+
+    /* Bright for strong, darker for weak
+       green for win, red for loss ... */
+    .weak-wins {
+        themed fill weak-win
+        themed background-color weak-win
+    }
+    .strong-wins {
+        themed fill strong-win
+        themed background-color strong-win
+    }
+    .strong-losses {
+        themed fill strong-loss
+        themed background-color strong-loss
+    }
+    .weak-losses {
+        themed fill weak-loss
+        themed background-color weak-loss
+    }
+    .transparent {
+        fill: transparent;
+    }
+    .win-loss-stats {
+        font-size: font-size-small;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: stretch;
+        align-content: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        div {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+    }
+    .win-loss-legend-block {
+        border: 1px solid transparent;
+        themed border-color bg
+        width: 15px;
+        height: 15px;
+        display: inline-block;
+        margin-right: 0.2rem;
+    }
+
+    .pie-title {
+        font-size: larger;
+    }
+    .pie {
+        themed stroke chart-area;
+        stroke-width: 1;
+    }
+
+    .date-legend-background {
+        themed fill shade2
+    }
+    .date-legend-text {
+        themed fill colored-background-fg
+    }
+
+}
