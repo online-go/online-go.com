@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import {put} from "requests";
 import {Player} from "Player";
-import {_, pgettext, interpolate} from "translate";
+import {_} from "translate";
 import {Modal, openModal} from "Modal";
 
 interface ReportedConversationModalProps {
