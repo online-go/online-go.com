@@ -153,7 +153,7 @@ class PrivateChat {
             title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
                 this.report();
             }));
-            
+
             title.append($("<i>").addClass("ogs-goban").click(() => {
                 challenge(this.user_id);
             }));
