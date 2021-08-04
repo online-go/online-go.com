@@ -28,6 +28,7 @@ import {emitNotification} from "Notifications";
 import {PlayerCacheEntry} from 'player_cache';
 import * as player_cache from "player_cache";
 import online_status from "online_status";
+import {alertModerator} from "misc";
 
 let last_id: number = 0;
 
@@ -113,6 +114,10 @@ class PrivateChat {
         let title = $("<div>").addClass("title")
             .append(this.player_dom)
         ;
+
+        title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
+            this.report();
+        }));
 
         if (data.get("user").is_moderator) {
             let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
@@ -441,6 +446,10 @@ class PrivateChat {
 
     createModNote = () => {
         createModeratorNote(this.user_id, this.getConversation());
+    }
+
+    report = () => {
+        alertModerator({user: this.user_id, reported_conversation: {username: this.player.username, content: this.getConversation()}});
     }
 
     hilight() {
