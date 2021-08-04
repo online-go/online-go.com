@@ -27,6 +27,7 @@ import {ignore, errorAlerter} from "misc";
 import * as moment from "moment";
 import {emitNotification} from "Notifications";
 import {browserHistory} from "ogsHistory";
+import {openReportedConversationModal} from "ReportedConversationModal";
 
 
 
@@ -240,6 +241,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         }
                                     </div>
 
+                                    {(report.reported_conversation || null) && <div className="spread" onClick={() => openReportedConversationModal(report.reported_user, report.reported_conversation.content)}><span id="conversation">{_("View Reported Conversation")}</span></div>}
 
                                     <div className="spread">
                                         {((report.moderator && user.is_moderator && user.id !== report.moderator.id) || null) &&

@@ -28,6 +28,7 @@ import {emitNotification} from "Notifications";
 import {PlayerCacheEntry} from 'player_cache';
 import * as player_cache from "player_cache";
 import online_status from "online_status";
+import {alertModerator} from "misc";
 
 let last_id: number = 0;
 
@@ -149,6 +150,10 @@ class PrivateChat {
             }));
         }
         else {
+            title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
+                this.report();
+            }));
+
             title.append($("<i>").addClass("ogs-goban").click(() => {
                 challenge(this.user_id);
             }));
@@ -430,13 +435,21 @@ class PrivateChat {
         }
     }
 
-    createModNote = () => {
-        let moderator_note = "";
-        this.lines.forEach((line) => {
-            moderator_note += line[0].textContent + "\n";
+    getConversation = () => {
+        let conversation = "";
+        this.lines.forEach(line => {
+            conversation += line[0].textContent + "\n";
         });
 
-        createModeratorNote(this.user_id, moderator_note);
+        return conversation;
+    }
+
+    createModNote = () => {
+        createModeratorNote(this.user_id, this.getConversation());
+    }
+
+    report = () => {
+        alertModerator({user: this.user_id, reported_conversation: {username: this.player.username, content: this.getConversation()}});
     }
 
     hilight() {
