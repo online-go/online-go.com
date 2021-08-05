@@ -46,12 +46,11 @@ interface RatingsChartProperties {
     size: 0 | 9 | 13 | 19;
 }
 
-const margin   = {top: 30, right: 20, bottom: 100, left: 20};
+const margin   = {top: 30, right: 20, bottom: 50, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
-const chart_height = 283;
+const chart_height = 380;  // matches definition in .styl
 const date_legend_width = 70;
-const win_loss_bars_start_y = 155;
 
 const height   = chart_height - margin.top - margin.bottom;
 
@@ -194,7 +193,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.graph_width = this.width;
         }
 
+        console.log("sizes:", sizes);
         this.pie_width = sizes.width / 3.0;
+
+        console.log(this.width, this.pie_width);
 
         this.height = height;
 
@@ -244,7 +246,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         /* The pie chart element is positioned at the centre of the circle of the pie.
            We need to create this even if show_pie is false, because it might become true from resizing */
         this.win_loss_pie = this.svg.append('g')
-            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
+            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
 
         this.legend = this.svg.append('g')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
@@ -470,7 +472,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         let graph_right_side = this.graph_width + margin.left + margin.right;
         this.win_loss_pie
-            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 2.0) + 20) + ')');
+            .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
     }
 
     plotWinLossPie = () => {
@@ -500,8 +502,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             'weak-wins'
         ];
 
-        let pie_radius = Math.min(this.pie_width, this.height) / 2.0 - 15; // just looks about right.
+        let pie_radius = Math.min(this.pie_width, this.height) / 4.0 - 15; // just looks about right.
 
+        console.log("radius", pie_radius);
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
         let arc = d3.arc()
@@ -590,7 +593,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
 
-        this.range_label.text("range_label");
+        // this.range_label.text("range_label");  // when we implement selecting a range, say here what it is
 
         this.deviation_chart
             .datum(this.game_entries)
@@ -622,7 +625,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     render() {
         return (
-            <div ref={this.setContainer} className="RatingsChart">
+            <div ref={this.setContainer} className="RatingsChartByGame">
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata

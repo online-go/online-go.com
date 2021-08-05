@@ -242,7 +242,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             this.graph_width = this.width;
         }
 
+        console.log("sizes:", sizes);
         this.pie_width = sizes.width / 3.0;
+
+        console.log(this.width, this.pie_width);
 
         this.height = height;
 
@@ -629,6 +632,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         ];
 
         let pie_radius = Math.min(this.pie_width, this.height) / 2.0 - 15; // just looks about right.
+
+        console.log("radius", pie_radius);
 
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
