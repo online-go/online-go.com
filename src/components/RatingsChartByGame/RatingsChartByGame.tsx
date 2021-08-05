@@ -18,13 +18,13 @@
 /* This code was derived from https://github.com/billneff79/d3-stock which
  * is a d3.js v4 port of https://github.com/arnauddri/d3-stock */
 
+ /* This component was derived from RatingsChart, with games-by-date carved out */
+ /* (Which is why it's structure is the same) */
+
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
-import * as data from "data";
 import ReactResizeDetector from 'react-resize-detector';
-import {Link} from "react-router-dom";
-import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
@@ -36,7 +36,6 @@ import {
     humble_rating,
     bounded_rank
 } from 'rank_utils';
-import { elementType } from "prop-types";
 
 type speed_t = 'overall' | 'blitz' | 'live' | 'correspondence';
 
@@ -46,13 +45,17 @@ interface RatingsChartProperties {
     size: 0 | 9 | 13 | 19;
 }
 
-const margin   = {top: 30, right: 20, bottom: 50, left: 20};
+const margin   = {top: 30, right: 20, bottom: 100, left: 20};
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
 const chart_min_width = 64;
-const chart_height = 380;  // matches definition in .styl
+const chart_height = 283;
 const date_legend_width = 70;
 
 const height   = chart_height - margin.top - margin.bottom;
+const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
+
+
+let format_date = (d:Date) => moment(d).format('ll');
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, any> {
     container = null;
@@ -60,22 +63,20 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     svg;
     clip;
     resize_debounce;
-    rating_graph;
+    rating_graph;   // The main graph
+    subselect_graph; // The secondary graph, where a slice of the data can be selected to display on the main graph
 
     legend;
 
-    dateLegend;   //  ** TBD - remove?
+    dateLegend;   //  We use this to tell them what date was associated with the game they moused over
     dateLegendBackground;
     dateLegendText;
-
+    subselect_extents;
     range_label;
     legend_label;
 
-    date_extents;  // ** TBD - remove?
-
     win_loss_aggregate;
-    win_loss_graphs:Array<any> = [];
-    win_loss_bars:Array<any> = [];
+
     game_entries:Array<RatingEntry>;
 
     destroyed = false;
@@ -86,9 +87,14 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     ratings_x      = d3.scaleLinear();
     ratings_y      = d3.scaleLinear();
 
+    subselect_x = d3.scaleLinear();
+    subselect_y = d3.scaleLinear();
+
     selected_axis  = d3.axisBottom(this.ratings_x);
     rating_axis    = d3.axisLeft(this.ratings_y);
     rank_axis      = d3.axisRight(this.ratings_y);
+
+    subselect_axis = d3.axisBottom(this.subselect_x);
 
     rating_line    = d3.line<RatingEntry>()
                        //.curve(d3.curveLinear)
@@ -103,8 +109,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                        .y0((d:RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
                        .y1((d:RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
 
+    subselect_area  = d3.area<RatingEntry>()
+                        .curve(d3.curveMonotoneX)
+                        .x((d:RatingEntry) => this.subselect_x(d.index))
+                        .y0(secondary_charts_height)
+                        .y1((d:RatingEntry) => this.subselect_y(humble_rating(d.rating, d.deviation)));
+
     deviation_chart;
     rating_chart;
+
     x_axis_date_labels;
     y_axis_rank_labels;
     y_axis_rating_labels;
@@ -114,8 +127,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     mouseArea;
 
     horizontalCrosshairLine;
-    timeline_chart;
-    timeline_axis_labels;
+
+    subselect_chart;
+    subselect_axis_labels;
+
     brush;
     width;  // whole width of this element
     graph_width; // width of the part where the graph is drawn
@@ -127,9 +142,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.state = {
             loading: true,
             nodata: false,
-            hovered_date: null,  // ** Fix TBD
-            hovered_month: null, // ** Fix TBD
-            date_extents: [],    // ** Fix TBD
+            subselect_extents: [],
         };
         this.chart_div = $("<div>")[0];
     }
@@ -173,6 +186,19 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             return true;
         }
 
+        /* Otherwise, we only need to update if our win/loss pie needs updating */
+        if (this.state.subselect_extents.length !== nextState.subselect_extents.length) {
+            return true;
+        }
+
+        if (this.state.subselect_extents.length === 2) {
+            if (this.state.subselect_extents[0] !== nextState.subselect_extents[0]
+                || this.state.subselect_extents[1] !== nextState.subselect_extents[1]
+            ) {
+                return true;
+            }
+        }
+
         return false;
     }
     shouldDisplayRankInformation():boolean {
@@ -193,15 +219,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.graph_width = this.width;
         }
 
-        console.log("sizes:", sizes);
         this.pie_width = sizes.width / 3.0;
-
-        console.log(this.width, this.pie_width);
 
         this.height = height;
 
         this.ratings_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
+
+        this.subselect_x.range([0, this.graph_width]);
+        this.subselect_y.range([secondary_charts_height, 0]);
     }
 
     initialize() {
@@ -247,6 +273,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
            We need to create this even if show_pie is false, because it might become true from resizing */
         this.win_loss_pie = this.svg.append('g')
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
+
+        this.subselect_graph = this.svg.append('g')
+            .attr('class', 'subselect')
+            .attr('transform', 'translate(' + margin2.left + ',' + margin2.top  + ')');
 
         this.legend = this.svg.append('g')
             .attr('transform', 'translate(' + margin2.left + ', 10)')
@@ -305,17 +335,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.helperText = this.helper.append('text');
 
-        /*   We might want this...
-        this.verticalCrosshairLine = this.rating_graph.append('g')
-            .attr('class', 'crosshairs')
-            .append('line')
-            .style('display', 'none')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('x1', 0)
-            .attr('y1', height);
-        */
-
         this.horizontalCrosshairLine = this.rating_graph.append('g')
             .attr('class', 'crosshairs')
             .append('line')
@@ -341,46 +360,32 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 this.helper.style('display', null);
                 this.dateLegend.style('display', null);
                 this.ratingTooltip.style('display', null);
-                //deviationTooltip.style('display', null);
-                //this.verticalCrosshairLine.style('display', null);
                 this.horizontalCrosshairLine.style('display', null);
             })
             .on('mouseout', () => {
                 this.helper.style('display', 'none');
                 this.dateLegend.style('display', 'none');
                 this.ratingTooltip.style('display', 'none');
-                //deviationTooltip.style('display', 'none');
-                //this.verticalCrosshairLine.style('display', 'none');
                 this.horizontalCrosshairLine.style('display', 'none');
-                this.setState({hovered_date: null});
             })
             .on('mousemove', function() {
                 /* tslint:disable */
                 // 'this' is the mouse area, in this context
                 let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-
-                console.log("Mouse at:", x0, this);
                 /* tslint:enable */
 
-                /*
-                let i = date_bisector(self.games_by_day, x0, 1);
-                let d0 = self.games_by_day[i - 1];
-                let d1 = self.games_by_day[i];
+                let n = Math.round(x0);
 
-                if (!d0 || !d1) {
-                    return;
-                }
-
-                let d = x0.getTime() - d0.ended.getTime() > d1.ended.getTime() - x0.getTime() ? d1 : d0;
-                self.helperText.text(format_date(new Date(d.ended)) + '  ' +
+                let d = self.game_entries[n];
+                self.helperText.text(
                     interpolate(
                         self.shouldDisplayRankInformation()
                         ? (
-                            pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
-                        ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "rating: {{rating}} ± {{deviation}}")
+                            pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "After {{n}} games, rating: {{rating}} ± {{deviation}} rank: {{rank}} ± {{rank_deviation}}")
+                        ) : pgettext( "Glicko-2 rating +- rating deviation text on the ratings chart", "After {{n}} games, rating: {{rating}} ± {{deviation}}")
                         ,
                         {
-                            //rating: Math.floor(d.rating),
+                            n: n,
                             rating: Math.floor(humble_rating(d.rating, d.deviation)),
                             deviation: Math.round(d.deviation),
                             rank: rankString(bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))), true),
@@ -389,15 +394,27 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     )
                 );
                 self.dateLegendText.text(format_date(new Date(d.ended)));
-                self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(d.ended)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
-                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
-                //deviationTooltip.attr('transform', 'translate(' + self.ratings_x(d.ended) + ',' + self.ratings_y(d.rating) + ')');
-                //self.verticalCrosshairLine.attr('transform', 'translate(' + self.ratings_x(d.ended) + ', 0)');
+                self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(n)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
+                self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(n) + ',' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
                 self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
-
-                self.setState({hovered_date: new Date(d.ended)});
-                */
             });
+
+        this.subselect_chart = this.subselect_graph.append('path')
+            .attr('class', 'area');
+
+        this.subselect_axis_labels = this.subselect_graph.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')')
+            .attr('y', 0);
+
+        this.brush = d3.brushX()
+            .extent([[0, 0], [width, secondary_charts_height]])
+            .on('brush', this.onSubselectBrush)
+            .on('end', this.onSubselectBrush);
+
+        this.subselect_graph.append('g')
+            .attr('class', 'x brush')
+            .call(this.brush);
 
         this.refreshData();
     }
@@ -412,8 +429,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
     refreshData() {
         this.setState({loading: true});
-        //d3.tsv(`/termination-api/player/${this.props.playerId}/rating-history?speed=${this.props.speed}&size=${this.props.size}`,
-        //d3.tsv(`/termination-api/player/${this.props.playerId}/glicko2-history?speed=${this.props.speed}&size=${this.props.size}`,
         d3.tsv(`/termination-api/player/${this.props.playerId}/v5-rating-history?speed=${this.props.speed}&size=${this.props.size}`,
             makeRatingEntry
         ).then(this.loadDataAndPlot)
@@ -431,6 +446,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     onResize = (no_debounce:boolean = false) => {
+        console.log("onResize...");
         if (this.destroyed) {
             return;
         }
@@ -464,15 +480,28 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.y_axis_rating_labels.attr('transform', 'translate(0, 0)');
         this.y_axis_rank_labels.attr('transform', 'translate(' + (width - 10) + ', 0)');
 
-        //this.verticalCrosshairLine.attr('y1', height);
         this.helper.attr('transform', 'translate(' + width + ', 0)');
         this.horizontalCrosshairLine.attr('x1', width);
         this.mouseArea.attr('width', width);
         this.mouseArea.attr('height', height);
 
+        this.subselect_axis_labels.attr('transform', 'translate(0,' + (secondary_charts_height - 22) + ')');
+        this.subselect_axis_labels.call(this.subselect_axis);
+        this.brush.extent([[0, 0], [width, secondary_charts_height]]);
+
         let graph_right_side = this.graph_width + margin.left + margin.right;
+
         this.win_loss_pie
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
+
+
+        if (0) { //!this.state.nodata) { //this.game_entries) {
+            this.subselect_chart
+                .datum(this.game_entries)
+                .attr('d', this.subselect_area as any);
+
+            this.onSubselectBrush();
+        }
     }
 
     plotWinLossPie = () => {
@@ -504,7 +533,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         let pie_radius = Math.min(this.pie_width, this.height) / 4.0 - 15; // just looks about right.
 
-        console.log("radius", pie_radius);
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
         let arc = d3.arc()
@@ -568,7 +596,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
-            // Note that the following causes a render, before the subsequent "Plot Graph" code.  There is no render after the "Plot Graph" code
+            // Note that the following causes a render, before the subsequent "Plot Graph" code.
             this.setState({
                 loading: false,
                 nodata: true,
@@ -586,14 +614,20 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.game_entries.forEach((entry, index) => { entry.index = index; });
 
         /* Plot graph */
-        let x_range:any = [0, this.game_entries.length];
+        let x_range:any = [0, this.game_entries.length - 1];
 
         this.ratings_x.domain(x_range);
         let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
         let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
 
-        // this.range_label.text("range_label");  // when we implement selecting a range, say here what it is
+        this.subselect_x.domain(this.ratings_x.domain());
+        this.subselect_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
+
+        // Reset the sub selection to full width
+        this.subselect_extents = this.subselect_x.range().map(this.subselect_x.invert, this.subselect_x);
+        console.log("load and plot setting extents to ", this.subselect_extents);
+        this.setState({subselect_extents: this.subselect_extents.slice()});
 
         this.deviation_chart
             .datum(this.game_entries)
@@ -603,16 +637,49 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr('d', this.rating_line as any);
         if (this.width < 768) {
             this.selected_axis.tickArguments([4]); // avoid crammed up tick labels
+            this.subselect_axis.tickArguments([4]);
         }
         this.x_axis_date_labels.call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
+
+        this.subselect_chart
+            .datum(this.game_entries)
+            .attr('d', this.subselect_area as any);
+
+        this.subselect_axis_labels
+            .call(this.subselect_axis);
 
         this.computeWinLossNumbers();
 
         if (this.show_pie) {
             this.plotWinLossPie();
         }
+    }
+
+    onSubselectBrush = () => {
+        this.subselect_extents = (d3.event && d3.event.selection) || this.subselect_x.range();
+        this.subselect_extents = this.subselect_extents.map(this.subselect_x.invert, this.subselect_x);
+        console.log("brush setting extents to ", this.subselect_extents);
+
+        this.setState({subselect_extents: this.subselect_extents.slice()});
+
+        this.ratings_x.domain(this.subselect_extents);
+
+        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+
+        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
+        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+        this.ratings_y.domain([l * 0.95, u * 1.05]);
+
+        this.range_label.text(`${this.subselect_extents[0]} - ${this.subselect_extents[1]}`);
+
+        this.rating_chart.attr('d', this.rating_line as any);
+        this.deviation_chart.attr('d', this.deviation_area as any);
+        this.rating_graph.select('.x.axis').call(this.selected_axis);
+        this.y_axis_rating_labels.call(this.rating_axis);
+        this.y_axis_rank_labels.call(this.rank_axis);
     }
 
     setContainer = (e) => {

@@ -23,8 +23,6 @@ import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
 import ReactResizeDetector from 'react-resize-detector';
-import {Link} from "react-router-dom";
-import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
@@ -94,7 +92,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
     ratings_y      = d3.scaleLinear();
     timeline_y     = d3.scaleLinear();
-    outcomes_y     = d3.scaleLinear();  // Win-loss bar graph y-axis scale (I think!)
+    win_loss_y     = d3.scaleLinear();
 
     selected_axis  = d3.axisBottom(this.ratings_x);
     timeline_axis  = d3.axisBottom(this.timeline_x);
@@ -242,10 +240,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             this.graph_width = this.width;
         }
 
-        console.log("sizes:", sizes);
         this.pie_width = sizes.width / 3.0;
-
-        console.log(this.width, this.pie_width);
 
         this.height = height;
 
@@ -253,7 +248,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([win_loss_bars_height, 0]);
+        this.win_loss_y.range([win_loss_bars_height, 0]);
     }
 
     initialize() {
@@ -633,8 +628,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         let pie_radius = Math.min(this.pie_width, this.height) / 2.0 - 15; // just looks about right.
 
-        console.log("radius", pie_radius);
-
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
         let arc = d3.arc()
@@ -772,11 +765,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
         let game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
         game_count_extent[0] = 0;
-        this.outcomes_y.domain(d3.extent(game_count_extent));
+        this.win_loss_y.domain(d3.extent(game_count_extent));
         this.timeline_x.domain(this.ratings_x.domain());
         this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
+
+        // Reset extents to full width...
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
         this.setState({date_extents: this.date_extents.slice()});
+
         this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
         this.deviation_chart
             .datum(this.games_by_day)
@@ -821,10 +817,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return isFinite(x) ? x : 0;
         };
         const H = (count:number) => {
-            return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+            return Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
         const Y = (count:number) => {
-            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
 
         for (let bars of this.win_loss_bars) {
@@ -912,6 +908,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         return this.graph_width * (days_in_month / days_in_range);
     }
+
     onTimelineBrush = () => {
         this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
