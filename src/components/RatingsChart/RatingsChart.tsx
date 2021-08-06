@@ -1062,7 +1062,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     renderWinLossNumbersAsText() {
-        if (this.state.loading || this.state.nodata || !this.game_entries) {
+        if (this.state.loading || this.state.nodata || !this.game_entries || !this.win_loss_aggregate) {
             return <div className='win-loss-stats'/>;
         }
 

@@ -849,16 +849,25 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} /> :
                             <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
                         }
-                        <Toggle
-                            height={14}
-                            width={30}
-                            checked={this.state.show_ratings_graph_by_game}
-                            id='show-ratings-in-days'
-                            onChange={(checked, ev, id) => {
-                                this.setState({'show_ratings_graph_by_game': checked});
-                                preferences.set('show-ratings-graph-by-game', checked);
-                            }}
-                            />
+                        <div className='graph-type-toggle-control'>
+                            <div className='graph-type-toggle-label'>
+                                {_('Plot by:')}
+                            </div>
+                            <div className='graph-type-toggle'>
+                                <span className='label'>{_('date')}</span>
+                                <Toggle
+                                    height={10}
+                                    width={20}
+                                    checked={this.state.show_ratings_graph_by_game}
+                                    id='show-ratings-in-days'
+                                    onChange={(checked, ev, id) => {
+                                        this.setState({'show_ratings_graph_by_game': checked});
+                                        preferences.set('show-ratings-graph-by-game', checked);
+                                    }}
+                                    />
+                                <span className='label'>{_('game')}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             }

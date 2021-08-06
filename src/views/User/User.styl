@@ -404,7 +404,24 @@
         flex-wrap: nowrap;
 
         .ratings-chart {
-            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+
+            .graph-type-toggle-control {
+                display: flex;
+                flex-direction: column;
+                font-size: smaller;
+                width: min-content;
+                align-items: center;
+                .graph-type-toggle {
+                    display: flex;
+                    flex-direction: row;
+                    .label {
+                        margin-right: 0.5em;
+                        margin-left: 0.5em;
+                    }
+                }
+            }
         }
     }
 

@@ -497,7 +497,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
 
 
-        if (!this.state.nodata) {
+        if (!this.state.nodata && this.game_entries) {
             this.subselect_chart
                 .datum(this.game_entries)
                 .attr('d', this.subselect_area as any);
@@ -776,7 +776,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     renderWinLossNumbersAsText() {
-        if (this.state.loading || this.state.nodata || !this.game_entries) {
+        if (this.state.loading || this.state.nodata || !this.game_entries || !this.win_loss_aggregate) {
             return <div className='win-loss-stats'/>;
         }
 
