@@ -50,8 +50,8 @@ interface RatingsChartProperties {
 const date_bisector = d3.bisector((d:RatingEntry) => { return d.ended; }).left;
 let format_date = (d:Date) => moment(d).format('ll');
 let format_month = (d:Date) => moment(d).format('MMM YYYY');
-const margin   = {top: 30, right: 20, bottom: 100, left: 20};
-const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
+const margin   = {top: 30, right: 20, bottom: 100, left: 20}; // Margins around the rating chart - but win/loss bars are inside this at the bottom!
+const margin2  = {top: 210, right: 20, bottom: 20, left: 20}; // Margins around the 'timeline' chart with respect to the whole space
 const chart_min_width = 64;
 const chart_height = 283;
 const date_legend_width = 70;
@@ -794,6 +794,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_axis_labels
             .call(this.timeline_axis);
 
+        this.computeWinLossNumbers();
 
         if (this.show_pie) {
             this.plotWinLossPie();
@@ -969,6 +970,11 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.rating_graph.select('.x.axis').call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
+
+        this.computeWinLossNumbers();
+        if (!this.state.loading && this.show_pie) {
+            this.plotWinLossPie();
+        }
     }
 
     setContainer = (e) => {
@@ -980,10 +986,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     render() {
-        this.computeWinLossNumbers();
-        if (!this.state.loading && this.show_pie) {
-            this.plotWinLossPie();
-        }
         return (
             <div ref={this.setContainer} className="RatingsChart">
                 {this.state.loading

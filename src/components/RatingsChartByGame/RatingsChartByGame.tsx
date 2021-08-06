@@ -45,10 +45,12 @@ interface RatingsChartProperties {
     size: 0 | 9 | 13 | 19;
 }
 
-const margin   = {top: 30, right: 20, bottom: 100, left: 20};
-const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
+const margin   = {top: 30, right: 20, bottom: 110, left: 20}; // Margins around the rating chart with respect to the whole space
+const margin2  = {top: 320, right: 20, bottom: 30, left: 20}; // Margins around the subselect chart with respect to the whole space
+
 const chart_min_width = 64;
-const chart_height = 283;
+const chart_height = 380;
+
 const date_legend_width = 70;
 
 const height   = chart_height - margin.top - margin.bottom;
@@ -495,7 +497,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
 
 
-        if (0) { //!this.state.nodata) { //this.game_entries) {
+        if (!this.state.nodata) {
             this.subselect_chart
                 .datum(this.game_entries)
                 .attr('d', this.subselect_area as any);
@@ -531,7 +533,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             'weak-wins'
         ];
 
-        let pie_radius = Math.min(this.pie_width, this.height) / 4.0 - 15; // just looks about right.
+        let pie_radius = Math.min(this.pie_width, this.height) / 3.0 - 15; // just looks about right.
 
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
@@ -635,10 +637,21 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.rating_chart
             .datum(this.game_entries)
             .attr('d', this.rating_line as any);
-        if (this.width < 768) {
-            this.selected_axis.tickArguments([4]); // avoid crammed up tick labels
+
+        // avoid crammed up tick labels, and avoid fractional ticks
+        if (this.width < 768 && this.game_entries.length > 4) {
+            this.selected_axis.tickArguments([4]);
             this.subselect_axis.tickArguments([4]);
+        } else if (this.game_entries.length < 20) {
+            this.selected_axis.tickArguments([this.game_entries.length]);
+            this.subselect_axis.tickArguments([this.game_entries.length]);
         }
+        else {
+            this.selected_axis.tickArguments([20]);
+            this.subselect_axis.tickArguments([20]);
+        }
+
+
         this.x_axis_date_labels.call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
@@ -660,7 +673,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     onSubselectBrush = () => {
         this.subselect_extents = (d3.event && d3.event.selection) || this.subselect_x.range();
         this.subselect_extents = this.subselect_extents.map(this.subselect_x.invert, this.subselect_x);
-        console.log("brush setting extents to ", this.subselect_extents);
+        const range = this.subselect_extents[1] - this.subselect_extents[0];
 
         this.setState({subselect_extents: this.subselect_extents.slice()});
 
@@ -673,13 +686,28 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
         this.ratings_y.domain([l * 0.95, u * 1.05]);
 
-        this.range_label.text(`${this.subselect_extents[0]} - ${this.subselect_extents[1]}`);
+        this.range_label.text(`Games ${Math.ceil(this.subselect_extents[0])} - ${Math.floor(this.subselect_extents[1])}`);
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);
         this.rating_graph.select('.x.axis').call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
+
+        // avoid crammed up tick labels, and avoid fractional ticks
+        if (this.width < 768 && range > 4) {
+            this.selected_axis.tickArguments([4]);
+        } else if (range < 20) {
+            this.selected_axis.tickArguments([range]);
+        }
+        else {
+            this.selected_axis.tickArguments([20]);
+        }
+
+        this.computeWinLossNumbers();
+        if (!this.state.loading && this.show_pie) {
+            this.plotWinLossPie();
+        }
     }
 
     setContainer = (e) => {
@@ -708,13 +736,29 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     computeWinLossNumbers() {
+        console.log("CWLN...");
+        let subselect_extents = [];
+
+        if (this.state.subselect_extents && this.state.subselect_extents.length === 2) {
+            subselect_extents = this.state.subselect_extents;
+        } else {
+            subselect_extents[0] = 0;
+            subselect_extents[1] = this.game_entries.length;
+        }
+
         let agg = null;
+        let start_game = subselect_extents[0];
+        let end_game = subselect_extents[1];
+
         if (!this.state.loading && !this.state.nodata && this.game_entries) {
             for (let entry of this.game_entries) {
-                if (!agg) {
-                    agg = new RatingEntry(entry);
-                } else {
-                    agg.merge(entry);
+                let game = entry.index;
+                if (game >= start_game && game <= end_game) {
+                    if (!agg) {
+                        agg = new RatingEntry(entry);
+                    } else {
+                        agg.merge(entry);
+                    }
                 }
             }
         }
