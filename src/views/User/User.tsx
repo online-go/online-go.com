@@ -28,6 +28,8 @@ import {Card} from 'material';
 import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
+import { MiniGoban } from "MiniGoban";
+import { GobanLineSummary } from "GobanLineSummary";
 import * as preferences from "preferences";
 import {updateDup, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating, effective_outcome, rating_to_rank, boundedRankString, rank_deviation} from "rank_utils";
@@ -139,6 +141,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
             show_ratings_graph_by_game: preferences.get('show-ratings-graph-by-game'),
+            hovered_game_id: null,
         };
 
         try {
@@ -556,6 +559,11 @@ export class User extends React.PureComponent<UserProperties, any> {
         preferences.get('hide-ranks') ? "" : rank
     )
 
+    updateHoveredGame = ( game_id: number) => {
+        console.log("Saw hover:", game_id);
+        this.setState({hovered_game_id: game_id});
+    }
+
     render() {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
@@ -572,7 +580,6 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
         setTimeout(doDomWork, 0);
-
 
         let game_history_groomer = (results) => {
             let ret = [];
@@ -835,18 +842,15 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {this.renderRatingGrid(this.state.show_ratings_in_rating_grid)}
                             </div>
                         }
-
-
                     </div>
                 </div>
             </div>
-
 
             {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
                         {this.state.show_ratings_graph_by_game ?
-                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} /> :
+                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} updateHoveredGame={this.updateHoveredGame}/> :
                             <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
                         }
                         <div className='graph-type-toggle-control'>
@@ -867,6 +871,12 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     />
                                 <span className='label'>{_('game')}</span>
                             </div>
+                            {this.state.hovered_game_id &&
+                                <MiniGoban
+                                    id={this.state.hovered_game_id}
+                                    displayWidth={500}
+                                />
+                            }
                         </div>
                     </div>
                 </div>

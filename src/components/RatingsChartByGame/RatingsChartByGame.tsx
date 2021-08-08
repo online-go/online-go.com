@@ -43,6 +43,7 @@ interface RatingsChartProperties {
     playerId: number;
     speed: speed_t;
     size: 0 | 9 | 13 | 19;
+    updateHoveredGame: any; // callback taking the game number that the person hovered over
 }
 
 const margin   = {top: 30, right: 20, bottom: 110, left: 20}; // Margins around the rating chart with respect to the whole space
@@ -56,6 +57,7 @@ const date_legend_width = 70;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
+const show_hovered_game_delay = 1000; // milliseconds till game info of hovered data point is updated
 
 let format_date = (d:Date) => moment(d).format('ll');
 
@@ -137,7 +139,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     width;  // whole width of this element
     graph_width; // width of the part where the graph is drawn
     pie_width; // width of the area for the pie chart
-    height;
+    height;  // of what?
+
+    hover_timer; // Timer for hovering over datapoints to see their game.
 
     constructor(props) {
         super(props);
@@ -234,6 +238,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     initialize() {
         let self = this;
+        this.hover_timer = null;
 
         this.setRanges();
 
@@ -369,6 +374,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 this.dateLegend.style('display', 'none');
                 this.ratingTooltip.style('display', 'none');
                 this.horizontalCrosshairLine.style('display', 'none');
+                window.clearTimeout(this.hover_timer);
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -377,8 +383,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 /* tslint:enable */
 
                 let n = Math.round(x0);
-
                 let d = self.game_entries[n];
+
                 self.helperText.text(
                     interpolate(
                         self.shouldDisplayRankInformation()
@@ -399,6 +405,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 self.dateLegend.attr('transform', 'translate(' + (boundDataLegendX(self.ratings_x(n)) + margin.left)  + ',' + (margin.top + height + 10) + ')');
                 self.ratingTooltip.attr('transform', 'translate(' + self.ratings_x(n) + ',' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
                 self.horizontalCrosshairLine.attr('transform', 'translate(0, ' + self.ratings_y(humble_rating(d.rating, d.deviation)) + ')');
+
+                if (self.hover_timer) { window.clearTimeout(self.hover_timer); }
+
+                self.hover_timer = window.setTimeout(self.props.updateHoveredGame , show_hovered_game_delay, d.game_id);
             });
 
         this.subselect_chart = this.subselect_graph.append('path')
@@ -448,7 +458,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     onResize = (no_debounce:boolean = false) => {
-        console.log("onResize...");
         if (this.destroyed) {
             return;
         }
@@ -628,7 +637,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         // Reset the sub selection to full width
         this.subselect_extents = this.subselect_x.range().map(this.subselect_x.invert, this.subselect_x);
-        console.log("load and plot setting extents to ", this.subselect_extents);
         this.setState({subselect_extents: this.subselect_extents.slice()});
 
         this.deviation_chart
@@ -736,7 +744,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     computeWinLossNumbers() {
-        console.log("CWLN...");
         let subselect_extents = [];
 
         if (this.state.subselect_extents && this.state.subselect_extents.length === 2) {
