@@ -26,14 +26,18 @@ import * as data from "data";
 import {PersistentElement} from "PersistentElement";
 import {rankString, getUserRating} from "rank_utils";
 import { Clock } from 'Clock';
+import { fetch } from "player_cache";
 
 interface MiniGobanProps {
     id: number;
     width?: number;
     height?: number;
     displayWidth?: number;
-    black: any;
-    white: any;
+
+    // if these are not provided, we look in the game itself...
+    black?: any; // user object or string is expected, to get the player name
+    white?: any; // user object or string is expected, to get the player name
+
     onUpdate?: () => void;
     json?: any;
     noLink?: boolean;
@@ -104,9 +108,23 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
     }
 
     sync_state() {
+        console.log(this.goban.engine);
         const score = this.goban.engine.computeScore(true);
-        const black = this.props.black;
-        const white = this.props.white;
+        const black = this.props.black || "";
+        const white = this.props.white || "";
+
+        if (!black ) {
+            fetch(this.goban.engine.config.black_player_id)
+                .then( (player) => {this.setState({black_name: player.username}); })
+                .catch( () => {console.log("Couldn't work out who played black"); });
+        }
+
+        if (!white ) {
+            fetch(this.goban.engine.config.white_player_id)
+                .then( (player) => {this.setState({white_name: player.username}); })
+                .catch( () => {console.log("Couldn't work out who played white"); });
+        }
+
         const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
 
 
@@ -155,7 +173,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                     <div className={`title-black ${this.state.black_to_move_cls}`}>
                         <span className={`player-name`}>{this.state.black_name}</span>
                         <span className={`player-rank`}>{this.state.black_rank}</span>
-                        <Clock compact goban={this.goban} color='black' className='mini-goban' />
+                        {this.state.finished || <Clock compact goban={this.goban} color='black' className='mini-goban' />}
                         <span className="score">{this.state.black_points}</span>
                     </div>
                 }
@@ -163,7 +181,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                     <div className={`title-white ${this.state.white_to_move_cls}`}>
                         <span className={`player-name`}>{this.state.white_name}</span>
                         <span className={`player-rank`}>{this.state.white_rank}</span>
-                        <Clock compact goban={this.goban} color='white' className='mini-goban' />
+                        {this.state.finished || <Clock compact goban={this.goban} color='white' className='mini-goban' />}
                         <span className="score">{this.state.white_points}</span>
                     </div>
                 }
