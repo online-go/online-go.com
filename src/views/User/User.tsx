@@ -28,8 +28,6 @@ import {Card} from 'material';
 import {PlayerIcon} from 'PlayerIcon';
 import {GameList} from "GameList";
 import {Player} from "Player";
-import { MiniGoban } from "MiniGoban";
-import { GobanLineSummary } from "GobanLineSummary";
 import * as preferences from "preferences";
 import {updateDup, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating, effective_outcome, rating_to_rank, boundedRankString, rank_deviation} from "rank_utils";
@@ -140,7 +138,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
-            show_ratings_graph_by_game: preferences.get('show-ratings-graph-by-game'),
+            show_ratings_graph_by_game: preferences.get('rating-graph-plot-by-games'),
             hovered_game_id: null,
         };
 
@@ -564,6 +562,10 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.setState({hovered_game_id: game_id});
     }
 
+    updateTogglePosition = ( _height: number, width: number) => {
+        this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
+    }
+
     render() {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
@@ -849,35 +851,28 @@ export class User extends React.PureComponent<UserProperties, any> {
             {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
-                        {this.state.show_ratings_graph_by_game ?
-                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} updateHoveredGame={this.updateHoveredGame}/> :
-                            <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                        {this.state.ratings_graph_plot_by_game ?
+                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
+                                updateHoveredGame={this.updateHoveredGame} updateChartSize={this.updateTogglePosition}
+                            /> :
+                            <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
+                                updateChartSize={this.updateTogglePosition}
+                            />
                         }
-                        <div className='graph-type-toggle-control'>
-                            <div className='graph-type-toggle-label'>
-                                {_('Plot by:')}
-                            </div>
-                            <div className='graph-type-toggle'>
-                                <span className='label'>{_('date')}</span>
-                                <Toggle
-                                    height={10}
-                                    width={20}
-                                    checked={this.state.show_ratings_graph_by_game}
-                                    id='show-ratings-in-days'
-                                    onChange={(checked, ev, id) => {
-                                        this.setState({'show_ratings_graph_by_game': checked});
-                                        preferences.set('show-ratings-graph-by-game', checked);
-                                    }}
-                                    />
-                                <span className='label'>{_('game')}</span>
-                            </div>
-                            {this.state.hovered_game_id &&
-                                <MiniGoban
-                                    id={this.state.hovered_game_id}
-                                    displayWidth={500}
-                                />
-                            }
-                        </div>
+                    </div>
+                    <div className='graph-type-toggle' style={{
+                            left: this.state.rating_chart_type_toggle_left}
+                        }>
+                        <Toggle
+                            height={10}
+                            width={20}
+                            checked={this.state.ratings_graph_plot_by_game}
+                            id='show-ratings-in-days'
+                            onChange={(checked, ev, id) => {
+                                this.setState({'ratings_graph_plot_by_game': checked});
+                                preferences.set('ratings-graph-plot-by-game', checked);
+                            }}
+                            />
                     </div>
                 </div>
             }

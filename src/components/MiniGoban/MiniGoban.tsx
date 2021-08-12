@@ -108,7 +108,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
     }
 
     sync_state() {
-        console.log(this.goban.engine);
         const score = this.goban.engine.computeScore(true);
         const black = this.props.black || "";
         const white = this.props.white || "";
@@ -126,7 +125,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         }
 
         const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
-
 
         const black_points = score.black.prisoners + score.black.komi;
         const white_points = score.white.prisoners + score.white.komi;

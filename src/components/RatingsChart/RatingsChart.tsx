@@ -27,12 +27,10 @@ import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
 import {errorLogger} from 'misc';
+
 import {
-    rank_to_rating,
     rating_to_rank,
-    get_handicap_adjustment,
     rankString,
-    is_novice,
     is_rank_bounded,
     humble_rating,
     bounded_rank
@@ -44,6 +42,7 @@ interface RatingsChartProperties {
     playerId: number;
     speed: speed_t;
     size: 0 | 9 | 13 | 19;
+    updateChartSize: (height: number, width: number) => void; // callback with actual chart size on resize
 }
 
 
@@ -561,6 +560,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.setRanges();
         let width = this.graph_width;
 
+        this.props.updateChartSize(chart_height, width);
+
         this.svg.attr('width', this.width + margin.left + margin.right);
         this.svg.attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
         this.clip.attr('width', width);
@@ -1069,22 +1070,24 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let agg = this.win_loss_aggregate;
 
         return (
-            <div className='win-loss-stats'>
-                <div>
-                    <span className='win-loss-legend-block weak-wins' />
-                    {interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block strong-wins' />
-                    {interpolate(pgettext("Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block weak-losses' />
-                    {interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block strong-losses' />
-                    {interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses})}
+            <div className="rating-chart">
+                <div className='win-loss-stats'>
+                    <div>
+                        <span className='win-loss-legend-block weak-wins' />
+                        {interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block strong-wins' />
+                        {interpolate(pgettext("Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block weak-losses' />
+                        {interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block strong-losses' />
+                        {interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses})}
+                    </div>
                 </div>
             </div>
         );

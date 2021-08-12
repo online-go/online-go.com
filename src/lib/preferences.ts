@@ -61,6 +61,8 @@ let defaults = {
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
+    "rating-graph-always-use": false,
+    "rating-graph-plot-by-games": false,
     "show-all-challenges": false,
     "show-unranked-challenges": true,
     "show-ranked-challenges": true,
@@ -71,7 +73,7 @@ let defaults = {
     "show-move-numbers": true,
     "show-offline-friends": true,
     "show-ratings-in-rating-grid": false,
-    "show-ratings-graph-by-game": false,
+
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
 

@@ -29,6 +29,8 @@ import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
 import {errorLogger} from 'misc';
+import { MiniGoban } from "MiniGoban";
+
 import {
     rating_to_rank,
     rankString,
@@ -43,7 +45,8 @@ interface RatingsChartProperties {
     playerId: number;
     speed: speed_t;
     size: 0 | 9 | 13 | 19;
-    updateHoveredGame: any; // callback taking the game number that the person hovered over
+    updateHoveredGame: (game_id: number) => void;       // callback with the game number that the person hovered over
+    updateChartSize: (height: number, width: number) => void;   // callback with the size of the actual chart within this component (for client to position stuff relative to that)
 }
 
 const margin   = {top: 30, right: 20, bottom: 110, left: 20}; // Margins around the rating chart with respect to the whole space
@@ -475,6 +478,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.setRanges();
         let width = this.graph_width;
 
+        this.props.updateChartSize(chart_height, width);
+
         this.svg.attr('width', this.width + margin.left + margin.right);
         this.svg.attr('height', height + margin.top + margin.bottom);
         this.clip.attr('width', width);
@@ -729,6 +734,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     render() {
         return (
             <div ref={this.setContainer} className="RatingsChartByGame">
+
+                {this.state.hovered_game_id &&
+                    <MiniGoban
+                        id={this.state.hovered_game_id}
+                        displayWidth={200}
+                        width={19}
+                        height={19}
+                    />
+                }
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata

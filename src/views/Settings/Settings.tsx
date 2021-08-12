@@ -1010,6 +1010,10 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         = React.useState(preferences.get("show-tournament-indicator"));
     const [hide_ranks, _setHideRanks]:[boolean, (x: boolean) => void]
         = React.useState(preferences.get("hide-ranks"));
+    const [rating_graph_always_use, _setAlwaysUse]:[boolean, (x: boolean) => void]
+        = React.useState(preferences.get("rating-graph-always-use"));
+    const [rating_graph_plot_by_games, _setUseGames]:[boolean, (x: boolean) => void]
+        = React.useState(preferences.get("rating-graph-plot-by-games"));
     const [incident_report_notifications, setIncidentReportNotifications]:[boolean, (x: boolean) => void]
         = React.useState(preferences.get("notify-on-incident-report"));
 
@@ -1126,6 +1130,16 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         _setShowTournamentIndicator(preferences.get("show-tournament-indicator"));
     }
 
+    function setAlwaysUse(checked) {
+        preferences.set("rating-graph-always-use", checked),
+        _setAlwaysUse(preferences.get("rating-graph-always-use"));
+    }
+
+    function setPlotByGames(checked) {
+        preferences.set("rating-graph-plot-by-games", checked),
+        _setUseGames(preferences.get("rating-graph-plot-by-games"));
+    }
+
     function setHideRanks(checked) {
         preferences.set("hide-ranks", checked),
         _setHideRanks(preferences.get("hide-ranks"));
@@ -1218,6 +1232,11 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
 
             <PreferenceLine title={_("Hide ranks and ratings")}>
                 <Toggle checked={hide_ranks} onChange={setHideRanks} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Plot rating graph by")}>
+                <span>{_("Ask me")}</span><Toggle checked={rating_graph_always_use} onChange={setAlwaysUse} />
+                <span>{_("Always use:")}</span><span>{_("time")}</span><Toggle checked={rating_graph_plot_by_games} onChange={setPlotByGames} disabled={!preferences.get("rating-graph-always-use")}/><span>{_("games")}</span>
             </PreferenceLine>
 
             {(user.is_moderator || null) &&

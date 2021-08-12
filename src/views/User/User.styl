@@ -402,26 +402,16 @@
         display: flex;
         flex-direction: column;
         flex-wrap: nowrap;
+        position: relative; // so we can position the graph-type-toggle relative this
 
         .ratings-chart {
             display: flex;
             flex-direction: column;
+        }
 
-            .graph-type-toggle-control {
-                display: flex;
-                flex-direction: column;
-                font-size: smaller;
-                width: min-content;
-                align-items: center;
-                .graph-type-toggle {
-                    display: flex;
-                    flex-direction: row;
-                    .label {
-                        margin-right: 0.5em;
-                        margin-left: 0.5em;
-                    }
-                }
-            }
+        .graph-type-toggle {
+            position: absolute
+            top: -5px;  // manually align with first label row in chart
         }
     }
 
