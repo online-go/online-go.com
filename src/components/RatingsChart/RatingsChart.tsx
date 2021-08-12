@@ -971,11 +971,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.rating_graph.select('.x.axis').call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
-
-        this.computeWinLossNumbers();
-        if (!this.state.loading && this.show_pie) {
-            this.plotWinLossPie();
-        }
     }
 
     setContainer = (e) => {
@@ -987,6 +982,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     render() {
+        this.computeWinLossNumbers();
+        if (!this.state.loading && this.show_pie) {
+            this.plotWinLossPie();
+        }
         return (
             <div ref={this.setContainer} className="RatingsChart">
                 {this.state.loading

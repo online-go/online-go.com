@@ -45,7 +45,6 @@ interface RatingsChartProperties {
     playerId: number;
     speed: speed_t;
     size: 0 | 9 | 13 | 19;
-    updateHoveredGame: (game_id: number) => void;       // callback with the game number that the person hovered over
     updateChartSize: (height: number, width: number) => void;   // callback with the size of the actual chart within this component (for client to position stuff relative to that)
 }
 
@@ -60,7 +59,7 @@ const date_legend_width = 70;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-const show_hovered_game_delay = 1000; // milliseconds till game info of hovered data point is updated
+const show_hovered_game_delay = 300; // milliseconds till game info of hovered data point is updated
 
 let format_date = (d:Date) => moment(d).format('ll');
 
@@ -152,6 +151,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             loading: true,
             nodata: false,
             subselect_extents: [],
+            hovered_game_id: null,
         };
         this.chart_div = $("<div>")[0];
     }
@@ -187,6 +187,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         if (this.props.playerId !== nextProps.playerId
             || this.props.speed !== nextProps.speed
             || this.props.size  !== nextProps.size
+            || this.state.hovered_game_id !== nextState.hovered_game_id
         ) {
             return true;
         }
@@ -377,7 +378,13 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 this.dateLegend.style('display', 'none');
                 this.ratingTooltip.style('display', 'none');
                 this.horizontalCrosshairLine.style('display', 'none');
+
+                // get rid of mouse-hover effects
                 window.clearTimeout(this.hover_timer);
+                this.setState({hovered_game_id: null});
+                if (this.show_pie) {
+                    this.plotWinLossPie();
+                }
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -411,7 +418,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
                 if (self.hover_timer) { window.clearTimeout(self.hover_timer); }
 
-                self.hover_timer = window.setTimeout(self.props.updateHoveredGame , show_hovered_game_delay, d.game_id);
+                self.hover_timer = window.setTimeout(self.updateHoveredGame , show_hovered_game_delay, d.game_id);
             });
 
         this.subselect_chart = this.subselect_graph.append('path')
@@ -518,6 +525,12 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
             this.onSubselectBrush();
         }
+    }
+
+    hideWinLossPie = () => {
+        this.win_loss_pie.selectAll('path').remove();
+        this.win_loss_pie.selectAll('rect').remove();
+        this.win_loss_pie.selectAll('text').remove();
     }
 
     plotWinLossPie = () => {
@@ -731,18 +744,19 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
     }
 
+    updateHoveredGame = (game_id: number) => {
+        console.log("Saw hover:", game_id);
+        this.setState({
+            hovered_game_id: game_id,
+            show_pie: false // we're putting the hovered game in that position
+        });
+        this.hideWinLossPie();
+    }
+
     render() {
+        // NOTE: we have a shouldComponentUpdate controlling this render (in case you wonder why it doesn't run ;)
         return (
             <div ref={this.setContainer} className="RatingsChartByGame">
-
-                {this.state.hovered_game_id &&
-                    <MiniGoban
-                        id={this.state.hovered_game_id}
-                        displayWidth={200}
-                        width={19}
-                        height={19}
-                    />
-                }
                 {this.state.loading
                     ? <div className='loading'>{_("Loading")}</div>
                     : this.state.nodata
@@ -751,6 +765,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                             <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                             <PersistentElement elt={this.chart_div}/>
                         </div>
+                }
+
+                {this.state.hovered_game_id &&
+                    <MiniGoban
+                        id={this.state.hovered_game_id}
+                        displayWidth={200}
+                        width={19}
+                        height={19}
+                    />
                 }
                 {this.show_pie ? null : this.renderWinLossNumbersAsText()}
             </div>

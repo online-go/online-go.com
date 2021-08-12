@@ -21,6 +21,13 @@ rating-chart-height=380px;  // needs to match constant in .tsx file
     height: rating-chart-height;
     max-width: calc(100vw - 2em);
 
+    position: relative; // so we can position the minigoban on over
+
+    .MiniGoban {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
     // Uncomment this to make charts resize.  But only when they support that.
     // max-width: calc(100vw - 2em);
 

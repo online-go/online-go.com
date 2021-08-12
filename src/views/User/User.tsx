@@ -138,7 +138,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
-            show_ratings_graph_by_game: preferences.get('rating-graph-plot-by-games'),
+            ratings_graph_plot_by_game: preferences.get('rating-graph-plot-by-games'),
             hovered_game_id: null,
         };
 
@@ -557,11 +557,6 @@ export class User extends React.PureComponent<UserProperties, any> {
         preferences.get('hide-ranks') ? "" : rank
     )
 
-    updateHoveredGame = ( game_id: number) => {
-        console.log("Saw hover:", game_id);
-        this.setState({hovered_game_id: game_id});
-    }
-
     updateTogglePosition = ( _height: number, width: number) => {
         this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
     }
@@ -853,7 +848,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                     <div className='ratings-chart'>
                         {this.state.ratings_graph_plot_by_game ?
                             <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
-                                updateHoveredGame={this.updateHoveredGame} updateChartSize={this.updateTogglePosition}
+                                updateChartSize={this.updateTogglePosition}
                             /> :
                             <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
                                 updateChartSize={this.updateTogglePosition}
