@@ -23,18 +23,14 @@ import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
 import ReactResizeDetector from 'react-resize-detector';
-import {Link} from "react-router-dom";
-import {termination_socket} from 'sockets';
 import {_, pgettext, interpolate} from "translate";
 import {PersistentElement} from 'PersistentElement';
 import {RatingEntry, makeRatingEntry} from './RatingEntry';
 import {errorLogger} from 'misc';
+
 import {
-    rank_to_rating,
     rating_to_rank,
-    get_handicap_adjustment,
     rankString,
-    is_novice,
     is_rank_bounded,
     humble_rating,
     bounded_rank
@@ -46,14 +42,15 @@ interface RatingsChartProperties {
     playerId: number;
     speed: speed_t;
     size: 0 | 9 | 13 | 19;
+    updateChartSize: (height: number, width: number) => void; // callback with actual chart size on resize
 }
 
 
 const date_bisector = d3.bisector((d:RatingEntry) => { return d.ended; }).left;
 let format_date = (d:Date) => moment(d).format('ll');
 let format_month = (d:Date) => moment(d).format('MMM YYYY');
-const margin   = {top: 30, right: 20, bottom: 100, left: 20};
-const margin2  = {top: 210, right: 20, bottom: 20, left: 20};
+const margin   = {top: 30, right: 20, bottom: 100, left: 20}; // Margins around the rating chart - but win/loss bars are inside this at the bottom!
+const margin2  = {top: 210, right: 20, bottom: 20, left: 20}; // Margins around the 'timeline' chart with respect to the whole space
 const chart_min_width = 64;
 const chart_height = 283;
 const date_legend_width = 70;
@@ -68,8 +65,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     svg;
     clip;
     resize_debounce;
-    rating_graph;
-    timeline_graph;
+    rating_graph;   // The main graph ( which does happen to be a timeline :o )
+    timeline_graph; // The secondary graph, where a slice of timeline can be selected to display on the main graph
     legend;
     dateLegend;
     dateLegendBackground;
@@ -91,9 +88,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
     ratings_x      = d3.scaleTime();
     timeline_x     = d3.scaleTime();
+
     ratings_y      = d3.scaleLinear();
     timeline_y     = d3.scaleLinear();
-    outcomes_y     = d3.scaleLinear();
+    win_loss_y     = d3.scaleLinear();
 
     selected_axis  = d3.axisBottom(this.ratings_x);
     timeline_axis  = d3.axisBottom(this.timeline_x);
@@ -249,7 +247,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_x.range([0, this.graph_width]);
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
-        this.outcomes_y.range([win_loss_bars_height, 0]);
+        this.win_loss_y.range([win_loss_bars_height, 0]);
     }
 
     initialize() {
@@ -381,7 +379,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.range_label = this.legend.append('text')
             .style('text-anchor', 'end')
             .attr('transform', 'translate(' + width + ', 0)');
-
 
         this.deviation_chart = this.rating_graph.append('path')
             .attr('clip-path', 'url(#clip)')
@@ -562,6 +559,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.setRanges();
         let width = this.graph_width;
+
+        this.props.updateChartSize(chart_height, width);
 
         this.svg.attr('width', this.width + margin.left + margin.right);
         this.svg.attr('height', height + margin.top + margin.bottom + win_loss_bars_height);
@@ -767,11 +766,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
         let game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
         game_count_extent[0] = 0;
-        this.outcomes_y.domain(d3.extent(game_count_extent));
+        this.win_loss_y.domain(d3.extent(game_count_extent));
         this.timeline_x.domain(this.ratings_x.domain());
         this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
+
+        // Reset extents to full width...
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
         this.setState({date_extents: this.date_extents.slice()});
+
         this.range_label.text(format_date(new Date(date_range[0])) + ' - ' + format_date(new Date(date_range[1])));
         this.deviation_chart
             .datum(this.games_by_day)
@@ -793,6 +795,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.timeline_axis_labels
             .call(this.timeline_axis);
 
+        this.computeWinLossNumbers();
 
         if (this.show_pie) {
             this.plotWinLossPie();
@@ -816,10 +819,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return isFinite(x) ? x : 0;
         };
         const H = (count:number) => {
-            return Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+            return Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
         const Y = (count:number) => {
-            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.outcomes_y(count));
+            return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
 
         for (let bars of this.win_loss_bars) {
@@ -907,6 +910,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         return this.graph_width * (days_in_month / days_in_range);
     }
+
     onTimelineBrush = () => {
         this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
@@ -1058,29 +1062,31 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     }
 
     renderWinLossNumbersAsText() {
-        if (this.state.loading || this.state.nodata || !this.game_entries) {
+        if (this.state.loading || this.state.nodata || !this.game_entries || !this.win_loss_aggregate) {
             return <div className='win-loss-stats'/>;
         }
 
         let agg = this.win_loss_aggregate;
 
         return (
-            <div className='win-loss-stats'>
-                <div>
-                    <span className='win-loss-legend-block weak-wins' />
-                    {interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block strong-wins' />
-                    {interpolate(pgettext("Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block weak-losses' />
-                    {interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses})}
-                </div>
-                <div>
-                    <span className='win-loss-legend-block strong-losses' />
-                    {interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses})}
+            <div className="rating-chart">
+                <div className='win-loss-stats'>
+                    <div>
+                        <span className='win-loss-legend-block weak-wins' />
+                        {interpolate(pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"), {weak_wins: agg.weak_wins})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block strong-wins' />
+                        {interpolate(pgettext("Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block weak-losses' />
+                        {interpolate(pgettext("Number of losses against weaker opponents", "{{weak_losses}} losses vs. weaker opponents"), {weak_losses: agg.weak_losses})}
+                    </div>
+                    <div>
+                        <span className='win-loss-legend-block strong-losses' />
+                        {interpolate(pgettext("Number of losses against stronger opponents", "{{strong_losses}} losses vs. stronger opponents"), {strong_losses: agg.strong_losses})}
+                    </div>
                 </div>
             </div>
         );
