@@ -17,6 +17,7 @@
 
 .MiniGoban {
     display: inline-flex;
+    flex-direction: column;
     width: 22rem;
     height: 25rem;
     max-width: 100vw;
@@ -31,6 +32,17 @@
 
     &.link {
         cursor: pointer;
+    }
+
+    .minigoban-title {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0.5rem;
+
+        .game-date {
+            font-size: smaller;
+        }
     }
 
     .inner-container {

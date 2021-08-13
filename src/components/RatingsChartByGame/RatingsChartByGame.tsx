@@ -59,7 +59,10 @@ const date_legend_width = 70;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-const show_hovered_game_delay = 300; // milliseconds till game info of hovered data point is updated
+const show_hovered_game_delay = 250; // milliseconds till game info of hovered data point is updated
+                                     // fast enough to not feel like a wait, while limiting rate
+
+const restore_delay = 1500;  // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
 
 let format_date = (d:Date) => moment(d).format('ll');
 
@@ -138,7 +141,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     subselect_axis_labels;
 
     brush;
-    width;  // whole width of this element
+    width;  // whole width of this element.
     graph_width; // width of the part where the graph is drawn
     pie_width; // width of the area for the pie chart
     height;  // of what?
@@ -178,6 +181,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
     componentWillUnmount() {
         this.deinitialize();
+        window.clearTimeout(this.hover_timer);
     }
     UNSAFE_componentWillReceiveProps(nextProps) {
         let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
@@ -381,10 +385,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
                 // get rid of mouse-hover effects
                 window.clearTimeout(this.hover_timer);
-                this.setState({hovered_game_id: null});
-                if (this.show_pie) {
-                    this.plotWinLossPie();
-                }
+                self.hover_timer = window.setTimeout(this.restorePie.bind(self), restore_delay);
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -456,6 +457,13 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         ).then(this.loadDataAndPlot)
         .catch(errorLogger)
         ;
+    }
+
+    restorePie() {
+        this.setState({hovered_game_id: null});
+        if (this.show_pie) {
+            this.plotWinLossPie();
+        }
     }
 
     /* The area we can draw all of our charting in */
@@ -745,7 +753,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     updateHoveredGame = (game_id: number) => {
-        console.log("Saw hover:", game_id);
         this.setState({
             hovered_game_id: game_id,
             show_pie: false // we're putting the hovered game in that position
@@ -754,7 +761,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     render() {
-        // NOTE: we have a shouldComponentUpdate controlling this render (in case you wonder why it doesn't run ;)
+        // NOTE: we have a shouldComponentUpdate controlling this render (in case you wonder why it doesn't run ;) )
         return (
             <div ref={this.setContainer} className="RatingsChartByGame">
                 {this.state.loading
@@ -773,6 +780,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                         displayWidth={200}
                         width={19}
                         height={19}
+                        title={true}
                     />
                 }
                 {this.show_pie ? null : this.renderWinLossNumbersAsText()}

@@ -19,6 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, npgettext, interpolate} from "translate";
+import * as moment from "moment";
 import * as preferences from "preferences";
 import {Goban} from "goban";
 import {termination_socket} from "sockets";
@@ -42,6 +43,7 @@ interface MiniGobanProps {
     json?: any;
     noLink?: boolean;
     noText?: boolean;
+    title?: boolean;
 }
 
 export class MiniGoban extends React.Component<MiniGobanProps, any> {
@@ -124,6 +126,13 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                 .catch( () => {console.log("Couldn't work out who played white"); });
         }
 
+        if (this.props.title) {
+            this.setState({
+                game_name: this.goban.engine.game_name || "",
+                game_date: this.goban.config.end_time ? moment(new Date(this.goban.config.end_time * 1000)).format("LLL") : ""
+            });
+        }
+
         const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
 
         const black_points = score.black.prisoners + score.black.komi;
@@ -159,6 +168,13 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
 
     inner() {
         return (
+            <React.Fragment>
+            {this.props.title &&
+                <div className={"minigoban-title"}>
+                    <div>{this.state.game_name}</div>
+                    <div className="game-date">{this.state.game_date}</div>
+                </div>
+            }
             <div className="inner-container">
                 <PersistentElement className={
                     "small board"
@@ -184,6 +200,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                     </div>
                 }
             </div>
+            </React.Fragment>
         );
     }
 }
