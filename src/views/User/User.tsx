@@ -138,7 +138,8 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
-            ratings_graph_plot_by_game: preferences.get('rating-graph-plot-by-games'),
+            rating_graph_plot_by_games: preferences.get('rating-graph-plot-by-games'),
+            show_graph_type_toggle: !preferences.get('rating-graph-always-use'),
             hovered_game_id: null,
         };
 
@@ -846,7 +847,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
-                        {this.state.ratings_graph_plot_by_game ?
+                        {this.state.rating_graph_plot_by_games ?
                             <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
                                 updateChartSize={this.updateTogglePosition}
                             /> :
@@ -855,20 +856,22 @@ export class User extends React.PureComponent<UserProperties, any> {
                             />
                         }
                     </div>
-                    <div className='graph-type-toggle' style={{
-                            left: this.state.rating_chart_type_toggle_left}
-                        }>
-                        <Toggle
-                            height={10}
-                            width={20}
-                            checked={this.state.ratings_graph_plot_by_game}
-                            id='show-ratings-in-days'
-                            onChange={(checked, ev, id) => {
-                                this.setState({'ratings_graph_plot_by_game': checked});
-                                preferences.set('ratings-graph-plot-by-game', checked);
-                            }}
-                            />
-                    </div>
+                    {this.state.show_graph_type_toggle &&
+                        <div className='graph-type-toggle' style={{
+                                left: this.state.rating_chart_type_toggle_left}
+                            }>
+                            <Toggle
+                                height={10}
+                                width={20}
+                                checked={this.state.rating_graph_plot_by_games}
+                                id='show-ratings-in-days'
+                                onChange={(checked, ev, id) => {
+                                    this.setState({'rating_graph_plot_by_games': checked});
+                                    preferences.set('rating-graph-plot-by-games', checked);
+                                }}
+                                />
+                        </div>
+                    }
                 </div>
             }
 
