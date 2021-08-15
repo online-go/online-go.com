@@ -28,6 +28,7 @@ import {PersistentElement} from "PersistentElement";
 import {rankString, getUserRating} from "rank_utils";
 import { Clock } from 'Clock';
 import { fetch } from "player_cache";
+import { getGameResultText } from "misc";
 
 interface MiniGobanProps {
     id: number;
@@ -127,9 +128,37 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         }
 
         if (this.props.title) {
+
+            // we have to cook up a `result` object to pass to getGameResultText
+            let result:any;
+
+            if (this.goban.engine.winner === this.goban.engine.black_player_id) {
+                result = {
+                    black_lost: false,
+                    white_lost: true
+                };
+            }
+            else if (this.goban.engine.winner === this.goban.engine.white_player_id) {
+                result = {
+                    black_lost: true,
+                    white_lost: false
+                };
+            }
+            else {
+                result = {
+                    black_lost: true,
+                    white_lost: true
+                };
+            }
+
+            result.outcome = this.goban.engine.outcome;
+
+            const result_string = getGameResultText(result);
+
             this.setState({
                 game_name: this.goban.engine.game_name || "",
-                game_date: this.goban.config.end_time ? moment(new Date(this.goban.config.end_time * 1000)).format("LLL") : ""
+                game_date: this.goban.config.end_time ? moment(new Date(this.goban.config.end_time * 1000)).format("LLL") : "",
+                game_result: result_string
             });
         }
 
@@ -173,6 +202,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                 <div className={"minigoban-title"}>
                     <div>{this.state.game_name}</div>
                     <div className="game-date">{this.state.game_date}</div>
+                    <div className="game-result">{this.state.game_result}</div>
                 </div>
             }
             <div className="inner-container">
@@ -188,7 +218,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                         <span className={`player-name`}>{this.state.black_name}</span>
                         <span className={`player-rank`}>{this.state.black_rank}</span>
                         {this.state.finished || <Clock compact goban={this.goban} color='black' className='mini-goban' />}
-                        <span className="score">{this.state.black_points}</span>
+                        {this.state.finished || <span className="score">{this.state.black_points}</span>}
                     </div>
                 }
                 {!this.props.noText &&
@@ -196,7 +226,7 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
                         <span className={`player-name`}>{this.state.white_name}</span>
                         <span className={`player-rank`}>{this.state.white_rank}</span>
                         {this.state.finished || <Clock compact goban={this.goban} color='white' className='mini-goban' />}
-                        <span className="score">{this.state.white_points}</span>
+                        {this.state.finished || <span className="score">{this.state.white_points}</span>}
                     </div>
                 }
             </div>
