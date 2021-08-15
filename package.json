@@ -23,6 +23,7 @@
     "@types/jest": "^26.0.15",
     "autoprefixer": "^10.2.5",
     "body-parser": "^1.16.1",
+    "cache-loader": "^4.1.0",
     "cssnano": "^5.0.2",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
@@ -53,9 +54,8 @@
     "webpack": "^5.37.0",
     "webpack-bundle-analyzer": "^4.1.1",
     "webpack-cli": "^4.7.0",
-    "cache-loader": "^4.1.0",
     "xgettext-js": "^3.0.0",
-    "yarn": "^1.22.10"
+    "yarn": "^1.22.11"
   },
   "dependencies": {
     "@sentry/browser": "^6.3.6",
