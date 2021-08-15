@@ -62,7 +62,7 @@ const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 const show_hovered_game_delay = 250; // milliseconds till game info of hovered data point is updated
                                      // fast enough to not feel like a wait, while limiting rate
 
-const restore_delay = 1500;  // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
+const pie_restore_delay = 1500;  // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
 
 let format_date = (d:Date) => moment(d).format('ll');
 
@@ -226,9 +226,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.graph_width = 2.0 * sizes.width / 3.0;
 
         if (this.width > 768) {  /* it gets too bunched up to show the pie */
-            this.show_pie = true;
+            if (!this.show_pie) {
+                this.show_pie = true;
+                this.plotWinLossPie();
+            }
         }
         else {
+            if (this.show_pie) {
+                this.hideWinLossPie();
+            }
             this.show_pie = false;
             this.graph_width = this.width;
         }
@@ -385,7 +391,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
                 // get rid of mouse-hover effects
                 window.clearTimeout(this.hover_timer);
-                self.hover_timer = window.setTimeout(this.restorePie.bind(self), restore_delay);
+                self.hover_timer = window.setTimeout(this.restorePie.bind(self), pie_restore_delay);
             })
             .on('mousemove', function() {
                 /* tslint:disable */
@@ -536,12 +542,16 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     hideWinLossPie = () => {
-        this.win_loss_pie.selectAll('path').remove();
-        this.win_loss_pie.selectAll('rect').remove();
-        this.win_loss_pie.selectAll('text').remove();
+        if (this.win_loss_pie) {
+            this.win_loss_pie.selectAll('path').remove();
+            this.win_loss_pie.selectAll('rect').remove();
+            this.win_loss_pie.selectAll('text').remove();
+        }
     }
 
     plotWinLossPie = () => {
+        if (!this.win_loss_pie) { return; }
+
         let agg = this.win_loss_aggregate;
 
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
@@ -739,7 +749,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         this.computeWinLossNumbers();
+
         if (!this.state.loading && this.show_pie) {
+            this.setState({hovered_game_id: null}); // make sure hovered game is not lingering while the are doing subselect
             this.plotWinLossPie();
         }
     }
@@ -783,7 +795,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                         title={true}
                     />
                 }
-                {this.show_pie ? null : this.renderWinLossNumbersAsText()}
             </div>
         );
     }
