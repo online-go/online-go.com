@@ -232,11 +232,15 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.graph_width = 2.0 * sizes.width / 3.0;
 
         if (this.width > 768) {  /* it gets too bunched up to show the pie */
-            this.show_pie = true;
+            if (!this.show_pie) {
+                this.show_pie = true;
+                this.plotWinLossPie();
+            }
         }
         else {
             this.show_pie = false;
             this.graph_width = this.width;
+            this.hideWinLossPie();
         }
 
         this.pie_width = sizes.width / 3.0;
@@ -600,7 +604,17 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
     }
 
+    hideWinLossPie = () => {
+        if (this.win_loss_pie) {
+            this.win_loss_pie.selectAll('path').remove();
+            this.win_loss_pie.selectAll('rect').remove();
+            this.win_loss_pie.selectAll('text').remove();
+        }
+    }
+
     plotWinLossPie = () => {
+        if (!this.win_loss_pie) { return; }
+
         let agg = this.win_loss_aggregate;
 
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
