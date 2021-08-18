@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2012-2020  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -328,6 +328,7 @@ export let GoResources = (props) => {
                 {scramble(
                 <span><Flag country={us}/> <a rel="noopener" href="http://www.usgo.org/">American Go Association</a></span>,
                 <span><Flag country={"gb"}/> <a rel="noopener" href="http://britgo.org/">British Go Association</a></span>,
+                <span><Flag country={"ie"}/> <a rel="noopener" href="https://www.irish-go.org">Irish Go Association</a></span>,
                 <span><Flag country={ca}/> <a rel="noopener" href="http://go-canada.org/">Canadian Go Association</a></span>,
                 <span><Flag country={de}/> <a rel="noopener" href="http://dgob.de/">Deutscher Go-Bund</a></span>,
                 <span><Flag country={au}/> <a rel="noopener" href="http://www.australiango.asn.au/">Australian Go Association</a></span>,
