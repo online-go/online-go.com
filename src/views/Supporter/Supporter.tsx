@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
+import {_, pgettext, interpolate, current_language} from "translate";
 import {del, put, post, get} from "requests";
 import {ignore, errorAlerter} from "misc";
 import * as data from "data";
@@ -104,6 +104,11 @@ let currency_list = [
     {'name': 'United Arab Emirates Dirham' , 'iso': 'AED' ,  'flag': 'ae', 'scale': 5    , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 0, 'sepa': 0, 'locales': ['AE']} ,
 ];
 
+// put here locales for that we should show images/text/etc from right to left
+let locale_details = [
+    { 'name': 'ja', rtl: 1 },
+];
+
 let currency_map = {};
 for (let x of currency_list) {
     currency_map[x.iso] = x;
@@ -180,6 +185,18 @@ function filterCurrencyOption({label, value, data}, text:string):boolean {
 
 function isPaypalEnabled(iso:string):boolean {
     return currency_list.filter(x => x.iso === iso)[0].paypal !== 0;
+}
+
+// gets direction of items withing contener by current_language
+function getDirection(lang:string) :string {
+    let defaultValue = "ltr";
+    for (let i = 0; i < locale_details.length; ++i) {
+        if(locale_details[i].name === lang) {
+            return locale_details[i].rtl == 1 ? "rtl" : defaultValue;
+        }
+    }
+
+    return defaultValue;
 }
 
 function getCurrencyScale(iso:string) {
@@ -755,7 +772,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <input type="hidden" name="modify" value="0" />
                                     <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
                                 </form>
-                                <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)}
+                                <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)} dir={getDirection(current_language)}
                                     onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} >
                                         {_("Donate with")} <img src={`${cdn_release}/img/new_paypal.png`} />
                                 </button>
