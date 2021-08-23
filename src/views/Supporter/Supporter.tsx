@@ -188,11 +188,11 @@ function isPaypalEnabled(iso:string):boolean {
 }
 
 // gets direction of items withing contener by current_language
-function getDirection(lang:string) :string {
+function getDirection(lang:string):string {
     let defaultValue = "ltr";
     for (let i = 0; i < locale_details.length; ++i) {
-        if(locale_details[i].name === lang) {
-            return locale_details[i].rtl == 1 ? "rtl" : defaultValue;
+        if (locale_details[i].name === lang) {
+            return locale_details[i].rtl === 1 ? "rtl" : defaultValue;
         }
     }
 
