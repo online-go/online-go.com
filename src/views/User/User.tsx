@@ -43,6 +43,7 @@ import {image_resizer} from "image_resizer";
 import {Flag} from "Flag";
 import {Markdown} from "Markdown";
 import {RatingsChart} from 'RatingsChart';
+import {RatingsChartByGame} from 'RatingsChartByGame';
 import {UIPush} from "UIPush";
 import {associations} from 'associations';
 import {browserHistory} from "ogsHistory";
@@ -137,6 +138,9 @@ export class User extends React.PureComponent<UserProperties, any> {
             resolved: false,
             temporary_show_ratings: false,
             show_ratings_in_rating_grid: preferences.get('show-ratings-in-rating-grid'),
+            rating_graph_plot_by_games: preferences.get('rating-graph-plot-by-games'),
+            show_graph_type_toggle: !preferences.get('rating-graph-always-use'),
+            hovered_game_id: null,
         };
 
         try {
@@ -554,6 +558,10 @@ export class User extends React.PureComponent<UserProperties, any> {
         preferences.get('hide-ranks') ? "" : rank
     )
 
+    updateTogglePosition = ( _height: number, width: number) => {
+        this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
+    }
+
     render() {
         let user = this.state.user;
         if (!user) { return this.renderInvalidUser(); }
@@ -570,7 +578,6 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
         setTimeout(doDomWork, 0);
-
 
         let game_history_groomer = (results) => {
             let ret = [];
@@ -833,18 +840,38 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 {this.renderRatingGrid(this.state.show_ratings_in_rating_grid)}
                             </div>
                         }
-
-
                     </div>
                 </div>
             </div>
 
-
             {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
-                        <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size} />
+                        {this.state.rating_graph_plot_by_games ?
+                            <RatingsChartByGame playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
+                                updateChartSize={this.updateTogglePosition}
+                            /> :
+                            <RatingsChart playerId={this.user_id} speed={this.state.selected_speed} size={this.state.selected_size}
+                                updateChartSize={this.updateTogglePosition}
+                            />
+                        }
                     </div>
+                    {this.state.show_graph_type_toggle &&
+                        <div className='graph-type-toggle' style={{
+                                left: this.state.rating_chart_type_toggle_left}
+                            }>
+                            <Toggle
+                                height={10}
+                                width={20}
+                                checked={this.state.rating_graph_plot_by_games}
+                                id='show-ratings-in-days'
+                                onChange={(checked, ev, id) => {
+                                    this.setState({'rating_graph_plot_by_games': checked});
+                                    preferences.set('rating-graph-plot-by-games', checked);
+                                }}
+                                />
+                        </div>
+                    }
                 </div>
             }
 

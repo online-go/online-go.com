@@ -16,22 +16,4 @@
  */
 
 
-.ReportedConversationModal {
-  max-width: 60%;
-
-  @media screen and (max-width: 850px){
-    max-width: 90%;
-  }
-  
-  .body {
-    padding: 20px 40px;
-
-    @media screen and (max-width: 850px){
-      padding: 10px;
-    }
-  }
-}
-
-.chatline {
-  margin-bottom: 5px;
-}
+export * from "./RatingsChartByGame";

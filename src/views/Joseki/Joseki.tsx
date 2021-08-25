@@ -398,23 +398,23 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // We have to turn show_comments_requested off once we are done loading a first position...
         this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
 
-        // console.log("Fetch next moves for ", node_id);
-        // console.log("... cache: ", this.cached_positions);
+        console.log("Fetch next moves for ", node_id);
+        console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, caching works only with
         // explore mode  ... the other modes need processNewMoves to happen after completion of fetchNextFilteredMovesFor() (IE this procedure)
         // which doesn't work with caching... needs some reorganisation to make that work
 
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            // console.log("cached position:", node_id);
-            // console.log("prefetching next positions for node", node_id, this.state.mode);
+            console.log("cached position:", node_id);
+            console.log("prefetching next positions for node", node_id, this.state.mode);
             fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                // console.log("Prefetch Server response:", body);
+                console.log("Prefetch Server response:", body);
                 body.forEach((move_info) => {
                     this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
                 });
@@ -426,15 +426,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.processNewMoves(node_id, this.cached_positions[node_id]);
         }
         else {
-            // console.log("fetching position for node", node_id, this.state.mode);
-            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
+            console.log("fetching position for node", node_id, this.state.mode);
+            // First, get the required position from the server as soon as possible
+            fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
                 headers: godojo_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                // console.log("Server response:", body);
-                const target_node = body[0];  // the one we're after comes in the first slot of the array
+                console.log("Server response:", body);
+                const target_node = body;  // the one we're after comes in the first slot of the array
 
                 // If this response we just got is the one we're waiting for now (rather than an old one) then process it
                 if ((this.waiting_for === "root" && target_node.placement === "root") ||
@@ -442,14 +443,28 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     this.processNewMoves(node_id, target_node);
                 }
                 else {
-                    // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
+                    console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
                 }
-                // update the cache with anything we got (irrespective of what we were waiting for)
+
+            }).catch((r) => {
+                console.log("Node GET failed:", r);
+                this.setState({throb: false});
+            });
+
+            // Then prefetch the next positions from this one
+            console.log("... and prefetching");
+            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
+                mode: 'cors',
+                headers: godojo_headers()
+            })
+            .then(response => response.json()) // wait for the body of the response
+            .then(body => {
+                console.log("Prefetch Server response:", body);
                 body.forEach((move_info) => {
                     this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
                 });
             }).catch((r) => {
-                console.log("Node GET failed:", r);
+                console.log("Node Prefetch failed:", r);
                 this.setState({throb: false});
             });
         }
