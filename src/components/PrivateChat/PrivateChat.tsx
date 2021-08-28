@@ -35,8 +35,11 @@ let last_id: number = 0;
 let private_chats = [];
 let instances = {};
 
-let locale = 'en-US';
-let date_format = {month: 'long' , day: 'numeric', year: 'numeric'};
+let locale = undefined;
+
+let date_format:Intl.DateTimeFormatOptions  = {
+	month: 'long' , day: 'numeric', year: 'numeric'
+};
 
 class PrivateChat {
     id: number = ++last_id;
