@@ -215,7 +215,7 @@ export let GoResources = (props) => {
             <dl>
                 <dt>{_("Video Channels")}</dt>
                 {scramble(
-                <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCRJyagla1B5cxIfR4i2LdgA">Michael Redmond's Go TV</a></span>,
+                <span><Flag country={en}/> <Flag country={jp}/> <a rel="noopener" href="https://www.youtube.com/channel/UCRJyagla1B5cxIfR4i2LdgA">Michael Redmond's Go TV</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/KNMeepsie">Jonathan Markowitz</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/user/nicksibicky/">Nick Sibicky</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA">Andrew Jackson</a></span>,
@@ -244,6 +244,10 @@ export let GoResources = (props) => {
                 <span><Flag country={ru}/> <a rel="noopener" href="https://www.twitch.tv/alone_go">Alone Go</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ">Şibumi Go Okulu</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>,
+
+                <span><Flag country={jp}/> <a rel="noopener" href="https://www.youtube.com/channel/UCl4UWklKYTaUOZAhSJAprWQ">The Nihon Ki-in Youtube Channel (日本棋院囲碁チャンネル)</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://www.youtube.com/user/igoshogich">Igo &amp; Shogi</a></span>,
+
                 <span><Flag country={"br"}/> <a rel="noopener" href="https://www.twitch.tv/brasilnihonkiin">Nihon Kiin do Brasil</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
@@ -283,6 +287,36 @@ export let GoResources = (props) => {
                 <span><Flag country={en}/> <a rel="noopener" href="http://mysanrensei.wordpress.com/">My Sanransei</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://onelibertyshort.wordpress.com/">One Liberty Short</a></span>,
                 <span><Flag country={en}/> <a rel="noopener" href="http://gooften.net/">Go of Ten</a></span>,
+
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/shukango">週刊碁ブログ</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/kiin5">棋院海外室Go日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/nationalgo/">囲碁ナショナルチーム「GO・碁・ジャパン」</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/nihonkiin_event/">日本棋院市ヶ谷本院事業部イベントブログ</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/yurakuchoigo/">有楽町囲碁センター</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/osakaigo">日本棋院関西総本部</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/igo-station">囲碁ステーション (Go Station)</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/igo_nikki">囲碁日記 (Go Diary)</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/ogoshi-igo">尾越一郎九段囲碁普及活動</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/kansaikishikai/">関西棋士会</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/15toyama/">このごろの下島八段と大表二段</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/igoshiraishi">白石勇一の囲碁日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://ichao1515.jugem.jp/">鈴木伊佐男七段の風来日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/ye_igo">そらちで囲碁</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/s-takao-san/">たかお日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/starnine">竹清勇の囲碁の宝石箱</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/33612534201">千寿の碁紀行</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/kodomoigo111">時々囲碁日誌+</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/nakanet_2009/">なかねっと</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://ameblo.jp/nagoyaamigo/">nagoya amigo</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/nagoyakishikai/">名古屋棋士会</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://blog.goo.ne.jp/minamijyuujisei_1984">ひろふみのブログ☆</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/yamaneko1985/">三谷哲也の囲碁日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://mimura15.jp/">三村囲碁jp</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/mukai3shimai">向井3姉妹のGO！GO！Diary☆</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://yukarigo.at.webry.info/">吉原由香里のつれづれ日記</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="http://blog.goo.ne.jp/yoda_norimoto">ヨダログ</a></span>,
+
+
                 <span><Flag country={es}/> <a rel="noopener" href="http://361puntos.blogspot.com/">361 Puntos</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
@@ -345,6 +379,33 @@ export let GoResources = (props) => {
                 <span><Flag country={"mx"}/> <a rel="noopener" href="http://go.org.mx/ ">Mexican Association of Go</a></span>,
                 <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.istanbulgo.org/">Istanbul Go Association</a></span>,
                 <span><Flag country={"br"}/> <a rel="noopener" href="http://www.nihonkiin.com.br/">Nihon Kiin do Brasil</a></span>,
+
+                <span>
+                    <a rel="noopener" href="http://www.nihonkiin.or.jp/">
+                        <Flag country={jp}/>
+                    </a>
+                    <a rel="noopener" href="http://www.nihonkiin.or.jp/english">
+                        <Flag country={en}/>
+                    </a>
+                    <a rel="noopener" href="http://www.nihonkiin.or.jp/">
+                        日本棋院 (Nihon Ki-in), Tokyo Japan
+                    </a>
+                </span>,
+                <span>
+                    <a rel="noopener" href="http://www.pairgo.or.jp/homej.php">
+                        <Flag country={jp}/>
+                    </a>
+                    <a rel="noopener" href="http://www.pairgo.or.jp/home.htm">
+                        <Flag country={en}/>
+                    </a>
+                    <a rel="noopener" href="http://www.pairgo.or.jp/homej.php">
+                        Japan Pair Go Association
+                    </a>
+                </span>,
+
+                <span><Flag country={jp}/> <a rel="noopener" href="https://jgof.or.jp/">Japan Go Federation</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://www.igoshogi.net/">Igo &amp; Shogi Channel Inc.</a></span>,
+                <span><Flag country={jp}/> <a rel="noopener" href="https://kansaikiin.jp/">関西棋院 (Kansai Ki-in), Osaka Japan</a></span>,
                 <span><Flag country={"il"}/> <a rel="noopener" href="https://igo.org.il/">Israeli Go Association</a></span>
                 ).map((elt, idx) => <dd key={idx}>{elt}</dd>)
                 }
