@@ -35,6 +35,9 @@ let last_id: number = 0;
 let private_chats = [];
 let instances = {};
 
+let date_format:Intl.DateTimeFormatOptions  = {
+    month: 'long' , day: 'numeric', year: 'numeric'
+};
 
 class PrivateChat {
     id: number = ++last_id;
@@ -43,7 +46,7 @@ class PrivateChat {
     lines = [];
     received_messages = {};
     last_uid;
-    last_date = new Date().toLocaleDateString();
+    last_date = new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format);
     floating = false;
     superchat_enabled = false;
     banner;
@@ -381,11 +384,13 @@ class PrivateChat {
 
         if (timestamp) {
             let ts = new Date(timestamp * 1000);
-            line.append($("<span class='timestamp'>").text("[" + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes() + "] "));
-            if (this.last_date !== ts.toLocaleDateString()) {
-                this.last_date = ts.toLocaleDateString();
-                this.lines.push($("<div>").addClass("date").text(ts.toLocaleDateString()));
+            if (this.last_date !== ts.toLocaleDateString(undefined, date_format)) {
+                this.last_date = ts.toLocaleDateString(undefined, date_format);
+                line.append($("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)));
             }
+
+            line.append($("<span class='timestamp'>").text("[" + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes() + "] "));
+
         }
 
         if (typeof(txt) === "string" && txt.substr(0, 4) === "/me ") {
