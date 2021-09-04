@@ -441,6 +441,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 if ((this.waiting_for === "root" && target_node.placement === "root") ||
                     (this.waiting_for === target_node.node_id.toString()) ) {
                     this.processNewMoves(node_id, target_node);
+                    // caching this one is important, because node_id could be "root", which needs to be cached this way
+                    this.cached_positions = {[node_id]: target_node, ...this.cached_positions};
                 }
                 else {
                     console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
