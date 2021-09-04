@@ -38,6 +38,8 @@ import {JosekiSourceModal} from "JosekiSourceModal";
 import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
+import { node } from "prop-types";
+import { scaleDivergingPow } from "d3";
 
 const server_url = data.get("joseki-url", "/godojo/");
 
@@ -170,6 +172,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
     trace_index = -1;  // index into move_trace of the current node that we are on
     waiting_for = "";  // what position is the most recent fetch to the server waiting to hear about.
 
+    prefetching = false; // if we have a prefetch of node positions in flight
+    prefetched = {};  // Nodes that we have already prefetched, so don't do it again
+
+    last_click:number; // most recent time (ms) we got a click from the goban
+
     constructor(props) {
         super(props);
 
@@ -284,6 +291,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     }
 
     resetBoard = () => {
+        this.last_click = new Date().valueOf();
         this.initializeBoard("root");
     }
 
@@ -383,11 +391,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
     // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
     // in the processing of the result of the fectch for that position.
 
-    fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
+    private fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
-
         this.waiting_for = node_id; // keep track of which position is the latest one that we're interested in
+
 
         // visual indication that we are processing their click
         this.setState({
@@ -404,26 +412,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // Because of tricky sequencing of state update from server responses, caching works only with
         // explore mode  ... the other modes need processNewMoves to happen after completion of fetchNextFilteredMovesFor() (IE this procedure)
         // which doesn't work with caching... needs some reorganisation to make that work
-
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
             console.log("cached position:", node_id);
-            console.log("prefetching next positions for node", node_id, this.state.mode);
-            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
-                mode: 'cors',
-                headers: godojo_headers()
-            })
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                console.log("Prefetch Server response:", body);
-                body.forEach((move_info) => {
-                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
-                });
-            }).catch((r) => {
-                console.log("Node GET failed:", r);
-                this.setState({throb: false});
-            });
-
             this.processNewMoves(node_id, this.cached_positions[node_id]);
+            this.prefetchFor(node_id, variation_filter);
         }
         else {
             console.log("fetching position for node", node_id, this.state.mode);
@@ -435,14 +427,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
                 console.log("Server response:", body);
-                const target_node = body;  // the one we're after comes in the first slot of the array
+                const target_node = body; // the one we're after comes in the first slot of the array
+
 
                 // If this response we just got is the one we're waiting for now (rather than an old one) then process it
                 if ((this.waiting_for === "root" && target_node.placement === "root") ||
-                    (this.waiting_for === target_node.node_id.toString()) ) {
+                    (this.waiting_for === target_node.node_id.toString())) {
                     this.processNewMoves(node_id, target_node);
                     // caching this one is important, because node_id could be "root", which needs to be cached this way
-                    this.cached_positions = {[node_id]: target_node, ...this.cached_positions};
+                    this.cached_positions = { [node_id]: target_node, ...this.cached_positions };
                 }
                 else {
                     console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
@@ -450,25 +443,46 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             }).catch((r) => {
                 console.log("Node GET failed:", r);
-                this.setState({throb: false});
+                this.setState({ throb: false });
             });
 
-            // Then prefetch the next positions from this one
-            console.log("... and prefetching");
-            fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
-                mode: 'cors',
-                headers: godojo_headers()
-            })
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                console.log("Prefetch Server response:", body);
-                body.forEach((move_info) => {
-                    this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+            // Then prefetch the next positions from this one, after a short pause to let the main fetch get underway
+            setTimeout( () => {this.prefetchFor(node_id, variation_filter); } , 100);
+        }
+    }
+
+    prefetchFor = (node_id: string, variation_filter) => {
+        // Prefetch the next nodes, by calling the prefetch API, unless we already have a pre-fetch in flight
+        // (no point in driving server load up with overlapping and expensive prefetches!)
+        if (!this.prefetching) {
+            console.log("checking if we alreay prefetched at", node_id, this.prefetched[node_id]);
+            if (!this.prefetched[node_id]) {
+                this.prefetching = true;
+                console.log("... prefetching", node_id);
+                fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
+                    mode: 'cors',
+                    headers: godojo_headers()
+                })
+                .then(response => response.json()) // wait for the body of the response
+                .then(body => {
+                    this.prefetching = false;
+                    this.prefetched[node_id] = true;
+                    console.log("Prefetch Server response:", body);
+                    body.forEach((move_info) => {
+                        this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                    });
+                }).catch((r) => {
+                    this.prefetching = false;
+                    console.log("Node Prefetch failed:", r);
+                    this.setState({throb: false});
                 });
-            }).catch((r) => {
-                console.log("Node Prefetch failed:", r);
-                this.setState({throb: false});
-            });
+            }
+            else {
+                console.log("(not prefetching, we already did this one)");
+            }
+        }
+        else {
+            console.log("(not prefetching here, we have one already in flight)");
         }
     }
 
@@ -488,6 +502,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         this.processNewJosekiPosition(dto);
+
+        let elapsed = new Date().valueOf() - this.last_click;
+
+        console.log("displayed result in", elapsed / 1000);
 
         if (this.state.count_details_open) {
             this.showVariationCounts(node_id);
@@ -613,6 +631,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
        We ask the board engine what the position is now, and update the display accordingly */
     onBoardUpdate = () => {
+        this.last_click = new Date().valueOf();
         let mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
