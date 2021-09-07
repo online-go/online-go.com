@@ -98,7 +98,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, {log: Ar
                     <tbody>
                       {this.state.log.map((entry, idx) => (
                           <tr key={entry.timestamp + ':' +  idx} className='entry'>
-                              <td className='timestamp'>{moment(entry.timestamp).format('LTS')}</td>
+                              <td className='timestamp'>{moment(entry.timestamp).format('L LTS')}</td>
                               <td className='event'>{entry.event}</td>
                               <td className='data'><LogData config={this.props.config} event={entry.event} data={entry.data} /></td>
                           </tr>
