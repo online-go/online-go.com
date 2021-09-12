@@ -67,6 +67,7 @@ export class Team extends React.PureComponent<{}, any> {
         let cz = getLanguageFlag("czech", country, "cz");
         let nl = getLanguageFlag("netherlands", country, "nl");
         let jp = getLanguageFlag("japan", country, "jp");
+        let fi = getLanguageFlag("finnish", country, "fi");
 
         let moderators = [
             {"id": 784    , "username": "mlopezviedma"   , "country": ["ar"] , "languages": [es, en]} ,
@@ -87,6 +88,13 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 209826 , "username": "Vsotvep"        , "country": ["nl"] , "languages": [nl, en, jp]} ,
             {"id": 683917 , "username": "RubyMineshaft"  , "country": ["us"] , "languages": [en, cn]} ,
             {"id": 497519 , "username": "Kosh"           , "country": ["au"] , "languages": [en]} ,
+            {"id": 427361 , "username": "shinuito"       , "country": ["ie"] , "languages": [en]} ,
+            {"id": 85719  , "username": "KoBa"           , "country": ["fi"] , "languages": [fi, en]} ,
+            {"id": 695886 , "username": "KAOSkonfused"   , "country": ["de"] , "languages": [de, en]} ,
+            {"id": 483146 , "username": "teapoweredrobot", "country": ["gb"] , "languages": [en, fr]} ,
+            {"id": 76618  , "username": "yebellz"        , "country": ["us"] , "languages": [en]} ,
+            {"id": 193671 , "username": "gennan"         , "country": ["nl"] , "languages": [nl, gb, de]} ,
+            {"id": 52288  , "username": "le_4tc"         , "country": ["se"] , "languages": [se, en]}
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
@@ -111,7 +119,7 @@ export class Team extends React.PureComponent<{}, any> {
                                 <span className='flags'>
                                     {u.country.map((c, idx) => (<Flag key={c} country={c}/>))}
                                 </span>
-                                <span style={{display: "inline-block", width: "9em"}}>
+                                <span style={{display: "inline-block", width: "10em"}}>
                                     <Player user={u} />
                                 </span>
                                 {_("Languages")}: {u.languages.map((c, idx) => (<span key={c} ><Flag country={c}/></span>) )}
