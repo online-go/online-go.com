@@ -70,31 +70,31 @@ export class Team extends React.PureComponent<{}, any> {
         let fi = getLanguageFlag("finnish", country, "fi");
 
         let moderators = [
-            {"id": 784    , "username": "mlopezviedma"   , "country": ["ar"] , "languages": [es, en]} ,
-            {"id": 781    , "username": "crodgers"       , "country": ["us"] , "languages": [en]} ,
-            {"id": 69627  , "username": "xhu98"          , "country": ["us"] , "languages": [cn, en]} ,
-            {"id": 4      , "username": "matburt"        , "country": ["us"] , "languages": [en]} ,
-            {"id": 1      , "username": "anoek"          , "country": ["us"] , "languages": [en]} ,
-            {"id": 52     , "username": "trohde"         , "country": ["de"] , "languages": [de, en]} ,
-            {"id": 64817  , "username": "mark5000"       , "country": ["us"] , "languages": [en]} ,
-            {"id": 66091  , "username": "Revar Isavé"    , "country": ["de"] , "languages": [de, gb]} ,
-            {"id": 441    , "username": "VincentCB"      , "country": ["ca"] , "languages": [en, fr]} ,
-            {"id": 55415  , "username": "entrpy"         , "country": ["se"] , "languages": [se, en]} ,
-            {"id": 360861 , "username": "AdamR"          , "country": ["cz"] , "languages": [cz, en]} ,
-            {"id": 299041 , "username": "Razza99"        , "country": ["gb"] , "languages": [en]} ,
-            {"id": 412892 , "username": "Eugene"         , "country": ["au"] , "languages": [en]} ,
-            {"id": 445315 , "username": "BHydden"        , "country": ["au"] , "languages": [en]} ,
-            {"id": 449941 , "username": "flovo"          , "country": ["eu"] , "languages": [de, en]} ,
-            {"id": 209826 , "username": "Vsotvep"        , "country": ["nl"] , "languages": [nl, en, jp]} ,
-            {"id": 683917 , "username": "RubyMineshaft"  , "country": ["us"] , "languages": [en, cn]} ,
-            {"id": 497519 , "username": "Kosh"           , "country": ["au"] , "languages": [en]} ,
-            {"id": 427361 , "username": "shinuito"       , "country": ["ie"] , "languages": [en]} ,
-            {"id": 85719  , "username": "KoBa"           , "country": ["fi"] , "languages": [fi, en]} ,
-            {"id": 695886 , "username": "KAOSkonfused"   , "country": ["de"] , "languages": [de, en]} ,
-            {"id": 483146 , "username": "teapoweredrobot", "country": ["gb"] , "languages": [en, fr]} ,
-            {"id": 76618  , "username": "yebellz"        , "country": ["us"] , "languages": [en]} ,
-            {"id": 193671 , "username": "gennan"         , "country": ["nl"] , "languages": [nl, gb, de]} ,
-            {"id": 52288  , "username": "le_4tc"         , "country": ["se"] , "languages": [se, en]}
+            {"id": 784   , "country": ["ar"] , "languages": [es, en]} , //mlopezviedma
+            {"id": 781   , "country": ["us"] , "languages": [en]} , //crocrobot
+            {"id": 69627 , "country": ["us"] , "languages": [cn, en]} , //xhu98
+            {"id": 4     , "country": ["us"] , "languages": [en]} , //matburt
+            {"id": 1     , "country": ["us"] , "languages": [en]} , //anoek
+            {"id": 52    , "country": ["de"] , "languages": [de, en]} , //trohde
+            {"id": 64817 , "country": ["us"] , "languages": [en]} , //mark5000
+            {"id": 66091 , "country": ["de"] , "languages": [de, gb]} , //Revar Isavé
+            {"id": 441   , "country": ["ca"] , "languages": [en, fr]} , //VincentCB
+            {"id": 55415 , "country": ["se"] , "languages": [se, en]} , //entrpy
+            {"id": 360861, "country": ["cz"] , "languages": [cz, en]} , //AdamR
+            {"id": 299041, "country": ["gb"] , "languages": [en]} , //Razza99
+            {"id": 412892, "country": ["au"] , "languages": [en]} , //Eugene
+            {"id": 445315, "country": ["au"] , "languages": [en]} , //BHydden
+            {"id": 449941, "country": ["eu"] , "languages": [de, en]} , //flovo
+            {"id": 209826, "country": ["nl"] , "languages": [nl, en, jp]} , //Vsotvep
+            {"id": 683917, "country": ["us"] , "languages": [en, cn]} , //RubyMineshaft
+            {"id": 497519, "country": ["au"] , "languages": [en]} , //Kosh
+            {"id": 427361, "country": ["ie"] , "languages": [en]} , //shinuito
+            {"id": 85719 , "country": ["fi"] , "languages": [fi, en]} , //KoBa
+            {"id": 695886, "country": ["de"] , "languages": [de, en]} , //KAOSkonfused
+            {"id": 483146, "country": ["gb"] , "languages": [en, fr]} , //teapoweredrobot
+            {"id": 76618 , "country": ["us"] , "languages": [en]} , //yebellz
+            {"id": 193671, "country": ["nl"] , "languages": [nl, gb, de]} , //gennan
+            {"id": 52288 , "country": ["se"] , "languages": [se, en]} //le_4tc
         ];
         let developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
