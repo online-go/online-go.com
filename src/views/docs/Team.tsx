@@ -68,6 +68,7 @@ export class Team extends React.PureComponent<{}, any> {
         let nl = getLanguageFlag("netherlands", country, "nl");
         let jp = getLanguageFlag("japan", country, "jp");
         let fi = getLanguageFlag("finnish", country, "fi");
+        let eng = getLanguageFlag("english", country, "_England");
 
         let moderators = [
             {"id": 784   , "country": ["ar"] , "languages": [es, en]} , //mlopezviedma
@@ -85,11 +86,11 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 412892, "country": ["au"] , "languages": [en]} , //Eugene
             {"id": 445315, "country": ["au"] , "languages": [en]} , //BHydden
             {"id": 449941, "country": ["eu"] , "languages": [de, en]} , //flovo
-            {"id": 209826, "country": ["nl"] , "languages": [nl, en, jp]} , //Vsotvep
+            {"id": 209826, "country": ["nl"] , "languages": [nl, gb, jp]} , //Vsotvep
             {"id": 683917, "country": ["us"] , "languages": [en, cn]} , //RubyMineshaft
-            {"id": 497519, "country": ["au"] , "languages": [en]} , //Kosh
+            {"id": 497519, "country": ["au"] , "languages": [eng]} , //Kosh
             {"id": 427361, "country": ["ie"] , "languages": [en]} , //shinuito
-            {"id": 85719 , "country": ["fi"] , "languages": [fi, en]} , //KoBa
+            {"id": 85719 , "country": ["fi"] , "languages": [fi, gb]} , //KoBa
             {"id": 695886, "country": ["de"] , "languages": [de, en]} , //KAOSkonfused
             {"id": 483146, "country": ["gb"] , "languages": [en, fr]} , //teapoweredrobot
             {"id": 76618 , "country": ["us"] , "languages": [en]} , //yebellz
