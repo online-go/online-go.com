@@ -18,7 +18,6 @@ module.exports = {
     },
     "extends": [
         "prettier",
-        "prettier/@typescript-eslint"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -34,7 +33,8 @@ module.exports = {
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
-        "@typescript-eslint/indent": "error",
+        // Commenting for now as SwitchCase statements are wonky
+        // "@typescript-eslint/indent": "error",
         "@typescript-eslint/member-delimiter-style": [
             "error",
             {
@@ -48,7 +48,8 @@ module.exports = {
                 }
             }
         ],
-        "@typescript-eslint/naming-convention": "error",
+        // Commenting until I can figure out how to allow PascalCase for React Components only
+        // "@typescript-eslint/naming-convention": "error",
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
@@ -80,7 +81,8 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
-        "indent": "error",
+        // Commenting for now as SwitchCase statements are wonky
+        // "indent": "error",
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "error",
         "jsdoc/newline-after-description": "error",
