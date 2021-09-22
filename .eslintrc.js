@@ -52,7 +52,10 @@ module.exports = {
             "error",
             "always"
         ],
-        "@typescript-eslint/type-annotation-spacing": "error",
+        "@typescript-eslint/type-annotation-spacing": [
+            "error",
+            "overrides": { "colon": { "before": false, "after": false } }
+        ]
         "brace-style": [
             "error",
             "1tbs",
