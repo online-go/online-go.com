@@ -54,8 +54,8 @@ module.exports = {
         ],
         "@typescript-eslint/type-annotation-spacing": [
             "error",
-            "overrides": { "colon": { "before": false, "after": false } }
-        ]
+            { "overrides": { "colon": { "after": false}, "parameter": { "after": true } } }
+        ],
         "brace-style": [
             "error",
             "1tbs",
