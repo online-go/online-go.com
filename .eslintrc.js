@@ -55,7 +55,8 @@ module.exports = {
         "@typescript-eslint/type-annotation-spacing": "error",
         "brace-style": [
             "error",
-            "1tbs"
+            "1tbs",
+            { "allowSingleLine" : true }
         ],
         "curly": "error",
         "eol-last": "error",
