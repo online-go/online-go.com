@@ -98,7 +98,6 @@ module.exports = {
         "no-tabs": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
-        "no-underscore-dangle": "error",
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
         "no-var": "error",
