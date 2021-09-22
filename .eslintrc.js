@@ -26,15 +26,12 @@ module.exports = {
     },
     "plugins": [
         "eslint-plugin-jsdoc",
-        "eslint-plugin-prefer-arrow",
         "@typescript-eslint",
         "@typescript-eslint/tslint"
     ],
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
-        // Commenting for now as SwitchCase statements are wonky
-        // "@typescript-eslint/indent": "error",
         "@typescript-eslint/member-delimiter-style": [
             "error",
             {
@@ -48,8 +45,6 @@ module.exports = {
                 }
             }
         ],
-        // Commenting until I can figure out how to allow PascalCase for React Components only
-        // "@typescript-eslint/naming-convention": "error",
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
@@ -81,8 +76,6 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
-        // Commenting for now as SwitchCase statements are wonky
-        // "indent": "error",
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "error",
         "jsdoc/newline-after-description": "error",
@@ -102,6 +95,7 @@ module.exports = {
             }
         ],
         "no-new-wrappers": "error",
+        "no-tabs": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
         "no-underscore-dangle": "error",
@@ -112,7 +106,10 @@ module.exports = {
             "error",
             "never"
         ],
-        "prefer-arrow/prefer-arrow-functions": "error",
+        "prefer-arrow-callback": [
+            "error",
+            { "allowNamedFunctions": true }
+        ],
         "semi": "error",
         "space-before-function-paren": [
             "error",
