@@ -1220,7 +1220,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                 <Toggle checked={translation_dialog_never_show} onChange={setTranslationDialogNeverShow} />
             </PreferenceLine>
 
-            {(user.supporter || null) &&
+            {(user.supporter || user.is_moderator || null) &&
                 <PreferenceLine title={_("Golden supporter name")}>
                     <Toggle checked={!hide_ui_class} onChange={updateHideUIClass} id='hide_ui_class' />
                 </PreferenceLine>
