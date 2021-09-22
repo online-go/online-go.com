@@ -72,7 +72,6 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
         comm_socket.on("incident-report", this.handleReport);
     }
 
-
     handleReport = (report) => {
         if (report.state === "resolved") {
             delete this.active_incident_reports[report.id];
@@ -94,7 +93,11 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             };
             report.claim = () => {
                 post("moderation/incident/%%", report.id, {"id": report.id, "action": "claim"})
-                .then(ignore)
+                .then((res) => {
+                    if (res.vanished) {
+                        swal("Report was removed");
+                    }
+                })
                 .catch(errorAlerter);
             };
             report.cancel = () => {
