@@ -455,7 +455,7 @@ export let PrivacyPolicy = (props) => (
     referring web page, search terms, and other information.
 
     <h3>Deleting your Information</h3>
-    Your personal information is strictly optional and may at anypoint be
+    Your personal information is strictly optional and may at any point be
     removed by editing your profile and removing it. You may
     also delete all of your information by clicking the 'Delete account' button
     found under your Account Settings.
