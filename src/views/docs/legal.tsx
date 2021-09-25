@@ -454,6 +454,11 @@ export let PrivacyPolicy = (props) => (
     request, such as cookies, your IP address, browser type, operating system,
     referring web page, search terms, and other information.
 
+    <h3>Deleting your Information</h3>
+    Your personal information is strictly optional and may at anypoint be
+    removed by editing your profile and removing it. You may
+    also delete all of your information by clicking the 'Delete account' button
+    found under your Account Settings.
 
 
     <h3>Information Sharing and Disclosure</h3>
@@ -522,7 +527,7 @@ export let PrivacyPolicy = (props) => (
 
 
     <div style={{marginTop: "2em"}}>
-        <em>Effective: Oct 30, 2012</em>
+        <em>Effective: Sep 25, 2021</em>
     </div>
 
   </div>

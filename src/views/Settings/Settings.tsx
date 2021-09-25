@@ -504,8 +504,38 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
         .catch(errorAlerter);
     }
 
+    function deleteAccount():void {
+        function doDel(password:string | null) {
+            del(`players/${user.id}`, {
+                "password": password,
+            })
+            .then((obj) => {
+                data.remove('user');
+                data.removePrefix('config');
+                data.removePrefix('preferences');
+                window.location.href = "/";
+            })
+            .catch(errorAlerter);
+        }
+        if (!settings.password_is_set) { // social auth account
+            swal({text: _("Are you sure you want to delete this account? This cannot be undone."), showCancelButton: true})
+            .then(() => {
+                doDel(null);
+            })
+            .catch(ignore);
+        } else {
+            swal({
+                text: _("Enter your current password"),
+                input: "password",
+            }).then((password) => {
+                doDel(password);
+            }).catch(errorAlerter);
+        }
+    }
+
     return (
         <div>
+            <i><Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link></i>
             <dl>
                 <dt>{_("Email address")}</dt>
                 <dd><input type="email" name="new_email" value={email} onChange={ev => setEmail(ev.target.value)} />
@@ -542,6 +572,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
                     </div>
                 </dd>
 
+
                 <dt>{_("Social account linking")}</dt>
                 {settings.social_auth_accounts &&
                     <dd>
@@ -568,9 +599,12 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
                 <dd>
                     <SocialLoginButtons />
                 </dd>
+
+                <dt>{_("Delete account")}</dt>
+                <dd><i>{_("Warning: this action is permanant, there is no way to recover an account after it's been deleted.")}</i></dd>
+                <dd><button className='reject' onClick={deleteAccount}>{_("Delete account")}</button></dd>
             </dl>
 
-            <i><Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link></i>
         </div>
     );
 }
