@@ -206,7 +206,7 @@ export function SocialLoginButtons():JSX.Element {
     return (
         <div className="social-buttons">
             <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>
-            <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a>
+        {/* <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a> */}
             <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Sign in with Twitter")}</a>
             <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="apple apple-id-icon fa fa-apple" />{_("Sign in with Apple")}</a>
         </div>
