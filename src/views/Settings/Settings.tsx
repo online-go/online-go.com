@@ -505,31 +505,48 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
     }
 
     function deleteAccount():void {
+
         function doDel(password:string | null) {
-            del(`players/${user.id}`, {
-                "password": password,
-            })
-            .then((obj) => {
-                data.remove('user');
-                data.removePrefix('config');
-                data.removePrefix('preferences');
-                window.location.href = "/";
-            })
-            .catch(errorAlerter);
+            if (user && user.id) {
+                del(`players/${user.id}`, {
+                    "password": password,
+                })
+                .then(() => {
+                    try {
+                        data.remove('user');
+                    } catch (e) {
+                    }
+
+                    try {
+                        data.removePrefix('config');
+                    } catch (e) {
+                    }
+
+                    try {
+                        data.removePrefix('preferences');
+                    } catch (e) {
+                    }
+
+                    window.location.href = "/";
+                })
+                .catch(errorAlerter);
+            }
         }
-        if (!settings.password_is_set) { // social auth account
-            swal({text: _("Are you sure you want to delete this account? This cannot be undone."), showCancelButton: true})
-            .then(() => {
-                doDel(null);
-            })
-            .catch(ignore);
-        } else {
-            swal({
-                text: _("Enter your current password"),
-                input: "password",
-            }).then((password) => {
-                doDel(password);
-            }).catch(errorAlerter);
+        if (user && user.id) {
+            if (!settings.password_is_set) { // social auth account
+                swal({text: _("Are you sure you want to delete this account? This cannot be undone."), showCancelButton: true})
+                .then(() => {
+                    doDel(null);
+                })
+                .catch(ignore);
+            } else {
+                swal({
+                    text: _("Enter your current password"),
+                    input: "password",
+                }).then((password) => {
+                    doDel(password);
+                }).catch(errorAlerter);
+            }
         }
     }
 
