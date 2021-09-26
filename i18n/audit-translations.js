@@ -105,7 +105,6 @@ function main() {
                 progress[lang] = missing; 
 
                 if (vandalizations === 0) {
-
                     write_promises.push(new Promise((resolve, reject) => {
                         fs.readFile(`./locale/${lang}.js`, 'utf8', (err, data) => {
                             if (/ogs_missing_translation_count/.test(data)) {

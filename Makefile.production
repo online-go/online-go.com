@@ -38,7 +38,7 @@ dev-put: push-cdn
 dev-del:
 	curl -X DELETE $(INDEX_HEADERS)  http://localhost:1080/_index
 
-beta-put: push-cdn audit-translations
+beta-put: audit-translations push-cdn 
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 
 live-put: confirm-go-live push-cdn
@@ -65,6 +65,7 @@ audit-translations:
 	cd i18n; node audit-translations.js
 
 prepare-cdn-files: purge-cdn-files sync-translations dist/ogs.min.js dist/vendor.min.js dist/ogs.$(VERSION).css
+	echo "Language version: $(LANGUAGE_VERSION)"
 	mkdir -p deployment-staging-area/$(RELEASE)/
 	mkdir -p deployment-staging-area/$(RELEASE)/locale
 	cat dist/ogs.min.js | sed 's/ogs.min.js.map/ogs.$(OGS_VERSION_HASH).js.map/' > deployment-staging-area/$(RELEASE)/ogs.$(OGS_VERSION_HASH).js
