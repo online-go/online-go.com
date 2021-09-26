@@ -19,7 +19,8 @@ import { setGobanTranslations } from 'goban';
 
 let w = window as { [key: string]: any }; // Add index signature
 export let current_language: string = w["ogs_current_language"] as string || 'en';
-export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
+//export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
+export let languages: { [key: string]: string } = w["supported_languages"] || { 'en': 'English' };
 export let countries: { [key: string]: { [key: string]: string } } =
     w["ogs_countries"] || { 'en': { 'us': 'United States' } };
 export let locales: { [key: string]: { [key: string]: string[] } } =
