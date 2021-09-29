@@ -18,6 +18,7 @@
 import * as data from "data";
 import Debug from "debug";
 import { current_language } from 'translate';
+import { io } from "socket.io-client";
 
 declare var ogs_language_version;
 declare var ogs_version;
@@ -39,6 +40,7 @@ let ai_config = {
     transports: ["websocket"],
     upgrade: false,
 };
+
 
 export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
 export const comm_socket = termination_socket;
