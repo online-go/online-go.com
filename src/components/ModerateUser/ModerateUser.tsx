@@ -104,6 +104,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setUiClassExtra = (ev) => this.setState({ui_class_extra: ev.target.value});
 
 
+    /*
     deleteAccount = (ev) => {
         const user_id = this.props.playerId;
         const username = lookup(user_id)?.username || "";
@@ -119,6 +120,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         })
         .catch(ignore);
     }
+    */
 
     render() {
         let user = this.state;
@@ -129,7 +131,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     <h1>
                         {this.state.username}
                     </h1>
-                    <button className='reject' onClick={this.deleteAccount}>Delete account</button>
+                    {/* <button className='reject' onClick={this.deleteAccount}>Delete account</button> */}
                 </div>
                 {(this.state.loading === false || null) &&
                     <div className="body">
