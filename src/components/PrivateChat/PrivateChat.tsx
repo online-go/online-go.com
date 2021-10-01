@@ -384,7 +384,7 @@ class PrivateChat {
         if (timestamp) {
             let ts = new Date(timestamp * 1000);
 			
-            if (this.last_date !== ts.toLocaleDateString(locale, date_format) {
+            if (this.last_date !== ts.toLocaleDateString(locale, date_format)) {
                 this.last_date = ts.toLocaleDateString(locale, date_format);
                 line.append($("<div>").addClass("date").text(ts.toLocaleDateString(locale, date_format)));
             }
