@@ -26,6 +26,7 @@ import {SearchInput} from "misc-ui";
 import {Player} from "Player";
 import * as moment from "moment";
 import { chat_markup } from "Chat";
+import * as data from "data";
 
 declare var swal;
 
@@ -201,12 +202,10 @@ export class ColorTableToggle extends React.Component<{}, any> {
         this.setState( prevState => ({
             timerID : ""
         }));
-        this.clearColor();
     }
   }
 
   colorTable() {
-    console.log('Color the table');
     let users = document.getElementsByClassName('userlog')[1].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
     if (users.length === 0) {
@@ -272,22 +271,14 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 }
 
-    clearColor() {
-    console.log('Cleared table colors');
-    }
-
     componentDidMount() {
-        let c = this.getCookie("colorDefault");
-        if (c === 'on') {
+        let c = data.get("table-color-default-on", "");
+        if (c === true) {
             this.setState(prevState => ({
             onDefault: !prevState.onDefault
             }));
         this.handleClick();
         }
-    }
-
-    componentDidUpdate() {
-        console.log(this.state);
     }
 
     componentWillUnmount() {
@@ -296,38 +287,14 @@ export class ColorTableToggle extends React.Component<{}, any> {
         this.setState( prevState => ({
             timerID : ""
         }));
-        this.clearColor();
         }
-    }
-
-    setCookie(cname, cvalue, exdays) {
-        let d = new Date();
-        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        let expires = "expires=" + d.toUTCString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
-
-    getCookie(cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) === 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "";
     }
 
     updateDefault() {
         if (this.state.onDefault) {
-            this.setCookie('colorDefault', "off", 365);
+           data.set("table-color-default-on", false);
         } else {
-            this.setCookie('colorDefault', "on", 365);
+            data.set("table-color-default-on", true);
         }
         this.setState(prevState => ({
         onDefault: !prevState.onDefault
