@@ -154,14 +154,7 @@ export class UIPush extends React.Component<UIPushProperties, any> {
             this.unsubscribe();
             this.channel = this.props.channel;
 
-            if (!this.channel || this.channel === "undefined") {
-                try {
-                    Sentry.captureException(new Error("UI Push channel was not set correctly"));
-                    console.error(`UI Push channel was set to ${this.channel}`);
-                } catch (e) {
-                    console.error(e);
-                }
-            } else {
+            if (this.channel && this.channel !== "undefined") {
                 push_manager.subscribe(this.channel);
             }
         }
