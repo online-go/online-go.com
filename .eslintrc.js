@@ -91,7 +91,10 @@ module.exports = {
         "no-cond-assign": "error",
         "no-debugger": "error",
         "no-eval": "error",
-        "no-invalid-this": "error",
+        // Using the typescript-eslint version of this rule because of class
+        // properties, which are not yet supported in ESLint.  For more info,
+        // see: https://github.com/typescript-eslint/typescript-eslint/issues/491
+        "@typescript-eslint/no-invalid-this": "error",
         "no-multiple-empty-lines": [
             "error",
             {
