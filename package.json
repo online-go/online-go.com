@@ -12,6 +12,7 @@
     "webpack-watch": "webpack --watch --progress --color",
     "yarn": "yarn",
     "tslint": "tslint",
+    "lint": "eslint src/**/*.ts",
     "gulp": "gulp",
     "minify-index": "gulp minify-index --silent",
     "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
