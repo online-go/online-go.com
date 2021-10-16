@@ -59,11 +59,13 @@ module.exports = {
 //            "error",
 //            { "overrides": { "colon": { "after": false}, "parameter": { "after": true } } }
 //        ],
-        "brace-style": [
-            "error",
-            "1tbs",
-            { "allowSingleLine" : true }
-        ],
+        // Again, couldn't find a rule that works with existing code, but
+        // eslint --fix will fix all errors automatically
+//        "brace-style": [
+//            "error",
+//            "1tbs",
+//            { "allowSingleLine" : true }
+//        ],
         "curly": "error",
         "eol-last": "error",
         "eqeqeq": [
