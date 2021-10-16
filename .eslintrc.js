@@ -52,10 +52,12 @@ module.exports = {
             "error",
             "always"
         ],
-        "@typescript-eslint/type-annotation-spacing": [
-            "error",
-            { "overrides": { "colon": { "after": false}, "parameter": { "after": true } } }
-        ],
+        // I could not find a version of this rule that works with the codebase,
+        // but this rule can easily be enabled with eslint --fix
+//        "@typescript-eslint/type-annotation-spacing": [
+//            "error",
+//            { "overrides": { "colon": { "after": false}, "parameter": { "after": true } } }
+//        ],
         "brace-style": [
             "error",
             "1tbs",
