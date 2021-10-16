@@ -141,5 +141,21 @@ module.exports = {
                 }
             }
         ]
-    }
+    },
+    "overrides": [
+        {
+            "files": ["src/**/*.test.ts"],
+            // since test files are not part of tsconfig.json,
+            // parserOptions.project must be unset
+            "parserOptions": {
+                "project": null,
+            },
+            "rules": {
+                // rules that depend on type information (and therefore
+                // parserOptions.project)
+                "@typescript-eslint/no-floating-promises": "off",
+                "@typescript-eslint/tslint/config": "off",
+            }
+        }
+    ]
 };
