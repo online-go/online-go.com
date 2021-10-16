@@ -49,10 +49,11 @@ module.exports = {
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
-        "@typescript-eslint/semi": [
-            "error",
-            "always"
-        ],
+        // Can be enabled with eslint --fix
+//        "@typescript-eslint/semi": [
+//            "error",
+//            "always"
+//        ],
         // I could not find a version of this rule that works with the codebase,
         // but this rule can easily be enabled with eslint --fix
 //        "@typescript-eslint/type-annotation-spacing": [
@@ -112,7 +113,8 @@ module.exports = {
         "no-undef-init": "error",
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
-        "no-var": "error",
+        // Can be enabled with eslint --fix
+//        "no-var": "error",
         "one-var": [
             "error",
             "never"
