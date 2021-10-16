@@ -32,19 +32,20 @@ module.exports = {
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
-        "@typescript-eslint/member-delimiter-style": [
-            "error",
-            {
-                "multiline": {
-                    "delimiter": "semi",
-                    "requireLast": true
-                },
-                "singleline": {
-                    "delimiter": "semi",
-                    "requireLast": false
-                }
-            }
-        ],
+        // member-delimiter-style can easily be enabled with eslint --fix
+//        "@typescript-eslint/member-delimiter-style": [
+//            "error",
+//            {
+//                "multiline": {
+//                    "delimiter": "semi",
+//                    "requireLast": true
+//                },
+//                "singleline": {
+//                    "delimiter": "semi",
+//                    "requireLast": false
+//                }
+//            }
+//        ],
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
