@@ -39,7 +39,7 @@
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
     "fork-ts-checker-webpack-plugin": "^6.2.10",
-    "goban": "=0.5.53",
+    "goban": "=0.5.56",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
     "gulp-livereload": "^4.0.2",
@@ -69,8 +69,8 @@
     "yarn": "^1.22.11"
   },
   "dependencies": {
-    "@sentry/browser": "^6.3.6",
-    "@sentry/tracing": "^6.3.6",
+    "@sentry/browser": "^6.13.2",
+    "@sentry/tracing": "^6.13.2",
     "@types/d3": "^5.7.2",
     "@types/howler": "^2.2.2",
     "@types/jquery": "^2.0.34",
@@ -83,7 +83,6 @@
     "@types/react-select": "^3.0.26",
     "@types/react-virtualized": "^9.18.8",
     "@types/sanitize-html": "^1.22.0",
-    "@types/socket.io-client": "^1.4.31",
     "@types/sweetalert": "^1.1.27",
     "array-move": "^2.2.1",
     "d3": "^5.15.0",
@@ -116,6 +115,7 @@
     "react-virtualized": "^9.21.2",
     "redux": "^3.7.2",
     "sanitize-html": "^2.3.2",
+    "socket.io-client": "4.2.0",
     "ts-md5": "^1.2.7",
     "valid-url": "^1.0.9",
     "whatwg-fetch": "^3.0.0"

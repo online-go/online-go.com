@@ -106,6 +106,8 @@ let defaults = {
 
     "mute-stream-announcements": false,
     "mute-event-announcements": false,
+
+    "table-color-default-on": false,
 };
 
 defaults['profanity-filter'][current_language] = true;

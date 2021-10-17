@@ -1400,7 +1400,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 {!editing
                                     ? <span>
                                          {tournament.players_start}
-                                         {((tournament.settings.maximum_players && tournament.settings.maximum_players > tournament.players_start)) ? "-" + tournament.settings.maximum_players : "+"}
+                                         {!tournament.settings.maximum_players
+                                             ? "+"
+                                             : (
+                                                 tournament.settings.maximum_players > tournament.players_start
+                                                 ? "-" + tournament.settings.maximum_players
+                                                 : ""
+                                             )}
                                       </span>
                                     : <span>
                                          <input ref="players_start" type="number" value={tournament.players_start} onChange={this.setPlayersStart} />

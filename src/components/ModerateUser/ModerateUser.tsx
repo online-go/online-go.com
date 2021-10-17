@@ -17,10 +17,11 @@
 
 import * as React from "react";
 import {_} from "translate";
-import {put, get} from "requests";
+import {put, get, del} from "requests";
 import {errorAlerter, ignore} from "misc";
 import {proRankList} from "rank_utils";
 import {Modal, openModal} from "Modal";
+import {lookup} from "player_cache";
 
 interface Events {
 }
@@ -102,13 +103,35 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setRanking = (ev) => this.setState({ranking: ev.target.value});
     setUiClassExtra = (ev) => this.setState({ui_class_extra: ev.target.value});
 
+
+    /*
+    deleteAccount = (ev) => {
+        const user_id = this.props.playerId;
+        const username = lookup(user_id)?.username || "";
+
+        swal({text: `Are you sure you want to delete the account "${username}" (${user_id})? This cannot be undone.`, showCancelButton: true})
+        .then(() => {
+            del(`players/${user_id}`, {
+            })
+            .then((obj) => {
+                swal("Done");
+            })
+            .catch(errorAlerter);
+        })
+        .catch(ignore);
+    }
+    */
+
     render() {
         let user = this.state;
 
         return (
             <div className="Modal ModerateUser" ref="modal">
                 <div className="header">
-                    <h1>{this.state.username}</h1>
+                    <h1>
+                        {this.state.username}
+                    </h1>
+                    {/* <button className='reject' onClick={this.deleteAccount}>Delete account</button> */}
                 </div>
                 {(this.state.loading === false || null) &&
                     <div className="body">

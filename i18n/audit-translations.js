@@ -105,12 +105,13 @@ function main() {
                 progress[lang] = missing; 
 
                 if (vandalizations === 0) {
-
                     write_promises.push(new Promise((resolve, reject) => {
                         fs.readFile(`./locale/${lang}.js`, 'utf8', (err, data) => {
-                            if (/ogs_missing_translation_count/.test(data)) {
-                                data.replace(/ogs_missing_translation_count = [0-9]+/, `ogs_missing_translation_count = ${missing}`);
+                            if (/window.ogs_missing_translation_count = [0-9]+;/.test(data)) {
+                                //console.log("Replace missing")
+                                data.replace(/window.ogs_missing_translation_count = [0-9]+;/, `window.ogs_missing_translation_count = ${missing};`);
                             } else {
+                                //console.log("Add missing")
                                 data += `window.ogs_missing_translation_count = ${missing};`;
                             }
                             fs.writeFile(`./locale/${lang}.js`, data, resolve);

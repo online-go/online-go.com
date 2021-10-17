@@ -20,6 +20,8 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {comm_socket} from "sockets";
+import * as Sentry from '@sentry/browser';
+
 
 interface UIPushProperties {
     event: string;
@@ -134,7 +136,7 @@ export class UIPush extends React.Component<UIPushProperties, any> {
         }
     }
     unsubscribe() {
-        if (this.channel) {
+        if (this.channel && this.channel !== "undefined") {
             push_manager.unsubscribe(this.channel);
             this.channel = null;
         }
@@ -151,7 +153,10 @@ export class UIPush extends React.Component<UIPushProperties, any> {
         if (this.props.channel !== this.channel) {
             this.unsubscribe();
             this.channel = this.props.channel;
-            push_manager.subscribe(this.channel);
+
+            if (this.channel && this.channel !== "undefined") {
+                push_manager.subscribe(this.channel);
+            }
         }
     }
 

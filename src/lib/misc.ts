@@ -568,10 +568,15 @@ export function deepCompare(x: any, y: any) {
         // Quick checking of one object being a subset of another.
         // todo: cache the structure of arguments[0] for performance
         for (let p in y) {
-            if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
-                return false;
-            }
-            else if (typeof y[p] !== typeof x[p]) {
+            try {
+                if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+                    return false;
+                }
+                else if (typeof y[p] !== typeof x[p]) {
+                    return false;
+                }
+            } catch (e) {
+                console.error(e);
                 return false;
             }
         }

@@ -22,7 +22,6 @@ import {Ribbon} from "misc-ui";
 import {Player} from "Player";
 import {PlayerIcon} from "PlayerIcon";
 import {toast} from "toast";
-import {VoiceChat} from "VoiceChat";
 import Datetime from "react-datetime";
 import {StarRating} from "StarRating";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
@@ -336,9 +335,6 @@ export class Styling extends React.PureComponent<{}, any> {
                     <button onClick={smalltoast}>Small toast</button>
                     <button onClick={bigtoast}>Large toast</button>
                     <button onClick={swal_popup}>Sweet alert</button>
-                </Card>
-                <Card>
-                    <VoiceChat channel="test-voice-chat" hasVoice={true}/>
                 </Card>
                 <Card>
                     <div className="row">

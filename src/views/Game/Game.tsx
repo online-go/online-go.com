@@ -45,7 +45,6 @@ import {chat_manager} from "chat_manager";
 import {openGameInfoModal} from "./GameInfoModal";
 import {openGameLinkModal} from "./GameLinkModal";
 import {openGameLogModal} from "./GameLogModal";
-//import {VoiceChat} from "VoiceChat";
 import {openACLModal} from "ACLModal";
 import {sfx, SFXSprite, ValidSound} from "sfx";
 import {AIReview} from "./AIReview";
@@ -2793,12 +2792,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                                 <button className="sm" type="button" disabled={user.anonymous} onClick={this.shareAnalysis}>{_("Share")}</button>
                             </div>
                         </div>
-
-                        {/*
-                        <div style={{padding: "0.5em", textAlign: "center"}}>
-                            {_("Voice Chat: ")} <VoiceChat channel={"review-" + this.review_id} hasVoice={ this.hasVoice(user.id) } />
-                        </div>
-                        */}
                     </div>
                 }
                 {(this.state.mode === "score estimation" || null) &&
