@@ -209,6 +209,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             })
             .on('mousemove', function() {
                 /* tslint:disable */
+                // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 let x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 
@@ -236,6 +237,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 last_move = -1;
 
                 /* tslint:disable */
+                // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 let x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 
