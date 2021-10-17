@@ -45,8 +45,11 @@ jobs:
       - name: Build CSS
         run: npx gulp min_styl
 
-      - name: Lint
+      - name: Lint (TSLint)
         run: npx tslint --project tsconfig.json
+
+      - name: Lint (ESLint)
+        run: npm run lint
 
       - name: Webpack
         run: npx webpack --optimization-minimize --devtool=source-map
