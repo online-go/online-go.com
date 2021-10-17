@@ -87,7 +87,6 @@ module.exports = {
         ],
         "id-match": "error",
         "jsdoc/check-alignment": "error",
-        "jsdoc/newline-after-description": "error",
         "jsdoc/require-asterisk-prefix": "error",
         "linebreak-style": [
             "error",
