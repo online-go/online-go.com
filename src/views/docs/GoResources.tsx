@@ -92,6 +92,10 @@ export let GoResources = (props) => {
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}><a rel="noopener" href="http://gogameguru.com/relentless/">Go Game Guru</a></span>
 
                     </span>,
+                    <span><Flag country={en}/> <a rel="noopener" href="https://www.usgo.org/sites/default/files/pdf/go-seigen-book.pdf">Go on Go: The Analyzed Games of Go Seigen</a>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Go Seigen</span>
+                        <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Translation by Jim Z. Yu</span></span>,
+
                     <span><Flag country={en}/> <a rel="noopener" href="https://archive.org/details/gameofgonational00smitrich/page/n9">The Game of Go</a>
                         <br/> <span style={{marginLeft: "1.7em", fontSize: "0.9em"}}>Arthur Smith (1908)</span></span>,
                     <span><Flag country={en}/> <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">River Mountain Go 1 (30k-20k)</a>
@@ -376,6 +380,7 @@ export let GoResources = (props) => {
                 <span><Flag country={"es"}/> <a rel="noopener" href="http://aego.biz/">Asociación Española de GO</a></span>,
                 <span><Flag country={"se"}/> <a rel="noopener" href="http://goforbundet.se">Svenska Goförbundet</a></span>,
                 <span><Flag country={it}/> <a rel="noopener" href="https://figg.org">Italian Federation of Go</a></span>,
+                <span><Flag country={nl}/> <a rel="noopener" href="https://www.gobond.nl">Dutch Go Association</a></span>,
                 <span><Flag country={"ru"}/> <a rel="noopener" href="http://gofederation.ru">Russian Go Federation</a></span>,
                 <span><Flag country={"pt"}/> <a rel="noopener" href="http://www.go-portugal.org">Associação Portuguesa de Go</a></span>,
                 <span><Flag country={"cl"}/> <a rel="noopener" href="http://www.igochile.cl/">Chilean Go Federation</a></span>,
