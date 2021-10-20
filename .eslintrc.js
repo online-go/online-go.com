@@ -6,7 +6,7 @@ It represents the closest reasonable ESLint configuration to this
 project's original TSLint configuration.
 
 We recommend eventually switching this configuration to extend from
-the recommended rulesets in typescript-eslint. 
+the recommended rulesets in typescript-eslint.
 https://github.com/typescript-eslint/tslint-to-eslint-config/blob/master/docs/FAQs.md
 
 Happy linting! 💖
@@ -32,41 +32,36 @@ module.exports = {
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
-        // member-delimiter-style can easily be enabled with eslint --fix
-//        "@typescript-eslint/member-delimiter-style": [
-//            "error",
-//            {
-//                "multiline": {
-//                    "delimiter": "semi",
-//                    "requireLast": true
-//                },
-//                "singleline": {
-//                    "delimiter": "semi",
-//                    "requireLast": false
-//                }
-//            }
-//        ],
+        // 110 errors, can be enabled with eslint --fix
+    //    "@typescript-eslint/member-delimiter-style": [
+    //        "error",
+    //        {
+    //            "multiline": {
+    //                "delimiter": "semi",
+    //                "requireLast": true
+    //            },
+    //            "singleline": {
+    //                "delimiter": "semi",
+    //                "requireLast": false
+    //            }
+    //        }
+    //    ],
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
-        // Can be enabled with eslint --fix
-//        "@typescript-eslint/semi": [
-//            "error",
-//            "always"
-//        ],
-        // I could not find a version of this rule that works with the codebase,
-        // but this rule can easily be enabled with eslint --fix
-//        "@typescript-eslint/type-annotation-spacing": [
-//            "error",
-//            { "overrides": { "colon": { "after": false}, "parameter": { "after": true } } }
-//        ],
+        // 561 errors, can be enabled with eslint --fix
+    //    "@typescript-eslint/semi": [
+    //        "error",
+    //        "always"
+    //    ],
+        // 1166 errors, can be enabled with eslint --fix
+    //    "@typescript-eslint/type-annotation-spacing": "error",
         // Again, couldn't find a rule that works with existing code, but
-        // eslint --fix will fix all errors automatically
-//        "brace-style": [
-//            "error",
-//            "1tbs",
-//            { "allowSingleLine" : true }
-//        ],
+        // 974 errors, can be enabled with eslint --fix
+    //    "brace-style": [
+    //        "error",
+    //        "stroustrup"
+    //    ],
         "curly": "error",
         "eol-last": "error",
         "eqeqeq": [
@@ -112,8 +107,8 @@ module.exports = {
         "no-undef-init": "error",
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
-        // Can be enabled with eslint --fix
-//        "no-var": "error",
+        // 56 errors, can be enabled with eslint --fix
+    //    "no-var": "error",
         "one-var": [
             "error",
             "never"
