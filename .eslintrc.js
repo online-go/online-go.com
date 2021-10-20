@@ -62,6 +62,7 @@ module.exports = {
     //        "error",
     //        "stroustrup"
     //    ],
+        "computed-property-spacing": ["error", "never"],
         "curly": "error",
         "eol-last": "error",
         "eqeqeq": [
@@ -81,6 +82,16 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
+        // 16243 errors, can be enabled with eslint --fix
+        // "indent": [
+        //     "error",
+        //     4,
+        //     {
+        //         "SwitchCase": 1,
+        //         "MemberExpression": 0,
+        //         "ignoredNodes": ["ConditionalExpression"]
+        //     }
+        // ],
         "jsdoc/check-alignment": "error",
         "jsdoc/require-asterisk-prefix": "error",
         "linebreak-style": [
