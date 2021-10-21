@@ -42,6 +42,7 @@
     "goban": "=0.5.56",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
+    "gulp-eslint7": "^0.3.2",
     "gulp-livereload": "^4.0.2",
     "gulp-postcss": "^9.0.0",
     "gulp-rename": "^2.0.0",

@@ -14,6 +14,7 @@ const postcss      = require('gulp-postcss');
 const cssnano      = require('cssnano');
 const inline_svg   = require('postcss-inline-svg');
 const gulpTsLint   = require('gulp-tslint');
+const gulpEslint   = require('gulp-eslint7');
 const tslint       = require('tslint');
 const html_minifier= require('html-minifier').minify;
 
