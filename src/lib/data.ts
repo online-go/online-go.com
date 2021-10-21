@@ -217,6 +217,10 @@ export function watch(key, cb, call_on_undefined?: boolean, dont_call_immediatel
     event_emitter.on(key, cb);
 
     let val = get(key);
+
+    // The != can possibly be changed to !==, but I don't want to touch it
+    // without further investigation.
+    // eslint-disable-next-line eqeqeq
     if (!dont_call_immediately && (val != undefined || call_on_undefined)) {
         cb(val);
     }

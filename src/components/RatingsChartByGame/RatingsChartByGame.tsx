@@ -396,6 +396,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .on('mousemove', function() {
                 /* tslint:disable */
                 // 'this' is the mouse area, in this context
+                // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 

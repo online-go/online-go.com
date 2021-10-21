@@ -165,6 +165,7 @@ function matchFullName(input, nicknames) {
 }
 
 /* tslint:disable */
+/* eslint-disable @typescript-eslint/no-invalid-this */
 function onKeyPress(e, options) {
     if (e.which === 9) {
         let $this = $(this);
@@ -246,7 +247,7 @@ function onKeyPress(e, options) {
     }
 };
 /* tslint:enable */
-
+/* eslint-enable @typescript-eslint/no-invalid-this */
 
 /* tslint:disable */
 $.fn.nicknameTabComplete = function(options) {
