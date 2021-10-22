@@ -14,6 +14,7 @@ const postcss      = require('gulp-postcss');
 const cssnano      = require('cssnano');
 const inline_svg   = require('postcss-inline-svg');
 const gulpTsLint   = require('gulp-tslint');
+const gulpEslint   = require('gulp-eslint7');
 const tslint       = require('tslint');
 const html_minifier= require('html-minifier').minify;
 
@@ -35,19 +36,22 @@ gulp.task('min_styl', min_styl);
 gulp.task('livereload-server', livereload_server);
 gulp.task('background_webpack', background_webpack);
 gulp.task('watch_tslint', watch_tslint);
+gulp.task('watch_eslint', watch_eslint);
 gulp.task('dev-server', dev_server);
 gulp.task('tslint', lint);
+gulp.task('eslint', eslint);
 gulp.task('minify-index', minify_index);
-gulp.task('default', 
+gulp.task('default',
     gulp.parallel(
-        'dev-server', 
-        "livereload-server", 
-        "background_webpack", 
-        "build_styl", 
-        "watch_styl", 
-        "watch_dist_js", 
-        "watch_html", 
-        "watch_tslint"
+        'dev-server',
+        "livereload-server",
+        "background_webpack",
+        "build_styl",
+        "watch_styl",
+        "watch_dist_js",
+        "watch_html",
+        "watch_tslint",
+        "watch_eslint"
     )
 );
 
@@ -56,26 +60,30 @@ function reload(done) {
     livereload.reload();
     done();
 }
-function watch_dist_js(done) { 
+function watch_dist_js(done) {
     gulp.watch(['dist/*.js'], reload);
-    done(); 
+    done();
 }
-function watch_html(done) { 
+function watch_html(done) {
     gulp.watch(['src/*.html'], reload);
-    done(); 
+    done();
 }
-function watch_styl(done) { 
+function watch_styl(done) {
     gulp.watch(['src/**/*.styl', 'src/*.styl'], build_styl);
-    done(); 
+    done();
 }
-function livereload_server(done) { 
+function livereload_server(done) {
     livereload.listen(35701);
-    done(); 
+    done();
 }
-function watch_tslint(done) { 
+function watch_tslint(done) {
     gulp.watch(ts_sources, lint);
     done();
 };
+function watch_eslint(done) {
+    gulp.watch(ts_sources, eslint);
+    done();
+}
 
 let lint_debounce = null;
 function lint(done) {
@@ -102,6 +110,13 @@ function lint(done) {
         }))
     }, 50)
     done();
+}
+
+function eslint() {
+    return gulp.src(ts_sources)
+        .pipe(gulpEslint())
+        .pipe(gulpEslint.format())
+        .pipe(gulpEslint.failAfterError());
 }
 
 function build_styl(done) {
