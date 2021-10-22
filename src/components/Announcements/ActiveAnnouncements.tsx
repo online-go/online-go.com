@@ -165,6 +165,25 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                         );
                     }
 
+                    if (announcement.type === "advertisement") {
+                        announcement_actions.push(
+                            {title: _('Hide go service advertisements'), onClick: () => {
+                                swal({
+                                    "text": _("Are you sure you want to hide all go related advertisements?"),
+                                    "showCancelButton": true,
+                                    "confirmButtonText": _("Yes"),
+                                    "cancelButtonText": _("Cancel"),
+                                })
+                                .then(() => {
+                                    preferences.set("mute-event-announcements", true);
+                                    this.forceUpdate();
+                                })
+                                .catch(() => 0);
+                                return;
+                            }}
+                        );
+                    }
+
                     return (
                     <div className="announcement" key={idx}>
                         {announcement.link
