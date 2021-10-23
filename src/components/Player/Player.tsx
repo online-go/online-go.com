@@ -284,13 +284,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
             else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
                 rank_text = '?';
-            }
-            /*
-            else if (is_novice(rating.rank)) {
-                rank_text = pgettext("Novice rank text", 'N');
-            }
-            */
-            else {
+            } else {
                 rank_text = rating.bounded_rank_label;
             }
 

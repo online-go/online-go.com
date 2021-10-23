@@ -399,13 +399,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let varkey = `${trunk_move.move_number}-${varstring}`;
         let have_variation_results = false;
 
-        // if we have an interactive review move, display that
+        // if we have an interactive review move, display that.
+        // otherwise, look for one that came from the normal review.
         if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
             have_variation_results = true;
             ai_review_move = this.ai_review.analyzed_variations[varkey];
-        }
-        // otherwise look for one that came from the normal review
-        else {
+        } else {
             if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
                 ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
             }
