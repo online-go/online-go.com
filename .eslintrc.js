@@ -32,37 +32,32 @@ module.exports = {
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
-        // 110 errors, can be enabled with eslint --fix
-    //    "@typescript-eslint/member-delimiter-style": [
-    //        "error",
-    //        {
-    //            "multiline": {
-    //                "delimiter": "semi",
-    //                "requireLast": true
-    //            },
-    //            "singleline": {
-    //                "delimiter": "semi",
-    //                "requireLast": false
-    //            }
-    //        }
-    //    ],
+        "@typescript-eslint/member-delimiter-style": [
+            "error",
+            {
+                "multiline": {
+                    "delimiter": "semi",
+                    "requireLast": true
+                },
+                "singleline": {
+                    "delimiter": "semi",
+                    "requireLast": false
+                }
+            }
+        ],
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
-        // 561 errors, can be enabled with eslint --fix
-    //    "@typescript-eslint/semi": [
-    //        "error",
-    //        "always"
-    //    ],
-        // 1166 errors, can be enabled with eslint --fix
-    //    "@typescript-eslint/type-annotation-spacing": "error",
-        // Again, couldn't find a rule that works with existing code, but
-        // 974 errors, can be enabled with eslint --fix
-    //    "brace-style": [
-    //        "error",
-    //        "1tbs",
-    //        { "allowSingleLine": true }
-    //    ],
+        "@typescript-eslint/semi": [
+            "error",
+            "always"
+        ],
+        "@typescript-eslint/type-annotation-spacing": "error",
+        "brace-style": [
+            "error",
+            "1tbs",
+            { "allowSingleLine": true }
+        ],
         "computed-property-spacing": ["error", "never"],
         "curly": "error",
         "eol-last": "error",
@@ -83,16 +78,15 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
-        // 16243 errors, can be enabled with eslint --fix
-        // "indent": [
-        //     "error",
-        //     4,
-        //     {
-        //         "SwitchCase": 1,
-        //         "MemberExpression": 0,
-        //         "ignoredNodes": ["ConditionalExpression"]
-        //     }
-        // ],
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1,
+                "MemberExpression": 0,
+                "ignoredNodes": ["ConditionalExpression"]
+            }
+        ],
         "jsdoc/check-alignment": "error",
         "jsdoc/require-asterisk-prefix": "error",
         "linebreak-style": [
@@ -119,8 +113,7 @@ module.exports = {
         "no-undef-init": "error",
         "no-unsafe-finally": "error",
         "no-unused-labels": "error",
-        // 56 errors, can be enabled with eslint --fix
-    //    "no-var": "error",
+        "no-var": "error",
         "one-var": [
             "error",
             "never"
