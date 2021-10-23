@@ -60,7 +60,8 @@ module.exports = {
         // 974 errors, can be enabled with eslint --fix
     //    "brace-style": [
     //        "error",
-    //        "stroustrup"
+    //        "1tbs",
+    //        { "allowSingleLine": true }
     //    ],
         "computed-property-spacing": ["error", "never"],
         "curly": "error",
