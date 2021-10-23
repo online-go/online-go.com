@@ -36,10 +36,7 @@ module.exports = {
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
-        "@typescript-eslint/semi": [
-            "error",
-            "always"
-        ],
+        "@typescript-eslint/semi": "error",
         "@typescript-eslint/type-annotation-spacing": "error",
         "brace-style": [
             "error",
@@ -110,7 +107,6 @@ module.exports = {
             "error",
             { "allowNamedFunctions": true }
         ],
-        "semi": "error",
         "space-before-function-paren": [
             "error",
             "never"
