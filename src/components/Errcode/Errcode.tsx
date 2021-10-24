@@ -25,8 +25,8 @@ export interface MessageProps {
     message_id?: MessageId;
 }
 
-export function format_message(props:MessageProps):string {
-    let message_id:MessageId;
+export function format_message(props: MessageProps): string {
+    let message_id: MessageId;
     if (props.message) {
         let message = props.message;
         message_id = message.message_id;
@@ -64,7 +64,7 @@ export function format_message(props:MessageProps):string {
         case "move_is_suicidal":
         case "illegal_ko_move":
         case "illegal_board_repetition": {
-            let m:GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
+            let m: GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
             let coords = m?.coords || "ERR";
             let move_number = m?.move_number || -1;
             let suffix = ": #" + move_number.toString() + " @" + coords;
@@ -87,6 +87,6 @@ export function format_message(props:MessageProps):string {
     return message_id;
 }
 
-export function Errcode(props:MessageProps):JSX.Element {
+export function Errcode(props: MessageProps): JSX.Element {
     return <div className='Errcode'>{format_message(props)}</div>;
 }

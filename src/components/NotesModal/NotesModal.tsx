@@ -35,14 +35,14 @@ export class NotesModal extends Modal<Events, NotesModalProperties, any> {
 
     render() {
         return (
-          <div className="Modal NotesModal" ref="modal">
-              <div className="body">
-                <textarea value={this.props.notes} readOnly />
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-              </div>
-          </div>
+            <div className="Modal NotesModal" ref="modal">
+                <div className="body">
+                    <textarea value={this.props.notes} readOnly />
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                </div>
+            </div>
         );
     }
 }

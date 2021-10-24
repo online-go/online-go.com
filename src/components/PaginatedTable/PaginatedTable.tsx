@@ -100,7 +100,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         } else {
             this.source_function = this.props.source as SourceFunction;
         }
-    }
+    };
 
     shouldComponentUpdate(nextProps, nextState) {
         return !deepCompare(this.props, nextProps) || !deepCompare(this.state, nextState);
@@ -130,9 +130,9 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
                     (k.indexOf("__contains") > 0)
                 )
                 && filter[k] === ""
-           ) {
-               continue;
-           }
+            ) {
+                continue;
+            }
 
             query[k] = filter[k];
         }
@@ -208,7 +208,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
 
     _setPageSize = (ev) => {
         this.setPageSize(parseInt(ev.target.value));
-    }
+    };
 
     _setPage = (ev) => {
         if ((ev.target as any).value === "") {
@@ -217,10 +217,10 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         }
         let n = parseInt(ev.target.value);
         this.setPage(n);
-    }
+    };
     _select = (ev) => {
         $(ev.target).select();
-    }
+    };
 
     _sort = (order_by) => {
         if (this.ordersMatch(order_by, this.state.orderBy)) {
@@ -230,7 +230,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             orderBy: order_by
         });
         setTimeout(() => this.update(), 1);
-    }
+    };
 
     ordersMatch(order1, order2) {
         let match = true;
@@ -349,7 +349,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
                                 onChange={this._setPage}
                                 onFocus={this._select}
                                 value={this.state.page}/>
-                                <span className="of"> /  </span><span className="total">{this.state.num_pages}</span>
+                            <span className="of"> /  </span><span className="total">{this.state.num_pages}</span>
                             {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={() => this.setPage(this.state.page + 1)}/> : <i className="fa"/>}
                         </div>
                         <div className="right">

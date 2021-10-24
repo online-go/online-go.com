@@ -18,8 +18,8 @@
 /* This code was derived from https://github.com/billneff79/d3-stock which
  * is a d3.js v4 port of https://github.com/arnauddri/d3-stock */
 
- /* This component was derived from RatingsChart, with games-by-date carved out */
- /* (Which is why it's structure is the same) */
+/* This component was derived from RatingsChart, with games-by-date carved out */
+/* (Which is why it's structure is the same) */
 
 import * as d3 from "d3";
 import * as moment from "moment";
@@ -60,11 +60,11 @@ const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
 const show_hovered_game_delay = 250; // milliseconds till game info of hovered data point is updated
-                                     // fast enough to not feel like a wait, while limiting rate
+// fast enough to not feel like a wait, while limiting rate
 
 const pie_restore_delay = 1500;  // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
 
-let format_date = (d:Date) => moment(d).format('ll');
+let format_date = (d: Date) => moment(d).format('ll');
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, any> {
     container = null;
@@ -86,7 +86,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     win_loss_aggregate;
 
-    game_entries:Array<RatingEntry>;
+    game_entries: Array<RatingEntry>;
 
     destroyed = false;
 
@@ -108,21 +108,21 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     rating_line    = d3.line<RatingEntry>()
                        //.curve(d3.curveLinear)
                        .curve(d3.curveMonotoneX)
-                       .x((d:RatingEntry) => this.ratings_x(d.index))
-                       .y((d:RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
+                       .x((d: RatingEntry) => this.ratings_x(d.index))
+                       .y((d: RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
 
     deviation_area = d3.area<RatingEntry>()
                        .curve(d3.curveBasis)
-                       .x0((d:RatingEntry) => this.ratings_x(d.index))
-                       .x1((d:RatingEntry) => this.ratings_x(d.index))
-                       .y0((d:RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
-                       .y1((d:RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
+                       .x0((d: RatingEntry) => this.ratings_x(d.index))
+                       .x1((d: RatingEntry) => this.ratings_x(d.index))
+                       .y0((d: RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
+                       .y1((d: RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
 
     subselect_area  = d3.area<RatingEntry>()
                         .curve(d3.curveMonotoneX)
-                        .x((d:RatingEntry) => this.subselect_x(d.index))
+                        .x((d: RatingEntry) => this.subselect_x(d.index))
                         .y0(secondary_charts_height)
-                        .y1((d:RatingEntry) => this.subselect_y(humble_rating(d.rating, d.deviation)));
+                        .y1((d: RatingEntry) => this.subselect_y(humble_rating(d.rating, d.deviation)));
 
     deviation_chart;
     rating_chart;
@@ -215,7 +215,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         return false;
     }
-    shouldDisplayRankInformation():boolean {
+    shouldDisplayRankInformation(): boolean {
         return this.props.size === 0 && this.props.speed === 'overall';
     }
 
@@ -230,8 +230,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 this.show_pie = true;
                 this.plotWinLossPie();
             }
-        }
-        else {
+        } else {
             if (this.show_pie) {
                 this.hideWinLossPie();
             }
@@ -248,7 +247,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.subselect_x.range([0, this.graph_width]);
         this.subselect_y.range([secondary_charts_height, 0]);
-    }
+    };
 
     initialize() {
         let self = this;
@@ -259,7 +258,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         let width = this.graph_width;
         let height = this.height;
 
-        this.rank_axis.tickFormat((rating:number) => {
+        this.rank_axis.tickFormat((rating: number) => {
             let rank = Math.round(rating_to_rank(rating));
             if (!is_rank_bounded(rank)) {
                 return rankString(rank);
@@ -267,7 +266,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             return "";
         });
 
-        let boundDataLegendX = (x:number) => {
+        let boundDataLegendX = (x: number) => {
             return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
         };
 
@@ -482,7 +481,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         };
     }
 
-    onResize = (no_debounce:boolean = false) => {
+    onResize = (no_debounce: boolean = false) => {
         if (this.destroyed) {
             return;
         }
@@ -540,7 +539,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
             this.onSubselectBrush();
         }
-    }
+    };
 
     hideWinLossPie = () => {
         if (this.win_loss_pie) {
@@ -548,7 +547,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.win_loss_pie.selectAll('rect').remove();
             this.win_loss_pie.selectAll('text').remove();
         }
-    }
+    };
 
     plotWinLossPie = () => {
         if (!this.win_loss_pie) { return; }
@@ -588,7 +587,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .outerRadius(pie_radius);
 
         let pie_values = d3.pie()
-            .value((d:any):number => (d.count))
+            .value((d: any): number => (d.count))
             .sort(null);
 
         this.win_loss_pie.selectAll('path').remove();
@@ -636,7 +635,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 .attr('x', legend_xoffset + 15 + 10)
                 .attr('y', legend_yoffset + i * 20 + 12);
         });
-    }
+    };
 
     /* Callback function for data retrieval, which plots the retrieved data */
     //loadDataAndPlot = (err, data) => {
@@ -662,15 +661,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.game_entries.forEach((entry, index) => { entry.index = index; });
 
         /* Plot graph */
-        let x_range:any = [0, this.game_entries.length - 1];
+        let x_range: any = [0, this.game_entries.length - 1];
 
         this.ratings_x.domain(x_range);
-        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
 
         this.subselect_x.domain(this.ratings_x.domain());
-        this.subselect_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
+        this.subselect_y.domain(d3.extent(this.game_entries.map((d: RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
 
         // Reset the sub selection to full width
         this.subselect_extents = this.subselect_x.range().map(this.subselect_x.invert, this.subselect_x);
@@ -690,8 +689,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         } else if (this.game_entries.length < 20) {
             this.selected_axis.tickArguments([this.game_entries.length]);
             this.subselect_axis.tickArguments([this.game_entries.length]);
-        }
-        else {
+        } else {
             this.selected_axis.tickArguments([20]);
             this.subselect_axis.tickArguments([20]);
         }
@@ -713,7 +711,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         if (this.show_pie) {
             this.plotWinLossPie();
         }
-    }
+    };
 
     onSubselectBrush = () => {
         this.subselect_extents = (d3.event && d3.event.selection) || this.subselect_x.range();
@@ -724,11 +722,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.ratings_x.domain(this.subselect_extents);
 
-        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
 
-        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
-        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+        let l = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
+        let u = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
         this.ratings_y.domain([l * 0.95, u * 1.05]);
 
         this.range_label.text(`Games ${Math.ceil(this.subselect_extents[0])} - ${Math.floor(this.subselect_extents[1])}`);
@@ -744,8 +742,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.selected_axis.tickArguments([4]);
         } else if (range < 20) {
             this.selected_axis.tickArguments([range]);
-        }
-        else {
+        } else {
             this.selected_axis.tickArguments([20]);
         }
 
@@ -755,7 +752,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.setState({hovered_game_id: null}); // make sure hovered game is not lingering while the are doing subselect
             this.plotWinLossPie();
         }
-    }
+    };
 
     setContainer = (e) => {
         let need_resize = this.container === null;
@@ -763,7 +760,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         if (need_resize) {
             this.onResize();
         }
-    }
+    };
 
     updateHoveredGame = (game_id: number) => {
         this.setState({
@@ -771,7 +768,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             show_pie: false // we're putting the hovered game in that position
         });
         this.hideWinLossPie();
-    }
+    };
 
     render() {
         // NOTE: we have a shouldComponentUpdate controlling this render (in case you wonder why it doesn't run ;) )
@@ -870,7 +867,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 }
 
 
-function speed_translation(speed:speed_t) {
+function speed_translation(speed: speed_t) {
     switch (speed) {
         case 'overall': return _("Overall");
         case 'blitz' : return _("Blitz");
@@ -878,6 +875,6 @@ function speed_translation(speed:speed_t) {
         case 'correspondence' : return _("Correspondence");
     }
 }
-function is_same_month(d1:Date, d2:Date):boolean {
+function is_same_month(d1: Date, d2: Date): boolean {
     return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
 }

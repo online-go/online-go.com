@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 
 export class Seki extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -34,9 +34,9 @@ export class Seki extends LearningHubSection {
         ];
     }
 
-    static section():string { return "seki"; }
-    static title():string { return pgettext("Tutorial section on seki", "Seki!"); }
-    static subtext():string { return pgettext("Tutorial section on seki", "Mutual life"); }
+    static section(): string { return "seki"; }
+    static title(): string { return pgettext("Tutorial section on seki", "Seki!"); }
+    static subtext(): string { return pgettext("Tutorial section on seki", "Mutual life"); }
 }
 
 class Page1 extends LearningPage {
@@ -47,7 +47,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -77,7 +77,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -105,7 +105,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Save your stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -134,7 +134,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Save your stones by making seki");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -166,7 +166,7 @@ class Page5 extends LearningPage {
     text() {
         return _("Save your stones by making seki");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {

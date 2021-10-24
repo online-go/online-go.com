@@ -34,11 +34,11 @@ export class PuzzleSettingsModal extends React.PureComponent<PuzzleSettingsModal
     toggleTransform = () => {
         preferences.set("puzzle.randomize.transform", !this.state.randomize_transform);
         this.setState({randomize_transform: !this.state.randomize_transform});
-    }
+    };
     toggleColor = () => {
         preferences.set("puzzle.randomize.color", !this.state.randomize_color);
         this.setState({randomize_color: !this.state.randomize_color});
-    }
+    };
     render() {
         return (
             <div className="PuzzleSettingsModal">

@@ -56,7 +56,7 @@ interface PlayerProperties {
 
 export class Player extends React.PureComponent<PlayerProperties, any> {
     refs: {
-        elt
+        elt;
     };
 
     online_subscription_user_id = null;
@@ -95,11 +95,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
                     errorLogger(user);
                 });
-            }
-            else if (player_id && player_id <= 0) {
+            } else if (player_id && player_id <= 0) {
                 // do nothing
-            }
-            else if (username && username !== "...") {
+            } else if (username && username !== "...") {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (this.unmounted) {
                         return;
@@ -126,14 +124,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         if (tf !== this.state.has_notes) {
             this.setState({has_notes: tf});
         }
-    }
+    };
 
     updateOnline = (_player_id, tf) => {
         if (this.unmounted) {
             return;
         }
         this.setState({is_online: tf});
-    }
+    };
 
     syncUpdateOnline(user_or_id) {
         let id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
@@ -188,11 +186,9 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                     this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
                     errorLogger(user);
                 });
-            }
-            else if (player_id && player_id <= 0) {
+            } else if (player_id && player_id <= 0) {
                 // do nothing
-            }
-            else if (username && username !== "...") {
+            } else if (username && username !== "...") {
                 player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
                     if (this.unmounted) {
                         return;
@@ -223,7 +219,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     openPlayerNotes = (ev) => {
         openPlayerNotesModal(ev.target.getAttribute("data-id"));
-   }
+    };
 
     render() {
         if (!this.state.user) {
@@ -238,7 +234,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         let player = this.state.user;
         let player_id = player.id || player.player_id;
         let nolink = !!this.props.nolink;
-        let rank:JSX.Element = null;
+        let rank: JSX.Element = null;
 
 
         let main_attrs: any = {
@@ -277,12 +273,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
             if (player.pro || player.professional) {
                 rank_text = rankString(player);
-            }
-            else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
+            } else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
-            }
-            else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+            } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
                 rank_text = '?';
             } else {
                 rank_text = rating.bounded_rank_label;
@@ -319,7 +313,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             );
         } else {
             let player_id = this.state.user.id || this.state.user.player_id;
-            let uri:string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
+            let uri: string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
                 // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
@@ -369,8 +363,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
             return;
-        }
-        else {
+        } else {
             let chat_id = null;
             try {
                 let cur = $(this.refs.elt);
@@ -393,5 +386,5 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 minHeight: 250,
             });
         }
-    }
+    };
 }

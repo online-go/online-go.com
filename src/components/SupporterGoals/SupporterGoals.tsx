@@ -21,7 +21,7 @@ import {Link} from "react-router-dom";
 import * as data from "data";
 
 interface SupporterGoalsProperties {
-    alwaysShow?:boolean;
+    alwaysShow?: boolean;
 }
 
 export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties, any> {

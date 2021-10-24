@@ -79,14 +79,14 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         this.show_announcements = props.show_announcements;
     }
 
-    namespacedPreferenceGet(key:preferences.ValidPreference): any {
+    namespacedPreferenceGet(key: preferences.ValidPreference): any {
         if (this.props.preferenceNamespace) {
             return data.get(`observed-games.${this.props.preferenceNamespace}.${key}`, preferences.get(key));
         }
         return preferences.get(key);
     }
 
-    namespacedPreferenceSet(key:preferences.ValidPreference, value:any): any {
+    namespacedPreferenceSet(key: preferences.ValidPreference, value: any): any {
         if (this.props.preferenceNamespace) {
             return data.set(`observed-games.${this.props.preferenceNamespace}.${key}`, value);
         }
@@ -99,9 +99,9 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         } else {
             comm_socket.send("gamelist/count/unsubscribe", this.channel);
         }
-    }
+    };
 
-    componentDidUpdate(prevProps:ObserveGamesComponentProperties, prevState:any) {
+    componentDidUpdate(prevProps: ObserveGamesComponentProperties, prevState: any) {
         if (this.props.channel !== prevProps.channel) {
             console.log("Should be reconnecting");
             this.destroy();
@@ -130,8 +130,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     destroy() {
         if (this.channel) {
             comm_socket.off(`gamelist-count-${this.channel}`, this.updateCounts);
-        }
-        else {
+        } else {
             comm_socket.off("gamelist-count", this.updateCounts);
         }
         comm_socket.off("connect", this.syncSubscribe);
@@ -155,7 +154,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             live_game_count: counts.live,
             corr_game_count: counts.correspondence,
         });
-    }
+    };
     setPageSize = (ev) => {
         if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
             let ct: number = parseInt(ev.target.value);
@@ -169,7 +168,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         } else {
             this.setState({page_size_text_input: ev.target.value});
         }
-    }
+    };
     refresh = () => {
         let now = Date.now();
         if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
@@ -201,37 +200,37 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             limit: this.state.page_size,
             channel: this.channel,
         },
-            (res) => {
-                let state_update:any = {
-                    num_pages: Math.ceil(res.size / this.state.page_size),
-                    game_list: res.results,
-                    page: Math.max(1, Math.min(this.state.page, this.state.num_pages)),
-                };
+        (res) => {
+            let state_update: any = {
+                num_pages: Math.ceil(res.size / this.state.page_size),
+                game_list: res.results,
+                page: Math.max(1, Math.min(this.state.page, this.state.num_pages)),
+            };
 
-                if (res.where) {
-                    if (res.list === 'live') {
-                        state_update.live_game_count = res.size;
-                        state_update.corr_game_count = 0;
-                    } else {
-                        state_update.corr_game_count = res.size;
-                        state_update.live_game_count = 0;
-                    }
+            if (res.where) {
+                if (res.list === 'live') {
+                    state_update.live_game_count = res.size;
+                    state_update.corr_game_count = 0;
+                } else {
+                    state_update.corr_game_count = res.size;
+                    state_update.live_game_count = 0;
                 }
-
-                this.setState(state_update);
             }
+
+            this.setState(state_update);
+        }
         );
-    }
+    };
     prevPage = () => {
         this.setPage(this.state.page - 1);
-    }
+    };
     nextPage = () => {
         if (typeof(this.state.page) === "number") {
             this.setPage(this.state.page + 1);
         } else {
             this.setPage(1);
         }
-    }
+    };
     setPage = (ev_or_page) => {
         let page = parseInt(typeof(ev_or_page) === "number" ? ev_or_page : (ev_or_page.target as any).value);
         if (isNaN(page)) {
@@ -243,55 +242,55 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                 / this.state.page_size), page));
         this.setState({page: page});
         setTimeout(this.refresh, 1);
-    }
+    };
 
     viewLive = () => {
         this.setState({viewing: "live", page: 0});
         this.namespacedPreferenceSet("observed-games-viewing", "live");
         setTimeout(this.refresh, 1);
-    }
+    };
     viewCorrespondence = () => {
         this.setState({viewing: "corr", page: 0});
         this.namespacedPreferenceSet("observed-games-viewing", "corr");
         setTimeout(this.refresh, 1);
-    }
+    };
 
     toggleShowFilters = () => {
         this.setState({show_filters: !this.state.show_filters});
-    }
+    };
     toggleForceList = () => {
         this.namespacedPreferenceSet("observed-games-force-list", !this.state.force_list);
         this.setState({force_list: !this.state.force_list});
-    }
+    };
 
     render() {
         let n_filters = Object.keys(this.state.filters).length;
 
         return (
-        <div className="ObserveGamesComponent">
-            <div className="container">
-                <div className="games">
-                    <div className="header">
+            <div className="ObserveGamesComponent">
+                <div className="container">
+                    <div className="games">
+                        <div className="header">
 
-                        <div className="btn-group">
-                            <button className={this.state.viewing === "live" ? "active" : ""} onClick={this.viewLive}>{interpolate(_("{{count}} live games"), {count: this.state.live_game_count || ""})}</button>
-                            <button className={this.state.viewing === "corr" ? "active" : ""} onClick={this.viewCorrespondence}>{interpolate(_("{{count}} correspondence games"), {count: this.state.corr_game_count || ""})}</button>
+                            <div className="btn-group">
+                                <button className={this.state.viewing === "live" ? "active" : ""} onClick={this.viewLive}>{interpolate(_("{{count}} live games"), {count: this.state.live_game_count || ""})}</button>
+                                <button className={this.state.viewing === "corr" ? "active" : ""} onClick={this.viewCorrespondence}>{interpolate(_("{{count}} correspondence games"), {count: this.state.corr_game_count || ""})}</button>
 
-                            <button className="btn default" onClick={this.toggleShowFilters}>
-                                <i className="fa fa-filter"></i> {n_filters ? `(${n_filters})` : ''}
+                                <button className="btn default" onClick={this.toggleShowFilters}>
+                                    <i className="fa fa-filter"></i> {n_filters ? `(${n_filters})` : ''}
+                                </button>
+                                <button className={"btn default " + (this.state.force_list ? "active" : "")} onClick={this.toggleForceList}>
+                                    <i className="fa fa-list"></i>
+                                </button>
+                            </div>
+
+
+                            <button className="btn xs primary" onClick={this.refresh}>
+                                <i className="fa fa-refresh"></i> {_("Refresh")}
                             </button>
-                            <button className={"btn default " + (this.state.force_list ? "active" : "")} onClick={this.toggleForceList}>
-                                <i className="fa fa-list"></i>
-                            </button>
-                        </div>
 
-
-                        <button className="btn xs primary" onClick={this.refresh}>
-                            <i className="fa fa-refresh"></i> {_("Refresh")}
-                        </button>
-
-                        <div className="page-controls">
-                            {((this.state.num_pages && this.state.num_pages > 0) || null) &&
+                            <div className="page-controls">
+                                {((this.state.num_pages && this.state.num_pages > 0) || null) &&
                                 <div className="left">
                                     {this.state.page > 1 ? <i className="fa fa-step-backward" onClick={this.prevPage}/> : <i className="fa"/>}
                                     <input onChange={this.setPage} value={this.state.page}/>
@@ -299,33 +298,33 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                                     <span className="total">{this.state.num_pages.toString()}</span>
                                     {this.state.page < this.state.num_pages ? <i className="fa fa-step-forward" onClick={this.nextPage}/> : <i className="fa"/>}
                                 </div>
-                            }
-                            <div className="right">
-                                <label className="labelshow">{_("Show") + ":"}</label>
-                                <input className="show" onChange={this.setPageSize} value={this.state.page_size_text_input} type="number" min="3" max="100" step="1" />
+                                }
+                                <div className="right">
+                                    <label className="labelshow">{_("Show") + ":"}</label>
+                                    <input className="show" onChange={this.setPageSize} value={this.state.page_size_text_input} type="number" min="3" max="100" step="1" />
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    {this.state.show_filters && this.renderFilters()}
                 </div>
 
-                {this.state.show_filters && this.renderFilters()}
+                {this.props.announcements && <ActiveAnnouncements  />}
+
+                <GameList
+                    list={this.state.game_list}
+                    disableSort={true}
+                    emptyMessage={_("No games being played")}
+                    miniGobanProps={this.props.miniGobanProps}
+                    namesByGobans={this.props.namesByGobans}
+                    forceList={this.state.force_list}
+                />
             </div>
-
-            {this.props.announcements && <ActiveAnnouncements  />}
-
-            <GameList
-                list={this.state.game_list}
-                disableSort={true}
-                emptyMessage={_("No games being played")}
-                miniGobanProps={this.props.miniGobanProps}
-                namesByGobans={this.props.namesByGobans}
-                forceList={this.state.force_list}
-            />
-        </div>
         );
     }
 
-    private filterOption(filter_field:string, name:string):JSX.Element {
+    private filterOption(filter_field: string, name: string): JSX.Element {
         let self = this;
 
         function toggle(ev) {
@@ -360,7 +359,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     }
 
 
-    private renderFilters():JSX.Element {
+    private renderFilters(): JSX.Element {
         return (
             <div className='filters'>
                 <div className='filter-group'>

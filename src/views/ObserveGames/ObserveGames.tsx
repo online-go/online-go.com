@@ -29,11 +29,11 @@ export class ObserveGames extends React.PureComponent<ObserveGamesProperties, an
 
     render() {
         return (
-        <div className="ObserveGames">
-            <div className="container">
-                <ObserveGamesComponent announcements={true} updateTitle={true} channel='' />
+            <div className="ObserveGames">
+                <div className="container">
+                    <ObserveGamesComponent announcements={true} updateTitle={true} channel='' />
+                </div>
             </div>
-        </div>
         );
     }
 }

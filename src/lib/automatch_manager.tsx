@@ -38,7 +38,7 @@ interface Events {
 export interface AutomatchPreferences {
     uuid: string;
     timestamp?: number;
-    size_speed_options: Array<{speed:Speed, size:Size}>;
+    size_speed_options: Array<{speed: Speed; size: Size}>;
     lower_rank_diff: number;
     upper_rank_diff: number;
     rules: {
@@ -49,16 +49,16 @@ export interface AutomatchPreferences {
         condition: AutomatchCondition;
         value: {
             system: 'byoyomi' | 'fischer' | 'simple' | 'canadian';
-            initial_time?: number,
-            time_increment?: number,
-            max_time?: number,
-            main_time?: number,
-            period_time?: number,
-            periods?: number,
-            stones_per_period?: number,
-            per_move?: number,
-            pause_on_weekends?: boolean,
-        }
+            initial_time?: number;
+            time_increment?: number;
+            max_time?: number;
+            main_time?: number;
+            period_time?: number;
+            periods?: number;
+            stones_per_period?: number;
+            per_move?: number;
+            pause_on_weekends?: boolean;
+        };
     };
     handicap: {
         condition: AutomatchCondition;
@@ -68,7 +68,7 @@ export interface AutomatchPreferences {
 
 
 class AutomatchToast extends React.PureComponent<{}, any> {
-    timer:any;
+    timer: any;
 
     constructor(props) {
         super(props);
@@ -101,10 +101,10 @@ class AutomatchToast extends React.PureComponent<{}, any> {
 }
 
 class AutomatchManager extends TypedEventEmitter<Events> {
-    active_live_automatcher:AutomatchPreferences;
-    active_correspondence_automatchers:{[id:string]: AutomatchPreferences} = {};
-    last_find_match_uuid:string;
-    active_toast:Toast;
+    active_live_automatcher: AutomatchPreferences;
+    active_correspondence_automatchers: {[id: string]: AutomatchPreferences} = {};
+    last_find_match_uuid: string;
+    active_toast: Toast;
 
 
 
@@ -122,7 +122,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         termination_socket.on('automatch/cancel', this.onAutomatchCancel);
     }
 
-    private onAutomatchEntry = (entry:AutomatchPreferences) => {
+    private onAutomatchEntry = (entry: AutomatchPreferences) => {
         if (!entry.timestamp) {
             entry.timestamp = Date.now();
         }
@@ -136,7 +136,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
 
         this.emit('entry', entry);
-    }
+    };
     private onAutomatchStart = (entry) => {
         this.remove(entry.uuid);
 
@@ -146,7 +146,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
 
         this.emit('start', entry);
-    }
+    };
     private onAutomatchCancel = (entry) => {
         if (!entry)  {
             if (this.active_live_automatcher) {
@@ -157,8 +157,8 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
         this.remove(entry.uuid);
         this.emit('cancel', entry);
-    }
-    private remove(uuid:string) {
+    };
+    private remove(uuid: string) {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
             this.active_live_automatcher = null;
         }
@@ -182,7 +182,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
     }
 
-    public findMatch(preferences:AutomatchPreferences) {
+    public findMatch(preferences: AutomatchPreferences) {
         termination_socket.emit('automatch/find_match', preferences);
 
         /* live game? track it, and pop up our searching toast */
@@ -195,7 +195,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             this.active_toast = toast(<AutomatchToast />);
         }
     }
-    public cancel(uuid?:string) {
+    public cancel(uuid?: string) {
         this.remove(uuid);
         termination_socket.emit('automatch/cancel', uuid);
     }

@@ -23,10 +23,10 @@ import {termination_socket} from "sockets";
 import {ignore, errorAlerter, getPrintableError} from "misc";
 import {SupporterGoals} from 'SupporterGoals';
 
-declare var swal;
-declare var ogs_release;
-declare var ogs_version;
-declare var ogs_language_version;
+declare let swal;
+declare let ogs_release;
+declare let ogs_version;
+declare let ogs_language_version;
 
 interface AdminProperties {
 }
@@ -77,7 +77,7 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
             this.appendResult("Cassandra State");
             this.appendResult(obj);
         });
-    }
+    };
 
 
     updating = false;
@@ -130,57 +130,57 @@ export class Admin extends React.PureComponent<AdminProperties, any> {
 
     render() {
         return (
-        <div className="Admin container">
-            <div className="row">
-                <div className="col-sm-6">
-                    <h3>Stuff</h3>
-                    <div>
-                        <Link to='/admin/merchant_log'>Merchant account request/response postback log</Link>
-                    </div>
+            <div className="Admin container">
+                <div className="row">
+                    <div className="col-sm-6">
+                        <h3>Stuff</h3>
+                        <div>
+                            <Link to='/admin/merchant_log'>Merchant account request/response postback log</Link>
+                        </div>
 
-                    <h3>Pause Controls</h3>
-                    <div>
-                        <div className="action-buttons">
-                            <button onClick={this.pauseLiveGames}>Pause live games</button>
-                            <button onClick={this.unpauseLiveGames}>Unpause live games</button>
+                        <h3>Pause Controls</h3>
+                        <div>
+                            <div className="action-buttons">
+                                <button onClick={this.pauseLiveGames}>Pause live games</button>
+                                <button onClick={this.unpauseLiveGames}>Unpause live games</button>
+                            </div>
+                            <div className="action-buttons">
+                                <button onClick={this.startWeekend}>Start weekend</button>
+                                <button onClick={this.stopWeekend}>Stop weekend</button>
+                            </div>
                         </div>
-                        <div className="action-buttons">
-                            <button onClick={this.startWeekend}>Start weekend</button>
-                            <button onClick={this.stopWeekend}>Stop weekend</button>
+                        <h3>Maintenance</h3>
+                        <div>
+                            <div className="action-buttons">
+                                <button onClick={this.rebuildGameList}>Rebuild game list</button>
+                            </div>
                         </div>
-                    </div>
-                    <h3>Maintenance</h3>
-                    <div>
-                        <div className="action-buttons">
-                            <button onClick={this.rebuildGameList}>Rebuild game list</button>
-                        </div>
-                    </div>
 
-                    <h3>Debug</h3>
-                    <div>
-                        <div className="action-buttons">
-                            <input type='text'
-                                placeholder='Player id'
-                                value={this.state.notifications_player_id}
-                                onChange={(ev) => this.setState({notifications_player_id: ev.target.value})}
+                        <h3>Debug</h3>
+                        <div>
+                            <div className="action-buttons">
+                                <input type='text'
+                                    placeholder='Player id'
+                                    value={this.state.notifications_player_id}
+                                    onChange={(ev) => this.setState({notifications_player_id: ev.target.value})}
                                 />
-                            <button onClick={this.fetchNotifications}>Notifications</button>
+                                <button onClick={this.fetchNotifications}>Notifications</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="col-sm-6">
-                    <button className='primary' onClick={() => {
-                        this.results = [];
-                        this.setState({results: []});
-                    }}>Clear log</button>
-                    <div className="well">
-                        {this.state.results.map((res, idx) => (
-                            <pre key={idx}>{res}</pre>
-                        ))}
+                    <div className="col-sm-6">
+                        <button className='primary' onClick={() => {
+                            this.results = [];
+                            this.setState({results: []});
+                        }}>Clear log</button>
+                        <div className="well">
+                            {this.state.results.map((res, idx) => (
+                                <pre key={idx}>{res}</pre>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         );
     }
 }

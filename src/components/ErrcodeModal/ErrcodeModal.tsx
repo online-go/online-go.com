@@ -49,24 +49,24 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
         body = <Errcode message_id={this.props.message_id} />;
 
         return (
-          <div className="Modal ErrcodeModal" ref="modal">
-              {header &&
+            <div className="Modal ErrcodeModal" ref="modal">
+                {header &&
                   <div className="header">
                       {header}
                   </div>
-              }
-              <div className="body">
-                  {body}
-              </div>
-              <div className="buttons">
-                  <button className='primary' onClick={this.close}>{_("OK")}</button>
-              </div>
-          </div>
+                }
+                <div className="body">
+                    {body}
+                </div>
+                <div className="buttons">
+                    <button className='primary' onClick={this.close}>{_("OK")}</button>
+                </div>
+            </div>
         );
     }
 }
 
 
-export function errcodeAlerter(errobj:{errcode: MessageId}):void {
+export function errcodeAlerter(errobj: {errcode: MessageId}): void {
     openModal(<ErrcodeModal message_id={errobj.errcode} />);
 }

@@ -22,9 +22,9 @@ import {termination_socket} from "sockets";
 import * as data from "data";
 import {ServerTimeDisplay} from "ServerTimeDisplay";
 
-declare var ogs_release;
-declare var ogs_version;
-declare var ogs_current_language;
+declare let ogs_release;
+declare let ogs_version;
+declare let ogs_current_language;
 
 export class About extends React.Component<{}, any> {
     constructor(props) {

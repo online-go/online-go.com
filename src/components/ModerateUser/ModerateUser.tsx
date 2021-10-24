@@ -30,7 +30,7 @@ interface ModerateUserProperties {
     playerId?: number;
 }
 
-declare var swal;
+declare let swal;
 
 let pro_ranks = proRankList(false);
 
@@ -87,7 +87,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }
+    };
     setLockedUsername = (ev) => this.setState({locked_username: ev.target.checked});
     setSupporter = (ev) => this.setState({supporter: ev.target.checked});
     setAnnouncer = (ev) => this.setState({is_announcer: ev.target.checked});

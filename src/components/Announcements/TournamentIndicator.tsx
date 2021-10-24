@@ -68,6 +68,6 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
                 <i className="fa fa-trophy"/>
                 <span className="time">{m}:{s}</span>
             </Link>
-       );
+        );
     }
 }

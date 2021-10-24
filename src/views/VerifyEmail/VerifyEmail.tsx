@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import { parse } from 'query-string';
 
-declare var swal;
+declare let swal;
 
 interface VerifyEmailProps {
     params: any;

@@ -112,7 +112,7 @@ const godojo_headers = (): {} => ({
     'Content-Type': 'application/json',
     'X-Godojo-Auth-Token': 'foofer',
     'X-User-Info' : getOGSJWT()       // re-load this every time, in case they change identity via login/logout
-    }
+}
 );
 
 enum MoveCategory {
@@ -141,7 +141,7 @@ const ColorMap = {
 
 interface JosekiProps {
     match: {
-        params: any
+        params: any;
     };
     location: any;
 }
@@ -151,8 +151,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
-    goban_container:HTMLDivElement;
-    goban_persistent_element:PersistentElement;
+    goban_container: HTMLDivElement;
+    goban_persistent_element: PersistentElement;
 
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
@@ -173,7 +173,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     prefetching = false; // if we have a prefetch of node positions in flight
     prefetched = {};  // Nodes that we have already prefetched, so don't do it again
 
-    last_click:number; // most recent time (ms) we got a click from the goban
+    last_click: number; // most recent time (ms) we got a click from the goban
 
     constructor(props) {
         super(props);
@@ -204,10 +204,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
             joseki_best_attempt: undefined as number,
             joseki_tag_id: undefined as number,       // the id of the "This is Joseki" tag, for use in setting default
 
-            joseki_source: undefined as {url: string, description: string}, // the source of the current position
+            joseki_source: undefined as {url: string; description: string}, // the source of the current position
             tags: [],                  // the tags that are on the current position
 
-            variation_filter: {} as {contributor: number, tags: number[], source: number},   // start with no filter defined
+            variation_filter: {} as {contributor: number; tags: number[]; source: number},   // start with no filter defined
 
             count_details_open: false,
             tag_counts: [],  // A count of the number of continuations from this position that have each tag
@@ -226,7 +226,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.goban.destroy();
         }
 
-        let opts:GobanConfig = {
+        let opts: GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -243,7 +243,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.goban.setMode("puzzle");
         this.goban.on("update", () => this.onBoardUpdate());
         window["global_goban"] = this.goban;
-    }
+    };
 
     componentDidMount = () => {
         this.getUserJosekiPermissions();
@@ -264,7 +264,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }
 
         this.initializeBoard(target_position);
-    }
+    };
 
     initializeBoard = (target_position: string = "root") => {
         // console.log("Resetting board...");
@@ -286,12 +286,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.initializeGoban();
         this.onResize();
         this.resetJosekiSequence(target_position);
-    }
+    };
 
     resetBoard = () => {
         this.last_click = new Date().valueOf();
         this.initializeBoard("root");
-    }
+    };
 
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
@@ -310,7 +310,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }).catch((r) => {
             console.log("Permissions GET failed:", r);
         });
-    }
+    };
 
     getJosekiTag = () => {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
@@ -328,12 +328,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }).catch((r) => {
             console.log("Joseki tag GET failed:", r);
         });
-    }
+    };
 
     resetJosekiSequence = (pos: string) => {
         // ask the server for the moves from postion pos
         this.fetchNextMovesFor(pos);
-    }
+    };
 
     onResize = () => {
         this.goban.setSquareSizeBasedOnDisplayWidth(
@@ -341,7 +341,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         );
         this.goban.redraw();
         this.recenterGoban();
-    }
+    };
 
     recenterGoban() {
         let m = this.goban.computeMetrics();
@@ -356,7 +356,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.fetchNextMovesFor(node_id);
         this.move_trace = [];
         this.trace_index = -1;
-    }
+    };
 
     updatePlayerJosekiRecord = (node_id) => {
         if (!data.get("user").anonymous) {
@@ -377,17 +377,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 console.log("Play record PUT failed:", r);
             });
         }
-    }
+    };
 
    // Fetch the next moves based on the current filter
    fetchNextMovesFor = (node_id: string) => {
-        this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
-    }
+       this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
+   };
 
-    // Fetch the next moves based on the supplied filter
-    // Note that this is where a "position gets rendered" after the placement of a stone, or some other trigger.
-    // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
-    // in the processing of the result of the fectch for that position.
+   // Fetch the next moves based on the supplied filter
+   // Note that this is where a "position gets rendered" after the placement of a stone, or some other trigger.
+   // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
+   // in the processing of the result of the fectch for that position.
 
     private fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
         /* TBD: error handling, cancel on new route */
@@ -414,8 +414,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
             this.prefetchFor(node_id, variation_filter);
-        }
-        else {
+        } else {
             console.log("fetching position for node", node_id, this.state.mode);
             // First, get the required position from the server as soon as possible
             fetch(position_url(node_id, variation_filter, this.state.mode), {
@@ -434,8 +433,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     this.processNewMoves(node_id, target_node);
                     // caching this one is important, because node_id could be "root", which needs to be cached this way
                     this.cached_positions = { [node_id]: target_node, ...this.cached_positions };
-                }
-                else {
+                } else {
                     console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
                 }
 
@@ -447,7 +445,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // Then prefetch the next positions from this one, after a short pause to let the main fetch get underway
             setTimeout( () => {this.prefetchFor(node_id, variation_filter); } , 100);
         }
-    }
+    };
 
     prefetchFor = (node_id: string, variation_filter) => {
         // Prefetch the next nodes, by calling the prefetch API, unless we already have a pre-fetch in flight
@@ -474,15 +472,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     console.log("Node Prefetch failed:", r);
                     this.setState({throb: false});
                 });
-            }
-            else {
+            } else {
                 console.log("(not prefetching, we already did this one)");
             }
-        }
-        else {
+        } else {
             console.log("(not prefetching here, we have one already in flight)");
         }
-    }
+    };
 
     // Handle the per-move processing of getting to the new node.
     // node_id is a string because it can be either "root" or a node id number
@@ -525,8 +521,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             if (this.computer_turn) {
                 // obviously, we don't place another stone if we just placed one
                 this.computer_turn = false;
-            }
-            else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
+            } else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
                 // the computer plays both good and bad moves
                 const next_play = dto.next_moves[Math.floor(Math.random() * dto.next_moves.length)];
                 // console.log("Will play: ", next_play);
@@ -535,8 +530,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 if (next_play.placement === "pass") {
                     this.goban.pass();
                     this.onBoardUpdate();
-                }
-                else {
+                } else {
                     const location = this.goban.engine.decodeMoves(next_play.placement)[0];
                     this.goban.engine.place(location.x, location.y);
                     this.onBoardUpdate();
@@ -546,7 +540,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         this.setState({throb: false});
         this.goban.enableStonePlacement();
-    }
+    };
 
     loadSequenceToBoard = (sequence: string) => {
         // We expect sequence to come from the server in the form ".root.K10.L11.pass.Q12"
@@ -556,7 +550,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         const ogs_move_string = sequence.substr(6).replace(/\./g, '').replace(/pass/g, '..');
         this.initializeGoban(ogs_move_string);
         this.onBoardUpdate();
-    }
+    };
 
     // Decode a response from the server into state we need, and display accordingly
     // "position" is a BoardPositionDTO
@@ -586,7 +580,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         // Give them the URL for this position in the URL bar
         window.history.replaceState({}, document.title, '/joseki/' + position.node_id);
-    }
+    };
 
     // Draw all the variations that we know about from the server (array of moves from the server)
     renderCurrentJosekiPosition = () => {
@@ -600,8 +594,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             new_options = {};
             if (option['placement'] === 'pass') {
                 pass_available = option["category"].toLowerCase(); // this is used as a css style for the button
-            }
-            else {
+            } else {
                 const label = option['variation_label'];
                 new_options[label] = {
                     move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
@@ -616,13 +609,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         this.setState({pass_available});
         let new_marks = {};
-        current_marks.forEach((mark:{}) => {
+        current_marks.forEach((mark: {}) => {
             const label = mark['label'];
             new_marks[label] = GoMath.encodePrettyCoord(mark['position'], this.goban.height);
             this.goban.setMarks(new_marks);
         });
         this.goban.redraw(true);  // stop it optimising away colour changes when mark doesn't change.
-    }
+    };
 
     /* This is called every time a move is played on the Goban
        or anything else changes about the state of the board (back-step, sequence load)
@@ -650,8 +643,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             move_string = move_string_array.join(",");
 
             the_move = mvs[mvs.length - 1];
-        }
-        else {
+        } else {
             // console.log("empty board");
             move_string = "";
             the_move = undefined;
@@ -661,13 +653,12 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // console.log("Move placed: ", the_move);
             this.setState({ move_string });
             this.processPlacement(the_move, move_string);   // this is responsible for making sure stone placement is turned back on
-        }
-        else {
+        } else {
             this.backstepping = false;   // Needed for if they backstep twice at the empty board
         }
-    }
+    };
 
-    processPlacement(move: {x: number, y: number}, move_string: string) {
+    processPlacement(move: {x: number; y: number}, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
             or hit "back" to arrive at an old position,
@@ -696,40 +687,34 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 this.played_mistake = false;
                 this.backstepping = false;
                 this.goban.enableStonePlacement();
-            }
-            else if (this.state.current_move_category !== "new") {
+            } else if (this.state.current_move_category !== "new") {
                 const stepping_back_to = this.previous_position.node_id;
                 this.fetchNextMovesFor(stepping_back_to);
                 this.trace_index--;
                 if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
                     this.trace_index = 0;
                     this.move_trace.unshift(stepping_back_to);
-                }
-                else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
+                } else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
                     console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
                     this.trace_index = 0;
                     this.move_trace = [stepping_back_to];
                 }
                 // this.setState({ current_move_category: this.previous_position.category }); redundant, done in processNewJosekiPosition?
-            }
-            else if (play === this.last_server_position) {
+            } else if (play === this.last_server_position) {
                 //console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
                 this.fetchNextMovesFor(this.state.current_node_id);
-            }
-            else {
+            } else {
                 this.backstepping = false; // nothing else to do
                 this.goban.enableStonePlacement();
                 // console.log("backstepped exploratory");
             }
 
             //console.log("trace:", this.move_trace, this.trace_index);
-        }
-        else if (this.load_sequence_to_board) {
+        } else if (this.load_sequence_to_board) {
             // console.log("loaded sequence: nothing to do in process placement");
             this.goban.enableStonePlacement();
-        }
-        else { // they must have clicked a stone onto the board
+        } else { // they must have clicked a stone onto the board
             const chosen_move = this.next_moves.find(move => move.placement === placement);
 
             // console.log("chosen move:", chosen_move, this.computer_turn);
@@ -751,13 +736,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 if (this.trace_index === this.move_trace.length - 1) {
                     this.move_trace.push(node_id);
                     this.trace_index++;
-                }
-                else {
+                } else {
                     if (node_id === this.move_trace[this.trace_index + 1]) {
                         // we're going forwards the same way we went last time
                         this.trace_index++;
-                    }
-                    else {
+                    } else {
                         // we must have back-stepped and are now going a different way
                         // dump old move trace past this point
                         this.move_trace.length = this.trace_index + 1;
@@ -836,7 +819,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             };
             this.goban.setColoredMarks(new_options);
         }
-    }
+    };
 
     componentDidUpdate(prevProps) {
         // console.log("did update...");
@@ -853,13 +836,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({
             mode: PageMode.Admin
         });
-    }
+    };
 
     setExploreMode = () => {
         this.setState({
             mode: PageMode.Explore,
         });
-    }
+    };
 
     setPlayMode = () => {
         this.setState({
@@ -873,13 +856,13 @@ export class Joseki extends React.Component<JosekiProps, any> {
             count_display_open: false
         });
         this.fetchPlayResults();
-    }
+    };
 
     setEditMode = () => {
         this.setState({
             mode: PageMode.Edit,
         });
-    }
+    };
 
     // Here we are getting the user's overall play history results
     fetchPlayResults = () => {
@@ -899,7 +882,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }).catch((r) => {
             console.log("Play results GET failed:", r);
         });
-    }
+    };
 
     // results DTO can come from either a fetch of the overall player record, or a put of the results of a particular sequence
     extractPlayResults = (results_dto) => {
@@ -909,7 +892,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             joseki_best_attempt: results_dto.error_count,
             joseki_successes: results_dto.successes
         });
-    }
+    };
 
     backOneMoveKey = () => {
         //console.log("backarrow key");
@@ -917,7 +900,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.mode !== PageMode.Play) {
             this.backOneMove();
         }
-    }
+    };
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
@@ -925,18 +908,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // console.log("backstepping...");
             this.backstepping = true;  // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
-        }
-        else {
+        } else {
             // console.log("(ignoring back button click, still processing prior one)");
         }
-    }
+    };
 
     forwardOneMoveKey = () => {
         // Play mode has back and forwards button disabled
         if (this.state.mode !== PageMode.Play) {
             this.forwardOneMove();
         }
-    }
+    };
 
     forwardOneMove = () => {
         // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
@@ -965,25 +947,24 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // console.log("going forwards back to:", step_to);
             this.doPlacement(step_to);
         }
-    }
+    };
 
     doPlacement = (placement: string): void => {
         if (placement === "pass") {
             this.doPass();
-        }
-        else {
+        } else {
             const location = this.goban.engine.decodeMoves(placement)[0];
             this.goban.engine.place(location.x, location.y);
             this.onBoardUpdate();
         }
-    }
+    };
 
     doPass = () => {
         this.goban.pass();
         this.goban.engine.cur_move.clearMarks();
         this.goban.redraw();
         this.onBoardUpdate();  // seems like pass does not trigger this!
-    }
+    };
 
     updateVariationFilter = (filter) => {
         // console.log("update filter:", filter);
@@ -992,21 +973,20 @@ export class Joseki extends React.Component<JosekiProps, any> {
         });
         this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
-    }
+    };
 
     updateMarks = (marks) => {
         this.current_marks = marks;
         this.renderCurrentJosekiPosition();
-    }
+    };
 
     toggleContinuationCountDetail = () => {
         if (this.state.count_details_open) {
             this.hideVariationCounts();
-        }
-        else {
+        } else {
             this.showVariationCounts(this.state.current_node_id);
         }
-    }
+    };
 
     showVariationCounts = (node_id: string) => {
         this.setState({
@@ -1037,15 +1017,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
         }).catch((r) => {
             console.log("Continuation Counts GET failed:", r);
         });
-    }
+    };
 
     hideVariationCounts = () => {
         this.setState({count_details_open: false});
-    }
+    };
 
     updateDBLockStatus = (new_status) => {
         this.setState({db_locked_down: new_status});
-    }
+    };
 
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
@@ -1064,10 +1044,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         const tags = ! this.state.tags  ? "" :
             this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
-            <div className="position-tag" key={idx}>
-                <span>{tag['description']}</span>
-            </div>
-        ));
+                <div className="position-tag" key={idx}>
+                    <span>{tag['description']}</span>
+                </div>
+            ));
 
         return (
             <div className={"Joseki"}>
@@ -1135,8 +1115,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
                                 <span>{_("Contributor")}:</span> <Player user={this.state.contributor_id} />
                             </div>
-                                <div>{_("Moves made")}:</div>
-                                <div className="moves-made">
+                            <div>{_("Moves made")}:</div>
+                            <div className="moves-made">
                                 {this.state.current_move_category !== "new" ?
                                 <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
                                 <span className="moves-made-string">{this.state.move_string}</span>}
@@ -1167,11 +1147,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             }
                             {(!this.state.child_count) &&
                                 <React.Fragment>
-                                <div className="position-child-count">
-                                    {_("This position has no continuations") + "."}
-                                </div>
-                                <div className="child-count-details-pane">
-                                </div>
+                                    <div className="position-child-count">
+                                        {_("This position has no continuations") + "."}
+                                    </div>
+                                    <div className="child-count-details-pane">
+                                    </div>
                                 </React.Fragment>
                             }
                         </div>
@@ -1205,7 +1185,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 {this.state.user_can_administer ? _("Admin") : _("Updates")}
             </button>
         </div>
-    )
+    );
 
     renderModeMainPane = () => {
         // console.log("Mode pane render ", this.state.variation_filter);
@@ -1221,8 +1201,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     updateDBLockStatus = {this.updateDBLockStatus}
                 />
             );
-        }
-        else if (this.state.mode === PageMode.Explore ||
+        } else if (this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
         ) {
             return (
@@ -1240,8 +1219,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     show_comments = {this.show_comments_requested}
                 />
             );
-        }
-        else if (this.state.mode === PageMode.Edit) {
+        } else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
                     node_id={this.state.current_node_id}
@@ -1255,8 +1233,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     update_marks={this.updateMarks}
                 />
             );
-        }
-        else {
+        } else {
             return (
                 <PlayPane
                     move_type_sequence={this.state.move_type_sequence}
@@ -1271,7 +1248,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 />
             );
         }
-    }
+    };
 
     saveNewPositionInfo = (move_type, variation_label, tags, description, joseki_source_id, marks) => {
 
@@ -1293,7 +1270,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     category: move_type.toUpperCase(),
                     joseki_source_id: joseki_source_id,
                     marks: mark_string
-                 })
+                })
             })
             .then(res => res.json())
             .then(body => {
@@ -1303,8 +1280,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             }).catch((r) => {
                 console.log("Position PUT failed:", r);
             });
-        }
-        else {
+        } else {
             // Here the person has added one or more moves then clicked "save"
             // First we save the new position(s)
             fetch(server_url + "positions/", {
@@ -1332,7 +1308,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                         tags: tags,
                         joseki_source_id: joseki_source_id,
                         marks: mark_string
-                     })
+                    })
                 })
                 .then(res => res.json())
                 .then(body => {
@@ -1346,7 +1322,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 console.log("PositionS POST failed:", r);
             });
         }
-    }
+    };
 }
 
 // This pane responds to changes in position ID by showing the new node information
@@ -1356,10 +1332,10 @@ interface ExploreProps {
     position_type: string;
     comment_count: number;
     can_comment: boolean;
-    joseki_source: {url: string, description: string};
+    joseki_source: {url: string; description: string};
     tags: Array<any>;
     set_variation_filter(filter: any): void;
-    current_filter: {contributor: number, tags: number[], source: number};
+    current_filter: {contributor: number; tags: number[]; source: number};
     child_count: number;
     show_comments: boolean;
 }
@@ -1384,14 +1360,13 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         if (this.props.show_comments) {
             this.showComments();
         }
-     }
+    };
 
     static getDerivedStateFromProps(nextProps, prevState) {
         // Detect position id changes, so we can close the extra_info pane
         if (nextProps.position_id !== prevState.current_position) {
             return { current_position: nextProps.position_id };
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -1402,13 +1377,12 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 extra_info_selected: "none",
                 commentary: []
             });
-        }
-        else {
+        } else {
             if (this.props.position_id  && this.props.show_comments && this.state.extra_info_selected === "none" ) {
                 this.showComments();
             }
         }
-    }
+    };
 
     showComments = () => {
         // Possible optimisation: don't re-fetch if we already have them for this node
@@ -1430,7 +1404,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             console.log("Comments GET failed:", r);
         });
         this.setState({ extra_info_selected: "comments" });
-    }
+    };
 
     extractCommentary = (commentary_dto) => {
         // console.log(commentary_dto);
@@ -1448,11 +1422,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             commentary: commentary,
             forum_thread: forum_thread_url
         });
-    }
+    };
 
     hideExtraInfo = () => {
         this.setState({ extra_info_selected: "none" });
-    }
+    };
 
     showAuditLog = () => {
         const audits_url = server_url + "audits?id=" + this.props.position_id;
@@ -1474,16 +1448,16 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         });
 
         this.setState({ extra_info_selected: "audit-log" });
-    }
+    };
 
     extractAuditLog = (audit_log_dto) => {
         // the format is basically what we need.  Just capture it!
         this.setState({ audit_log: audit_log_dto});
-    }
+    };
 
     showFilterSelector = () => {
         this.setState({ extra_info_selected: "variation-filter" });
-    }
+    };
 
     onCommentChange = (e) => {
         // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
@@ -1505,11 +1479,10 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             });
 
             this.setState({ next_comment: "" });
-        }
-        else if (e.target.value.length < 200 && this.props.can_comment) {
+        } else if (e.target.value.length < 200 && this.props.can_comment) {
             this.setState({ next_comment: e.target.value });
         }
-    }
+    };
 
     render = () => {
         const filter_active =
@@ -1521,34 +1494,34 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
         return (
             <div className="explore-pane">
-                    <div className="description-column">
-                        {this.props.position_type !== "new" ?
+                <div className="description-column">
+                    {this.props.position_type !== "new" ?
                         <div className="position-description">
                             <Markdown source={description} />
                         </div>
                         : ""}
-                    </div>
-                    <div className={"extra-info-column extra-info-open"}>
-                        <div className="btn-group extra-info-selector">
-                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                                    <span>{_("Filter")}</span>
-                                    {this.state.extra_info_selected === "variation-filter" ?
+                </div>
+                <div className={"extra-info-column extra-info-open"}>
+                    <div className="btn-group extra-info-selector">
+                        <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
+                            onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
+                            <span>{_("Filter")}</span>
+                            {this.state.extra_info_selected === "variation-filter" ?
                                     <i className={"fa fa-filter hide"}/> :
                                     <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
-                                    }
-                            </button>
-                            <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
-                                    {_("Comments")} ({this.props.comment_count})
-                            </button>
-                            <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
-                                    {_("Changes")}
-                            </button>
-                        </div>
+                            }
+                        </button>
+                        <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
+                            onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
+                            {_("Comments")} ({this.props.comment_count})
+                        </button>
+                        <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
+                            onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
+                            {_("Changes")}
+                        </button>
+                    </div>
 
-                        {this.state.extra_info_selected === "comments" &&
+                    {this.state.extra_info_selected === "comments" &&
                             <div className="discussion-container">
                                 <div className="discussion-lines">
                                     <Throbber throb={this.state.extra_throb}/>
@@ -1566,24 +1539,24 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     hidden={!this.props.can_comment}
                                     rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
                             </div>
-                        }
+                    }
 
-                        {this.state.extra_info_selected === "audit-log" &&
+                    {this.state.extra_info_selected === "audit-log" &&
                             <div className="audit-container">
-                                    <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.audit_log.map((audit, idx) =>
-                                        <div className="audit-entry" key={idx}>
-                                            <div className="audit-header">
-                                                <Player user={audit.userId}></Player>
-                                                <div className="audit-date">{new Date(audit.date).toDateString()}</div>
-                                            </div>
-                                            {audit.comment}
+                                <Throbber throb={this.state.extra_throb}/>
+                                {this.state.audit_log.map((audit, idx) =>
+                                    <div className="audit-entry" key={idx}>
+                                        <div className="audit-header">
+                                            <Player user={audit.userId}></Player>
+                                            <div className="audit-date">{new Date(audit.date).toDateString()}</div>
                                         </div>
-                                    )}
+                                        {audit.comment}
+                                    </div>
+                                )}
                             </div>
-                        }
+                    }
 
-                        {this.state.extra_info_selected === "variation-filter" &&
+                    {this.state.extra_info_selected === "variation-filter" &&
                             <div className="filter-container">
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
@@ -1594,11 +1567,11 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
-                        }
-                    </div>
+                    }
+                </div>
             </div>
         );
-    }
+    };
 }
 
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
@@ -1611,7 +1584,7 @@ interface PlayProps {
     joseki_successes: number;
     joseki_tag_id: number;
     set_variation_filter(filter: any): void;
-    current_filter: {contributor: number, tags: number[], source: number};
+    current_filter: {contributor: number; tags: number[]; source: number};
 }
 
 class PlayPane extends React.Component<PlayProps, any> {
@@ -1632,7 +1605,7 @@ class PlayPane extends React.Component<PlayProps, any> {
             case 'complete': return (<i className="fa fa-star"/>); break;
             default: return "";
         }
-    }
+    };
 
     componentDidMount = () => {
         if (this.props.current_filter.contributor  &&
@@ -1646,11 +1619,10 @@ class PlayPane extends React.Component<PlayProps, any> {
             });
             this.showFilterSelector();
             this.setState({forced_filter: true});
-        }
-        else {
+        } else {
             this.showResults();
         }
-    }
+    };
 
     // here we are detecting each time they play a move, so we can
     // set the extra info selector in the most helpful way
@@ -1662,19 +1634,19 @@ class PlayPane extends React.Component<PlayProps, any> {
             });
         }
         return null;
-    }
+    };
 
     showFilterSelector = () => {
         this.setState({ extra_info_selected: "variation-filter" });
-    }
+    };
 
     showResults = () => {
         this.setState({ extra_info_selected: 'results'});
-    }
+    };
 
     hideExtraInfo = () => {
         this.setState({ extra_info_selected: "none" });
-    }
+    };
 
     render = () => {
         // console.log("Play render", this.props.move_type_sequence);
@@ -1696,21 +1668,21 @@ class PlayPane extends React.Component<PlayProps, any> {
                         </div>))}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
-                        <div className="btn-group extra-info-selector">
-                            <button className={"btn s " + (this.state.extra_info_selected === "results" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "results") ? this.hideExtraInfo : this.showResults}>
-                                    {_("Results")}
-                            </button>
-                            <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                                    onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                                    <span>{_("Filter")}</span>
-                                    {this.state.extra_info_selected === "variation-filter" ?
+                    <div className="btn-group extra-info-selector">
+                        <button className={"btn s " + (this.state.extra_info_selected === "results" ? " primary" : "")}
+                            onClick={(this.state.extra_info_selected === "results") ? this.hideExtraInfo : this.showResults}>
+                            {_("Results")}
+                        </button>
+                        <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
+                            onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
+                            <span>{_("Filter")}</span>
+                            {this.state.extra_info_selected === "variation-filter" ?
                                     <i className={"fa fa-filter hide"}/> :
                                     <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
-                                    }
-                            </button>
-                        </div>
-                        {this.state.extra_info_selected === "results" &&
+                            }
+                        </button>
+                    </div>
+                    {this.state.extra_info_selected === "results" &&
                             <div className="play-results-container">
                                 <h4>{_("Overall:")}</h4>
                                 <div>{_("Josekis played")}: {this.props.josekis_played}</div>
@@ -1724,14 +1696,14 @@ class PlayPane extends React.Component<PlayProps, any> {
                                 }
                                 {!!this.props.joseki_best_attempt &&
                                     <div>
-                                    {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
+                                        {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
                                      + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
                                     </div>
                                 }
                             </div>
-                        }
+                    }
 
-                        {this.state.extra_info_selected === "variation-filter" &&
+                    {this.state.extra_info_selected === "variation-filter" &&
                             <div className="filter-container">
                                 <JosekiVariationFilter
                                     contributor_list_url={server_url + "contributors"}
@@ -1742,11 +1714,11 @@ class PlayPane extends React.Component<PlayProps, any> {
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
-                        }
-                    </div>
+                    }
+                </div>
             </div>
         );
-    }
+    };
 }
 
 // This pane enables the user to edit the description and move attributes of the current position
@@ -1810,24 +1782,23 @@ class EditPane extends React.Component<EditProps, any> {
                 tags: nextProps.tags === null ? [] : nextProps.tags.map((t) => ({label: t.description, value: t.id})),
                 variation_label: nextProps.variation_label || '1'
             };
-        }
-        else {
+        } else {
             return null;
         }
-    }
+    };
 
     onTypeChange = (e) => {
         this.setState({ move_type: e.target.value });
-    }
+    };
 
     onSourceChange = (e) => {
         this.setState({ joseki_source: e.target.value });
-    }
+    };
 
     onTagChange = (e) => {
         //console.log("changing tags", e);
         this.setState({ tags: e });
-    }
+    };
 
     handleEditInput = (e) => {
         const new_description = e.target.value;
@@ -1835,7 +1806,7 @@ class EditPane extends React.Component<EditProps, any> {
         this.props.update_marks(this.currentMarksInDescription(new_description));
 
         this.setState({ new_description });
-    }
+    };
 
     saveNewInfo = (e) => {
         this.props.save_new_info(
@@ -1845,9 +1816,9 @@ class EditPane extends React.Component<EditProps, any> {
             this.state.new_description,
             this.state.joseki_source  !== 'none' ? this.state.joseki_source : undefined,
             this.currentMarksInDescription(this.state.new_description));
-    }
+    };
 
-    currentMarksInDescription = (description: string): Array<{label: string, position: string}> => {
+    currentMarksInDescription = (description: string): Array<{label: string; position: string}> => {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
 
@@ -1875,11 +1846,11 @@ class EditPane extends React.Component<EditProps, any> {
 
         return mark_matches.map((mark_match) => ({label:mark_match[1], position: mark_match[2]}));
         */
-    }
+    };
 
     promptForJosekiSource = (e) => {
         openModal(<JosekiSourceModal add_joseki_source={this.addJosekiSource} fastDismiss />);
-    }
+    };
 
     addJosekiSource = (description, url) => {
         fetch(server_url + "josekisources/", {
@@ -1900,11 +1871,11 @@ class EditPane extends React.Component<EditProps, any> {
         }).catch((r) => {
             console.log("Sources PUT failed:", r);
         });
-    }
+    };
 
     onLabelChange = (e) => {
         this.setState({ variation_label: e.target.value});
-    }
+    };
 
     render = () => {
         //console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
@@ -1993,7 +1964,7 @@ class EditPane extends React.Component<EditProps, any> {
                 </div>
             </div>
         );
-    }
+    };
 }
 
 

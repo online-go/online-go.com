@@ -137,14 +137,14 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
             recallTimeControlSettings(bracket, this.state.system),
             { speed: bracket, },
         ));
-    }
+    };
     setTimeControlSystem = (time_control_system) => {
         this.syncTimeControl(Object.assign(
             {},
             recallTimeControlSettings(this.state.speed, time_control_system),
             { speed: this.state.speed },
         ));
-    }
+    };
     update_speed_bracket        = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
     update_time_control_system  = (ev) => this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
     update_initial_time         = (ev) => this.syncTimeControl({initial_time: parseInt(ev.target.value)});
@@ -172,44 +172,44 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         let speed = this.state.speed;
 
         return (
-        <div className="TimeControlPicker">
-            {
+            <div className="TimeControlPicker">
+                {
+                    <div className="form-group">
+                        <label className="control-label" htmlFor="challenge-speed">{_("Game Speed")}</label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <select id="challenge-speed" value={speed} onChange={this.update_speed_bracket}
+                                    className="challenge-dropdown form-control" style={{overflow: "hidden"}}>
+                                    <option value="blitz">{_("Blitz")}</option>
+                                    <option value="live">{_("Live")}</option>
+                                    <option value="correspondence">{_("Correspondence")}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+
                 <div className="form-group">
-                  <label className="control-label" htmlFor="challenge-speed">{_("Game Speed")}</label>
-                  <div className="controls">
-                      <div className="checkbox">
-                          <select id="challenge-speed" value={speed} onChange={this.update_speed_bracket}
-                                className="challenge-dropdown form-control" style={{overflow: "hidden"}}>
-                            <option value="blitz">{_("Blitz")}</option>
-                            <option value="live">{_("Live")}</option>
-                            <option value="correspondence">{_("Correspondence")}</option>
-                          </select>
-                      </div>
-                  </div>
-                </div>
-            }
-
-
-            <div className="form-group">
-                <label className="control-label" htmlFor="challenge-time-control">{_("Time Control")}</label>
-                <div className="controls">
-                    <div className="checkbox">
-                        <select value={this.state.system} onChange={this.update_time_control_system}
-                            id="challenge-time-control" className="challenge-dropdown form-control">
-                            <option value="fischer">{_("Fischer")}</option>
-                            <option value="simple">{_("Simple")}</option>
-                            <option value="byoyomi">{_("Byo-Yomi")}</option>
-                            <option value="canadian">{_("Canadian")}</option>
-                            <option value="absolute">{_("Absolute")}</option>
-                            {(speed === "correspondence" || null) && <option value="none">{_("None")}</option>}
-                        </select>
+                    <label className="control-label" htmlFor="challenge-time-control">{_("Time Control")}</label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select value={this.state.system} onChange={this.update_time_control_system}
+                                id="challenge-time-control" className="challenge-dropdown form-control">
+                                <option value="fischer">{_("Fischer")}</option>
+                                <option value="simple">{_("Simple")}</option>
+                                <option value="byoyomi">{_("Byo-Yomi")}</option>
+                                <option value="canadian">{_("Canadian")}</option>
+                                <option value="absolute">{_("Absolute")}</option>
+                                {(speed === "correspondence" || null) && <option value="none">{_("None")}</option>}
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
 
 
 
-            {(this.state.system === "fischer" || null) &&
+                {(this.state.system === "fischer" || null) &&
                 <div id="challenge-initial-time-group" className="form-group challenge-time-group">
                     <label id="challenge-initial-time-label" className=" control-label" htmlFor="challenge-initial-time">{_("Initial Time")}</label>
                     <div className="controls">
@@ -224,8 +224,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "fischer" || null) &&
+                }
+                {(this.state.system === "fischer" || null) &&
                 <div  id="challenge-inc-time-group" className="form-group challenge-time-group">
                     <label id="challenge-inc-time-label" className=" control-label" htmlFor="challenge-inc-time">{_("Time Increment")}</label>
                     <div className="controls">
@@ -239,8 +239,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "fischer" || null) &&
+                }
+                {(this.state.system === "fischer" || null) &&
                 <div  id="challenge-max-time-group" className="form-group challenge-time-group">
                     <label className=" control-label" htmlFor="challenge-max-time">{_("Max Time")}</label>
                     <div className="controls">
@@ -254,9 +254,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-            {(this.state.system === "simple" || null) &&
+                {(this.state.system === "simple" || null) &&
                 <div id="challenge-per-move-time-group" className="form-group challenge-time-group">
                     <label id="challenge-per-move-time-label" className=" control-label" htmlFor="challenge-per-move-time">{_("Time per Move")}</label>
                     <div className="controls">
@@ -270,9 +270,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-            {(this.state.system === "canadian" || null) &&
+                {(this.state.system === "canadian" || null) &&
                 <div className="form-group challenge-time-group">
                     <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">{_("Main Time")}</label>
                     <div className="controls">
@@ -286,8 +286,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "byoyomi"  || null) &&
+                }
+                {(this.state.system === "byoyomi"  || null) &&
                 <div className="form-group challenge-time-group">
                     <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">{_("Main Time")}</label>
                     <div className="controls">
@@ -301,8 +301,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "byoyomi" || null) &&
+                }
+                {(this.state.system === "byoyomi" || null) &&
                 <div  id="challenge-per-period-time-group" className="form-group challenge-time-group">
                     <label id="challenge-per-period-time-label" className=" control-label" htmlFor="challenge-per-period-time">{_("Time per Period")}</label>
                     <div className="controls">
@@ -316,8 +316,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "byoyomi" || null) &&
+                }
+                {(this.state.system === "byoyomi" || null) &&
                 <div  id="challenge-periods-group" className="form-group challenge-time-group">
                     <label id="challenge-periods-label" className=" control-label" htmlFor="challenge-periods">{_("Periods")}</label>
                     <div className="controls">
@@ -327,9 +327,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-            {(this.state.system === "canadian" || null) &&
+                {(this.state.system === "canadian" || null) &&
                 <div id="challenge-per-canadian-period-time-group" className="form-group challenge-time-group">
                     <label id="challenge-per-canadian-period-time-label" className=" control-label" htmlFor="challenge-per-canadian-period-time">{_("Time per Period")}</label>
                     <div className="controls">
@@ -343,8 +343,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
-            {(this.state.system === "canadian" || null) &&
+                }
+                {(this.state.system === "canadian" || null) &&
                 <div id="challenge-canadian-stones-group" className="form-group challenge-time-group">
                     <label id="challenge-canadian-stones-label" className=" control-label" htmlFor="challenge-canadian-stones">{_("Stones per Period")}</label>
                     <div className="controls">
@@ -354,9 +354,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-            {(this.state.system === "absolute" || null) &&
+                {(this.state.system === "absolute" || null) &&
                 <div id="challenge-total-time-group" className="form-group challenge-time-group">
                     <label id="challenge-total-time-label" className=" control-label" htmlFor="challenge-total-time">{_("Total Time")}</label>
                     <div className="controls">
@@ -370,9 +370,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-            {(this.state.speed === "correspondence" && this.state.system !== "none" || null) &&
+                {(this.state.speed === "correspondence" && this.state.system !== "none" || null) &&
                 <div id="challenge-pause-on-weekends-div" className="form-group" style={{position: "relative"}}>
                     <label className="control-label" htmlFor="challenge-pause-on-weekends">{_("Pause on Weekends")}</label>
                     <div className="controls">
@@ -381,9 +381,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                         </div>
                     </div>
                 </div>
-            }
+                }
 
-        </div>
+            </div>
         );
     }
 }

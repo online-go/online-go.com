@@ -20,14 +20,14 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {challenge, challengeComputer, createCorrespondence, createBlitz,
-        createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
+    createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore} from "misc";
 import * as preferences from "preferences";
 import * as data from "data";
 import {bot_count} from "bots";
 
-declare var swal;
+declare let swal;
 
 interface Events {
 }
@@ -58,19 +58,19 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     newBlitz = () => {
         createBlitz();
         this.close();
-    }
+    };
     newLive = () => {
         createLive();
         this.close();
-    }
+    };
     newCorrespondence = () => {
         createCorrespondence();
         this.close();
-    }
+    };
     newCustom = () => {
         challenge(null);
         this.close();
-    }
+    };
     newComputer = () => {
         if (bot_count() === 0) {
             swal(_("Sorry, all bots seem to be offline, please try again later."));
@@ -78,7 +78,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
         }
         challengeComputer();
         this.close();
-    }
+    };
 
     render() {
         return (
@@ -134,7 +134,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>
                 </div>
-        </div>
+            </div>
         );
     }
 }

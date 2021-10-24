@@ -30,7 +30,7 @@ import * as moment from "moment";
 
 interface LibraryPlayerProperties {
     match: {
-        params: any
+        params: any;
     };
 }
 
@@ -187,7 +187,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         } else {
             console.log("Not uploading selected files since we're not on our own library page");
         }
-    }
+    };
 
     setCollection(collection_id) {
         browserHistory.push(`/library/${this.state.player_id}/${collection_id}`);
@@ -206,10 +206,10 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     }
     setNewCollectionName = (ev) => {
         this.setState({new_collection_name: ev.target.value});
-    }
+    };
     setNewCollectionPrivate = (ev) => {
         this.setState({new_collection_private: ev.target.checked});
-    }
+    };
     createCollection = () => {
 
         post("library/%%/collections", this.state.player_id, {
@@ -223,7 +223,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.setState({
             new_collection_name: ""
         });
-    }
+    };
     deleteCollection = () => {
         let parent = this.state.collections[this.state.collection_id].parent;
         post("library/%%", this.state.player_id, {
@@ -235,7 +235,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             .catch(ignore);
         })
         .catch(errorAlerter);
-    }
+    };
     deleteGames = () => {
         post("library/%%", this.state.player_id, {
             delete_entries: Object.keys(this.state.games_checked)
@@ -245,7 +245,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         })
         .catch(errorAlerter);
         this.setState({"games_checked": {}});
-    }
+    };
     toggleAllGamesChecked = () => {
         let collection = this.state.collections[this.state.collection_id];
         let all_games_checked = true;
@@ -264,7 +264,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
             }
             this.setState({games_checked: new_checked});
         }
-    }
+    };
 
     render() {
         let owner = this.state.player_id === data.get("user").id || null;

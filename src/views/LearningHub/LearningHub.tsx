@@ -30,14 +30,14 @@ import {browserHistory} from "ogsHistory";
 import {MiniGoban} from "MiniGoban";
 
 
-declare var swal;
+declare let swal;
 
 interface LearningHubProperties {
     match: {
         params: {
             section: string;
             page: number;
-        }
+        };
     };
 }
 
@@ -110,42 +110,42 @@ class Index extends React.PureComponent<{}, any>  {
         return (
             <div id='LearningHub-Index'>
 
-            <div id='LearningHub-list'>
-                {sections.map((arr) =>
-                    <div key={arr[0]} className='section'>
-                        <h2>{arr[0]}</h2>
-                        <div className='contents'>
-                            {arr[1].map((S) => {
-                                let className = getSectionClassName(S.section());
-                                let p = (new (S.pages()[0]));
-                                let config = p.config();
-                                if (!config.width) {
-                                    config.width = 9;
-                                    config.height = 9;
-                                }
-                                delete config['mode'];
-                                delete config['move_tree'];
-                                return (
-                                    <CardLink key={S.section()}
-                                        className={className + ' Ribboned'} to={`/learn-to-play-go/${S.section()}`}>
+                <div id='LearningHub-list'>
+                    {sections.map((arr) =>
+                        <div key={arr[0]} className='section'>
+                            <h2>{arr[0]}</h2>
+                            <div className='contents'>
+                                {arr[1].map((S) => {
+                                    let className = getSectionClassName(S.section());
+                                    let p = (new (S.pages()[0]));
+                                    let config = p.config();
+                                    if (!config.width) {
+                                        config.width = 9;
+                                        config.height = 9;
+                                    }
+                                    delete config['mode'];
+                                    delete config['move_tree'];
+                                    return (
+                                        <CardLink key={S.section()}
+                                            className={className + ' Ribboned'} to={`/learn-to-play-go/${S.section()}`}>
 
-                                        <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
-                                        <div>
-                                            <h1>{S.title()}</h1>
-                                            <h3>{S.subtext()}</h3>
-                                        </div>
-                                        {className !== 'todo' ? <Ribbon>{this.ribbonText(S.section())}</Ribbon> : null}
-                                    </CardLink>
-                                );
-                            })}
+                                            <MiniGoban noLink id={null} json={config} displayWidth={64} white={null} black={null} />
+                                            <div>
+                                                <h1>{S.title()}</h1>
+                                                <h3>{S.subtext()}</h3>
+                                            </div>
+                                            {className !== 'todo' ? <Ribbon>{this.ribbonText(S.section())}</Ribbon> : null}
+                                        </CardLink>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <div className='section'>
-                    <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
-                    <div className='contents'>
-                        {(!user || user.anonymous) &&
+                    <div className='section'>
+                        <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
+                        <div className='contents'>
+                            {(!user || user.anonymous) &&
                             <CardLink className={'done'} to={`/register`}>
                                 <i className='fa fa-thumbs-up' />
                                 <div>
@@ -153,9 +153,9 @@ class Index extends React.PureComponent<{}, any>  {
                                     <h3>{_("Get a free Online-Go account to play Go!")}</h3>
                                 </div>
                             </CardLink>
-                        }
+                            }
 
-                        {!(!user || user.anonymous) &&
+                            {!(!user || user.anonymous) &&
                             <CardLink className={'done'} to={`/play`}>
                                 <i className='ogs-goban' />
                                 <div>
@@ -163,25 +163,25 @@ class Index extends React.PureComponent<{}, any>  {
                                     <h3>{_("Play people from around the world, or against the computer")}</h3>
                                 </div>
                             </CardLink>
-                        }
+                            }
 
-                        <CardLink className={'done'} to={`/puzzles`}>
-                            <i className='fa fa-puzzle-piece' />
-                            <div>
-                                <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
-                                <h3>{_("Practice by solving Go puzzles")}</h3>
-                            </div>
-                        </CardLink>
+                            <CardLink className={'done'} to={`/puzzles`}>
+                                <i className='fa fa-puzzle-piece' />
+                                <div>
+                                    <h1>{pgettext("Practice go by playing puzzles", "Puzzles")}</h1>
+                                    <h3>{_("Practice by solving Go puzzles")}</h3>
+                                </div>
+                            </CardLink>
 
+                        </div>
                     </div>
                 </div>
-            </div>
 
             </div>
         );
     }
 
-    ribbonText(section_name:string) {
+    ribbonText(section_name: string) {
         let sc = getSectionCompletion(section_name);
         if (sc.completed) {
             return (
@@ -226,16 +226,16 @@ class SectionNav extends React.Component<{}, any>  {
                         <Link to={`/learn-to-play-go/${arr[1][0].section()}`}><h2>{arr[0]}</h2></Link>
                         {arr[1].reduce((acc, v) => acc + (v.section() === section_name ? 1 : 0), 0) ? // is our active section?
                             arr[1].map((S) => {
-                            return (
-                                <Link key={S.section()}
-                                    className={S.section() === section_name ? 'active' : ''}
-                                    to={`/learn-to-play-go/${S.section()}`}
-                                >
-                                    {S.title()}
-                                {this.getProgressText(S.section())}
-                                </Link>
-                            );
-                        }) : null}
+                                return (
+                                    <Link key={S.section()}
+                                        className={S.section() === section_name ? 'active' : ''}
+                                        to={`/learn-to-play-go/${S.section()}`}
+                                    >
+                                        {S.title()}
+                                        {this.getProgressText(S.section())}
+                                    </Link>
+                                );
+                            }) : null}
                     </div>
                 )}
 
@@ -254,9 +254,9 @@ class SectionNav extends React.Component<{}, any>  {
         })
         .catch(ignore);
 
-    }
+    };
 
-    getProgressText(section_name:string) {
+    getProgressText(section_name: string) {
         let sc = getSectionCompletion(section_name);
 
         if (sc.completed) {
@@ -274,7 +274,7 @@ class SectionNav extends React.Component<{}, any>  {
     }
 }
 
-function getSectionClassName(section_name:string):string {
+function getSectionClassName(section_name: string): string {
     let sc = getSectionCompletion(section_name);
 
     let S = getSectionByName(section_name);

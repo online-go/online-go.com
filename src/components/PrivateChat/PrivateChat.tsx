@@ -35,7 +35,7 @@ let last_id: number = 0;
 let private_chats = [];
 let instances = {};
 
-let date_format:Intl.DateTimeFormatOptions  = {
+let date_format: Intl.DateTimeFormatOptions  = {
     month: 'long' , day: 'numeric', year: 'numeric'
 };
 
@@ -57,7 +57,7 @@ class PrivateChat {
     pc;
     opening;
     player_dom;
-    player:PlayerCacheEntry;
+    player: PlayerCacheEntry;
 
     /* for generating uids */
     chatbase = Math.floor(Math.random() * 100000).toString(36);
@@ -151,8 +151,7 @@ class PrivateChat {
             title.append($("<i>").addClass("fa fa-clipboard").click(() => {
                 this.createModNote();
             }));
-        }
-        else {
+        } else {
             title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
                 this.report();
             }));
@@ -295,8 +294,7 @@ class PrivateChat {
             if (this.superchat_enabled) {
                 line.addClass("megaphone-banner");
                 line.text(_("OGS Moderator official message: please respond"));
-            }
-            else {
+            } else {
                 line.text(_("(You are talking with an OGS Moderator)"));
             }
             this.banner.append(line);
@@ -447,15 +445,15 @@ class PrivateChat {
         });
 
         return conversation;
-    }
+    };
 
     createModNote = () => {
         createModeratorNote(this.user_id, this.getConversation());
-    }
+    };
 
     report = () => {
         alertModerator({user: this.user_id, reported_conversation: {username: this.player.username, content: this.getConversation()}});
-    }
+    };
 
     hilight() {
         if (this.dom) {
@@ -477,29 +475,28 @@ class PrivateChat {
         }
 
         //if (line.message.to) {
-            //this.addChat(data.get('user').username, line.message.m, 0, line.message.t);
+        //this.addChat(data.get('user').username, line.message.m, 0, line.message.t);
         //} else {
-            line.message.m = profanity_filter(line.message.m);
-            this.addChat(line.from.username, line.message.m, line.from.id, line.message.t);
-            if (line.from.id !== data.get("user").id) { /* don't open if we were the ones who sent this (from another tab for instance) */
-                if (this.display_state === "closed") {
-                    //this.opening = true;
-                    //setTimeout(()=>{
-                    //    if (this.opening) {
-                    this.minimize();
-                    this.hilight();
-                    //    }
-                    //}, 100);
-                }
-                else if (this.display_state === "minimized") {
-                    this.hilight();
-                }
-                if (!player_is_ignored(line.from.id)) {
-                    emitNotification("Private Message", line.from.username + " sent you a message:\n" + line.message.m);
-                } else {
-                    console.log("Ignoring private chat from ", line.from.username);
-                }
+        line.message.m = profanity_filter(line.message.m);
+        this.addChat(line.from.username, line.message.m, line.from.id, line.message.t);
+        if (line.from.id !== data.get("user").id) { /* don't open if we were the ones who sent this (from another tab for instance) */
+            if (this.display_state === "closed") {
+                //this.opening = true;
+                //setTimeout(()=>{
+                //    if (this.opening) {
+                this.minimize();
+                this.hilight();
+                //    }
+                //}, 100);
+            } else if (this.display_state === "minimized") {
+                this.hilight();
             }
+            if (!player_is_ignored(line.from.id)) {
+                emitNotification("Private Message", line.from.username + " sent you a message:\n" + line.message.m);
+            } else {
+                console.log("Ignoring private chat from ", line.from.username);
+            }
+        }
         //}
 
         this.last_uid = line.message.i + " " + line.message.t;

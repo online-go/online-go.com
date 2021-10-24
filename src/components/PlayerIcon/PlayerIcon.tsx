@@ -40,7 +40,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     mounted: boolean = false;
     subscriber = new player_cache.Subscriber(user => this.fetch(user.id, this.props));
 
-    constructor(props:PlayerIconProps) {
+    constructor(props: PlayerIconProps) {
         super(props);
         let id = this.getId(props);
         if (!id) {
@@ -58,7 +58,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         }
     }
 
-    getId(props:PlayerIconProps):number {
+    getId(props: PlayerIconProps): number {
         let ret = parseInt(props.id || (props.user && (props.user.id || props.user.user_id)));
         if (isNaN(ret)) {
             ret = null;
@@ -96,8 +96,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
             this.subscriber.off(this.subscriber.players());
             if (next_id > 0) {
                 this.subscriber.on(next_id);
-            }
-            else {
+            } else {
                 return;
             }
             this.fetch(next_id, next_props);

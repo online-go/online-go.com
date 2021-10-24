@@ -28,7 +28,7 @@ import cached from 'cached';
 import {Md5} from 'ts-md5/dist/md5';
 
 window['Md5'] = Md5;
-declare var swal;
+declare let swal;
 
 export function get_bid() {
     let bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -161,7 +161,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                     .catch(errorAlerter);
             })
             .catch(ignore);
-    }
+    };
 
     render() {
         return (
@@ -202,7 +202,7 @@ export class SignIn extends React.PureComponent<{}, any> {
 }
 
 
-export function SocialLoginButtons():JSX.Element {
+export function SocialLoginButtons(): JSX.Element {
     return (
         <div className="social-buttons">
             <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>

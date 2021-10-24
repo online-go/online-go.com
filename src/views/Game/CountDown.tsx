@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-export class CountDown extends React.PureComponent<{to:Date}, any> {
+export class CountDown extends React.PureComponent<{to: Date}, any> {
     timeout: any;
 
     constructor(props) {

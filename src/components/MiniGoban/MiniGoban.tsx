@@ -48,7 +48,7 @@ interface MiniGobanProps {
 }
 
 export class MiniGoban extends React.Component<MiniGobanProps, any> {
-    public goban_div:HTMLDivElement;
+    public goban_div: HTMLDivElement;
     goban;
 
     constructor(props) {
@@ -130,21 +130,19 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
         if (this.props.title) {
 
             // we have to cook up a `result` object to pass to getGameResultText
-            let result:any;
+            let result: any;
 
             if (this.goban.engine.winner === this.goban.engine.black_player_id) {
                 result = {
                     black_lost: false,
                     white_lost: true
                 };
-            }
-            else if (this.goban.engine.winner === this.goban.engine.white_player_id) {
+            } else if (this.goban.engine.winner === this.goban.engine.white_player_id) {
                 result = {
                     black_lost: true,
                     white_lost: false
                 };
-            }
-            else {
+            } else {
                 result = {
                     black_lost: true,
                     white_lost: true
@@ -198,38 +196,38 @@ export class MiniGoban extends React.Component<MiniGobanProps, any> {
     inner() {
         return (
             <React.Fragment>
-            {this.props.title &&
+                {this.props.title &&
                 <div className={"minigoban-title"}>
                     <div>{this.state.game_name}</div>
                     <div className="game-date">{this.state.game_date}</div>
                     <div className="game-result">{this.state.game_result}</div>
                 </div>
-            }
-            <div className="inner-container">
-                <PersistentElement className={
-                    "small board"
+                }
+                <div className="inner-container">
+                    <PersistentElement className={
+                        "small board"
                     + (this.state.current_users_move ? " current-users-move" : "")
                     + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
                     + (this.state.finished ? " finished" : "")
-                }
-                elt={this.goban_div} />
-                {!this.props.noText &&
+                    }
+                    elt={this.goban_div} />
+                    {!this.props.noText &&
                     <div className={`title-black ${this.state.black_to_move_cls}`}>
                         <span className={`player-name`}>{this.state.black_name}</span>
                         <span className={`player-rank`}>{this.state.black_rank}</span>
                         {this.state.finished || <Clock compact goban={this.goban} color='black' className='mini-goban' />}
                         {this.state.finished || <span className="score">{this.state.black_points}</span>}
                     </div>
-                }
-                {!this.props.noText &&
+                    }
+                    {!this.props.noText &&
                     <div className={`title-white ${this.state.white_to_move_cls}`}>
                         <span className={`player-name`}>{this.state.white_name}</span>
                         <span className={`player-rank`}>{this.state.white_rank}</span>
                         {this.state.finished || <Clock compact goban={this.goban} color='white' className='mini-goban' />}
                         {this.state.finished || <span className="score">{this.state.white_points}</span>}
                     </div>
-                }
-            </div>
+                    }
+                </div>
             </React.Fragment>
         );
     }

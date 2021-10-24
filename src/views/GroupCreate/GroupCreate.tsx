@@ -21,14 +21,14 @@ import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {browserHistory} from "ogsHistory";
 
-declare var swal;
+declare let swal;
 
 interface GroupCreateProperties {
 }
 
 export class GroupCreate extends React.PureComponent<GroupCreateProperties, any> {
     refs: {
-        name
+        name;
     };
 
     constructor(props) {
@@ -66,31 +66,31 @@ export class GroupCreate extends React.PureComponent<GroupCreateProperties, any>
 
     render() {
         return (
-        <div className="GroupCreate">
-            <div className="container" style={{maxWidth: "42em", paddingTop: "5em"}}>
+            <div className="GroupCreate">
+                <div className="container" style={{maxWidth: "42em", paddingTop: "5em"}}>
 
-                <div style={{textAlign: "center"}}>
-                    <h1>{_("Excellent, another group!")}</h1>
-                    <p>{_("To begin, please fill out some basic information about your group.")}</p>
-                </div>
-                <div className="well">
-                    <div className="form-horizontal" role="form">
-                        <div className="form-group">
-                            <label className="col-sm-5 control-label" htmlFor="group-create-name">{_("Group Name")}</label>
-                            <div className="col-sm-6">
-                                <input type="text" ref="name" className="form-control" id="group-create-name" value={this.state.name} onChange={this.set_name} placeholder={_("Group Name")}/>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label className="col-sm-5 control-label" htmlFor="group-create-public">{_("Open to the public")}</label>
-                            <div className="col-sm-6">
-                                <div className="checkbox">
-                                    <input type="checkbox" id="group-create-public" checked={this.state.is_public} onChange={this.set_is_public}/>
+                    <div style={{textAlign: "center"}}>
+                        <h1>{_("Excellent, another group!")}</h1>
+                        <p>{_("To begin, please fill out some basic information about your group.")}</p>
+                    </div>
+                    <div className="well">
+                        <div className="form-horizontal" role="form">
+                            <div className="form-group">
+                                <label className="col-sm-5 control-label" htmlFor="group-create-name">{_("Group Name")}</label>
+                                <div className="col-sm-6">
+                                    <input type="text" ref="name" className="form-control" id="group-create-name" value={this.state.name} onChange={this.set_name} placeholder={_("Group Name")}/>
                                 </div>
                             </div>
-                        </div>
-                        {(!this.state.is_public || null) &&
+
+                            <div className="form-group">
+                                <label className="col-sm-5 control-label" htmlFor="group-create-public">{_("Open to the public")}</label>
+                                <div className="col-sm-6">
+                                    <div className="checkbox">
+                                        <input type="checkbox" id="group-create-public" checked={this.state.is_public} onChange={this.set_is_public}/>
+                                    </div>
+                                </div>
+                            </div>
+                            {(!this.state.is_public || null) &&
                             <div className="form-group">
                                 <label className="col-sm-5 control-label" htmlFor="group-create-disable-invitation">{_("Disable invitation requests")}</label>
                                 <div className="col-sm-6">
@@ -99,26 +99,26 @@ export class GroupCreate extends React.PureComponent<GroupCreateProperties, any>
                                     </div>
                                 </div>
                             </div>
-                        }
-                        <div className="form-group">
-                            <label className="col-sm-5 control-label" htmlFor="group-create-hide-details">{_("Hide details from non-members")}</label>
-                            <div className="col-sm-6">
-                                <div className="checkbox">
-                                    <input type="checkbox" id="group-create-hide-details" checked={this.state.hide_details} onChange={this.set_hide_details}/>
+                            }
+                            <div className="form-group">
+                                <label className="col-sm-5 control-label" htmlFor="group-create-hide-details">{_("Hide details from non-members")}</label>
+                                <div className="col-sm-6">
+                                    <div className="checkbox">
+                                        <input type="checkbox" id="group-create-hide-details" checked={this.state.hide_details} onChange={this.set_hide_details}/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="form-group">
-                            <label className="col-sm-5 control-label"></label>
-                            <div className="col-sm-6">
-                                <button className="primary" onClick={() => (this.createGroup())}>{_("Create your group!")}</button>
+                            <div className="form-group">
+                                <label className="col-sm-5 control-label"></label>
+                                <div className="col-sm-6">
+                                    <button className="primary" onClick={() => (this.createGroup())}>{_("Create your group!")}</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         );
     }
 }

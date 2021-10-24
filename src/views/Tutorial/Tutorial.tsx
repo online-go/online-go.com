@@ -29,12 +29,12 @@ import {openNewGameModal} from "NewGameModal";
 
 interface TutorialProperties {
     match: {
-        params:any
+        params: any;
     };
 }
 
 const NUM_PAGES = 12;
-declare var ogs_current_language;
+declare let ogs_current_language;
 
 export class Tutorial extends React.PureComponent<TutorialProperties, any> {
     constructor(props) {
@@ -95,21 +95,21 @@ abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, 
         let step = Math.max(0, Math.min(NUM_PAGES - 1, this.getCurrentStep() + 1));
         console.log("Next step: ", this.getCurrentStep(), step);
         browserHistory.push(`/learn-to-play-go/${step}`);
-    }
+    };
     reset = () => {
         //let step = Math.max(0, Math.min(NUM_PAGES - 1, this.getCurrentStep()));
         window.location.reload();
         //browserHistory.replace(`/learn-to-play-go/${step}?n=` + Date.now());
-    }
+    };
 
 
     componentDidMount() {
         this.setState({show_next: this.showNext()});
     }
-    showReset():boolean {
+    showReset(): boolean {
         return false;
     }
-    showNext():boolean {
+    showNext(): boolean {
         return true;
     }
     onUpdate = () => {
@@ -117,7 +117,7 @@ abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, 
             show_reset: this.showReset(),
             show_next: this.showNext(),
         });
-    }
+    };
 
     abstract text();
     abstract config();
@@ -167,7 +167,7 @@ class ThisIsAGoban extends TutorialPage {
                 <div>
                     {_("Great! Once a stone is placed, it cannot be moved. Stones can however be captured...")  /* translators: This is part of the tutorial */}
                 </div>
-           );
+            );
         }
     }
     config() {
@@ -200,7 +200,7 @@ class CapturingStones1 extends TutorialPage {
                 <p>
                     <Markdown source={_("Excellent! Captured stones are taken as <i>&ldquo;prisoners&rdquo;</i> and are removed from the board.") /* translators: This is part of the tutorial */} />
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -233,7 +233,7 @@ class CapturingStones2 extends TutorialPage {
                 <p>
                     {_("Well done!") /* translators: This is a congratulation message in the tutorial after the player has succeeded in capturing a group */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -266,7 +266,7 @@ class CapturingStones3 extends TutorialPage {
                 <p>
                     {_("Great!") /* translators: This is a congratulation message in the tutorial after the player has succeeded in capturing a group */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -300,7 +300,7 @@ class CapturingStones4 extends TutorialPage {
                 <p>
                     {_("Very good!") /* translators: This is a congratulation message in the tutorial after the player has succeeded in capturing a group */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -369,7 +369,7 @@ class StayingAlive2 extends TutorialPage {
                 <p>
                     {_("Oops! Without forming two eyes, white can capture black!") /* translators: This is part of the tutorial */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -429,7 +429,7 @@ class Ko extends TutorialPage {
                 <p>
                     <Markdown source={_("Good.  <br/><br/>  You'll notice you can't endlessly retake stones, the other player must play somewhere else, however the next time it is their turn they may retake the stone if it is still available.  This is commonly known as a <i>Ko threat</i> and clever players can use them to their advantage.") /* translators: This is part of the tutorial */} />
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -470,7 +470,7 @@ class Snapback extends TutorialPage {
                 <p>
                     {_("Great, we're almost done! Next we'll learn about finishing the game and scoring.") /* translators: This is part of the tutorial */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -529,8 +529,7 @@ class Scoring2 extends TutorialPage {
                     <Markdown source={_("When scoring, territory needs to be <i>completely surrounded</i> before it can be scored.  Place the missing stone so that black can claim the territory in the upper right corner.") /* translators: This is part of the tutorial */} />
                 </p>
             );
-        }
-        else if (this.state.show_next) {
+        } else if (this.state.show_next) {
             return (
                 <p>
                     {_("Excellent!") /* translators: This is a congratulation message in the tutorial after the player has succeeded in sealing territory */}
@@ -541,7 +540,7 @@ class Scoring2 extends TutorialPage {
                 <p>
                     {_("Oops! Try again.!") /* translators: This is a failure message in the tutorial after the player didn't place a correct stone while trying to seal some territory */}
                 </p>
-           );
+            );
         }
     }
     config() {
@@ -588,7 +587,7 @@ class Done extends React.PureComponent<{}, any> {
 
     playComputer = () => {
         openNewGameModal();
-    }
+    };
 
     render() {
 

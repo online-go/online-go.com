@@ -22,7 +22,7 @@ export interface IAssociation {
     acronym?: string;
 }
 
-export let associations:Array<IAssociation> = [
+export let associations: Array<IAssociation> = [
     {country: "ar", name: "Asociación Argentina de Go", acronym: "AAGo"},
     {country: "am", name: "Armenian Draughts and Go Federation "},
     {country: "au", name: "Australian Go Association", acronym: "AGA"},

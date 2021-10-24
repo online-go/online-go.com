@@ -28,7 +28,7 @@ import {UIPush} from "UIPush";
 import * as data from "data";
 import tooltip from "tooltip";
 
-declare var swal;
+declare let swal;
 
 interface LadderComponentProperties {
     ladderId: number;
@@ -44,7 +44,7 @@ interface LadderComponentProperties {
 
 export class LadderComponent extends React.PureComponent<LadderComponentProperties, any> {
     refs: {
-        ladder
+        ladder;
     };
 
     constructor(props) {
@@ -69,7 +69,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
     onResize = () => {
         this.forceUpdate();
-    }
+    };
 
     reload = () => {
         get("ladders/%%", this.props.ladderId)
@@ -77,19 +77,19 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         .catch(errorAlerter);
 
         this.updatePlayers();
-    }
+    };
 
     updatePlayers = () => {
         if (this.refs.ladder) {
             this.refs.ladder.update();
         }
-    }
+    };
 
     challenge(ladder_player) {
         console.log(ladder_player);
         swal({
             "text": interpolate(_("Are you ready to start your game with {{player_name}}?"), /* translators: ladder challenge */
-                         {player_name: ladder_player.player.username}),
+                {player_name: ladder_player.player.username}),
             "showCancelButton": true,
             "confirmButtonText": _("Yes!"),
             "cancelButtonText": _("No"),
@@ -144,10 +144,10 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                             {
                                 lp.incoming_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                     <div key={idx}>
-                                    <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
-                                    </Link>
+                                        <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
+                                            <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                            <Player nolink user={challenge.player} />
+                                        </Link>
                                     </div>
                                 ))
                             }
@@ -167,10 +167,10 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                             {
                                 lp.outgoing_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                     <div key={idx}>
-                                    <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
-                                        <Player nolink user={challenge.player} />
-                                    </Link>
+                                        <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
+                                            <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                            <Player nolink user={challenge.player} />
+                                        </Link>
                                     </div>
                                 ))
                             }
@@ -220,12 +220,12 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                                 (lp.player.id !== user.id && lp.can_challenge || null) && ( lp.can_challenge.challengeable
                                     ? <button className="primary xs" onClick={this.challenge.bind(this, lp)}>{_("Challenge")}</button>
                                     : <span className="not-challengable"
-                                          data-title={canChallengeTooltip(lp.can_challenge)}
-                                          onClick={tooltip}
-                                          onMouseOver={tooltip}
-                                          onMouseOut={tooltip}
-                                          onMouseMove={tooltip}
-                                          >{_("Not challengable")}</span>
+                                        data-title={canChallengeTooltip(lp.can_challenge)}
+                                        onClick={tooltip}
+                                        onMouseOver={tooltip}
+                                        onMouseOut={tooltip}
+                                        onMouseMove={tooltip}
+                                    >{_("Not challengable")}</span>
                                 )
                             }
                         ),
@@ -244,13 +244,13 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                         thin_view  || !full_view
                            ? null
                            : {header: _("Challenged By"),
-                              className: "challenge-column", render: (lp) => challenged_by(lp, false)}
+                               className: "challenge-column", render: (lp) => challenged_by(lp, false)}
                         ,
 
                         thin_view  || !full_view
                            ? null
                            : {header: _("Challenging"),
-                              className: "challenge-column", render: (lp) => challenging(lp, false)}
+                               className: "challenge-column", render: (lp) => challenging(lp, false)}
                         ,
                     ]}
                 />
@@ -259,7 +259,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
     }
 }
 
-function canChallengeTooltip(obj:any):string {
+function canChallengeTooltip(obj: any): string {
     if (obj.reason_code) {
         switch (obj.reason_code) {
             case 0x001: return pgettext("Can't challenge player in ladder because: ", "Can't challenge yourself");

@@ -89,7 +89,7 @@ abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> impleme
     on(channels: K | Array<K>): this {
         let table = this.callback_table;
 
-        let ch:Array<string> = typeof channels === "string" ? [channels] : channels;
+        let ch: Array<string> = typeof channels === "string" ? [channels] : channels;
         for (let channel of ch) {
             (table[channel] || (table[channel] = {}))[this.serial] = this.callback;
             this.subscribed_channels[channel] = true;

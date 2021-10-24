@@ -17,7 +17,7 @@
 
 import * as preferences from "preferences";
 
-let filters: { [key:string]: boolean} = {};
+let filters: { [key: string]: boolean} = {};
 export let profanity_regex: { [key: string]: RegExp } = {};
 
 export function profanity_filter(str: string) {

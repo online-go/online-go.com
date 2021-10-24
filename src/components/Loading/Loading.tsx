@@ -22,7 +22,7 @@ interface LoadingProps {
     small?: boolean;
 }
 
-export function Loading(props: LoadingProps):JSX.Element {
+export function Loading(props: LoadingProps): JSX.Element {
     return (
         <span className={'Loading' + (props.small ? ' small' : '') + (props.large ? ' large' : '')}>
             <span className='loading-spinner' />
@@ -30,7 +30,7 @@ export function Loading(props: LoadingProps):JSX.Element {
     );
 }
 
-export function LoadingPage(props: LoadingProps):JSX.Element {
+export function LoadingPage(props: LoadingProps): JSX.Element {
     return (
         <span className='LoadingPage'>
             <Loading {...props} />

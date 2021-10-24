@@ -29,7 +29,7 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<any, {}> {
-    div:HTMLDivElement = null;
+    div: HTMLDivElement = null;
 
     last_width = 0;
     last_height = 0;
@@ -45,8 +45,8 @@ export class Resizable extends React.Component<any, {}> {
         }
 
         let div = this.div;
-        let width:number;
-        let height:number;
+        let width: number;
+        let height: number;
 
         try {
             height = div.clientHeight;
@@ -79,7 +79,7 @@ export class Resizable extends React.Component<any, {}> {
                 this.props.onResize(width, height);
             }
         }
-    }
+    };
 
     componentDidMount() {
         let div = this.div;

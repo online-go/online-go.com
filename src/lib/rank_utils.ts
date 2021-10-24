@@ -24,22 +24,22 @@ export interface IRankInfo {
 }
 
 class Rating {
-    unset:boolean;
-    rating:number;
-    deviation:number;
-    volatility:number;
-    provisional:boolean;
-    rank:number;
-    rank_label:string;
-    partial_rank:number;
-    partial_rank_label:string;
-    rank_deviation_labels:Array<string>;
-    rank_deviation:number;
-    professional:boolean;
-    bounded_rank:number;
-    bounded_rank_label:string;
-    partial_bounded_rank:number;
-    partial_bounded_rank_label:string;
+    unset: boolean;
+    rating: number;
+    deviation: number;
+    volatility: number;
+    provisional: boolean;
+    rank: number;
+    rank_label: string;
+    partial_rank: number;
+    partial_rank_label: string;
+    rank_deviation_labels: Array<string>;
+    rank_deviation: number;
+    professional: boolean;
+    bounded_rank: number;
+    bounded_rank_label: string;
+    partial_bounded_rank: number;
+    partial_bounded_rank_label: string;
 }
 
 export const MinRank: number = 5;
@@ -52,22 +52,22 @@ const MAX_RATING = 6000;
 const A = 525;
 const C = 23.15;
 
-export function rank_to_rating(rank:number) {
+export function rank_to_rating(rank: number) {
     return A * Math.exp(rank / C);
 }
 
-export function rating_to_rank(rating:number) {
+export function rating_to_rank(rating: number) {
     return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
-export function rank_deviation(rating:number, deviation:number) {
+export function rank_deviation(rating: number, deviation: number) {
     return rating_to_rank(rating + deviation) - rating_to_rank(rating);
 }
 
-export function get_handicap_adjustment(rating:number, handicap:number):number {
+export function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
-function overall_rank(user_or_rank:any):number {
+function overall_rank(user_or_rank: any): number {
     let rank = null;
     if (typeof(user_or_rank) === 'number') {
         rank = user_or_rank;
@@ -76,18 +76,18 @@ function overall_rank(user_or_rank:any):number {
     }
     return rank;
 }
-export function is_novice(user_or_rank:any):boolean {
+export function is_novice(user_or_rank: any): boolean {
     return overall_rank(user_or_rank) < MinRank;
 }
-export function is_rank_bounded(user_or_rank:any):boolean {
+export function is_rank_bounded(user_or_rank: any): boolean {
     let rank = overall_rank(user_or_rank);
     return rank < MinRank || rank > MaxRank;
 }
-export function bounded_rank(user_or_rank:any):number {
+export function bounded_rank(user_or_rank: any): number {
     let rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
-export function is_provisional(user:any):boolean {
+export function is_provisional(user: any): boolean {
     let ratings = user.ratings || {};
 
     let rating = ratings['overall'] || {
@@ -100,12 +100,12 @@ export function is_provisional(user:any):boolean {
 }
 
 
-export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'correspondence' = 'overall', size: 0 | 9 | 13 | 19 = 0) {
+export function getUserRating(user: any, speed: 'overall' | 'blitz' | 'live' | 'correspondence' = 'overall', size: 0 | 9 | 13 | 19 = 0) {
     let ret = new Rating();
     let ratings = user.ratings || {};
     ret.professional = user.pro || user.professional;
 
-    let key:string = speed;
+    let key: string = speed;
     if (size > 0) {
         if (speed !== 'overall') {
             key += `-${size}x${size}`;
@@ -158,11 +158,11 @@ export function getUserRating(user:any, speed:'overall' | 'blitz' | 'live' | 'co
 }
 
 
-export function boundedRankString(r, with_tenths?:boolean) {
+export function boundedRankString(r, with_tenths?: boolean) {
     return rankString(bounded_rank(r), with_tenths);
 }
 
-export function rankString(r, with_tenths?:boolean) {
+export function rankString(r, with_tenths?: boolean) {
     let provisional = false;
 
     if (typeof(r) === "object") {
@@ -258,7 +258,7 @@ export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlus
     return result;
 }
 
-export function proRankList(bigranknums:boolean = true): Array<IRankInfo> {
+export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     let result = [];
     for (let i = 37; i <= 45; ++i) {
         result.push ({
@@ -277,7 +277,7 @@ export function allRanks() { return rankList().concat( proRankList()); }
  *  https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surounding that.
 */
-export function humble_rating(rating:number, deviation:number):number {
+export function humble_rating(rating: number, deviation: number): number {
     return rating - ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) - PROVISIONAL_RATING_CUTOFF) / (350 - PROVISIONAL_RATING_CUTOFF)) * deviation;
 }
 
@@ -293,7 +293,7 @@ export interface EffectiveOutcome {
     white_effective_stronger: boolean;
 }
 
-export function effective_outcome(black_rating: number, white_rating: number, handicap: number):EffectiveOutcome {
+export function effective_outcome(black_rating: number, white_rating: number, handicap: number): EffectiveOutcome {
     //let res: EffectiveOutcome = new EffectiveOutcome;
     let black_effective_rating: number = black_rating + get_handicap_adjustment(black_rating, handicap);
     let white_effective_rating: number = white_rating;

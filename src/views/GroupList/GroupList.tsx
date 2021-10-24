@@ -30,7 +30,7 @@ interface GroupListProperties {
 
 export class GroupList extends React.PureComponent<GroupListProperties, any> {
     refs: {
-        table
+        table;
     };
 
     constructor(props) {
@@ -44,55 +44,55 @@ export class GroupList extends React.PureComponent<GroupListProperties, any> {
 
     render() {
         return (
-        <div className="page-width">
-            <div className="GroupList">
+            <div className="page-width">
+                <div className="GroupList">
 
-                <div className="page-nav">
-                    <h2><i className="fa fa-users"></i> {_("Groups")}</h2>
-                    <div>
-                        <Link className="primary" to="/group/create"><i className="fa fa-plus-square"></i> {_("New group")}</Link>
+                    <div className="page-nav">
+                        <h2><i className="fa fa-users"></i> {_("Groups")}</h2>
+                        <div>
+                            <Link className="primary" to="/group/create"><i className="fa fa-plus-square"></i> {_("New group")}</Link>
 
-                        <SearchInput
-                            placeholder={_("Search")}
-                            onChange={(event) => {
-                                this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
-                                this.refs.table.filter_updated();
-                            }}
+                            <SearchInput
+                                placeholder={_("Search")}
+                                onChange={(event) => {
+                                    this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
+                                    this.refs.table.filter_updated();
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="group-list-container">
+                        <PaginatedTable
+                            className=""
+                            ref="table"
+                            name="game-history"
+                            source={`groups/`}
+                            orderBy={["-member_count"]}
+                            filter={{ "name__icontains": "" }}
+                            onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
+                            columns={[
+                                {header: "",  className: "group-icon-header",
+                                    render: (X) => (<img className='group-icon' src={X.icon} width="64" height="64" />)},
+                                {header: _("Group"),  className: () => "name",
+                                    render: (X) => (
+                                        <div className="group-name">
+                                            <div>
+                                                <div style={{fontWeight: "bold"}}>{X.name}</div>
+                                                <div style={{fontStyle: "italic"}}>
+                                                    {X.summary}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                },
+                                {header: _("Members"), className: () => "member-count",                    render: (X) => X.member_count},
+                            ]}
                         />
+
                     </div>
                 </div>
-
-                <div className="group-list-container">
-                    <PaginatedTable
-                        className=""
-                        ref="table"
-                        name="game-history"
-                        source={`groups/`}
-                        orderBy={["-member_count"]}
-                        filter={{ "name__icontains": "" }}
-                        onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
-                        columns={[
-                            {header: "",  className: "group-icon-header",
-                                render: (X) => (<img className='group-icon' src={X.icon} width="64" height="64" />)},
-                            {header: _("Group"),  className: () => "name",
-                             render: (X) => (
-                                 <div className="group-name">
-                                    <div>
-                                        <div style={{fontWeight: "bold"}}>{X.name}</div>
-                                        <div style={{fontStyle: "italic"}}>
-                                            {X.summary}
-                                        </div>
-                                    </div>
-                                 </div>
-                             )
-                            },
-                            {header: _("Members"), className: () => "member-count",                    render: (X) => X.member_count},
-                        ]}
-                    />
-
-                </div>
             </div>
-        </div>
         );
     }
 }

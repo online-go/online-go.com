@@ -24,9 +24,9 @@ import { SortablePuzzleList } from './SortablePuzzleList';
 import { openACLModal } from 'ACLModal';
 
 
-declare var swal;
+declare let swal;
 
-export function PuzzleCollection({match:{params:{collection_id}}}:{match:{params:{collection_id:number}}}):JSX.Element {
+export function PuzzleCollection({match:{params:{collection_id}}}: {match: {params: {collection_id: number}}}): JSX.Element {
     let [collection, setCollection] = React.useState(null);
     let [name, setName] = React.useState(null);
     let [puzzle_is_private, setPrivate] = React.useState(false);

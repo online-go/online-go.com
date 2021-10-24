@@ -27,12 +27,12 @@ interface InstructionalGobanProps {
     height?: number;
     displayWidth?: number;
     onUpdate?: () => void;
-    onSetStoneRemoval?: (obj:any) => void;
+    onSetStoneRemoval?: (obj: any) => void;
     config: any;
 }
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
-    goban_div:HTMLDivElement;
+    goban_div: HTMLDivElement;
     goban;
 
     constructor(props) {
@@ -97,10 +97,10 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps,
             }
         });
 
-        this.goban.on("puzzle-place", (o:{x: number, y: number, width: number, height: number, color: 'black' | 'white'}) => {
+        this.goban.on("puzzle-place", (o: {x: number; y: number; width: number; height: number; color: 'black' | 'white'}) => {
             sfx.playStonePlacementSound(o.x, o.y, o.width, o.height, o.color);
         });
-        this.goban.on("set-for-removal", (obj:any) => {
+        this.goban.on("set-for-removal", (obj: any) => {
             if (this.props.config.onSetStoneRemoval) {
                 this.props.config.onSetStoneRemoval(obj);
             }

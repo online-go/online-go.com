@@ -62,7 +62,7 @@ function onChatSubscribeTournamentMentionsChange(pref) {
     event_emiter.emit("subscription_changed");
 }
 
-export function getUnreadChatPreference(channel:string): boolean {
+export function getUnreadChatPreference(channel: string): boolean {
     if (channel in chat_subscriptions && "unread" in chat_subscriptions[channel]) {
         return chat_subscriptions[channel].unread;
     }
@@ -74,7 +74,7 @@ export function getUnreadChatPreference(channel:string): boolean {
     }
     return false;
 }
-export function getMentionedChatPreference(channel:string): boolean {
+export function getMentionedChatPreference(channel: string): boolean {
     if (channel in chat_subscriptions && "mentioned" in chat_subscriptions[channel]) {
         return chat_subscriptions[channel].mentioned;
     }
@@ -87,21 +87,21 @@ export function getMentionedChatPreference(channel:string): boolean {
     return false;
 }
 
-export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediately?: boolean):void { // Give a single place to subscribe to setting changes
+export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediately?: boolean): void { // Give a single place to subscribe to setting changes
     event_emiter.on("subscription_changed", cb);
     if (!dont_call_imediately) {
         cb();
     }
 }
-export function unwatchChatSubscriptionChanged(cb: () => void):void {
+export function unwatchChatSubscriptionChanged(cb: () => void): void {
     event_emiter.off("subscription_changed", cb);
 }
 
-let chat_indicator_sinleton:ChatIndicator;
+let chat_indicator_sinleton: ChatIndicator;
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
 
-    channels: {[channel:string]: ChatChannelProxy} = {};
+    channels: {[channel: string]: ChatChannelProxy} = {};
 
     constructor(props) {
         super(props);
@@ -129,11 +129,11 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
 
     onShowEmptyNotification = (pref) => {
         this.setState({show_empty_notification: pref});
-    }
+    };
 
     onChatSubscriptionUpdate = () => {
         // Join new chats
-        let join = (channel:string) => {
+        let join = (channel: string) => {
             if (!(channel in this.channels) &&
                     getUnreadChatPreference(channel) ||
                     getMentionedChatPreference(channel)) {
@@ -161,11 +161,11 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         });
         this.updateStats();
         this.forceUpdate();
-    }
+    };
 
     onUnreadCountChange = (obj) => {
         this.updateStats();
-    }
+    };
 
     updateStats() {
         //console.warn("updateStats");
@@ -191,22 +191,22 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
             add_count("tournament-" + element.id);
         });
         this.setState({unread_ct: unread_ct,
-                       mentioned: mentioned});
+            mentioned: mentioned});
     }
 
     toggleChannelList = () => {
         this.setState({
             show_channel_list: !this.state.show_channel_list
         });
-    }
+    };
 
-    partFunc = (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => {
+    partFunc = (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => {
         chat_subscriptions[channel] = {
             mentioned: false,
             unread: false
         };
         data.set("chat-indicator.chat-subscriptions", chat_subscriptions);
-    }
+    };
 
     render() {
         return (
@@ -224,7 +224,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                     </div>
                 }
             </span>
-            );
+        );
     }
 }
 

@@ -37,17 +37,17 @@ interface ChatUsersListProperties {
 
 interface ChatUsersListState {
     online_count: number;
-    user_list: {[player_id:string]: ChatUser};
+    user_list: {[player_id: string]: ChatUser};
     user_sort_order: 'alpha' | 'rank';
 }
 
-let deferred_users_update:Timeout = null;
+let deferred_users_update: Timeout = null;
 
-export function ChatUsersList({channel}:ChatUsersListProperties):JSX.Element {
-    let [, refresh]:[number, (n:number) => void] = useState(0);
-    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
-    let [user_sort_order, set_user_sort_order]: [string, (s:string) => void] = useState(preferences.get("chat.user-sort-order"));
-    let [online_count, set_online_count]: [number, (n:number) => void] = useState(0);
+export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
+    let [, refresh]: [number, (n: number) => void] = useState(0);
+    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    let [user_sort_order, set_user_sort_order]: [string, (s: string) => void] = useState(preferences.get("chat.user-sort-order"));
+    let [online_count, set_online_count]: [number, (n: number) => void] = useState(0);
 
     useEffect(() => {
         let proxy = chat_manager.join(channel);
@@ -71,8 +71,8 @@ export function ChatUsersList({channel}:ChatUsersListProperties):JSX.Element {
         };
     }, [channel]);
 
-    const toggleSortOrder = useCallback(():void => {
-        let new_sort_order:'rank' | 'alpha' = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+    const toggleSortOrder = useCallback((): void => {
+        let new_sort_order: 'rank' | 'alpha' = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         set_user_sort_order(new_sort_order);
     }, [channel]);

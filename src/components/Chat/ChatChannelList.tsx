@@ -38,7 +38,7 @@ import {
 data.setDefault("chat.joined", {'global-english': true});
 
 try {
-    let joined_defaults:any = {};
+    let joined_defaults: any = {};
     let found = false;
     for (let chan of global_channels) {
         try {
@@ -97,19 +97,19 @@ function autojoin_channels() {
 }
 
 
-export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element {
+export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Element {
     autojoin_channels();
 
     const joined_channels = data.get("chat.joined");
-    const using_resolved_channel:boolean = !(
+    const using_resolved_channel: boolean = !(
         group_channels.filter(chan => `group-${chan.id}` === channel).length
         + tournament_channels.filter(chan => `tournament-${chan.id}` === channel).length
         + global_channels.filter(chan => chan.id === channel).length
     );
 
-    let [more, set_more]:[boolean, (tf:boolean) => void] = useState(false as boolean);
-    let [search, set_search]:[string, (text:string) => void] = useState("");
-    let [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s:ChannelInformation | null) => void] = useState(null);
+    let [more, set_more]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    let [search, set_search]: [string, (text: string) => void] = useState("");
+    let [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s: ChannelInformation | null) => void] = useState(null);
 
     //pgettext("Joining chat channel", "Joining"));
 
@@ -135,9 +135,9 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
     }, [channel]);
 
 
-    let more_channels:JSX.Element;
+    let more_channels: JSX.Element;
 
-    function chanSearch(chan: {name: string}):boolean {
+    function chanSearch(chan: {name: string}): boolean {
         let s = search.toLowerCase().trim();
 
         if (s === "") {
@@ -204,13 +204,13 @@ export function ChatChannelList({channel}:ChatChannelListProperties):JSX.Element
         <div className='ChatChannelList'>
             {using_resolved_channel
                 ? <ChatChannel
-                      key={channel}
-                      channel={channel}
-                      name={resolved_channel?.name || pgettext("Joining chat channel", "Joining...")}
-                      icon={resolved_channel?.icon}
-                      active={true}
-                      joined={true}
-                  />
+                    key={channel}
+                    channel={channel}
+                    name={resolved_channel?.name || pgettext("Joining chat channel", "Joining...")}
+                    icon={resolved_channel?.icon}
+                    active={true}
+                    joined={true}
+                />
                 : null
             }
 
@@ -265,8 +265,8 @@ interface ChatChannelProperties {
 }
 
 export function ChatChannel(
-    {channel, name, active, country, language, icon, joined}:ChatChannelProperties
-):JSX.Element {
+    {channel, name, active, country, language, icon, joined}: ChatChannelProperties
+): JSX.Element {
     const user = data.get('user');
     const user_country = user?.country || 'un';
 
@@ -275,8 +275,8 @@ export function ChatChannel(
     }
 
 
-    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
-    let [unread_ct, set_unread_ct]:[number, (x:number) => void] = useState(0);
+    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    let [unread_ct, set_unread_ct]: [number, (x: number) => void] = useState(0);
 
     let setChannel = useCallback(() => {
         if (!joined) {
@@ -285,7 +285,7 @@ export function ChatChannel(
             data.set("chat.joined", joined_channels);
         }
 
-        let next_location:string;
+        let next_location: string;
 
         if (name) {
             next_location = `/chat/${channel}/${slugify(name)}`;
@@ -335,7 +335,7 @@ export function ChatChannel(
     }, [active, proxy]);
 
 
-    let icon_element:JSX.Element;
+    let icon_element: JSX.Element;
 
     if (channel.indexOf('tournament') === 0) {
         icon_element = <i className="fa fa-trophy" />;
@@ -346,7 +346,7 @@ export function ChatChannel(
     }
 
     let mentioned = proxy?.channel.mentioned;
-    let unread:JSX.Element;
+    let unread: JSX.Element;
 
     if (unread_ct) {
         unread = <span className="unread-count" data-count={`(${unread_ct})`} />;

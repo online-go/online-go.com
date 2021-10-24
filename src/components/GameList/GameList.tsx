@@ -48,8 +48,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
             if (this.state.sort_order === name) {
                 this.setState({ sort_order: '-' + name });
             } else {
-                 this.setState({ sort_order: name });
-             }
+                this.setState({ sort_order: name });
+            }
         };
     }
 
@@ -185,22 +185,22 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 <div className="GameList GobanLineSummaryContainer">
                     {this.props.player
                         ? <div className="GobanLineSummaryContainerHeader">
-                              <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{pgettext("Game list move number", "Move")}</div>
-                              <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
-                              <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
-                              <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
-                              <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
-                              <div onClick={this.sortBy("size")} className={sortable + size}>{_("Size")}</div>
-                          </div>
+                            <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>{pgettext("Game list move number", "Move")}</div>
+                            <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>{_("Game")}</div>
+                            <div onClick={this.sortBy("opponent")} className={sortable + opponent_sort + " text-align-left"}>{_("Opponent")}</div>
+                            <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>{_("Clock")}</div>
+                            <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>{_("Opponent's Clock")}</div>
+                            <div onClick={this.sortBy("size")} className={sortable + size}>{_("Size")}</div>
+                        </div>
                         : <div className="GobanLineSummaryContainerHeader">
-                              <div >{pgettext("Game list move number", "Move")}</div>
-                              <div >{_("Game")}</div>
-                              <div className="text-align-left">{_("Black")}</div>
-                              <div></div>
-                              <div className="text-align-left">{_("White")}</div>
-                              <div></div>
-                              <div className="text-align-left">{_("Size")}</div>
-                          </div>
+                            <div >{pgettext("Game list move number", "Move")}</div>
+                            <div >{_("Game")}</div>
+                            <div className="text-align-left">{_("Black")}</div>
+                            <div></div>
+                            <div className="text-align-left">{_("White")}</div>
+                            <div></div>
+                            <div className="text-align-left">{_("Size")}</div>
+                        </div>
                     }
                     {lst.map((game) =>
                         <GobanLineSummary key={game.id}
@@ -211,7 +211,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                             gobanref={(goban) => game.goban = goban}
                             width={game.width}
                             height={game.height}
-                            />)}
+                        />)}
                 </div>
             );
         } else {
@@ -231,7 +231,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                                     width={game.width}
                                     height={game.height}
                                     {...(this.props.miniGobanProps || {})}
-                                    />
+                                />
                             </div>
                         )}
                     </div>
@@ -247,7 +247,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                                 width={game.width}
                                 height={game.height}
                                 {...(this.props.miniGobanProps || {})}
-                                />)}
+                            />)}
                     </div>
                 );
             }

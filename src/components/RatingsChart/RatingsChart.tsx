@@ -46,9 +46,9 @@ interface RatingsChartProperties {
 }
 
 
-const date_bisector = d3.bisector((d:RatingEntry) => { return d.ended; }).left;
-let format_date = (d:Date) => moment(d).format('ll');
-let format_month = (d:Date) => moment(d).format('MMM YYYY');
+const date_bisector = d3.bisector((d: RatingEntry) => { return d.ended; }).left;
+let format_date = (d: Date) => moment(d).format('ll');
+let format_month = (d: Date) => moment(d).format('MMM YYYY');
 const margin   = {top: 30, right: 20, bottom: 100, left: 20}; // Margins around the rating chart - but win/loss bars are inside this at the bottom!
 const margin2  = {top: 210, right: 20, bottom: 20, left: 20}; // Margins around the 'timeline' chart with respect to the whole space
 const chart_min_width = 64;
@@ -75,12 +75,12 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     legend_label;
     date_extents;
     win_loss_aggregate;
-    win_loss_graphs:Array<any> = [];
-    win_loss_bars:Array<any> = [];
-    game_entries:Array<RatingEntry>;
-    games_by_month:Array<RatingEntry>;
-    games_by_day:Array<RatingEntry>;
-    max_games_played_in_a_month:number;
+    win_loss_graphs: Array<any> = [];
+    win_loss_bars: Array<any> = [];
+    game_entries: Array<RatingEntry>;
+    games_by_month: Array<RatingEntry>;
+    games_by_day: Array<RatingEntry>;
+    max_games_played_in_a_month: number;
     destroyed = false;
 
     show_pie;
@@ -100,21 +100,21 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
     rating_line    = d3.line<RatingEntry>()
                        .curve(d3.curveMonotoneX)
-                       .x((d:RatingEntry) => this.ratings_x(d.ended))
-                       .y((d:RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
+                       .x((d: RatingEntry) => this.ratings_x(d.ended))
+                       .y((d: RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
 
     deviation_area = d3.area<RatingEntry>()
                        .curve(d3.curveBasis)
-                       .x0((d:RatingEntry) => this.ratings_x(d.ended))
-                       .x1((d:RatingEntry) => this.ratings_x(d.ended))
-                       .y0((d:RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
-                       .y1((d:RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
+                       .x0((d: RatingEntry) => this.ratings_x(d.ended))
+                       .x1((d: RatingEntry) => this.ratings_x(d.ended))
+                       .y0((d: RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
+                       .y1((d: RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
 
     timeline_area  = d3.area<RatingEntry>()
                        .curve(d3.curveMonotoneX)
-                       .x((d:RatingEntry) => this.timeline_x(d.ended))
+                       .x((d: RatingEntry) => this.timeline_x(d.ended))
                        .y0(secondary_charts_height)
-                       .y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
+                       .y1((d: RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
 
 
     deviation_chart;
@@ -193,19 +193,15 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             if (this.state.hovered_date.getTime() !== nextState.hovered_date.getTime()) {
                 return true;
             }
-        }
-        else if (this.state.hovered_date !== nextState.hovered_date) {
+        } else if (this.state.hovered_date !== nextState.hovered_date) {
             return true;
-        }
-        else if (this.state.hovered_month !== null && nextState.hovered_month !== null) {
+        } else if (this.state.hovered_month !== null && nextState.hovered_month !== null) {
             if (is_same_month(this.state.hovered_month, nextState.hovered_month)) {
                 return true;
             }
-        }
-        else if (this.state.hovered_month !== nextState.hovered_month) {
+        } else if (this.state.hovered_month !== nextState.hovered_month) {
             return true;
-        }
-        else {
+        } else {
             if (this.state.date_extents.length !== nextState.date_extents.length) {
                 return true;
             }
@@ -220,7 +216,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         return false;
     }
-    shouldDisplayRankInformation():boolean {
+    shouldDisplayRankInformation(): boolean {
         return this.props.size === 0 && this.props.speed === 'overall';
     }
 
@@ -235,8 +231,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 this.show_pie = true;
                 this.plotWinLossPie();
             }
-        }
-        else {
+        } else {
             this.show_pie = false;
             this.graph_width = this.width;
             this.hideWinLossPie();
@@ -251,7 +246,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         this.ratings_y.range([height, 0]);
         this.timeline_y.range([secondary_charts_height, 0]);
         this.win_loss_y.range([win_loss_bars_height, 0]);
-    }
+    };
 
     initialize() {
         let self = this;
@@ -261,7 +256,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         let width = this.graph_width;
         let height = this.height;
 
-        this.rank_axis.tickFormat((rating:number) => {
+        this.rank_axis.tickFormat((rating: number) => {
             let rank = Math.round(rating_to_rank(rating));
             if (!is_rank_bounded(rank)) {
                 return rankString(rank);
@@ -269,7 +264,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             return "";
         });
 
-        let boundDataLegendX = (x:number) => {
+        let boundDataLegendX = (x: number) => {
             return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
         };
 
@@ -547,7 +542,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         };
     }
 
-    onResize = (no_debounce:boolean = false) => {
+    onResize = (no_debounce: boolean = false) => {
         if (this.destroyed) {
             return;
         }
@@ -603,7 +598,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
             this.onTimelineBrush();
         }
-    }
+    };
 
     hideWinLossPie = () => {
         if (this.win_loss_pie) {
@@ -611,7 +606,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             this.win_loss_pie.selectAll('rect').remove();
             this.win_loss_pie.selectAll('text').remove();
         }
-    }
+    };
 
     plotWinLossPie = () => {
         if (!this.win_loss_pie) { return; }
@@ -651,7 +646,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             .outerRadius(pie_radius);
 
         let pie_values = d3.pie()
-            .value((d:any):number => (d.count))
+            .value((d: any): number => (d.count))
             .sort(null);
 
         this.win_loss_pie.selectAll('path').remove();
@@ -699,7 +694,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .attr('x', legend_xoffset + 15 + 10)
                 .attr('y', legend_yoffset + i * 20 + 12);
         });
-    }
+    };
 
     /* Callback function for data retrieval, which plots the retrieved data */
     //loadDataAndPlot = (err, data) => {
@@ -724,15 +719,15 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         /* Group into days and process information like starting/ended rating/rank, increase/decrease, etc */
         this.games_by_day = new Array<RatingEntry>();
         this.games_by_month = new Array<RatingEntry>();
-        const daykey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
-        const monthkey = (d:Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+        const daykey = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+        const monthkey = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
         this.max_games_played_in_a_month = 0;
 
         if (this.game_entries.length > 0) {
             let last_month_key = '';
             let last_day_key = '';
-            let cur_day:RatingEntry = null;
-            let cur_month:RatingEntry = null;
+            let cur_day: RatingEntry = null;
+            let cur_month: RatingEntry = null;
             for (let d of this.game_entries) {
                 let day_key = daykey(d.ended);
                 if (last_day_key !== day_key) {
@@ -770,20 +765,20 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
 
         /* Plot graph */
-        let date_range:any = d3.extent(this.game_entries.map((d:RatingEntry) => { return d.ended; }));
+        let date_range: any = d3.extent(this.game_entries.map((d: RatingEntry) => { return d.ended; }));
         date_range[0] = new Date(date_range[0].getUTCFullYear(), date_range[0].getUTCMonth());
         date_range[1] = new Date(date_range[1].getUTCFullYear(), date_range[1].getUTCMonth());
         date_range[1].setMonth(date_range[1].getMonth() + 1);
 
         this.ratings_x.domain(date_range);
-        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
-        let game_count_extent = d3.extent(this.games_by_month.map((d:RatingEntry) => { return d.count; }));
+        let game_count_extent = d3.extent(this.games_by_month.map((d: RatingEntry) => { return d.count; }));
         game_count_extent[0] = 0;
         this.win_loss_y.domain(d3.extent(game_count_extent));
         this.timeline_x.domain(this.ratings_x.domain());
-        this.timeline_y.domain(d3.extent(this.game_entries.map((d:RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
+        this.timeline_y.domain(d3.extent(this.game_entries.map((d: RatingEntry) => { return humble_rating(d.rating, d.deviation); })) as any);
 
         // Reset extents to full width...
         this.date_extents = this.timeline_x.range().map(this.timeline_x.invert, this.timeline_x);
@@ -817,14 +812,14 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         }
 
         this.plotWinLossBars();
-    }
+    };
 
     plotWinLossBars = () => {
-        const W = (d:RatingEntry, alpha:number) => {
+        const W = (d: RatingEntry, alpha: number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
         };
-        const X = (d:RatingEntry, alpha:number) => {
+        const X = (d: RatingEntry, alpha: number) => {
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
@@ -833,10 +828,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             let x = this.ratings_x(s * (1 - alpha) + e * alpha);
             return isFinite(x) ? x : 0;
         };
-        const H = (count:number) => {
+        const H = (count: number) => {
             return Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
-        const Y = (count:number) => {
+        const Y = (count: number) => {
             return win_loss_bars_start_y - Math.max(0, win_loss_bars_height - this.win_loss_y(count));
         };
 
@@ -850,54 +845,54 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 .data(this.games_by_month)
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar weak-wins')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
+                .attr('x', (d: RatingEntry) => X(d, 0))
+                .attr('y', (d: RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+                .attr('width', (d: RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('height', (d: RatingEntry) => H(d.weak_losses + d.weak_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[1].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar weak-losses')
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.weak_losses + d.weak_wins))
+                .attr('x', (d: RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('y', (d: RatingEntry) => Y(d.count) + H(d.strong_losses + d.strong_wins))
+                .attr('width', (d: RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)))
+                .attr('height', (d: RatingEntry) => H(d.weak_losses + d.weak_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[2].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar strong-losses')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
+                .attr('x', (d: RatingEntry) => X(d, 0))
+                .attr('y', (d: RatingEntry) => Y(d.count))
+                .attr('width', (d: RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('height', (d: RatingEntry) => H(d.strong_losses + d.strong_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[3].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar strong-wins')
-                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('y', (d:RatingEntry) => Y(d.count))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)))
-                .attr('height', (d:RatingEntry) => H(d.strong_losses + d.strong_wins))
+                .attr('x', (d: RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('y', (d: RatingEntry) => Y(d.count))
+                .attr('width', (d: RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)))
+                .attr('height', (d: RatingEntry) => H(d.strong_losses + d.strong_wins))
         );
         this.win_loss_bars.push(
             this.win_loss_graphs[4].selectAll('rect')
                 .data(this.games_by_month)
                 .enter().append('rect')
                 .attr('class', 'win-loss-bar transparent')
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('y', (d:RatingEntry) => Y(this.max_games_played_in_a_month))
-                .attr('width', (d:RatingEntry) => W(d, 0.999))
-                .attr('height', (d:RatingEntry) => H(this.max_games_played_in_a_month - d.count))
+                .attr('x', (d: RatingEntry) => X(d, 0))
+                .attr('y', (d: RatingEntry) => Y(this.max_games_played_in_a_month))
+                .attr('width', (d: RatingEntry) => W(d, 0.999))
+                .attr('height', (d: RatingEntry) => H(this.max_games_played_in_a_month - d.count))
         );
-    }
+    };
 
-    getUTCMonthWidth(d:Date):number {
+    getUTCMonthWidth(d: Date): number {
         let days_in_month;
 
         /*
@@ -935,20 +930,20 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
         this.ratings_x.domain(this.date_extents);
 
-        let lower = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
 
-        let l = Math.min.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
-        let u = Math.max.apply(null, this.game_entries.map((d:RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+        let l = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
+        let u = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => (d.ended.getTime() >= this.date_extents[0].getTime() && d.ended.getTime() <= this.date_extents[1].getTime()) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
         this.ratings_y.domain([l * 0.95, u * 1.05]);
 
         this.range_label.text(format_date(new Date(this.date_extents[0])) + ' - ' + format_date(new Date(this.date_extents[1])));
 
-        const W = (d:RatingEntry, alpha:number) => {
+        const W = (d: RatingEntry, alpha: number) => {
             let w = this.getUTCMonthWidth(d.ended) * alpha;
             return isFinite(w) ? w : 0;
         };
-        const X = (d:RatingEntry, alpha:number) => {
+        const X = (d: RatingEntry, alpha: number) => {
             let start = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             let end = new Date(d.ended.getUTCFullYear(), d.ended.getUTCMonth());
             end.setMonth(end.getMonth() + 1);
@@ -969,24 +964,24 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 
 
         this.win_loss_bars[0]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
+                .attr('x', (d: RatingEntry) => X(d, 0))
+                .attr('width', (d: RatingEntry) => W(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[1]
-                .attr('x', (d:RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
+                .attr('x', (d: RatingEntry) => X(d, d.weak_wins / (d.weak_losses + d.weak_wins || 1)))
+                .attr('width', (d: RatingEntry) => W(d, d.weak_losses / (d.weak_losses + d.weak_wins || 1)));
         this.win_loss_bars[2]
-                .attr('x', (d:RatingEntry) => X(d, 0))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
+                .attr('x', (d: RatingEntry) => X(d, 0))
+                .attr('width', (d: RatingEntry) => W(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)));
         this.win_loss_bars[3]
-                .attr('x', (d:RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
-                .attr('width', (d:RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
+                .attr('x', (d: RatingEntry) => X(d, d.strong_losses / (d.strong_losses + d.strong_wins || 1)))
+                .attr('width', (d: RatingEntry) => W(d, d.strong_wins / (d.strong_losses + d.strong_wins || 1)));
 
         this.rating_chart.attr('d', this.rating_line as any);
         this.deviation_chart.attr('d', this.deviation_area as any);
         this.rating_graph.select('.x.axis').call(this.selected_axis);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
-    }
+    };
 
     setContainer = (e) => {
         let need_resize = this.container === null;
@@ -994,7 +989,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
         if (need_resize) {
             this.onResize();
         }
-    }
+    };
 
     render() {
         this.computeWinLossNumbers();
@@ -1025,8 +1020,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             date_extents[1] = new Date(this.state.hovered_date);
             date_extents[0].setHours(0, 0, 0, 0);
             date_extents[1].setHours(23, 59, 59, 0);
-        }
-        else if (this.state.hovered_month) {
+        } else if (this.state.hovered_month) {
             date_extents[0] = new Date(this.state.hovered_month);
             date_extents[1] = new Date(this.state.hovered_month);
 
@@ -1037,8 +1031,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             date_extents[1].setMonth(date_extents[1].getMonth() + 1);
             date_extents[1].setDate(-1);
             date_extents[1].setHours(23, 59, 59, 0);
-        }
-        else {
+        } else {
             if (this.state.date_extents && this.state.date_extents.length === 2) {
                 date_extents = this.state.date_extents;
             } else {
@@ -1109,7 +1102,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
 }
 
 
-function speed_translation(speed:speed_t) {
+function speed_translation(speed: speed_t) {
     switch (speed) {
         case 'overall': return _("Overall");
         case 'blitz' : return _("Blitz");
@@ -1117,6 +1110,6 @@ function speed_translation(speed:speed_t) {
         case 'correspondence' : return _("Correspondence");
     }
 }
-function is_same_month(d1:Date, d2:Date):boolean {
+function is_same_month(d1: Date, d2: Date): boolean {
     return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
 }

@@ -23,7 +23,7 @@ import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
 import {errorAlerter} from "misc";
 
-declare var swal;
+declare let swal;
 
 interface Events {
 }
@@ -61,7 +61,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
             swal.close();
             errorAlerter(err);
         });
-    }
+    };
 
     render() {
         let challenge = this.props.challenge;
@@ -79,47 +79,47 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         }
 
         return (
-          <div className="Modal GameAcceptModal" ref="modal">
-              <div className="header">
-                  <div>
-                      <h2>
-                          <Player icon iconSize={32} user={challenge}/>
-                      </h2>
-                      <h4>
-                          {challenge.name}
-                      </h4>
-                  </div>
-              </div>
-              <div className="body">
-                <p>{time_control_description}</p>
-                {usedForCheating(challenge.time_control_parameters) ?
+            <div className="Modal GameAcceptModal" ref="modal">
+                <div className="header">
+                    <div>
+                        <h2>
+                            <Player icon iconSize={32} user={challenge}/>
+                        </h2>
+                        <h4>
+                            {challenge.name}
+                        </h4>
+                    </div>
+                </div>
+                <div className="body">
+                    <p>{time_control_description}</p>
+                    {usedForCheating(challenge.time_control_parameters) ?
                     <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}</p> :
                     ""}
-                {challenge.komi ?
+                    {challenge.komi ?
                     <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: Custom komi.  Accept at your own risk.")}</p> :
                     ""}
-                <hr/>
-                <dl className="horizontal">
-                  <dt>{_("Your color")}</dt><dd>{player_color}</dd>
-                  <dt>{_("Ranked")}</dt><dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
-                  <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
-                  <dt>{_("Komi")}</dt>
-                    <dd>
-                    {challenge.komi ?
+                    <hr/>
+                    <dl className="horizontal">
+                        <dt>{_("Your color")}</dt><dd>{player_color}</dd>
+                        <dt>{_("Ranked")}</dt><dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
+                        <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
+                        <dt>{_("Komi")}</dt>
+                        <dd>
+                            {challenge.komi ?
                     <span title={_("Custom komi setting")}>{challenge.komi}<i className="fa fa-exclamation-triangle cheat-alert"></i></span>
                     : _("Automatic")}
-                    </dd>
-                  <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
-                  <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
-                      {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
-                      {(challenge.time_per_move > 3600 || null) && <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>}
-                </dl>
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-                  <button onClick={this.accept} className="primary">{_("Accept Game")}</button>
-              </div>
-          </div>
+                        </dd>
+                        <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
+                        <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
+                        {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
+                        {(challenge.time_per_move > 3600 || null) && <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>}
+                    </dl>
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                    <button onClick={this.accept} className="primary">{_("Accept Game")}</button>
+                </div>
+            </div>
         );
     }
 }

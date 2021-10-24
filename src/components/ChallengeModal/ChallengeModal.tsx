@@ -46,7 +46,7 @@ interface ChallengeModalProperties {
     initialState?: any;
     config?: any;
     autoCreate?: boolean;
-    playersList?: Array<{name:string, rank:number}>;
+    playersList?: Array<{name: string; rank: number}>;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
 }
@@ -120,7 +120,7 @@ const standard_board_sizes = {
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
     refs: {
-        time_control_picker
+        time_control_picker;
     };
     constructor(props) {
         super(props);
@@ -201,7 +201,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             this.state.demo.white_ranking = this.props.playersList[this.props.playersList.length - 1].rank;
         }
 
-        let state:any = this.state;
+        let state: any = this.state;
 
 
         if (this.props.config) {
@@ -348,7 +348,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             console.log("Demo create response: ", res);
             browserHistory.push(`/demo/view/${res.id}`);
         }).catch(errorAlerter);
-    }
+    };
     validateBoardSize() {
         let next = this.next();
 
@@ -456,28 +456,28 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
         .then((res) => {
-                console.log("Challenge response: ", res);
-                let challenge_id = res.challenge;
-                let game_id = typeof(res.game) === "object" ? res.game.id : res.game;
-                let keepalive_interval;
+            console.log("Challenge response: ", res);
+            let challenge_id = res.challenge;
+            let game_id = typeof(res.game) === "object" ? res.game.id : res.game;
+            let keepalive_interval;
 
-                notification_manager.event_emitter.on("notification", checkForReject);
+            notification_manager.event_emitter.on("notification", checkForReject);
 
-                if (open_now) {
-                    if (this.props.mode !== "open") {
-                        /* This is a direct challenge, which can be made in any context (not necessarily one showing challenges)
+            if (open_now) {
+                if (this.props.mode !== "open") {
+                    /* This is a direct challenge, which can be made in any context (not necessarily one showing challenges)
                            so it needs a dialog to let them know that we made the challenge.
 
                            This doesn't _have to be_ a modal, but currently is a modal pending a different design.
                          */
-                        swal({
-                            title: _("Waiting for opponent"),
-                            html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
-                            confirmButtonClass: "btn-danger",
-                            confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                        })
+                    swal({
+                        title: _("Waiting for opponent"),
+                        html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
+                        confirmButtonClass: "btn-danger",
+                        confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    })
                             .then(() => {
                                 off();
                                 // cancel challenge
@@ -488,66 +488,66 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             .catch(() => {
                                 off();
                             });
-                    }
-
-                    active_check();
-                } else {
-                    if (this.props.mode === "open") {
-                        swal(_("Challenge created!"));
-                    } else if (this.props.mode === "player") {
-                        swal(_("Challenge sent!"));
-                    }
                 }
 
-
-                function active_check() {
-                    keepalive_interval = setInterval(() => {
-                        termination_socket.send("challenge/keepalive", {challenge_id: challenge_id, game_id: game_id});
-                    }, 1000);
-                    termination_socket.send("game/connect", {"game_id": game_id});
-                    termination_socket.on(`game/${game_id}/gamedata`, onGamedata);
+                active_check();
+            } else {
+                if (this.props.mode === "open") {
+                    swal(_("Challenge created!"));
+                } else if (this.props.mode === "player") {
+                    swal(_("Challenge sent!"));
                 }
+            }
 
-                function onGamedata() {
-                    off();
-                    swal.close();
-                    //sfx.play("game_accepted");
-                    sfx.play("game_started", 3000);
-                    //sfx.play("setup-bowl");
-                    browserHistory.push(`/game/${game_id}`);
-                }
 
-                function onRejected(message?:string) {
-                    off();
-                    swal.close();
-                    swal({
-                        text: message || _("Game offer was rejected"),
-                    });
-                }
+            function active_check() {
+                keepalive_interval = setInterval(() => {
+                    termination_socket.send("challenge/keepalive", {challenge_id: challenge_id, game_id: game_id});
+                }, 1000);
+                termination_socket.send("game/connect", {"game_id": game_id});
+                termination_socket.on(`game/${game_id}/gamedata`, onGamedata);
+            }
 
-                function off() {
-                    clearTimeout(keepalive_interval);
-                    termination_socket.send("game/disconnect", {"game_id": game_id});
-                    termination_socket.off(`game/${game_id}/gamedata`, onGamedata);
-                    termination_socket.off(`game/${game_id}/rejected`, onRejected);
-                    notification_manager.event_emitter.off("notification", checkForReject);
-                }
+            function onGamedata() {
+                off();
+                swal.close();
+                //sfx.play("game_accepted");
+                sfx.play("game_started", 3000);
+                //sfx.play("setup-bowl");
+                browserHistory.push(`/game/${game_id}`);
+            }
 
-                function checkForReject(notification) {
-                    console.log(notification);
-                    if (notification.type === "gameOfferRejected") {
-                        /* non checked delete to purge old notifications that
+            function onRejected(message?: string) {
+                off();
+                swal.close();
+                swal({
+                    text: message || _("Game offer was rejected"),
+                });
+            }
+
+            function off() {
+                clearTimeout(keepalive_interval);
+                termination_socket.send("game/disconnect", {"game_id": game_id});
+                termination_socket.off(`game/${game_id}/gamedata`, onGamedata);
+                termination_socket.off(`game/${game_id}/rejected`, onRejected);
+                notification_manager.event_emitter.off("notification", checkForReject);
+            }
+
+            function checkForReject(notification) {
+                console.log(notification);
+                if (notification.type === "gameOfferRejected") {
+                    /* non checked delete to purge old notifications that
                          * could be around after browser refreshes, connection
                          * drops, etc. */
-                        notification_manager.deleteNotification(notification);
-                        if (notification.game_id === game_id) {
-                            onRejected(notification.message);
-                        }
+                    notification_manager.deleteNotification(notification);
+                    if (notification.game_id === game_id) {
+                        onRejected(notification.message);
                     }
                 }
-            })
+            }
+        })
         .catch(errorAlerter);
-    }
+    };
 
     /* update bindings  */
     update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", ev);
@@ -583,7 +583,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             )
         });
-    }
+    };
     update_max_rank             = (ev) => {
         let min_ranking = this.state.challenge.min_ranking;
         let max_ranking = parseInt(ev.target.value);
@@ -600,7 +600,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             )
         });
-    }
+    };
     update_demo_black_name      = (ev) => this.upstate("demo.black_name", ev);
     update_demo_white_name      = (ev) => this.upstate("demo.white_name", ev);
     update_demo_black_ranking   = (ev) => this.upstate("demo.black_ranking", ev);
@@ -613,7 +613,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({
             selected_demo_player_black: idx
         });
-    }
+    };
     update_selected_demo_player_white   = (ev) => {
         let idx = parseInt(ev.target.value);
         this.upstate("demo.white_name", this.props.playersList[idx].name);
@@ -621,7 +621,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({
             selected_demo_player_white: idx
         });
-    }
+    };
 
     /* rendering  */
 
@@ -633,9 +633,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="form-group">
                     <label className="control-label" htmlFor="engine">{pgettext("Computer opponent", "AI Player")}</label>
                     <div className="controls">
-                    <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
-                        {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(getUserRating(bot).rank)})</option>) )}
-                    </select>
+                        <select id="challenge-ai" value={this.state.conf.bot_id} onChange={this.update_conf_bot_id} required={true}>
+                            {bots_list().map((bot, idx) => (<option key={idx} value={bot.id}>{bot.username} ({rankString(getUserRating(bot).rank)})</option>) )}
+                        </select>
                     </div>
                 </div>
             }
@@ -656,21 +656,21 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 <div className="controls">
                     {(mode !== "demo" || null) && <div className="checkbox">
                         <input type="checkbox"
-                        id="challenge-private"
-                        checked={this.state.challenge.game.private} onChange={this.update_private}/>
+                            id="challenge-private"
+                            checked={this.state.challenge.game.private} onChange={this.update_private}/>
                     </div>
                     }
                     {(mode === "demo" || null) && <div className="checkbox">
                         <input type="checkbox"
-                        id="challenge-private"
-                        checked={this.state.demo.private} onChange={this.update_demo_private}/>
+                            id="challenge-private"
+                            checked={this.state.demo.private} onChange={this.update_demo_private}/>
                     </div>
                     }
 
                 </div>
             </div>
         </div>;
-    }
+    };
 
     // board size and 'Ranked' checkbox
     additionalSettings = () => {
@@ -769,7 +769,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 </div>
             }
         </div>;
-    }
+    };
 
     advancedDemoSettings = () => {
         return <div id="challenge-advanced-fields" className="challenge-pane-container form-inline" style={{marginTop: "1em"}}>
@@ -779,13 +779,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <div className="controls">
                         {this.props.playersList
                             ? <select value={this.state.selected_demo_player_black} onChange={this.update_selected_demo_player_black}>
-                                  {this.props.playersList.map((player, idx) =>
-                                     <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
-                                  )}
-                              </select>
+                                {this.props.playersList.map((player, idx) =>
+                                    <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
+                                )}
+                            </select>
                             : <div className="checkbox">
-                                  <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
-                              </div>
+                                <input type="text" className="form-control" value={this.state.demo.black_name} onChange={this.update_demo_black_name}/>
+                            </div>
                         }
                     </div>
                 </div>
@@ -801,7 +801,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 </select>
                             </div>
                         </div>
-                       </div>
+                    </div>
                 }
             </div>
             <div className="right-pane pane form-horizontal">
@@ -810,13 +810,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <div className="controls">
                         {this.props.playersList
                             ? <select value={this.state.selected_demo_player_white} onChange={this.update_selected_demo_player_white}>
-                                  {this.props.playersList.map((player, idx) =>
-                                     <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
-                                  )}
-                              </select>
+                                {this.props.playersList.map((player, idx) =>
+                                    <option key={idx} value={idx}>{player.name} [{rankString(player.rank)}]</option>
+                                )}
+                            </select>
                             : <div className="checkbox">
-                                  <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
-                              </div>
+                                <input type="text" className="form-control" value={this.state.demo.white_name} onChange={this.update_demo_white_name}/>
+                            </div>
                         }
                     </div>
                 </div>
@@ -832,11 +832,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 </select>
                             </div>
                         </div>
-                       </div>
+                    </div>
                 }
             </div>
         </div>;
-    }
+    };
 
     advancedSettings = () => {
         let mode = this.props.mode;
@@ -876,14 +876,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             <div className="checkbox">
                                 <select value={this.state.challenge.game.handicap} onChange={this.update_handicap} className="challenge-dropdown form-control">
                                     <option value="-1"
-                                            /*{disabled={!this.state.conf.handicap_enabled}}*/
-                                            >{_("Automatic")}</option>
+                                        /*{disabled={!this.state.conf.handicap_enabled}}*/
+                                    >{_("Automatic")}</option>
                                     <option value="0"
-                                            >{_("None")}</option>
+                                    >{_("None")}</option>
                                     {handicapRanges.map((n, idx) => (
                                         <option key={idx} value={n}
                                             disabled={n > 9 && challenge.game.ranked}
-                                            >{n}</option>
+                                        >{n}</option>
                                     ))}
                                 </select>
                             </div>
@@ -985,7 +985,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 </div>
             </div>
         </div>;
-    }
+    };
 
     render() {
         let mode = this.props.mode;
@@ -998,42 +998,42 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         return (
-          <div className="Modal ChallengeModal" ref="modal">
-              <div className="header">
-                  <h2>
-                      {(mode === "open" || null) && <span>{_("Custom Game")}</span> }
-                      {(mode === "demo" || null) && <span>{_("Demo Board")}</span> }
-                      {(mode === "player" || null) && <span className="header-with-icon"><PlayerIcon id={player_id} size={32} />&nbsp; {player_username}</span> }
-                      {(mode === "computer" || null) && <span>{_("Computer")}</span> }
-                  </h2>
-              </div>
-              <div className="body">
-                <div className="challenge  form-inline">
-                    <div className="challenge-pane-container">
-                      { this.basicSettings() }
-                      {(!this.state.initial_state || null) &&
-                          this.additionalSettings()
-                      }
-                    </div>
-
-                    <hr/>
-                    {(mode !== "demo" || null) &&
-                        this.advancedSettings()
-                    }
-                    {(mode === "demo" || null) &&
-                        this.advancedDemoSettings()
-                    }
-
+            <div className="Modal ChallengeModal" ref="modal">
+                <div className="header">
+                    <h2>
+                        {(mode === "open" || null) && <span>{_("Custom Game")}</span> }
+                        {(mode === "demo" || null) && <span>{_("Demo Board")}</span> }
+                        {(mode === "player" || null) && <span className="header-with-icon"><PlayerIcon id={player_id} size={32} />&nbsp; {player_username}</span> }
+                        {(mode === "computer" || null) && <span>{_("Computer")}</span> }
+                    </h2>
                 </div>
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-                  {(mode === "demo" || null) && <button onClick={this.createDemo} className="primary">{_("Create Demo")}</button>}
-                  {(mode === "computer" || null) && <button onClick={this.createChallenge} className="primary">{_("Play")}</button>}
-                  {(mode === "player" || null) && <button onClick={this.createChallenge} className="primary">{_("Send Challenge")}</button>}
-                  {(mode === "open" || null) && <button onClick={this.createChallenge} className="primary">{_("Create Challenge")}</button>}
-              </div>
-          </div>
+                <div className="body">
+                    <div className="challenge  form-inline">
+                        <div className="challenge-pane-container">
+                            { this.basicSettings() }
+                            {(!this.state.initial_state || null) &&
+                          this.additionalSettings()
+                            }
+                        </div>
+
+                        <hr/>
+                        {(mode !== "demo" || null) &&
+                        this.advancedSettings()
+                        }
+                        {(mode === "demo" || null) &&
+                        this.advancedDemoSettings()
+                        }
+
+                    </div>
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                    {(mode === "demo" || null) && <button onClick={this.createDemo} className="primary">{_("Create Demo")}</button>}
+                    {(mode === "computer" || null) && <button onClick={this.createChallenge} className="primary">{_("Play")}</button>}
+                    {(mode === "player" || null) && <button onClick={this.createChallenge} className="primary">{_("Send Challenge")}</button>}
+                    {(mode === "open" || null) && <button onClick={this.createChallenge} className="primary">{_("Create Challenge")}</button>}
+                </div>
+            </div>
         );
     }
 
@@ -1057,7 +1057,7 @@ export function challenge(player_id?: number, initial_state?: any, computer?: bo
 
     return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} />);
 }
-export function createDemoBoard(players_list?:Array<{name:string, rank:number}>, tournament_record_id?:number, tournament_record_round_id?:number) {
+export function createDemoBoard(players_list?: Array<{name: string; rank: number}>, tournament_record_id?: number, tournament_record_round_id?: number) {
     let mode: ChallengeModes = "demo";
     return openModal(<
         ChallengeModal mode={mode}
@@ -1133,7 +1133,7 @@ export function challengeRematch(goban, player, original_game_meta) {
     config.challenge.game.disable_analysis = conf.disable_analysis;
     config.challenge.game.pause_on_weekends = false;
     if (original_game_meta && original_game_meta.pause_on_weekends) {
-    console.log("orgs", original_game_meta);
+        console.log("orgs", original_game_meta);
         config.challenge.game.pause_on_weekends = true;
     }
     config.challenge.game.initial_state = null;
@@ -1200,7 +1200,7 @@ export function challenge_text_description(challenge) {
         ", " + interpolate(_("%s handicap"), [(g.handicap < 0 ? _("auto") : g.handicap)])
         + ((g.komi == null || typeof(g.komi) === "object") ? "" : (", " + interpolate(_("{{komi}} komi"), {komi: g.komi})))
         + (g.disable_analysis ? ", " + _("analysis disabled") : "")
-        ;
+    ;
     if (c.challenger_color !== "automatic") {
         let yourcolor = "";
         if (data.get("user") &&
@@ -1211,11 +1211,9 @@ export function challenge_text_description(challenge) {
         ) {
             if (c.challenger_color === "black") {
                 yourcolor = _("white");
-            }
-            else if (c.challenger_color === "white") {
+            } else if (c.challenger_color === "white") {
                 yourcolor = _("black");
-            }
-            else {
+            } else {
                 yourcolor = _(c.challenger_color);
             }
         } else {

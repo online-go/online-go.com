@@ -30,32 +30,32 @@ interface ChatViewProperties {
     match: {
         params: {
             channel: string;
-        }
+        };
     };
 }
 
 
-export function ChatView(props: ChatViewProperties):JSX.Element {
+export function ChatView(props: ChatViewProperties): JSX.Element {
     let channel = props.match.params.channel;
 
     data.set('chat.active_channel', channel);
 
-    let [showing_channels, set_showing_channels]:[boolean, (tf:boolean) => void] = useState(false as boolean);
-    let [showing_users, set_showing_users]:[boolean, (tf:boolean) => void] = useState(false as boolean);
+    let [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    let [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(false as boolean);
 
     useEffect(() => {
         set_showing_channels(false);
         set_showing_users(false);
     }, [channel]);
 
-    const onShowChannels = useCallback((tf:boolean) => {
+    const onShowChannels = useCallback((tf: boolean) => {
         if (tf !== showing_channels) {
             set_showing_channels(tf);
             set_showing_users(false);
         }
     }, [channel, showing_channels]);
 
-    const onShowUsers = useCallback((tf:boolean) => {
+    const onShowUsers = useCallback((tf: boolean) => {
         if (tf !== showing_users) {
             set_showing_users(tf);
             set_showing_channels(false);

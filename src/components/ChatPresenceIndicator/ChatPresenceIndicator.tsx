@@ -66,12 +66,12 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
         if (this.state.online !== online) {
             this.setState({online: online});
         }
-    }
+    };
     toggleSortOrder = () => {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }
+    };
 
 
     render() {

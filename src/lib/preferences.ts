@@ -144,7 +144,7 @@ export function dump(): void {
     data.dump("preferences.", true);
 }
 
-export function getSelectedThemes():{"board": string, "black": string, "white": string} {
+export function getSelectedThemes(): {"board": string; "black": string; "white": string} {
     //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
     let default_plain = ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
 

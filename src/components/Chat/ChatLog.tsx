@@ -62,8 +62,8 @@ interface ChatLogProperties {
     updateTitle?: boolean;
     hideTopic?: boolean;
     forceShowGames?: boolean;
-    onShowChannels?: (tf:boolean) => void;
-    onShowUsers?: (tf:boolean) => void;
+    onShowChannels?: (tf: boolean) => void;
+    onShowUsers?: (tf: boolean) => void;
     /* if properties are added to this, don't forget to
      * add a copy line in the ChatLog internal props construction */
     showingChannels?: boolean;
@@ -71,24 +71,24 @@ interface ChatLogProperties {
 }
 
 interface InternalChatLogProperties extends ChatLogProperties {
-    onShowGames?: (tf:boolean) => void;
+    onShowGames?: (tf: boolean) => void;
     showingGames?: boolean;
     canShowGames?: boolean;
 }
 
-let deferred_chat_update:Timeout = null;
+let deferred_chat_update: Timeout = null;
 
-function saveSplitSizes(sizes: Array<number>):void {
+function saveSplitSizes(sizes: Array<number>): void {
     data.set('chat.split-sizes', sizes);
 }
 
-export function ChatLog(props:ChatLogProperties):JSX.Element {
-    let [showing_games, set_showing_games]:[boolean, (tf:boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
-    let [height, set_height]:[number, (tf:number) => void] = useState(document.body.clientHeight);
-    const onShowGames = useCallback((tf:boolean) => {
+export function ChatLog(props: ChatLogProperties): JSX.Element {
+    let [showing_games, set_showing_games]: [boolean, (tf: boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
+    let [height, set_height]: [number, (tf: number) => void] = useState(document.body.clientHeight);
+    const onShowGames = useCallback((tf: boolean) => {
         //if (tf !== showing_games) {
-            set_showing_games(tf);
-            data.set('chat.show-games', tf);
+        set_showing_games(tf);
+        data.set('chat.show-games', tf);
         //}
     }, [props.channel, showing_games]);
 
@@ -138,7 +138,7 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
                     gutterSize={7}
                     minSize={50}
                     onDragEnd={saveSplitSizes}
-                    >
+                >
                     <div className='game-list'>
                         <ObserveGamesComponent
                             announcements={false}
@@ -150,7 +150,7 @@ export function ChatLog(props:ChatLogProperties):JSX.Element {
                         />
                     </div>
                     <ChatLines {...props} />
-                  </Split>
+                </Split>
 
                 : <ChatLines {...props} />
             }
@@ -171,23 +171,23 @@ function ChannelTopic(
         showingUsers,
         showingGames,
         canShowGames
-    }:InternalChatLogProperties
-):JSX.Element {
+    }: InternalChatLogProperties
+): JSX.Element {
     if (hideTopic) {
         return null;
     }
 
     let user = data.get('user');
 
-    let [editing, set_editing]:[boolean, (tf:boolean) => void] = useState(false as boolean);
-    let [topic, set_topic]:[string, (tf:string) => void] = useState("");
-    let [topic_updated, set_topic_updated]:[boolean, (tf:boolean) => void] = useState(false as boolean);
-    let [name, set_name]:[string, (tf:string) => void] = useState(channel);
-    let [group_id, set_group_id]:[number | null, (tf:number) => void] = useState(null);
-    let [tournament_id, set_tournament_id]:[number | null, (tf:number) => void] = useState(null);
-    let [banner, set_banner]:[string, (s:string) => void] = useState("");
-    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
-    let [title_hover, set_title_hover]:[string, (s:string) => void] = useState("");
+    let [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    let [topic, set_topic]: [string, (tf: string) => void] = useState("");
+    let [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    let [name, set_name]: [string, (tf: string) => void] = useState(channel);
+    let [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
+    let [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] = useState(null);
+    let [banner, set_banner]: [string, (s: string) => void] = useState("");
+    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    let [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
     let groups = data.get('cached.groups', []);
 
@@ -206,7 +206,7 @@ function ChannelTopic(
         set_banner("");
 
         resolveChannelInformation(channel)
-        .then((info:ChannelInformation) => {
+        .then((info: ChannelInformation) => {
             set_name(info.name);
             if (info.group_id) {
                 set_group_id(info.group_id);
@@ -229,7 +229,7 @@ function ChannelTopic(
             set_title_hover(getTitleHover(proxy.channel?.topic));
         });
 
-        function getTitleHover(topic:TopicMessage | null):string {
+        function getTitleHover(topic: TopicMessage | null): string {
             if (topic && topic.username && topic.timestamp) {
                 return topic.username + " - " + moment(new Date(topic.timestamp)).format('LL');
             }
@@ -238,7 +238,7 @@ function ChannelTopic(
         }
     }, [channel]);
 
-    const updateTopic = useCallback((ev:React.ChangeEvent<HTMLInputElement>) => {
+    const updateTopic = useCallback((ev: React.ChangeEvent<HTMLInputElement>) => {
         set_topic(ev.target.value);
         set_topic_updated(true);
     }, [channel]);
@@ -310,31 +310,31 @@ function ChannelTopic(
 
                 {(editing && topic_editable)
                     ?  <React.Fragment>
-                          <i className='header-icon fa fa-save' onClick={saveEdits} />
-                          <div className='channel-topic'>
-                               <input
-                                   value={topic}
-                                   className="channel-topic-edit"
-                                   placeholder={pgettext("Set channel topic", "Topic")}
-                                   onChange={updateTopic}
-                                   autoFocus={true}
-                               />
-                          </div>
-                      </React.Fragment>
+                        <i className='header-icon fa fa-save' onClick={saveEdits} />
+                        <div className='channel-topic'>
+                            <input
+                                value={topic}
+                                className="channel-topic-edit"
+                                placeholder={pgettext("Set channel topic", "Topic")}
+                                onChange={updateTopic}
+                                autoFocus={true}
+                            />
+                        </div>
+                    </React.Fragment>
                     : <React.Fragment>
-                          {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
-                          <div className='channel-topic' title={title_hover}>
-                              <div className='topic'>
-                                  <span className='content'><Linkify>{localize_time_strings(profanity_filter(topic.trim())) || name}</Linkify></span>
-                              </div>
-                          </div>
-                      </React.Fragment>
+                        {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
+                        <div className='channel-topic' title={title_hover}>
+                            <div className='topic'>
+                                <span className='content'><Linkify>{localize_time_strings(profanity_filter(topic.trim())) || name}</Linkify></span>
+                            </div>
+                        </div>
+                    </React.Fragment>
                 }
 
 
                 <i className={'header-icon fa fa-gear'}
                     onClick={channelDetails}
-                    />
+                />
                 {/*channel_leavable &&
                     <i className={'header-icon fa fa-times'}
                         title={pgettext("Leave the selected channel.", "Leave Channel")}
@@ -349,13 +349,13 @@ function ChannelTopic(
 }
 
 
-let scrolled_to_bottom:boolean = true;
-function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}:InternalChatLogProperties):JSX.Element {
+let scrolled_to_bottom: boolean = true;
+function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     let chat_log_div = useRef(null);
-    let [, refresh]:[number, (n:number) => void] = useState(0);
-    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
+    let [, refresh]: [number, (n: number) => void] = useState(0);
+    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
 
 
     useEffect(() => {
@@ -407,7 +407,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
         }
     }, [channel]);
 
-    const focusInput = useCallback(():void => {
+    const focusInput = useCallback((): void => {
         if (window.getSelection() && window.getSelection().toString() !== "") {
             // don't focus input if we're selecting text
             return;
@@ -426,7 +426,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
         scrolled_to_bottom = true;
     }, [channel]);
 
-    const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>):void => {
+    const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>): void => {
         let div = chat_log_div.current;
         if (!div) {
             return;
@@ -457,7 +457,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
         }
     });
 
-    let last_line:ChatMessage;
+    let last_line: ChatMessage;
 
     return (
         <div
@@ -465,7 +465,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
             ref={chat_log_div}
             onScroll={onScroll}
             onClick={focusInput}
-            >
+        >
             {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
                 let ll = last_line;
                 last_line = line;
@@ -476,11 +476,11 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
 }
 
 
-function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
+function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     let input = useRef(null);
-    let [proxy, setProxy]:[ChatChannelProxy | null, (x:ChatChannelProxy) => void] = useState(null);
+    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
     let [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
     let [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 
@@ -493,7 +493,7 @@ function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
         }).catch(err => 0);
     }, [channel]);
 
-    const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>):boolean => {
+    const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>): boolean => {
         if (event.charCode === 13) {
             let input = event.target as HTMLInputElement;
             if (!comm_socket.connected) {
@@ -528,7 +528,7 @@ function ChatInput({channel, autoFocus}:InternalChatLogProperties):JSX.Element {
 }
 
 
-export function EmbeddedChatCard(props:ChatLogProperties):JSX.Element {
+export function EmbeddedChatCard(props: ChatLogProperties): JSX.Element {
     return (
         <Card className="Card EmbeddedChatCard">
             <ChatLog key={props.channel} {...props} hideTopic={true} forceShowGames={true} />

@@ -46,7 +46,7 @@ export let cached = {
     group_invitations: 'cached.group_invitations',
 
     refresh: {
-        config: (cb?:() => void) => {
+        config: (cb?: () => void) => {
             get('ui/config').then((config) => {
                 data.set(cached.config, config);
                 data.set('config', config);
@@ -168,7 +168,7 @@ export let cached = {
 };
 
 
-let current_user_id:number = 0;
+let current_user_id: number = 0;
 let refresh_debounce = setTimeout(refresh_all, 10);
 function refresh_all() {
     refresh_debounce = null;
@@ -185,7 +185,7 @@ data.watch('user', (user) => {
     if (user.id !== current_user_id) {
         current_user_id = user.id;
         if (refresh_debounce) {
-        clearTimeout(refresh_debounce);
+            clearTimeout(refresh_debounce);
         }
         refresh_debounce = setTimeout(refresh_all, 10);
     }
