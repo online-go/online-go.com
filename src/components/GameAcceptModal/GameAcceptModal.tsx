@@ -68,10 +68,15 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         let time_control_description = timeControlDescription(challenge.time_control_parameters);
         let player_color = _(challenge.challenger_color);
 
-        if (challenge.challenger_color === "black")          { player_color = _("White");     }
-        else if (challenge.challenger_color === "white")     { player_color = _("Black");     }
-        else if (challenge.challenger_color === "automatic") { player_color = _("Automatic"); }
-        else if (challenge.challenger_color === "random")    { player_color = _("Random");    }
+        if (challenge.challenger_color === "black") {
+            player_color = _("White");
+        } else if (challenge.challenger_color === "white") {
+            player_color = _("Black");
+        } else if (challenge.challenger_color === "automatic") {
+            player_color = _("Automatic");
+        } else if (challenge.challenger_color === "random") {
+            player_color = _("Random");
+        }
 
         return (
           <div className="Modal GameAcceptModal" ref="modal">
