@@ -218,7 +218,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         }).catch((err) => {
             console.error(err);
-            this.setState({"user": null});
+            this.setState({"user": null, resolved: true});
         });
     }
 
@@ -564,7 +564,9 @@ export class User extends React.PureComponent<UserProperties, any> {
 
     render() {
         let user = this.state.user;
-        if (!user) { return this.renderInvalidUser(); }
+        if (!user) {
+            return this.renderInvalidUser();
+        }
         let editing = this.state.editing;
         let showRatings = this.state.temporary_show_ratings;
 
@@ -1231,13 +1233,12 @@ export class User extends React.PureComponent<UserProperties, any> {
             );
         }
         return (
-        <div className="User flex stetch">
-            <div className="container flex fill center-both">
+            <div className="User flex stetch">
+                <div className="container flex fill center-both">
+                </div>
             </div>
-        </div>
         );
     }
-
 
     renderRatingGrid(show_ratings: boolean) {
         return (

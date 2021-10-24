@@ -13,7 +13,7 @@ window["ogs_locales"] = {
 };
 window["ogs_countries"] = {'en': {'us': 'United States'}, 'test_language': {'test_cc': 'test_country'}};
 
-import { gettext, pluralidx, ngettext, pgettext, npgettext, interpolate, cc_to_country_name, setCurrentLanguage } from './translate'
+import { gettext, pluralidx, ngettext, pgettext, npgettext, interpolate, cc_to_country_name, setCurrentLanguage } from './translate';
 
 jest.mock('goban', () => ({
     setGobanTranslations: jest.fn(),
@@ -72,15 +72,15 @@ test('interpolate array', () => {
     expect(interpolate('%d %d %d', ['One', 'Two', 'Three'])).toBe('One Two Three');
     expect(interpolate('%d %d %d', [1, 2, 3])).toBe('1 2 3');
     expect(interpolate('%d %d %d', [1, 'Two', 3.14])).toBe('1 Two 3.14'); // Mix and match
-})
+});
 
 test('interpolate object', () => {
     expect(interpolate('{{key_1}} {{key_2}} {{key_3}}', {key_1: 'One', key_2: 'Two', key_3: 'Three'})).toBe('One Two Three');
     expect(interpolate('{{key_3}} {{key_2}} {{key_3}}', {key_1: 'One', key_2: 'Two', key_3: 'Three'})).toBe('Three Two Three');
-})
+});
 
 test('cc_to_country_name', () => {
     // Setting the current language may not be necessary in the future. See TODO above cc_to_country_name
     setCurrentLanguage('test_language');
     expect(cc_to_country_name('test_cc')).toBe('test_country');
-})
+});

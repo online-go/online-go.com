@@ -120,6 +120,10 @@ let modifiers = {
     "ctrl": "ctrl"
 };
 
+// It looks like this should be something like
+//    `let bound_shortcuts: {[x: string]: Binding} = {};
+// but I won't touch this for now -BPJ
+// eslint-disable-next-line id-denylist
 let bound_shortcuts = {string: Binding};
 
 function sanitize_shortcut(shortcut) {

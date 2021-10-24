@@ -83,7 +83,9 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         })
         .then(res => res.json())
         .then(body => {
-            // console.log("Server response to source GET:", body);
+            // This can possibly be changed to !== undefined or != null,
+            // But I don't want to touch this right now -BPJ
+            // eslint-disable-next-line eqeqeq
             if (body.sources != undefined) { // Sentry reports that we somehow receive a body with undefined source_list!?
                 this.setState({source_list: body.sources});
             }

@@ -1,5 +1,5 @@
-import { chat_markup } from './chat_markup'
-import * as React from 'react'
+import { chat_markup } from './chat_markup';
+import * as React from 'react';
 
 // Workaround for error "TypeError: goban_1.setGobanTranslations is not a function"
 jest.mock('translate', () => ({
@@ -19,7 +19,7 @@ function expect_singular_markup(input: string, output: JSX.Element) {
 test('No markup', () => {
     expect_singular_markup("There is nothing interesting about this text.",
         <span key={0}>{"There is nothing interesting about this text."}</span>);
-})
+});
 
 test('tsumegododo', () => {
     expect_singular_markup("tsumegodojo", <span key={0}>{"tsumegododo"}</span>);
@@ -42,5 +42,5 @@ test('E-mail', () => {
 // Because of the @ symbol, these URLs have a tendency to get caught by the e-mail RegExp
 test('Google Maps link not parsed as e-mail', () => {
     expect_singular_markup("https://www.google.com/maps/@50.7006874,-3.0915427,13.75z",
-        <a key={0} target="_blank" href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}>{"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}</a>)
+        <a key={0} target="_blank" href={"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}>{"https://www.google.com/maps/@50.7006874,-3.0915427,13.75z"}</a>);
 });

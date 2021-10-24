@@ -314,6 +314,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 })
                 .on('mousemove', function() {
                     /* tslint:disable */
+                    // eslint-disable-next-line @typescript-eslint/no-invalid-this
                     let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                     /* tslint:enable */
 
@@ -460,6 +461,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
             })
             .on('mousemove', function() {
                 /* tslint:disable */
+                // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 

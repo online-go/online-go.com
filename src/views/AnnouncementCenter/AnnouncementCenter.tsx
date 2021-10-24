@@ -142,6 +142,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                                   <option value="system">System</option>
                                   <option value="stream">Stream</option>
                                   <option value="event">Event</option>
+                                  <option value="advertisement">Advertisement</option>
                                   <option value="tournament">Tournament</option>
                                   <option value="non-supporter">Non-Supporters</option>
                                   <option value="uservoice">Uservoice</option>
@@ -153,6 +154,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                                       <option value="system">System</option>
                                       <option value="stream">Stream</option>
                                       <option value="event">Event</option>
+                                      <option value="advertisement">Advertisement</option>
                                   </select>
                               </dd>
                             : <dd>

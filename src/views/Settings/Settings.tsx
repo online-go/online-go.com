@@ -1154,9 +1154,11 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                             .then(onRequestResult)
                             .catch(ignore);
                     } catch (e) {
+                        /* eslint-disable @typescript-eslint/no-floating-promises */
                         /* deprecated usage, but only way supported on safari currently */
                         // tslint:disable-next-line:no-floating-promises
                         Notification.requestPermission(onRequestResult);
+                        /* eslint-enable @typescript-eslint/no-floating-promises */
                     }
 
                 }
