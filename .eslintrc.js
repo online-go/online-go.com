@@ -68,7 +68,7 @@ module.exports = {
             4,
             {
                 "SwitchCase": 1,
-                "MemberExpression": 0,
+                "MemberExpression": "off",
                 "ignoredNodes": ["ConditionalExpression"]
             }
         ],
