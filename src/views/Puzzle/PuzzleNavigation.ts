@@ -28,41 +28,41 @@ export class PuzzleNavigation {
     nav_up = () => {
         this.checkAndEnterAnalysis();
         this._goban.prevSibling();
-    }
+    };
     nav_down = () => {
         this.checkAndEnterAnalysis();
         this._goban.nextSibling();
-    }
+    };
     nav_first = () => {
         this.checkAndEnterAnalysis();
         this._goban.showFirst();
-    }
+    };
     nav_prev_10 = () => {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
             this._goban.showPrevious( i < 9 );
         }
-    }
+    };
     nav_prev = () => {
         this.checkAndEnterAnalysis();
         this._goban.showPrevious();
-    }
+    };
     nav_next = (event?: React.MouseEvent<any>) => {
         this.checkAndEnterAnalysis();
         this._goban.showNext();
-    }
+    };
     nav_next_10 = () => {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
             this._goban.showNext( i < 9 );
         }
-    }
+    };
     nav_last = () => {
         this.checkAndEnterAnalysis();
         this._goban.jumpToLastOfficialMove();
-    }
+    };
 
     checkAndEnterAnalysis() {
         if (this._goban.mode === "puzzle") {

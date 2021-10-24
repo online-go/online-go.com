@@ -63,38 +63,38 @@ export class LadderList extends React.PureComponent<LadderListProperties, any> {
 
     render() {
         return (
-        <div className="page-width">
-            <div className="page-nav">
-                <h2 style={{marginLeft: '1rem'}}><i className="fa fa-list-ol"></i> {_("Ladders")}</h2>
-                <div>
+            <div className="page-width">
+                <div className="page-nav">
+                    <h2 style={{marginLeft: '1rem'}}><i className="fa fa-list-ol"></i> {_("Ladders")}</h2>
+                    <div>
+                        {this.state.ladders.map((ladder, idx) => (
+                            <Link key={idx} to={`/ladder/${ladder.id}`}>
+                                {_(ladder.board_size + 'x' + ladder.board_size)}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+                <div className="LadderList">
                     {this.state.ladders.map((ladder, idx) => (
-                    <Link key={idx} to={`/ladder/${ladder.id}`}>
-                        {_(ladder.board_size + 'x' + ladder.board_size)}
-                    </Link>
-                ))}
+                        <Card key={idx}>
+                            <h2>{_(ladder.name)}</h2>
+                            {(ladder.player_rank < 0 || null) &&
+                            <button className="primary sm" onClick={this.join.bind(this, ladder.id)}>{_("Join")}</button>
+                            }
+                            <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>{_("Full View") /* translators: View details of the selected ladder */}</Link>
+
+                            <h4>{interpolate(_("{{ladder_size}} players"), {"ladder_size": ladder.size})}</h4>
+
+                            <LadderComponent
+                                pageSize={10}
+                                ladderId={ladder.id}
+                                hidePageControls={true}
+                                dontStartOnPlayersPage={true}
+                            />
+                        </Card>
+                    ))}
                 </div>
             </div>
-            <div className="LadderList">
-                {this.state.ladders.map((ladder, idx) => (
-                    <Card key={idx}>
-                        <h2>{_(ladder.name)}</h2>
-                        {(ladder.player_rank < 0 || null) &&
-                            <button className="primary sm" onClick={this.join.bind(this, ladder.id)}>{_("Join")}</button>
-                        }
-                        <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>{_("Full View") /* translators: View details of the selected ladder */}</Link>
-
-                        <h4>{interpolate(_("{{ladder_size}} players"), {"ladder_size": ladder.size})}</h4>
-
-                        <LadderComponent
-                            pageSize={10}
-                            ladderId={ladder.id}
-                            hidePageControls={true}
-                            dontStartOnPlayersPage={true}
-                            />
-                    </Card>
-                ))}
-            </div>
-        </div>
         );
     }
 }

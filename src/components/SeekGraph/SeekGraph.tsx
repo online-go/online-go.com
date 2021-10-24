@@ -157,21 +157,20 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return bounded_rank(user);
     }
     onDisconnect = () => {
-    }
+    };
     onConnect = () => {
         this.connected = true;
         this.socket.send("seek_graph/connect", {"channel": "global"});
         if (this.show_live_games) {
             this.connectToLiveGameList();
         }
-    }
+    };
     onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
             let e = lst[i];
             if ("game_started" in e) {
                 //console.log(e);
-            }
-            else if ("delete" in e) {
+            } else if ("delete" in e) {
                 if (e.challenge_id in this.challenges) {
                     let uid = this.challenges[e.challenge_id].system_message_id;
                     delete this.challenges[e.challenge_id];
@@ -199,8 +198,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
                     if (e.min_rank > this.userRank()) {
                         e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
-                    }
-                    else if (e.max_rank < this.userRank()) {
+                    } else if (e.max_rank < this.userRank()) {
                         e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
                     }
                 }
@@ -217,19 +215,19 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         this.redraw();
         this.emit("challenges", this.challenges);
-    }
+    };
     onTouchEnd = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerDown(ev);
         }
-    }
+    };
     onTouchStartMove = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerMove(ev);
             ev.preventDefault();
             return false;
         }
-    }
+    };
     onPointerMove = (ev) => {
         let new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
@@ -242,7 +240,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         } else {
             this.closeChallengeList(ev);
         }
-    }
+    };
     onPointerDown = (ev) => {
         let new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
@@ -267,12 +265,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.list_locked = false;
             this.closeChallengeList();
         }
-    }
+    };
     onPointerOut = (ev) => {
         if (!this.list_locked) {
             this.closeChallengeList();
         }
-    }
+    };
 
     connectToLiveGameList() {
         this.socket.send("gamelist/subscribe", {"gamelist": "gamelist/global"});
@@ -669,16 +667,14 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         */
                     }).catch(errorAlerter);
                 }));
-            }
-            else if (C.user_challenge) {
+            } else if (C.user_challenge) {
                 e.append($("<i>").addClass("fa fa-trash-o").attr("title", _("Remove challenge")).click((ev) => {
                     //console.log("Remove");
                     del("challenges/%%", C.challenge_id)
                     .then((ev) => e.html(_("Challenge removed")))
                     .catch((response) => swal(_("Error removing challenge")));
                 }));
-            }
-            else {
+            } else {
                 e.append($("<i>").addClass("fa fa-circle"));
             }
 
@@ -709,11 +705,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     let yourcolor = "";
                     if (C.challenger_color === "black") {
                         yourcolor = _("white");
-                    }
-                    else if (C.challenger_color === "white") {
+                    } else if (C.challenger_color === "white") {
                         yourcolor = _("black");
-                    }
-                    else {
+                    } else {
                         yourcolor = _(C.challenger_color);
                     }
 
@@ -739,11 +733,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 if (!data.get("user").anonymous) {
                     if (C.min_rank > this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) + "</span>";
-                    }
-                    else if (C.max_rank < this.userRank()) {
+                    } else if (C.max_rank < this.userRank()) {
                         details_html += ", <span class='cause'>" + interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) + "</span>";
-                    }
-                    else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
+                    } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
                         details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }

@@ -25,8 +25,8 @@ type clock_color = 'black' | 'white' | 'stone-removal';
 let ct = 0;
 
 
-export function Clock({goban, color, className, compact}:{goban:Goban, color:clock_color, className?:string, compact?:boolean}):JSX.Element {
-    const [clock, setClock]:[JGOFClock, (x:JGOFClock) => void] = useState(null);
+export function Clock({goban, color, className, compact}: {goban: Goban; color: clock_color; className?: string; compact?: boolean}): JSX.Element {
+    const [clock, setClock]: [JGOFClock, (x: JGOFClock) => void] = useState(null);
 
     useEffect(() => {
         if (goban) {
@@ -44,13 +44,13 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
         return null;
     }
 
-    const time_control:JGOFTimeControl = goban.engine.time_control;
+    const time_control: JGOFTimeControl = goban.engine.time_control;
 
     if (color === 'stone-removal') {
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
-        let player_clock:JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
-        let player_id:number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
+        let player_clock: JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
+        let player_id: number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
 
         let clock_className = 'Clock ' + color;
         if (clock.pause_state) {
@@ -120,14 +120,14 @@ export function Clock({goban, color, className, compact}:{goban:Goban, color:clo
 
     throw new Error('Clock failed to render');
 
-    function update(clock:JGOFClock) {
+    function update(clock: JGOFClock) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }
     }
 }
 
-function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}):JSX.Element {
+function ClockPauseReason({clock, player_id}: {clock: JGOFClock; player_id: number}): JSX.Element {
     let pause_text = _("Paused");
     let pause_state = clock.pause_state;
 
@@ -146,7 +146,7 @@ function ClockPauseReason({clock, player_id}:{clock:JGOFClock, player_id:number}
     return <span className='pause-text'>{pause_text}</span>;
 }
 
-function prettyTime(ms:number):string {
+function prettyTime(ms: number): string {
     //return shortDurationString(Math.round(ms / 1000));
 
     let seconds = Math.ceil((ms - 1) / 1000);

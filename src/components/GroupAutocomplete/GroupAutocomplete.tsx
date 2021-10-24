@@ -66,7 +66,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             value: newValue
         });
         this.complete(newValue);
-    }
+    };
     onSuggestionsFetchRequested = ({ value }) => {
         if (this.current_search === value) {
             return;
@@ -98,12 +98,12 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
                 suggestions: []
             });
         }
-    }
+    };
     onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: []
         });
-    }
+    };
     //onBlur = (ev, {focusedSuggestion}) => {
     onBlur = (ev, {highlightedSuggestion}) => {
         if (this.tabbed_out) {
@@ -112,14 +112,14 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
                 this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
-    }
+    };
     onKeyDown = (ev) => {
         if (ev.keyCode === 9) {
             this.tabbed_out = true;
         } else {
             this.tabbed_out = false;
         }
-    }
+    };
 
     render() {
         let { suggestions, value } = this.state;
@@ -142,7 +142,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
                     renderSuggestion={renderSuggestion}
                     highlightFirstSuggestion={true}
                     inputProps={inputProps}
-                    />
+                />
             </span>
         );
     }

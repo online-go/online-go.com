@@ -59,11 +59,11 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
         }).catch((r) => {
             console.log("Tags GET failed:", r);
         });
-    }
+    };
 
     onTagChange = (e) => {
         this.props.on_tag_update(e);
-    }
+    };
 
     render() {
         // console.log("Tag selector render");

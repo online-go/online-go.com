@@ -52,7 +52,9 @@
         ],
         "semicolon": [
             true,
-            "always"
+            "always",
+            "ignore-bound-class-methods",
+            "ignore-interfaces"
         ],
         "space-before-function-paren": [
             true,

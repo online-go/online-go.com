@@ -42,7 +42,7 @@ export function configure_goban() {
             };
         },
 
-        getCoordinateDisplaySystem: ():'A1'|'1-1' => {
+        getCoordinateDisplaySystem: (): 'A1'|'1-1' => {
             switch (preferences.get('board-labeling')) {
                 case 'A1':
                     return 'A1';
@@ -62,7 +62,7 @@ export function configure_goban() {
             }
         },
 
-        isAnalysisDisabled: (goban:Goban, perGameSettingAppliesToNonPlayers = false):boolean => {
+        isAnalysisDisabled: (goban: Goban, perGameSettingAppliesToNonPlayers = false): boolean => {
             // The player's preference setting to always disable analysis overrides the per-game setting for
             // their own games.
             if (preferences.get("always-disable-analysis") && goban.isParticipatingPlayer()) {
@@ -80,28 +80,28 @@ export function configure_goban() {
             }
         },
 
-        getClockDrift: ():number => get_clock_drift(),
-        getNetworkLatency: ():number => get_network_latency(),
-        getLocation: ():string => window.location.pathname,
-        getShowMoveNumbers: ():boolean => !!preferences.get("show-move-numbers"),
-        getShowVariationMoveNumbers: ():boolean => preferences.get("show-variation-move-numbers"),
-        getMoveTreeNumbering: ():"none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
-        getCDNReleaseBase: ():string => data.get('config.cdn_release'),
+        getClockDrift: (): number => get_clock_drift(),
+        getNetworkLatency: (): number => get_network_latency(),
+        getLocation: (): string => window.location.pathname,
+        getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
+        getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
+        getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
+        getCDNReleaseBase: (): string => data.get('config.cdn_release'),
         getSoundEnabled: (): boolean => sfx.getVolume('master') > 0,
         getSoundVolume: (): number => sfx.getVolume('master'),
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
 
-        discBlackStoneColor: ():string => data.get("custom.black"),
-        discBlackTextColor: ():string => data.get("custom.white"),
-        discWhiteStoneColor: ():string => data.get("custom.white"),
-        discWhiteTextColor: ():string => data.get("custom.black"),
-        plainBoardColor: ():string => data.get("custom.board"),
-        plainBoardLineColor: ():string => data.get("custom.line"),
-        plainBoardUrl: ():string => data.get("custom.url"),
+        discBlackStoneColor: (): string => data.get("custom.black"),
+        discBlackTextColor: (): string => data.get("custom.white"),
+        discWhiteStoneColor: (): string => data.get("custom.white"),
+        discWhiteTextColor: (): string => data.get("custom.black"),
+        plainBoardColor: (): string => data.get("custom.board"),
+        plainBoardLineColor: (): string => data.get("custom.line"),
+        plainBoardUrl: (): string => data.get("custom.url"),
 
-        addCoordinatesToChatInput: (coordinates:string):void => {
+        addCoordinatesToChatInput: (coordinates: string): void => {
             let chat_input = $(".chat-input");
 
             if (!chat_input.attr("disabled")) {

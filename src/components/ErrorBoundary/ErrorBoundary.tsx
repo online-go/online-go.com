@@ -21,8 +21,8 @@ import { _ } from 'translate';
 import * as Sentry from '@sentry/browser';
 
 
-declare var ogs_current_language;
-declare var ogs_version;
+declare let ogs_current_language;
+declare let ogs_version;
 
 export class ErrorBoundary extends React.Component<{}, any> {
     constructor(props) {

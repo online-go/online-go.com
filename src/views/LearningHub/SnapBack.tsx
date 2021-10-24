@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 
 export class SnapBack extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -34,9 +34,9 @@ export class SnapBack extends LearningHubSection {
         ];
     }
 
-    static section():string { return "snapback"; }
-    static title():string { return pgettext("Tutorial section on snapback", "Snapback!"); }
-    static subtext():string { return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group"); }
+    static section(): string { return "snapback"; }
+    static title(): string { return pgettext("Tutorial section on snapback", "Snapback!"); }
+    static subtext(): string { return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group"); }
 }
 
 
@@ -48,7 +48,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Capture the two white stones at e3 and e4");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -72,7 +72,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the two white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -96,7 +96,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Capture the three white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -121,7 +121,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Capture the five white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -145,7 +145,7 @@ class Page5 extends LearningPage {
     text() {
         return _("Save your group");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -171,7 +171,7 @@ class Page6 extends LearningPage {
     text() {
         return _("Capture the four white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -197,7 +197,7 @@ class Page7 extends LearningPage {
     text() {
         return _("Capture all of the white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {

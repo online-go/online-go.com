@@ -32,7 +32,7 @@ import {ignore} from "misc";
 import cached from 'cached';
 
 
-export class ChallengesList extends React.PureComponent<{onAccept:() => void}, any> {
+export class ChallengesList extends React.PureComponent<{onAccept: () => void}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -48,7 +48,7 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
     }
     update = (challenge_list) => {
         this.setState({"challenges": challenge_list});
-    }
+    };
 
     deleteChallenge(challenge) {
         del("me/challenges/%%", challenge.id)
@@ -84,22 +84,22 @@ export class ChallengesList extends React.PureComponent<{onAccept:() => void}, a
                         let opponent = challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
 
                         return (
-                        <Card key={challenge.id}>
-                            <div className='icon-name'>
-                                <PlayerIcon id={opponent.id} size={64}/>
-                                <div className='name'>
-                                    {challenge.challenged.id === user.id &&
+                            <Card key={challenge.id}>
+                                <div className='icon-name'>
+                                    <PlayerIcon id={opponent.id} size={64}/>
+                                    <div className='name'>
+                                        {challenge.challenged.id === user.id &&
                                         <FabCheck onClick={this.acceptChallenge.bind(this, challenge)} />
-                                    }
-                                    <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
-                                    <h4>{profanity_filter(challenge.game.name)}</h4>
-                                    <Player user={opponent}/>
+                                        }
+                                        <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
+                                        <h4>{profanity_filter(challenge.game.name)}</h4>
+                                        <Player user={opponent}/>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                {challenge_text_description(challenge)}
-                            </div>
-                        </Card>
+                                <div>
+                                    {challenge_text_description(challenge)}
+                                </div>
+                            </Card>
                         );
                     })}
                 </div>

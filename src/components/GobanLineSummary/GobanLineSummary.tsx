@@ -30,7 +30,7 @@ interface GobanLineSummaryProps {
     black: any;
     white: any;
     player?: any;
-    gobanref?: (goban:Goban) => void;
+    gobanref?: (goban: Goban) => void;
     width?: number;
     height?: number;
 }
@@ -126,8 +126,8 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
     render() {
         let player;
         let opponent;
-        let player_color:string;
-        let opponent_color:string;
+        let player_color: string;
+        let opponent_color: string;
 
         if (this.props.player && this.props.player.id === this.props.black.id) {
             player = this.props.black;
@@ -147,8 +147,8 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             <Link to={`/game/${this.props.id}`} className={ `GobanLineSummary `
                             + (this.state.current_users_move ? " current-users-move" : "")
                             + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
-                }
-                >
+            }
+            >
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 

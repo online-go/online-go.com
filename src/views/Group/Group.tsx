@@ -39,11 +39,11 @@ import {EmbeddedChatCard} from "Chat";
 import { localize_time_strings } from 'localize-time';
 
 
-declare var swal;
+declare let swal;
 
 interface GroupProperties {
     match: {
-        params: any
+        params: any;
     };
 }
 
@@ -151,7 +151,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         post("groups/%%/members", this.state.group_id, {"delete": true})
         .then((res) => { this.resolve(this.state.group_id); })
         .catch(errorAlerter);
-    }
+    };
     joinGroup = () => {
         post("groups/%%/members", this.state.group_id, {})
         .then((res) => {
@@ -162,14 +162,14 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         })
         .catch(errorAlerter);
-    }
+    };
 
     refreshGroup = () => {
         this.resolve(this.state.group_id);
-    }
+    };
     refreshPlayerList = () => {
         this.refs.members.update();
-    }
+    };
 
     toggleEdit = () => {
         if (this.state.editing) {
@@ -178,7 +178,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         } else {
             this.setState({editing: true});
         }
-    }
+    };
     saveEditChanges() {
         put(`groups/${this.state.group_id}`, this.state.group)
         .then((res) => {
@@ -195,7 +195,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }
+    };
     updateBanner = (files) => {
         this.setState({new_banner: files[0]});
         image_resizer(files[0], 2560, 512).then((file: Blob) => {
@@ -206,11 +206,11 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }
+    };
 
     createTournament = () => {
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
-    }
+    };
     createTournamentRecord = () => {
         swal({
             text: _("Tournament Name"),
@@ -232,40 +232,40 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }
+    };
     setGroupName = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {name: ev.target.value})});
-    }
+    };
     setShortDescription = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {short_description: ev.target.value})});
-    }
+    };
     setDescription = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {description: ev.target.value})});
-    }
+    };
     setWebsite = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {website: ev.target.value})});
-    }
+    };
     setLocation = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {location: ev.target.value})});
-    }
+    };
     setBulletin = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {bulletin: ev.target.value})});
-    }
+    };
     setOpenToThePublic = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {is_public: ev.target.checked})});
-    }
+    };
     setHideDetails = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {hide_details: ev.target.checked})});
-    }
+    };
     setDisableInvitationRequests = (ev) => {
         this.setState({group: Object.assign({}, this.state.group, {require_invitation: ev.target.checked})});
-    }
+    };
     setNewNewsTitle = (ev) => {
         this.setState({new_news_title: ev.target.value});
-    }
+    };
     setNewNewsBody = (ev) => {
         this.setState({new_news_body: ev.target.value});
-    }
+    };
     postNewNews = (ev) => {
         if (this.state.new_news_title.trim().length < 5) {
             swal({"title": _("Please provide a title")})
@@ -289,13 +289,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         .then(() => {
             if (this.refs.news) {
                 this.refs.news.update();
-            }
-            else {
+            } else {
                 this.resolve(this.state.group_id);
             }
         })
         .catch(errorAlerter);
-    }
+    };
     toggleNewNewsPost = () => {
         this.setState({show_new_news_post: !this.state.show_new_news_post});
         setTimeout(() => {
@@ -303,7 +302,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 this.refs.new_news_title.focus();
             }
         }, 1);
-    }
+    };
     deleteNewsPost(entry) {
         swal({
             "text": _("Delete this news post?"),
@@ -318,8 +317,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .then(() => {
                 if (this.refs.news) {
                     this.refs.news.update();
-                }
-                else {
+                } else {
                     this.resolve(this.state.group_id);
                 }
             })
@@ -337,13 +335,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             this.setState({editing_news: null});
             if (this.refs.news) {
                 this.refs.news.update();
-            }
-            else {
+            } else {
                 this.resolve(this.state.group_id);
             }
         })
         .catch(errorAlerter);
-    }
+    };
     updateNewsContent = (ev) => {
         this.setState({
             editing_news: Object.assign(
@@ -353,7 +350,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             )
         });
         this.refs.news.forceUpdate();
-    }
+    };
     updateNewsTitle = (ev) => {
         this.setState({
             editing_news: Object.assign(
@@ -363,7 +360,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             )
         });
         this.refs.news.forceUpdate();
-    }
+    };
 
     inviteUser = (ev) => {
         post("group/%%/members", this.state.group_id, {"username": this.state.user_to_invite.username })
@@ -383,10 +380,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             }
         });
 
-    }
+    };
     setUserToInvite = (user) => {
         this.setState({user_to_invite: user});
-    }
+    };
 
 
     render() {
@@ -403,59 +400,59 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         }
 
         return (
-        <div className="Group container">
-            <UIPush event="players-updated" channel={`group-${group.id}`} action={this.refreshPlayerList} />
-            <UIPush event="reload-group" channel={`group-${group.id}`} action={this.refreshGroup}/>
+            <div className="Group container">
+                <UIPush event="players-updated" channel={`group-${group.id}`} action={this.refreshPlayerList} />
+                <UIPush event="reload-group" channel={`group-${group.id}`} action={this.refreshGroup}/>
 
-            {(editing || group.has_banner || null) &&
+                {(editing || group.has_banner || null) &&
                 <div className="banner">
-                  {editing
+                    {editing
                     ? <Dropzone className="Dropzone" onDrop={this.updateBanner} multiple={false}>
-                       {this.state.new_banner
+                        {this.state.new_banner
                            ? <img src={this.state.new_banner.preview}/>
                            : (group.banner ? <img src={group.banner}/> : <i className="fa fa-picture-o"/>)
-                       }
-                      </Dropzone>
-                    : (group.banner ? <img src={group.banner}/> : <i className="fa fa-picture-o"/>)
-                  }
-                </div>
-            }
-            <div className="row">
-                <div className="col-sm-9">
-                    <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card  */}
-                        {(this.state.is_admin || user.is_moderator || null) &&
-                            <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit}/>
                         }
+                    </Dropzone>
+                    : (group.banner ? <img src={group.banner}/> : <i className="fa fa-picture-o"/>)
+                    }
+                </div>
+                }
+                <div className="row">
+                    <div className="col-sm-9">
+                        <Card style={{minHeight: "10rem", position: "relative"}}>{/* Main card  */}
+                            {(this.state.is_admin || user.is_moderator || null) &&
+                            <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit}/>
+                            }
 
-                        <div className="row">
-                            <div className="col-sm-2" style={{minWidth: "128px"}}>
-                                {editing
+                            <div className="row">
+                                <div className="col-sm-2" style={{minWidth: "128px"}}>
+                                    {editing
                                     ? <Dropzone className="Dropzone Dropzone-128" onDrop={this.updateIcon} multiple={false}>
-                                       {this.state.new_icon
+                                        {this.state.new_icon
                                            ? <img src={this.state.new_icon.preview} style={{maxHeight: "128px", maxWidth: "128px"}}/>
                                            : <img src={group.icon} style={{maxHeight: "128px", maxWidth: "128px"}}/>
-                                       }
-                                      </Dropzone>
+                                        }
+                                    </Dropzone>
                                     : <img src={group.icon} style={{maxHeight: "128px", maxWidth: "128px"}}/>
-                                }
-                            </div>
-                            <div className="col-sm-10">
-                                {!editing
+                                    }
+                                </div>
+                                <div className="col-sm-10">
+                                    {!editing
                                     ? <h2>{group.name}</h2>
                                     : <input type="text" placeholder={_("Group name")} style={{width: 'calc(100% - 30px)'}} value={group.name} onChange={this.setGroupName} />
-                                }
+                                    }
 
-                                <div className="admins">
-                                    <b style={{marginRight: "1rem"}}>{_("Admins")}:</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
-                                </div>
+                                    <div className="admins">
+                                        <b style={{marginRight: "1rem"}}>{_("Admins")}:</b> { group.admins.map((u, idx) => <Player key={idx} icon user={u} />) }
+                                    </div>
 
-                                {((this.state.group_loaded && editing && user.is_moderator) || null) &&
+                                    {((this.state.group_loaded && editing && user.is_moderator) || null) &&
                                     <div>
                                         <button className="reject" onClick={this.deleteGroup}>{_("Delete Group")}</button>
                                     </div>
-                                }
+                                    }
 
-                                {(this.state.group_loaded || null) &&
+                                    {(this.state.group_loaded || null) &&
                                     (group.is_member
                                         ? this.state.is_admin
                                             ? (editing
@@ -466,28 +463,28 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                         </div>
                                                   )
                                                 : <div>
-                                                     <button className="primary sm" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
-                                                         {_("Create news post")}
-                                                     </button>
-                                                     <button className="primary sm" onClick={this.createTournament}>
-                                                         {_("Create tournament")}
-                                                     </button>
-                                                     <button className="primary sm" onClick={this.createTournamentRecord}>
-                                                         {_("Create tournament record")}
-                                                     </button>
-                                                  </div>
+                                                    <button className="primary sm" disabled={this.state.show_new_news_post} onClick={this.toggleNewNewsPost}>
+                                                        {_("Create news post")}
+                                                    </button>
+                                                    <button className="primary sm" onClick={this.createTournament}>
+                                                        {_("Create tournament")}
+                                                    </button>
+                                                    <button className="primary sm" onClick={this.createTournamentRecord}>
+                                                        {_("Create tournament record")}
+                                                    </button>
+                                                </div>
                                               )
                                             : <div>
-                                                 <button className="sm" disabled={this.state.is_admin} onClick={this.leaveGroup}>
+                                                <button className="sm" disabled={this.state.is_admin} onClick={this.leaveGroup}>
                                                     {_("Leave Group")}
-                                                 </button>
-                                                 <button className="primary sm" onClick={this.createTournament}>
-                                                     {_("Create tournament")}
-                                                 </button>
-                                                 <button className="primary sm" onClick={this.createTournamentRecord}>
-                                                     {_("Create tournament record")}
-                                                 </button>
-                                              </div>
+                                                </button>
+                                                <button className="primary sm" onClick={this.createTournament}>
+                                                    {_("Create tournament")}
+                                                </button>
+                                                <button className="primary sm" onClick={this.createTournamentRecord}>
+                                                    {_("Create tournament record")}
+                                                </button>
+                                            </div>
                                         : group.is_public
                                             ? <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Join Group")}</button>
                                             : group.require_invitation
@@ -496,90 +493,90 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                                     ? <i>{_("A request to join this group has been sent to the group administrators")}</i>
                                                     : <button className="primary sm" disabled={user.anonymous} onClick={this.joinGroup}>{_("Request to join this group")}</button>
                                     )
-                                }
-
-
-                                <div className="pad">
-                                    {(editing || group.website || null) && <b>{_("Website")}: </b>}
-                                    {((!editing && group.website) || null) && <span>{
-                                        <a target="_blank" href={group_website_href}>{group.website}</a>
-                                    }</span>}
-                                    {(editing || null) && <span>
-                                        <input type="url" value={group.website} onChange={this.setWebsite} />
-                                    </span>}
-                                </div>
-
-                                <div className="pad">
-                                    {(editing || group.location || null) && <b>{_("Location")}: </b>}
-                                    {((!editing && group.location) || null) && <span>{group.location}</span>}
-                                    {(editing || null) &&
-                                        <span><input value={group.location} onChange={this.setLocation}/></span>
                                     }
-                                </div>
 
-                                <div className="pad">
-                                    {((editing ) || null) &&
+
+                                    <div className="pad">
+                                        {(editing || group.website || null) && <b>{_("Website")}: </b>}
+                                        {((!editing && group.website) || null) && <span>{
+                                            <a target="_blank" href={group_website_href}>{group.website}</a>
+                                        }</span>}
+                                        {(editing || null) && <span>
+                                            <input type="url" value={group.website} onChange={this.setWebsite} />
+                                        </span>}
+                                    </div>
+
+                                    <div className="pad">
+                                        {(editing || group.location || null) && <b>{_("Location")}: </b>}
+                                        {((!editing && group.location) || null) && <span>{group.location}</span>}
+                                        {(editing || null) &&
+                                        <span><input value={group.location} onChange={this.setLocation}/></span>
+                                        }
+                                    </div>
+
+                                    <div className="pad">
+                                        {((editing ) || null) &&
                                         <div>
                                             <input type="checkbox" id="public-group" checked={group.is_public} onChange={this.setOpenToThePublic}/>
                                             <label htmlFor="public-group">{_("Public group")}</label>
                                         </div>
-                                    }
-                                </div>
-                                <div className="pad">
-                                    {((editing ) || null) &&
+                                        }
+                                    </div>
+                                    <div className="pad">
+                                        {((editing ) || null) &&
                                         <div>
                                             <input type="checkbox" id="require-invitation" checked={group.require_invitation} onChange={this.setDisableInvitationRequests}/>
                                             <label htmlFor="require-invitation">{_("Disable invitation requests")}</label>
                                         </div>
-                                    }
-                                </div>
-                                <div className="pad">
-                                    {((!editing && group.hide_details) || null) && <i>{_("Group details are hidden")}</i>}
-                                    {((editing ) || null) &&
+                                        }
+                                    </div>
+                                    <div className="pad">
+                                        {((!editing && group.hide_details) || null) && <i>{_("Group details are hidden")}</i>}
+                                        {((editing ) || null) &&
                                         <div>
                                             <input type="checkbox" id="hide-details" checked={group.hide_details} onChange={this.setHideDetails}/>
                                             <label htmlFor="hide-details">{_("Hide group details")}</label>
                                         </div>
-                                    }
+                                        }
+                                    </div>
+
+
                                 </div>
-
-
                             </div>
-                        </div>
 
-                        {!editing
+                            {!editing
                             ? <Markdown source={group.description}/>
                             : <textarea rows={7} value={group.description} onChange={this.setDescription} placeholder={_("Description") /* translators: Description of the group */} />
-                        }
-                        {(editing || null) &&
+                            }
+                            {(editing || null) &&
                             <div>
                                 <b>{_("Short Description") /* translators: Short description of the group */}: </b>
                                 <i>{_("This will be visible on the group list and search page")}</i>
                                 <textarea value={group.short_description} onChange={this.setShortDescription} placeholder={_("Short Description")} />
                             </div>
-                        }
-                    </Card>
+                            }
+                        </Card>
 
 
-                    {((!editing && group.bulletin) || null) && <Card><Markdown source={group.bulletin}/></Card>}
-                    {(editing || null) &&
+                        {((!editing && group.bulletin) || null) && <Card><Markdown source={group.bulletin}/></Card>}
+                        {(editing || null) &&
                         <Card>
                             <textarea rows={7} placeholder={_("Bulletin")} value={group.bulletin} onChange={this.setBulletin} />
                         </Card>
-                    }
+                        }
 
-                    <div className="new-news">
-                        {(this.state.show_new_news_post || null) &&
+                        <div className="new-news">
+                            {(this.state.show_new_news_post || null) &&
                             <div>
                                 <input ref="new_news_title" type="text" placeholder={_("Title")} value={this.state.new_news_title} onChange={this.setNewNewsTitle}/>
                                 <textarea ref="new_news_body" rows={7} placeholder={_("News")} value={this.state.new_news_body} onChange={this.setNewNewsBody}/>
                                 <button className="reject" onClick={this.toggleNewNewsPost}>{_("Cancel")}</button>
                                 <button className="primary" onClick={this.postNewNews}>{_("Post!")}</button>
                             </div>
-                        }
-                    </div>
+                            }
+                        </div>
 
-                    {(this.state.news.length > 0 || null) &&
+                        {(this.state.news.length > 0 || null) &&
                         <Card style={{minHeight: "12rem"}}>
                             <PaginatedTable
                                 ref="news"
@@ -613,12 +610,12 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 ]}
                             />
                         </Card>
-                    }
+                        }
 
-                    {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />}
+                        {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />}
 
-                    <Card>
-                        {(group.has_tournament_records || null) &&
+                        <Card>
+                            {(group.has_tournament_records || null) &&
                             <div>
                                 <h3>{_("Tournament Records")}</h3>
 
@@ -631,18 +628,18 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     orderBy={["-created"]}
                                     columns={[
                                         {header: _("Tournament"),  className: () => "name",
-                                         render: (tournament) => (
-                                             <div className="tournament-name">
-                                                <Link to={`/tournament-record/${tournament.id}/${slugify(tournament.name)}`}>{tournament.name}</Link>
-                                             </div>
-                                         )
+                                            render: (tournament) => (
+                                                <div className="tournament-name">
+                                                    <Link to={`/tournament-record/${tournament.id}/${slugify(tournament.name)}`}>{tournament.name}</Link>
+                                                </div>
+                                            )
                                         },
                                     ]}
                                 />
                             </div>
-                        }
+                            }
 
-                        {(group.has_open_tournaments || null) &&
+                            {(group.has_open_tournaments || null) &&
                             <div>
                                 <h3>{_("Open Tournaments")}</h3>
                                 <TournamentList filter={{
@@ -651,9 +648,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     group: this.props.match.params.group_id,
                                 }}/>
                             </div>
-                        }
+                            }
 
-                        {(group.has_active_tournaments || null) &&
+                            {(group.has_active_tournaments || null) &&
                             <div>
                                 <h3>{_("Active Tournaments")}</h3>
                                 <TournamentList filter={{
@@ -662,9 +659,9 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     group: this.props.match.params.group_id,
                                 }}/>
                             </div>
-                        }
+                            }
 
-                        {(group.has_finished_tournaments || null) &&
+                            {(group.has_finished_tournaments || null) &&
                             <div>
                                 <h3>{_("Finished Tournaments")}</h3>
                                 <TournamentList filter={{
@@ -673,13 +670,13 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                     group: this.props.match.params.group_id,
                                 }}/>
                             </div>
-                        }
-                    </Card>
+                            }
+                        </Card>
 
-                </div>
-                <div className="col-sm-3">{/* Right column  */}
-                    <Card style={{minHeight: "12rem"}}>
-                        {this.state.is_admin &&
+                    </div>
+                    <div className="col-sm-3">{/* Right column  */}
+                        <Card style={{minHeight: "12rem"}}>
+                            {this.state.is_admin &&
                             <div className="invite-input">
                                 <div className="input-group" id="tournament-invite-user-container" >
                                     <PlayerAutocomplete onComplete={this.setUserToInvite} />
@@ -689,22 +686,22 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 <div className="bold">{this.state.invite_result}</div>
                                 <div id="tournament-invite-result"></div>
                             </div>
-                        }
+                            }
 
-                        <PaginatedTable
-                            ref="members"
-                            className="members"
-                            name="members"
-                            source={`groups/${group.id}/members`}
-                            groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
-                            columns={[
-                                {header: _("Members"), className: "", render: (X) => <Player icon user={X} online/>},
-                            ]}
-                        />
-                    </Card>
+                            <PaginatedTable
+                                ref="members"
+                                className="members"
+                                name="members"
+                                source={`groups/${group.id}/members`}
+                                groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
+                                columns={[
+                                    {header: _("Members"), className: "", render: (X) => <Player icon user={X} online/>},
+                                ]}
+                            />
+                        </Card>
 
 
-                    {((group.invitation_requests && group.invitation_requests.length > 0) || null) &&
+                        {((group.invitation_requests && group.invitation_requests.length > 0) || null) &&
                         <Card className="invitation-requests">
                             <h4>{_("Invitation requests")}</h4>
                             {group.invitation_requests.map((ir) => {
@@ -732,16 +729,16 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                                 );
                             })}
                         </Card>
-                    }
+                        }
 
 
-                    <Card className='ladders'>
-                        <div><Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link></div>
-                        <div><Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link></div>
-                        <div><Link to={`/ladder/${group.ladder_ids[2]}`}>{_("19x19 Ladder")}</Link></div>
-                    </Card>
+                        <Card className='ladders'>
+                            <div><Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link></div>
+                            <div><Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link></div>
+                            <div><Link to={`/ladder/${group.ladder_ids[2]}`}>{_("19x19 Ladder")}</Link></div>
+                        </Card>
 
-                    {/*
+                        {/*
                     {group.ladder_ids.map((ladder_id, idx) => (
                         <Card key={idx}>
                             <Link
@@ -756,13 +753,13 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         </Card>
                     ))}
                     */}
+                    </div>
+
+
+
                 </div>
 
-
-
             </div>
-
-        </div>
         );
 
 
@@ -786,7 +783,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                 </div>
             );
         }
-    }
+    };
 
     deleteGroup = () => {
         swal({
@@ -802,7 +799,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }
+    };
 
     makeAdmin(player_id: number) {
         swal({text: _("Are you sure you wish to make this user an administrator of the group?"), showCancelButton: true, focusCancel: true})

@@ -39,13 +39,13 @@ export class FriendList extends React.PureComponent<{}, any> {
             show_offline_friends: preferences.get("show-offline-friends"),
         };
     }
-    friends_listener:any;
+    friends_listener: any;
 
     updateFriends = (friends) => {
         this.setState({
             friends: this.sortFriends(friends),
         });
-    }
+    };
 
     componentDidMount() {
         data.watch(cached.friends, this.updateFriends); /* this is managed by our FriendIndicator */
@@ -57,7 +57,7 @@ export class FriendList extends React.PureComponent<{}, any> {
     }
     resortFriends = () => {
         this.setState({"friends": this.sortFriends(this.state.friends)});
-    }
+    };
     sortFriends(lst) {
         let ret = [].concat(lst);
         ret.sort((a, b) => {
@@ -77,13 +77,13 @@ export class FriendList extends React.PureComponent<{}, any> {
         preferences.set("show-offline-friends", ev.target.checked),
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
         ev.stopPropagation();
-    }
+    };
     clickShowOfflineFriends = (ev) => {
         ev.stopPropagation();
-    }
+    };
     eat = (ev) => {
         ev.stopPropagation();
-    }
+    };
 
     render() {
         return (

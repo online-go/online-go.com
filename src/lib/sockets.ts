@@ -20,8 +20,8 @@ import Debug from "debug";
 import { current_language } from 'translate';
 import { io } from "socket.io-client";
 
-declare var ogs_language_version;
-declare var ogs_version;
+declare let ogs_language_version;
+declare let ogs_version;
 
 const debug = new Debug("sockets");
 

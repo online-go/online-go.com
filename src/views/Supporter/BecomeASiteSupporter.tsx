@@ -50,7 +50,7 @@ export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     becomeASiteSupporter = () => {
         browserHistory.push("/user/supporter");
         this.close();
-    }
+    };
 }
 
 export function openBecomeASiteSupporterModal() {

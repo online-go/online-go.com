@@ -32,55 +32,55 @@ import {Intro} from './Intro';
 
 
 export class FalseEyes extends LearningHubSection {
-    static section():string { return "false-eyes"; }
-    static title():string { return pgettext("Tutorial section on false eyes", "False Eyes"); }
-    static subtext():string { return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes"); }
+    static section(): string { return "false-eyes"; }
+    static title(): string { return pgettext("Tutorial section on false eyes", "False Eyes"); }
+    static subtext(): string { return pgettext("Tutorial section on false eyes", "Some eyes aren't really eyes"); }
 }
 export class CuttingStones extends LearningHubSection {
-    static section():string { return "cutting-stones"; }
-    static title():string { return pgettext("Tutorial section on cutting stones", "Cutting Stones"); }
-    static subtext():string { return pgettext("Tutorial section on cutting stones", ""); }
+    static section(): string { return "cutting-stones"; }
+    static title(): string { return pgettext("Tutorial section on cutting stones", "Cutting Stones"); }
+    static subtext(): string { return pgettext("Tutorial section on cutting stones", ""); }
 }
 export class JumpingStones extends LearningHubSection {
-    static section():string { return "jumping-stones"; }
-    static title():string { return pgettext("Tutorial section on jumping stones", "Jumping Stones"); }
-    static subtext():string { return pgettext("Tutorial section on jumping stones", ""); }
+    static section(): string { return "jumping-stones"; }
+    static title(): string { return pgettext("Tutorial section on jumping stones", "Jumping Stones"); }
+    static subtext(): string { return pgettext("Tutorial section on jumping stones", ""); }
 }
 
 export class Semeai extends LearningHubSection {
-    static section():string { return "semeai"; }
-    static title():string { return pgettext("Tutorial section on semeai", "Semeai"); }
-    static subtext():string { return pgettext("Tutorial section on semeai", "Attacking eachother"); }
+    static section(): string { return "semeai"; }
+    static title(): string { return pgettext("Tutorial section on semeai", "Semeai"); }
+    static subtext(): string { return pgettext("Tutorial section on semeai", "Attacking eachother"); }
 }
 export class CountingLiberties extends LearningHubSection {
-    static section():string { return "counting-liberties"; }
-    static title():string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
-    static subtext():string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
+    static section(): string { return "counting-liberties"; }
+    static title(): string { return pgettext("Tutorial section on counting liberties", "Counting Liberties"); }
+    static subtext(): string { return pgettext("Tutorial section on counting liberties", "Known when you can win a battle"); }
 }
 export class WhatIsGo extends LearningHubSection {
-    static section():string { return "what-is-go"; }
-    static title():string { return pgettext("Tutorial section on what is go", "What is Go?"); }
-    static subtext():string { return pgettext("Tutorial section on what is go", ""); }
+    static section(): string { return "what-is-go"; }
+    static title(): string { return pgettext("Tutorial section on what is go", "What is Go?"); }
+    static subtext(): string { return pgettext("Tutorial section on what is go", ""); }
 }
 export class SportOfGoAndGoAsArt extends LearningHubSection {
-    static section():string { return "sport-of-go-and-go-as-art"; }
-    static title():string { return pgettext("Tutorial section on the sport of Go", "Sport of Go"); }
-    static subtext():string { return pgettext("Tutorial section on the sport of Go", "Go as Art"); }
+    static section(): string { return "sport-of-go-and-go-as-art"; }
+    static title(): string { return pgettext("Tutorial section on the sport of Go", "Sport of Go"); }
+    static subtext(): string { return pgettext("Tutorial section on the sport of Go", "Go as Art"); }
 }
 export class BenefitsOfLearningGo extends LearningHubSection {
-    static section():string { return "benefits-of-learning-go"; }
-    static title():string { return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go"); }
-    static subtext():string { return pgettext("Tutorial section on beneifts to learning go", "It's more than just a game!"); }
+    static section(): string { return "benefits-of-learning-go"; }
+    static title(): string { return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go"); }
+    static subtext(): string { return pgettext("Tutorial section on beneifts to learning go", "It's more than just a game!"); }
 }
 export class BasicMannersOfGo extends LearningHubSection {
-    static section():string { return "basic-manners-of-go"; }
-    static title():string { return pgettext("Tutorial section on the manners in the game", "Basic manners of Go"); }
-    static subtext():string { return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!"); }
+    static section(): string { return "basic-manners-of-go"; }
+    static title(): string { return pgettext("Tutorial section on the manners in the game", "Basic manners of Go"); }
+    static subtext(): string { return pgettext("Tutorial section on the manners in the game", "Be polite, it's Go!"); }
 }
 export class Terminology extends LearningHubSection {
-    static section():string { return "terminology"; }
-    static title():string { return pgettext("Tutorial section on terminology", "Terminology"); }
-    static subtext():string { return pgettext("Tutorial section on terminology", "Say what now?"); }
+    static section(): string { return "terminology"; }
+    static title(): string { return pgettext("Tutorial section on terminology", "Terminology"); }
+    static subtext(): string { return pgettext("Tutorial section on terminology", "Say what now?"); }
 }
 
 
@@ -101,7 +101,7 @@ export let sections: [string, any[]][] = [
     */
 ];
 
-export let allsections:Array<typeof LearningHubSection> = [];
+export let allsections: Array<typeof LearningHubSection> = [];
 for (let S of sections) {
     allsections = allsections.concat(S[1]);
 }

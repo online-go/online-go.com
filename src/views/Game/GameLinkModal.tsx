@@ -44,39 +44,39 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         }
 
         return (
-          <div className="Modal GameLinkModal" ref="modal">
-              <div className="header">
-                  <div>
-                      <h2>
-                          {goban.engine.config.game_name}
-                      </h2>
-                      <h3>
-                          <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {
-                              _("vs.")
-                          } <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
-                      </h3>
-                  </div>
-              </div>
-              <div className="body">
-                  <div className="GameLink-kv">
-                      <a href={"" + window.location} target="_blank"><i className="fa fa-link"/></a>
-                      <span>{goban.game_id
+            <div className="Modal GameLinkModal" ref="modal">
+                <div className="header">
+                    <div>
+                        <h2>
+                            {goban.engine.config.game_name}
+                        </h2>
+                        <h3>
+                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {
+                                _("vs.")
+                            } <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
+                        </h3>
+                    </div>
+                </div>
+                <div className="body">
+                    <div className="GameLink-kv">
+                        <a href={"" + window.location} target="_blank"><i className="fa fa-link"/></a>
+                        <span>{goban.game_id
                           ?  _("Game") /* Translators: Link to game */
                           :  _("Review") /* Translators: Link to review */
-                      }: </span>
-                      <input type="text" value={"" + window.location} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
-                  </div>
+                        }: </span>
+                        <input type="text" value={"" + window.location} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
+                    </div>
 
-                  <div className="GameLink-kv">
-                      <a href={sgf_url} target="_blank"><i className="fa fa-link"/></a>
-                      <span>{_("SGF")}: </span>
-                      <input type="text" value={sgf_url} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
-                  </div>
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-              </div>
-          </div>
+                    <div className="GameLink-kv">
+                        <a href={sgf_url} target="_blank"><i className="fa fa-link"/></a>
+                        <span>{_("SGF")}: </span>
+                        <input type="text" value={sgf_url} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
+                    </div>
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                </div>
+            </div>
         );
     }
 }

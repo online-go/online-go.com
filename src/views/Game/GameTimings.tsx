@@ -22,7 +22,7 @@ import 'moment-duration-format';
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 
-declare var swal;
+declare let swal;
 
 interface GameTimingProperties {
     moves: any;
@@ -40,10 +40,10 @@ interface GameTimingState {
 
 export class GameTimings extends React.Component<GameTimingProperties> {
 
-    constructor(props:GameTimingProperties) {
+    constructor(props: GameTimingProperties) {
         super(props);
 
-        let state:GameTimingState = {
+        let state: GameTimingState = {
         };
         this.state = state;
     }
@@ -52,22 +52,20 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         duration < moment.duration(60000) ?
         `${moment.duration(duration).asSeconds().toFixed(1)}s` :
         moment.duration(duration).format()
-    )
+    );
 
     // needed because end_time and start_time are only to the nearest second
     show_seconds_resolution = (duration: moment.Duration) => {
         if (duration < moment.duration(1000)) {
             return ">1s";  // we don't have better resolution than this.
-        }
-        else if (duration < moment.duration(60000)) {
-           return `${moment.duration(duration).asSeconds().toFixed(0)}s`;
-        }
-        else {
+        } else if (duration < moment.duration(60000)) {
+            return `${moment.duration(duration).asSeconds().toFixed(0)}s`;
+        } else {
             return  moment.duration(duration).format("d:h:m:s");
         }
-    }
+    };
 
-    public render():JSX.Element {
+    public render(): JSX.Element {
         let game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
         let black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
         let white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
@@ -87,8 +85,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                 handicap_moves = this.props.moves.slice(0, this.props.handicap - 1);
                 non_handicap_moves = this.props.moves.slice(this.props.handicap - 1);
                 handicap_move_offset = this.props.handicap - 1;
-            }
-            else {
+            } else {
                 // In fixed handicap placement, white goes first.  This needs a separate special row in the table to show just white's move
 
                 white_first_turn = true;
@@ -143,8 +140,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                         game_elapseds.push(game_elapsed.clone());
                         if (blacks_turn) {
                             black_elapsed.add(elapsed);
-                        }
-                        else {
+                        } else {
                             white_elapsed.add(elapsed);
                         }
                         return(
@@ -233,7 +229,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
     }
 }
 
-function blurDurationFormat(blur_ms: number | undefined):string | null {
+function blurDurationFormat(blur_ms: number | undefined): string | null {
     if (!blur_ms || blur_ms < 100) {
         return null;
     }

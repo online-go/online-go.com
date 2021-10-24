@@ -40,7 +40,7 @@ import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 import {openPlayerNotesModal} from 'PlayerNotesModal';
 
-declare var swal;
+declare let swal;
 
 interface PlayerDetailsProperties {
     playerId: number;
@@ -130,7 +130,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
-    }
+    };
 
     gotoPlayerView = (ev) => {
         this.close_all_modals_and_popovers();
@@ -141,57 +141,57 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         } else {
             browserHistory.push(url);
         }
-    }
+    };
     challenge = (_ev) => {
         challenge(this.props.playerId);
         this.close_all_modals_and_popovers();
-    }
+    };
     message = (_ev) => {
         getPrivateChat(this.props.playerId).open();
         this.close_all_modals_and_popovers();
-    }
+    };
     report = (_ev) => {
         alertModerator({user: this.props.playerId});
         this.close_all_modals_and_popovers();
-    }
+    };
     block = (ev) => {
         let controls = openBlockPlayerControls(ev, this.props.playerId);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
-    }
+    };
     ban = (_ev) => {
         ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }
+    };
     shadowban = (_ev) => {
         shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }
+    };
     removeShadowban = (_ev) => {
         remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }
+    };
     removeBan = (_ev) => {
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
-    }
+    };
     openSupporterAdmin = () => {
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
-    }
+    };
 
     editPlayerNotes = () => {
         this.close_all_modals_and_popovers();
         openPlayerNotesModal(this.props.playerId);
-    }
+    };
 
     addFriend = () => {
         toast(<div>{_("Sent friend request")}</div>, 5000);
         this.close_all_modals_and_popovers();
         post('me/friends', {player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
-    }
+    };
     removeFriend = () => {
         toast(<div>{_("Removed friend")}</div>, 5000);
         this.close_all_modals_and_popovers();
         post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
-    }
+    };
     removeSingleLine = () => {
         let m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
         if (m) {
@@ -219,7 +219,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         }
 
         this.close_all_modals_and_popovers();
-    }
+    };
     removeAllChats = () => {
         this.close_all_modals_and_popovers();
 
@@ -232,7 +232,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         })
         .then(() => termination_socket.send('chat/remove_all', {player_id: this.props.playerId}))
         .catch(() => 0);
-    }
+    };
     render() {
         let user = data.get("user");
 

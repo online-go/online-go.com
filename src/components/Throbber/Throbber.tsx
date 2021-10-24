@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /* From https://loading.io/css/ */
+/* From https://loading.io/css/ */
 
 import * as React from "react";
 
@@ -38,7 +38,7 @@ export class Throbber extends React.PureComponent<ThrobberProps, any> {
     turnOnThrob = () => {
         // console.log("turning on throb");
         this.setState({throbbing: true});
-    }
+    };
 
     componentDidUpdate = (prevProps, prevState) => {
         // console.log("throb request", this.props.throb);
@@ -46,19 +46,18 @@ export class Throbber extends React.PureComponent<ThrobberProps, any> {
             if (!prevState.throbbing) {
                 this.throb_delay_timer = setTimeout(this.turnOnThrob , 150);
             }
-        }
-        else {
+        } else {
             clearTimeout(this.throb_delay_timer);
             this.setState({throbbing: false});
         }
-    }
+    };
 
     render = () => {
         return (
             <div className={"throbber" + (this.state.throbbing ? "" :" throbber-off")}>
                 <div className="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-          </div>
+            </div>
         );
-    }
+    };
 }
 

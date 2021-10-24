@@ -50,7 +50,7 @@ let UserRating = (props: {rating: number}) => {
     return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
 };
 
-declare var ogs_missing_translation_count;
+declare let ogs_missing_translation_count;
 
 export class Overview extends React.Component<{}, any> {
     private static defaultTitle = "OGS";
@@ -87,7 +87,7 @@ export class Overview extends React.Component<{}, any> {
 
     setBoardsToMoveOn = (boardsToMoveOn) => {
         this.setState({boards_to_move_on: boardsToMoveOn});
-    }
+    };
 
     componentDidMount() {
         this.setTitle();
@@ -102,7 +102,7 @@ export class Overview extends React.Component<{}, any> {
 
     updateUser = (user) => {
         this.setState({"user": user});
-    }
+    };
 
     refresh() {
         abort_requests_in_flight("ui/overview");
@@ -125,43 +125,43 @@ export class Overview extends React.Component<{}, any> {
         let user = this.state.user;
 
         return (
-        <div id="Overview-Container">
-            <SupporterGoals />
-            <div id="Overview">
-                <div className="left">
-                    <EmailBanner />
-                    <ActiveAnnouncements  />
-                    <ChallengesList onAccept={() => this.refresh()} />
+            <div id="Overview-Container">
+                <SupporterGoals />
+                <div id="Overview">
+                    <div className="left">
+                        <EmailBanner />
+                        <ActiveAnnouncements  />
+                        <ChallengesList onAccept={() => this.refresh()} />
 
-                    {((user && user.provisional) || null) &&
+                        {((user && user.provisional) || null) &&
                         <DismissableNotification
                             className="learn-how-to-play"
                             dismissedKey="learn-how-to-play"
-                            >
+                        >
                             <Link to="/learn-to-play-go">{_("New to Go? Click here to learn how to play!")}</Link>
                         </DismissableNotification>
-                    }
+                        }
 
-                    {((this.state.resolved && this.state.overview.active_games.length) || null) &&
+                        {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
                             <h2>{_("Active Games")} ({this.state.overview.active_games.length})</h2>
                             <GameList list={this.state.overview.active_games} player={user}
                                 emptyMessage={_("You're not currently playing any games. Start a new game with the \"Create a new game\" or \"Look for open games\" buttons above.")}
                             />
                         </div>
-                    }
-                    {((this.state.resolved && this.state.overview.active_games.length === 0) || null) &&
+                        }
+                        {((this.state.resolved && this.state.overview.active_games.length === 0) || null) &&
                         <div className="no-active-games">
                             <div style={{"marginBottom": "1rem"}}>{_("You're not currently playing any games.")}</div>
                             <Link to="/play" className="btn primary">{_("Find a game")}</Link>
                         </div>
-                    }
-                </div>
-                <div className="right">
-                    <ProfileCard user={user} />
+                        }
+                    </div>
+                    <div className="right">
+                        <ProfileCard user={user} />
 
-                    <div className="overview-categories">
-                        {this.state.show_translation_dialog &&
+                        <div className="overview-categories">
+                            {this.state.show_translation_dialog &&
                             <Card className="translation-dialog">
                                 <FabX onClick={this.dismissTranslationDialog} />
 
@@ -171,24 +171,24 @@ export class Overview extends React.Component<{}, any> {
 
                                 <button className='btn xs never-show-this-message-button' onClick={this.neverShowTranslationDialog}>{_("Never show this message")}</button>
                             </Card>
-                        }
+                            }
 
-                        <h3><Link to="/tournaments"><i className="fa fa-trophy"></i> {_("Tournaments")}</Link></h3>
-                        <TournamentList />
+                            <h3><Link to="/tournaments"><i className="fa fa-trophy"></i> {_("Tournaments")}</Link></h3>
+                            <TournamentList />
 
-                        <h3><Link to="/ladders"><i className="fa fa-list-ol"></i> {_("Ladders")}</Link></h3>
-                        <LadderList />
+                            <h3><Link to="/ladders"><i className="fa fa-list-ol"></i> {_("Ladders")}</Link></h3>
+                            <LadderList />
 
-                        <h3><Link to="/groups"><i className="fa fa-users"></i> {_("Groups")}</Link></h3>
-                        <GroupList />
+                            <h3><Link to="/groups"><i className="fa fa-users"></i> {_("Groups")}</Link></h3>
+                            <GroupList />
 
-                        <h3><Link to="/chat"><i className="fa fa-comment-o"></i> {_("Chat with friends")}</Link></h3>
-                        <FriendList />
+                            <h3><Link to="/chat"><i className="fa fa-comment-o"></i> {_("Chat with friends")}</Link></h3>
+                            <FriendList />
+                        </div>
+
                     </div>
-
                 </div>
             </div>
-        </div>
         );
     }
 
@@ -197,14 +197,14 @@ export class Overview extends React.Component<{}, any> {
         this.setState({
             show_translation_dialog: false
         });
-    }
+    };
 
     neverShowTranslationDialog = (ev) => {
         preferences.set("translation-dialog-never-show", true);
         this.setState({
             show_translation_dialog: false
         });
-    }
+    };
 }
 
 export class GroupList extends React.PureComponent<{}, any> {
@@ -224,10 +224,10 @@ export class GroupList extends React.PureComponent<{}, any> {
 
     updateGroups = (groups) => {
         this.setState({"groups": groups});
-    }
+    };
     updateGroupInvitations = (invitations) => {
         this.setState({"invitations": invitations});
-    }
+    };
 
     componentWillUnmount() {
         data.unwatch(cached.groups, this.updateGroups);
@@ -281,7 +281,7 @@ export class TournamentList extends React.PureComponent<{}, any> {
     }
     update = (tournaments) => {
         this.setState({"my_tournaments": tournaments});
-    }
+    };
 
     componentWillUnmount() {
         abort_requests_in_flight("me/tournaments");
@@ -315,7 +315,7 @@ export class LadderList extends React.PureComponent<{}, any> {
 
     update = (ladders) => {
         this.setState({"ladders": ladders});
-    }
+    };
 
     componentWillUnmount() {
         abort_requests_in_flight("me/ladders");

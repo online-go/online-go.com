@@ -24,7 +24,7 @@ interface PersistentElementProps {
 }
 
 export class PersistentElement extends React.Component<PersistentElementProps, any> {
-    container:HTMLDivElement;
+    container: HTMLDivElement;
 
     componentDidMount() {
         if (this.container) {

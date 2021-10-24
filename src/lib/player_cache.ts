@@ -56,8 +56,7 @@ export class Subscriber {
         for (let player of players) {
             if (typeof player === "number") {
                 result.push(player.toString());
-            }
-            else {
+            } else {
                 result.push(player.id.toString());
             }
         }
@@ -66,19 +65,19 @@ export class Subscriber {
 }
 
 export interface PlayerCacheEntry {
-    id      : number;
+    id: number;
     country?: string;
-    icon?   : string;
-    pro?    : boolean;
+    icon?: string;
+    pro?: boolean;
     ranking?: number;
-    rating? : number;
+    rating?: number;
     ratings?: {
                 'overall': {
                     rating: number;
                     deviation: number;
                     volatility: number;
                     games_played: number;
-                }
+                };
               };
     ui_class?: string;
     username?: string;
@@ -86,8 +85,8 @@ export interface PlayerCacheEntry {
 
 interface FetchEntry {
     player_id: number;
-    resolve: (value?:any) => void;
-    reject: (reason?:any) => void;
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
     required_fields: Array<string>;
 }
 
@@ -162,18 +161,17 @@ export function fetch_by_username(username: string, required_fields?: Array<stri
     let user = lookup_by_username(username);
     if (user) {
         return fetch(user.id, required_fields);
-    }
-    else {
+    } else {
         let res = get("players", {username: username})
                     .then((res) => {
-                    if (res.results.length) {
-                        return fetch(res.results[0].id, required_fields);
-                    } else {
-                        console.error("Attempted to fetch invalid player name: ", username);
-                        cache_by_username[username] = {id: null, username: username, ui_class: "provisional", pro: false};
-                        return Promise.reject("invalid player name");
-                    }
-                });
+                        if (res.results.length) {
+                            return fetch(res.results[0].id, required_fields);
+                        } else {
+                            console.error("Attempted to fetch invalid player name: ", username);
+                            cache_by_username[username] = {id: null, username: username, ui_class: "provisional", pro: false};
+                            return Promise.reject("invalid player name");
+                        }
+                    });
         return res;
     }
 }

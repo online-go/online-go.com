@@ -27,7 +27,7 @@ interface JosekiVariationFilterProps {
     tag_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
-    current_filter: {contributor: number, tags: number[], source: number};
+    current_filter: {contributor: number; tags: number[]; source: number};
 }
 
 export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, any> {
@@ -92,7 +92,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         }).catch((r) => {
             console.log("Sources GET failed:", r);
         });
-    }
+    };
 
     onTagChange = (tags) => {
         // console.log("Variation filter update:", e);
@@ -102,7 +102,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         // console.log("new tag filter", new_filter);
         this.props.set_variation_filter(new_filter);
         this.setState({selected_filter: new_filter});
-    }
+    };
 
     onContributorChange = (e) => {
 
@@ -110,14 +110,14 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         const new_filter = {...this.state.selected_filter, contributor: val};
         this.props.set_variation_filter(new_filter);
         this.setState({selected_filter: new_filter});
-    }
+    };
 
     onSourceChange = (e) => {
         const val = e.target.value === 'none' ? null : parseInt(e.target.value);
         const new_filter = {...this.state.selected_filter, source: val};
         this.props.set_variation_filter(new_filter);
         this.setState({selected_filter: new_filter});
-    }
+    };
 
     render() {
         // console.log("Variation filter render");
@@ -128,8 +128,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         let contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved) {
                 return <option key={i} value={c.player.id}>{c.player.username}</option>;
-            }
-            else {
+            } else {
                 return <option key={i} value={c.player}>{"(player " + c.player + ")"}</option>;
             }
         });

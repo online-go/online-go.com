@@ -69,7 +69,7 @@ export class PopOver extends TypedEventEmitter<Events> {
 
             this.emit("close");
         }
-    }
+    };
 }
 
 export function close_all_popovers(): void {
@@ -101,8 +101,7 @@ export function popover(config: PopoverConfig): PopOver {
         } else {
             container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
         }
-    }
-    else if (config.below) {
+    } else if (config.below) {
         let rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
         x = rectangle.left + window.scrollX;
         x = Math.min(x, bounds.x - minWidth);

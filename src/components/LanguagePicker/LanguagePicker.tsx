@@ -70,8 +70,7 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
             if (auto) {
                 if (lc === "auto") {
                     ret += "selected";
-                }
-                else if (lc === current_language) {
+                } else if (lc === current_language) {
                     ret += "auto";
                 }
             } else {
@@ -85,12 +84,12 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
         return (
             <div className="Modal LanguagePickerModal">
                 <div className="body">
-                {
-                    Object.keys(languages).sort(language_sorter).map((lc, idx) => (
-                        <span key={idx} className={computeClass(lc) + " fakelink language-option"}
-                              onClick={() => this.setLanguage(lc)}>{languages[lc]}</span>
-                    ))
-                }
+                    {
+                        Object.keys(languages).sort(language_sorter).map((lc, idx) => (
+                            <span key={idx} className={computeClass(lc) + " fakelink language-option"}
+                                onClick={() => this.setLanguage(lc)}>{languages[lc]}</span>
+                        ))
+                    }
                 </div>
                 <div className="footer">
                     <button onClick={this.close}>{_("Cancel")}</button>

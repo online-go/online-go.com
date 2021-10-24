@@ -31,7 +31,7 @@ import {openReportedConversationModal} from "ReportedConversationModal";
 
 
 
-declare var swal;
+declare let swal;
 
 interface IncidentReportTrackerProperties {
 }
@@ -127,11 +127,9 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                         () => {
                             if (report.reported_game) {
                                 browserHistory.push(`/game/${report.reported_game}`);
-                            }
-                            else if (report.reported_review) {
+                            } else if (report.reported_review) {
                                 browserHistory.push(`/review/${report.reported_review}`);
-                            }
-                            else if (report.reported_user) {
+                            } else if (report.reported_user) {
                                 browserHistory.push(`/user/view/${report.reported_user.id}`);
                             }
                         }
@@ -187,11 +185,11 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             normal_ct: normal_ct,
             sandbag_ct: sandbag_ct,
         });
-    }
+    };
 
     toggleList = () => {
         this.setState({show_incident_list: !this.state.show_incident_list});
-    }
+    };
 
 
     render() {
@@ -255,13 +253,13 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                                         }
 
 
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                        {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
                                             <button className="success xs"  onClick={report.good_report}>{_("Good report")}</button>}
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                        {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
                                             <button className="info xs"  onClick={report.set_note}>{_("Note")}</button>}
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                        {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
                                             <button className="danger xs"  onClick={report.unclaim}>{_("Unclaim")}</button>}
-                                    {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
+                                        {((report.moderator && user.is_moderator && user.id === report.moderator.id) || null) &&
                                             <button className="reject xs"  onClick={report.bad_report}>{_("Bad report")}</button>}
                                     </div>
                                     <div className="spread">

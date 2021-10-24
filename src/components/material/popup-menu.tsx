@@ -22,53 +22,53 @@ export interface PopupMenuItem {
     onClick: () => void;
 }
 
-interface PopupMenuProps { list: PopupMenuItem[]; }
+interface PopupMenuProps { list: PopupMenuItem[] }
 
 export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: boolean}> {
 
     constructor(props: PopupMenuProps) {
         super(props);
         this.state = {
-          isListOpen: false
+            isListOpen: false
         };
     }
 
     toggleList = () => {
         this.setState(prevState => ({
-          isListOpen: !prevState.isListOpen,
+            isListOpen: !prevState.isListOpen,
         }));
-    }
+    };
 
     render() {
         const { isListOpen } = this.state;
         const { list } = this.props;
 
         return (
-          <div className="popup-menu">
-            <button
-              type="button"
-              className="popup-menu-button"
-              onClick={this.toggleList}>
-              <i className = "fa fa-caret-down"/>
-            </button>
-            {isListOpen && (
-              <div
-                role="list"
-                className="popup-menu-list"
-              >
-                {list.map((item: PopupMenuItem, idx) => (
-                  <button
-                    key={idx}
+            <div className="popup-menu">
+                <button
                     type="button"
-                    className="popup-menu-item"
-                    onClick={item.onClick}
-                  >
-                    {item.title}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+                    className="popup-menu-button"
+                    onClick={this.toggleList}>
+                    <i className = "fa fa-caret-down"/>
+                </button>
+                {isListOpen && (
+                    <div
+                        role="list"
+                        className="popup-menu-list"
+                    >
+                        {list.map((item: PopupMenuItem, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                className="popup-menu-item"
+                                onClick={item.onClick}
+                            >
+                                {item.title}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         );
     }
 
@@ -78,17 +78,17 @@ export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: bool
                 isListOpen: false,
             });
         }
-    }
+    };
 
     componentDidUpdate() {
         const { isListOpen } = this.state;
 
         setTimeout(() => {
             if (isListOpen) {
-              window.addEventListener('click', this.close);
+                window.addEventListener('click', this.close);
             } else {
-              window.removeEventListener('click', this.close);
+                window.removeEventListener('click', this.close);
             }
-          }, 0);
+        }, 0);
     }
 }

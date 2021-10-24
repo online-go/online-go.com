@@ -9,7 +9,7 @@
 
 import * as player_cache from "player_cache";
 
-declare var $;
+declare let $;
 
 
 /*!
@@ -63,8 +63,7 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
     if (input.setSelectionRange) {
         input.focus();
         input.setSelectionRange(selectionStart, selectionEnd);
-    }
-    else if (input.createTextRange) {
+    } else if (input.createTextRange) {
         let range = input.createTextRange();
         range.collapse(true);
         range.moveEnd("character", selectionEnd);
@@ -96,13 +95,13 @@ function matchName(input, nicknames) {
     $.each(nicknames, (index, value) => {
         let components = value.toLowerCase().split(" ");
         for (let k = 0; k < components.length; ++k) {
-                if (components[k].substr(0, length) === match) {
-                        matches.push(value);
-                        return;
-                }
+            if (components[k].substr(0, length) === match) {
+                matches.push(value);
+                return;
+            }
         }
         if (value.toLowerCase().substr(0, length) === match) {
-                matches.push(value);
+            matches.push(value);
         }
     });
 
@@ -114,8 +113,8 @@ function matchName(input, nicknames) {
 
             $.each(matches, (index, value) => {
                 if (value.toLowerCase().substr(length + i, 1) !== letter) {
-                     letter = "";
-                     return false;
+                    letter = "";
+                    return false;
                 }
             });
             if (letter) {
@@ -125,7 +124,7 @@ function matchName(input, nicknames) {
             }
         }
         return { value: input + letters, matches: matches };
-}
+    }
     return { value: "", matches: matches };
 }
 
@@ -149,8 +148,8 @@ function matchFullName(input, nicknames) {
 
             $.each(matches, (index, value) => {
                 if (value.toLowerCase().substr(length + i, 1) !== letter) {
-                     letter = "";
-                     return false;
+                    letter = "";
+                    return false;
                 }
             });
             if (letter) {
@@ -186,36 +185,35 @@ function onKeyPress(e, options) {
 
             text = val.substr(0, sel.start);
             if (options.nick_match.test(text)) {
-                 text = text.match(options.nick_match)[1];
+                text = text.match(options.nick_match)[1];
 
-                 if (typeof(options.nicknames) === "function") {
-                     match = matchName(text, options.nicknames());
-                 } else {
-                     match = matchName(text, options.nicknames);
-                 }
+                if (typeof(options.nicknames) === "function") {
+                    match = matchName(text, options.nicknames());
+                } else {
+                    match = matchName(text, options.nicknames);
+                }
 
 
-                 completed_event = $.Event("nickname-complete");
-                 $.extend(completed_event, match);
-                 completed_event.caret = sel.start;
-                 $this.trigger(completed_event);
+                completed_event = $.Event("nickname-complete");
+                $.extend(completed_event, match);
+                completed_event.caret = sel.start;
+                $this.trigger(completed_event);
 
-                 if (match.value && !completed_event.isDefaultPrevented()) {
-                     first = val.substr(0, sel.start - text.length );
-                     last    = val.substr(sel.start);
-                     /* Space should not be added when there is only 1 match
+                if (match.value && !completed_event.isDefaultPrevented()) {
+                    first = val.substr(0, sel.start - text.length );
+                    last    = val.substr(sel.start);
+                    /* Space should not be added when there is only 1 match
                             or if there is already a space following the caret position */
-                     let space = (match.matches.length > 1 || last.length && last.substr(0, 1) === " ") ? "" : (first.trim().length === 0 ? ": " : " ");
-                     $this.val(first + match.value + space + last);
-                     setCaretToPos(this, sel.start - text.length + match.value.length + space.length);
-                 }
+                    let space = (match.matches.length > 1 || last.length && last.substr(0, 1) === " ") ? "" : (first.trim().length === 0 ? ": " : " ");
+                    $this.val(first + match.value + space + last);
+                    setCaretToPos(this, sel.start - text.length + match.value.length + space.length);
+                }
 
-                 e.preventDefault();
+                e.preventDefault();
 
-                 // Part of a crazy hack for Opera
-                 this.lastKey = 9;
-            }
-            else if (/( |: )$/.test(text)) {
+                // Part of a crazy hack for Opera
+                this.lastKey = 9;
+            } else if (/( |: )$/.test(text)) {
                 let space = text.match(/( |: )$/)[1];
                 text = text.substring(0, text.length - space.length);
                 if (typeof(options.nicknames) === "function") {
@@ -251,35 +249,35 @@ function onKeyPress(e, options) {
 
 /* tslint:disable */
 $.fn.nicknameTabComplete = function(options) {
-  options = $.extend({}, $.fn.nicknameTabComplete.defaults, options);
-  this.bind("keydown.nickname", (e) => {
-    onKeyPress.call(this, e, options);
-  }).bind("focus.nickname", () => {
+    options = $.extend({}, $.fn.nicknameTabComplete.defaults, options);
+    this.bind("keydown.nickname", (e) => {
+        onKeyPress.call(this, e, options);
+    }).bind("focus.nickname", () => {
     // Part of a crazy hack for Opera
-    this.lastKey = 0;
-  }).bind("blur.nickname", () => {
+        this.lastKey = 0;
+    }).bind("blur.nickname", () => {
     // Part of a crazy hack for Opera
-    if (this.lastKey === 9) {
-      this.focus();
-    }
-  });
+        if (this.lastKey === 9) {
+            this.focus();
+        }
+    });
 
-  if (options.on_complete != null) {
-    this.bind("nickname-complete", options.on_complete);
-  }
-  return this;
+    if (options.on_complete != null) {
+        this.bind("nickname-complete", options.on_complete);
+    }
+    return this;
 };
 /* tslint:enable */
 
 $.fn.nicknameTabComplete.defaults = {
-  nicknames: () => player_cache.nicknames,
-  nick_match: /([-_a-z0-9]+)$/i,
-  on_complete: null // Pass in a function as an alternate way of binding to this event
+    nicknames: () => player_cache.nicknames,
+    nick_match: /([-_a-z0-9]+)$/i,
+    on_complete: null // Pass in a function as an alternate way of binding to this event
 };
 
 $.fn.nicknameTabComplete.has_newline_bug = (() => {
-  let textarea = $("<textarea>").val("Newline\nTest");
-  return textarea[0].value === "Newline\r\nTest";
+    let textarea = $("<textarea>").val("Newline\nTest");
+    return textarea[0].value === "Newline\r\nTest";
 })();
 
 

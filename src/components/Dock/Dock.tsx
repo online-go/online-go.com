@@ -39,7 +39,7 @@ export class Dock extends React.Component<any, any> {
         // tested on Opera, Chrome, Safari, Edge, Firefox
         dock.style.transition = modified_transition;
         dock.style.webkitTransition = modified_transition;
-    }
+    };
 
     mouseExited = (ev) => {
         // always close fast
@@ -47,7 +47,7 @@ export class Dock extends React.Component<any, any> {
         let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
         dock.style.transition = fast_transition;
         dock.style.webkitTransition = fast_transition;
-    }
+    };
 
     render() {
         return (

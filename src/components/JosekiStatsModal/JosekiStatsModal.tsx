@@ -30,8 +30,8 @@ interface Events {
 }
 
 interface JosekiStatsModalProperties {
-    daily_page_visits: Array<{date: string, pageVisits: number,
-        explorePageVisits: number, playPageVisits: number, guestPageVisits: number}>;
+    daily_page_visits: Array<{date: string; pageVisits: number;
+        explorePageVisits: number; playPageVisits: number; guestPageVisits: number; }>;
 }
 
 function StatsChart(props: JosekiStatsModalProperties) {
@@ -62,8 +62,8 @@ function StatsChart(props: JosekiStatsModalProperties) {
         ];
 
     const series = {
-          showPoints: false
-        };
+        showPoints: false
+    };
 
     // Accessible TBD - assumes dark for now
     const label_colour = data.get("theme") === "light" ? false : true;

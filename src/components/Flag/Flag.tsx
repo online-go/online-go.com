@@ -27,7 +27,7 @@ interface FlagProperties {
 }
 
 
-export function Flag(props: FlagProperties):JSX.Element {
+export function Flag(props: FlagProperties): JSX.Element {
     if (props.language && props.user_country) {
         return (
             <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>

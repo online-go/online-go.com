@@ -19,27 +19,27 @@ import {get_handicap_adjustment, effective_outcome, EffectiveOutcome} from 'rank
 
 export class RatingEntry {
     ended: Date;
-    game_id:number;
-    played_black:boolean;
-    handicap:number;
-    rating:number;
-    deviation:number;
-    volatility:number;
-    opponent_id:number;
-    opponent_rating:number;
-    opponent_deviation:number;
-    outcome:number;
-    extra:any;
-    count:number;
-    starting_rating:number;
-    starting_deviation:number;
-    increase:boolean;
-    wins:number;
-    losses:number;
-    strong_wins:number;
-    strong_losses:number;
-    weak_wins:number;
-    weak_losses:number;
+    game_id: number;
+    played_black: boolean;
+    handicap: number;
+    rating: number;
+    deviation: number;
+    volatility: number;
+    opponent_id: number;
+    opponent_rating: number;
+    opponent_deviation: number;
+    outcome: number;
+    extra: any;
+    count: number;
+    starting_rating: number;
+    starting_deviation: number;
+    increase: boolean;
+    wins: number;
+    losses: number;
+    strong_wins: number;
+    strong_losses: number;
+    weak_wins: number;
+    weak_losses: number;
     index: number;  // to be set by client as needed.
 
     constructor(obj) {
@@ -72,7 +72,7 @@ export class RatingEntry {
         return new RatingEntry(this);
     }
 
-    merge(other:RatingEntry):RatingEntry {
+    merge(other: RatingEntry): RatingEntry {
         this.rating = other.rating;
         this.deviation = other.deviation;
         this.volatility = other.volatility;
@@ -89,7 +89,7 @@ export class RatingEntry {
     }
 }
 
-export function makeRatingEntry(d:any):RatingEntry {
+export function makeRatingEntry(d: any): RatingEntry {
     let played_black = parseInt(d.played_black) === 1;
     let rating = parseFloat(d.rating);
     let opponent_rating = parseFloat(d.opponent_rating);
@@ -107,8 +107,7 @@ export function makeRatingEntry(d:any):RatingEntry {
     let outcome: EffectiveOutcome;
     if (played_black) {
         outcome = effective_outcome(rating, opponent_rating, handicap);
-    }
-    else {
+    } else {
         outcome = effective_outcome(opponent_rating, rating, handicap);
     }
 

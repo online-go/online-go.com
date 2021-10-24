@@ -40,7 +40,7 @@ interface ChatListProperties {
     closing_toggle?: () => void;
     collapse_state_store_name?: string;
     fakelink?: boolean;
-    partFunc?: (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => void;
+    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 interface ChatListState {
@@ -54,16 +54,16 @@ interface ChatListState {
     collapse_read: boolean;
     join_subscriptions: boolean;
     join_joined: boolean;
-    collapsed_channel_groups: {[channel_group:string]: boolean};
+    collapsed_channel_groups: {[channel_group: string]: boolean};
     collapse_state_store_name: string;
     highlight_active_channel: boolean;
     active_channel: string;
     fakelink: boolean;
-    partFunc?: (channel:string, dont_autoset_active:boolean, dont_clear_joined:boolean) => void;
+    partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
 }
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
-    channels: {[channel:string]: ChatChannelProxy} = {};
+    channels: {[channel: string]: ChatChannelProxy} = {};
     joined_chats = {};
     closing_toggle: () => void = () => null;
 
@@ -124,46 +124,46 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             obj.tournaments = false;
         }
         this.setState({collapsed_channel_groups: obj});
-    }
+    };
 
     onActiveChannelChanged = (channel) => {
         this.setState({
             active_channel: channel,
         });
-    }
+    };
 
-    onJoinedChanged = (joined: {[channel:string]: number}) => {
+    onJoinedChanged = (joined: {[channel: string]: number}) => {
         if (joined === undefined) {
             joined = {};
         }
         this.joined_chats = joined;
         this.updateConnectedChannels();
-    }
+    };
 
     onChatSubscriptionUpdate = () => {
         this.updateConnectedChannels();
-    }
+    };
 
-    _join_or_part(channel:string) {
+    _join_or_part(channel: string) {
         if (this.state.join_subscriptions &&
             (getUnreadChatPreference(channel) ||
              getMentionedChatPreference(channel))) {
-                if (!(channel in this.channels)) {
-                    let channelProxy = chat_manager.join(channel);
-                    channelProxy.on("unread-count-changed", this.onUnreadCountChange);
-                    this.channels[channel] = channelProxy;
-                }
-                return true;
+            if (!(channel in this.channels)) {
+                let channelProxy = chat_manager.join(channel);
+                channelProxy.on("unread-count-changed", this.onUnreadCountChange);
+                this.channels[channel] = channelProxy;
+            }
+            return true;
         }
         if (this.state.join_joined &&
             channel in this.joined_chats &&
             this.joined_chats[channel]) {
-                if (!(channel in this.channels)) {
-                    let channelProxy = chat_manager.join(channel);
-                    channelProxy.on("unread-count-changed", this.onUnreadCountChange);
-                    this.channels[channel] = channelProxy;
-                }
-                return true;
+            if (!(channel in this.channels)) {
+                let channelProxy = chat_manager.join(channel);
+                channelProxy.on("unread-count-changed", this.onUnreadCountChange);
+                this.channels[channel] = channelProxy;
+            }
+            return true;
         }
         if (channel in this.channels) {
             this.channels[channel].part();
@@ -204,7 +204,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
 
     onUnreadCountChange = (obj) => {
         this.forceUpdate();
-    }
+    };
 
     goToChannel = (ev) => {
         setActiveChannel($(ev.target).attr("data-channel"));
@@ -217,7 +217,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             }
         }
         this.closing_toggle();
-    }
+    };
 
     toggleShowAllGlobalChannels = () => {
         let collapsed_channel_groups = this.state.collapsed_channel_groups;
@@ -226,7 +226,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             data.set(this.state.collapse_state_store_name, collapsed_channel_groups);
         }
         this.forceUpdate();
-    }
+    };
     toggleShowAllGroupChannels = () => {
         let collapsed_channel_groups = this.state.collapsed_channel_groups;
         collapsed_channel_groups.groups = !collapsed_channel_groups.groups;
@@ -234,7 +234,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             data.set(this.state.collapse_state_store_name, collapsed_channel_groups);
         }
         this.forceUpdate();
-    }
+    };
     toggleShowAllTournamentChannels = () => {
         let collapsed_channel_groups = this.state.collapsed_channel_groups;
         collapsed_channel_groups.tournaments = !collapsed_channel_groups.tournaments;
@@ -242,7 +242,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             data.set(this.state.collapse_state_store_name, collapsed_channel_groups);
         }
         this.forceUpdate();
-    }
+    };
 
     display_details = (event) => {
         if (!this.props.fakelink && shouldOpenNewTab(event)) {
@@ -270,7 +270,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             below: event.currentTarget,
             minWidth: 130,
         });
-    }
+    };
 
     render() {
         let user = data.get('user');

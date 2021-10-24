@@ -68,7 +68,7 @@ export class StarRating extends React.PureComponent<any, {rating}> {
             return;
         }
         this.setState({rating: Math.max(0, Math.min(5, this.props.value))});
-    }
+    };
 
     render() {
         return (
@@ -79,7 +79,7 @@ export class StarRating extends React.PureComponent<any, {rating}> {
                         onClick={this.setters[idx]}
                         onMouseOver={this.preview[idx]}
                         onMouseOut={this.unpreview}
-                        />
+                    />
                 ))}
             </span>
         );

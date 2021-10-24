@@ -35,7 +35,7 @@ interface Events {
 
 export interface Announcement {
     id: number;
-    expiration:number;
+    expiration: number;
     type: string;
     creator: {
         id: number;
@@ -102,7 +102,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
 
     retract = (announcement) => {
         this.clearAnnouncement(announcement.id, true);
-    }
+    };
     announce = (announcement: Announcement) => {
         active_announcements[announcement.id] = announcement;
 
@@ -137,7 +137,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                 data.set("active-tournament", announcement);
             }
         }
-    }
+    };
 
     clearAnnouncement(id, dont_send_clear_announcement) {
         cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
@@ -162,39 +162,39 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
 
     render() {
         return (
-        <div className="Announcements">
-            <UIPush event="retract" channel="announcements" action={this.retract}/>
-            <UIPush event="announcement" channel="announcements" action={this.announce}/>
-            <UIPush event="retract"  action={this.retract}/>
-            <UIPush event="announcement" action={this.announce}/>
+            <div className="Announcements">
+                <UIPush event="retract" channel="announcements" action={this.retract}/>
+                <UIPush event="announcement" channel="announcements" action={this.announce}/>
+                <UIPush event="retract"  action={this.retract}/>
+                <UIPush event="announcement" action={this.announce}/>
 
-            {this.state.announcements.map((announcement, idx) => {
-                let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-                let type_muted = announcementTypeMuted(announcement);
+                {this.state.announcements.map((announcement, idx) => {
+                    let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                    let type_muted = announcementTypeMuted(announcement);
 
-                if (creator_blocked || type_muted) {
-                    return (null);
-                }
+                    if (creator_blocked || type_muted) {
+                        return (null);
+                    }
 
-                return <div className="announcement" key={idx}>
-                    <i className="fa fa-times-circle" onClick={announcement.clear}/>
-                    {/*
+                    return <div className="announcement" key={idx}>
+                        <i className="fa fa-times-circle" onClick={announcement.clear}/>
+                        {/*
                     {(announcement.type === 'tournament' || null) &&
                         <span className='expiration'>
                             {moment(announcement.expiration).fromNow(true)}:
                         </span>
                     }
                     */}
-                    {announcement.link
+                        {announcement.link
                         ? (announcement.link.indexOf("://") > 0
                             ? <a href={announcement.link} target="_blank">{announcement.text}</a>
                             : <Link to={announcement.link}>{announcement.text}</Link>
                           )
                         : <span>{announcement.text}</span>
-                    }
-                </div>;
-            })}
-        </div>
+                        }
+                    </div>;
+                })}
+            </div>
         );
     }
 }

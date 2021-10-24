@@ -36,7 +36,7 @@ interface PuzzleListProperties {
 
 export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
     refs: {
-        table
+        table;
     };
 
     constructor(props) {
@@ -103,26 +103,26 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                             }}
                             columns={[
                                 {header: "",  className: () => "icon",
-                                 render: (X) => (
-                                    <MiniGoban noLink id={null} json={X.starting_puzzle} displayWidth={64} white={null} black={null} />
-                                 )
+                                    render: (X) => (
+                                        <MiniGoban noLink id={null} json={X.starting_puzzle} displayWidth={64} white={null} black={null} />
+                                    )
                                 },
 
                                 {header: _("Collection"),  className: () => "name", orderBy: ["name"],
-                                 render: (X) => (
-                                    <div>
-                                        <div>{X.name}</div>
-                                        <Player user={X.owner}/>
-                                    </div>
-                                 )
+                                    render: (X) => (
+                                        <div>
+                                            <div>{X.name}</div>
+                                            <Player user={X.owner}/>
+                                        </div>
+                                    )
                                 },
 
                                 {header: _("Difficulty"),  className: () => "difficulty center", orderBy: ["min_rank", "max_rank"],
-                                 render: (X) => (
+                                    render: (X) => (
                                      X.min_rank_string === X.max_rank_string
                                          ? <span>{X.min_rank_string}</span>
                                          : <span>{X.min_rank_short}-{X.max_rank_short}</span>
-                                 )
+                                    )
                                 },
 
                                 {header: _("Puzzles"),  className: () => "puzzle-count center", render: (X) => X.puzzle_count, orderBy: ["-puzzle_count"]},

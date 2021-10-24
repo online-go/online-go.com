@@ -28,9 +28,9 @@ interface Events {
 }
 
 type ACLModalProperties =
-    { game_id: number; }
-    | { review_id: number; }
-    | { puzzle_collection_id?: number; }
+    { game_id: number }
+    | { review_id: number }
+    | { puzzle_collection_id?: number }
 ;
 
 
@@ -40,8 +40,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         group_autocomplete;
     };
 
-    url:string;
-    del_url:string;
+    url: string;
+    del_url: string;
 
     constructor(props) {
         super(props);
@@ -54,16 +54,13 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         if ('game_id' in props) {
             this.url = `games/${props.game_id}/acl`;
             this.del_url = `games/acl/%%`;
-        }
-        else if ('review_id' in props) {
+        } else if ('review_id' in props) {
             this.url = `reviews/${props.review_id}/acl`;
             this.del_url = `reviews/acl/%%`;
-        }
-        else if ('puzzle_collection_id' in props) {
+        } else if ('puzzle_collection_id' in props) {
             this.url = `puzzles/collections/${props.puzzle_collection_id}/acl`;
             this.del_url = `puzzles/collections/acl/%%`;
-        }
-        else {
+        } else {
             throw new Error(`ACLModal created with invalid parameters`);
         }
     }
@@ -77,7 +74,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         get(this.url)
         .then((acl) => this.setState({acl: acl}))
         .catch(errorAlerter);
-    }
+    };
 
     removeACLEntry(obj) {
         console.log("SHould be removing", obj);
@@ -96,10 +93,10 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
     playerComplete = (user) => {
         this.setState({selected_player: user});
-    }
+    };
     groupComplete = (group) => {
         this.setState({selected_group: group});
-    }
+    };
 
     grantAccess = () => {
         let player_id = this.state.selected_player && this.state.selected_player.id;
@@ -123,44 +120,44 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
             selected_player: null,
             selected_group: null,
         });
-    }
+    };
 
 
     render() {
         return (
-          <div className="Modal ACLModal" ref="modal">
-              <div className="header">
-                  <h2>{_("Access Control")}</h2>
-              </div>
-              <div className="body">
-                <div className="grant">
-                    <PlayerAutocomplete ref="player_autocomplete" onComplete={this.playerComplete} />
-                    <GroupAutocomplete ref="group_autocomplete" onComplete={this.groupComplete} />
-                    <button className="primary sm" onClick={this.grantAccess} >{_("Grant access")}</button>
+            <div className="Modal ACLModal" ref="modal">
+                <div className="header">
+                    <h2>{_("Access Control")}</h2>
                 </div>
+                <div className="body">
+                    <div className="grant">
+                        <PlayerAutocomplete ref="player_autocomplete" onComplete={this.playerComplete} />
+                        <GroupAutocomplete ref="group_autocomplete" onComplete={this.groupComplete} />
+                        <button className="primary sm" onClick={this.grantAccess} >{_("Grant access")}</button>
+                    </div>
 
-                <div className="acl-entries">
-                    {this.state.acl.map((obj, idx) => (
-                        <div key={idx} className="acl-entry">
-                            <i className="fa fa-remove clickable" onClick={this.removeACLEntry.bind(this, obj)} />
+                    <div className="acl-entries">
+                        {this.state.acl.map((obj, idx) => (
+                            <div key={idx} className="acl-entry">
+                                <i className="fa fa-remove clickable" onClick={this.removeACLEntry.bind(this, obj)} />
 
-                            {obj.group_id
+                                {obj.group_id
                                 ? <a target="_blank" href={`/group/${obj.group_id}`} className="group">{obj.group_name}</a>
                                 : <Player user={obj.player_id} />
-                            }
-                        </div>
-                    ))}
+                                }
+                            </div>
+                        ))}
+                    </div>
                 </div>
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-              </div>
-          </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                </div>
+            </div>
         );
     }
 }
 
-export function openACLModal(props:ACLModalProperties): void {
+export function openACLModal(props: ACLModalProperties): void {
     openModal(<ACLModal {...props} />);
 }
 

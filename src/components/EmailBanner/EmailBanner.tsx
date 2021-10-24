@@ -36,12 +36,12 @@ export class EmailBanner extends React.PureComponent<EmailBannerProperties, any>
 
     viewSettings = () => {
         browserHistory.push('/user/settings');
-    }
+    };
 
     dismiss = () => {
         data.set('email-banner-dismissed', true);
         this.forceUpdate();
-    }
+    };
 
     render() {
         if (data.get('user').email_validated) {

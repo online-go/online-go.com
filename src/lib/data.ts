@@ -102,7 +102,7 @@ import { TypedEventEmitter } from 'TypedEventEmitter';
 import { GroupList, ActiveTournamentList } from './types';
 
 interface Events {
-    [name:string]: any;
+    [name: string]: any;
 }
 
 export enum Replication {
@@ -254,7 +254,7 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     console.table(ret);
 }
 
-export function getPrefix(key_prefix:string = "", strip_prefix?: boolean):{[key:string]: any} {
+export function getPrefix(key_prefix: string = "", strip_prefix?: boolean): {[key: string]: any} {
     if (!key_prefix) {
         key_prefix = "";
     }
@@ -344,7 +344,7 @@ try {
 import ITC from 'ITC';
 import { termination_socket } from 'sockets';
 
-type RemoteStorableValue = number | string | boolean | undefined | {[key:string]: RemoteStorableValue};
+type RemoteStorableValue = number | string | boolean | undefined | {[key: string]: RemoteStorableValue};
 
 interface RemoteKV {
     key: string;
@@ -353,14 +353,14 @@ interface RemoteKV {
     modified?: string;
 }
 
-let remote_store:{[key:string]: RemoteKV} = {};
-let wal:{[key:string]: {key: string, value?: any, replication: Replication}} = {};
-let wal_currently_processing:{[k:string]: boolean} = {};
-let last_modified:string = "2000-01-01T00:00:00.000Z";
-let loaded_user_id:number | null = null; // user id we've currently loaded data for
+let remote_store: {[key: string]: RemoteKV} = {};
+let wal: {[key: string]: {key: string; value?: any; replication: Replication}} = {};
+let wal_currently_processing: {[k: string]: boolean} = {};
+let last_modified: string = "2000-01-01T00:00:00.000Z";
+let loaded_user_id: number | null = null; // user id we've currently loaded data for
 
 
-function remote_set(key:string, value:RemoteStorableValue, replication: Replication):void {
+function remote_set(key: string, value: RemoteStorableValue, replication: Replication): void {
     let user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error('user is not authenticated');
@@ -375,7 +375,7 @@ function remote_set(key:string, value:RemoteStorableValue, replication: Replicat
     safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${key}`, JSON.stringify(remote_store[key]));
 }
 
-function remote_remove(key:string, replication: Replication):void {
+function remote_remove(key: string, replication: Replication): void {
     let user = store["config.user"];
     if (!user || user.anonymous) {
         throw new Error('user is not authenticated');
@@ -390,7 +390,7 @@ function remote_remove(key:string, replication: Replication):void {
     safeLocalStorageRemove(`ogs-remote-storage-store.${user.id}.${key}`);
 }
 
-function remote_get(key:string):RemoteStorableValue {
+function remote_get(key: string): RemoteStorableValue {
     let user = store["config.user"];
     if (!user || user.anonymous) {
         return undefined;
@@ -404,14 +404,14 @@ function remote_get(key:string):RemoteStorableValue {
 // are writing a value to our remote storage, we retry when we re-establish
 // our connection. This is a "last to write wins" system.
 
-function _enqueue_set(user_id:number, key:string, value: RemoteStorableValue, replication: Replication):void {
+function _enqueue_set(user_id: number, key: string, value: RemoteStorableValue, replication: Replication): void {
     let entry = {key, value, replication};
     safeLocalStorageSet(`ogs-remote-storage-wal.${user_id}.${key}`, JSON.stringify(entry));
     wal[key] = entry;
     _process_write_ahead_log(user_id);
 }
 
-function _enqueue_remove(user_id:number, key:string, replication: Replication):void {
+function _enqueue_remove(user_id: number, key: string, replication: Replication): void {
     let entry = {key, replication};
     safeLocalStorageSet(`ogs-remote-storage-wal.${user_id}.${key}`, JSON.stringify(entry));
     wal[key] = entry;
@@ -419,7 +419,7 @@ function _enqueue_remove(user_id:number, key:string, replication: Replication):v
 }
 
 
-function _process_write_ahead_log(user_id:number):void {
+function _process_write_ahead_log(user_id: number): void {
     for (let data_key in wal) {
         let kv = wal[data_key];
 
@@ -531,7 +531,7 @@ ITC.register('remote_storage/sync_needed', () => {
 
 // After we've sent a synchronization request, we'll get these update messages
 // for each key that's been updated since the timestamp we sent
-termination_socket.on('remote_storage/update', (row:RemoteKV) => {
+termination_socket.on('remote_storage/update', (row: RemoteKV) => {
     let user = store['config.user'];
     if (!user || user.anonymous) {
         console.error("User is not logged in but received remote_storage/update for some reason, ignoring");

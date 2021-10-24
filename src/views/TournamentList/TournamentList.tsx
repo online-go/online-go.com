@@ -173,28 +173,28 @@ class Schedule extends React.PureComponent<{}, any> {
                         </tr>
                     </thead>
                     <tbody>
-                     {this.state.schedules.map((entry, idx) => (
-                         <tr key={idx} >
-                            <td>
-                                <h4>
-                                    <i className={speedIcon(entry) + " site-tourny"}></i>
-                                    {entry.name}
-                                </h4>
-                                <div><i>{rrule_description(entry)}</i></div>
-                            </td>
-                            <td>
-                                <div>{typeDescription(entry)}</div>
-                            </td>
-                            <td>
-                                <div>{datefmt(entry.next_run)}</div>
-                                <div><i>{fromNow(entry.next_run)}</i></div>
-                            </td>
-                            <td>
-                                <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
-                                <div><i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i></div>
-                            </td>
-                        </tr>
-                     ))}
+                        {this.state.schedules.map((entry, idx) => (
+                            <tr key={idx} >
+                                <td>
+                                    <h4>
+                                        <i className={speedIcon(entry) + " site-tourny"}></i>
+                                        {entry.name}
+                                    </h4>
+                                    <div><i>{rrule_description(entry)}</i></div>
+                                </td>
+                                <td>
+                                    <div>{typeDescription(entry)}</div>
+                                </td>
+                                <td>
+                                    <div>{datefmt(entry.next_run)}</div>
+                                    <div><i>{fromNow(entry.next_run)}</i></div>
+                                </td>
+                                <td>
+                                    <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
+                                    <div><i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i></div>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
 
@@ -205,7 +205,7 @@ class Schedule extends React.PureComponent<{}, any> {
 }
 export class TournamentList extends React.PureComponent<TournamentListProperties, any> {
     refs: {
-        table
+        table;
     };
 
     constructor(props) {
@@ -228,28 +228,28 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                     orderBy={["-started", "time_start", "name"]}
                     columns={[
                         {header: _("Tournament"),  className: () => "name",
-                         render: (tournament) => (
-                             <div className="tournament-name">
-                                <i className={timeIcon(tournament.time_per_move) + (tournament.group ? " group-tourny" : " site-tourny")} />
-                                {tournament.group
+                            render: (tournament) => (
+                                <div className="tournament-name">
+                                    <i className={timeIcon(tournament.time_per_move) + (tournament.group ? " group-tourny" : " site-tourny")} />
+                                    {tournament.group
                                     ? <Link to={`/group/${tournament.group.id}`}>
                                         <img src={mk32icon(tournament.icon)}
                                             data-title={tournament.group.name}
                                             onMouseOver={tooltip}
                                             onMouseOut={tooltip}
                                             onMouseMove={tooltip}
-                                            />
-                                     </Link>
+                                        />
+                                    </Link>
                                     : <img src={tournament.icon}
-                                            data-title={_("OGS Site Wide Tournament")}
-                                            onMouseOver={tooltip}
-                                            onMouseOut={tooltip}
-                                            onMouseMove={tooltip}
-                                            />
-                                }
-                                <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
-                             </div>
-                         )
+                                        data-title={_("OGS Site Wide Tournament")}
+                                        onMouseOver={tooltip}
+                                        onMouseOut={tooltip}
+                                        onMouseMove={tooltip}
+                                    />
+                                    }
+                                    <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
+                                </div>
+                            )
                         },
 
                         {header: _("When")        , className: "nobr" , render: (tournament) => when(tournament.time_start)},
@@ -282,11 +282,9 @@ function speedIcon(e) {
 }
 function timeIcon(time_per_move) {
     if (time_per_move === 0) {
-    }
-    else if (time_per_move < 20) {
+    } else if (time_per_move < 20) {
         return "fa fa-bolt";
-    }
-    else if (time_per_move < 3600) {
+    } else if (time_per_move < 3600) {
         return "fa fa-clock-o";
     }
     return "ogs-turtle";

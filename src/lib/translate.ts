@@ -25,7 +25,7 @@ export let countries: { [key: string]: { [key: string]: string } } =
     w["ogs_countries"] || { 'en': { 'us': 'United States' } };
 export let locales: { [key: string]: { [key: string]: string[] } } =
     w["ogs_locales"] || { 'en': {} };
-export let sorted_locale_countries: { cc: string; name: string; }[] = [];
+export let sorted_locale_countries: { cc: string; name: string }[] = [];
 
 
 let catalog: { [key: string]: string[] };
@@ -357,8 +357,7 @@ export function _(msgid: string): string {
 export function cc_to_country_name(country_code: string) {
     if (current_language in countries) {
         return countries[current_language][country_code];
-    }
-    else {
+    } else {
         return country_code;
     }
 }

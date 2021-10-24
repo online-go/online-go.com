@@ -27,7 +27,7 @@ import {KBShortcut} from "KBShortcut";
 import cached from 'cached';
 
 
-let friend_indicator_singleton:FriendIndicator;
+let friend_indicator_singleton: FriendIndicator;
 
 export class FriendIndicator extends React.PureComponent<{}, any> {
     update_interval = null;
@@ -67,18 +67,18 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         this.setState({
             online_ct: ct
         });
-    }
+    };
 
     updateFriends = (friends) => {
         this.friend_list = friends;
         this.updateFriendCount();
-    }
+    };
 
     toggleFriendList = () => {
         this.setState({
             show_friend_list: !this.state.show_friend_list
         });
-    }
+    };
 
 
     render() {

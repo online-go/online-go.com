@@ -26,7 +26,7 @@ import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 import * as data from 'data';
 import * as preferences from "preferences";
 
-declare var swal;
+declare let swal;
 
 interface ActiveAnnouncementsProperties {
 
@@ -55,7 +55,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
 
     update = () => {
         this.forceUpdate();
-    }
+    };
 
     clearAnnouncement(id) {
         hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
@@ -112,7 +112,7 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                             {title: interpolate(_("Hide all from {{username}}"), {username: announcement.creator.username}), onClick: () => {
                                 swal({
                                     "text": interpolate(_("Are you sure you want to hide all announcements from {{name}}?"),
-                                                 {name: announcement.creator.username}),
+                                        {name: announcement.creator.username}),
                                     "showCancelButton": true,
                                     "confirmButtonText": _("Yes"),
                                     "cancelButtonText": _("Cancel"),
@@ -185,16 +185,16 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                     }
 
                     return (
-                    <div className="announcement" key={idx}>
-                        {announcement.link
+                        <div className="announcement" key={idx}>
+                            {announcement.link
                             ? (announcement.link.indexOf("://") > 0
                                 ? <a href={announcement.link} target="_blank">{announcement.text}</a>
                                 : <Link to={announcement.link}>{announcement.text}</Link>
                               )
                             : <span>{announcement.text}</span>
-                        }
-                        <PopupMenu list={announcement_actions}></PopupMenu>
-                    </div>
+                            }
+                            <PopupMenu list={announcement_actions}></PopupMenu>
+                        </div>
                     );
                 })}
             </Card>

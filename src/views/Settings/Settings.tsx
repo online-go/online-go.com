@@ -50,7 +50,7 @@ import { PaginatedTable } from "PaginatedTable";
 import { SocialLoginButtons } from "SignIn";
 
 
-declare var swal;
+declare let swal;
 export const MAX_DOCK_DELAY = 3.0;
 
 ITC.register('logout', (device_uuid) => {
@@ -60,13 +60,13 @@ ITC.register('logout', (device_uuid) => {
 });
 
 function logoutOtherDevices() {
-        swal({
-            text: "Logout of other devices you are logged in to?",
-            showCancelButton: true,
-        }).then((password) => {
-            ITC.send("logout", data.get('device.uuid'));
-            swal("Other devices have been logged out").then(ignore).catch(ignore);
-        }).catch(ignore);
+    swal({
+        text: "Logout of other devices you are logged in to?",
+        showCancelButton: true,
+    }).then((password) => {
+        ITC.send("logout", data.get('device.uuid'));
+        swal("Other devices have been logged out").then(ignore).catch(ignore);
+    }).catch(ignore);
     //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
 }
 
@@ -114,22 +114,22 @@ interface SettingGroupProps {
     state: SettingsState;
     vacation_base_time: number;
     refresh: () => () => void;
-    updateSelfReportedAccountLinkages: (link:any) => void;
+    updateSelfReportedAccountLinkages: (link: any) => void;
 }
 
 interface SettingsProperties {
     match: {
         params: {
-            category: string
-        }
+            category: string;
+        };
     };
 }
 
 
-export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Element {
-    const [settings_state, setSettingsState]:[SettingsState, (s: SettingsState) => void] = React.useState({});
-    const [vacation_base_time, set_vacation_base_time]:[number, (s: number) => void] = React.useState(Date.now());
-    const [loaded, set_loaded]:[number, (b: number) => void] = React.useState(0);
+export function Settings({match:{params:{category}}}: SettingsProperties): JSX.Element {
+    const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] = React.useState({});
+    const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] = React.useState(Date.now());
+    const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
 
     React.useEffect(refresh, []);
 
@@ -167,7 +167,7 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
     }
 
 
-    let groups:Array<{key:string, label:string}> = [
+    let groups: Array<{key: string; label: string}> = [
         { key: 'general'         , label: _("General Preferences") },
         { key: 'sound'           , label: _("Sound Preferences") },
         { key: 'game'            , label: _("Game Preferences") },
@@ -181,7 +181,7 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
         { key: 'logout'          , label: _("Logout") },
     ];
 
-    let SelectedPage:(props:SettingGroupProps) => JSX.Element = () => <div>Error</div>;
+    let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
     switch (selected) {
         case 'sound'           : SelectedPage = SoundPreferences        ; break ;
@@ -197,11 +197,11 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
         case 'chat'            : SelectedPage = ChatPreferences         ; break ;
     }
 
-    let props:SettingGroupProps = {
+    let props: SettingGroupProps = {
         state: settings_state,
         vacation_base_time: vacation_base_time,
         refresh: refresh,
-        updateSelfReportedAccountLinkages: (new_link:any) => {
+        updateSelfReportedAccountLinkages: (new_link: any) => {
             let ns = dup(settings_state);
             ns.self_reported_account_linkages = new_link;
             setSettingsState(ns);
@@ -225,7 +225,7 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
                     classNamePrefix='ogs-react-select'
                     value={groups.filter(opt => opt.key === selected)[0]}
                     getOptionValue={data => data.key}
-                    onChange={(data:any) => select(data.key)}
+                    onChange={(data: any) => select(data.key)}
                     options={groups}
                     isClearable={false}
                     isSearchable={false}
@@ -264,18 +264,18 @@ export function Settings({match:{params:{category}}}:SettingsProperties):JSX.Ele
 
 interface PreferenceDropdownProps {
     value: any;
-    options: Array<{value: any, label: string}>;
-    onChange: (value:any) => void;
+    options: Array<{value: any; label: string}>;
+    onChange: (value: any) => void;
 }
 
-function PreferenceDropdown(props: PreferenceDropdownProps):JSX.Element {
+function PreferenceDropdown(props: PreferenceDropdownProps): JSX.Element {
     return (
         <Select
             className='PreferenceDropdown'
             classNamePrefix='ogs-react-select'
             value={props.options.filter(opt => opt.value === props.value)[0]}
             getOptionValue={data => data.value}
-            onChange={(data:any) => props.onChange(data.value)}
+            onChange={(data: any) => props.onChange(data.value)}
             options={props.options}
             isClearable={false}
             isSearchable={false}
@@ -302,7 +302,7 @@ function PreferenceDropdown(props: PreferenceDropdownProps):JSX.Element {
     );
 }
 
-function PreferenceLine(props: {title: (string | JSX.Element), description?: string, children: React.ReactNode}):JSX.Element {
+function PreferenceLine(props: {title: (string | JSX.Element); description?: string; children: React.ReactNode}): JSX.Element {
     return (
         <div className='PreferenceLine'>
             <span className='PreferenceLineTitle'>
@@ -315,7 +315,7 @@ function PreferenceLine(props: {title: (string | JSX.Element), description?: str
 }
 
 
-function SettingsGroupSelector(props: {children: React.ReactNode}):JSX.Element {
+function SettingsGroupSelector(props: {children: React.ReactNode}): JSX.Element {
     return (
         <div id='SettingsGroupSelector'>
             {props.children}
@@ -323,7 +323,7 @@ function SettingsGroupSelector(props: {children: React.ReactNode}):JSX.Element {
     );
 }
 
-function SettingsGroup(props: {selected: boolean, onClick: (ev?: any) => void, children: React.ReactNode}):JSX.Element {
+function SettingsGroup(props: {selected: boolean; onClick: (ev?: any) => void; children: React.ReactNode}): JSX.Element {
     return (
         <div className={'SettingsGroup' + (props.selected ? ' selected' : '')} onClick={props.onClick}>
             {props.children}
@@ -336,8 +336,8 @@ function SettingsGroup(props: {selected: boolean, onClick: (ev?: any) => void, c
     );
 }
 
-function VacationSettings(props:SettingGroupProps):JSX.Element {
-    const [vacation_left, set_vacation_left]:[number, (x: number) => void]
+function VacationSettings(props: SettingGroupProps): JSX.Element {
+    const [vacation_left, set_vacation_left]: [number, (x: number) => void]
         = React.useState(props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000);
 
 
@@ -367,42 +367,42 @@ function VacationSettings(props:SettingGroupProps):JSX.Element {
     let vacation_string = vacation_left > 0 ? durationString(vacation_left) : ("0 " + _("Seconds").toLowerCase());
 
     return (
-    <div>
-        <h3>
-            {props.state.profile.on_vacation
-                ?  <span className="vacation-status">
-                       <i className="fa fa-smile-o"></i>
-                           &nbsp; {_("You are on vacation")} &nbsp;
-                       <i className="fa fa-smile-o"></i>
-                   </span>
-                : <span>{_("Vacation Control")}</span>
-            }
-        </h3>
-        <div className="vacation-container">
-            <div>
+        <div>
+            <h3>
                 {props.state.profile.on_vacation
+                ?  <span className="vacation-status">
+                    <i className="fa fa-smile-o"></i>
+                           &nbsp; {_("You are on vacation")} &nbsp;
+                    <i className="fa fa-smile-o"></i>
+                </span>
+                : <span>{_("Vacation Control")}</span>
+                }
+            </h3>
+            <div className="vacation-container">
+                <div>
+                    {props.state.profile.on_vacation
                     ? <button onClick={endVacation} className="primary">{_("End vacation")}</button>
                     : <button onClick={startVacation} className="primary">{_("Go on vacation")}</button>
-                }
-            </div>
+                    }
+                </div>
 
-            <div>
-                {(!props.state.profile.on_vacation || null) &&
+                <div>
+                    {(!props.state.profile.on_vacation || null) &&
                     <i>
-                    {_("This will pause any correspondence games you are in until you end your vacation")}
+                        {_("This will pause any correspondence games you are in until you end your vacation")}
                     </i>
-                }
-            </div>
+                    }
+                </div>
 
-            <div>{interpolate(_("You have {{vacation_left}} of vacation available"),
-                              {vacation_left: vacation_string})
-            }</div>
+                <div>{interpolate(_("You have {{vacation_left}} of vacation available"),
+                    {vacation_left: vacation_string})
+                }</div>
+            </div>
         </div>
-    </div>
     );
 }
 
-function LogoutPreferences(props:SettingGroupProps):JSX.Element {
+function LogoutPreferences(props: SettingGroupProps): JSX.Element {
     return (
         <div className='LogoutButtons'>
             <div>
@@ -421,13 +421,13 @@ function LogoutPreferences(props:SettingGroupProps):JSX.Element {
 }
 
 
-function AccountSettings(props:SettingGroupProps):JSX.Element {
-    const [password1, setPassword1]:[string, (x: string) => void] = React.useState('');
-    const [password2, setPassword2]:[string, (x: string) => void] = React.useState('');
-    const [email, __setEmail]:[string, (x: string) => void] = React.useState(props.state.profile.email);
-    const [email_changed, setEmailChanged]:[boolean, (x: boolean) => void] = React.useState();
-    const [message, setMessage]:[string, (x: string) => void] = React.useState('');
-    const [settings, setSettings]:[any, (x: any) => void] = React.useState({});
+function AccountSettings(props: SettingGroupProps): JSX.Element {
+    const [password1, setPassword1]: [string, (x: string) => void] = React.useState('');
+    const [password2, setPassword2]: [string, (x: string) => void] = React.useState('');
+    const [email, __setEmail]: [string, (x: string) => void] = React.useState(props.state.profile.email);
+    const [email_changed, setEmailChanged]: [boolean, (x: boolean) => void] = React.useState();
+    const [message, setMessage]: [string, (x: string) => void] = React.useState('');
+    const [settings, setSettings]: [any, (x: any) => void] = React.useState({});
 
     React.useEffect(refreshAccountSettings, []);
 
@@ -442,16 +442,16 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
         .catch(errorLogger);
     }
 
-    function setEmail(s:string):void {
+    function setEmail(s: string): void {
         __setEmail(s);
         setEmailChanged(true);
     }
 
-    function passwordIsValid():boolean {
+    function passwordIsValid(): boolean {
         return password1.length < 1024 && password1.length > 3 && password1 === password2;
     }
 
-    function emailIsValid():boolean {
+    function emailIsValid(): boolean {
         if (email.trim() === "") {
             return true;
         }
@@ -459,7 +459,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
         return re.test(email.trim());
     }
 
-    function saveEmail():void {
+    function saveEmail(): void {
         put("players/%%", user.id, { email })
         .then(() => {
             setEmailChanged(false);
@@ -467,7 +467,7 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
         }).catch(errorAlerter);
     }
 
-    function savePassword():void {
+    function savePassword(): void {
         if (!settings.password_is_set) { // social auth account
             post("/api/v0/changePassword", {
                 "new_password": password1,
@@ -504,9 +504,9 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
         .catch(errorAlerter);
     }
 
-    function deleteAccount():void {
+    function deleteAccount(): void {
 
-        function doDel(password:string | null) {
+        function doDel(password: string | null) {
             if (user && user.id) {
                 del(`players/${user.id}`, {
                     "password": password,
@@ -556,20 +556,20 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
             <dl>
                 <dt>{_("Email address")}</dt>
                 <dd><input type="email" name="new_email" value={email} onChange={ev => setEmail(ev.target.value)} />
-                {!email_changed ? null :
+                    {!email_changed ? null :
                     <button disabled={!emailIsValid()} className="primary" onClick={saveEmail}>
                         {emailIsValid() ? _("Update email address") : _("Email address is not valid")}
                     </button>
-                }
-                {message && <div>{message}</div>}
-                {email && !email_changed && !user.email_validated &&
+                    }
+                    {message && <div>{message}</div>}
+                    {email && !email_changed && !user.email_validated &&
                     <div>
                         <div className='awaiting-validation-text'>
                             {_("Awaiting email address confirmation. Chat will be disabled until your email address has been validated.")}
                         </div>
                         <button onClick={resendValidationEmail}>{_("Resend validation email")}</button>
                     </div>
-                }
+                    }
                 </dd>
 
                 <dt>{_("Password")}</dt>
@@ -595,19 +595,19 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
                     <dd>
                         {settings.social_auth_accounts.map((account, idx) =>
                             <div key={account.provider}>
-                            <div className='social-link'>
-                                {account.provider === "google-oauth2" && <span className="google google-oauth2-icon" />}
-                                {account.provider === "facebook" && <span className="facebook facebook-icon" />}
-                                {account.provider === "twitter" && <i className="twitter twitter-icon fa fa-twitter" />}
-                                {account.provider === "apple-id" && <i className="apple apple-id-icon fa fa-apple" />}
+                                <div className='social-link'>
+                                    {account.provider === "google-oauth2" && <span className="google google-oauth2-icon" />}
+                                    {account.provider === "facebook" && <span className="facebook facebook-icon" />}
+                                    {account.provider === "twitter" && <i className="twitter twitter-icon fa fa-twitter" />}
+                                    {account.provider === "apple-id" && <i className="apple apple-id-icon fa fa-apple" />}
 
-                                {account.uid}
+                                    {account.uid}
 
-                                <form method='POST' action={`/disconnect/${account.provider}/`}>
-                                    <input type='hidden' name='csrfmiddlewaretoken' value={getCookie("csrftoken")} />
-                                    {settings.password_is_set && <button type='submit'>Unlink</button>}
-                                </form>
-                            </div>
+                                    <form method='POST' action={`/disconnect/${account.provider}/`}>
+                                        <input type='hidden' name='csrfmiddlewaretoken' value={getCookie("csrftoken")} />
+                                        {settings.password_is_set && <button type='submit'>Unlink</button>}
+                                    </form>
+                                </div>
                             </div>
                         )}
                     </dd>
@@ -626,12 +626,12 @@ function AccountSettings(props:SettingGroupProps):JSX.Element {
     );
 }
 
-function ChatPreferences(props:SettingGroupProps):JSX.Element {
-    const [show_empty_chat_notification, _setEmptyChatNotification]:[boolean, (x: boolean) => void] = React.useState(preferences.get("show-empty-chat-notification"));
-    const [group_chat_unread, _setGroupChatUnread]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-chat-unread"));
-    const [group_chat_mentions, _setGroupChatMentions]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-mentions"));
-    const [tournament_chat_unread, _setTournamentChatUnread]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-chat-unread"));
-    const [tournament_chat_mentions, _setTournamentChatMentions]:[boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-mentions"));
+function ChatPreferences(props: SettingGroupProps): JSX.Element {
+    const [show_empty_chat_notification, _setEmptyChatNotification]: [boolean, (x: boolean) => void] = React.useState(preferences.get("show-empty-chat-notification"));
+    const [group_chat_unread, _setGroupChatUnread]: [boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-chat-unread"));
+    const [group_chat_mentions, _setGroupChatMentions]: [boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-group-mentions"));
+    const [tournament_chat_unread, _setTournamentChatUnread]: [boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-chat-unread"));
+    const [tournament_chat_mentions, _setTournamentChatMentions]: [boolean, (x: boolean) => void] = React.useState(preferences.get("chat-subscribe-tournament-mentions"));
 
     function toggleEmptyChatNotification(checked) {
         preferences.set("show-empty-chat-notification", checked);
@@ -666,32 +666,32 @@ function ChatPreferences(props:SettingGroupProps):JSX.Element {
 
             <PreferenceLine title={_("Notify me when I'm mentioned in group chats I'm a member of.")}
                 description={_("This only applies to chats you haven't choosen a different setting.")}
-                >
+            >
                 <Toggle checked={group_chat_mentions} onChange={toggleGroupChatMentions}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Notify me about unread messages in group chats I'm a member of.")}
                 description={_("This only applies to chats you haven't choosen a different setting.")}
-                >
+            >
                 <Toggle checked={group_chat_unread} onChange={toggleGroupChatUnread}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Notify me when I'm mentioned in tournament chats I'm a member of.")}
                 description={_("This only applies to chats you haven't choosen a different setting.")}
-                >
+            >
                 <Toggle checked={tournament_chat_mentions} onChange={toggleTournamentChatMentions}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Notify me about unread messages in tournament chats I'm a member of.")}
                 description={_("This only applies to chats you haven't choosen a different setting.")}
-                >
+            >
                 <Toggle checked={tournament_chat_unread} onChange={toggleTournamentChatUnread}/>
             </PreferenceLine>
         </div>
     );
 }
 
-function EmailPreferences(props:SettingGroupProps):JSX.Element {
+function EmailPreferences(props: SettingGroupProps): JSX.Element {
     return (
         <div>
             {_("Email me a notification when ...")}
@@ -702,8 +702,8 @@ function EmailPreferences(props:SettingGroupProps):JSX.Element {
     );
 }
 
-function BlockedPlayerPreferences(props:SettingGroupProps):JSX.Element {
-    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -743,8 +743,8 @@ function BlockedPlayerPreferences(props:SettingGroupProps):JSX.Element {
     );
 }
 
-function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
-    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x:Array<any> | null) => void] = React.useState(null);
+function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
+    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -755,9 +755,9 @@ function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
         .catch(errorAlerter);
     }, []);
 
-    const [mute_stream_announcements, _muteStreamAnnouncements]:[boolean, (x: boolean) => void] =
+    const [mute_stream_announcements, _muteStreamAnnouncements]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("mute-stream-announcements"));
-    const [mute_event_announcements, _muteEventAnnouncements]:[boolean, (x: boolean) => void] =
+    const [mute_event_announcements, _muteEventAnnouncements]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("mute-event-announcements"));
 
     function toggleMuteStreamAnnouncements(checked) {
@@ -792,11 +792,11 @@ function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
                 columns={[
                     {header: "Time"      , className: "announcement-time ", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
                     {header: "Duration"  , className: "", render: (a) => {
-                            let ms = moment(a.expiration).diff(moment(a.timestamp));
-                            let d = moment.duration(ms);
-                            return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
-                            //.format('HH:mm')
-                        }
+                        let ms = moment(a.expiration).diff(moment(a.timestamp));
+                        let d = moment.duration(ms);
+                        return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                        //.format('HH:mm')
+                    }
                     },
                     {header: "Type"      , className: "announcement-type ", render: (a) => {
                         switch (a.type) {
@@ -833,21 +833,21 @@ function AnnouncementPreferences(props:SettingGroupProps):JSX.Element {
     );
 }
 
-function GamePreferences(props:SettingGroupProps):JSX.Element {
-    const [dock_delay, _setDockDelay]:[number, (x: number) => void] = React.useState(preferences.get("dock-delay"));
-    const [ai_review_enabled, _setAiReviewEnabled]:[boolean, (x: boolean) => void] = React.useState(preferences.get("ai-review-enabled"));
-    const [variations_in_chat, _setVariationsInChat]:[boolean, (x: boolean) => void] = React.useState(preferences.get("variations-in-chat-enabled"));
-    const [live_submit_mode, _setLiveSubmitMode]:[string, (x: string) => void] = React.useState(getSubmitMode('live'));
-    const [corr_submit_mode, _setCorrSubmitMode]:[string, (x: string) => void] = React.useState(getSubmitMode('correspondence'));
-    const [board_labeling, _setBoardLabeling]:[string, (x: string) => void] = React.useState(preferences.get('board-labeling'));
+function GamePreferences(props: SettingGroupProps): JSX.Element {
+    const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(preferences.get("dock-delay"));
+    const [ai_review_enabled, _setAiReviewEnabled]: [boolean, (x: boolean) => void] = React.useState(preferences.get("ai-review-enabled"));
+    const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] = React.useState(preferences.get("variations-in-chat-enabled"));
+    const [live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(getSubmitMode('live'));
+    const [corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(getSubmitMode('correspondence'));
+    const [board_labeling, _setBoardLabeling]: [string, (x: string) => void] = React.useState(preferences.get('board-labeling'));
 
-    const [autoadvance, _setAutoAdvance]:[boolean, (x: boolean) => void] = React.useState(preferences.get('auto-advance-after-submit'));
-    const [always_disable_analysis, _setAlwaysDisableAnalysis]:[boolean, (x: boolean) => void] = React.useState(preferences.get('always-disable-analysis'));
-    const [dynamic_title, _setDynamicTitle]:[boolean, (x: boolean) => void] = React.useState(preferences.get('dynamic-title'));
-    const [function_keys_enabled, _setFunctionKeysEnabled]:[boolean, (x: boolean) => void] = React.useState(preferences.get('function-keys-enabled'));
-    const [autoplay_delay, _setAutoplayDelay]:[number, (x: number) => void] = React.useState(preferences.get('autoplay-delay') / 1000);
-    const [variation_stone_transparency, _setVariationStoneTransparency]:[number, (x: number) => void] = React.useState(preferences.get("variation-stone-transparency"));
-    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]:[boolean, (x: boolean) => void] = React.useState(preferences.get("visual-undo-request-indicator"));
+    const [autoadvance, _setAutoAdvance]: [boolean, (x: boolean) => void] = React.useState(preferences.get('auto-advance-after-submit'));
+    const [always_disable_analysis, _setAlwaysDisableAnalysis]: [boolean, (x: boolean) => void] = React.useState(preferences.get('always-disable-analysis'));
+    const [dynamic_title, _setDynamicTitle]: [boolean, (x: boolean) => void] = React.useState(preferences.get('dynamic-title'));
+    const [function_keys_enabled, _setFunctionKeysEnabled]: [boolean, (x: boolean) => void] = React.useState(preferences.get('function-keys-enabled'));
+    const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(preferences.get('autoplay-delay') / 1000);
+    const [variation_stone_transparency, _setVariationStoneTransparency]: [number, (x: number) => void] = React.useState(preferences.get("variation-stone-transparency"));
+    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]: [boolean, (x: boolean) => void] = React.useState(preferences.get("visual-undo-request-indicator"));
 
     function setDockDelay(ev) {
         let new_delay = parseFloat(ev.target.value);
@@ -944,8 +944,8 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
                 _("Game-control-dock pop-out delay") // translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
             }>
                 <input type="range"
-                       onChange={setDockDelay}
-                          value={dock_delay} min={0} max={MAX_DOCK_DELAY} step={0.1}
+                    onChange={setDockDelay}
+                    value={dock_delay} min={0} max={MAX_DOCK_DELAY} step={0.1}
                 />
                 <span>&nbsp;{
                     dock_delay === MAX_DOCK_DELAY
@@ -1000,25 +1000,25 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
 
             <PreferenceLine title={_("Disable AI review")}
                 description={_("This will enable or disable the artificial intelligence reviews at the end of a game.")}
-                >
+            >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Always disable analysis")}
                 description={_("This will disable the analysis mode and conditional moves for you in all games, even if it is not disabled in the game's settings. (If allowed in game settings, your opponent will still have access to analysis.)")}
-                >
+            >
                 <Toggle checked={always_disable_analysis} onChange={setAlwaysDisableAnalysis} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Visual undo request indicator")}
                 description={_("This will cause an undo request to be indicated by a mark on your opponent's last move.")}
-                >
+            >
                 <Toggle checked={visual_undo_request_indicator} onChange={setVisualUndoRequestIndicator} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Dynamic title")}
                 description={_("Choose whether to show in the web page title whose turn it is (dynamic) or who the users are (not dynamic)")}
-                >
+            >
                 <Toggle checked={dynamic_title} onChange={setDynamicTitle} />
             </PreferenceLine>
 
@@ -1028,13 +1028,13 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
 
             <PreferenceLine title={_("Disable clickable variations in chat")}
                 description={_("This will enable or disable the hoverable and clickable variations displayed in a game or review chat.")}
-                >
+            >
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat}/>
             </PreferenceLine>
 
             <PreferenceLine title={_("Variation stone transparency")}
                 description={_("Choose the level of transparency for stones shown in variations. 0.0 is transparent and 1.0 is opaque.")}
-                >
+            >
                 <input type="number" step="0.1" min="0.0" max="1.0" onChange={setVariationStoneTransparency} value={variation_stone_transparency} />
             </PreferenceLine>
         </div>
@@ -1042,34 +1042,34 @@ function GamePreferences(props:SettingGroupProps):JSX.Element {
 }
 
 
-function GeneralPreferences(props:SettingGroupProps):JSX.Element {
-    const [profanity_filter, _setProfanityFilter]:[Array<string>, (x: Array<string>) => void]
+function GeneralPreferences(props: SettingGroupProps): JSX.Element {
+    const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void]
         = React.useState(Object.keys(preferences.get("profanity-filter")));
-    const [game_list_threshold, _setGameListThreshold]:[number, (x: number) => void]
+    const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void]
         = React.useState(preferences.get("game-list-threshold"));
-    const [desktop_notifications, _setDesktopNotifications]:[boolean, (x: boolean) => void]
+    const [desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("desktop-notifications"));
-    const [show_offline_friends, _setShowOfflineFriends]:[boolean, (x: boolean) => void]
+    const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("show-offline-friends"));
-    const [unicode_filter_usernames, _setUnicodeFilterUsernames]:[boolean, (x: boolean) => void]
+    const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("unicode-filter"));
-    const [translation_dialog_never_show, _setTranslationDialogNeverShow]:[boolean, (x: boolean) => void]
+    const [translation_dialog_never_show, _setTranslationDialogNeverShow]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("translation-dialog-never-show"));
-    const [hide_ui_class, setHideUiClass]:[boolean, (x: boolean) => void]
+    const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void]
         = React.useState(props.state.hide_ui_class);
-    const [show_tournament_indicator, _setShowTournamentIndicator]:[boolean, (x: boolean) => void]
+    const [show_tournament_indicator, _setShowTournamentIndicator]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("show-tournament-indicator"));
-    const [hide_ranks, _setHideRanks]:[boolean, (x: boolean) => void]
+    const [hide_ranks, _setHideRanks]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("hide-ranks"));
-    const [rating_graph_always_use, _setAlwaysUse]:[boolean, (x: boolean) => void]
+    const [rating_graph_always_use, _setAlwaysUse]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("rating-graph-always-use"));
-    const [rating_graph_plot_by_games, _setUseGames]:[boolean, (x: boolean) => void]
+    const [rating_graph_plot_by_games, _setUseGames]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("rating-graph-plot-by-games"));
-    const [incident_report_notifications, setIncidentReportNotifications]:[boolean, (x: boolean) => void]
+    const [incident_report_notifications, setIncidentReportNotifications]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("notify-on-incident-report"));
 
     const user = data.get("user");
-    const desktop_notifications_enableable:boolean = typeof(Notification) !== "undefined";
+    const desktop_notifications_enableable: boolean = typeof(Notification) !== "undefined";
 
     let desktop_notifications_enabled = false;
     try {
@@ -1078,7 +1078,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
         /* not all browsers support the Notification API */
     }
 
-    function updateProfanityFilter(langs: {value: string, label: string}[]) {
+    function updateProfanityFilter(langs: {value: string; label: string}[]) {
         if (!langs) {
             langs = [];
         }
@@ -1208,9 +1208,9 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     }));
 
     function setLanguage(language_code: string) {
-            preferences.set("language", language_code);
-            setCurrentLanguage(language_code);
-            window.location.reload();
+        preferences.set("language", language_code);
+        setCurrentLanguage(language_code);
+        window.location.reload();
     }
 
     return (
@@ -1233,7 +1233,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
                         lang.value in profanity_regex)}
                     onChange = {updateProfanityFilter}
                     isMulti
-                    />
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Game thumbnail list threshold")} description={_("Set to 0 to always show list.")}>
@@ -1256,7 +1256,7 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
 
                 {!desktop_notifications_enableable &&
                     <div><i>
-                    {_("Desktop notifications are not supported by your browser")}
+                        {_("Desktop notifications are not supported by your browser")}
                     </i></div>
                 }
             </PreferenceLine>
@@ -1301,12 +1301,12 @@ function GeneralPreferences(props:SettingGroupProps):JSX.Element {
     );
 }
 
-let update_link_preferences_debounce:Timeout;
+let update_link_preferences_debounce: Timeout;
 
-function LinkPreferences(props:SettingGroupProps):JSX.Element {
+function LinkPreferences(props: SettingGroupProps): JSX.Element {
     let link = props.state.self_reported_account_linkages || {};
 
-    function set(key:string):((value: any) => void) {
+    function set(key: string): ((value: any) => void) {
         return ((value: any) => {
             if (typeof(value) === "object") {
                 value = value.target.value; // event
@@ -1339,13 +1339,13 @@ function LinkPreferences(props:SettingGroupProps):JSX.Element {
 
             <PreferenceLine
                 title={_("Show this information on your profile page")}
-                >
+            >
                 <Toggle checked={!link.hidden} onChange={(tf) => set('hidden')(!tf)} />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Only show ranks, not ids and usernames")}
-                >
+            >
                 <Toggle disabled={link.hidden} checked={link.hidden_ids && !link.hidden} onChange={(tf) => set('hidden_ids')(tf)} />
             </PreferenceLine>
 
@@ -1421,11 +1421,11 @@ function LinkPreferences(props:SettingGroupProps):JSX.Element {
 }
 
 const rank_select_ranks = allRanks();
-function RankSelect({value, onChange}:{value: number, onChange: (value:number) => void}):JSX.Element {
+function RankSelect({value, onChange}: {value: number; onChange: (value: number) => void}): JSX.Element {
     return (
         <select className='RankSelect' value={value} onChange={(ev) => onChange(parseInt(ev.target.value))}>
             <option value={-999}>{_("-- Select Rank --")}</option>
-            {rank_select_ranks.map((rank:IRankInfo) =>
+            {rank_select_ranks.map((rank: IRankInfo) =>
                 <option key={rank.rank} value={rank.rank}>{rank.label}</option>
             )}
         </select>
@@ -1433,7 +1433,7 @@ function RankSelect({value, onChange}:{value: number, onChange: (value:number) =
 }
 
 
-function AssociationSelect({value, onChange}:{value: string, onChange: (value:string) => void}):JSX.Element {
+function AssociationSelect({value, onChange}: {value: string; onChange: (value: string) => void}): JSX.Element {
     let user_countries = [];
     try {
         if (data.get('user').country) {
@@ -1453,7 +1453,7 @@ function AssociationSelect({value, onChange}:{value: string, onChange: (value:st
         ];
     }
 
-    associations.sort((a:IAssociation, b:IAssociation) => {
+    associations.sort((a: IAssociation, b: IAssociation) => {
         if (user_countries.indexOf(a.country) >= 0) {
             if (user_countries.indexOf(b.country) >= 0) {
                 return a.name < b.name ? -1 : 1;
@@ -1470,7 +1470,7 @@ function AssociationSelect({value, onChange}:{value: string, onChange: (value:st
     return (
         <select className='AssociationSelect' value={value} onChange={(ev) => onChange(ev.target.value)}>
             <option value={''}>{_("-- Select Association --")}</option>
-            {associations.map((association:IAssociation) =>
+            {associations.map((association: IAssociation) =>
                 <option key={association.country} value={association.country}>{association.name}</option>
             )}
         </select>
@@ -1478,12 +1478,12 @@ function AssociationSelect({value, onChange}:{value: string, onChange: (value:st
 }
 
 
-function SoundPreferences(props:SettingGroupProps):JSX.Element {
-    const [tick_tock_start, __setTickTockStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.tick-tock.start'));
-    const [ten_seconds_start, __setTenSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.ten-seconds.start'));
-    const [five_seconds_start, __setFiveSecondsStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.five-seconds.start'));
-    const [every_second_start, __setEverySecondStart]:[number, (x: number) => void] = React.useState(preferences.get('sound.countdown.every-second.start'));
-    const [count_direction, __setCountDirection]:[string, (x: string) => void] = React.useState(preferences.get('sound.countdown.byoyomi-direction'));
+function SoundPreferences(props: SettingGroupProps): JSX.Element {
+    const [tick_tock_start, __setTickTockStart]: [number, (x: number) => void] = React.useState(preferences.get('sound.countdown.tick-tock.start'));
+    const [ten_seconds_start, __setTenSecondsStart]: [number, (x: number) => void] = React.useState(preferences.get('sound.countdown.ten-seconds.start'));
+    const [five_seconds_start, __setFiveSecondsStart]: [number, (x: number) => void] = React.useState(preferences.get('sound.countdown.five-seconds.start'));
+    const [every_second_start, __setEverySecondStart]: [number, (x: number) => void] = React.useState(preferences.get('sound.countdown.every-second.start'));
+    const [count_direction, __setCountDirection]: [string, (x: string) => void] = React.useState(preferences.get('sound.countdown.byoyomi-direction'));
     let count_direction_auto = 'down';
 
     if (count_direction === 'auto') {
@@ -1494,23 +1494,23 @@ function SoundPreferences(props:SettingGroupProps):JSX.Element {
 
     let count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
 
-    function setTickTockStart(opt):void {
+    function setTickTockStart(opt): void {
         preferences.set('sound.countdown.tick-tock.start', opt.value);
         __setTickTockStart(opt.value);
     }
-    function setTenSecondsStart(opt):void {
+    function setTenSecondsStart(opt): void {
         preferences.set('sound.countdown.ten-seconds.start', opt.value);
         __setTenSecondsStart(opt.value);
     }
-    function setFiveSecondsStart(opt):void {
+    function setFiveSecondsStart(opt): void {
         preferences.set('sound.countdown.five-seconds.start', opt.value);
         __setFiveSecondsStart(opt.value);
     }
-    function setEverySecondStart(opt):void {
+    function setEverySecondStart(opt): void {
         preferences.set('sound.countdown.every-second.start', opt.value);
         __setEverySecondStart(opt.value);
     }
-    function setCountDirection(opt):void {
+    function setCountDirection(opt): void {
         preferences.set('sound.countdown.byoyomi-direction', opt.value);
         __setCountDirection(opt.value);
     }
@@ -1560,258 +1560,258 @@ function SoundPreferences(props:SettingGroupProps):JSX.Element {
 
     return (<div>
         <div className='Settings-Card'>
-        <div>
-            <h4>{pgettext('Overall sound level', "Master Volume")}</h4>
+            <div>
+                <h4>{pgettext('Overall sound level', "Master Volume")}</h4>
 
-            <span>
-            </span>
-            <span>
-                <Volume group='master' sample={['black-1', 'white-2', 'capture-handful', '5_periods_left']} />
-            </span>
-        </div>
+                <span>
+                </span>
+                <span>
+                    <Volume group='master' sample={['black-1', 'white-2', 'capture-handful', '5_periods_left']} />
+                </span>
+            </div>
 
-        <div>
-            <h4>{pgettext('Sound pack to use for things like "You have won" and "Undo requested" phrases', "Game Voice")}</h4>
-            <span>
-                <SoundPackSelect group='game_voice' options={SpriteGroups.game_voice} />
-            </span>
-            <span>
-                <Volume group='game_voice' sample={['byoyomi', 'you_have_won']} />
-            </span>
-        </div>
+            <div>
+                <h4>{pgettext('Sound pack to use for things like "You have won" and "Undo requested" phrases', "Game Voice")}</h4>
+                <span>
+                    <SoundPackSelect group='game_voice' options={SpriteGroups.game_voice} />
+                </span>
+                <span>
+                    <Volume group='game_voice' sample={['byoyomi', 'you_have_won']} />
+                </span>
+            </div>
 
-        <div>
-            <h4>{pgettext('Sound pack to use for clock countdown, "3", "2", "1"', "Clock Countdown")}</h4>
-            <span>
-                <SoundPackSelect group='countdown' options={SpriteGroups.countdown} />
-            </span>
-            <span>
-                <Volume group='countdown' sample={
-                    ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]
-                } />
-            </span>
-        </div>
-        <div>
-            <h5>{pgettext('When we should start playing the soft clock tick-tock sound when the clock is running out', "Soft tick-tock every second starting at")}</h5>
+            <div>
+                <h4>{pgettext('Sound pack to use for clock countdown, "3", "2", "1"', "Clock Countdown")}</h4>
+                <span>
+                    <SoundPackSelect group='countdown' options={SpriteGroups.countdown} />
+                </span>
+                <span>
+                    <Volume group='countdown' sample={
+                        ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]
+                    } />
+                </span>
+            </div>
+            <div>
+                <h5>{pgettext('When we should start playing the soft clock tick-tock sound when the clock is running out', "Soft tick-tock every second starting at")}</h5>
 
-            <span>
-                <Select
-                    className='sound-option-select'
-                    classNamePrefix='ogs-react-select'
-                    value={start_options.filter(opt => opt.value === tick_tock_start)[0]}
-                    getOptionValue={data => data.value}
-                    onChange={setTickTockStart}
-                    options={start_options}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                            <div ref={innerRef} {...innerProps}
-                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
-                                {data.label}
-                            </div>
-                        ),
-                        SingleValue: ({innerProps, data}) => (
-                            <span {...innerProps} className='sound-option'>
-                                {data.label}
-                            </span>
-                        ),
-                        ValueContainer: ({children}) => (
-                            <div className='sound-option-container'>
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
-            </span>
+                <span>
+                    <Select
+                        className='sound-option-select'
+                        classNamePrefix='ogs-react-select'
+                        value={start_options.filter(opt => opt.value === tick_tock_start)[0]}
+                        getOptionValue={data => data.value}
+                        onChange={setTickTockStart}
+                        options={start_options}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                    {data.label}
+                                </div>
+                            ),
+                            SingleValue: ({innerProps, data}) => (
+                                <span {...innerProps} className='sound-option'>
+                                    {data.label}
+                                </span>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='sound-option-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                </span>
 
-            <span>
-                <PlayButton sample={['tick', 'tock', 'tick', 'tock', 'tick', 'tock-3left', 'tick-2left', 'tock-1left']} />
-            </span>
-        </div>
-        <div>
-            <h5>{pgettext("When we should start counting down at 10 second intervals", "Count every 10 seconds starting at")}</h5>
+                <span>
+                    <PlayButton sample={['tick', 'tock', 'tick', 'tock', 'tick', 'tock-3left', 'tick-2left', 'tock-1left']} />
+                </span>
+            </div>
+            <div>
+                <h5>{pgettext("When we should start counting down at 10 second intervals", "Count every 10 seconds starting at")}</h5>
 
-            <span>
-                <Select
-                    className='sound-option-select'
-                    classNamePrefix='ogs-react-select'
-                    value={start_options_tens.filter(opt => opt.value === ten_seconds_start)[0]}
-                    getOptionValue={data => data.value}
-                    onChange={setTenSecondsStart}
-                    options={start_options_tens}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                            <div ref={innerRef} {...innerProps}
-                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
-                                {data.label}
-                            </div>
-                        ),
-                        SingleValue: ({innerProps, data}) => (
-                            <span {...innerProps} className='sound-option'>
-                                {data.label}
-                            </span>
-                        ),
-                        ValueContainer: ({children}) => (
-                            <div className='sound-option-container'>
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
-            </span>
+                <span>
+                    <Select
+                        className='sound-option-select'
+                        classNamePrefix='ogs-react-select'
+                        value={start_options_tens.filter(opt => opt.value === ten_seconds_start)[0]}
+                        getOptionValue={data => data.value}
+                        onChange={setTenSecondsStart}
+                        options={start_options_tens}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                    {data.label}
+                                </div>
+                            ),
+                            SingleValue: ({innerProps, data}) => (
+                                <span {...innerProps} className='sound-option'>
+                                    {data.label}
+                                </span>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='sound-option-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                </span>
 
-            <span>
-                <PlayButton sample={['60', '50', '40', '30', '20', '10']} />
-            </span>
-        </div>
-        <div>
-            <h5>{pgettext("When we should start counting down at 5 second intervals", "Count every 5 seconds starting at")}</h5>
+                <span>
+                    <PlayButton sample={['60', '50', '40', '30', '20', '10']} />
+                </span>
+            </div>
+            <div>
+                <h5>{pgettext("When we should start counting down at 5 second intervals", "Count every 5 seconds starting at")}</h5>
 
-            <span>
-                <Select
-                    className='sound-option-select'
-                    classNamePrefix='ogs-react-select'
-                    value={start_options_fives.filter(opt => opt.value === five_seconds_start)[0]}
-                    getOptionValue={data => data.value}
-                    onChange={setFiveSecondsStart}
-                    options={start_options_fives}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                            <div ref={innerRef} {...innerProps}
-                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
-                                {data.label}
-                            </div>
-                        ),
-                        SingleValue: ({innerProps, data}) => (
-                            <span {...innerProps} className='sound-option'>
-                                {data.label}
-                            </span>
-                        ),
-                        ValueContainer: ({children}) => (
-                            <div className='sound-option-container'>
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
-            </span>
+                <span>
+                    <Select
+                        className='sound-option-select'
+                        classNamePrefix='ogs-react-select'
+                        value={start_options_fives.filter(opt => opt.value === five_seconds_start)[0]}
+                        getOptionValue={data => data.value}
+                        onChange={setFiveSecondsStart}
+                        options={start_options_fives}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                    {data.label}
+                                </div>
+                            ),
+                            SingleValue: ({innerProps, data}) => (
+                                <span {...innerProps} className='sound-option'>
+                                    {data.label}
+                                </span>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='sound-option-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                </span>
 
-            <span>
-                <PlayButton sample={['30', '25', '20', '15', '10', '5']} />
-            </span>
-        </div>
+                <span>
+                    <PlayButton sample={['30', '25', '20', '15', '10', '5']} />
+                </span>
+            </div>
 
-        <div>
-            <h5>{pgettext("When we should start announcing time left on the clock every second", "Count every second starting at")}</h5>
+            <div>
+                <h5>{pgettext("When we should start announcing time left on the clock every second", "Count every second starting at")}</h5>
 
-            <span>
-                <Select
-                    className='sound-option-select'
-                    classNamePrefix='ogs-react-select'
-                    value={start_options.filter(opt => opt.value === every_second_start)[0]}
-                    getOptionValue={data => data.value}
-                    onChange={setEverySecondStart}
-                    options={start_options}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                            <div ref={innerRef} {...innerProps}
-                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
-                                {data.label}
-                            </div>
-                        ),
-                        SingleValue: ({innerProps, data}) => (
-                            <span {...innerProps} className='sound-option'>
-                                {data.label}
-                            </span>
-                        ),
-                        ValueContainer: ({children}) => (
-                            <div className='sound-option-container'>
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
-            </span>
+                <span>
+                    <Select
+                        className='sound-option-select'
+                        classNamePrefix='ogs-react-select'
+                        value={start_options.filter(opt => opt.value === every_second_start)[0]}
+                        getOptionValue={data => data.value}
+                        onChange={setEverySecondStart}
+                        options={start_options}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                    {data.label}
+                                </div>
+                            ),
+                            SingleValue: ({innerProps, data}) => (
+                                <span {...innerProps} className='sound-option'>
+                                    {data.label}
+                                </span>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='sound-option-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                </span>
 
-            <span>
-                <PlayButton sample={["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]} />
-            </span>
-        </div>
+                <span>
+                    <PlayButton sample={["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]} />
+                </span>
+            </div>
 
-        <div>
-            <h5>{pgettext("When announcing how long is left on the clock during a byo-yomi period, should we count up or down?", "Count up or down during a byo-yomi period?")}</h5>
+            <div>
+                <h5>{pgettext("When announcing how long is left on the clock during a byo-yomi period, should we count up or down?", "Count up or down during a byo-yomi period?")}</h5>
 
-            <span>
-                <Select
-                    className='sound-option-select'
-                    classNamePrefix='ogs-react-select'
-                    value={counting_direction_options.filter(opt => opt.value === count_direction)[0]}
-                    getOptionValue={data => data.value}
-                    onChange={setCountDirection}
-                    options={counting_direction_options}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                            <div ref={innerRef} {...innerProps}
-                                className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
-                                {data.label}
-                            </div>
-                        ),
-                        SingleValue: ({innerProps, data}) => (
-                            <span {...innerProps} className='sound-option'>
-                                {data.label}
-                            </span>
-                        ),
-                        ValueContainer: ({children}) => (
-                            <div className='sound-option-container'>
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
-            </span>
+                <span>
+                    <Select
+                        className='sound-option-select'
+                        classNamePrefix='ogs-react-select'
+                        value={counting_direction_options.filter(opt => opt.value === count_direction)[0]}
+                        getOptionValue={data => data.value}
+                        onChange={setCountDirection}
+                        options={counting_direction_options}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
+                                <div ref={innerRef} {...innerProps}
+                                    className={'sound-option ' + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                                    {data.label}
+                                </div>
+                            ),
+                            SingleValue: ({innerProps, data}) => (
+                                <span {...innerProps} className='sound-option'>
+                                    {data.label}
+                                </span>
+                            ),
+                            ValueContainer: ({children}) => (
+                                <div className='sound-option-container'>
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                </span>
 
-            <span>
-                <PlayButton sample={
+                <span>
+                    <PlayButton sample={
                     count_direction_computed === 'up'
                     ? ["1", "2", "3", "4", "5"]
                     : ["5", "4", "3", "2", "1"]
-                } />
-            </span>
-        </div>
+                    } />
+                </span>
+            </div>
 
-        <div>
-            <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
-            <span>
-                <SoundPackSelect group='stones' options={SpriteGroups.stones} />
-            </span>
-            <span>
-                <Volume group='stones' sample={['black-1', 'white-2', 'black-3']} />
-            </span>
-        </div>
+            <div>
+                <h4>{pgettext('Sound pack to use for things like stone placement sounds', "Stone Sounds")}</h4>
+                <span>
+                    <SoundPackSelect group='stones' options={SpriteGroups.stones} />
+                </span>
+                <span>
+                    <Volume group='stones' sample={['black-1', 'white-2', 'black-3']} />
+                </span>
+            </div>
 
-        <div>
-            <h4>{pgettext('Sound pack to use for various effects', "Effects")}</h4>
-            <span>
-                <SoundPackSelect group='effects' options={SpriteGroups.effects} />
-            </span>
-            <span>
-                <Volume group='effects' sample={['tutorial-bling', 'tutorial-pass']} />
-            </span>
-        </div>
+            <div>
+                <h4>{pgettext('Sound pack to use for various effects', "Effects")}</h4>
+                <span>
+                    <SoundPackSelect group='effects' options={SpriteGroups.effects} />
+                </span>
+                <span>
+                    <Volume group='effects' sample={['tutorial-bling', 'tutorial-pass']} />
+                </span>
+            </div>
         </div>
 
         <LineText>{pgettext("Settings for individual sound options", "Individual sound options")}</LineText>
@@ -1882,11 +1882,11 @@ function SoundPreferences(props:SettingGroupProps):JSX.Element {
 
                 <Card>
                     <PreferenceToggle name={pgettext("Shift the audio to the left or right depending on where the stone was placed.", "Positional stone placement effect")} preference="sound.positional-stone-placement-effect" />
-                {navigator.vibrate
+                    {navigator.vibrate
                     ?
                         <PreferenceToggle name={pgettext("On mobile devices, vibrate when a stone is placed?", "Vibrate when stone is placed")} preference="sound.vibrate-on-stone-placement" />
                     : null
-                }
+                    }
                 </Card>
 
             </div>
@@ -1894,16 +1894,16 @@ function SoundPreferences(props:SettingGroupProps):JSX.Element {
     </div>);
 }
 
-function SoundToggle(props:{name: string, sprite: ValidSound, voiceopt?: boolean}):JSX.Element {
-    const [on, __set]:[boolean, (x:boolean) => void] = React.useState(sfx.getSpriteEnabled(props.sprite));
-    const [voice, __setVoice]:[boolean, (x:boolean) => void] = React.useState(sfx.getSpriteVoiceEnabled(props.sprite));
+function SoundToggle(props: {name: string; sprite: ValidSound; voiceopt?: boolean}): JSX.Element {
+    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(sfx.getSpriteEnabled(props.sprite));
+    const [voice, __setVoice]: [boolean, (x: boolean) => void] = React.useState(sfx.getSpriteVoiceEnabled(props.sprite));
 
-    function setSpriteEnabled(on:boolean):void {
+    function setSpriteEnabled(on: boolean): void {
         sfx.setSpriteEnabled(props.sprite, on);
         __set(on);
     }
 
-    function setSpriteVoiceEnabled(on:boolean):void {
+    function setSpriteVoiceEnabled(on: boolean): void {
         sfx.setSpriteVoiceEnabled(props.sprite, on);
         __setVoice(on);
     }
@@ -1932,10 +1932,10 @@ function SoundToggle(props:{name: string, sprite: ValidSound, voiceopt?: boolean
     );
 }
 
-function EmailNotificationToggle(props:{state: SettingsState, name: string, notification: string}):JSX.Element {
-    const [on, __set]:[boolean, (x:boolean) => void] = React.useState(!!props.state.notifications[props.notification].value.email);
+function EmailNotificationToggle(props: {state: SettingsState; name: string; notification: string}): JSX.Element {
+    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(!!props.state.notifications[props.notification].value.email);
 
-    function save(on:boolean):void {
+    function save(on: boolean): void {
         __set(on);
         let up = {};
         up[props.notification] = {
@@ -1963,10 +1963,10 @@ function EmailNotificationToggle(props:{state: SettingsState, name: string, noti
     );
 }
 
-function PreferenceToggle(props:{name: string, preference: ValidPreference}):JSX.Element {
-    const [on, __set]:[boolean, (x:boolean) => void] = React.useState(preferences.get(props.preference));
+function PreferenceToggle(props: {name: string; preference: ValidPreference}): JSX.Element {
+    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(preferences.get(props.preference));
 
-    function setPreference(on:boolean):void {
+    function setPreference(on: boolean): void {
         preferences.set(props.preference, on);
         __set(on);
     }
@@ -1982,15 +1982,15 @@ function PreferenceToggle(props:{name: string, preference: ValidPreference}):JSX
 }
 
 
-function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>}):JSX.Element {
-    const [pack_id, __setPackId]:[string, (x:string) => void] = React.useState(sfx.getPackId(props.group));
+function SoundPackSelect(props: {group: ValidSoundGroup; options: Array<SpritePack>}): JSX.Element {
+    const [pack_id, __setPackId]: [string, (x: string) => void] = React.useState(sfx.getPackId(props.group));
 
-    function filter({label, value, data}, text:string):boolean {
+    function filter({label, value, data}, text: string): boolean {
         if (!text) {
             text = "";
         }
         text = text.toLowerCase();
-        let pack:SpritePack = data;
+        let pack: SpritePack = data;
 
         if (pack.name.toLowerCase().indexOf(text) >= 0) {
             return true;
@@ -2001,7 +2001,7 @@ function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>
         return false;
     }
 
-    function setPackId(pack:SpritePack):void {
+    function setPackId(pack: SpritePack): void {
         __setPackId(pack.pack_id);
         sfx.setPackId(props.group, pack.pack_id);
     }
@@ -2042,19 +2042,19 @@ function SoundPackSelect(props:{group:ValidSoundGroup, options:Array<SpritePack>
     );
 }
 
-function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidSound>}):JSX.Element {
-    const [volume, __setVolume]:[number, (x:number) => void] = React.useState(sfx.getVolume(props.group));
+function Volume(props: {group: ValidSoundGroup; sample: ValidSound | Array<ValidSound>}): JSX.Element {
+    const [volume, __setVolume]: [number, (x: number) => void] = React.useState(sfx.getVolume(props.group));
 
-    function setVolume(v:number):void {
+    function setVolume(v: number): void {
         __setVolume(v);
         sfx.setVolume(props.group, v);
     }
 
-    function setVolumeHandler(ev: React.ChangeEvent<HTMLInputElement>):void {
+    function setVolumeHandler(ev: React.ChangeEvent<HTMLInputElement>): void {
         setVolume(parseFloat(ev.target.value));
     }
 
-    function toggleVolumeHandler(ev: any):void {
+    function toggleVolumeHandler(ev: any): void {
         if (volume > 0) {
             setVolume(0);
         } else {
@@ -2068,7 +2068,7 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
             <i className={"fa volume-icon " +
                 (volume === 0 ? "fa-volume-off"
                     : (volume > 0.5 ? "fa-volume-up" : "fa-volume-down"))}
-                    onClick={toggleVolumeHandler} />
+            onClick={toggleVolumeHandler} />
             <input type="range"
                 onChange={setVolumeHandler}
                 value={volume} min={0} max={1.0} step={0.05} />
@@ -2079,14 +2079,14 @@ function Volume(props:{group: ValidSoundGroup, sample: ValidSound | Array<ValidS
 }
 
 
-let play_timeout:Timeout | null = null;
+let play_timeout: Timeout | null = null;
 let play_emitter = new EventEmitter();
 
-function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element {
-    const [playing, setPlaying]:[boolean, any] = React.useState(false);
-    let samples:Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
+function PlayButton(props: {sample: ValidSound | Array<ValidSound>}): JSX.Element {
+    const [playing, setPlaying]: [boolean, any] = React.useState(false);
+    let samples: Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
 
-    function play(ev: any):void {
+    function play(ev: any): void {
         let _samples = samples.slice();
         if (play_timeout) {
             clearTimeout(play_timeout);
@@ -2111,7 +2111,7 @@ function PlayButton(props:{sample: ValidSound | Array<ValidSound>}):JSX.Element 
         setPlaying(true);
     }
 
-    function stop(ev: any):void {
+    function stop(ev: any): void {
         play_emitter.emit('stop');
         clearTimeout(play_timeout);
         play_timeout = null;

@@ -82,7 +82,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
             value: newValue
         });
         this.complete(newValue);
-    }
+    };
     onSuggestionsFetchRequested = ({ value }) => {
         if (this.current_search === value) {
             return;
@@ -96,8 +96,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
 
             if (this.props.ladderId) {
                 q = get(`ladders/${this.props.ladderId}/players/`, {player__username__istartswith: value, page_size: 10, no_challenge_information: 1});
-            }
-            else {
+            } else {
                 q = get("players/", {username__istartswith: value, page_size: 10});
             }
 
@@ -127,12 +126,12 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                 suggestions: []
             });
         }
-    }
+    };
     onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: []
         });
-    }
+    };
     //onBlur = (ev, {focusedSuggestion}) => {
     onBlur = (ev, {highlightedSuggestion}) => {
         if (this.tabbed_out) {
@@ -141,14 +140,14 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                 this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
-    }
+    };
     onKeyDown = (ev) => {
         if (ev.keyCode === 9) {
             this.tabbed_out = true;
         } else {
             this.tabbed_out = false;
         }
-    }
+    };
 
     render() {
         let { suggestions, value } = this.state;
@@ -171,7 +170,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                     renderSuggestion={renderSuggestion}
                     highlightFirstSuggestion={true}
                     inputProps={inputProps}
-                    />
+                />
             </span>
         );
     }

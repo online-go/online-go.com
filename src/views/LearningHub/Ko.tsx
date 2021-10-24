@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 
 export class Ko extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -34,9 +34,9 @@ export class Ko extends LearningHubSection {
         ];
     }
 
-    static section():string { return "ko"; }
-    static title():string { return pgettext("Tutorial section on ko", "Ko!"); }
-    static subtext():string { return pgettext("Tutorial section on ko", "The recapture rule"); }
+    static section(): string { return "ko"; }
+    static title(): string { return pgettext("Tutorial section on ko", "Ko!"); }
+    static subtext(): string { return pgettext("Tutorial section on ko", "The recapture rule"); }
 }
 
 
@@ -48,7 +48,7 @@ class Page1 extends LearningPage {
     text() {
         return _("To prevent endlessly re-capturing the same space, there's a special rule called the \"Ko rule\" which prevents immediately recapturing the same position.  Capture the white group by exploiting the Ko rule.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -72,7 +72,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Connect your black stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -98,7 +98,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Capture two White stones by exploiting the Ko rule");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -126,7 +126,7 @@ class Page4 extends LearningPage {
     text() {
         return _("White just captured a stone with A3. Find a place to play where white must capture to move past the ko rule and take whites group at B5. This is called a \"ko threat\"");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             width: 13,
@@ -146,7 +146,7 @@ class Page4 extends LearningPage {
                     "a1a8a4a6",
                     "c8a8a4a6",
                 ]
-            , 13, 13)
+                , 13, 13)
         };
     }
 }

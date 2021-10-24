@@ -32,7 +32,7 @@ interface SupporterAdminProperties {
     playerId?: number;
 }
 
-declare var swal;
+declare let swal;
 
 
 export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any> {
@@ -86,9 +86,9 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
         .catch(errorAlerter);
     }
 
-    setNumMonths = (ev:React.ChangeEvent<HTMLInputElement>) => {
+    setNumMonths = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({num_months: ev.target.value});
-    }
+    };
 
     makeSupporter = () => {
         let num_months = parseInt(this.state.num_months);
@@ -102,7 +102,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }
+    };
 
     render() {
         let user = this.state;
@@ -118,7 +118,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                                 {this.state.supporter_expiration ? ' until ' + moment(this.state.supporter_expiration).format('YYYY-MM-DD') : ''}
 
                                 : ~${this.state.rough_monthly_support.toFixed(2)}/mo
-                              </span>
+                            </span>
                         }
                     </h3>
                 </div>
@@ -245,6 +245,6 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
     }
 }
 
-export function openSupporterAdminModal(user_id:number) {
+export function openSupporterAdminModal(user_id: number) {
     return openModal(<SupporterAdmin playerId={user_id} fastDismiss={true} />);
 }

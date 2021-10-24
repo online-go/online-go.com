@@ -22,7 +22,7 @@ import { ai_socket } from "sockets";
 import { MoveTree } from "goban";
 
 
-let analysis_requests_made:{[id:string]: boolean} = {};
+let analysis_requests_made: {[id: string]: boolean} = {};
 
 interface AIReviewStreamProperties {
     uuid?: string;
@@ -31,7 +31,7 @@ interface AIReviewStreamProperties {
     callback: (data: any) => any;
 }
 
-export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
+export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
     const uuid = props.uuid;
     const game_id = props.game_id;
     const ai_review_id = props.ai_review_id;
@@ -85,7 +85,7 @@ export function AIReviewStream(props:AIReviewStreamProperties):JSX.Element {
     return null;
 }
 
-export function ai_request_variation_analysis(uuid, game_id, ai_review_id, cur_move:MoveTree, trunk_move: MoveTree):void {
+export function ai_request_variation_analysis(uuid, game_id, ai_review_id, cur_move: MoveTree, trunk_move: MoveTree): void {
     if (!ai_socket.connected) {
         console.warn("Not sending request for variation analysis since we wern't connected to the AI server");
         return;

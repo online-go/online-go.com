@@ -58,18 +58,18 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
             notify_unread: getUnreadChatPreference(this.state.channelId),
             notify_mentioned: getMentionedChatPreference(this.state.channelId)
         });
-    }
+    };
 
     close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
-    }
+    };
 
     leave = (_ev) => {
         let c = this.state.channelId;
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
-    }
+    };
     goToGroup = (ev) => {
         this.close_all_modals_and_popovers();
 
@@ -79,7 +79,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         } else {
             browserHistory.push(url);
         }
-    }
+    };
     goToTournament = (ev) => {
         this.close_all_modals_and_popovers();
 
@@ -89,10 +89,10 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
         } else {
             browserHistory.push(url);
         }
-    }
+    };
 
     toggleNewMessageNotification = (ev) => {
-        let n_list: {[channel:string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        let n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
         if (!(this.state.channelId in n_list)) {
             n_list[this.state.channelId] = {};
         }
@@ -102,10 +102,10 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
             n_list[this.state.channelId].unread = true;
         }
         data.set("chat-indicator.chat-subscriptions", n_list);
-    }
+    };
 
     toggleMentionNotification = (ev) => {
-        let n_list: {[channel:string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        let n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
         if (!(this.state.channelId in n_list)) {
             n_list[this.state.channelId] = {};
         }
@@ -115,7 +115,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
             n_list[this.state.channelId].mentioned = true;
         }
         data.set("chat-indicator.chat-subscriptions", n_list);
-    }
+    };
 
     render() {
         let group_text = pgettext("Go to the main page for this group.", "Group Page");
@@ -130,7 +130,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                             className="xs noshadow"
                             onAuxClick={this.goToGroup}
                             onClick={this.goToGroup}>
-                                <i className="fa fa-users"/>{" "}{group_text}
+                            <i className="fa fa-users"/>{" "}{group_text}
                         </button>
                     }
                     {this.state.channelId.startsWith("tournament") &&
@@ -138,27 +138,27 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
                             className="xs noshadow"
                             onAuxClick={this.goToTournament}
                             onClick={this.goToTournament}>
-                                <i className="fa fa-trophy"/>{" "}{tournament_text}
+                            <i className="fa fa-trophy"/>{" "}{tournament_text}
                         </button>
                     }
                     {this.state.subscribable &&
                         <button
                             className={"xs noshadow "}// + this.state.notify_mentioned ? "active" : "inactive"}
                             onClick={this.toggleMentionNotification}>
-                                <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
+                            <i className="fa fa-comment" />{" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
                         </button>
                     }
                     {this.state.subscribable &&
                         <button
                             className={"xs noshadow "}// + this.state.notify_unread ? "active" : "inactive"}
                             onClick={this.toggleNewMessageNotification}>
-                                <i className="fa fa-comment" />{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
+                            <i className="fa fa-comment" />{" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
                         </button>
                     }
                     {(this.props.partFunc ? <button
                         className="xs noshadow reject"
                         onClick={this.leave}>
-                            <i className="fa fa-times"/>{" "}{leave_text}
+                        <i className="fa fa-times"/>{" "}{leave_text}
                     </button> : null)}
                 </div>
             </div>

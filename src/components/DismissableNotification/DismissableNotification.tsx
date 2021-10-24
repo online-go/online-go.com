@@ -36,7 +36,7 @@ export class DismissableNotification extends React.Component<DismissableNotifica
     dismiss = () => {
         data.set(`dismissed.${this.props.dismissedKey}`, true);
         this.setState({ dismissed: true });
-    }
+    };
 
     render() {
         if (this.state.dismissed) {

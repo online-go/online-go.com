@@ -55,7 +55,7 @@ declare let swal;
 
 interface UserProperties {
     match: {
-        params: any
+        params: any;
     };
     location?: any;
     // id?: any,
@@ -75,9 +75,9 @@ function getGameResultRichText(game) {
     }
     if (game.annulled) {
         result = <span>
-                     <span style={{textDecoration: 'line-through'}}>{result}</span>
-                     <span>, {_("annulled")}</span>
-                 </span>;
+            <span style={{textDecoration: 'line-through'}}>{result}</span>
+            <span>, {_("annulled")}</span>
+        </span>;
     }
 
     return result;
@@ -112,8 +112,8 @@ export class User extends React.PureComponent<UserProperties, any> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
-    moderator_note:any = null;
-    moderator_log:any = null;
+    moderator_note: any = null;
+    moderator_log: any = null;
     moderator_log_anchor: any = React.createRef();
     show_mod_log: boolean;
 
@@ -189,8 +189,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             let vacation_time_accrued = this.state.user.vacation_left;
             if (this.isSpecialUser()) {
                 return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
-            }
-            else {
+            } else {
                 return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
             }
         }
@@ -268,10 +267,10 @@ export class User extends React.PureComponent<UserProperties, any> {
             }
         };
 
-         if (data.get("config.user").is_moderator) /* aliases  */ {
+        if (data.get("config.user").is_moderator) /* aliases  */ {
             state.ip = null;
             state.host_ip_settings = null;
-         }
+        }
         state.temporary_show_ratings = false;
 
         this.setState(state);
@@ -432,7 +431,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }
+    };
     clearIcon = () => {
         this.setState({new_icon: null});
         del("players/%%/icon", this.user_id)
@@ -444,44 +443,44 @@ export class User extends React.PureComponent<UserProperties, any> {
             });
         })
         .catch(errorAlerter);
-    }
+    };
     toggleEdit = () => {
         if (this.state.editing) {
             this.saveEditChanges();
         } else {
             this.setState({editing: true});
         }
-    }
+    };
     toggleRatings = () => {
         this.setState((state) => ({temporary_show_ratings: !state.temporary_show_ratings}));
-    }
+    };
     saveCountry = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {country: ev.target.value})});
-    }
+    };
     saveAbout = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {about: ev.target.value})});
-    }
+    };
     saveUsername = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {username: ev.target.value})});
-    }
+    };
     saveWebsite = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {website: ev.target.value})});
-    }
+    };
     saveRealFirstName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             first_name: ev.target.value,
             name: ev.target.value + " " + (this.state.user.last_name || ""),
         })});
-    }
+    };
     saveRealLastName = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, {
             last_name: ev.target.value,
             name: (this.state.user.first_name || "") + " " + ev.target.value,
         })});
-    }
+    };
     saveRealNameIsPrivate = (ev) => {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
-    }
+    };
     saveEditChanges() {
         let username = this.state.user.username.trim();
         let promise: Promise<void>;
@@ -490,8 +489,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 text: _("You can only change your name once every 30 days. Are you sure you wish to change your username at this time?"),
                 showCancelButton: true,
             });
-        }
-        else {
+        } else {
             promise = Promise.resolve();
         }
         promise.then(() => {
@@ -517,7 +515,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         modal.on("close", () => {
             this.resolve(this.props);
         });
-    }
+    };
 
     updateGameSearch = (player) => {
         if (player) {
@@ -526,7 +524,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             delete this.refs.game_table.filter.alt_player;
         }
         this.refs.game_table.filter_updated();
-    }
+    };
     updateReviewSearch = (player) => {
         if (player) {
             this.refs.review_table.filter.alt_player = player.id;
@@ -534,7 +532,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             delete this.refs.review_table.filter.alt_player;
         }
         this.refs.review_table.filter_updated();
-    }
+    };
 
 
     addModeratorNote = () => {
@@ -552,15 +550,15 @@ export class User extends React.PureComponent<UserProperties, any> {
         .catch(errorAlerter);
 
         this.moderator_note.value = "";
-    }
+    };
 
     maskedRank = (rank: string): string => (
         preferences.get('hide-ranks') ? "" : rank
-    )
+    );
 
     updateTogglePosition = ( _height: number, width: number) => {
         this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
-    }
+    };
 
     render() {
         let user = this.state.user;
@@ -725,106 +723,106 @@ export class User extends React.PureComponent<UserProperties, any> {
         let account_links = user.self_reported_account_linkages;
 
         return (
-          <div className="User container">
-            <div>{/* Profile card  */}
-                <div className="profile-card">
-                    <div className="avatar-and-ratings-row">
-                        <div className="avatar-container">{/* Avatar container */}
-                            {editing
+            <div className="User container">
+                <div>{/* Profile card  */}
+                    <div className="profile-card">
+                        <div className="avatar-and-ratings-row">
+                            <div className="avatar-container">{/* Avatar container */}
+                                {editing
                                 ? <input className='username-input' value={user.username} onChange={this.saveUsername} placeholder={_("User Name")} />
                                 : <span className='username'><Player user={user}/></span>
-                            }
+                                }
 
-                            {preferences.get("hide-ranks") && this.state.temporary_show_ratings &&
+                                {preferences.get("hide-ranks") && this.state.temporary_show_ratings &&
                                  <span className='Player-rank'>{'[' + getUserRating(user).bounded_rank_label + ']'}</span>
-                            }
+                                }
 
-                            {editing
+                                {editing
                                 ?  <div className='dropzone-container'><Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
                                     {this.state.new_icon
                                         ? <img src={this.state.new_icon.preview} style={{height: "128px", width: "128px"}} />
                                         : <PlayerIcon id={user.id} size={128} />
                                     }
-                                   </Dropzone></div>
+                                </Dropzone></div>
                                 : <PlayerIcon id={user.id} size={128} />
-                            }
-                            {editing &&
+                                }
+                                {editing &&
                                 <div className='clear-icon-container'>
                                     <button className='xs' onClick={this.clearIcon}>{_("Clear icon")}</button>
                                 </div>
-                            }
+                                }
 
-                            <div className='avatar-subtext'>
-                                {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
+                                <div className='avatar-subtext'>
+                                    {(global_user.is_moderator && user.is_watched) && <div ><h3 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> Watched <i className="fa fa-exclamation-triangle"></i></h3></div>}
 
-                                {(user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0) && <div ><h4 style={inlineBlock}><img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")} </h4></div>}
+                                    {(user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0) && <div ><h4 style={inlineBlock}><img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")} </h4></div>}
 
-                                {(false /* suppress this message until backend fix is implemented */ && user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
+                                    {(false /* suppress this message until backend fix is implemented */ && user.timeout_provisional) && <div ><h4 style={inlineBlock}><i className="fa fa-exclamation-triangle"></i> {_("Has recently timed out of a game")} <i className="fa fa-exclamation-triangle"></i></h4></div>}
 
-                                {(!user.is_superuser && user.is_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-gavel"></i> {_("Moderator")}</h3></div>}
+                                    {(!user.is_superuser && user.is_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-gavel"></i> {_("Moderator")}</h3></div>}
 
-                                {(!user.is_moderator && user.supporter) && <div ><h3 style={inlineBlock}><i className="fa fa-star"></i> {_("Site Supporter")} <i className="fa fa-star"></i></h3></div>}
+                                    {(!user.is_moderator && user.supporter) && <div ><h3 style={inlineBlock}><i className="fa fa-star"></i> {_("Site Supporter")} <i className="fa fa-star"></i></h3></div>}
 
-                                {(user.is_superuser) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
+                                    {(user.is_superuser) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
 
-                                {(!user.is_superuser && user.is_tournament_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-trophy"></i> {_("Tournament Moderator")} <i className="fa fa-trophy"></i></h3></div>}
+                                    {(!user.is_superuser && user.is_tournament_moderator) && <div ><h3 style={inlineBlock}><i className="fa fa-trophy"></i> {_("Tournament Moderator")} <i className="fa fa-trophy"></i></h3></div>}
 
-                                {(user.on_vacation) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
-                            </div>
+                                    {(user.on_vacation) && <div ><h3 style={inlineBlock}><i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} - {this.state.vacation_left_text} <i className="fa fa-smile-o fa-spin"></i></h3></div>}
+                                </div>
 
-                            {(editing || null) &&
+                                {(editing || null) &&
                                 <div>
                                     <input className='name-input' placeholder={_("First") /* translators: First name */} value={user.first_name || ""} onChange={this.saveRealFirstName}/>
                                     &nbsp;
                                     <input className='name-input' placeholder={_("Last") /* translators: Last name */} value={user.last_name || ""} onChange={this.saveRealLastName}/>
                                 </div>
-                            }
-                            {(!editing && user.name) && <div className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</div>}
+                                }
+                                {(!editing && user.name) && <div className={user.real_name_is_private ? "italic" : ""}>{user.name}{user.real_name_is_private ? " " + _("(hidden)") : ""}</div>}
 
 
-                            {(editing || null) && <div ><input type="checkbox" id="real-name-is-private" checked={user.real_name_is_private} onChange={this.saveRealNameIsPrivate}/> <label htmlFor="real-name-is-private">{_("Hide real name")}</label></div>}
+                                {(editing || null) && <div ><input type="checkbox" id="real-name-is-private" checked={user.real_name_is_private} onChange={this.saveRealNameIsPrivate}/> <label htmlFor="real-name-is-private">{_("Hide real name")}</label></div>}
 
-                            {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
-                            {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
-                            {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
+                                {(user.is_bot) && <div ><i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b> <i className="fa fa-star"></i></div>}
+                                {(user.is_bot) && <div id="bot-ai-name">{pgettext("Bot AI engine", "Engine")}: {user.bot_ai}</div>}
+                                {(user.is_bot) && <div>{_("Administrator")}: <Player user={user.bot_owner}/></div>}
 
 
-                            {editing
+                                {editing
                               ? <div className='country-line'>
-                                    <Flag country={user.country} big/>
-                                    <select value={user.country} onChange={this.saveCountry}>
-                                        {sorted_locale_countries.map((C) => (
-                                            <option key={C.cc} value={C.cc}>{C.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                  <Flag country={user.country} big/>
+                                  <select value={user.country} onChange={this.saveCountry}>
+                                      {sorted_locale_countries.map((C) => (
+                                          <option key={C.cc} value={C.cc}>{C.name}</option>
+                                      ))}
+                                  </select>
+                              </div>
                               : <div className='country-line'>
-                                    <Flag country={user.country} big/>
-                                    <span>{cc_to_country_name(user.country)}</span>
-                                </div>
-                            }
+                                  <Flag country={user.country} big/>
+                                  <span>{cc_to_country_name(user.country)}</span>
+                              </div>
+                                }
 
 
-                            {(!editing && user.website) &&
+                                {(!editing && user.website) &&
                                 <div className='website-url'><a target="_blank" rel="noopener" href={cleaned_website}>{user.website}</a></div>
-                            }
-                            {(editing || null) &&
+                                }
+                                {(editing || null) &&
                                 <div className='website-url'><input type="url" value={user.website} onChange={this.saveWebsite} /></div>
-                            }
+                                }
 
-                            <div className='avatar-buttons'>
-                                {((global_user.id === user.id || global_user.is_moderator) || null)   &&
+                                <div className='avatar-buttons'>
+                                    {((global_user.id === user.id || global_user.is_moderator) || null)   &&
                                     <button onClick={this.toggleEdit} className='xs edit-button'>
                                         <i className={editing ? "fa fa-save" : "fa fa-pencil"}/> {" " + (editing ? _("Save") : _("Edit"))}
                                     </button>
-                                }
+                                    }
 
-                                { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                                    { (window["user"].is_moderator) && <button className="danger xs pull-right" onClick={this.openModerateUser}>{_("Moderator Controls")}</button> }
+                                </div>
                             </div>
-                        </div>
 
 
-                        {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
+                            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                             <div className='ratings-container'>{/* Ratings  */}
                                 <h3 className='ratings-title'>
                                     {_("Ratings")}
@@ -837,16 +835,16 @@ export class User extends React.PureComponent<UserProperties, any> {
                                             this.setState({'show_ratings_in_rating_grid': checked});
                                             preferences.set('show-ratings-in-rating-grid', checked);
                                         }}
-                                        />
+                                    />
                                 </h3>
                                 {this.renderRatingGrid(this.state.show_ratings_in_rating_grid)}
                             </div>
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
+                {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) && (!user.professional || global_user.id === user.id) &&
                 <div className='ratings-row'>
                     <div className='ratings-chart'>
                         {this.state.rating_graph_plot_by_games ?
@@ -860,8 +858,8 @@ export class User extends React.PureComponent<UserProperties, any> {
                     </div>
                     {this.state.show_graph_type_toggle &&
                         <div className='graph-type-toggle' style={{
-                                left: this.state.rating_chart_type_toggle_left}
-                            }>
+                            left: this.state.rating_chart_type_toggle_left}
+                        }>
                             <Toggle
                                 height={10}
                                 width={20}
@@ -871,57 +869,57 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     this.setState({'rating_graph_plot_by_games': checked});
                                     preferences.set('rating-graph-plot-by-games', checked);
                                 }}
-                                />
+                            />
                         </div>
                     }
                 </div>
-            }
+                }
 
-            { (preferences.get("hide-ranks")) &&
+                { (preferences.get("hide-ranks")) &&
                 <button className="danger toggle-ratings" onClick={this.toggleRatings}>{showRatings ? _("Hide ratings") : _("Show ratings")}</button>
-            }
+                }
 
-            <div className="row">
-                <div className='col-sm-8'>
-                    {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
-                        <b>Users with the same IP or Browser ID</b>
-                        <PaginatedTable
-                            className="aliases"
-                            name="aliases"
-                            source={`players/${this.user_id}/aliases/`}
-                            columns={[
-                                {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
-                                {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
-                                {header: "Browser ID",   sortable:true, className: "browser_id", render: (X) => X.last_browser_id},
-                                {header: "User",         className: "",           render: (X) => (
-                                    <span>
-                                        <Player user={X}/>
-                                        {(X.has_notes || null) && <i className="fa fa-file-text-o clickable" onClick={() => openNotes(X.moderator_notes)} />}
-                                    </span>
-                                )},
-                                {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
-                                {header: "Shadowbanned", className: "banned",     render: (X) => X.is_shadowbanned ? _("Yes") : _("No")},
-                            ]}
-                        />
+                <div className="row">
+                    <div className='col-sm-8'>
+                        {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
+                            <b>Users with the same IP or Browser ID</b>
+                            <PaginatedTable
+                                className="aliases"
+                                name="aliases"
+                                source={`players/${this.user_id}/aliases/`}
+                                columns={[
+                                    {header: "Registered",   className: "date",       render: (X) => moment(X.registration_date).format("YYYY-MM-DD")},
+                                    {header: "Last Login",   className: "date",       render: (X) => moment(X.last_login).format("YYYY-MM-DD")},
+                                    {header: "Browser ID",   sortable:true, className: "browser_id", render: (X) => X.last_browser_id},
+                                    {header: "User",         className: "",           render: (X) => (
+                                        <span>
+                                            <Player user={X}/>
+                                            {(X.has_notes || null) && <i className="fa fa-file-text-o clickable" onClick={() => openNotes(X.moderator_notes)} />}
+                                        </span>
+                                    )},
+                                    {header: "Banned",       className: "banned",     render: (X) => X.is_banned ? _("Yes") : _("No")},
+                                    {header: "Shadowbanned", className: "banned",     render: (X) => X.is_shadowbanned ? _("Yes") : _("No")},
+                                ]}
+                            />
 
-                        <b>Mod log</b>
-                        <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
-                        <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
-                            <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
-                            <button onClick={this.addModeratorNote}>Add note</button>
-                        </div>
-                        <PaginatedTable
-                            className="moderator-log"
-                            name="moderator-log"
-                            ref={(x) => this.moderator_log = x}
-                            source={`moderation?player_id=${this.user_id}`}
-                            columns={[
-                                {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
-                                {header: "", className: "",     render: (X) => <Player user={X.moderator} />},
-                                {header: "", className: "",     render: (X) =>
-                                    <div>
-                                        <div className='action'>{X.game ? <Link to={`/game/${X.game.id}`}>{X.game.id}</Link> : null}{X.action}</div>
-                                        {X.incident_report &&
+                            <b>Mod log</b>
+                            <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
+                            <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
+                                <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
+                                <button onClick={this.addModeratorNote}>Add note</button>
+                            </div>
+                            <PaginatedTable
+                                className="moderator-log"
+                                name="moderator-log"
+                                ref={(x) => this.moderator_log = x}
+                                source={`moderation?player_id=${this.user_id}`}
+                                columns={[
+                                    {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
+                                    {header: "", className: "",     render: (X) => <Player user={X.moderator} />},
+                                    {header: "", className: "",     render: (X) =>
+                                        <div>
+                                            <div className='action'>{X.game ? <Link to={`/game/${X.game.id}`}>{X.game.id}</Link> : null}{X.action}</div>
+                                            {X.incident_report &&
                                             <div>
                                                 {X.incident_report.cleared_by_user ? <div><b>Cleared by user</b></div> : null}
                                                 <div>{X.incident_report.url}</div>
@@ -930,123 +928,123 @@ export class User extends React.PureComponent<UserProperties, any> {
                                                 {X.incident_report.moderator ? <Player user={X.incident_report.moderator} /> : null}
                                                 <i> {X.incident_report.moderator_note}</i>
                                             </div>
-                                        }
-                                        <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
-                                    </div>
-                                },
-                            ]}
-                        />
-                    </Card>
-                    }
+                                            }
+                                            <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
+                                        </div>
+                                    },
+                                ]}
+                            />
+                        </Card>
+                        }
 
-                {(user.about || editing || null) &&
+                        {(user.about || editing || null) &&
                     <Card>
                         <div className='about-container'>
                             {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
                             {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
                         </div>
                     </Card>
-                }
+                        }
 
-                {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
-                <GameList list={this.state.active_games} player={user}/>
+                        {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
+                        <GameList list={this.state.active_games} player={user}/>
 
 
-                    <div className="row">{/* Game History  */}
-                        <div className="col-sm-12">
-                            <h2>{_("Game History")}</h2>
-                            <Card>
-                            <div>{/* loading-container="game_history.settings().$loading" */}
-                                <div className="search">
-                                    <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
-                                </div>
+                        <div className="row">{/* Game History  */}
+                            <div className="col-sm-12">
+                                <h2>{_("Game History")}</h2>
+                                <Card>
+                                    <div>{/* loading-container="game_history.settings().$loading" */}
+                                        <div className="search">
+                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                        </div>
 
-                                <PaginatedTable
-                                    className="game-history-table"
-                                    ref="game_table"
-                                    name="game-history"
-                                    method="get"
-                                    source={`players/${this.user_id}/games/`}
-                                    filter={{
-                                        "source": "play",
-                                        "ended__isnull": false,
-                                    }}
-                                    orderBy={["-ended"]}
-                                    groom={game_history_groomer}
-                                    onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
-                                    columns={[                                /* I wish we could set properties at the row level! */
-                                        {header: _("User"),   className: (X) => ("user_info" +         ((X && X.annulled) ? " annulled" : "")), render: (X) => (<React.Fragment>{(X.played_black ? <span>⚫</span> : <span>⚪</span>)}{this.maskedRank(`[${rankString(X.player)}]`)}</React.Fragment>)},
-                                        {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
-                                        {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),     render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                        {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
-                                        {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
-                                        {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),     render: (X) => `${X.width}x${X.height}`},
-                                        {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
-                                        {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""),    render: (X) => X.result},
-                                    ]}
-                                />
-                            </div>
-                            </Card>
-                        </div>
-                    </div>
-
-                    <div className="row">{/* Reviews and Demos */}
-                        <div className="col-sm-12">
-                            <h2>{_("Reviews and Demos")}</h2>
-                            <Card>
-                                <div>{/* loading-container="game_history.settings().$loading" */}
-                                    <div className="search">
-                                        <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                        <PaginatedTable
+                                            className="game-history-table"
+                                            ref="game_table"
+                                            name="game-history"
+                                            method="get"
+                                            source={`players/${this.user_id}/games/`}
+                                            filter={{
+                                                "source": "play",
+                                                "ended__isnull": false,
+                                            }}
+                                            orderBy={["-ended"]}
+                                            groom={game_history_groomer}
+                                            onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                                            columns={[                                /* I wish we could set properties at the row level! */
+                                                {header: _("User"),   className: (X) => ("user_info" +         ((X && X.annulled) ? " annulled" : "")), render: (X) => (<React.Fragment>{(X.played_black ? <span>⚫</span> : <span>⚪</span>)}{this.maskedRank(`[${rankString(X.player)}]`)}</React.Fragment>)},
+                                                {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
+                                                {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),     render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                                {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
+                                                {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
+                                                {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),     render: (X) => `${X.width}x${X.height}`},
+                                                {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
+                                                {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""),    render: (X) => X.result},
+                                            ]}
+                                        />
                                     </div>
-
-                                    <PaginatedTable
-                                        className="review-history-table"
-                                        ref="review_table"
-                                        name="review-history"
-                                        method="get"
-                                        source={`reviews/`}
-                                        filter={{
-                                            "owner_id": this.user_id,
-                                        }}
-                                        orderBy={["-created"]}
-                                        groom={review_history_groomer}
-                                        onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
-                                        columns={[
-                                            {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                            {header: _("Name"),   className: () => "game_name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
-                                            {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
-                                            {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
-                                        ]}
-                                    />
-                                </div>
-                            </Card>
+                                </Card>
+                            </div>
                         </div>
+
+                        <div className="row">{/* Reviews and Demos */}
+                            <div className="col-sm-12">
+                                <h2>{_("Reviews and Demos")}</h2>
+                                <Card>
+                                    <div>{/* loading-container="game_history.settings().$loading" */}
+                                        <div className="search">
+                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                        </div>
+
+                                        <PaginatedTable
+                                            className="review-history-table"
+                                            ref="review_table"
+                                            name="review-history"
+                                            method="get"
+                                            source={`reviews/`}
+                                            filter={{
+                                                "owner_id": this.user_id,
+                                            }}
+                                            orderBy={["-created"]}
+                                            groom={review_history_groomer}
+                                            onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                                            columns={[
+                                                {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                                {header: _("Name"),   className: () => "game_name",                            render: (X) => <Link to={X.href}>{X.name}</Link>},
+                                                {header: _("Black"),  className: (X) => ("player " + (X ? X.black_class : "")), render: (X) => <Player user={X.historical.black} disableCacheUpdate />},
+                                                {header: _("White"),  className: (X) => ("player " + (X ? X.white_class : "")), render: (X) => <Player user={X.historical.white} disableCacheUpdate />},
+                                            ]}
+                                        />
+                                    </div>
+                                </Card>
+                            </div>
+                        </div>
+
                     </div>
 
-                </div>
 
-
-                <div className="col-sm-4">
-                    {(!(user.professional)) &&
+                    <div className="col-sm-4">
+                        {(!(user.professional)) &&
                         <div >
 
-                        {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings)
+                            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings)
                             && (!user.professional || global_user.id === user.id)
                             && account_links
                             &&
                             <Card>
                                 <SelfReportedAccountLinkages links={account_links} />
                             </Card>
-                        }
+                            }
 
-                        {(this.state.achievements.length > 0 || null) &&
+                            {(this.state.achievements.length > 0 || null) &&
                             <Card>
                                 <h3>{_("Achievements")}</h3>
                                 <AchievementList list={this.state.achievements} />
                             </Card>
-                        }
+                            }
 
-                        {(this.state.titles.length > 0 || this.state.trophies.length > 0 || null) &&
+                            {(this.state.titles.length > 0 || this.state.trophies.length > 0 || null) &&
                             <Card>
                                 <h3>{_("Trophies")}</h3>
 
@@ -1081,155 +1079,155 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     </React.Fragment>
                                 }
                             </Card>
+                            }
+
+                        </div>
                         }
 
-                        </div>
-                    }
-
-                    {(this.state.vs.total || null) && <div >
-                        <Card>
-                            <h5 style={{textAlign: "center"}}>{interpolate("You have won {{vs.wins}} out of {{vs.total}} games against {{username}}", {"vs.wins": this.state.vs.wins, "vs.total": this.state.vs.total, "username": user.username})}</h5>
-                            <div className="progress">
-                                 {(this.state.vs.winPercent > 0) &&
+                        {(this.state.vs.total || null) && <div >
+                            <Card>
+                                <h5 style={{textAlign: "center"}}>{interpolate("You have won {{vs.wins}} out of {{vs.total}} games against {{username}}", {"vs.wins": this.state.vs.wins, "vs.total": this.state.vs.total, "username": user.username})}</h5>
+                                <div className="progress">
+                                    {(this.state.vs.winPercent > 0) &&
                                   <div className="progress-bar games-won" style={{width: this.state.vs.winPercent + "%"}}>{this.state.vs.wins}</div>}
-                                 {(this.state.vs.lossPercent > 0) &&
+                                    {(this.state.vs.lossPercent > 0) &&
                                   <div className="progress-bar games-lost" style={{width: this.state.vs.lossPercent + "%"}}>{this.state.vs.losses}</div>}
-                                 {(this.state.vs.drawPercent > 0) &&
+                                    {(this.state.vs.drawPercent > 0) &&
                                    <div className="progress-bar primary" style={{width: this.state.vs.drawPercent + "%"}}>{this.state.vs.draws}</div>}
-                            </div>
+                                </div>
 
-                            {this.state.vs.recent5.map((game, idx) => (
-                                <div style={{textAlign: "center"}} key={idx}>
-                                    <span className="date">{game.pretty_date}</span> <a href={`/game/${game.game}`}>#{game.game}</a>
-                                    {(game.state === "W") && <i  className="fa fa-check-circle-o won"></i>}
-                                    {(game.state === "L") && <i  className="fa fa-times loss"></i>}
-                                </div>
-                            ))}
-                        </Card>
-                    </div>}
-
-                    {(user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id) && <div >
-                        <h2>{_("Bot Controls")}</h2>
-                        <div className="well">
-                            <h5>{_("API Key")}
-                            <button className="btn btn-xs btn-default" onClick={() => this.generateAPIKey()}>{_("Generate API Key")}</button>
-                            </h5>
-                            <input type="text" className="form-control" value={this.state.bot_apikey} readOnly />
-                            <h5>{_("Bot Engine")}</h5>
-                            <input type="text" className="form-control" placeholder={_("Engine Name")} value={this.state.bot_ai || ""}
-                                   onChange={(event) => this.setState({"bot_ai": (event.target as HTMLInputElement).value})}/>
-                            <div style={{textAlign: "right"}}>
-                                <button className="btn btn-xs btn-default" onClick={() => this.saveBot()}>{_("Save")}</button>
-                            </div>
-                        </div>
-                    </div>}
-
-                    {(this.state.ip) && <Card >
-                        <div><b>IP</b><span> {this.state.ip}</span></div>
-                        <div><b>Country</b><span> {this.state.ip.country} / {cc_to_country_name(this.state.ip.country)}</span></div>
-                        <div><b>Region</b>{this.state.ip.subdivisions.map((sd, idx) => (<span key={idx} > {sd} </span>))}</div>
-                        <div><b>Map</b><span> <a href={`https://maps.google.com/maps?ll=${this.state.ip.location[0]},${this.state.ip.location[1]}`} target="_blank">map</a></span></div>
-                        <div><b>IP Shadowbanned</b> <span>{parseInt(user.ip_shadowbanned) === 1 ? _("Yes") : _("No")}</span></div>
-                        {(this.state.host_ip_settings) && <div >
-                            <form className="form-horizontal" role="form">
-                                <div className="form-group" style={marginBottom0}>
-                                    <label className="col-xs-7" htmlFor="clients-limit ">User limit</label>
-                                    <div className="col-xs-5">
-                                        <input type="number" id="clients-limit" style={{width: "5rem"}} value={this.state.host_ip_settings.clients_limit}
-                                               onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "clients_limit", parseInt((event.target as HTMLInputElement).value))})}
-                                        />
+                                {this.state.vs.recent5.map((game, idx) => (
+                                    <div style={{textAlign: "center"}} key={idx}>
+                                        <span className="date">{game.pretty_date}</span> <a href={`/game/${game.game}`}>#{game.game}</a>
+                                        {(game.state === "W") && <i  className="fa fa-check-circle-o won"></i>}
+                                        {(game.state === "L") && <i  className="fa fa-times loss"></i>}
                                     </div>
-                                </div>
-                                <div className="form-group" style={marginBottom0}>
-                                    <label className="col-xs-7" htmlFor="ban-affects-all">Ban affects all</label>
-                                    <div className="col-xs-5">
-                                        <input type="checkbox" id="ban-affects-all" value={this.state.host_ip_settings.ban_affects_all}
-                                               onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "ban_affects_all", (event.target as HTMLInputElement).checked)})}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-group" style={marginBottom0}>
-                                    <label className="col-xs-7" htmlFor="chatban-affects-all">Chatban affects all</label>
-                                    <div className="col-xs-5">
-                                        <input type="checkbox" id="chatban-affects-all" value={this.state.host_ip_settings.chatban_affects_all}
-                                               onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "chatban_affects_all", (event.target as HTMLInputElement).checked)})}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-group" style={marginBottom0}>
-                                    <label className="col-xs-7" htmlFor=""></label>
-                                    <div className="col-xs-5">
-                                        <button className="btn btn-default btn-xs" onClick={() => this.saveHostIpSettings()}>save</button>
-                                        <i id="host-ip-saved" className="fa fa-check-circle-o won hidden"></i>
-                                    </div>
-                                </div>
-                            </form>
+                                ))}
+                            </Card>
                         </div>}
-                    </Card>}
+
+                        {(user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id) && <div >
+                            <h2>{_("Bot Controls")}</h2>
+                            <div className="well">
+                                <h5>{_("API Key")}
+                                    <button className="btn btn-xs btn-default" onClick={() => this.generateAPIKey()}>{_("Generate API Key")}</button>
+                                </h5>
+                                <input type="text" className="form-control" value={this.state.bot_apikey} readOnly />
+                                <h5>{_("Bot Engine")}</h5>
+                                <input type="text" className="form-control" placeholder={_("Engine Name")} value={this.state.bot_ai || ""}
+                                    onChange={(event) => this.setState({"bot_ai": (event.target as HTMLInputElement).value})}/>
+                                <div style={{textAlign: "right"}}>
+                                    <button className="btn btn-xs btn-default" onClick={() => this.saveBot()}>{_("Save")}</button>
+                                </div>
+                            </div>
+                        </div>}
+
+                        {(this.state.ip) && <Card >
+                            <div><b>IP</b><span> {this.state.ip}</span></div>
+                            <div><b>Country</b><span> {this.state.ip.country} / {cc_to_country_name(this.state.ip.country)}</span></div>
+                            <div><b>Region</b>{this.state.ip.subdivisions.map((sd, idx) => (<span key={idx} > {sd} </span>))}</div>
+                            <div><b>Map</b><span> <a href={`https://maps.google.com/maps?ll=${this.state.ip.location[0]},${this.state.ip.location[1]}`} target="_blank">map</a></span></div>
+                            <div><b>IP Shadowbanned</b> <span>{parseInt(user.ip_shadowbanned) === 1 ? _("Yes") : _("No")}</span></div>
+                            {(this.state.host_ip_settings) && <div >
+                                <form className="form-horizontal" role="form">
+                                    <div className="form-group" style={marginBottom0}>
+                                        <label className="col-xs-7" htmlFor="clients-limit ">User limit</label>
+                                        <div className="col-xs-5">
+                                            <input type="number" id="clients-limit" style={{width: "5rem"}} value={this.state.host_ip_settings.clients_limit}
+                                                onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "clients_limit", parseInt((event.target as HTMLInputElement).value))})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group" style={marginBottom0}>
+                                        <label className="col-xs-7" htmlFor="ban-affects-all">Ban affects all</label>
+                                        <div className="col-xs-5">
+                                            <input type="checkbox" id="ban-affects-all" value={this.state.host_ip_settings.ban_affects_all}
+                                                onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "ban_affects_all", (event.target as HTMLInputElement).checked)})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group" style={marginBottom0}>
+                                        <label className="col-xs-7" htmlFor="chatban-affects-all">Chatban affects all</label>
+                                        <div className="col-xs-5">
+                                            <input type="checkbox" id="chatban-affects-all" value={this.state.host_ip_settings.chatban_affects_all}
+                                                onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "chatban_affects_all", (event.target as HTMLInputElement).checked)})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group" style={marginBottom0}>
+                                        <label className="col-xs-7" htmlFor=""></label>
+                                        <div className="col-xs-5">
+                                            <button className="btn btn-default btn-xs" onClick={() => this.saveHostIpSettings()}>save</button>
+                                            <i id="host-ip-saved" className="fa fa-check-circle-o won hidden"></i>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>}
+                        </Card>}
 
 
-                    <h2>{_("Activity")}</h2>
-                    <Card className="activity-card">
-                        <h4>{_("Vacation Accrued:")} {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}</h4>
-                        {!user.on_vacation && <div >{this.vacationAccrued()}</div>}
-                        {user.on_vacation && <div >{_("User On Vacation")}</div>}
-                        <h4>{_("Ladders")}</h4>
-                        {(this.state.ladders.length > 0) && <div >
-                            <dl className="activity-dl">
-                                {this.state.ladders.map((ladder, idx) => (
-                                <dd key={idx}>
+                        <h2>{_("Activity")}</h2>
+                        <Card className="activity-card">
+                            <h4>{_("Vacation Accrued:")} {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}</h4>
+                            {!user.on_vacation && <div >{this.vacationAccrued()}</div>}
+                            {user.on_vacation && <div >{_("User On Vacation")}</div>}
+                            <h4>{_("Ladders")}</h4>
+                            {(this.state.ladders.length > 0) && <div >
+                                <dl className="activity-dl">
+                                    {this.state.ladders.map((ladder, idx) => (
+                                        <dd key={idx}>
                                     #{ladder.rank} <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
-                                </dd>
-                                ))}
-                            </dl>
-                        </div>}
-                        {(!this.state.ladders.length) && <div >
-                            <div>{_("Not participating in any ladders")}</div>
-                        </div>}
+                                        </dd>
+                                    ))}
+                                </dl>
+                            </div>}
+                            {(!this.state.ladders.length) && <div >
+                                <div>{_("Not participating in any ladders")}</div>
+                            </div>}
 
 
-                        <h4>{_("Tournaments")}</h4>
-                        {(this.state.tournaments.length > 0) && <div >
-                            <dl className="activity-dl">
-                                {this.state.tournaments.map((tournament, idx) => (
-                                <dd key={idx}>
-                                    <Link to={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</Link>
-                                </dd>
-                                ))}
-                            </dl>
-                        </div>}
-                        {(!this.state.tournaments.length) && <div >
-                            <div>{_("Not participating in any tournaments")}</div>
-                        </div>}
+                            <h4>{_("Tournaments")}</h4>
+                            {(this.state.tournaments.length > 0) && <div >
+                                <dl className="activity-dl">
+                                    {this.state.tournaments.map((tournament, idx) => (
+                                        <dd key={idx}>
+                                            <Link to={`/tournament/${tournament.id}`}><img src={tournament.icon} className="icon" /> {tournament.name}</Link>
+                                        </dd>
+                                    ))}
+                                </dl>
+                            </div>}
+                            {(!this.state.tournaments.length) && <div >
+                                <div>{_("Not participating in any tournaments")}</div>
+                            </div>}
 
-                        <h4>{_("Groups")}</h4>
-                        {(this.state.groups.length > 0) && <div >
-                            <dl className="activity-dl">
-                                {this.state.groups.map((group, idx) => (
-                                <dd key={idx}>
-                                    <Link to={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</Link>
-                                </dd>
-                                ))}
-                            </dl>
-                        </div>}
-                        {(!this.state.groups.length) && <div >
-                            <div>{_("Not a member of any groups")}</div>
-                        </div>}
-                    </Card>
+                            <h4>{_("Groups")}</h4>
+                            {(this.state.groups.length > 0) && <div >
+                                <dl className="activity-dl">
+                                    {this.state.groups.map((group, idx) => (
+                                        <dd key={idx}>
+                                            <Link to={`/group/${group.id}`}><img src={group.icon} className="icon" /> {group.name}</Link>
+                                        </dd>
+                                    ))}
+                                </dl>
+                            </div>}
+                            {(!this.state.groups.length) && <div >
+                                <div>{_("Not a member of any groups")}</div>
+                            </div>}
+                        </Card>
+                    </div>
+                    {/* end right col  */}
                 </div>
-                {/* end right col  */}
             </div>
-          </div>
         );
     }
     renderInvalidUser() {
         if (this.state.resolved) {
             return (
-            <div className="User flex stetch">
-                <div className="container flex fill center-both">
-                <h3>{_("User not found")}</h3>
+                <div className="User flex stetch">
+                    <div className="container flex fill center-both">
+                        <h3>{_("User not found")}</h3>
+                    </div>
                 </div>
-            </div>
             );
         }
         return (
@@ -1254,11 +1252,11 @@ export class User extends React.PureComponent<UserProperties, any> {
                     <div key={size} className='speed'>
                         {size > 0
                             ?  <span className='title'>
-                                 {size}x{size}
-                               </span>
+                                {size}x{size}
+                            </span>
                             :  <span className='title'>
-                                 <i className="speed-icon fa fa-circle-o" title={_("Overall")} />
-                               </span>
+                                <i className="speed-icon fa fa-circle-o" title={_("Overall")} />
+                            </span>
                         }
 
                         {['overall', 'blitz', 'live', 'correspondence'].map((speed) => (
@@ -1267,18 +1265,18 @@ export class User extends React.PureComponent<UserProperties, any> {
                             </span>
                         ))}
                     </div>
-                 ))
+                ))
                 }
             </div>
         );
     }
-    renderRatingOrRank(speed, size, show_rating: boolean):JSX.Element {
+    renderRatingOrRank(speed, size, show_rating: boolean): JSX.Element {
         let r = getUserRating(this.state.user, speed, size);
 
         return (
             <div className={`rating-entry ${speed}-${size}x${size} ` + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
-                 onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
-                >
+                onClick={() => this.setState({'selected_size': size, 'selected_speed': speed})}
+            >
                 <div className='rating'>
                     <span className='left'>{
                         show_rating
@@ -1300,7 +1298,7 @@ function openNotes(notes) {
     openModal(<NotesModal notes={notes} fastDismiss />);
 }
 
-function SelfReportedAccountLinkages({links}: {links: any}):JSX.Element {
+function SelfReportedAccountLinkages({links}: {links: any}): JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (let key in links) {
@@ -1333,25 +1331,25 @@ function SelfReportedAccountLinkages({links}: {links: any}):JSX.Element {
     );
 
 }
-function AssociationLink({country, id, rank}: {country: string, id?: string, rank?: string}):JSX.Element {
+function AssociationLink({country, id, rank}: {country: string; id?: string; rank?: string}): JSX.Element {
     try {
         if (!country) {
             return null;
         }
 
         let association = associations.filter(a => a.country === country)[0];
-        let linker:(id:string) => string;
+        let linker: (id: string) => string;
 
         if (country === "us") {
-            linker = (id:string) => `https://agagd.usgo.org/player/${id}/`;
+            linker = (id: string) => `https://agagd.usgo.org/player/${id}/`;
         }
 
         if (country === "eu") {
-            linker = (id:string) => `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
+            linker = (id: string) => `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
         }
 
         if (country === "ru") {
-            linker = (id:string) => `https://gofederation.ru/players/${id}`;
+            linker = (id: string) => `https://gofederation.ru/players/${id}`;
         }
 
         return (
@@ -1370,7 +1368,7 @@ function AssociationLink({country, id, rank}: {country: string, id?: string, ran
     }
 }
 
-function ServerLink({name, id, rank}: {name: string, id?: string, rank?: string}):JSX.Element {
+function ServerLink({name, id, rank}: {name: string; id?: string; rank?: string}): JSX.Element {
     if (!id && !rank) {
         return null;
     }

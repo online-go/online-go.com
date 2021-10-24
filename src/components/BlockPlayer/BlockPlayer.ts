@@ -30,7 +30,7 @@ class BlockState {
     block_games = false;
     block_announcements = false;
 
-    constructor(blocked:number) {
+    constructor(blocked: number) {
         this.blocked = blocked;
     }
 }
@@ -118,8 +118,7 @@ function ignoreUser(uid, dont_fetch = false) {
     if (dont_fetch) {
         ignores[uid] = true;
         $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
-    }
-    else {
+    } else {
         player_cache.fetch(uid, ['ui_class']).then((obj) => {
             if (obj.ui_class.indexOf('moderator') < 0) {
                 ignores[uid] = true;

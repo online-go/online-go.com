@@ -42,7 +42,7 @@ export class GobanTest extends React.Component<{}, any> {
         this.goban_div = document.createElement('div');
         this.goban_div.className = 'Goban';
 
-        let opts:GobanConfig = {
+        let opts: GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -67,7 +67,7 @@ export class GobanTest extends React.Component<{}, any> {
             this.goban.height);
         let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
         this.setState({ move_string });
-    }
+    };
 
     render() {
         return (
