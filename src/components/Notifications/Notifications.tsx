@@ -451,6 +451,10 @@ class NotificationManager {
                 }
             }
 
+            if (notification.type === "lateChatReceivedInGame") {
+                emitNotification(_("Chat add to finished game"), _("Someone added some chat to your finished game"));
+            }
+
             this.rebuildNotificationList();
 
             this.event_emitter.emit("notification", notification);
@@ -931,6 +935,17 @@ class NotificationEntry extends React.Component<{notification}, any> {
 
             case "aiReviewDone":
                 return <div>{interpolate(_("The computer has finished analyzing your game: {{game_name}}"), {game_name: notification.game_name})}</div>;
+
+            case "lateChatReceivedInGame":
+                return <div className="late-notification">
+                    <Player user={notification.from}/>
+                    <span className="late-notification-text">
+                        {_(" added chat to your finished ")}
+                    </span>
+                    <a href={`/game/${notification.game}`}>
+                        {_("game")}
+                    </a>
+                </div>;
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);

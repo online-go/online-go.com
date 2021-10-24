@@ -24,9 +24,12 @@ let ts_sources = [
     '!src/**/*.test.ts',
     '!src/**/*.test.tsx',
 ];
-// let SERVER = "beta.online-go.com"
-let SERVER = "localhost:1080";
-//SERVER = "online-go.com";
+
+const SERVER = "online-go.com";
+
+// const SERVER = "beta.online-go.com"
+//const SERVER = "localhost:1080";
+
 
 
 gulp.task('watch_dist_js', watch_dist_js);
@@ -337,7 +340,7 @@ function dev_server(done) {
                     }
                 }
                 case 'EXTRA_CONFIG':
-                    return `<script>window['websocket_host'] = "https://${SERVER}";</script>`
+                    return `<script>window['websocket_host'] = "http://${SERVER}";</script>`
                 ;
             }
             return '{{' + parameter + '}}';
