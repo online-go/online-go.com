@@ -99,7 +99,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     rank_axis      = d3.axisRight(this.ratings_y);
 
     rating_line    = d3.line<RatingEntry>()
-                       //.curve(d3.curveLinear)
                        .curve(d3.curveMonotoneX)
                        .x((d:RatingEntry) => this.ratings_x(d.ended))
                        .y((d:RatingEntry) => this.ratings_y(humble_rating(d.rating, d.deviation)));
@@ -115,8 +114,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                        .curve(d3.curveMonotoneX)
                        .x((d:RatingEntry) => this.timeline_x(d.ended))
                        .y0(secondary_charts_height)
-                       //.y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
                        .y1((d:RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
+
 
     deviation_chart;
     rating_chart;
