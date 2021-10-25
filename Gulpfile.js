@@ -1,5 +1,10 @@
 'use strict';
 
+// Which backend server would you like to use today? ...
+const BACKEND = 'BETA';
+//const BACKEND = 'PRODUCTION';
+//const BACKEND = 'LOCAL';
+
 const spawn        = require('child_process').spawn;
 const fs           = require('fs');
 const gulp         = require('gulp');
@@ -24,12 +29,6 @@ let ts_sources = [
     '!src/**/*.test.ts',
     '!src/**/*.test.tsx',
 ];
-
-const SERVER = "online-go.com";
-
-// const SERVER = "beta.online-go.com"
-//const SERVER = "localhost:1080";
-
 
 
 gulp.task('watch_dist_js', watch_dist_js);
@@ -197,8 +196,33 @@ function background_webpack(done) {
     done()
 }
 
+// This is a pretend OGS backend server that proxies browser requests to the right place for development purposes, depending on the constants set
+// at the top of this file...
+//  ... the developer points their browser at this server and magic happens...
+
 function dev_server(done) {
-    let port = 8080;
+    const port = 8080;   // this is the port on localhost where the developer points their browser to, to get the backend that this proxies
+
+    let server_url, use_https;
+
+    switch (BACKEND) {
+        case 'BETA':
+            server_url = 'https://beta.online-go.com';
+            use_https = true;
+            break;
+        case 'PRODUCTION':
+            server_url = 'https://online-go.com';
+            use_https = true;
+            break;
+        case 'LOCAL':
+            server_url = 'http://localhost:1080';
+            use_https = false;
+            break;
+        default:
+            console.error(`unsupported backend: ${BACKEND}`);
+            process.exit(1);
+    }
+
     let express = require('express');
     let body_parser = require('body-parser');
     let http = require('http');
@@ -210,16 +234,17 @@ function dev_server(done) {
     http.createServer(devserver)
         .listen(port, null, function() {
             console.info(`#############################################`);
-            console.info(`## Development server started on port ${port} ##`);
-            console.info(`##   http://dev.beta.online-go.com:${port}    ##`);
+            console.info(`## Development server started on port ${port}`);
+            console.info(`##  (localhost:${port})`                      );
+            console.info(`##  pointing at ${BACKEND} (${server_url})`   );
             console.info(`#############################################`);
         });
 
     devserver.use(express.static('dist'))
     devserver.use(express.static('assets'))
 
-    let beta_proxy = (prefix) => proxy(SERVER, {
-        https: false,
+    let beta_proxy = (prefix) => proxy(server_url, {
+        https: use_https,
         proxyReqPathResolver: function(req) {
             let path = prefix + require('url').parse(req.url).path;
             console.log('-->', path);
@@ -340,7 +365,7 @@ function dev_server(done) {
                     }
                 }
                 case 'EXTRA_CONFIG':
-                    return `<script>window['websocket_host'] = "http://${SERVER}";</script>`
+                    return `<script>window['websocket_host'] = "${server_url}";</script>`
                 ;
             }
             return '{{' + parameter + '}}';
