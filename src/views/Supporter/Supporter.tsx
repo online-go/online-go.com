@@ -32,11 +32,11 @@ import {Flag} from "Flag";
 import Select from 'react-select';
 import * as preferences from "preferences";
 
-declare var swal;
-declare var ogs_release;
-declare var StripeCheckout;
-declare var MODE;
-const ReactNumberFormat:any = NumberFormat;
+declare let swal;
+declare let ogs_release;
+declare let StripeCheckout;
+declare let MODE;
+const ReactNumberFormat: any = NumberFormat;
 
 interface SupporterProperties {
 }
@@ -57,7 +57,7 @@ let amount_steps = {
     'one time': [ ],
 };
 
-function getIntervalScale(interval:string):number {
+function getIntervalScale(interval: string): number {
     return interval === 'month' ? 1 : 10;
 }
 
@@ -154,11 +154,11 @@ function getThousandSeparator() {
     return (1000).toLocaleString().substring(1, 2);
 }
 
-function toFixedWithLocale(n:number, decimals:number = 2) {
+function toFixedWithLocale(n: number, decimals: number = 2) {
     return n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
-function formatMoney(currency: string, n:number, no_fraction_digits:boolean = false):string {
+function formatMoney(currency: string, n: number, no_fraction_digits: boolean = false): string {
     let ret = Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency}).format(n);
 
     if (no_fraction_digits) {
@@ -167,7 +167,7 @@ function formatMoney(currency: string, n:number, no_fraction_digits:boolean = fa
     return ret;
 }
 
-function filterCurrencyOption({label, value, data}, text:string):boolean {
+function filterCurrencyOption({label, value, data}, text: string): boolean {
     if (!text) {
         text = "";
     }
@@ -183,12 +183,12 @@ function filterCurrencyOption({label, value, data}, text:string):boolean {
     return false;
 }
 
-function isPaypalEnabled(iso:string):boolean {
+function isPaypalEnabled(iso: string): boolean {
     return currency_list.filter(x => x.iso === iso)[0].paypal !== 0;
 }
 
 // gets direction of items withing contener by current_language
-function getDirection(lang:string):string {
+function getDirection(lang: string): string {
     let defaultValue = "ltr";
     for (let i = 0; i < locale_details.length; ++i) {
         if (locale_details[i].name === lang) {
@@ -199,15 +199,15 @@ function getDirection(lang:string):string {
     return defaultValue;
 }
 
-function getCurrencyScale(iso:string) {
+function getCurrencyScale(iso: string) {
     return currency_list.filter(x => x.iso === iso)[0].scale;
 }
 
-function getCurrencyDecimals(iso:string) {
+function getCurrencyDecimals(iso: string) {
     return currency_list.filter(x => x.iso === iso)[0].decimals;
 }
 
-function scaledAmountToFloat(amount:number, currency:string) {
+function scaledAmountToFloat(amount: number, currency: string) {
     return amount / Math.pow(10, getCurrencyDecimals(currency));
 }
 
@@ -236,7 +236,7 @@ let DEPRECATED_stripe_checkout_js_promise;
 let stripe_checkout_js_promise;
 let checkout = null;
 
-declare var Stripe;
+declare let Stripe;
 let stripe;
 
 /* TODO: Delete this code after we're sure we don't need it anymore. This allows anoek
@@ -245,7 +245,7 @@ let stripe;
 /**** DEPRECATED BRAINTREE CODE ****/
 let braintree_js_promise;
 let braintree;
-declare var Braintree;
+declare let Braintree;
 
 
 try {
@@ -392,7 +392,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
             preferences.set("supporter.currency", currency);
         }
-    }
+    };
     setInterval = (interval_option) => {
         if (interval_option) {
             let interval = interval_option.interval;
@@ -405,16 +405,16 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
             preferences.set("supporter.interval", interval);
         }
-    }
+    };
     updateCustomAmount = (values) => {
         console.log(values);
         this.setState({
             custom_amount: values.floatValue || 0.0
         });
-    }
+    };
     isValueAllowed = (values) => {
         return (values.floatValue || 0) >= 0;
-    }
+    };
     getAmount() {
         if (this.state.amount) {
             return this.state.amount * getCurrencyScale(this.state.currency);
@@ -486,7 +486,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(errorAlerter);
         })
         .catch(errorAlerter);
-    }
+    };
 
     processPaypal = () => {
         if (this.state.disable_payment_buttons) {
@@ -514,12 +514,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch(ignore); /* we already alert in this case */
         })
         .catch(errorAlerter);
-    }
+    };
     cancelPaypal = () => {
         swal({
             html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please sign in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
         });
-    }
+    };
 
     createPaymentAccountAndMethod(vendor, details) {
         let obj = {
@@ -568,12 +568,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }
 
     /* Returns the aggregate descaled support amount per month */
-    getSupportLevel():number {
+    getSupportLevel(): number {
         return Math.round(this.getAmount() / (getIntervalScale(this.state.interval) * getCurrencyScale(this.state.currency))) ;
     }
 
     /* Sets support level based on scaled support amount */
-    setSupportLevel(amount:number) {
+    setSupportLevel(amount: number) {
         if (data.get('user').anonymous) {
             return;
         }
@@ -598,7 +598,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     learnMore = (ev) => {
         ev.stopPropagation();
         openBecomeASiteSupporterModal();
-    }
+    };
 
 
     render() {
@@ -613,11 +613,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         let supporter_level = (
             <div className='supporter-text-container'>
 
-        <div className='SiteSupporterText'>
-                <div className='supporter-header'>
-                    {_("Becoming a supporter gives you the benefit of having your games automatically analysed by a very strong artificial intelligence engine at the end of your game to help discover better moves that could have been made. The engine has professional strength intuition for all supporter levels, the difference between the plans is in how many times the servers \"play out\" your game, which gives you deeper readings and will sometimes discover less obvious but really great moves.")}
+                <div className='SiteSupporterText'>
+                    <div className='supporter-header'>
+                        {_("Becoming a supporter gives you the benefit of having your games automatically analysed by a very strong artificial intelligence engine at the end of your game to help discover better moves that could have been made. The engine has professional strength intuition for all supporter levels, the difference between the plans is in how many times the servers \"play out\" your game, which gives you deeper readings and will sometimes discover less obvious but really great moves.")}
+                    </div>
                 </div>
-            </div>
                 <div id='supporter-ai-perks' >
                     <div className={'supporter-perk-box clickable ' + (this.getSupportLevel() === 3 ? 'active' : '')} onClick={() => this.setSupportLevel(3)}>
                         <div className='title'>
@@ -700,112 +700,112 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         }
 
         return (
-        <div id="Supporter">
-            <h2><span><i className="fa fa-star"></i> {_("Support OGS")}</span>
-                {this.state.recurring_donations.length > 0 && <span> {_("Thank you for your support!")}</span>}
-            </h2>
+            <div id="Supporter">
+                <h2><span><i className="fa fa-star"></i> {_("Support OGS")}</span>
+                    {this.state.recurring_donations.length > 0 && <span> {_("Thank you for your support!")}</span>}
+                </h2>
 
-            <div id="supporter-payment-block-container">
-                {supporter_level}
+                <div id="supporter-payment-block-container">
+                    {supporter_level}
 
-                <div id="supporter-payment-block">
-                    <div id='supporter-input-amount'>
-                        {/*
+                    <div id="supporter-payment-block">
+                        <div id='supporter-input-amount'>
+                            {/*
                         <div>
                             <input type="range" value={this.state.amount_step} onChange={this.setAmountByStep} min={0} max={amount_steps[this.state.interval].length - 1} step={1}/>
                         </div>
                         */}
-                        <div>
-                            {this.state.amount === 0
+                            <div>
+                                {this.state.amount === 0
                                 ? <div className='donation-summary'>
                                     {this.renderCurrencySelect()}
                                     <ReactNumberFormat
-                                            type='text'
-                                            className='supporter-amount'
-                                            decimalSeparator={getDecimalSeparator()}
-                                            thousandSeparator={getThousandSeparator()}
-                                            value={this.state.custom_amount}
-                                            decimalScale={2}
-                                            onValueChange={this.updateCustomAmount}
-                                            isAllowed={this.isValueAllowed}
-                                            allowNegative={false}
-                                          />
+                                        type='text'
+                                        className='supporter-amount'
+                                        decimalSeparator={getDecimalSeparator()}
+                                        thousandSeparator={getThousandSeparator()}
+                                        value={this.state.custom_amount}
+                                        decimalScale={2}
+                                        onValueChange={this.updateCustomAmount}
+                                        isAllowed={this.isValueAllowed}
+                                        allowNegative={false}
+                                    />
                                           / {this.renderIntervalSelect()}
-                                  </div>
+                                </div>
                                 : <div className='donation-summary'>
                                     {this.renderCurrencySelect()}
                                     <span className='supporter-amount'>{formatMoney(this.state.currency, this.getAmount())}
                                     </span>
                                     / {this.renderIntervalSelect()}
-                                  </div>
-                            }
-                        </div>
-                        <div className='supporter-payment-buttons'>
-                            <div className='stripe'>
+                                </div>
+                                }
+                            </div>
+                            <div className='supporter-payment-buttons'>
+                                <div className='stripe'>
 
-                                <button className="stripe-button" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
-                                    {_("Donate with Card")}
-                                </button>
+                                    <button className="stripe-button" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
+                                        {_("Donate with Card")}
+                                    </button>
 
-                                <div className='powered-by-stripe'>
-                                    <a href='https://stripe.com/'>
-                                        <img src={`${cdn_release}/img/powered_by_stripe.svg`} />
-                                    </a>
+                                    <div className='powered-by-stripe'>
+                                        <a href='https://stripe.com/'>
+                                            <img src={`${cdn_release}/img/powered_by_stripe.svg`} />
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="paypal">
+                                    <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                                        <input type="hidden" name="cmd" value={this.state.interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
+                                        <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                                        <input type="hidden" name="item_name" value="Supporter Account" />
+                                        {this.state.interval !== "one time" && <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />}
+                                        {this.state.interval !== "one time" && <input type="hidden" name="p3" value="1" />}
+                                        {this.state.interval !== "one time" && <input type="hidden" name="t3" value={this.state.interval === "month" ? "M" : "Y"} />}
+
+                                        {this.state.interval === "one time" && <input type="hidden" name="amount" value={this.getAmount().toFixed(2)} />}
+                                        <input type="hidden" name="src" value="1" />
+                                        <input type="hidden" name="no_note" value="1" />
+                                        <input type="hidden" name="currency_code" value={this.state.currency} />
+                                        <input type="hidden" name="custom" value={data.get("user").id} />
+                                        <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
+                                        <input type="hidden" name="modify" value="0" />
+                                        <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
+                                    </form>
+                                    <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)} dir={getDirection(current_language)}
+                                        onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} >
+                                        {_("Donate with")} <img src={`${cdn_release}/img/new_paypal.png`} />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="paypal">
-                                <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                                    <input type="hidden" name="cmd" value={this.state.interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
-                                    <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                                    <input type="hidden" name="item_name" value="Supporter Account" />
-                                    {this.state.interval !== "one time" && <input type="hidden" name="a3" value={this.getAmount().toFixed(2)} />}
-                                    {this.state.interval !== "one time" && <input type="hidden" name="p3" value="1" />}
-                                    {this.state.interval !== "one time" && <input type="hidden" name="t3" value={this.state.interval === "month" ? "M" : "Y"} />}
-
-                                    {this.state.interval === "one time" && <input type="hidden" name="amount" value={this.getAmount().toFixed(2)} />}
-                                    <input type="hidden" name="src" value="1" />
-                                    <input type="hidden" name="no_note" value="1" />
-                                    <input type="hidden" name="currency_code" value={this.state.currency} />
-                                    <input type="hidden" name="custom" value={data.get("user").id} />
-                                    <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                                    <input type="hidden" name="modify" value="0" />
-                                    <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
-                                </form>
-                                <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)} dir={getDirection(current_language)}
-                                    onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} >
-                                        {_("Donate with")} <img src={`${cdn_release}/img/new_paypal.png`} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {false && data.get('user').id === 1 &&
+                            {false && data.get('user').id === 1 &&
                             <button className="danger" onClick={this.DEPRECATEDprocessBraintreeCC}>
-                              {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
+                                {interpolate((`Braintree {{amount}}/month`), {"amount": `$${toFixedWithLocale(this.getAmount(), 2)}`})}
                             </button>
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className='supporter-text'>
-                {supporter_text}
-            </div>
+                <div className='supporter-text'>
+                    {supporter_text}
+                </div>
 
-            <div id="supporter-current-methods">
+                <div id="supporter-current-methods">
 
-                {this.state.recurring_donations.map((recurring_donation, idx) => {
-                    let price = recurring_donation.price;
-                    let currency = recurring_donation.currency;
-                    let interval = recurring_donation.interval;
-                    let vendor = recurring_donation.account.payment_vendor;
-                    let account = recurring_donation.account;
-                    let method = recurring_donation.method;
+                    {this.state.recurring_donations.map((recurring_donation, idx) => {
+                        let price = recurring_donation.price;
+                        let currency = recurring_donation.currency;
+                        let interval = recurring_donation.interval;
+                        let vendor = recurring_donation.account.payment_vendor;
+                        let account = recurring_donation.account;
+                        let method = recurring_donation.method;
 
-                    return (
-                        <div key={recurring_donation.id}>
+                        return (
+                            <div key={recurring_donation.id}>
 
-                            {(vendor === "stripe" || null) &&
+                                {(vendor === "stripe" || null) &&
                                 <div className='recurring-donation'>
                                     <p>
                                         {interpolate(
@@ -839,9 +839,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                         </React.Fragment>
                                     }
                                 </div>
-                            }
+                                }
 
-                            {(vendor === "paypal" || null) &&
+                                {(vendor === "paypal" || null) &&
                                 <div className='recurring-donation'>
                                     <p>
                                         {interpolate(
@@ -861,9 +861,9 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                         {_("Cancel this support")}
                                     </button>
                                 </div>
-                            }
+                                }
 
-                            {(vendor === "braintree" || null) &&
+                                {(vendor === "braintree" || null) &&
                                 <div className='recurring-donation'>
                                     <p>
                                         {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
@@ -883,13 +883,13 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                         </button>
                                     }
                                 </div>
-                            }
+                                }
 
-                        </div>
-                    );
-                })}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
-        </div>
         );
     }
 
@@ -956,7 +956,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     }
 
 
-    updateStripePaymentMethod = (order_id:string) => {
+    updateStripePaymentMethod = (order_id: string) => {
         this.setState({disable_payment_buttons: true});
 
         post("me/update_stripe_session", {
@@ -988,7 +988,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             */
         })
         .catch(errorAlerter);
-    }
+    };
     processStripe = () => {
         this.setState({disable_payment_buttons: true});
 
@@ -1020,5 +1020,5 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             */
         })
         .catch(errorAlerter);
-    }
+    };
 }

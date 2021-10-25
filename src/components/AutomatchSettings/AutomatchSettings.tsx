@@ -20,14 +20,14 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import {challenge, challengeComputer, createCorrespondence, createBlitz,
-        createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
+    createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
 import {shortShortTimeControl} from "TimeControl";
 import {errorAlerter, ignore, dup} from "misc";
 import * as preferences from "preferences";
 import * as data from "data";
 import {bot_count} from "bots";
 
-declare var swal;
+declare let swal;
 
 interface Events {
 }
@@ -104,7 +104,7 @@ const ConditionSelect = (props) => (
     </div>
 );
 
-export function getAutomatchSettings(speed:'blitz'|'live'|'correspondence') {
+export function getAutomatchSettings(speed: 'blitz'|'live'|'correspondence') {
     switch (speed) {
         case 'blitz':
             return dup(data.get("automatch.blitz", default_blitz));
@@ -129,7 +129,7 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
     setTab = (tab) => {
         data.set('automatch.last-tab', tab);
         this.setState({'tab': tab});
-    }
+    };
 
     getSelectedSettings() {
         switch (this.state.tab) {
@@ -164,34 +164,33 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
         let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
         this.setSelectedSettings(settings);
-    }
+    };
     setUpperRankDiff = (ev) => {
         let settings = this.getSelectedSettings();
         let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
-    }
+    };
     setHandicapCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.handicap.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
     setTimeControlCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.time_control.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
     setRulesCondition = (ev) => {
         let settings = this.getSelectedSettings();
         settings.rules.condition = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
     toggleSize(size) {
         let settings = this.getSelectedSettings();
         if (settings.size_options.indexOf(size) >= 0) {
             settings.size_options = settings.size_options.filter((x) => x !== size);
-        }
-        else {
+        } else {
             settings.size_options.push(size);
         }
         if (settings.size_options.length === 0) {
@@ -204,17 +203,17 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
         let settings = this.getSelectedSettings();
         settings.handicap.value = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
     setRulesValue = (ev) => {
         let settings = this.getSelectedSettings();
         settings.rules.value = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
     setTimeControlSystem = (ev) => {
         let settings = this.getSelectedSettings();
         settings.time_control.value.system = ev.target.value;
         this.setSelectedSettings(settings);
-    }
+    };
 
     render() {
         let settings = this.getSelectedSettings();
@@ -240,56 +239,56 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                         </button>
                         <button className={this.state.tab === 'correspondence' ? 'primary active sm' : 'sm'} onClick={() => this.setTab("correspondence")}>
                             {_("Correspondence")}
-                         </button>
+                        </button>
                     </div>
 
                     <div className='automatch-settings'>
                         <table>
                             <tbody>
-                            <tr>
-                                <th>{_("Opponent rank range")}</th>
-                                <td>
-                                    <span style={{visibility: settings.lower_rank_diff ? 'visible' : 'hidden'}}>-</span>
-                                    <input type='number' min={0} max={9} value={settings.lower_rank_diff} onChange={this.setLowerRankDiff} />
+                                <tr>
+                                    <th>{_("Opponent rank range")}</th>
+                                    <td>
+                                        <span style={{visibility: settings.lower_rank_diff ? 'visible' : 'hidden'}}>-</span>
+                                        <input type='number' min={0} max={9} value={settings.lower_rank_diff} onChange={this.setLowerRankDiff} />
                                     &nbsp; &nbsp;
-                                    <span style={{visibility: settings.upper_rank_diff ? 'visible' : 'hidden'}}>+</span>
-                                    <input type='number' min={0} max={9} value={settings.upper_rank_diff} onChange={this.setUpperRankDiff} />
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>{_("Handicap")}</th>
-                                <td>
-                                    <ConditionSelect value={settings.handicap.condition} onChange={this.setHandicapCondition} />
-                                    {settings.handicap.condition === 'no-preference'
+                                        <span style={{visibility: settings.upper_rank_diff ? 'visible' : 'hidden'}}>+</span>
+                                        <input type='number' min={0} max={9} value={settings.upper_rank_diff} onChange={this.setUpperRankDiff} />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>{_("Handicap")}</th>
+                                    <td>
+                                        <ConditionSelect value={settings.handicap.condition} onChange={this.setHandicapCondition} />
+                                        {settings.handicap.condition === 'no-preference'
                                         ? <i>{tab === 'blitz' ? _("Default is disabled") : _("Default is enabled")} </i>
                                         : <select value={settings.handicap.value} onChange={this.setHandicapValue} >
                                             <option value='enabled'>{_("Handicaps enabled")}</option>
                                             <option value='disabled'>{_("Handicaps disabled")}</option>
-                                          </select>
-                                    }
-                                </td>
-                            </tr>
+                                        </select>
+                                        }
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <th>{_("Time Control")}</th>
-                                <td>
-                                    <ConditionSelect value={settings.time_control.condition} onChange={this.setTimeControlCondition} />
-                                    {settings.time_control.condition === 'no-preference'
+                                <tr>
+                                    <th>{_("Time Control")}</th>
+                                    <td>
+                                        <ConditionSelect value={settings.time_control.condition} onChange={this.setTimeControlCondition} />
+                                        {settings.time_control.condition === 'no-preference'
                                         ? <i>{tab === 'correspondence' ? _("Default is to use Fischer") : _("Default is to use Byo-Yomi")}</i>
                                         : <select value={settings.time_control.value.system} onChange={this.setTimeControlSystem} >
                                             <option value='byoyomi'>{_("Byo-Yomi")}</option>
                                             <option value='fischer'>{_("Fischer")}</option>
                                             <option value='canadian'>{_("Canadian")}</option>
-                                          </select>
-                                    }
-                                </td>
-                            </tr>
+                                        </select>
+                                        }
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <th>{_("Rules")}</th>
-                                <td>
-                                    <ConditionSelect value={settings.rules.condition} onChange={this.setRulesCondition} />
-                                    {settings.rules.condition === 'no-preference'
+                                <tr>
+                                    <th>{_("Rules")}</th>
+                                    <td>
+                                        <ConditionSelect value={settings.rules.condition} onChange={this.setRulesCondition} />
+                                        {settings.rules.condition === 'no-preference'
                                         ? <i>{_("Default is to use Japanese rules")}</i>
                                         : <select value={settings.rules.value} onChange={this.setRulesValue} >
                                             <option value='japanese'>{_("Japanese")}</option>
@@ -298,10 +297,10 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                                             <option value='korean'>{_("Korean")}</option>
                                             <option value='nz'>{_("New Zealand")}</option>
                                             <option value='ing'>{_("Ing")}</option>
-                                          </select>
-                                    }
-                                </td>
-                            </tr>
+                                        </select>
+                                        }
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -310,7 +309,7 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
                 </div>
-        </div>
+            </div>
         );
     }
 }

@@ -23,7 +23,7 @@ import {LearningHubSection} from './LearningHubSection';
 
 
 export class Ladders extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -34,10 +34,10 @@ export class Ladders extends LearningHubSection {
         ];
     }
 
-    static section():string { return "ladders"; }
-    static title():string { return pgettext("Tutorial section on ladders", "Ladders!"); }
+    static section(): string { return "ladders"; }
+    static title(): string { return pgettext("Tutorial section on ladders", "Ladders!"); }
     //static subtext():string { return pgettext("Tutorial section on ladders", ""); }
-    static subtext():string { return ""; }
+    static subtext(): string { return ""; }
 }
 
 class Page1 extends LearningPage {
@@ -48,7 +48,7 @@ class Page1 extends LearningPage {
     text() {
         return _("This zig zag pattern is called a \"ladder\". Capture the white stones by continuing the ladder.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -76,7 +76,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the white stones using a ladder.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 
@@ -101,7 +101,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Stones in the path of a ladder break the ladder. Stay alive!");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
 

@@ -27,7 +27,7 @@ let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-          "\\b"  + cleaned_username_regex + "\\b"
+        "\\b"  + cleaned_username_regex + "\\b"
         + "|\\bplayer ?" + user.id + "\\b"
         + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
@@ -39,7 +39,7 @@ interface ChatLineInterface {
     lastline?: ChatMessage;
 }
 
-export function ChatLine(props: ChatLineInterface):JSX.Element {
+export function ChatLine(props: ChatLineInterface): JSX.Element {
     let line = props.line;
     let lastline = props.lastline;
     let user = line;
@@ -92,7 +92,7 @@ export function ChatLine(props: ChatLineInterface):JSX.Element {
 
     let mentions = name_match_regex.test(body);
 
-    let timestamp_str:string = "";
+    let timestamp_str: string = "";
     if (ts) {
         let hours = ts.getHours();
         let minutes = ts.getMinutes();
@@ -104,11 +104,11 @@ export function ChatLine(props: ChatLineInterface):JSX.Element {
 
     return (
         <div className={
-             (third_person ? "chat-line third-person" : "chat-line")
+            (third_person ? "chat-line third-person" : "chat-line")
              + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
              + (mentions ? " mentions" : "")
         }
-            data-chat-id={message.i}
+        data-chat-id={message.i}
         >
             {show_date}
             {(ts) && <span className="timestamp">[{timestamp_str}]</span>}

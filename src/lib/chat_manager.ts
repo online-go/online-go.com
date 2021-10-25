@@ -43,8 +43,8 @@ export interface ChatMessage {
         t: number; // epoch in seconds
         m: string; // the text
     };
-    system_message_type?:'flood';
-    system?:boolean; // true if it's a system message
+    system_message_type?: 'flood';
+    system?: boolean; // true if it's a system message
 }
 
 export interface ChannelInformation {
@@ -93,8 +93,8 @@ export interface UnreadChanged {
 }
 
 
-let channel_information_cache:{[channel: string]: ChannelInformation} = {};
-let channel_information_resolvers:{[channel: string]: Promise<ChannelInformation>} = {};
+let channel_information_cache: {[channel: string]: ChannelInformation} = {};
+let channel_information_resolvers: {[channel: string]: Promise<ChannelInformation>} = {};
 
 
 export let global_channels: Array<ChannelInformation> = [
@@ -221,14 +221,14 @@ export function resolveChannelDisplayName(channel: string): string {
             }
         });
     } else if (channel.startsWith("tournament-")) {
-        let id:number = parseInt(channel.substring(11));
+        let id: number = parseInt(channel.substring(11));
         tournament_channels.forEach(element => {
             if (id === element.id) {
                 return element.name;
             }
         });
     } else if (channel.startsWith("group-")) {
-        let id:number = parseInt(channel.substring(6));
+        let id: number = parseInt(channel.substring(6));
         group_channels.forEach(element => {
             if (id === element.id) {
                 return element.name;
@@ -245,10 +245,10 @@ export function resolveChannelDisplayName(channel: string): string {
 export let group_channels: GroupList = [];
 export let tournament_channels: ActiveTournamentList = [];
 
-function updateGroups(groups:GroupList) {
+function updateGroups(groups: GroupList) {
     group_channels = groups;
 }
-function updateTournaments(tournaments:ActiveTournamentList) {
+function updateTournaments(tournaments: ActiveTournamentList) {
     tournament_channels = tournaments;
 }
 data.watch(cached.groups, updateGroups);
@@ -260,7 +260,7 @@ let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-          "\\b"  + cleaned_username_regex + "\\b"
+        "\\b"  + cleaned_username_regex + "\\b"
         + "|\\bplayer ?" + user.id + "\\b"
         + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
         , "i");
@@ -281,7 +281,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     name: string;
     proxies: {[id: number]: ChatChannelProxy} = {};
     joining: boolean = false;
-    chat_log:Array<ChatMessage>   = [];
+    chat_log: Array<ChatMessage>   = [];
     chat_ids   = {};
     has_unread = false;
     unread_ct = 0;
@@ -293,8 +293,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
     rtl_mode   = false;
     last_seen_timestamp: number;
     send_tokens = 5;
-    flood_protection:Timeout = null;
-    topic:TopicMessage;
+    flood_protection: Timeout = null;
+    topic: TopicMessage;
 
 
 
@@ -325,12 +325,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
         data.set("chat-manager.last-seen", last_seen);
         try {
             this.emit("unread-count-changed",
-                        {channel: this.channel,
-                        unread_ct: this.unread_ct,
-                        unread_delta: unread_delta,
-                        mentioned: this.mentioned,
-                        previous_mentioned: previous_mentioned
-                        });
+                {channel: this.channel,
+                    unread_ct: this.unread_ct,
+                    unread_delta: unread_delta,
+                    mentioned: this.mentioned,
+                    previous_mentioned: previous_mentioned
+                });
         } catch (e) {
             console.error(e);
         }
@@ -340,7 +340,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         if (comm_socket.connected) {
             comm_socket.emit("chat/join", {"channel": this.channel});
         }
-    }
+    };
     _destroy() {
         if (comm_socket.connected) {
             comm_socket.emit("chat/part", {"channel": this.channel});
@@ -361,7 +361,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }
 
-    handleTopic(obj: TopicMessage):void {
+    handleTopic(obj: TopicMessage): void {
         this.topic = obj;
         this.emit("topic", obj);
     }
@@ -493,7 +493,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
 
-    public send(text: string):void {
+    public send(text: string): void {
         if (text.length > 300) {
             for (let split_str of string_splitter(text)) {
                 this.send(split_str);
@@ -555,7 +555,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         };
 
         comm_socket.send("chat/send", _send_obj);
-        let obj:ChatMessage = {
+        let obj: ChatMessage = {
             channel: _send_obj.channel,
             username: user.username,
             id: user.id,
@@ -571,7 +571,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     public setTopic(topic: string) {
         let user = data.get('user');
 
-        let msg:TopicMessage = {
+        let msg: TopicMessage = {
             channel: this.channel,
             username: user.username,
             id: user.id,
@@ -586,8 +586,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.topic = msg;
     }
 
-    public systemMessage(text:string, system_message_type:'flood'):void {
-        let obj:ChatMessage = {
+    public systemMessage(text: string, system_message_type: 'flood'): void {
+        let obj: ChatMessage = {
             channel: this.channel,
             username: 'system',
             id: -1,
@@ -607,7 +607,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.emit("chat", obj);
     }
 
-    public clearSystemMessages(system_message_type: 'flood'):void {
+    public clearSystemMessages(system_message_type: 'flood'): void {
         for (let i = 0; i < this.chat_log.length; ++i) {
             if (this.chat_log[i].system && system_message_type === this.chat_log[i].system_message_type) {
                 this.chat_log.splice(i, 1);
@@ -662,22 +662,22 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
 
     _onChat = (...args) => {
         this.emit.apply(this, ["chat"].concat(args));
-    }
+    };
     _onTopic = (...args) => {
         this.emit.apply(this, ["topic"].concat(args));
-    }
+    };
     _onJoin = (...args) => {
         this.emit.apply(this, ["join"].concat(args));
-    }
+    };
     _onPart = (...args) => {
         this.emit.apply(this, ["part"].concat(args));
-    }
+    };
     _onChatRemoved = (...args) => {
         this.emit.apply(this, ["chat-removed"].concat(args));
-    }
+    };
     _onUnreadChanged = (...args) => {
         this.emit.apply(this, ["unread-count-changed"].concat(args));
-    }
+    };
     _destroy() {
         this.channel.off("chat", this._onChat);
         this.channel.off("topic", this._onTopic);
@@ -719,7 +719,7 @@ class ChatManager {
         }
 
         this.channels[obj.channel].handleTopic(obj);
-    }
+    };
     onMessage = (obj: ChatMessage) => {
         if (!(obj.channel in this.channels)) {
             return;
@@ -737,14 +737,14 @@ class ChatManager {
         }
 
         this.channels[obj.channel].handleChat(obj);
-    }
+    };
     onMessageRemoved = (obj) => {
         if (!(obj.channel in this.channels)) {
             return;
         }
 
         this.channels[obj.channel].handleChatRemoved(obj);
-    }
+    };
     onJoin = (joins) => {
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
@@ -755,14 +755,14 @@ class ChatManager {
         }
 
         this.channels[joins.channel].handleJoins(joins.users);
-    }
+    };
     onPart = (part) => {
         if (!(part.channel in this.channels)) {
             return;
         }
 
         this.channels[part.channel].handlePart(part.user);
-    }
+    };
     join(channel: string): ChatChannelProxy {
         let display_name = resolveChannelDisplayName(channel);
         if (!(channel in this.channels)) {
@@ -783,18 +783,18 @@ export const chat_manager = new ChatManager();
 
 /* Channel information resolver */
 
-export function cachedChannelInformation(channel:string):ChannelInformation | null {
+export function cachedChannelInformation(channel: string): ChannelInformation | null {
     if (channel in channel_information_cache) {
         return channel_information_cache[channel];
     }
     return null;
 }
 
-export function updateCachedChannelInformation(channel: string, info:ChannelInformation):void {
-     channel_information_cache[channel] = info;
+export function updateCachedChannelInformation(channel: string, info: ChannelInformation): void {
+    channel_information_cache[channel] = info;
 }
 
-export function resolveChannelInformation(channel:string):Promise<ChannelInformation> {
+export function resolveChannelInformation(channel: string): Promise<ChannelInformation> {
     if (channel in channel_information_cache) {
         return Promise.resolve( channel_information_cache[channel]);
     }
@@ -804,9 +804,9 @@ export function resolveChannelInformation(channel:string):Promise<ChannelInforma
     }
 
 
-    let resolver:Promise<ChannelInformation>;
+    let resolver: Promise<ChannelInformation>;
 
-    let ret:ChannelInformation = {
+    let ret: ChannelInformation = {
         id: channel,
         name: channel,
     };
@@ -828,7 +828,7 @@ export function resolveChannelInformation(channel:string):Promise<ChannelInforma
     if (ret.group_id) {
         resolver = new Promise<ChannelInformation>((resolve, reject) => {
             get(`/termination-api/group/${ret.group_id}`)
-            .then((res:any):ChannelInformation => {
+            .then((res: any): ChannelInformation => {
                 ret.name = res.name;
                 ret.icon = res.icon;
                 ret.banner = res.banner;
@@ -855,7 +855,7 @@ export function resolveChannelInformation(channel:string):Promise<ChannelInforma
 for (let chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
 }
-data.watch(cached.active_tournaments, (tournaments:ActiveTournamentList) => {
+data.watch(cached.active_tournaments, (tournaments: ActiveTournamentList) => {
     for (let tournament of tournaments) {
         updateCachedChannelInformation(`tournament-${tournament.id}`, {
             id: `tournament-${tournament.id}`,

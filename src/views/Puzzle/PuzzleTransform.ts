@@ -205,10 +205,10 @@ export class PuzzleTransform {
             case "color" : state = {transform_color : this.settings.transform_color = !this.settings.transform_color}; break;
             case "zoom"  :
                 state = {zoom: this.settings.zoom = !this.settings.zoom};
-            break;
+                break;
         }
 
-       return state;
+        return state;
     }
 
 

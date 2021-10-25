@@ -24,13 +24,13 @@ import { errorAlerter, ignore } from "misc";
 import { put } from "requests";
 import { cached } from "cached";
 
-export function ForceUsernameChange():JSX.Element {
+export function ForceUsernameChange(): JSX.Element {
     const user = data.get('config.user');
     let [username, setUsername] = React.useState("");
     const inputRef = React.useRef();
 
     React.useEffect(() => {
-        let ir:any = inputRef as any;
+        let ir: any = inputRef as any;
         if (ir?.current?.focus) {
             ir.current.focus();
         }

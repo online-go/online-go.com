@@ -32,11 +32,11 @@ import {browserHistory} from "ogsHistory";
 
 
 
-declare var swal;
+declare let swal;
 
 interface LadderProperties {
     match: {
-        params: any
+        params: any;
     };
 }
 
@@ -92,7 +92,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             this.resolve(this.props.match.params.ladder_id);
         })
         .catch(errorAlerter);
-    }
+    };
 
     leave = () => {
         swal({
@@ -111,7 +111,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             .catch(errorAlerter);
         })
         .catch(() => 0);
-    }
+    };
 
     updateAutocompletedPlayer = (user) => {
         if (user) {
@@ -120,48 +120,48 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                 highlight_rank: user.ladder_rank
             });
         }
-    }
+    };
 
     render() {
         let user = data.get("user");
 
         return (
             <div className="Ladder-container">
-            <div className="Ladder">
-                <UIPush event="players-updated" channel={`ladder-${this.props.match.params.ladder_id}`} action={this.invalidate} />
+                <div className="Ladder">
+                    <UIPush event="players-updated" channel={`ladder-${this.props.match.params.ladder_id}`} action={this.invalidate} />
 
-                <div className='Ladder-header'>
-                    <h2>{this.state.ladder && this.state.ladder.name}</h2>
+                    <div className='Ladder-header'>
+                        <h2>{this.state.ladder && this.state.ladder.name}</h2>
 
-                    <PlayerAutocomplete ladderId={this.props.match.params.ladder_id} onComplete={this.updateAutocompletedPlayer} />
+                        <PlayerAutocomplete ladderId={this.props.match.params.ladder_id} onComplete={this.updateAutocompletedPlayer} />
 
-                    {(this.state.ladder && (!this.state.ladder.group || this.state.ladder.player_is_member_of_group)) &&
+                        {(this.state.ladder && (!this.state.ladder.group || this.state.ladder.player_is_member_of_group)) &&
                         <span>
                             {(this.state.ladder.player_rank > 0)
                               ? <button onClick={this.leave}>{_("Drop out from ladder")}</button>
                               : <button className="primary" disabled={user.anonymous} onClick={this.join}>{_("Join Ladder")}</button>
                             }
                         </span>
-                    }
-                </div>
+                        }
+                    </div>
 
-                <div className='AutoSizer-container'>
-                    <AutoSizer>
-                        {({width, height}) => (
-                            <List
-                                height={height}
-                                width={width}
-                                overscanRowCount={20 - (this.state.invalidationCount % 2) /* forces refresh */}
-                                rowHeight={30}
-                                rowCount={this.state.ladder_size}
-                                rowRenderer={this.renderRow}
-                                scrollToIndex={this.state.scrollToIndex}
-                                scrollToAlignment="center"
+                    <div className='AutoSizer-container'>
+                        <AutoSizer>
+                            {({width, height}) => (
+                                <List
+                                    height={height}
+                                    width={width}
+                                    overscanRowCount={20 - (this.state.invalidationCount % 2) /* forces refresh */}
+                                    rowHeight={30}
+                                    rowCount={this.state.ladder_size}
+                                    rowRenderer={this.renderRow}
+                                    scrollToIndex={this.state.scrollToIndex}
+                                    scrollToAlignment="center"
                                 />
-                        )}
-                    </AutoSizer>
+                            )}
+                        </AutoSizer>
+                    </div>
                 </div>
-            </div>
             </div>
         );
     }
@@ -177,19 +177,19 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
                     isScrolling={isScrolling} />
             </div>
         );
-    }
+    };
 
-    cache:{[index:number]: any} = {};
-    requests_in_flight:{[page_number:number]: Promise<any>} = {};
+    cache: {[index: number]: any} = {};
+    requests_in_flight: {[page_number: number]: Promise<any>} = {};
 
     invalidate = () => {
         abort_requests_in_flight(`ladders/${this.props.match.params.ladder_id}/players`, 'GET');
         this.requests_in_flight = {};
         this.cache = {};
         this.setState({invalidationCount: this.state.invalidationCount + 1});
-    }
+    };
 
-    load = (idx:number, only_from_cache:boolean): Promise<any> | any => {
+    load = (idx: number, only_from_cache: boolean): Promise<any> | any => {
         const PAGE_SIZE = 20;
 
         if (idx in this.cache) {
@@ -241,19 +241,19 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             }
             return ar - br;
         }
-    }
+    };
 }
 
 interface LadderRowProperties {
-    index:number;
-    isScrolling:boolean;
-    highlightRank:number;
-    ladder:Ladder;
-    invalidationCount:number;
+    index: number;
+    isScrolling: boolean;
+    highlightRank: number;
+    ladder: Ladder;
+    invalidationCount: number;
 }
 
 export class LadderRow extends React.Component<LadderRowProperties, any> {
-    unmounted:boolean = false;
+    unmounted: boolean = false;
 
     constructor(props) {
         super(props);
@@ -307,8 +307,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
             let obj = this.props.ladder.load(this.props.index, true);
             if (!this.state) {
                 this.state = { row: obj };
-            }
-            else if (obj) {
+            } else if (obj) {
                 if (this.state.row !== obj) {
                     this.setState({row: obj});
                 }
@@ -438,8 +437,8 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                         { row.can_challenge.challengeable
                              ? <button className="primary xs" onClick={this.challenge.bind(this, row)}>{_("Challenge")}</button>
                              : <div className='not-challengable'>
-                                  {canChallengeTooltip(row.can_challenge)}
-                               </div>
+                                 {canChallengeTooltip(row.can_challenge)}
+                             </div>
                         }
                     </div>
                 }
@@ -463,7 +462,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
 
                 {((challenged_by && challenged_by.length) || null) &&
                     <div className='incoming'>
-                         <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
+                        <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
 
                         <span className='challenge-list'>
                             {challenged_by.map((challenge, idx) => (
@@ -491,12 +490,12 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
 
 
 
-    }
+    };
 
     challenge(ladder_player) {
         swal({
             "text": interpolate(_("Are you ready to start your game with {{player_name}}?"), /* translators: ladder challenge */
-                         {player_name: ladder_player.player.username}),
+                {player_name: ladder_player.player.username}),
             "showCancelButton": true,
             "confirmButtonText": _("Yes!"),
             "cancelButtonText": _("No"),
@@ -514,7 +513,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
     }
 }
 
-function canChallengeTooltip(obj:any):string {
+function canChallengeTooltip(obj: any): string {
     if (obj.reason_code) {
         switch (obj.reason_code) {
             case 0x001: return pgettext("Can't challenge player in ladder because: ", "Can't challenge yourself");

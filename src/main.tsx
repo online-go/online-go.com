@@ -27,9 +27,9 @@ import { ai_host } from 'sockets';
 import { get_bid } from 'SignIn';
 sfx.sync();
 
-declare var ogs_current_language;
-declare var ogs_language_version;
-declare var ogs_version;
+declare let ogs_current_language;
+declare let ogs_language_version;
+declare let ogs_version;
 
 let sentry_env = "production";
 
@@ -263,7 +263,7 @@ sockets.comm_socket.on("connect", () => {auth_connect_fn(); });
 
 /*** Setup remote score estimation */
 set_remote_scorer(remote_score_estimator);
-function remote_score_estimator(req:ScoreEstimateRequest):Promise<ScoreEstimateResponse> {
+function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
     return new Promise<ScoreEstimateResponse>((resolve, reject) => {
         req.jwt = data.get('config.user_jwt');
         resolve(
@@ -282,7 +282,7 @@ sockets.termination_socket.on("ERROR", errorAlerter);
 
 
 /*** Google analytics ***/
-declare var gtag;
+declare let gtag;
 
 browserHistory.listen(location => {
     try {
@@ -325,9 +325,9 @@ init_tabcomplete();
 let svg_loader = document.getElementById('loading-svg-container');
 svg_loader.parentNode.removeChild(svg_loader);
 
-let forceReactUpdate:() => void = () => {};
+let forceReactUpdate: () => void = () => {};
 
-function ForceReactUpdateWrapper(props):JSX.Element {
+function ForceReactUpdateWrapper(props): JSX.Element {
     let [update, setUpdate] = React.useState(1);
     forceReactUpdate = () => {
         setUpdate(update + 1);

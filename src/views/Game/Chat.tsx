@@ -30,9 +30,9 @@ import {ChatUserList, ChatUserCount} from "ChatUserList";
 import {TabCompleteInput} from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
 
-let active_game_view:Game = null;
+let active_game_view: Game = null;
 
-export function setActiveGameView(game:Game) {
+export function setActiveGameView(game: Game) {
     active_game_view = game;
 }
 
@@ -75,8 +75,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             if (event.target.className === "qc-option") {
                 this.saveEdit();
                 event.preventDefault();
-            }
-            else {
+            } else {
                 let input = event.target as HTMLInputElement;
                 this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
                 input.value = "";
@@ -125,7 +124,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
-    }
+    };
     toggleModeratorChatLog = () => {
         let new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
         this.setState({
@@ -134,38 +133,38 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
             qc_editing: false
         });
         this.props.onChatLogChanged(new_chat_log);
-    }
+    };
     togglePlayerList = () => {
         this.setState({
             show_player_list: !this.state.show_player_list
         });
-    }
+    };
     togglePlayerListSortOrder = () => {
-    }
+    };
 
     sendQuickChat = (msg: string) => {
         this.props.gameview.goban.sendChat(msg, this.state.chat_log);
         this.hideQCOptions();
-    }
+    };
 
     showQCOptions = () => {
         this.setState({
             qc_visible: true
         });
-    }
+    };
 
     hideQCOptions = () => {
         this.setState({
             qc_visible: false,
             qc_editing: false
         });
-    }
+    };
 
     startEdit = () => {
         this.setState({
             qc_editing: true
         });
-    }
+    };
 
     saveEdit = () => {
         let user = data.get("user");
@@ -174,14 +173,14 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         });
         localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
         this.finishEdit();
-    }
+    };
 
     finishEdit = () => {
         this.qc_editableMsgs = null;
         this.setState({
             qc_editing: false
         });
-    }
+    };
 
     render() {
         let last_line = null;
@@ -216,7 +215,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleChatLog}
-                            >
+                        >
                             {this.state.chat_log === "malkovich" ? _("Malkovich") : _("Chat")} <i className={"fa " + (this.state.chat_log === "malkovich" ? "fa-caret-up" : "fa-caret-down")}/>
                         </button>
                     }
@@ -224,7 +223,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleModeratorChatLog}
-                            >
+                        >
                             {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")} <i className={"fa " + (this.state.chat_log === "moderator" ? "fa-caret-up" : "fa-caret-down")}/>
                         </button>
                     }
@@ -272,32 +271,31 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                         _("Thanks for the game") + "."
                     ];
                     localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
-                }
-                else {
+                } else {
                     user.qc_phrases = JSON.parse(qc_local);
                 }
             }
 
             let lis = user.qc_phrases.map((msg, index) =>
-                    <li
-                        className="qc-option"
-                        key={index}
-                        contentEditable={this.state.qc_editing}
-                        onKeyPress={this.onKeyPress}
-                        ref={this.state.qc_editing
+                <li
+                    className="qc-option"
+                    key={index}
+                    contentEditable={this.state.qc_editing}
+                    onKeyPress={this.onKeyPress}
+                    ref={this.state.qc_editing
                             ? (input) => {
                                 this.qc_editableMsgs = (index === 0 ? [] : this.qc_editableMsgs);
                                 this.qc_editableMsgs.push(input);
-                                }
+                            }
                             : null
-                        }
-                    >
-                        {
+                    }
+                >
+                    {
                         this.state.qc_editing
                         ? msg
                         : (<a onClick={() => {this.sendQuickChat(msg); }} >{msg}</a>)
-                        }
-                    </li>
+                    }
+                </li>
             );
 
             quick_chat =
@@ -306,16 +304,16 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                     ? (<span className="qc-edit">
                         <button onClick={() => {this.saveEdit(); }} className='xs edit-button'><i className={"fa fa-save"}/> {_("Save")}</button>
                         <button onClick={this.finishEdit} className='xs edit-button'><i className={"fa fa-times-circle"}/> {_("Cancel")}</button>
-                        </span>)
+                    </span>)
                     : (<span className="qc-edit">
                         <button onClick={this.startEdit} className='xs edit-button'><i className={"fa fa-pencil"}/> {_("Edit")}</button>
-                        </span>)
+                    </span>)
                 }
                 <ul>{lis}</ul>
             </div>;
         }
         return quick_chat;
-    }
+    };
 }
 
 
@@ -383,88 +381,88 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             try {
                 switch (body.type) {
                     case "analysis": {
-                            if (!preferences.get("variations-in-chat-enabled")) {
-                                return (
-                                    <span>
-                                        {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
-                                    </span>
-                                );
-                            }
-
-
-                            let gameview = this.props.gameview;
-                            let goban = gameview.goban;
-                            let orig_move = null;
-                            let stashed_pen_marks = goban.pen_marks;
-                            let orig_marks = null;
-
-                            let v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
-                            if (v) {
-                                this.props.gameview.last_variation_number = Math.max(v, this.props.gameview.last_variation_number);
-                            }
-
-                            let onLeave = () => {
-                                if (this.props.gameview.in_pushed_analysis) {
-                                    this.props.gameview.in_pushed_analysis = false;
-                                    this.props.gameview.leave_pushed_analysis = null;
-                                    goban.engine.jumpTo(orig_move);
-                                    orig_move.marks = orig_marks;
-                                    goban.pen_marks = stashed_pen_marks;
-                                    if (goban.pen_marks.length === 0) {
-                                        goban.disablePen();
-                                    }
-                                    goban.redraw();
-                                }
-                            };
-
-                            let onEnter = () => {
-                                this.props.gameview.in_pushed_analysis = true;
-                                this.props.gameview.leave_pushed_analysis = onLeave;
-                                let turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
-                                let moves = body.moves;
-
-                                orig_move = goban.engine.cur_move;
-                                if (orig_move) {
-                                    orig_marks = orig_move.marks;
-                                    orig_move.clearMarks();
-                                } else {
-                                    orig_marks = null;
-                                }
-                                goban.engine.followPath(parseInt(turn), moves);
-
-                                if (body.marks) {
-                                    goban.setMarks(body.marks);
-                                }
-                                stashed_pen_marks = goban.pen_marks;
-                                if (body.pen_marks) {
-                                    goban.pen_marks = [].concat(body.pen_marks);
-                                } else {
-                                    goban.pen_marks = [];
-                                }
-
-                                goban.redraw();
-                            };
-
-                            let onClick = () => {
-                                onLeave();
-                                goban.setMode("analyze");
-                                onEnter();
-                                this.props.gameview.in_pushed_analysis = false;
-                                goban.updateTitleAndStonePlacement();
-                                goban.syncReviewMove();
-                                goban.redraw();
-                            };
-
+                        if (!preferences.get("variations-in-chat-enabled")) {
                             return (
-                                <span className="variation"
-                                    onMouseEnter={onEnter}
-                                    onMouseLeave={onLeave}
-                                    onClick={onClick}
-                                >
+                                <span>
                                     {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
                                 </span>
                             );
                         }
+
+
+                        let gameview = this.props.gameview;
+                        let goban = gameview.goban;
+                        let orig_move = null;
+                        let stashed_pen_marks = goban.pen_marks;
+                        let orig_marks = null;
+
+                        let v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
+                        if (v) {
+                            this.props.gameview.last_variation_number = Math.max(v, this.props.gameview.last_variation_number);
+                        }
+
+                        let onLeave = () => {
+                            if (this.props.gameview.in_pushed_analysis) {
+                                this.props.gameview.in_pushed_analysis = false;
+                                this.props.gameview.leave_pushed_analysis = null;
+                                goban.engine.jumpTo(orig_move);
+                                orig_move.marks = orig_marks;
+                                goban.pen_marks = stashed_pen_marks;
+                                if (goban.pen_marks.length === 0) {
+                                    goban.disablePen();
+                                }
+                                goban.redraw();
+                            }
+                        };
+
+                        let onEnter = () => {
+                            this.props.gameview.in_pushed_analysis = true;
+                            this.props.gameview.leave_pushed_analysis = onLeave;
+                            let turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
+                            let moves = body.moves;
+
+                            orig_move = goban.engine.cur_move;
+                            if (orig_move) {
+                                orig_marks = orig_move.marks;
+                                orig_move.clearMarks();
+                            } else {
+                                orig_marks = null;
+                            }
+                            goban.engine.followPath(parseInt(turn), moves);
+
+                            if (body.marks) {
+                                goban.setMarks(body.marks);
+                            }
+                            stashed_pen_marks = goban.pen_marks;
+                            if (body.pen_marks) {
+                                goban.pen_marks = [].concat(body.pen_marks);
+                            } else {
+                                goban.pen_marks = [];
+                            }
+
+                            goban.redraw();
+                        };
+
+                        let onClick = () => {
+                            onLeave();
+                            goban.setMode("analyze");
+                            onEnter();
+                            this.props.gameview.in_pushed_analysis = false;
+                            goban.updateTitleAndStonePlacement();
+                            goban.syncReviewMove();
+                            goban.redraw();
+                        };
+
+                        return (
+                            <span className="variation"
+                                onMouseEnter={onEnter}
+                                onMouseLeave={onLeave}
+                                onClick={onClick}
+                            >
+                                {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
+                            </span>
+                        );
+                    }
                     case "review":
                         return <Link to={`/review/${body.review_id}`}>{interpolate(_("Review: ##{{id}}"), {"id": body.review_id})}</Link>;
                     default:
@@ -482,14 +480,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
     }
 
     jumpToMove = () => {
-       this.props.gameview.stopEstimatingScore();
-       let line = this.props.line;
-       let goban = this.props.gameview.goban;
+        this.props.gameview.stopEstimatingScore();
+        let line = this.props.line;
+        let goban = this.props.gameview.goban;
 
-       if ("move_number" in line) {
-           if (!goban.isAnalysisDisabled()) {
-               goban.setMode("analyze");
-           }
+        if ("move_number" in line) {
+            if (!goban.isAnalysisDisabled()) {
+                goban.setMode("analyze");
+            }
 
             goban.engine.followPath(line.move_number, "");
             goban.redraw();
@@ -499,9 +497,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             }
 
             goban.emit("update");
-       }
+        }
 
-       if ("from" in line) {
+        if ("from" in line) {
             let mvs = goban.engine.decodeMoves(line.moves);
             let ct = 0;
             for (let i = 0; i < mvs.length; ++i) {
@@ -518,9 +516,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             goban.redraw();
             //last_move_number[type] = line.from;
             //last_moves[type] = line.moves;
-       }
+        }
 
-    }
+    };
 
     render() {
         let line = this.props.line;

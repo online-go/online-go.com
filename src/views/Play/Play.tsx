@@ -117,7 +117,7 @@ export class Play extends React.Component<PlayProperties, any> {
         if (w === 0 || h === 0) { // Wait for positive size
             setTimeout(this.onResize, 500);
         }
-    }
+    };
 
     updateChallenges = (challenges) => {
         if (this.state.freeze_challenge_list) {
@@ -151,11 +151,9 @@ export class Play extends React.Component<PlayProperties, any> {
             C.ranked_text = C.ranked ? _("Yes") : _("No");
             if (C.handicap === -1) {
                 C.handicap_text = _("Auto");
-            }
-            else if (C.handicap === 0) {
+            } else if (C.handicap === 0) {
                 C.handicap_text = _("No");
-            }
-            else {
+            } else {
                 C.handicap_text = C.handicap;
             }
 
@@ -174,7 +172,7 @@ export class Play extends React.Component<PlayProperties, any> {
             correspondence_list: corr,
             pending_challenges: []
         });
-    }
+    };
 
     acceptOpenChallenge(challenge) {
         openGameAcceptModal(challenge).then((challenge) => {
@@ -192,11 +190,11 @@ export class Play extends React.Component<PlayProperties, any> {
     cancelActiveLiveChallenges = () => {
         // In theory there should only be one, but cancel them all anyhow...
         this.state.live_list.forEach((c) => {
-           if (c.user_challenge) {
-               this.cancelOpenChallenge(c);
-           }
+            if (c.user_challenge) {
+                this.cancelOpenChallenge(c);
+            }
         });
-    }
+    };
 
     extractUser(challenge) {
         return {
@@ -209,15 +207,15 @@ export class Play extends React.Component<PlayProperties, any> {
 
     onAutomatchEntry = (entry) => {
         this.forceUpdate();
-    }
+    };
 
     onAutomatchStart = (entry) => {
         this.forceUpdate();
-    }
+    };
 
     onAutomatchCancel = (entry) => {
         this.forceUpdate();
-    }
+    };
 
     findMatch = (speed: 'blitz' | 'live' | 'correspondence') => {
         let settings = getAutomatchSettings(speed);
@@ -251,19 +249,19 @@ export class Play extends React.Component<PlayProperties, any> {
         if (speed === 'correspondence') {
             this.setState({showLoadingSpinnerForCorrespondence: true});
         }
-    }
+    };
 
 
     dismissCorrespondenceSpinner = () => {
         this.setState({showLoadingSpinnerForCorrespondence: false});
-    }
+    };
 
     cancelActiveAutomatch = () => {
         if (automatch_manager.active_live_automatcher) {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
-    }
+    };
 
     newComputerGame = () => {
         if (bot_count() === 0) {
@@ -271,18 +269,17 @@ export class Play extends React.Component<PlayProperties, any> {
             return;
         }
         challengeComputer();
-    }
+    };
 
     newCustomGame = () => {
         challenge(null);
-    }
+    };
 
     toggleSize(size) {
         let size_options = dup(this.state.automatch_size_options);
         if (size_options.indexOf(size) >= 0) {
             size_options = size_options.filter((x) => x !== size);
-        }
-        else {
+        } else {
             size_options.push(size);
         }
         if (size_options.length === 0) {
@@ -295,37 +292,37 @@ export class Play extends React.Component<PlayProperties, any> {
     toggleShowAllChallenges = () => {
         preferences.set("show-all-challenges", !this.state.show_all_challenges);
         this.setState({show_all_challenges: !this.state.show_all_challenges});
-    }
+    };
 
     toggleShowUnrankedChallenges = () => {
         preferences.set("show-unranked-challenges", !this.state.show_unranked_challenges);
         this.setState({show_unranked_challenges: !this.state.show_unranked_challenges});
-    }
+    };
 
     toggleShowRankedChallenges = () => {
         preferences.set("show-ranked-challenges", !this.state.show_ranked_challenges);
         this.setState({show_ranked_challenges: !this.state.show_ranked_challenges});
-    }
+    };
 
     toggleShow19x19Challenges = () => {
         preferences.set("show-19x19-challenges", !this.state.show_19x19_challenges);
         this.setState({show_19x19_challenges: !this.state.show_19x19_challenges});
-    }
+    };
 
     toggleShow13x13Challenges = () => {
         preferences.set("show-13x13-challenges", !this.state.show_13x13_challenges);
         this.setState({show_13x13_challenges: !this.state.show_13x13_challenges});
-    }
+    };
 
     toggleShow9x9Challenges = () => {
         preferences.set("show-9x9-challenges", !this.state.show_9x9_challenges);
         this.setState({show_9x9_challenges: !this.state.show_9x9_challenges});
-    }
+    };
 
     toggleShowOtherBoardsizeChallenges = () => {
         preferences.set("show-other-boardsize-challenges", !this.state.show_other_boardsize_challenges);
         this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
-    }
+    };
 
     anyChallengesToShow = (live) => {
         let challengeList = live ? this.state.live_list : this.state.correspondence_list;
@@ -333,12 +330,12 @@ export class Play extends React.Component<PlayProperties, any> {
         return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
-    }
+    };
 
     liveOwnChallengePending = () => {
         let locp = this.state.live_list.some((c) => (c.user_challenge));
         return locp;
-    }
+    };
 
     freezeChallenges = () => {
         if (this.list_freeze_timeout) {
@@ -349,7 +346,7 @@ export class Play extends React.Component<PlayProperties, any> {
             this.setState({freeze_challenge_list: true});
         }
         this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
-    }
+    };
 
     unfreezeChallenges = () => {
         //console.log("Unfreeze challenges...");
@@ -358,7 +355,7 @@ export class Play extends React.Component<PlayProperties, any> {
             clearTimeout(this.list_freeze_timeout);
             this.list_freeze_timeout = null;
         }
-    }
+    };
 
     render() {
         let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
@@ -406,45 +403,46 @@ export class Play extends React.Component<PlayProperties, any> {
                             }
                             {corr_automatchers.map((m) => (
                                 <div className='challenge-row automatch-challenge-row' key={m.uuid}>
-                                <span className='cell'>
-                                    <button className='reject xs'
-                                            onClick={() => { automatch_manager.cancel(m.uuid);
-                                            if (corr_automatchers.length === 1)  {
-                                                this.setState({showLoadingSpinnerForCorrespondence: false});
-                                            }
+                                    <span className='cell'>
+                                        <button className='reject xs'
+                                            onClick={() => {
+                                                automatch_manager.cancel(m.uuid);
+                                                if (corr_automatchers.length === 1)  {
+                                                    this.setState({showLoadingSpinnerForCorrespondence: false});
+                                                }
                                             }}>{pgettext("Cancel automatch", "Cancel")}</button>
-                                </span>
+                                    </span>
 
                                     <span className='cell'>
-                                    {m.lower_rank_diff === m.upper_rank_diff ?
+                                        {m.lower_rank_diff === m.upper_rank_diff ?
                                         <span>&plusmn; {m.lower_rank_diff}</span> :
                                         <span>-{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}</span>}
-                                </span>
+                                    </span>
 
                                     <span className='cell'>
-                                    {m.size_speed_options.filter((x) => x.speed === 'correspondence').map((x) => x.size).join(',')}
-                                </span>
+                                        {m.size_speed_options.filter((x) => x.speed === 'correspondence').map((x) => x.size).join(',')}
+                                    </span>
 
                                     <span className={m.time_control.condition + ' cell'}>
-                                    {m.time_control.condition === 'no-preference'
+                                        {m.time_control.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : timeControlSystemText(m.time_control.value.system)
-                                    }
-                                </span>
+                                        }
+                                    </span>
 
                                     <span className={m.handicap.condition + ' cell'}>
-                                    {m.handicap.condition === 'no-preference'
+                                        {m.handicap.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : (m.handicap.value === 'enabled' ? pgettext("Handicap dnabled", "Enabled") : pgettext("Handicap disabled", "Disabled"))
-                                    }
-                                </span>
+                                        }
+                                    </span>
 
                                     <span className={m.rules.condition + ' cell'}>
-                                    {m.rules.condition === 'no-preference'
+                                        {m.rules.condition === 'no-preference'
                                         ? pgettext("Automatch: no preference", "No preference")
                                         : rulesText(m.rules.value)
-                                    }
-                                </span>
+                                        }
+                                    </span>
                                 </div>
                             ))}
 
@@ -479,31 +477,31 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
 
-                        <div className="showall-selector">
-                            <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
-                                onChange={this.toggleShowAllChallenges}/>
-                            <label htmlFor="show-all-challenges">{_("Show ineligible challenges")}</label>
-                            <br></br>
-                            <input id="show-ranked-challenges" type="checkbox" checked={this.state.show_ranked_challenges}
-                                onChange={this.toggleShowRankedChallenges}/>
-                            <label htmlFor="show-ranked-challenges">{_("Ranked")}</label>
-                            <input id="show-unranked-challenges" type="checkbox" checked={this.state.show_unranked_challenges}
-                                onChange={this.toggleShowUnrankedChallenges}/>
-                            <label htmlFor="show-unranked-challenges">{_("Unranked")}</label>
-                            <br></br>
-                            <input id="show-19x19-challenges" type="checkbox" checked={this.state.show_19x19_challenges}
-                                onChange={this.toggleShow19x19Challenges}/>
-                            <label htmlFor="show-19x19-challenges">{_("19x19")}</label>
-                            <input id="show-13x13-challenges" type="checkbox" checked={this.state.show_13x13_challenges}
-                                onChange={this.toggleShow13x13Challenges}/>
-                            <label htmlFor="show-13x13-challenges">{_("13x13")}</label>
-                            <input id="show-9x9-challenges" type="checkbox" checked={this.state.show_9x9_challenges}
-                                onChange={this.toggleShow9x9Challenges}/>
-                            <label htmlFor="show-9x9-challenges">{_("9x9")}</label>
-                            <input id="show-other-boardsize-challenges" type="checkbox" checked={this.state.show_other_boardsize_challenges}
-                                onChange={this.toggleShowOtherBoardsizeChallenges}/>
-                            <label htmlFor="show-other-boardsize-challenges">{_("Other boardsizes")}</label>
-                        </div>
+                <div className="showall-selector">
+                    <input id="show-all-challenges" type="checkbox" checked={this.state.show_all_challenges}
+                        onChange={this.toggleShowAllChallenges}/>
+                    <label htmlFor="show-all-challenges">{_("Show ineligible challenges")}</label>
+                    <br></br>
+                    <input id="show-ranked-challenges" type="checkbox" checked={this.state.show_ranked_challenges}
+                        onChange={this.toggleShowRankedChallenges}/>
+                    <label htmlFor="show-ranked-challenges">{_("Ranked")}</label>
+                    <input id="show-unranked-challenges" type="checkbox" checked={this.state.show_unranked_challenges}
+                        onChange={this.toggleShowUnrankedChallenges}/>
+                    <label htmlFor="show-unranked-challenges">{_("Unranked")}</label>
+                    <br></br>
+                    <input id="show-19x19-challenges" type="checkbox" checked={this.state.show_19x19_challenges}
+                        onChange={this.toggleShow19x19Challenges}/>
+                    <label htmlFor="show-19x19-challenges">{_("19x19")}</label>
+                    <input id="show-13x13-challenges" type="checkbox" checked={this.state.show_13x13_challenges}
+                        onChange={this.toggleShow13x13Challenges}/>
+                    <label htmlFor="show-13x13-challenges">{_("13x13")}</label>
+                    <input id="show-9x9-challenges" type="checkbox" checked={this.state.show_9x9_challenges}
+                        onChange={this.toggleShow9x9Challenges}/>
+                    <label htmlFor="show-9x9-challenges">{_("9x9")}</label>
+                    <input id="show-other-boardsize-challenges" type="checkbox" checked={this.state.show_other_boardsize_challenges}
+                        onChange={this.toggleShowOtherBoardsizeChallenges}/>
+                    <label htmlFor="show-other-boardsize-challenges">{_("Other boardsizes")}</label>
+                </div>
 
             </div>
         );
@@ -531,8 +529,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
             );
-        }
-        else if (this.liveOwnChallengePending()) {
+        } else if (this.liveOwnChallengePending()) {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
@@ -549,8 +546,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
             );
-        }
-        else if (this.state.showLoadingSpinnerForCorrespondence) {
+        } else if (this.state.showLoadingSpinnerForCorrespondence) {
             return (
                 <div className='automatch-container'>
                     <div className='automatch-header'>
@@ -564,8 +560,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
             );
-        }
-        else {
+        } else {
             return (
                 <div className='automatch-container'>
                     <div className='automatch-header'>
@@ -671,13 +666,13 @@ export class Play extends React.Component<PlayProperties, any> {
                                   ((C.handicap !== 0 && C.handicap !== -1)))
                                    || null) &&
                                 <React.Fragment>
-                                 <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
-                                 <p className="cheat-alert-tooltiptext">
-                                    {
-                                        (C.komi !== null ?
+                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                                    <p className="cheat-alert-tooltiptext">
+                                        {
+                                            (C.komi !== null ?
                                             pgettext("Warning for users accepting game", "Custom komi") + ": " + C.komi + " "
                                             : ""
-                                        ) +
+                                            ) +
                                         (usedForCheating(C.time_control_parameters) ?
                                             pgettext("Warning for users accepting game", "Unusual time setting") + " "
                                             : ""
@@ -686,8 +681,8 @@ export class Play extends React.Component<PlayProperties, any> {
                                             pgettext("Warning for users accepting game", "Custom handicap") + ": " + C.handicap_text
                                             : ""
                                         )
-                                    }
-                                </p>
+                                        }
+                                    </p>
                                 </React.Fragment>
                             }
 

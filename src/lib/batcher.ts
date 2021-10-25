@@ -40,5 +40,5 @@ export class Batcher<T> {
         let values = this.values;
         this.values = [];
         this.action(values);
-    }
+    };
 }

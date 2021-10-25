@@ -300,7 +300,7 @@ class NotificationManager {
         }
         const player_id = goban.config.player_id;
         return (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && (player_id === goban.config.black_player_id || player_id === goban.config.white_player_id));
-    }
+    };
 
     deleteNotification(notification, dont_rebuild?: boolean) {
         comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
@@ -345,8 +345,7 @@ class NotificationManager {
                 ) {
                     this.boards_to_move_on[game.id] = game;
                 }
-            }
-            else if (game.phase === "play") {
+            } else if (game.phase === "play") {
                 if (game.player_to_move === data.get("user").id) {
                     this.boards_to_move_on[game.id] = game;
                 }
@@ -381,8 +380,7 @@ class NotificationManager {
                     return;
                 }
                 delete this.notifications[notification.id];
-            }
-            else {
+            } else {
                 this.notifications[notification.id] = notification;
             }
 
@@ -477,7 +475,7 @@ class NotificationManager {
                 this.rebuildNotificationList();
             }
         }
-    }
+    };
     rebuildNotificationList() {
         this.ordered_notifications = [];
 
@@ -534,7 +532,7 @@ export class TurnIndicator extends React.Component<{}, any> {
             <span className="turn-indicator" onAuxClick={this.advanceToNextBoard} onClick={this.advanceToNextBoard}>
                 <span className={this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"}><span>{this.state.count}</span></span>
             </span>
-       );
+        );
     }
 }
 
@@ -664,7 +662,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 browserHistory.push(url);
             }
         }
-    }
+    };
     isClickable() {
         return !!this.getOpenUrl();
     }
@@ -905,7 +903,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 return (
                     <div>
                         {interpolate(_("{{username}} has sent you an invitation to join the tournament: {{tournament_name}}"),
-                                     {username: notification.invitingUser, tournament_name: notification.tournamentname})}
+                            {username: notification.invitingUser, tournament_name: notification.tournamentname})}
 
                         <div className="buttons">
                             <FabX onClick={() => {

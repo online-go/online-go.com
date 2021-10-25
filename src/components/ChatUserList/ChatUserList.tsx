@@ -75,7 +75,7 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
         let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
-    }
+    };
 
 
     render() {
@@ -86,7 +86,7 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
                 <div className="user-header" onClick={this.toggleSortOrder}>
                     <i className={this.state.user_sort_order === "rank" ? "fa fa-sort-numeric-asc" : "fa fa-sort-alpha-asc"} /> {
                         interpolate(_("Users : {{in_chat}}"),
-                                    {"in_chat": sorted_users.length})
+                            {"in_chat": sorted_users.length})
                     }
                 </div>
 
@@ -102,7 +102,7 @@ export class ChatUserCount extends ChatUsers<ChatUserCountProperties> {
             <button
                 onClick={this.props.chat.togglePlayerList}
                 className={"chat-input-player-list-toggle sm" + (this.props.active ? " active" : "")}
-                >
+            >
                 <i className="fa fa-users" /> {this.proxy ? this.proxy.channel.users_by_name.length : ""}
             </button>
         );

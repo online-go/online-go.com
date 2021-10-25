@@ -126,7 +126,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                                 ...(theme.theme_name === "Plain" ? {backgroundImage: "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)"} : {})
                             }}
                             onClick={this.selectTheme["board"][theme.theme_name]}
-                            >
+                        >
 
                             {theme.theme_name === "Plain"
                                 ? <span>{pgettext("Custom board theme", "Custom")}</span>
@@ -157,7 +157,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             className={"selector" + (this.state.white === theme.theme_name ? " active" : "")}
                             style={theme.styles}
                             onClick={this.selectTheme["white"][theme.theme_name]}
-                            >
+                        >
                             <PersistentElement elt={this.canvases.white[idx]} />
                         </div>
                     ))}
@@ -175,7 +175,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                             className={"selector" + (this.state.black === theme.theme_name ? " active" : "")}
                             style={theme.styles}
                             onClick={this.selectTheme["black"][theme.theme_name]}
-                            >
+                        >
                             <PersistentElement elt={this.canvases.black[idx]} />
                         </div>
                     ))}

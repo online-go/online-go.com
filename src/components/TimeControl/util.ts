@@ -243,25 +243,25 @@ export function timeControlDescription(time_control) {
             break;
         case "fischer":
             ret = interpolate(_("Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s."), [
-                                    durationString(time_control.initial_time),
-                                    durationString(time_control.time_increment),
-                                    durationString(time_control.max_time)
-                                ]);
+                durationString(time_control.initial_time),
+                durationString(time_control.time_increment),
+                durationString(time_control.max_time)
+            ]);
             break;
         case "byoyomi":
             ret = interpolate(_("Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods."), [
-                                    durationString(time_control.main_time),
-                                    time_control.periods,
-                                    durationString(time_control.period_time)
-                                ]);
+                durationString(time_control.main_time),
+                time_control.periods,
+                durationString(time_control.period_time)
+            ]);
 
             break;
         case "canadian":
             ret = interpolate(_("Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones."), [
-                                    durationString(time_control.main_time),
-                                    durationString(time_control.period_time),
-                                    time_control.stones_per_period
-                                ]);
+                durationString(time_control.main_time),
+                durationString(time_control.period_time),
+                time_control.stones_per_period
+            ]);
             break;
         case "absolute":
             ret = interpolate(_("Absolute: %s total play time per player."), [durationString(time_control.total_time)]);
@@ -294,23 +294,23 @@ export function shortTimeControl(time_control) {
             return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [durationString(time_control.per_move)]);
         case "fischer":
             return interpolate(pgettext("Fischer time", "%s+%s/move, max %s"), [
-                                    durationString(time_control.initial_time),
-                                    durationString(time_control.time_increment),
-                                    durationString(time_control.max_time)
-                                ]);
+                durationString(time_control.initial_time),
+                durationString(time_control.time_increment),
+                durationString(time_control.max_time)
+            ]);
         case "byoyomi":
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
-                                    durationString(time_control.main_time),
-                                    time_control.periods,
-                                    durationString(time_control.period_time)
-                                ]);
+                durationString(time_control.main_time),
+                time_control.periods,
+                durationString(time_control.period_time)
+            ]);
 
         case "canadian":
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
-                                    durationString(time_control.main_time),
-                                    durationString(time_control.period_time),
-                                    time_control.stones_per_period
-                                ]);
+                durationString(time_control.main_time),
+                durationString(time_control.period_time),
+                time_control.stones_per_period
+            ]);
         case "absolute":
             return durationString(time_control.total_time);
         case "none":
@@ -333,22 +333,22 @@ export function shortShortTimeControl(time_control) {
             return interpolate(pgettext("Simple time: <time>/move", "%s/move"), [shortDurationString(time_control.per_move)]);
         case "fischer":
             return interpolate(pgettext("Fischer time", "%s+%s up to %s"), [
-                                    shortDurationString(time_control.initial_time),
-                                    shortDurationString(time_control.time_increment),
-                                    shortDurationString(time_control.max_time)
-                                ]);
+                shortDurationString(time_control.initial_time),
+                shortDurationString(time_control.time_increment),
+                shortDurationString(time_control.max_time)
+            ]);
         case "byoyomi":
             return interpolate(pgettext("Japanese Byo-Yomi", "%s+%sx%s"), [
-                                    shortDurationString(time_control.main_time),
-                                    time_control.periods,
-                                    shortDurationString(time_control.period_time)
-                                ]);
+                shortDurationString(time_control.main_time),
+                time_control.periods,
+                shortDurationString(time_control.period_time)
+            ]);
         case "canadian":
             return interpolate(pgettext("Canadian Byo-Yomi", "%s+%s/%s"), [
-                                    shortDurationString(time_control.main_time),
-                                    shortDurationString(time_control.period_time),
-                                    time_control.stones_per_period
-                                ]);
+                shortDurationString(time_control.main_time),
+                shortDurationString(time_control.period_time),
+                time_control.stones_per_period
+            ]);
         case "absolute":
             return shortDurationString(time_control.total_time);
         case "none":
@@ -386,7 +386,7 @@ export function usedForCheating(time_control) {
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
                 time_control.period_time > QUESTIONABLE_SECONDS_PER_MOVE
-                );
+            );
 
         case "fischer":
             return !(
@@ -412,7 +412,7 @@ export function timeControlSystemText(system) {
     }
 }
 export function validateTimeControl(tc: TimeControl): boolean {
-   let error = false;
+    let error = false;
 
     for (let k in tc) {
         if (typeof(tc[k]) === "number" && isNaN(tc[k])) {
@@ -459,14 +459,14 @@ export function durationString(seconds: number): string {
     let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
     let coarse_fine_time_template = pgettext("Duration strings using two units (e.g. \"1 week 3 days\", \"2 hours 45 minutes\"). This is localizable because some languages may need to change the order of the coarse and fine times.",
-                                             "{{coarse}} {{fine}}");
+        "{{coarse}} {{fine}}");
     let weeks_string = ngettext("%s week", "%s weeks", weeks);
     let days_string = ngettext("%s day", "%s days", days);
     let hours_string = ngettext("%s hour", "%s hours", hours);
     let minutes_string = ngettext("%s minute", "%s minutes", minutes);
     let seconds_string = ngettext("%s second", "%s seconds", seconds);
 
-    let coarsest_to_finest: {value: number, template: string}[] =
+    let coarsest_to_finest: {value: number; template: string}[] =
         [
             {value: weeks, template: weeks_string},
             {value: days, template: days_string},

@@ -32,28 +32,28 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
         super(props);
     }
 
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             DummyPage,
             DummyPage,
             DummyPage,
         ];
     }
-    static section():string { return "missing"; }
-    static title():string { return "Missing"; }
-    static subtext():string { return "Missing"; }
+    static section(): string { return "missing"; }
+    static title(): string { return "Missing"; }
+    static subtext(): string { return "Missing"; }
 
     render() {
         let page = this.props.page || getFirstUncompletedPage(this.props.section);
         page = Math.min(page, this.props.pages.length);
         page = Math.max(page, 0);
-        let P:typeof LearningPage = this.props.pages[page];
+        let P: typeof LearningPage = this.props.pages[page];
         return <P
             title={this.props.title}
             npages={this.props.pages.length}
             curpage={page}
             section={this.props.section}
             nextSection={this.props.nextSection}
-            />;
+        />;
     }
 }

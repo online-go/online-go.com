@@ -39,14 +39,14 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
         super.componentDidMount(); /* this.close() doesn't work if you don't do this */
         let user = data.get('config.user');
         this.setState({ notes: data.get(`player-notes.${user.id}.${this.props.playerId}`) });
-    }
+    };
 
     updateNotes = (ev) => {
         const new_notes = ev.target.value;
         if (new_notes.length < 5000) {
             this.setState({notes: ev.target.value});
         }
-    }
+    };
 
     saveNotes = () => {
         let user = data.get('config.user');
@@ -57,19 +57,19 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
             data.remove(`player-notes.${user.id}.${this.props.playerId}`, data.Replication.REMOTE_OVERWRITES_LOCAL);
         }
         this.close();
-    }
+    };
 
     render() {
         return (
-          <div className="Modal PlayerNotesModal" ref="modal">
-              <div className="body">
-                <textarea placeholder={_("(no notes yet)")} value={this.state.notes} onChange={this.updateNotes} />
-              </div>
-              <div className="buttons">
-                <button onClick={this.close}>{_("Cancel")}</button>
-                <button className="primary bold" onClick={this.saveNotes}>{_("Save")}</button>
-              </div>
-          </div>
+            <div className="Modal PlayerNotesModal" ref="modal">
+                <div className="body">
+                    <textarea placeholder={_("(no notes yet)")} value={this.state.notes} onChange={this.updateNotes} />
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Cancel")}</button>
+                    <button className="primary bold" onClick={this.saveNotes}>{_("Save")}</button>
+                </div>
+            </div>
         );
     }
 }

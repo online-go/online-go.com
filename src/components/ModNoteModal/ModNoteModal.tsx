@@ -56,13 +56,13 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
         .catch(errorAlerter);
 
         this.close();
-    }
+    };
 
     updateDraft = (e) => {
         this.setState({
             current_draft: e.target.value
         });
-    }
+    };
 
     render() {
         const current_draft: [string] = this.state.current_draft.split('\n').map((line, idx) => (
@@ -70,21 +70,21 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
         ));
 
         return (
-          <div className="Modal ModNoteModal" ref="modal">
-              <div className="header">
-                  <h2>
-                    {_("Add moderator note for: ")} <Player user={this.props.player_id} />
-                  </h2>
-              </div>
-              <textarea id="mod-note-text" placeholder={_("New moderator note...")}
-                            rows={5}
-                            value={this.state.current_draft}
-                            onChange={this.updateDraft}/>
+            <div className="Modal ModNoteModal" ref="modal">
+                <div className="header">
+                    <h2>
+                        {_("Add moderator note for: ")} <Player user={this.props.player_id} />
+                    </h2>
+                </div>
+                <textarea id="mod-note-text" placeholder={_("New moderator note...")}
+                    rows={5}
+                    value={this.state.current_draft}
+                    onChange={this.updateDraft}/>
 
-              <div className="buttons">
-                 <button className="primary" onClick={this.submitNote}>{_("Submit")}</button>
-              </div>
-          </div>
+                <div className="buttons">
+                    <button className="primary" onClick={this.submitNote}>{_("Submit")}</button>
+                </div>
+            </div>
         );
     }
 }

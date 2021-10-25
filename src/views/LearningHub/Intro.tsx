@@ -22,15 +22,15 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 
 export class Intro extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1
         ];
     }
 
-    static section():string { return "rules-intro"; }
-    static title():string { return pgettext("Tutorial section name on rules introduction", "The Game!"); }
-    static subtext():string { return pgettext("Tutorial section subtext on rules introduction", "Build territory one stone at a time"); }
+    static section(): string { return "rules-intro"; }
+    static title(): string { return pgettext("Tutorial section name on rules introduction", "The Game!"); }
+    static subtext(): string { return pgettext("Tutorial section subtext on rules introduction", "Build territory one stone at a time"); }
 }
 
 class Page1 extends LearningPage {
@@ -41,7 +41,7 @@ class Page1 extends LearningPage {
     text() {
         return _("You can play a stone on any crossline, even the outer ones. The goal of the game is to surround the largest areas. Stones don't move but can be captured. Make a move to continue");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {black: "", white: ""},

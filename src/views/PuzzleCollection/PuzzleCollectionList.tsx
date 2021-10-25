@@ -26,9 +26,9 @@ import { StarRating } from "StarRating";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";
 
-declare var swal;
+declare let swal;
 
-export function PuzzleCollectionList({match:{params:{player_id}}}:{match:{params:{player_id:number}}}):JSX.Element {
+export function PuzzleCollectionList({match:{params:{player_id}}}: {match: {params: {player_id: number}}}): JSX.Element {
     return (
         <div className="page-width">
             <div className="PuzzleList container">
@@ -60,26 +60,26 @@ export function PuzzleCollectionList({match:{params:{player_id}}}:{match:{params
                         onRowClick={(row, ev) => navigateTo(`/puzzle-collection/${row.id}`, ev)}
                         columns={[
                             {header: "",  className: () => "icon",
-                             render: (X) => (
-                                <MiniGoban noLink id={null} json={X.starting_puzzle} displayWidth={64} white={null} black={null} />
-                             )
+                                render: (X) => (
+                                    <MiniGoban noLink id={null} json={X.starting_puzzle} displayWidth={64} white={null} black={null} />
+                                )
                             },
 
                             {header: _("Collection"), className: () => "name", orderBy: ["name"],
-                             render: (X) => (
-                                <div>
-                                    <div>{X.name}</div>
-                                    <Player user={X.owner}/>
-                                </div>
-                             )
+                                render: (X) => (
+                                    <div>
+                                        <div>{X.name}</div>
+                                        <Player user={X.owner}/>
+                                    </div>
+                                )
                             },
 
                             {header: _("Difficulty"), className: () => "difficulty center", orderBy: ["min_rank", "max_rank"],
-                             render: (X) => (
+                                render: (X) => (
                                  X.min_rank_string === X.max_rank_string
                                      ? <span>{X.min_rank_string}</span>
                                      : <span>{X.min_rank_short}-{X.max_rank_short}</span>
-                             )
+                                )
                             },
 
                             {header: _("Puzzles"), className: () => "puzzle-count center", render: (X) => X.puzzle_count, orderBy: ["-puzzle_count"]},

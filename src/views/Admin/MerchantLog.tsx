@@ -27,7 +27,7 @@ import {SearchInput} from "misc-ui";
 import {Player} from "Player";
 import * as moment from "moment";
 
-declare var swal;
+declare let swal;
 
 
 export class MerchantLog extends React.PureComponent<{}, any> {
@@ -47,7 +47,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                     orderBy={["-timestamp"]}
                     columns={[
                         {header: "Time",  className: () => "timestamp",
-                         render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },
+                            render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },
 
                         {header: "System"     , render: (X) => X.system} ,
                         {header: "Event"      , render: (X) => {
@@ -70,12 +70,12 @@ export class MerchantLog extends React.PureComponent<{}, any> {
     }
 }
 
-function clean_meta(str:string):string {
+function clean_meta(str: string): string {
     let obj = JSON.parse(str);
     return JSON.stringify(obj, Object.keys(obj).sort(), 1);
 }
-function clean_body(str:string):string {
-    let obj:any = str;
+function clean_body(str: string): string {
+    let obj: any = str;
     try {
         obj = JSON.parse(str);
         console.log(obj);
@@ -96,28 +96,28 @@ function clean_body(str:string):string {
 
     return JSON.stringify(obj, null, 1);
 }
-function clean_exception(str:string):string {
+function clean_exception(str: string): string {
     return str;
 }
 
 
 function sortObjByKey(value) {
-  return (typeof value === 'object') ?
+    return (typeof value === 'object') ?
     (Array.isArray(value) ?
       value.map(sortObjByKey) :
       Object.keys(value).sort().reduce(
-        (o, key) => {
-          const v = value[key];
-          o[key] = sortObjByKey(v);
-          return o;
-        }, {})
+          (o, key) => {
+              const v = value[key];
+              o[key] = sortObjByKey(v);
+              return o;
+          }, {})
     ) :
     value;
 }
 
 
 function orderedJsonStringify(obj) {
-  return JSON.stringify(sortObjByKey(obj));
+    return JSON.stringify(sortObjByKey(obj));
 }
 
 

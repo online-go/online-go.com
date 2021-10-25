@@ -43,8 +43,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
-        }
-        else {
+        } else {
             this.setState({ userid: new_id });
         }
 
@@ -66,23 +65,23 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         }).catch((r) => {
             console.log("Permissions GET failed:", r);
         });
-    }
+    };
 
     onCommentChange = (e) => {
         this.updatePermission('can_comment', e.target.checked);
-    }
+    };
 
     onEditChange = (e) => {
         this.updatePermission('can_edit', e.target.checked);
-    }
+    };
 
     onAdminChange = (e) => {
         this.updatePermission('can_admin', e.target.checked);
-    }
+    };
 
     updatePermission = (permission, value) => {
         this.setState({
-           [permission] : value,
+            [permission] : value,
             throb: true
         });
 
@@ -107,7 +106,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         }).catch((r) => {
             console.log("Permissions PUT failed:", r);
         });
-    }
+    };
 
     render = () => {
         const protect_self = data.get('config').user.id === parseInt(this.state.userid); // don't let people dis-admin themselves!
@@ -136,6 +135,6 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
                 }
             </div>
         );
-    }
+    };
 }
 

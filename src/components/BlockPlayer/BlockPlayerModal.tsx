@@ -43,17 +43,17 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
     toggleChatBlock = () => {
         setIgnore(this.props.playerId, !this.state.block_chat);
         this.setState({block_chat: !this.state.block_chat});
-    }
+    };
 
     toggleGameBlock = () => {
         setGameBlock(this.props.playerId, !this.state.block_games);
         this.setState({block_games: !this.state.block_games});
-    }
+    };
 
     toggleAnnouncementBlock = () => {
         setAnnouncementBlock(this.props.playerId, !this.state.block_announcements);
         this.setState({block_announcements: !this.state.block_announcements});
-    }
+    };
 
 
     render() {

@@ -39,7 +39,7 @@ interface SortablePuzzleListProperties {
     collection: number;
 }
 interface SortablePuzzleListState {
-    entries:Array<PuzzleEntry>;
+    entries: Array<PuzzleEntry>;
 }
 
 export class SortablePuzzleList extends React.Component<SortablePuzzleListProperties, SortablePuzzleListState> {
@@ -81,7 +81,7 @@ export class SortablePuzzleList extends React.Component<SortablePuzzleListProper
         this.setState(({entries}) => ({
             entries: arrayMove(entries, oldIndex, newIndex),
         }));
-    }
+    };
 
     render() {
         return <SortablePuzzleListContainer entries={this.state.entries} onSortEnd={this.onSortEnd} />;
@@ -110,7 +110,7 @@ const PuzzleEntry = SortableElement(({puzzle}) => (
     </li>
 ));
 
-const SortablePuzzleListContainer = SortableContainer(({entries}:{entries: Array<PuzzleEntry>}) => (
+const SortablePuzzleListContainer = SortableContainer(({entries}: {entries: Array<PuzzleEntry>}) => (
     <ul className='SortablePuzzleList'>
         {entries.map((entry, index) => (
             <PuzzleEntry key={entry.id} index={index} puzzle={entry} />

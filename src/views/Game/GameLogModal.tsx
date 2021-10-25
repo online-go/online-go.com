@@ -31,7 +31,7 @@ import { termination_socket } from "sockets";
 import { GoMath } from "goban";
 
 
-declare var swal;
+declare let swal;
 
 interface Events {
 }
@@ -62,7 +62,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, {log: Ar
         termination_socket.send(`game/log`, {game_id}, (log) => this.setLog(log));
     }
 
-    setLog(log:Array<LogEntry>) {
+    setLog(log: Array<LogEntry>) {
         console.log(log);
         this.setState({log});
     }
@@ -73,54 +73,54 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, {log: Ar
         let game_id = config.game_id;
 
         return (
-          <div className="Modal GameLogModal" ref="modal">
-              <div className="header">
-                  <div>
-                      <h2>
-                          {config.game_name}
-                      </h2>
-                      <h3>
-                          <Player disableCacheUpdate icon rank user={this.props.black} /> {
-                              _("vs.")
-                          } <Player disableCacheUpdate icon rank user={this.props.white} />
-                      </h3>
-                  </div>
-              </div>
-              <div className="body">
-                  <table className='log'>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Event</th>
-                            <th>Parameters</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                      {this.state.log.map((entry, idx) => (
-                          <tr key={entry.timestamp + ':' +  idx} className='entry'>
-                              <td className='timestamp'>{moment(entry.timestamp).format('L LTS')}</td>
-                              <td className='event'>{entry.event}</td>
-                              <td className='data'><LogData config={this.props.config} event={entry.event} data={entry.data} /></td>
-                          </tr>
-                      ))}
-                    </tbody>
-                   </table>
-              </div>
-              <div className="buttons">
-                  <button onClick={this.close}>{_("Close")}</button>
-              </div>
-          </div>
+            <div className="Modal GameLogModal" ref="modal">
+                <div className="header">
+                    <div>
+                        <h2>
+                            {config.game_name}
+                        </h2>
+                        <h3>
+                            <Player disableCacheUpdate icon rank user={this.props.black} /> {
+                                _("vs.")
+                            } <Player disableCacheUpdate icon rank user={this.props.white} />
+                        </h3>
+                    </div>
+                </div>
+                <div className="body">
+                    <table className='log'>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Event</th>
+                                <th>Parameters</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.state.log.map((entry, idx) => (
+                                <tr key={entry.timestamp + ':' +  idx} className='entry'>
+                                    <td className='timestamp'>{moment(entry.timestamp).format('L LTS')}</td>
+                                    <td className='event'>{entry.event}</td>
+                                    <td className='data'><LogData config={this.props.config} event={entry.event} data={entry.data} /></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                </div>
+            </div>
         );
     }
 }
 
 
-function LogData({config, event, data}:{config:any, event:string, data:any}):JSX.Element {
+function LogData({config, event, data}: {config: any; event: string; data: any}): JSX.Element {
     if (event === 'game_created') {
         return null;
     }
 
-    let ret:Array<JSX.Element> = [];
+    let ret: Array<JSX.Element> = [];
 
     if (data) {
         try {
@@ -150,7 +150,7 @@ function LogData({config, event, data}:{config:any, event:string, data:any}):JSX
 }
 
 
-export function openGameLogModal(config:any, black: any, white:any): void {
+export function openGameLogModal(config: any, black: any, white: any): void {
     openModal(<GameLogModal config={config} black={black} white={white} fastDismiss />);
 }
 

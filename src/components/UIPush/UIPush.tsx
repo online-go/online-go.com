@@ -40,10 +40,10 @@ class Handler {
 let last_handler_id = 0;
 class UIPushManager {
     handlers: {
-        [id: string]: Array<Handler>
+        [id: string]: Array<Handler>;
     };
     subscriptions: {
-        [id: string]: number
+        [id: string]: number;
     };
 
     constructor() {

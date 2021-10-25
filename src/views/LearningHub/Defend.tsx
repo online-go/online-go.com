@@ -22,7 +22,7 @@ import {_, pgettext, interpolate} from "translate";
 import {LearningHubSection} from './LearningHubSection';
 
 export class Defend extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -31,9 +31,9 @@ export class Defend extends LearningHubSection {
         ];
     }
 
-    static section():string { return "defend"; }
-    static title():string { return pgettext("Tutorial section name on learning how to defend", "Defend!"); }
-    static subtext():string { return pgettext("Tutorial section subtext on learning how to defend", "Two eyes or death"); }
+    static section(): string { return "defend"; }
+    static title(): string { return pgettext("Tutorial section name on learning how to defend", "Defend!"); }
+    static subtext(): string { return pgettext("Tutorial section subtext on learning how to defend", "Two eyes or death"); }
 }
 
 
@@ -45,7 +45,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Create two eyes to keep your group alive!");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -74,7 +74,7 @@ class Page2 extends LearningPage {
     text() {
         return _("There is one critical move to make to keep this group alive");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -104,7 +104,7 @@ class Page3 extends LearningPage {
     text() {
         return _("Create two eyes to keep your group alive!");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -141,7 +141,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Empty space that is completely surrounded by your stones is called \"territory\". Protect your territory from white.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {black: "gagbgcgegfgghgig", white: "fafbfcgdfefffg"},

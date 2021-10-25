@@ -23,7 +23,7 @@ import {LearningHubSection} from './LearningHubSection';
 
 
 export class Capture extends LearningHubSection {
-    static pages():Array<typeof LearningPage> {
+    static pages(): Array<typeof LearningPage> {
         return [
             Page1,
             Page2,
@@ -36,9 +36,9 @@ export class Capture extends LearningHubSection {
         ];
     }
 
-    static section():string { return "capture"; }
-    static title():string { return pgettext("Tutorial section on capturing", "Capture!"); }
-    static subtext():string { return pgettext("Tutorial section on capturing", "Surrounding stones"); }
+    static section(): string { return "capture"; }
+    static title(): string { return pgettext("Tutorial section on capturing", "Capture!"); }
+    static subtext(): string { return pgettext("Tutorial section on capturing", "Surrounding stones"); }
 }
 
 class Page1 extends LearningPage {
@@ -46,7 +46,7 @@ class Page1 extends LearningPage {
     text() {
         return _("Capture the white stone");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -72,7 +72,7 @@ class Page2 extends LearningPage {
     text() {
         return _("Capture the group of white stones");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -99,7 +99,7 @@ class Page3 extends LearningPage {
     text() {
         return _("You can capture on the side too, capture the white stones.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -126,7 +126,7 @@ class Page4 extends LearningPage {
     text() {
         return _("Surrounding isn't enough, you have to fill all the space around the stones. Capture the white stones.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -153,7 +153,7 @@ class Page5 extends LearningPage {
     text() {
         return _("Surrounding isn't enough, you have to fill all the space around the stones. Capture the white stones.");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -180,7 +180,7 @@ class Page6 extends LearningPage {
     text() {
         return _("Capture the white stones before white can form two \"eyes\"");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -212,7 +212,7 @@ class Page7 extends LearningPage {
     text() {
         return _("Capture the white stones before white can form two \"eyes\"");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {
@@ -241,7 +241,7 @@ class Page8 extends LearningPage {
     text() {
         return _("Capture the white stones before white can form two \"eyes\"");
     }
-    config():PuzzleConfig {
+    config(): PuzzleConfig {
         return {
             mode: "puzzle",
             initial_state: {

@@ -168,11 +168,11 @@ export class NavBar extends React.PureComponent<{}, any> {
     newGame = () => {
         this.closeNavbar();
         openNewGameModal();
-    }
+    };
     newDemo = () => {
         this.closeNavbar();
         createDemoBoard();
-    }
+    };
 
     clearOmnisearch() {
         this.abortOmnisearch();
@@ -229,7 +229,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             console.log(e);
             // ignore
         }
-    }
+    };
 
     onOmnisearchKeyPress = (ev) => {
         try {
@@ -244,7 +244,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             console.log(e);
             // ignore
         }
-    }
+    };
 
 
     render() {
@@ -274,37 +274,37 @@ export class NavBar extends React.PureComponent<{}, any> {
             this.state.omnisearch_sitemap.length ;
 
         return (
-        <div id="NavBar" className={(this.state.left_nav_active || this.state.right_nav_active) ? "active" : ""}>
-            <KBShortcut shortcut="`" action={this.toggleLeftNav}/>
-            <KBShortcut shortcut="alt-`" action={this.toggleRightNav}/>
-            <KBShortcut shortcut="shift-`" action={this.toggleRightNav}/>
-            <KBShortcut shortcut="escape" action={this.closeNavbar}/>
+            <div id="NavBar" className={(this.state.left_nav_active || this.state.right_nav_active) ? "active" : ""}>
+                <KBShortcut shortcut="`" action={this.toggleLeftNav}/>
+                <KBShortcut shortcut="alt-`" action={this.toggleRightNav}/>
+                <KBShortcut shortcut="shift-`" action={this.toggleRightNav}/>
+                <KBShortcut shortcut="escape" action={this.closeNavbar}/>
 
-            <span className="ogs-nav-logo-container" onClick={this.toggleLeftNav}>
-                <i className="fa fa-bars"/>
-                <span className="ogs-nav-logo"/>
-            </span>
+                <span className="ogs-nav-logo-container" onClick={this.toggleLeftNav}>
+                    <i className="fa fa-bars"/>
+                    <span className="ogs-nav-logo"/>
+                </span>
 
 
-            <section className="left">
-                {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
-                {user && <Link to="/play">{_("Play")}</Link>}
-                <Link to="/observe-games">{_("Games")}</Link>
-                <Link to="/chat">{_("Chat")}</Link>
-                <Link to="/puzzles">{_("Puzzles")}</Link>
-                <Link to="/joseki">{_("Joseki")}</Link>
-                <Link to="/tournaments">{_("Tournaments")}</Link>
-                <Link to="/ladders">{_("Ladders")}</Link>
-                <Link to="/groups">{_("Groups")}</Link>
-                <Link to="/leaderboards">{_("Leaderboards")}</Link>
-                <a target="_blank" href="https://forums.online-go.com/" rel="noopener">{_("Forums")}</a>
-                {user && <Link to={`/user/view/${user.id}`}>{_("Profile")}</Link>}
-                {/*
+                <section className="left">
+                    {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
+                    {user && <Link to="/play">{_("Play")}</Link>}
+                    <Link to="/observe-games">{_("Games")}</Link>
+                    <Link to="/chat">{_("Chat")}</Link>
+                    <Link to="/puzzles">{_("Puzzles")}</Link>
+                    <Link to="/joseki">{_("Joseki")}</Link>
+                    <Link to="/tournaments">{_("Tournaments")}</Link>
+                    <Link to="/ladders">{_("Ladders")}</Link>
+                    <Link to="/groups">{_("Groups")}</Link>
+                    <Link to="/leaderboards">{_("Leaderboards")}</Link>
+                    <a target="_blank" href="https://forums.online-go.com/" rel="noopener">{_("Forums")}</a>
+                    {user && <Link to={`/user/view/${user.id}`}>{_("Profile")}</Link>}
+                    {/*
                 <a href='https://ogs.readme.io/'>{_("Help")}</a>
                 */}
-            </section>
+                </section>
 
-            { this.state.user.anonymous ?
+                { this.state.user.anonymous ?
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
@@ -323,9 +323,9 @@ export class NavBar extends React.PureComponent<{}, any> {
                         <i className="fa fa-caret-down" />
                     </span>
                 </section>
-            }
+                }
 
-            {/*
+                {/*
 
                 <Link to='/'>Incident Reports</Link>
                 <Link to='/'>Tournament Icon</Link>
@@ -337,10 +337,10 @@ export class NavBar extends React.PureComponent<{}, any> {
             */}
 
 
-            <div className={"nav-menu-modal-backdrop " + ((this.state.left_nav_active || this.state.right_nav_active) ? "active" : "")} onClick={this.closeNavbar}/>
+                <div className={"nav-menu-modal-backdrop " + ((this.state.left_nav_active || this.state.right_nav_active) ? "active" : "")} onClick={this.closeNavbar}/>
 
-            {/* Right Nav */}
-            {user &&
+                {/* Right Nav */}
+                {user &&
             <div className={"rightnav " + (this.state.right_nav_active ? "active" : "")}>
                 <div style={{'textAlign': 'right'}}>
                     <Player user={user}  disable-cache-update />
@@ -353,13 +353,13 @@ export class NavBar extends React.PureComponent<{}, any> {
                 <div className="theme-selectors">
                     <button className="theme-button light"
                         onClick={setThemeLight}
-                        ><i className="fa fa-sun-o"/></button>
+                    ><i className="fa fa-sun-o"/></button>
                     <button className="theme-button dark"
                         onClick={setThemeDark}
-                        ><i className="fa fa-moon-o"/></button>
+                    ><i className="fa fa-moon-o"/></button>
                     <button className="theme-button accessible"
                         onClick={setThemeAccessible}
-                        ><i className="fa fa-eye"/></button>
+                    ><i className="fa fa-eye"/></button>
                 </div>
 
                 <div className="theme-selectors">
@@ -373,19 +373,19 @@ export class NavBar extends React.PureComponent<{}, any> {
                     </div>
                 }
             </div>
-            }
+                }
 
 
-            {/* Left Nav */}
-            <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
-                <div className="search-row">
-                    <i className="fa fa-search"/>
-                    <input ref="omnisearch_input" type="text"
-                           className="OmniSearch-input"
-                           value={this.state.omnisearch_string}
-                           onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
-                </div>
-                {(!omnisearch_searching || null) &&
+                {/* Left Nav */}
+                <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
+                    <div className="search-row">
+                        <i className="fa fa-search"/>
+                        <input ref="omnisearch_input" type="text"
+                            className="OmniSearch-input"
+                            value={this.state.omnisearch_string}
+                            onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
+                    </div>
+                    {(!omnisearch_searching || null) &&
                     <ul id="items">
                         {user && <li><Link to="/overview"><i className="fa fa-home"></i>{_("Home")}</Link></li>}
                         {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i>{_("Sign In")}</Link></li>}
@@ -484,8 +484,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                             </ul>
                         }
                     </ul>
-                }
-                {(omnisearch_searching || null) &&
+                    }
+                    {(omnisearch_searching || null) &&
                     <div className="OmniSearch-results">
                         {(this.state.omnisearch_sitemap.length || null) &&
                             <div>
@@ -541,16 +541,16 @@ export class NavBar extends React.PureComponent<{}, any> {
                         }
 
                     </div>
-                }
+                    }
+                </div>
             </div>
-        </div>
         );
     }
 }
 
 
 
-declare var ogs_version;
+declare let ogs_version;
 let omnisearch_sitemap = {};
 
 omnisearch_sitemap[_("Home")] = [_("Home"), "/overview"];

@@ -20,14 +20,14 @@ import {TypedEventEmitterPureComponent} from "TypedEventEmitterPureComponent";
 import {dup} from "misc";
 
 let current_modal = null;
-export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events & {"close": never, "open": never}, P&{fastDismiss?: boolean}, S> {
+export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events & {"close": never; "open": never}, P&{fastDismiss?: boolean}, S> {
     constructor(props) {
         super(props);
         current_modal = this;
     }
     close = () => {
         this.emit("close");
-    }
+    };
     _open = () => {
         let container = $(ReactDOM.findDOMNode(this)).parent();
         let backdrop = $("<div class='Modal-backdrop'></div>");
@@ -57,7 +57,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events &
         $(document.body).on("keydown", on_escape);
 
         this.emit("open");
-    }
+    };
     componentDidMount() {
         this._open();
     }

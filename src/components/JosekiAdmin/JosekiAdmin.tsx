@@ -40,16 +40,16 @@ interface JosekiAdminProps {
 }
 
 const AuditTypes = [
-        "CREATED",
-        "CATEGORY_CHANGE",
-        "DESCRIPTION_CHANGE",
-        "SOURCE_CHANGE",
-        "ADD_CHILD",
-        "REMOVE_CHILD",
-        "ADD_COMMENT",
-        "REMOVE_COMMENT",
-        "DEACTIVATE",
-        "REACTIVATE"
+    "CREATED",
+    "CATEGORY_CHANGE",
+    "DESCRIPTION_CHANGE",
+    "SOURCE_CHANGE",
+    "ADD_CHILD",
+    "REMOVE_CHILD",
+    "ADD_COMMENT",
+    "REMOVE_COMMENT",
+    "DEACTIVATE",
+    "REACTIVATE"
 ];
 
 const SelectTable = selectTableHOC(ReactTable) ;
@@ -92,7 +92,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }).catch((r) => {
             console.log("Appinfo GET failed:", r);
         });
-    }
+    };
 
     revertAllSelectedChanges = () => {
         // set up to revert each selected change one at a time...
@@ -105,7 +105,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         });
         this.setState({reversions: reversions});
         this.revertSelectedChanges(this.state.selections);
-    }
+    };
 
     //  Call the server to revert each selected item in turn (one at a time, for ease of understanding what happened)
     revertSelectedChanges = (current_selections) => {
@@ -143,14 +143,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             }).catch((r) => {
                 console.log("Revert POST failed:", r);
             });
-        }
-        else {
+        } else {
             // There are no more reversions to be done, so reload the audit log to show the ones that were done
             //console.log("...reversions done.")
             this.reloadData();
             this.props.loadPositionToBoard("root"); // and reset the board, incase the status of what is displayed changed
         }
-    }
+    };
 
     reloadData = () => {
         let audits_url = this.props.server_url + `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`;
@@ -189,7 +188,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }).catch((r) => {
             console.log("Changes GET failed:", r);
         });
-    }
+    };
 
     fetchDataForTable = (table_state, instance) => {
         // this shinanigans is so that we save the table state passed in the argument to this callback
@@ -199,49 +198,47 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             current_page: table_state.page,
             current_pageSize: table_state.pageSize
         }, this.reloadData);
-    }
+    };
 
     onUserIdChange = (e) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
-        }
-        else {
+        } else {
             this.setState(
                 { filter_user_id: new_id },
                 this.reloadData
             );
         }
-    }
+    };
 
     onFilterPositionChange = (e) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
-        }
-        else {
+        } else {
             this.setState(
                 { filter_position_id: new_id },
                 this.renderFilteredPosition
             );
         }
-    }
+    };
 
     renderFilteredPosition = () => {
         this.reloadData();
         this.props.loadPositionToBoard(this.state.filter_position_id);
-    }
+    };
 
     onFilterAuditTypeChange = (e) => {
         this.setState(
             {filter_audit_type: e.target.value},
             this.reloadData
         );
-    }
+    };
 
     showVisitStats = () => {
         openModal(<JosekiStatsModal fastDismiss daily_page_visits={this.state.daily_visits}/>);
-    }
+    };
 
     toggleLockdown = () => {
         const lockdown_url = this.props.server_url + 'lockdown?lockdown=' + !(this.props.db_locked_down);
@@ -257,7 +254,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         .catch((r) => {
             console.log("Toggle lockdown failed:", r);
         });
-    }
+    };
 
     render = () => {
         // console.log("Joseki Admin render");
@@ -270,7 +267,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             <option key={i} value={AuditTypes[selection]}>{AuditTypes[selection].toLowerCase()}</option>
         ));
 
-         audit_type_selections.unshift(<option key={-1} value=""></option>);
+        audit_type_selections.unshift(<option key={-1} value=""></option>);
 
         const reversions = Array.from(this.state.reversions.values());
 
@@ -279,7 +276,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                 {this.props.user_can_edit &&
                 <div className="audit-actions">
                     <div className="audit-filters">
-                    <div className="audit-filter">
+                        <div className="audit-filter">
                             <div>Filter by position:</div>
                             <input value={this.state.filter_position_id} onChange={this.onFilterPositionChange}/>
                         </div>
@@ -401,5 +398,5 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                 }
             </div>
         );
-    }
+    };
 }

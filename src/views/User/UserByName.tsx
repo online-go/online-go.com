@@ -26,7 +26,7 @@ declare let swal;
 
 interface UserByNameProperties {
     match: {
-        params: any
+        params: any;
     };
 }
 
@@ -59,7 +59,7 @@ export class UserByName extends React.PureComponent<UserByNameProperties, any> {
         }
     }
 
-    doFetch(username:string) {
+    doFetch(username: string) {
         get("players", {username: username})
         .then((res) => {
             if (res.results.length) {

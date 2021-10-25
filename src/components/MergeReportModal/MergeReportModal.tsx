@@ -41,22 +41,22 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
 
     render() {
         return (
-          <div className="Modal MergeReportModal" ref="modal">
-              <div className="body">
-                {this.props.error && <h3>{this.props.error}</h3>}
-                <div className='lines'>
-                    {this.props.report.map((e, idx) => {
-                        let cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
-                        let msg = e[cls];
+            <div className="Modal MergeReportModal" ref="modal">
+                <div className="body">
+                    {this.props.error && <h3>{this.props.error}</h3>}
+                    <div className='lines'>
+                        {this.props.report.map((e, idx) => {
+                            let cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
+                            let msg = e[cls];
 
-                        return (<div key={idx} className={`line merge-${cls}`}><span className='fixed'>{idx + 1}</span>{msg}</div>);
-                    })}
+                            return (<div key={idx} className={`line merge-${cls}`}><span className='fixed'>{idx + 1}</span>{msg}</div>);
+                        })}
+                    </div>
                 </div>
-              </div>
-              <div className="buttons">
-                <button onClick={this.close}>{_("Close")}</button>
-              </div>
-          </div>
+                <div className="buttons">
+                    <button onClick={this.close}>{_("Close")}</button>
+                </div>
+            </div>
         );
     }
 }

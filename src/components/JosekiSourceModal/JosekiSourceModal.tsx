@@ -44,16 +44,16 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
         if (e.target.value.length < 45) {   // none longer than this at josekipedia
             this.setState({ description: e.target.value });
         }
-    }
+    };
 
     setUrl = (e) => {
         this.setState({ url: e.target.value });
-    }
+    };
 
     saveNewJoseki = (e) => {
         this.props.add_joseki_source(this.state.description, this.state.url);
         this.close();
-    }
+    };
 
     render() {
         const inputs_valid = (this.state.url.length === 0 || ValidUrl.isWebUri(this.state.url)) && this.state.description.length > 8;  // some basic sanity that they put something in

@@ -114,7 +114,7 @@ export class PuzzleEditor {
      * NOTE: Does not catch error
      * @param puzzle Puzzle
      */
-    createPuzzleCollection(puzzle: any, name:string): Promise<any> {
+    createPuzzleCollection(puzzle: any, name: string): Promise<any> {
         let postResult;
         return post("puzzles/collections/", {
             "name": name,
@@ -226,7 +226,7 @@ export class PuzzleEditor {
             goban_div.removeChild(goban_div.firstChild);
         }
 
-        let opts:GobanCanvasConfig = Object.assign({
+        let opts: GobanCanvasConfig = Object.assign({
             "board_div": goban_div,
             "interactive": true,
             "mode": "puzzle" as "puzzle",
