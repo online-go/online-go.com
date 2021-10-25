@@ -54,7 +54,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         .then(res => res.json())
         .then(body => {
             // console.log("Server response to contributors GET:", body);
-            let contributor_list = [];
+            const contributor_list = [];
             body.forEach((id, idx) => {
                 // console.log("Looking up player", id, idx);
                 const player = player_cache.lookup(id);
@@ -64,7 +64,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                     // console.log("fetching player", id, idx);
                     player_cache.fetch(id).then((p) => {
                         // console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
-                        let contributor_list = [...this.state.contributor_list];
+                        const contributor_list = [...this.state.contributor_list];
                         contributor_list[idx] = {resolved: true, player: p};
                         this.setState({contributor_list});
                     }).catch((r) => {
@@ -125,7 +125,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         // console.log("sources", this.state.source_list);
         // console.log(" filter", this.state.selected_filter);
 
-        let contributors = this.state.contributor_list.map((c, i) => {
+        const contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved) {
                 return <option key={i} value={c.player.id}>{c.player.username}</option>;
             } else {
@@ -135,7 +135,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
         contributors.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
 
-        let sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
+        const sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
         sources.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
 
         const current_contributor = (this.state.selected_filter.contributor === null) ?

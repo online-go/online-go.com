@@ -43,7 +43,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
     constructor(props: GameTimingProperties) {
         super(props);
 
-        let state: GameTimingState = {
+        const state: GameTimingState = {
         };
         this.state = state;
     }
@@ -66,10 +66,10 @@ export class GameTimings extends React.Component<GameTimingProperties> {
     };
 
     public render(): JSX.Element {
-        let game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
-        let black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-        let white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-        let game_elapseds: Array<ReturnType<typeof moment.duration>> = new Array(); // the time elapsed up to each move
+        const game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
+        const black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
+        const white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
+        const game_elapseds: Array<ReturnType<typeof moment.duration>> = new Array(); // the time elapsed up to each move
 
         let non_handicap_moves = [...this.props.moves];
         let handicap_moves = [];
@@ -164,12 +164,12 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                                 (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.white_id) >= 0
                              || (non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []).indexOf(this.props.white_id) >= 0;
                             let other_sgf_download = false;
-                            for (let player_id of non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []) {
+                            for (const player_id of non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []) {
                                 if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
                                     other_sgf_download = true;
                                 }
                             }
-                            for (let player_id of non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []) {
+                            for (const player_id of non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []) {
                                 if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
                                     other_sgf_download = true;
                                 }

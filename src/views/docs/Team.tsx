@@ -24,8 +24,8 @@ import * as data from "data";
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        let temp = array[i];
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
@@ -51,26 +51,26 @@ export class Team extends React.PureComponent<{}, any> {
     }
 
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
 
-        let country = user ? user.country : "gb";
+        const country = user ? user.country : "gb";
 
-        let fr = getLanguageFlag("french", country, "fr");
-        let en = getLanguageFlag("english", country, "us");
-        let es = getLanguageFlag("spanish", country, "es");
-        let de = getLanguageFlag("german", country, "de");
-        let cn = getLanguageFlag("chinese", country, "cn");
-        let hi = getLanguageFlag("hindi", country, "in");
-        let gb = getLanguageFlag("gb", country, "gb");
-        let se = getLanguageFlag("swedish", country, "se");
-        let cz = getLanguageFlag("czech", country, "cz");
-        let nl = getLanguageFlag("netherlands", country, "nl");
-        let jp = getLanguageFlag("japan", country, "jp");
-        let fi = getLanguageFlag("finnish", country, "fi");
-        let eng = "_England";
+        const fr = getLanguageFlag("french", country, "fr");
+        const en = getLanguageFlag("english", country, "us");
+        const es = getLanguageFlag("spanish", country, "es");
+        const de = getLanguageFlag("german", country, "de");
+        const cn = getLanguageFlag("chinese", country, "cn");
+        const hi = getLanguageFlag("hindi", country, "in");
+        const gb = getLanguageFlag("gb", country, "gb");
+        const se = getLanguageFlag("swedish", country, "se");
+        const cz = getLanguageFlag("czech", country, "cz");
+        const nl = getLanguageFlag("netherlands", country, "nl");
+        const jp = getLanguageFlag("japan", country, "jp");
+        const fi = getLanguageFlag("finnish", country, "fi");
+        const eng = "_England";
 
-        let moderators = [
+        const moderators = [
             {"id": 784   , "country": ["ar"] , "languages": [es, en]} , //mlopezviedma
             {"id": 781   , "country": ["us"] , "languages": [en]} , //crocrobot
             {"id": 69627 , "country": ["us"] , "languages": [cn, en]} , //xhu98
@@ -97,7 +97,7 @@ export class Team extends React.PureComponent<{}, any> {
             {"id": 193671, "country": ["nl"] , "languages": [nl, gb, de]} , //gennan
             {"id": 52288 , "country": ["se"] , "languages": [se, en]} //le_4tc
         ];
-        let developers = [
+        const developers = [
             {"id": 4, "username": "matburt", "country": ["us"], "languages": [en]},
             {"id": 1, "username": "anoek", "country": ["us"], "languages": [en]},
         ];

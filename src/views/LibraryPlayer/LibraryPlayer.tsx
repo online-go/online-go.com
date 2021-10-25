@@ -56,7 +56,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
     }
     UNSAFE_componentWillReceiveProps(next_props) {
-        let update: any = {};
+        const update: any = {};
 
         if (this.props.match.params.player_id !== next_props.match.params.player_id) {
             this.refresh(parseInt(next_props.match.params.player_id)).then(ignore).catch(ignore);
@@ -80,13 +80,13 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         abort_requests_in_flight("library/");
     }
     refresh(player_id: number) {
-        let promise = get("library/%%", player_id);
+        const promise = get("library/%%", player_id);
 
         promise
         .then((library) => {
-            let collections = {};
+            const collections = {};
 
-            let root = {
+            const root = {
                 id: 0,
                 name: "",
                 "private": "",
@@ -98,8 +98,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
 
             collections[0] = root;
 
-            for (let c of library.collections) {
-                let collection = {
+            for (const c of library.collections) {
+                const collection = {
                     id: c[0],
                     name: c[1],
                     "private": c[2],
@@ -110,7 +110,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                 collections[collection.id] = collection;
             }
 
-            for (let id in collections) {
+            for (const id in collections) {
                 if (id === "0") {
                     continue;
                 }
@@ -119,8 +119,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                 collections[id].parent.collections.push(collections[id]);
             }
 
-            for (let g of library.games) {
-                let game = {
+            for (const g of library.games) {
+                const game = {
                     "entry_id": g[0],
                     "game_id": g[1],
                     "collection_id": g[2],
@@ -152,15 +152,15 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                 game.collection.games.push(game);
             }
 
-            for (let collection_id in collections) {
-                let collection = collections[collection_id];
+            for (const collection_id in collections) {
+                const collection = collections[collection_id];
                 collection.collections.sort((a, b) => a.name.localeCompare(b));
                 collection.games.sort((a, b) => a.name.localeCompare(b));
             }
 
-            let ct = (collection) => {
+            const ct = (collection) => {
                 let acc = 0;
-                for (let c of collection.collections) {
+                for (const c of collection.collections) {
                     acc += ct(c);
                 }
                 acc += collection.games.length;
@@ -193,7 +193,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         browserHistory.push(`/library/${this.state.player_id}/${collection_id}`);
     }
     setCheckedGame(entry_id, event) {
-        let new_games_checked = Object.assign({}, this.state.games_checked);
+        const new_games_checked = Object.assign({}, this.state.games_checked);
         if (event.target.checked) {
             new_games_checked[entry_id] = true;
         } else {
@@ -225,7 +225,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         });
     };
     deleteCollection = () => {
-        let parent = this.state.collections[this.state.collection_id].parent;
+        const parent = this.state.collections[this.state.collection_id].parent;
         post("library/%%", this.state.player_id, {
             delete_collections: [this.state.collection_id]
         })
@@ -247,9 +247,9 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         this.setState({"games_checked": {}});
     };
     toggleAllGamesChecked = () => {
-        let collection = this.state.collections[this.state.collection_id];
+        const collection = this.state.collections[this.state.collection_id];
         let all_games_checked = true;
-        for (let g of collection.games) {
+        for (const g of collection.games) {
             if (!(g.entry_id in this.state.games_checked)) {
                 all_games_checked = false;
                 break;
@@ -258,8 +258,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         if (all_games_checked) {
             this.setState({games_checked: {}});
         } else {
-            let new_checked = {};
-            for (let g of collection.games) {
+            const new_checked = {};
+            for (const g of collection.games) {
                 new_checked[g.entry_id] = true;
             }
             this.setState({games_checked: new_checked});
@@ -267,13 +267,13 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     };
 
     render() {
-        let owner = this.state.player_id === data.get("user").id || null;
+        const owner = this.state.player_id === data.get("user").id || null;
         if (this.state.collections == null) {
             return <div className="LibraryPlayer"/>;
         }
 
-        let bread_crumbs = [];
-        let collection = this.state.collections[this.state.collection_id];
+        const bread_crumbs = [];
+        const collection = this.state.collections[this.state.collection_id];
 
         if (!collection) {
             return <div className="LibraryPlayer"><h1>{_("This library collection doesn't exist or is private")}</h1></div>;
@@ -286,7 +286,7 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
         } while (cur);
 
         let all_games_checked = true;
-        for (let g of collection.games) {
+        for (const g of collection.games) {
             if (!(g.entry_id in this.state.games_checked)) {
                 all_games_checked = false;
                 break;

@@ -31,7 +31,7 @@ const getSuggestionValue = (suggestion) => {
 
 const renderSuggestion = suggestion => ( <div>{suggestion.name}</div>);
 
-let groups_by_name = {};
+const groups_by_name = {};
 
 export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProperties, any> {
     last_on_complete_username = null;
@@ -78,7 +78,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
         if (value.length > 1) {
             get("groups/", {name__istartswith: value, page_size: 10})
             .then((res) => {
-                for (let group of res.results) {
+                for (const group of res.results) {
                     groups_by_name[group.name] = group;
                 }
 
@@ -122,7 +122,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
     };
 
     render() {
-        let { suggestions, value } = this.state;
+        const { suggestions, value } = this.state;
 
         const inputProps = {
             placeholder: this.props.placeholder || _("Group name"),

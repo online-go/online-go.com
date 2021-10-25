@@ -48,7 +48,7 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
             return null;
         }
 
-        let t = (moment(this.state.tournament.expiration).toDate().getTime() - Date.now()) / 1000;
+        const t = (moment(this.state.tournament.expiration).toDate().getTime() - Date.now()) / 1000;
         if (t < 0) {
             setTimeout(() => {
                 data.set("active-tournament", null);
@@ -56,7 +56,7 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
             return null;
         }
 
-        let m = Math.floor(t / 60);
+        const m = Math.floor(t / 60);
         let s: any = Math.floor(t - (m * 60));
         if (s < 10) {
             s = "0" + s;

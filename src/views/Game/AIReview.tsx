@@ -78,7 +78,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     constructor(props: AIReviewProperties) {
         super(props);
-        let state: AIReviewState = {
+        const state: AIReviewState = {
             loading: true,
             reviewing: false,
             ai_reviews: [],
@@ -115,7 +115,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return null;
     }
     getAIReviewList() {
-        let game_id = this.getGameId();
+        const game_id = this.getGameId();
         if (!game_id) {
             return;
         }
@@ -186,14 +186,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return;
         }
 
-        let ai_review: JGOFAIReview = this.ai_review;
+        const ai_review: JGOFAIReview = this.ai_review;
 
         if (!ai_review.win_rates) {
             ai_review.win_rates = [];
         }
 
-        for (let k in ai_review.moves) {
-            let move = ai_review.moves[k];
+        for (const k in ai_review.moves) {
+            const move = ai_review.moves[k];
             ai_review.win_rates[move.move_number] = move.win_rate;
         }
 
@@ -237,7 +237,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.syncAIReview();
     };
     startNewAIReview(analysis_type: "fast" | "full", engine: "leela_zero" | "katago") {
-        let user = data.get('user');
+        const user = data.get('user');
 
         if (user.anonymous) {
             swal(_("Please sign in first"));
@@ -264,12 +264,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         if (!this.ai_review || this.ai_review.uuid !== ai_review.uuid) {
             this.ai_review = ai_review;
         } else {
-            for (let k in ai_review) {
+            for (const k in ai_review) {
                 //console.log("Updating", k, ai_review[k]);
                 if (k !== 'moves' || !this.ai_review['moves']) {
                     this.ai_review[k] = ai_review[k];
                 } else {
-                    for (let move in ai_review['moves']) {
+                    for (const move in ai_review['moves']) {
                         this.ai_review['moves'][move] = ai_review['moves'][move];
                     }
                 }
@@ -285,18 +285,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     updateAiReview = (data: any) => {
         if (this.deferred_queue) {
-            for (let key in data) {
+            for (const key in data) {
                 this.deferred_queue[key] = data[key];
             }
         } else {
             this.deferred_queue = data;
             this.deferred_update_timeout = setTimeout(() => {
-                let data = this.deferred_queue;
+                const data = this.deferred_queue;
                 delete this.deferred_update_timeout;
                 delete this.deferred_queue;
 
-                for (let key in data) {
-                    let value = data[key];
+                for (const key in data) {
+                    const value = data[key];
                     if (key === 'metadata') {
                         this.updateAIReviewMetadata(value as JGOFAIReview);
                     } else if (key === 'error') {
@@ -311,8 +311,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             return;
                         }
 
-                        let m = key.match(/move-([0-9]+)/);
-                        let move_number = parseInt(m[1]);
+                        const m = key.match(/move-([0-9]+)/);
+                        const move_number = parseInt(m[1]);
                         this.ai_review.moves[move_number] = value;
                     } else if (/variation-([0-9]+)-([a-z.]+)/.test(key)) {
                         if (!this.ai_review.analyzed_variations) {
@@ -322,8 +322,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             console.warn("AI Review move received but ai review not initialized yet");
                             return;
                         }
-                        let m = key.match(/variation-([0-9a-z.A-Z-]+)/);
-                        let varkey = m[1];
+                        const m = key.match(/variation-([0-9a-z.A-Z-]+)/);
+                        const varkey = m[1];
                         this.ai_review.analyzed_variations[varkey] = value;
                     } else {
                         console.warn(`Unrecognized key in updateAiReview data: ${key}`, value);
@@ -346,19 +346,19 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     };
 
     private getVariationReviewEntries(): Array<AIReviewEntry> {
-        let ret: Array<AIReviewEntry> = [];
+        const ret: Array<AIReviewEntry> = [];
         let cur_move = this.props.move;
-        let trunk_move = cur_move.getBranchPoint();
-        let trunk_move_string = trunk_move.getMoveStringToThisPoint();
+        const trunk_move = cur_move.getBranchPoint();
+        const trunk_move_string = trunk_move.getMoveStringToThisPoint();
 
         while (cur_move.id !== trunk_move.id) {
-            let cur_move_string = cur_move.getMoveStringToThisPoint();
-            let varstring = cur_move_string.slice(trunk_move_string.length);
-            let varkey = `${trunk_move.move_number}-${varstring}`;
+            const cur_move_string = cur_move.getMoveStringToThisPoint();
+            const varstring = cur_move_string.slice(trunk_move_string.length);
+            const varkey = `${trunk_move.move_number}-${varstring}`;
 
             // if we have an interactive review move, that's what we're interested in
             if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
-                let analysis = this.ai_review.analyzed_variations[varkey];
+                const analysis = this.ai_review.analyzed_variations[varkey];
                 ret.push({
                     move_number: analysis.move_number,
                     win_rate: analysis.win_rate,
@@ -384,15 +384,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let next_score: number;
         let next_move = null;
         let next_move_delta_win_rate = null;
-        let cur_move = this.props.move;
-        let trunk_move = cur_move.getBranchPoint();
-        let move_number = trunk_move.move_number;
+        const cur_move = this.props.move;
+        const trunk_move = cur_move.getBranchPoint();
+        const move_number = trunk_move.move_number;
         let next_move_pretty_coords: string = '';
 
-        let trunk_move_string = trunk_move.getMoveStringToThisPoint();
-        let cur_move_string = cur_move.getMoveStringToThisPoint();
-        let varstring = cur_move_string.slice(trunk_move_string.length);
-        let varkey = `${trunk_move.move_number}-${varstring}`;
+        const trunk_move_string = trunk_move.getMoveStringToThisPoint();
+        const cur_move_string = cur_move.getMoveStringToThisPoint();
+        const varstring = cur_move_string.slice(trunk_move_string.length);
+        const varkey = `${trunk_move.move_number}-${varstring}`;
         let have_variation_results = false;
 
         // if we have an interactive review move, display that.
@@ -410,8 +410,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
         }
 
-        let win_rates = this.ai_review?.win_rates || [];
-        let scores = this.ai_review?.scores || [];
+        const win_rates = this.ai_review?.win_rates || [];
+        const scores = this.ai_review?.scores || [];
 
         if (ai_review_move) {
             win_rate = ai_review_move.win_rate;
@@ -432,13 +432,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        let marks: any = {};
-        let colored_circles = [];
+        const marks: any = {};
+        const colored_circles = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
             if ((cur_move.trunk || have_variation_results) && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
                 next_move = cur_move.trunk_next;
-                let branches = ai_review_move.branches.slice(0, 6);
+                const branches = ai_review_move.branches.slice(0, 6);
                 //let branches = ai_review_move.branches;
 
                 // Ensure we have an entry in branches for our next move,
@@ -447,7 +447,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 // make sure it's win rate aligns with what we determined
                 // it was upon further analysis (use next move's win rate)
                 let found_next_move = false;
-                for (let branch of branches) {
+                for (const branch of branches) {
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
                         branch.win_rate = next_win_rate;
@@ -465,10 +465,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
 
                 /* Generate the heatmap, blue move, and triangle move */
-                let strength = this.ai_review.strength;
+                const strength = this.ai_review.strength;
                 heatmap = [];
                 for (let y = 0; y < this.props.game.goban.engine.height; y++) {
-                    let r = [];
+                    const r = [];
                     for (let x = 0; x < this.props.game.goban.engine.width; x++) {
                         r.push(0);
                     }
@@ -476,8 +476,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
 
                 for (let i = 0 ; i < branches.length; ++i) {
-                    let branch = branches[i];
-                    let mv = branch.moves[0];
+                    const branch = branches[i];
+                    const mv = branch.moves[0];
 
                     if (mv.x === -1) {
                         continue;
@@ -502,7 +502,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             : JGOFNumericPlayerColor.BLACK;
                     }
 
-                    let delta: number = this.state.use_score && this.ai_review.scores
+                    const delta: number = this.state.use_score && this.ai_review.scores
                         ? (next_player === JGOFNumericPlayerColor.WHITE
                             ? (ai_review_move.score - branch.score)
                             : (branch.score) - (ai_review_move.score))
@@ -526,7 +526,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         this.props.game.goban.setSubscriptMark(mv.x, mv.y, key, true);
                     }
 
-                    let circle: ColoredCircle = {
+                    const circle: ColoredCircle = {
                         move: branch.moves[0],
                         color: 'rgba(0,0,0,0)',
                     };
@@ -594,7 +594,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return false;
         }
 
-        let user = data.get('user');
+        const user = data.get('user');
         if (user.anonymous) {
             //console.debug("Anonymous user, not performing analysis of variation");
             return false;
@@ -604,9 +604,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return false;
         }
 
-        let black_id = this.props.game.goban?.engine?.config?.black_player_id;
-        let white_id = this.props.game.goban?.engine?.config?.white_player_id;
-        let creator_id = this.props.game.creator_id;
+        const black_id = this.props.game.goban?.engine?.config?.black_player_id;
+        const white_id = this.props.game.goban?.engine?.config?.white_player_id;
+        const creator_id = this.props.game.creator_id;
 
         if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
             //console.debug("Not performing analysis of variation for non player");
@@ -637,7 +637,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
      */
     private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks): boolean {
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
-            let ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
+            const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
                 continue;
             }
@@ -646,11 +646,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             trunk_move_string = trunk_move_string.slice(0, trunk_move_string.length - 2 * j);
 
-            let cur_move_string = cur_move.getMoveStringToThisPoint();
+            const cur_move_string = cur_move.getMoveStringToThisPoint();
             let next_moves = null;
 
-            for (let branch of ai_review_move.branches) {
-                let move_str: string = trunk_move_string + GoMath.encodeMoves(branch.moves);
+            for (const branch of ai_review_move.branches) {
+                const move_str: string = trunk_move_string + GoMath.encodeMoves(branch.moves);
                 if (move_str.startsWith(cur_move_string)) {
                     next_moves = move_str.slice(cur_move_string.length, Infinity);
                     break;
@@ -658,13 +658,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
 
             if (next_moves) {
-                let decoded_moves = this.props.game.goban.engine.decodeMoves(next_moves);
+                const decoded_moves = this.props.game.goban.engine.decodeMoves(next_moves);
                 let black = "";
                 let white = "";
 
                 for (let i = 0; i < decoded_moves.length; ++i) {
-                    let mv = decoded_moves[i];
-                    let encoded_mv = GoMath.encodeMove(mv.x, mv.y);
+                    const mv = decoded_moves[i];
+                    const encoded_mv = GoMath.encodeMove(mv.x, mv.y);
                     marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
                     if (((this.props.game.goban.engine.player - 1) + i) % 2 === 1) {
                         white += encoded_mv;
@@ -721,7 +721,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let show_full_ai_review_button: null | true = null;
 
         try {
-            let user = data.get('user');
+            const user = data.get('user');
             if (
                 user.id === this.props.game.creator_id ||
                 user.id === this.props.game.goban.engine.players.black.id ||
@@ -739,17 +739,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
 
-        let [
+        const [
             win_rate,
             score,
             next_move_delta_win_rate,
             next_move_pretty_coords,
         ] = this.updateHighlightsMarksAndHeatmaps();
 
-        let win_rate_p = win_rate * 100.0;
-        let next_move_delta_p = next_move_delta_win_rate * 100.0;
+        const win_rate_p = win_rate * 100.0;
+        const next_move_delta_p = next_move_delta_win_rate * 100.0;
 
-        let ai_review_chart_entries: Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
+        const ai_review_chart_entries: Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
             return {
                 move_number: idx,
                 win_rate: x,
@@ -758,12 +758,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         }) || [];
 
-        let ai_review_chart_variation_entries: Array<AIReviewEntry> = this.getVariationReviewEntries();
+        const ai_review_chart_variation_entries: Array<AIReviewEntry> = this.getVariationReviewEntries();
 
-        let cur_move = this.props.move;
-        let trunk_move = cur_move.getBranchPoint();
-        let move_number = trunk_move.move_number;
-        let variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
+        const cur_move = this.props.move;
+        const trunk_move = cur_move.getBranchPoint();
+        const move_number = trunk_move.move_number;
+        const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
         return (
             <div className='AIReview'>
@@ -786,8 +786,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         isSearchable={false}
                         components = {{
                             Option: ({innerRef, innerProps, isFocused, data, getValue}) => {
-                                let value = getValue();
-                                let isSelected = value && value[0].id === data.id;
+                                const value = getValue();
+                                const isSelected = value && value[0].id === data.id;
 
                                 return (
                                     <div ref={innerRef} {...innerProps}
@@ -844,7 +844,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 </div>
                             ),
                             MenuList: (props) => {
-                                let goban = this.props.game.goban;
+                                const goban = this.props.game.goban;
 
                                 return (
                                     <components.MenuList {...props}>
@@ -958,15 +958,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return null;
         }
 
-        let lst = computeWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
-        let more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
+        const lst = computeWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
+        const more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
 
         return (
             <div className='worst-move-list-container'>
                 <div className='move-list'>
                     {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}:
                     {lst.slice(0, 3).map((de, idx) => {
-                        let pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
+                        const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
                             <span
                                 key={`${idx}-${de.move_number}`}

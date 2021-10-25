@@ -199,7 +199,7 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<Tex
     }
 
     let fragments = [profanity_filter(body)];
-    for (let r of replacements) {
+    for (const r of replacements) {
         fragments = [].concat.apply([], fragments.map((text_fragment) => {
             return text_fragment.split(r.split);
         }));
@@ -208,8 +208,8 @@ export function chat_markup(body: string, extra_pattern_replacements?: Array<Tex
     fragments = fragments.filter((value: string) => (value !== ''));
 
     return fragments.map((fragment, i) => {
-        for (let r of replacements) {
-            let m = r.pattern.exec(fragment);
+        for (const r of replacements) {
+            const m = r.pattern.exec(fragment);
             if (m) {
                 return r.replacement(m, i);
             }

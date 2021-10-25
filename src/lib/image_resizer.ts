@@ -46,7 +46,7 @@ export function image_resizer(file: File, max_width: number, max_height?: number
     const resize = (): File => {
         let width = image.width;
         let height = image.height;
-        let aspect = width / height;
+        const aspect = width / height;
 
         if (width > max_width) {
             width = max_width;
@@ -62,8 +62,8 @@ export function image_resizer(file: File, max_width: number, max_height?: number
         canvas.width = width;
         canvas.height = height;
         canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-        let dataUrl = canvas.toDataURL("image/png");
-        let blob: any = dataURItoBlob(dataUrl);
+        const dataUrl = canvas.toDataURL("image/png");
+        const blob: any = dataURItoBlob(dataUrl);
         //blob.lastModifiedDate = file.lastModifiedDate;
         blob.lastModified = file.lastModified;
         blob.name = file.name;

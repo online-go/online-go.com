@@ -37,7 +37,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
     componentDidMount = () => {
         super.componentDidMount(); /* this.close() doesn't work if you don't do this */
-        let user = data.get('config.user');
+        const user = data.get('config.user');
         this.setState({ notes: data.get(`player-notes.${user.id}.${this.props.playerId}`) });
     };
 
@@ -49,8 +49,8 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     };
 
     saveNotes = () => {
-        let user = data.get('config.user');
-        let notes = this.state.notes.trim();
+        const user = data.get('config.user');
+        const notes = this.state.notes.trim();
         if (notes) {
             data.set(`player-notes.${user.id}.${this.props.playerId}`, notes, data.Replication.REMOTE_OVERWRITES_LOCAL);
         } else {

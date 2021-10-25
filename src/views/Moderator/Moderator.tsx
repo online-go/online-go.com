@@ -206,20 +206,20 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 
     colorTable() {
-        let users = document.getElementsByClassName('userlog')[1].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const users = document.getElementsByClassName('userlog')[1].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
         if (users.length === 0) {
             return;
         }
 
         for (let i = 0; i < users.length; i++) {
-            let m = (parseInt(users[i].getElementsByTagName('td')[3].getElementsByTagName('span')[0].innerHTML));
+            const m = (parseInt(users[i].getElementsByTagName('td')[3].getElementsByTagName('span')[0].innerHTML));
 
             if (m > 1) {
                 users[i].getElementsByTagName("td")[3].style.backgroundColor = "hsl(0,80%,20%)";
             }
-            let l = (parseInt(users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0].innerHTML) + 12);
-            let j = (l * 15) % 360;
+            const l = (parseInt(users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0].innerHTML) + 12);
+            const j = (l * 15) % 360;
             if (l !== 12) {
                 users[i].getElementsByTagName("td")[6].style.backgroundColor = "hsl(" + j + (l % 3 === 1 ? ",70%,15%)" : (l % 3 === 2 ? ",70%,30%)" : ",70%,60%)"));
 
@@ -232,7 +232,7 @@ export class ColorTableToggle extends React.Component<{}, any> {
             }
 
             if (users[i].getElementsByTagName('td')[8].getElementsByTagName('div').length === 0) {
-                let k = users[i].getElementsByTagName('td')[8].getElementsByTagName('span')[0].innerHTML.split('@');
+                const k = users[i].getElementsByTagName('td')[8].getElementsByTagName('span')[0].innerHTML.split('@');
                 if (k.length === 2) {
                     if (!whitelist.includes(k[1])) {
                         users[i].getElementsByTagName('td')[8].innerHTML = '<div><span class="monospace small clip">' + k[0] + '@</span><span style="color:#9dc6ff">' + k[1] + '</span></div>';
@@ -240,7 +240,7 @@ export class ColorTableToggle extends React.Component<{}, any> {
                     if (greylist.includes(k[1])) {
                         users[i].getElementsByTagName('td')[8].style.backgroundColor = "salmon";
                     }
-                    let k1 = k[1].split(".");
+                    const k1 = k[1].split(".");
                     if (k1.length > 1 && greylist2.includes(k1[k1.length - 1])) {
                         users[i].getElementsByTagName('td')[8].style.backgroundColor = "salmon";
                     }
@@ -248,12 +248,12 @@ export class ColorTableToggle extends React.Component<{}, any> {
             }
         }
 
-        let users2 = document.getElementsByClassName('Player-username');
+        const users2 = document.getElementsByClassName('Player-username');
 
         for (let i = 0; i < users2.length; i++) {
             let s = "";
             if (!users2[i].classList.contains('checked')) {
-                let chars = users2[i].innerHTML.split("");
+                const chars = users2[i].innerHTML.split("");
                 for (let j = 0; j < chars.length; j++) {
                     if (chars[j] >= 'A' && chars[j] <= 'Z') {
                         s += '<span style="color:#99ddff">' + chars[j] + '</span>';
@@ -272,7 +272,7 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 
     componentDidMount() {
-        let c = data.get("table-color-default-on", "");
+        const c = data.get("table-color-default-on", "");
         if (c === true) {
             this.setState(prevState => ({
                 onDefault: !prevState.onDefault

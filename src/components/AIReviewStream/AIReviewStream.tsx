@@ -22,7 +22,7 @@ import { ai_socket } from "sockets";
 import { MoveTree } from "goban";
 
 
-let analysis_requests_made: {[id: string]: boolean} = {};
+const analysis_requests_made: {[id: string]: boolean} = {};
 
 interface AIReviewStreamProperties {
     uuid?: string;
@@ -49,8 +49,8 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
         }
 
         function onJwtChange() {
-            let user = data.get('config.user');
-            let user_jwt = data.get('config.user_jwt');
+            const user = data.get('config.user');
+            const user_jwt = data.get('config.user_jwt');
             if (!user.anonymous && user_jwt) {
                 ai_socket.send('authenticate', {jwt: user_jwt});
             }
@@ -91,17 +91,17 @@ export function ai_request_variation_analysis(uuid, game_id, ai_review_id, cur_m
         return;
     }
 
-    let trunk_move_string = trunk_move.getMoveStringToThisPoint();
-    let cur_move_string = cur_move.getMoveStringToThisPoint();
-    let variation = cur_move_string.slice(trunk_move_string.length);
+    const trunk_move_string = trunk_move.getMoveStringToThisPoint();
+    const cur_move_string = cur_move.getMoveStringToThisPoint();
+    const variation = cur_move_string.slice(trunk_move_string.length);
 
-    let key = `${uuid}-${game_id}-${ai_review_id}-${trunk_move.move_number}-${variation}`;
+    const key = `${uuid}-${game_id}-${ai_review_id}-${trunk_move.move_number}-${variation}`;
     if (key in analysis_requests_made) {
         return;
     }
     analysis_requests_made[key] = true;
 
-    let req = {
+    const req = {
         uuid: uuid,
         game_id: game_id,
         ai_review_id: ai_review_id,

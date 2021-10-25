@@ -41,7 +41,7 @@ const ReactNumberFormat: any = NumberFormat;
 interface SupporterProperties {
 }
 
-let amount_steps = {
+const amount_steps = {
     'month': [
         3.0,
         5.0,
@@ -71,7 +71,7 @@ for (let i = 0; i < amount_steps.month.length; ++i) {
 // aud, cad, eur, gbp, hkd, jpy, nzd, sgd, or usd
 
 /* Decimal information from: http://apps.cybersource.com/library/documentation/sbc/quickref/currencies.pdf */
-let currency_list = [
+const currency_list = [
     {'name': 'United States Dollar'        , 'iso': 'USD' ,  'flag': 'us', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 0, 'locales': [/*default*/]},
     {'name': 'Euro'                        , 'iso': 'EUR' ,  'flag': 'eu', 'scale': 1.0  , 'decimals': 2, 'cc': 1, 'paypal': 1, 'alipay': 1, 'sepa': 1, 'locales':
         ['AT', 'BE', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LU', 'MT', 'NL', 'PT', 'SK', 'SL', 'ES']} ,
@@ -105,20 +105,20 @@ let currency_list = [
 ];
 
 // put here locales for that we should show images/text/etc from right to left
-let locale_details = [
+const locale_details = [
     { 'name': 'ja', rtl: 1 },
 ];
 
-let currency_map = {};
-for (let x of currency_list) {
+const currency_map = {};
+for (const x of currency_list) {
     currency_map[x.iso] = x;
 }
 
-let active_currency_list = currency_list.filter(currency => currency.iso !== 'ARS' && currency.iso !== 'INR');
+const active_currency_list = currency_list.filter(currency => currency.iso !== 'ARS' && currency.iso !== 'INR');
 
 data.watch('config.supporter_currency_scale', (scales) => {
     for (let i = 0; i < currency_list.length; ++i) {
-        let iso = currency_list[i].iso;
+        const iso = currency_list[i].iso;
         if (iso in scales) {
             currency_list[i].scale = scales[iso];
         } else {
@@ -128,17 +128,17 @@ data.watch('config.supporter_currency_scale', (scales) => {
 });
 
 
-let interval_list = [
+const interval_list = [
     {'name': _('month'),    'interval': 'month'},
     {'name': _('year'),     'interval': 'year'},
     {'name': _('one time'), 'interval': 'one time'},
 ];
-let interval_map = {};
-for (let x of interval_list) {
+const interval_map = {};
+for (const x of interval_list) {
     interval_map[x.interval] = x;
 }
 
-let interval_description = {
+const interval_description = {
     'month': _('Monthly donation'),
     'year': _('Yearly donation'),
     'one time': _('One time donation'),
@@ -159,7 +159,7 @@ function toFixedWithLocale(n: number, decimals: number = 2) {
 }
 
 function formatMoney(currency: string, n: number, no_fraction_digits: boolean = false): string {
-    let ret = Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency}).format(n);
+    const ret = Intl.NumberFormat(navigator.language, { style: 'currency', currency: currency}).format(n);
 
     if (no_fraction_digits) {
         return ret.replace(/[.,].{2}$/, "");
@@ -172,7 +172,7 @@ function filterCurrencyOption({label, value, data}, text: string): boolean {
         text = "";
     }
     text = text.toLowerCase();
-    let currency = data;
+    const currency = data;
 
     if (currency.iso.toLowerCase().indexOf(text) >= 0) {
         return true;
@@ -189,7 +189,7 @@ function isPaypalEnabled(iso: string): boolean {
 
 // gets direction of items withing contener by current_language
 function getDirection(lang: string): string {
-    let defaultValue = "ltr";
+    const defaultValue = "ltr";
     for (let i = 0; i < locale_details.length; ++i) {
         if (locale_details[i].name === lang) {
             return locale_details[i].rtl === 1 ? "rtl" : defaultValue;
@@ -212,15 +212,15 @@ function scaledAmountToFloat(amount: number, currency: string) {
 }
 
 function guessCurrency() {
-    let currency = preferences.get('supporter.currency');
+    const currency = preferences.get('supporter.currency');
     if (currency !== 'auto') {
         return currency;
     }
 
-    let lang = navigator.language;
+    const lang = navigator.language;
 
-    for (let currency of currency_list) {
-        for (let locale of currency.locales) {
+    for (const currency of currency_list) {
+        for (const locale of currency.locales) {
             if (navigator.language.toUpperCase().indexOf(locale) > 0) {
                 return currency.iso;
             }
@@ -234,7 +234,7 @@ function guessCurrency() {
 
 let DEPRECATED_stripe_checkout_js_promise;
 let stripe_checkout_js_promise;
-let checkout = null;
+const checkout = null;
 
 declare let Stripe;
 let stripe;
@@ -252,7 +252,7 @@ try {
 
     if (data.get('user').id === 1) {
         braintree_js_promise = new Promise((resolve, reject) => {
-            let script = document.createElement("script");
+            const script = document.createElement("script");
             script.src = "https://js.braintreegateway.com/v1/braintree.js";
             script.async = true;
             script.charset = "utf-8";
@@ -317,7 +317,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
         if (!DEPRECATED_stripe_checkout_js_promise) {
             DEPRECATED_stripe_checkout_js_promise = new Promise<void>((resolve, reject) => {
-                let script = document.createElement("script");
+                const script = document.createElement("script");
                 script.src = "https://checkout.stripe.com/checkout.js";
                 script.async = true;
                 script.charset = "utf-8";
@@ -331,7 +331,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             });
 
             stripe_checkout_js_promise = new Promise<void>((resolve, reject) => {
-                let script = document.createElement("script");
+                const script = document.createElement("script");
                 script.src = "https://js.stripe.com/v3";
                 script.async = true;
                 script.charset = "utf-8";
@@ -383,7 +383,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     setCurrency = (currency_option) => {
         console.log(currency_option);
         const currency = currency_option.iso;
-        let custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
+        const custom_amount_scale = (1.0 / getCurrencyScale(this.state.currency)) * getCurrencyScale(currency);
 
         if (currency) {
             this.setState({
@@ -395,8 +395,8 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     };
     setInterval = (interval_option) => {
         if (interval_option) {
-            let interval = interval_option.interval;
-            let step = this.state.amount_step;
+            const interval = interval_option.interval;
+            const step = this.state.amount_step;
 
             this.setState({
                 interval: interval,
@@ -451,7 +451,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
 
     /**** DEPRECATED BRAINTREE CODE ****/
     DEPRECATEDprocessBraintreeCC = () => {
-        let amount = this.getAmount();
+        const amount = this.getAmount();
 
         if (amount < 1.0) {
             return;
@@ -474,11 +474,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             "cccvc": 123,
         })
         .then((obj) => {
-            let payment_account = obj.payment_account;
-            let payment_method = obj.payment_method;
+            const payment_account = obj.payment_account;
+            const payment_method = obj.payment_method;
             //this.processSupporterSignup(payment_method, amount)
-            let currency = this.state.currency;
-            let interval = this.state.interval;
+            const currency = this.state.currency;
+            const interval = this.state.interval;
             this.processSupporterSignup('braintree', payment_method, amount, currency, interval)
             .then(() => {
                 window.location.reload();
@@ -493,7 +493,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             return;
         }
 
-        let amount = this.getAmount();
+        const amount = this.getAmount();
 
         if (amount < 1.0) {
             return;
@@ -503,10 +503,10 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         this.createPaymentAccountAndMethod("paypal", null)
         .then((obj) => {
             console.log("Preparing paypal purchase", obj);
-            let payment_account = obj.payment_account;
-            let payment_method = obj.payment_method;
-            let currency = this.state.currency;
-            let interval = this.state.interval;
+            const payment_account = obj.payment_account;
+            const payment_method = obj.payment_method;
+            const currency = this.state.currency;
+            const interval = this.state.interval;
             this.processSupporterSignup('paypal', payment_method, amount, currency, interval)
             .then(() => {
                 console.log("Navigating to paypal purchase page");
@@ -522,7 +522,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     };
 
     createPaymentAccountAndMethod(vendor, details) {
-        let obj = {
+        const obj = {
             "payment_vendor": vendor,
         };
         if (details) {
@@ -539,7 +539,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         return post("me/payment_accounts", obj);
     }
     processSupporterSignup(vendor, payment_method, amount, currency, interval) {
-        let promise = post("me/supporter", {
+        const promise = post("me/supporter", {
             "vendor": vendor,
             "payment_method": payment_method,
             "price": amount,
@@ -581,12 +581,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
         amount *= getIntervalScale(this.state.interval);
         let step = 0;
         for (; step < amount_steps[this.state.interval].length; ++step) {
-            let e = 0.0001;
+            const e = 0.0001;
             if (amount > amount_steps[this.state.interval][step] - e && amount < amount_steps[this.state.interval][step] + e) {
                 break;
             }
         }
-        let amt = amount_steps[this.state.interval][step];
+        const amt = amount_steps[this.state.interval][step];
 
         this.setState({
             amount_step: step,
@@ -606,11 +606,11 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             return null;
         }
 
-        let user = data.get("user");
-        let processing = this.state.processing;
-        let cdn_release = data.get("config.cdn_release");
+        const user = data.get("user");
+        const processing = this.state.processing;
+        const cdn_release = data.get("config.cdn_release");
 
-        let supporter_level = (
+        const supporter_level = (
             <div className='supporter-text-container'>
 
                 <div className='SiteSupporterText'>
@@ -675,7 +675,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             </div>
         );
 
-        let supporter_text = (
+        const supporter_text = (
             <div className='supporter-text-container'>
                 <div className='supporter-text'>
                     <SiteSupporterText />
@@ -795,12 +795,12 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                 <div id="supporter-current-methods">
 
                     {this.state.recurring_donations.map((recurring_donation, idx) => {
-                        let price = recurring_donation.price;
-                        let currency = recurring_donation.currency;
-                        let interval = recurring_donation.interval;
-                        let vendor = recurring_donation.account.payment_vendor;
-                        let account = recurring_donation.account;
-                        let method = recurring_donation.method;
+                        const price = recurring_donation.price;
+                        const currency = recurring_donation.currency;
+                        const interval = recurring_donation.interval;
+                        const vendor = recurring_donation.account.payment_vendor;
+                        const account = recurring_donation.account;
+                        const method = recurring_donation.method;
 
                         return (
                             <div key={recurring_donation.id}>

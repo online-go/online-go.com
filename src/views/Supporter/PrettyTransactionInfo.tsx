@@ -31,7 +31,7 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
     }
 
     render() {
-        let transaction = this.props.transaction;
+        const transaction = this.props.transaction;
         if (!transaction) {
             return null;
         }
@@ -43,7 +43,7 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
 
 
         let message = null;
-        let date = moment(transaction.created).format('ll');
+        const date = moment(transaction.created).format('ll');
 
         if (transaction.method === 'braintree') {
             switch (transaction.action) {

@@ -82,12 +82,12 @@ function logoutAndClearLocalData() {
     }
 
     try {
-        let cookies = document.cookie.split(";");
+        const cookies = document.cookie.split(";");
 
         for (let i = 0; i < cookies.length; i++) {
-            let cookie = cookies[i];
-            let eqPos = cookie.indexOf("=");
-            let name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
             document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
     } catch (e) {
@@ -167,7 +167,7 @@ export function Settings({match:{params:{category}}}: SettingsProperties): JSX.E
     }
 
 
-    let groups: Array<{key: string; label: string}> = [
+    const groups: Array<{key: string; label: string}> = [
         { key: 'general'         , label: _("General Preferences") },
         { key: 'sound'           , label: _("Sound Preferences") },
         { key: 'game'            , label: _("Game Preferences") },
@@ -197,12 +197,12 @@ export function Settings({match:{params:{category}}}: SettingsProperties): JSX.E
         case 'chat'            : SelectedPage = ChatPreferences         ; break ;
     }
 
-    let props: SettingGroupProps = {
+    const props: SettingGroupProps = {
         state: settings_state,
         vacation_base_time: vacation_base_time,
         refresh: refresh,
         updateSelfReportedAccountLinkages: (new_link: any) => {
-            let ns = dup(settings_state);
+            const ns = dup(settings_state);
             ns.self_reported_account_linkages = new_link;
             setSettingsState(ns);
         }
@@ -342,7 +342,7 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
 
 
     React.useEffect(() => {
-        let vacation_interval = setInterval(() => {
+        const vacation_interval = setInterval(() => {
             if (props.state.profile.on_vacation) {
                 set_vacation_left(props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000);
             }
@@ -364,7 +364,7 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
         .catch(errorAlerter);
     }
 
-    let vacation_string = vacation_left > 0 ? durationString(vacation_left) : ("0 " + _("Seconds").toLowerCase());
+    const vacation_string = vacation_left > 0 ? durationString(vacation_left) : ("0 " + _("Seconds").toLowerCase());
 
     return (
         <div>
@@ -431,7 +431,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
 
     React.useEffect(refreshAccountSettings, []);
 
-    let user = data.get('user');
+    const user = data.get('user');
 
     function refreshAccountSettings() {
         get(`me/account_settings`)
@@ -455,7 +455,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
         if (email.trim() === "") {
             return true;
         }
-        let re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
+        const re = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
         return re.test(email.trim());
     }
 
@@ -703,7 +703,7 @@ function EmailPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
-    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
+    const [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -723,7 +723,7 @@ function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
             <h2>{_("Blocked players")}</h2>
             <div>
                 {blocked_players.map((block_state) => {
-                    let user_id = block_state.blocked;
+                    const user_id = block_state.blocked;
                     if (!user_id) {
                         return (null);
                     }
@@ -744,7 +744,7 @@ function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
-    let [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
+    const [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -792,8 +792,8 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
                 columns={[
                     {header: "Time"      , className: "announcement-time ", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
                     {header: "Duration"  , className: "", render: (a) => {
-                        let ms = moment(a.expiration).diff(moment(a.timestamp));
-                        let d = moment.duration(ms);
+                        const ms = moment(a.expiration).diff(moment(a.timestamp));
+                        const d = moment.duration(ms);
                         return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
                         //.format('HH:mm')
                     }
@@ -816,7 +816,7 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
                 <div>
                     <h2>{_("Blocked players")}</h2>
                     {blocked_players.map((block_state) => {
-                        let user_id = block_state.blocked;
+                        const user_id = block_state.blocked;
                         if (!user_id) {
                             return (null);
                         }
@@ -850,7 +850,7 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
     const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]: [boolean, (x: boolean) => void] = React.useState(preferences.get("visual-undo-request-indicator"));
 
     function setDockDelay(ev) {
-        let new_delay = parseFloat(ev.target.value);
+        const new_delay = parseFloat(ev.target.value);
         preferences.set("dock-delay", new_delay);
         _setDockDelay(new_delay);
     }
@@ -881,8 +881,8 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
     }
 
     function getSubmitMode(speed) {
-        let single = preferences.get(`one-click-submit-${speed}` as ValidPreference);
-        let dbl = preferences.get(`double-click-submit-${speed}` as ValidPreference);
+        const single = preferences.get(`one-click-submit-${speed}` as ValidPreference);
+        const dbl = preferences.get(`double-click-submit-${speed}` as ValidPreference);
         return single ? "single" : (dbl ? "double" : "button");
     }
     function setSubmitMode(speed, mode) {
@@ -914,7 +914,7 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
         setSubmitMode("correspondence", value);
     }
     function setVariationStoneTransparency(ev) {
-        let value = parseFloat(ev.target.value);
+        const value = parseFloat(ev.target.value);
 
         if (value >= 0.0 && value <= 1.0) {
             _setVariationStoneTransparency(value);
@@ -930,7 +930,7 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
         _setBoardLabeling(value);
     }
     function updateAutoplayDelay(ev) {
-        let delay = parseFloat(ev.target.value);
+        const delay = parseFloat(ev.target.value);
 
         if (delay >= 0.1) {
             _setAutoplayDelay(delay);
@@ -1083,7 +1083,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
             langs = [];
         }
 
-        let new_profanity_settings = {};
+        const new_profanity_settings = {};
 
         langs.forEach((lang) => {
             new_profanity_settings[lang.value] = true;
@@ -1139,7 +1139,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
                 }
 
                 if ((Notification as any).permission === 'default') {
-                    let onRequestResult = (perm) => {
+                    const onRequestResult = (perm) => {
                         if (perm === "granted") {
                             //this.setState({'desktop_notifications_enabled': true});
                             console.log("granted notification permission");
@@ -1304,7 +1304,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
 let update_link_preferences_debounce: Timeout;
 
 function LinkPreferences(props: SettingGroupProps): JSX.Element {
-    let link = props.state.self_reported_account_linkages || {};
+    const link = props.state.self_reported_account_linkages || {};
 
     function set(key: string): ((value: any) => void) {
         return ((value: any) => {
@@ -1492,7 +1492,7 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
             ? 'up' : 'down';
     }
 
-    let count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
+    const count_direction_computed = count_direction !== 'auto' ? count_direction : count_direction_auto;
 
     function setTickTockStart(opt): void {
         preferences.set('sound.countdown.tick-tock.start', opt.value);
@@ -1937,7 +1937,7 @@ function EmailNotificationToggle(props: {state: SettingsState; name: string; not
 
     function save(on: boolean): void {
         __set(on);
-        let up = {};
+        const up = {};
         up[props.notification] = {
             "description": props.state.notifications[props.notification].description,
             "value": {
@@ -1990,7 +1990,7 @@ function SoundPackSelect(props: {group: ValidSoundGroup; options: Array<SpritePa
             text = "";
         }
         text = text.toLowerCase();
-        let pack: SpritePack = data;
+        const pack: SpritePack = data;
 
         if (pack.name.toLowerCase().indexOf(text) >= 0) {
             return true;
@@ -2080,14 +2080,14 @@ function Volume(props: {group: ValidSoundGroup; sample: ValidSound | Array<Valid
 
 
 let play_timeout: Timeout | null = null;
-let play_emitter = new EventEmitter();
+const play_emitter = new EventEmitter();
 
 function PlayButton(props: {sample: ValidSound | Array<ValidSound>}): JSX.Element {
     const [playing, setPlaying]: [boolean, any] = React.useState(false);
-    let samples: Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
+    const samples: Array<ValidSound> = typeof(props.sample) === 'string' ? [props.sample] : props.sample;
 
     function play(ev: any): void {
-        let _samples = samples.slice();
+        const _samples = samples.slice();
         if (play_timeout) {
             clearTimeout(play_timeout);
         }
@@ -2098,8 +2098,8 @@ function PlayButton(props: {sample: ValidSound | Array<ValidSound>}): JSX.Elemen
         function process_next() {
             play_timeout = null;
             if (_samples.length) {
-                let sample = _samples.shift();
-                let start = Date.now();
+                const sample = _samples.shift();
+                const start = Date.now();
                 play_timeout = setTimeout(process_next, 1000);
                 sfx.play(sample);
             } else {

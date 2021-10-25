@@ -33,8 +33,8 @@ export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties
 
     getHoursVisitedSinceGoalsShown() {
         /* counts and returns hours of play since the last reset of our goal shown counter */
-        let d = new Date();
-        let this_hour = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}`;
+        const d = new Date();
+        const this_hour = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}`;
 
         if (data.get('last-visited-since-goals-shown') !== this_hour) {
             data.set('last-visited-since-goals-shown', this_hour);

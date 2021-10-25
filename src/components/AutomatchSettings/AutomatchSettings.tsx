@@ -36,7 +36,7 @@ interface AutomatchSettingsProperties {
 }
 
 
-let default_blitz = {
+const default_blitz = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -55,7 +55,7 @@ let default_blitz = {
         value: 'disabled',
     },
 };
-let default_live = {
+const default_live = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -74,7 +74,7 @@ let default_live = {
         value: 'enabled',
     },
 };
-let default_correspondence = {
+const default_correspondence = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -160,34 +160,34 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
         }
     }
     setLowerRankDiff = (ev) => {
-        let settings = this.getSelectedSettings();
-        let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
+        const settings = this.getSelectedSettings();
+        const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
     setUpperRankDiff = (ev) => {
-        let settings = this.getSelectedSettings();
-        let diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
+        const settings = this.getSelectedSettings();
+        const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
     setHandicapCondition = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.handicap.condition = ev.target.value;
         this.setSelectedSettings(settings);
     };
     setTimeControlCondition = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.time_control.condition = ev.target.value;
         this.setSelectedSettings(settings);
     };
     setRulesCondition = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.rules.condition = ev.target.value;
         this.setSelectedSettings(settings);
     };
     toggleSize(size) {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         if (settings.size_options.indexOf(size) >= 0) {
             settings.size_options = settings.size_options.filter((x) => x !== size);
         } else {
@@ -200,26 +200,26 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
     }
 
     setHandicapValue = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.handicap.value = ev.target.value;
         this.setSelectedSettings(settings);
     };
     setRulesValue = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.rules.value = ev.target.value;
         this.setSelectedSettings(settings);
     };
     setTimeControlSystem = (ev) => {
-        let settings = this.getSelectedSettings();
+        const settings = this.getSelectedSettings();
         settings.time_control.value.system = ev.target.value;
         this.setSelectedSettings(settings);
     };
 
     render() {
-        let settings = this.getSelectedSettings();
-        let tab = this.state.tab;
+        const settings = this.getSelectedSettings();
+        const tab = this.state.tab;
 
-        let size_enabled = (size) => {
+        const size_enabled = (size) => {
             return settings.size_options.indexOf(size) >= 0;
         };
 

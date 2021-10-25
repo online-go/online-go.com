@@ -38,9 +38,9 @@ import {
 data.setDefault("chat.joined", {'global-english': true});
 
 try {
-    let joined_defaults: any = {};
+    const joined_defaults: any = {};
     let found = false;
-    for (let chan of global_channels) {
+    for (const chan of global_channels) {
         try {
             if (chan.id === "global-help" && navigator.languages.indexOf("en") >= 0) {
                 joined_defaults[chan.id] = true;
@@ -70,22 +70,22 @@ interface ChatChannelListProperties {
 
 
 function autojoin_channels() {
-    let joined_channels = data.get("chat.joined");
+    const joined_channels = data.get("chat.joined");
     const parted_channels = data.get("chat.parted", {});
 
-    for (let chan of group_channels) {
-        let key = `group-${chan.id}`;
+    for (const chan of group_channels) {
+        const key = `group-${chan.id}`;
         if (!(key in parted_channels)) {
             joined_channels[key] = 1;
         }
     }
-    for (let chan of tournament_channels) {
-        let key = `group-${chan.id}`;
+    for (const chan of tournament_channels) {
+        const key = `group-${chan.id}`;
         if (!(key in parted_channels)) {
             joined_channels[key] = 1;
         }
     }
-    for (let chan of global_channels) {
+    for (const chan of global_channels) {
         if (chan.id.indexOf('supporter') >= 0 || chan.id.indexOf('shadowban') >= 0) {
             if (!(chan.id in parted_channels)) {
                 joined_channels[chan.id] = 1;
@@ -107,9 +107,9 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
         + global_channels.filter(chan => chan.id === channel).length
     );
 
-    let [more, set_more]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    let [search, set_search]: [string, (text: string) => void] = useState("");
-    let [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s: ChannelInformation | null) => void] = useState(null);
+    const [more, set_more]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [search, set_search]: [string, (text: string) => void] = useState("");
+    const [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s: ChannelInformation | null) => void] = useState(null);
 
     //pgettext("Joining chat channel", "Joining"));
 
@@ -138,7 +138,7 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
     let more_channels: JSX.Element;
 
     function chanSearch(chan: {name: string}): boolean {
-        let s = search.toLowerCase().trim();
+        const s = search.toLowerCase().trim();
 
         if (s === "") {
             return true;
@@ -275,10 +275,10 @@ export function ChatChannel(
     }
 
 
-    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
-    let [unread_ct, set_unread_ct]: [number, (x: number) => void] = useState(0);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [unread_ct, set_unread_ct]: [number, (x: number) => void] = useState(0);
 
-    let setChannel = useCallback(() => {
+    const setChannel = useCallback(() => {
         if (!joined) {
             const joined_channels = data.get("chat.joined");
             joined_channels[channel] = 1;
@@ -345,7 +345,7 @@ export function ChatChannel(
         icon_element = <img src={icon}/>;
     }
 
-    let mentioned = proxy?.channel.mentioned;
+    const mentioned = proxy?.channel.mentioned;
     let unread: JSX.Element;
 
     if (unread_ct) {

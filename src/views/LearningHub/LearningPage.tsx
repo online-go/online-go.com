@@ -137,16 +137,16 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     };
 
     makePuzzleMoveTree(_correct: Array<string>, _wrong: Array<string>, width: number = 9, height: number = 9) {
-        let correct: Array<any> = [];
-        let wrong: Array<any> = [];
-        for (let s of _correct) {
+        const correct: Array<any> = [];
+        const wrong: Array<any> = [];
+        for (const s of _correct) {
             correct.push(GoMath.decodeMoves(s, width, height));
         }
-        for (let s of _wrong) {
+        for (const s of _wrong) {
             wrong.push(GoMath.decodeMoves(s, width, height));
         }
 
-        let ret = {
+        const ret = {
             x: -1,
             y: -1,
             branches: [],
@@ -157,14 +157,14 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                 cb(cur);
                 return;
             } else {
-                for (let branch of cur.branches) {
+                for (const branch of cur.branches) {
                     if (branch.x === path[0].x && branch.y === path[0].y) {
                         path.shift();
                         walk(branch, path, cb);
                         return;
                     }
                 }
-                let new_branch = {
+                const new_branch = {
                     x: path[0].x,
                     y: path[0].y,
                     branches: [],
@@ -176,11 +176,11 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             }
         }
 
-        for (let arr of correct) {
+        for (const arr of correct) {
             walk(ret, arr, (node) => node.correct_answer = true);
         }
 
-        for (let arr of wrong) {
+        for (const arr of wrong) {
             walk(ret, arr, (node) => node.wrong_answer = true);
         }
 
@@ -212,7 +212,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     render() {
-        let links = [];
+        const links = [];
         for (let i = 0; i < this.props.npages; ++i) {
             if (i === this.props.curpage) {
                 links.push(<span key={i} onClick={this.reset} className='page active'>{i + 1}</span>);
@@ -223,8 +223,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             }
         }
 
-        let correct: boolean = this.correct_answer_triggered || this.complete();
-        let fail: boolean = this.error_triggered || this.wrong_answer_triggered || this.failed();
+        const correct: boolean = this.correct_answer_triggered || this.complete();
+        const fail: boolean = this.error_triggered || this.wrong_answer_triggered || this.failed();
 
         return (
             <div className='LearningPage'>
@@ -269,7 +269,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     at(coord: string): number {
         if (this.instructional_goban && this.instructional_goban.goban) {
-            let obj = this.instructional_goban.goban.engine.decodeMoves(coord, 9, 9);
+            const obj = this.instructional_goban.goban.engine.decodeMoves(coord, 9, 9);
             return this.instructional_goban.goban.engine.board[obj[0].y][obj[0].x];
         }
         return 0;

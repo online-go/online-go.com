@@ -76,7 +76,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 this.saveEdit();
                 event.preventDefault();
             } else {
-                let input = event.target as HTMLInputElement;
+                const input = event.target as HTMLInputElement;
                 this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
                 input.value = "";
                 return false;
@@ -99,7 +99,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     }
 
     updateScrollPosition() {
-        let tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
+        const tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
             this.scrolled_to_bottom  = tf;
             this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
@@ -117,7 +117,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         }
     }
     toggleChatLog = () => {
-        let new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
+        const new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
         this.setState({
             chat_log: new_chat_log,
             qc_visible: false,
@@ -126,7 +126,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
         this.props.onChatLogChanged(new_chat_log);
     };
     toggleModeratorChatLog = () => {
-        let new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
+        const new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
         this.setState({
             chat_log: new_chat_log,
             qc_visible: false,
@@ -167,7 +167,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
     };
 
     saveEdit = () => {
-        let user = data.get("user");
+        const user = data.get("user");
         this.qc_editableMsgs.map((li, index) => {
             user.qc_phrases[index] = li.innerText.trim();
         });
@@ -184,8 +184,8 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
     render() {
         let last_line = null;
-        let user = data.get("user");
-        let channel = this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`;
+        const user = data.get("user");
+        const channel = this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`;
 
         return (
             <div className="chat-container">
@@ -193,7 +193,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                     <div className="chat-log-container">
                         <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
                             {this.props.chatlog.map((line, idx) => {
-                                let ll = last_line;
+                                const ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
                                 return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
@@ -261,7 +261,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
 
         if (this.state.qc_visible) {
             if (user.qc_phrases === undefined) {
-                let qc_local = localStorage.getItem("ogs.qc.messages");
+                const qc_local = localStorage.getItem("ogs.qc.messages");
                 if (qc_local === null) {
                     user.qc_phrases = [
                         _("Hi") + ".",
@@ -276,7 +276,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, any> {
                 }
             }
 
-            let lis = user.qc_phrases.map((msg, index) =>
+            const lis = user.qc_phrases.map((msg, index) =>
                 <li
                     className="qc-option"
                     key={index}
@@ -324,7 +324,7 @@ function parsePosition(position: string) {
             j: -1
         };
     }
-    let goban = active_game_view.goban;
+    const goban = active_game_view.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
     let j = ((goban && goban.height) || 19) - parseInt(position.substr(1));
@@ -341,7 +341,7 @@ function parsePosition(position: string) {
 function highlight_position(event) {
     if (!active_game_view) { return; }
 
-    let pos = parsePosition(event.target.innerText);
+    const pos = parsePosition(event.target.innerText);
     if (pos.i >= 0) {
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = true;
         active_game_view.goban.drawSquare(pos.i, pos.j);
@@ -350,7 +350,7 @@ function highlight_position(event) {
 function unhighlight_position(event) {
     if (!active_game_view) { return; }
 
-    let pos = parsePosition(event.target.innerText);
+    const pos = parsePosition(event.target.innerText);
     if (pos.i >= 0) {
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = false;
         active_game_view.goban.drawSquare(pos.i, pos.j);
@@ -369,7 +369,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
             return chat_markup(body, [
                 {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
                     replacement: (m, idx) => {
-                        let pos = m[1];
+                        const pos = m[1];
                         if (parsePosition(pos).i < 0) {
                             return (<span key={idx}>{m[1]}</span>);
                         }
@@ -390,18 +390,18 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                         }
 
 
-                        let gameview = this.props.gameview;
-                        let goban = gameview.goban;
+                        const gameview = this.props.gameview;
+                        const goban = gameview.goban;
                         let orig_move = null;
                         let stashed_pen_marks = goban.pen_marks;
                         let orig_marks = null;
 
-                        let v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
+                        const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                         if (v) {
                             this.props.gameview.last_variation_number = Math.max(v, this.props.gameview.last_variation_number);
                         }
 
-                        let onLeave = () => {
+                        const onLeave = () => {
                             if (this.props.gameview.in_pushed_analysis) {
                                 this.props.gameview.in_pushed_analysis = false;
                                 this.props.gameview.leave_pushed_analysis = null;
@@ -415,11 +415,11 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                             }
                         };
 
-                        let onEnter = () => {
+                        const onEnter = () => {
                             this.props.gameview.in_pushed_analysis = true;
                             this.props.gameview.leave_pushed_analysis = onLeave;
-                            let turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
-                            let moves = body.moves;
+                            const turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
+                            const moves = body.moves;
 
                             orig_move = goban.engine.cur_move;
                             if (orig_move) {
@@ -443,7 +443,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
                             goban.redraw();
                         };
 
-                        let onClick = () => {
+                        const onClick = () => {
                             onLeave();
                             goban.setMode("analyze");
                             onEnter();
@@ -481,8 +481,8 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
 
     jumpToMove = () => {
         this.props.gameview.stopEstimatingScore();
-        let line = this.props.line;
-        let goban = this.props.gameview.goban;
+        const line = this.props.line;
+        const goban = this.props.gameview.goban;
 
         if ("move_number" in line) {
             if (!goban.isAnalysisDisabled()) {
@@ -500,7 +500,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
         }
 
         if ("from" in line) {
-            let mvs = goban.engine.decodeMoves(line.moves);
+            const mvs = goban.engine.decodeMoves(line.moves);
             let ct = 0;
             for (let i = 0; i < mvs.length; ++i) {
                 ct += mvs[i].edited ? 0 : 1;
@@ -521,15 +521,15 @@ export class GameChatLine extends React.Component<GameChatLineProperties, any> {
     };
 
     render() {
-        let line = this.props.line;
-        let lastline = this.props.lastline;
-        let ts = line.date ? new Date(line.date * 1000) : null;
+        const line = this.props.line;
+        const lastline = this.props.lastline;
+        const ts = line.date ? new Date(line.date * 1000) : null;
         let third_person = "";
         if (typeof(line.body) === "string" && line.body.substr(0, 4) === "/me ") {
             third_person = (line.body.substr(0, 4) === "/me ") ? "third-person" : "";
             line.body = line.body.substr(4);
         }
-        let msg = this.markup(line.body);
+        const msg = this.markup(line.body);
         let show_date: JSX.Element = null;
         let move_number: JSX.Element = null;
 

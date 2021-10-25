@@ -156,10 +156,10 @@ data.watch(cached.config, (config) => {
      * again to do the emits that we are expecting. Otherwise triggers
      * that are depending on other parts of the config will fire without
      * having up to date information (in particular user / auth stuff) */
-    for (let key in config) {
+    for (const key in config) {
         data.setWithoutEmit(`config.${key}`, config[key]);
     }
-    for (let key in config) {
+    for (const key in config) {
         data.set(`config.${key}`, config[key]);
     }
 });
@@ -286,10 +286,10 @@ declare let gtag;
 
 browserHistory.listen(location => {
     try {
-        let cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
+        const cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
 
         let user_type = 'error';
-        let user = data.get('user');
+        const user = data.get('user');
 
         if (!user || user.anonymous) {
             user_type = 'anonymous';
@@ -322,13 +322,13 @@ browserHistory.listen(location => {
 init_tabcomplete();
 
 /* Initialization done, render!! */
-let svg_loader = document.getElementById('loading-svg-container');
+const svg_loader = document.getElementById('loading-svg-container');
 svg_loader.parentNode.removeChild(svg_loader);
 
 let forceReactUpdate: () => void = () => {};
 
 function ForceReactUpdateWrapper(props): JSX.Element {
-    let [update, setUpdate] = React.useState(1);
+    const [update, setUpdate] = React.useState(1);
     forceReactUpdate = () => {
         setUpdate(update + 1);
     };

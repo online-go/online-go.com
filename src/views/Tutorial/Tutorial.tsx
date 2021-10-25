@@ -42,7 +42,7 @@ export class Tutorial extends React.PureComponent<TutorialProperties, any> {
     }
 
     render() {
-        let page_number = parseInt(this.props.match.params.step || 0);
+        const page_number = parseInt(this.props.match.params.step || 0);
 
         switch (page_number) {
             case 0: return <ThisIsAGoban />;
@@ -92,7 +92,7 @@ abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, 
         return 0;
     }
     next = () => {
-        let step = Math.max(0, Math.min(NUM_PAGES - 1, this.getCurrentStep() + 1));
+        const step = Math.max(0, Math.min(NUM_PAGES - 1, this.getCurrentStep() + 1));
         console.log("Next step: ", this.getCurrentStep(), step);
         browserHistory.push(`/learn-to-play-go/${step}`);
     };
@@ -592,7 +592,7 @@ class Done extends React.PureComponent<{}, any> {
     render() {
 
         let iwtg_link = 'http://www.playgo.to/iwtg/';
-        let iwtg_links = {
+        const iwtg_links = {
             'en': 'http://www.playgo.to/iwtg/en/',
             'ru': 'http://www.playgo.to/iwtg/russian/',
             'zh-cn': 'http://www.playgo.to/iwtg/cn_simple',

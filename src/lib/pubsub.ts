@@ -42,7 +42,7 @@ export class Publisher<T> {
 
     constructor() {
         let serial: number = 0;
-        let callback_table: CallbackTable<T> = {};
+        const callback_table: CallbackTable<T> = {};
 
         this.callback_table = callback_table;
         this.Subscriber = class Subscriber<K extends Extract<keyof T, string>> extends AbstractSubscriber<T, K> {
@@ -54,8 +54,8 @@ export class Publisher<T> {
 
     // Publish a piece of information to anyone who is listening.
     publish<K extends Extract<keyof T, string>>(channel: K, item: T[K]): T[K] {
-        let callbacks = this.callback_table[channel] || {};
-        for (let serial in callbacks) {
+        const callbacks = this.callback_table[channel] || {};
+        for (const serial in callbacks) {
             callbacks[serial](channel, item);
         }
         return item;
@@ -87,10 +87,10 @@ abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> impleme
     // then adding it again has no further effect. Mentioning a channel more
     // than once has the same effect as mentioning it exactly once.
     on(channels: K | Array<K>): this {
-        let table = this.callback_table;
+        const table = this.callback_table;
 
-        let ch: Array<string> = typeof channels === "string" ? [channels] : channels;
-        for (let channel of ch) {
+        const ch: Array<string> = typeof channels === "string" ? [channels] : channels;
+        for (const channel of ch) {
             (table[channel] || (table[channel] = {}))[this.serial] = this.callback;
             this.subscribed_channels[channel] = true;
         }
@@ -100,10 +100,10 @@ abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> impleme
     // Unsubscribe from some channels. Once again, removal is an idempotent
     // operation.
     off(channels: K | Array<K>): this {
-        let table = this.callback_table;
+        const table = this.callback_table;
 
         channels = typeof channels === "string" ? [channels] : channels;
-        for (let channel of channels) {
+        for (const channel of channels) {
             delete (table[channel] || {})[this.serial];
             delete this.subscribed_channels[channel];
         }
@@ -112,8 +112,8 @@ abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> impleme
 
     // List the channels that we're subscribed to, in no particular order.
     channels(): Array<K> {
-        let channels: Array<K> = [];
-        for (let channel in this.subscribed_channels) {
+        const channels: Array<K> = [];
+        for (const channel in this.subscribed_channels) {
             channels.push(channel);
         }
         return channels;

@@ -26,11 +26,11 @@ import { cached } from "cached";
 
 export function ForceUsernameChange(): JSX.Element {
     const user = data.get('config.user');
-    let [username, setUsername] = React.useState("");
+    const [username, setUsername] = React.useState("");
     const inputRef = React.useRef();
 
     React.useEffect(() => {
-        let ir: any = inputRef as any;
+        const ir: any = inputRef as any;
         if (ir?.current?.focus) {
             ir.current.focus();
         }

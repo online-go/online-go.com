@@ -26,8 +26,8 @@ declare let swal;
 export type Timeout = ReturnType<typeof setTimeout>;
 
 export function updateDup(obj: any, field: string, value: any) {
-    let ret = dup(obj);
-    let arr =  field.split(".");
+    const ret = dup(obj);
+    const arr =  field.split(".");
     let cur = ret;
     for (let i = 0; i < arr.length - 1; ++i) {
         cur = cur[arr[i]];
@@ -83,7 +83,7 @@ export function dup<T>(obj: T): T {
             }
         } else {
             ret = {};
-            for (let i in obj) {
+            for (const i in obj) {
                 ret[i] = dup(obj[i]);
             }
         }
@@ -111,7 +111,7 @@ export function deepEqual(a: any, b: any) {
                 return false;
             }
         } else {
-            for (let i in a) {
+            for (const i in a) {
                 if (!(i in b)) {
                     return false;
                 }
@@ -119,7 +119,7 @@ export function deepEqual(a: any, b: any) {
                     return false;
                 }
             }
-            for (let i in b) {
+            for (const i in b) {
                 if (!(i in a)) {
                     return false;
                 }
@@ -136,7 +136,7 @@ export function getRandomInt(min, max) {
 export function getRelativeEventPosition(event) {
     let x;
     let y;
-    let offset = $(event.target).offset();
+    const offset = $(event.target).offset();
 
     if (event.originalEvent.touches && event.originalEvent.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
@@ -157,8 +157,8 @@ export function getRelativeEventPosition(event) {
 
 export function uuid(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-        let r = Math.random() * 16 | 0;
-        let v = c === "x" ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0;
+        const v = c === "x" ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }
@@ -187,7 +187,7 @@ export function getOutcomeTranslation(outcome: string) {
     }
 
     if (/[0-9.]+/.test(outcome)) {
-        let num = outcome.match(/([0-9.]+)/)[1];
+        const num = outcome.match(/([0-9.]+)/)[1];
         return interpolate(pgettext("Game outcome", "{{number}} points"), {"number": num});
     }
 
@@ -239,7 +239,7 @@ export function rejectTournamentInvite(id): Promise<any> {
 
 function lengthInUtf8Bytes(str) {
     // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
-    let m = encodeURIComponent(str).match(/%[89ABab]/g);
+    const m = encodeURIComponent(str).match(/%[89ABab]/g);
     return str.length + (m ? m.length : 0);
 }
 export function splitOnBytes(message, bytes) {
@@ -320,7 +320,7 @@ export function getPrintableError(err) {
             } else if ("game_error" in obj) {
                 obj = obj.game_error;
             } else {
-                for (let k in obj) {
+                for (const k in obj) {
                     if (obj[k] === "This field is required.") {
                         obj = "This field is required: " + k;
                         break;
@@ -343,7 +343,7 @@ export function getPrintableError(err) {
     }
 }
 export function errorAlerter(...args) {
-    let err = getPrintableError(args[0]);
+    const err = getPrintableError(args[0]);
     if (!err) {
         return;
     }
@@ -369,23 +369,23 @@ export function errorAlerter(...args) {
     console.error(err);
 }
 export function errorLogger(...args) {
-    let err = getPrintableError(args[0]);
+    const err = getPrintableError(args[0]);
     if (!err) {
         return;
     }
     console.error(err);
 }
 export function string_splitter(str: string, max_length: number= 200): Array<string> {
-    let re = new RegExp(`.{1,${max_length}}`, "g");
+    const re = new RegExp(`.{1,${max_length}}`, "g");
 
-    let arr = str.split(/\s+/).map((s) => s.match(re));
-    let ret: Array<string> = [];
+    const arr = str.split(/\s+/).map((s) => s.match(re));
+    const ret: Array<string> = [];
     let cur = "";
-    for (let pieces of arr) {
+    for (const pieces of arr) {
         if (!pieces) {
             continue;
         }
-        for (let s of pieces) {
+        for (const s of pieces) {
             if (cur.length + s.length + (cur.length === 0 ? 0 : 1) < max_length) {
                 cur += (cur.length ? " " : "") + s;
             } else {
@@ -430,7 +430,7 @@ export function n2s(n?: number) {
 
     let ret = "";
     while (n) {
-        let remainder = n % n2s_alphalen;
+        const remainder = n % n2s_alphalen;
         n = Math.trunc(n / n2s_alphalen);
         ret = n2s_alphabet[remainder] + ret;
     }
@@ -485,7 +485,7 @@ export function shouldOpenNewTab(event) {
     return false;
 }
 
-let last_navigateTo = {
+const last_navigateTo = {
     path: null,
     timestamp: null
 };
@@ -510,10 +510,10 @@ export function navigateTo(path, event?) {
 
 export function deepCompare(x: any, y: any) {
     // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
-    let leftChain = [];
-    let rightChain = [];
+    const leftChain = [];
+    const rightChain = [];
 
-    let compare2Objects = (x, y) => {
+    const compare2Objects = (x, y) => {
         // remember that NaN === NaN returns false
         // and isNaN(undefined) returns true
         if (isNaN(x) && isNaN(y) && typeof x === "number" && typeof y === "number") {
@@ -562,7 +562,7 @@ export function deepCompare(x: any, y: any) {
 
         // Quick checking of one object being a subset of another.
         // todo: cache the structure of arguments[0] for performance
-        for (let p in y) {
+        for (const p in y) {
             try {
                 if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
                     return false;
@@ -575,7 +575,7 @@ export function deepCompare(x: any, y: any) {
             }
         }
 
-        for (let p in x) {
+        for (const p in x) {
             if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
                 return false;
             } else if (typeof y[p] !== typeof x[p]) {
@@ -612,7 +612,7 @@ export function deepCompare(x: any, y: any) {
 
 
 /*** OGS Focus detection ***/
-let focus_window_id = "" + Math.random();
+const focus_window_id = "" + Math.random();
 try {
     $(window).focus(() => {
         try {

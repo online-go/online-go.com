@@ -64,7 +64,7 @@ const show_hovered_game_delay = 250; // milliseconds till game info of hovered d
 
 const pie_restore_delay = 1500;  // long enough to go click on the minigoban if you want to, not so long as to come as a suprise later.
 
-let format_date = (d: Date) => moment(d).format('ll');
+const format_date = (d: Date) => moment(d).format('ll');
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, any> {
     container = null;
@@ -184,7 +184,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         window.clearTimeout(this.hover_timer);
     }
     UNSAFE_componentWillReceiveProps(nextProps) {
-        let size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
+        const size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : '';
         this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }
     shouldComponentUpdate(nextProps, nextState) {
@@ -220,7 +220,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     setRanges = () => {
-        let sizes = this.chart_sizes();
+        const sizes = this.chart_sizes();
 
         this.width = sizes.width;
         this.graph_width = 2.0 * sizes.width / 3.0;
@@ -250,23 +250,23 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     };
 
     initialize() {
-        let self = this;
+        const self = this;
         this.hover_timer = null;
 
         this.setRanges();
 
-        let width = this.graph_width;
-        let height = this.height;
+        const width = this.graph_width;
+        const height = this.height;
 
         this.rank_axis.tickFormat((rating: number) => {
-            let rank = Math.round(rating_to_rank(rating));
+            const rank = Math.round(rating_to_rank(rating));
             if (!is_rank_bounded(rank)) {
                 return rankString(rank);
             }
             return "";
         });
 
-        let boundDataLegendX = (x: number) => {
+        const boundDataLegendX = (x: number) => {
             return Math.min(width - date_legend_width / 2, Math.max(date_legend_width / 2, x));
         };
 
@@ -287,7 +287,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
         /* Win-loss pie chart goes to the right of the rating graph */
-        let graph_right_side = this.graph_width + margin.left + margin.right;
+        const graph_right_side = this.graph_width + margin.left + margin.right;
 
         /* The pie chart element is positioned at the centre of the circle of the pie.
            We need to create this even if show_pie is false, because it might become true from resizing */
@@ -321,7 +321,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr('class', 'date-legend-text')
             .attr('y', 3);
 
-        let size_text = this.props.size ? `${this.props.size}x${this.props.size}` : '';
+        const size_text = this.props.size ? `${this.props.size}x${this.props.size}` : '';
         this.legend_label = this.legend.append('text')
             .text(`${speed_translation(this.props.speed)} ${size_text}`);
 
@@ -396,11 +396,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 /* tslint:disable */
                 // 'this' is the mouse area, in this context
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                let x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 
-                let n = Math.round(x0);
-                let d = self.game_entries[n];
+                const n = Math.round(x0);
+                const d = self.game_entries[n];
 
                 self.helperText.text(
                     interpolate(
@@ -474,7 +474,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     /* The area we can draw all of our charting in */
     chart_sizes() {
-        let width = Math.max(chart_min_width, $(this.container).width()  - margin.left - margin.right);
+        const width = Math.max(chart_min_width, $(this.container).width()  - margin.left - margin.right);
         return {
             width: width,
             height: height,
@@ -497,7 +497,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         this.setRanges();
-        let width = this.graph_width;
+        const width = this.graph_width;
 
         this.props.updateChartSize(chart_height, width);
 
@@ -526,7 +526,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.subselect_axis_labels.call(this.subselect_axis);
         this.brush.extent([[0, 0], [width, secondary_charts_height]]);
 
-        let graph_right_side = this.graph_width + margin.left + margin.right;
+        const graph_right_side = this.graph_width + margin.left + margin.right;
 
         this.win_loss_pie
             .attr('transform', 'translate(' + (graph_right_side + this.pie_width / 2.0) + ',' + ((margin.top + this.height / 3.0)) + ')');
@@ -552,10 +552,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     plotWinLossPie = () => {
         if (!this.win_loss_pie) { return; }
 
-        let agg = this.win_loss_aggregate;
+        const agg = this.win_loss_aggregate;
 
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
-        let pie_data = [
+        const pie_data = [
             {
                 label:interpolate(pgettext( "Number of wins against stronger opponents", "{{strong_wins}} wins vs. stronger opponents"), {strong_wins: agg.strong_wins}),
                 count: agg.strong_wins},
@@ -571,22 +571,22 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             }
         ];
 
-        let pie_colour_class = [
+        const pie_colour_class = [
             'strong-wins',
             'strong-losses',
             'weak-losses',
             'weak-wins'
         ];
 
-        let pie_radius = Math.min(this.pie_width, this.height) / 3.0 - 15; // just looks about right.
+        const pie_radius = Math.min(this.pie_width, this.height) / 3.0 - 15; // just looks about right.
 
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
-        let arc = d3.arc()
+        const arc = d3.arc()
             .innerRadius(0)
             .outerRadius(pie_radius);
 
-        let pie_values = d3.pie()
+        const pie_values = d3.pie()
             .value((d: any): number => (d.count))
             .sort(null);
 
@@ -606,10 +606,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         /* placement relative to centre of pie */
 
-        let legend_xoffset = -1.0 * pie_radius - 20; // just looks about right
-        let legend_yoffset = pie_radius + 30;
+        const legend_xoffset = -1.0 * pie_radius - 20; // just looks about right
+        const legend_yoffset = pie_radius + 30;
 
-        let total_games = agg.strong_wins + agg.strong_losses + agg.weak_wins + agg.weak_losses;
+        const total_games = agg.strong_wins + agg.strong_losses + agg.weak_wins + agg.weak_losses;
 
         this.win_loss_pie.append('text')
             .text(interpolate(pgettext( "Total Ranked Games", "Total of: {{total_games}} ranked games"), {total_games: total_games}))
@@ -619,7 +619,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         /* It's nice to have the legend in a different order, just makes more sense */
 
-        let legend_order = [0, 1, 3, 2]; // index into pie_data[]
+        const legend_order = [0, 1, 3, 2]; // index into pie_data[]
 
         legend_order.forEach( (legend_item, i) => {
             this.win_loss_pie
@@ -661,11 +661,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.game_entries.forEach((entry, index) => { entry.index = index; });
 
         /* Plot graph */
-        let x_range: any = [0, this.game_entries.length - 1];
+        const x_range: any = [0, this.game_entries.length - 1];
 
         this.ratings_x.domain(x_range);
-        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        const lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        const upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
 
         this.subselect_x.domain(this.ratings_x.domain());
@@ -722,11 +722,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.ratings_x.domain(this.subselect_extents);
 
-        let lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
-        let upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
+        const lower = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation));
+        const upper = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation));
 
-        let l = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
-        let u = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
+        const l = Math.min.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.min(d.starting_rating, d.rating) - d.deviation) : upper));
+        const u = Math.max.apply(null, this.game_entries.map((d: RatingEntry) => (d.index >= this.subselect_extents[0] && d.index <= this.subselect_extents[1]) ? (Math.max(d.starting_rating, d.rating) + d.deviation) : lower));
         this.ratings_y.domain([l * 0.95, u * 1.05]);
 
         this.range_label.text(`Games ${Math.ceil(this.subselect_extents[0])} - ${Math.floor(this.subselect_extents[1])}`);
@@ -755,7 +755,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     };
 
     setContainer = (e) => {
-        let need_resize = this.container === null;
+        const need_resize = this.container === null;
         this.container = e;
         if (need_resize) {
             this.onResize();
@@ -808,12 +808,12 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         let agg = null;
-        let start_game = subselect_extents[0];
-        let end_game = subselect_extents[1];
+        const start_game = subselect_extents[0];
+        const end_game = subselect_extents[1];
 
         if (!this.state.loading && !this.state.nodata && this.game_entries) {
-            for (let entry of this.game_entries) {
-                let game = entry.index;
+            for (const entry of this.game_entries) {
+                const game = entry.index;
                 if (game >= start_game && game <= end_game) {
                     if (!agg) {
                         agg = new RatingEntry(entry);
@@ -841,7 +841,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             return <div className='win-loss-stats'/>;
         }
 
-        let agg = this.win_loss_aggregate;
+        const agg = this.win_loss_aggregate;
 
         return (
             <div className='win-loss-stats'>

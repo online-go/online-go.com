@@ -55,7 +55,7 @@ function initialize() {
 }
 
 
-let requests_in_flight = {};
+const requests_in_flight = {};
 let last_request_id: number = 0;
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -95,20 +95,20 @@ export function request(method: Method): RequestFunction {
             console.trace();
         }
 
-        let real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+        const real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
         let real_data: any;
         real_data = data;
 
-        for (let req_id in requests_in_flight) {
-            let req = requests_in_flight[req_id];
+        for (const req_id in requests_in_flight) {
+            const req = requests_in_flight[req_id];
             if (req.promise && (req.url === real_url) && (method === req.type) && deepCompare(req.data, real_data)) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
             }
         }
 
-        let request_id = ++last_request_id;
-        let traceback = new Error();
+        const request_id = ++last_request_id;
+        const traceback = new Error();
 
         requests_in_flight[request_id] = {
             type: method,
@@ -118,7 +118,7 @@ export function request(method: Method): RequestFunction {
 
 
         requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            let opts = {
+            const opts = {
                 url: api1ify(real_url),
                 type: method,
                 data: undefined,
@@ -144,7 +144,7 @@ export function request(method: Method): RequestFunction {
                     if (real_data instanceof Blob) {
                         opts.data.append("file", real_data);
                     } else {
-                        for (let file of (real_data as Array<Blob>)) {
+                        for (const file of (real_data as Array<Blob>)) {
                             opts.data.append("file", file);
                         }
                     }
@@ -169,9 +169,9 @@ export function request(method: Method): RequestFunction {
 export function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
-        let cookies = document.cookie.split(";");
+        const cookies = document.cookie.split(";");
         for (let i = 0; i < cookies.length; i++) {
-            let cookie = jQuery.trim(cookies[i]);
+            const cookie = jQuery.trim(cookies[i]);
             if (cookie.substring(0, name.length + 1) === (name + "=")) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -188,8 +188,8 @@ export const patch = request("PATCH");
 export const del = request("DELETE");
 
 export function abort_requests_in_flight(url, method?: Method) {
-    for (let id in requests_in_flight) {
-        let req = requests_in_flight[id];
+    for (const id in requests_in_flight) {
+        const req = requests_in_flight[id];
         if ((req.url === url) && (!method || method === req.type)) {
             req.request.abort();
         }

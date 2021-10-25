@@ -28,14 +28,14 @@ import * as player_cache from 'player_cache';
  */
 
 function anon() {
-    let user = data.get('config.user');
+    const user = data.get('config.user');
     if (!user) {
         return true;
     }
     return user.anonymous;
 }
 
-export let cached = {
+export const cached = {
     config: 'cached.config',
     friends: 'cached.friends',
     groups: 'cached.groups',
@@ -65,7 +65,7 @@ export let cached = {
             }
 
             get("me/challenges", {page_size: 30}).then((res) => {
-                for (let challenge of res.results) {
+                for (const challenge of res.results) {
                     player_cache.update(challenge.challenger);
                     player_cache.update(challenge.challenged);
                     challenge.game.time_control = JSON.parse(challenge.game.time_control_parameters);
@@ -83,7 +83,7 @@ export let cached = {
             }
 
             get("me/groups/invitations", {page_size: 100}).then((res) => {
-                let invitations = res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation);
+                const invitations = res.results.filter(invite => invite.user === data.get('user').id && invite.is_invitation);
                 data.set(cached.group_invitations, invitations);
             }).catch((err) => {
                 console.error("Error retrieving group invitation list: ", err);
@@ -110,7 +110,7 @@ export let cached = {
             }
 
             get('me/groups', {page_size: 100}).then((res) => {
-                let groups = res.results;
+                const groups = res.results;
                 groups.sort((a, b) => a.name.localeCompare(b.name));
                 data.set(cached.groups, groups);
             }).catch((err) => {
@@ -125,7 +125,7 @@ export let cached = {
             }
 
             get('me/tournaments', {ended__isnull: true, page_size: 100}).then((res) => {
-                let tournaments = res.results;
+                const tournaments = res.results;
                 tournaments.sort((a, b) => a.name.localeCompare(b.name));
                 data.set(cached.active_tournaments, tournaments);
             }).catch((err) => {
@@ -140,7 +140,7 @@ export let cached = {
             }
 
             get('me/ladders').then((res) => {
-                let ladders = res.results;
+                const ladders = res.results;
                 ladders.sort((a, b) => a.name.localeCompare(b.name));
                 data.set(cached.ladders, ladders);
             }).catch((err) => {
@@ -174,7 +174,7 @@ function refresh_all() {
     refresh_debounce = null;
     cached.refresh.config();
 
-    for (let k in cached.refresh) {
+    for (const k in cached.refresh) {
         if (k !== 'config') {
             cached.refresh[k]();
         }

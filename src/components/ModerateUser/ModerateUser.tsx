@@ -32,7 +32,7 @@ interface ModerateUserProperties {
 
 declare let swal;
 
-let pro_ranks = proRankList(false);
+const pro_ranks = proRankList(false);
 
 export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     constructor(props) {
@@ -65,7 +65,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
             this.close();
 
-            let fields = [
+            const fields = [
                 "is_bot", "is_banned", "is_shadowbanned",
                 "bot_owner", "bot_ai", "username",
                 "supporter", "username", "password", "email",
@@ -73,8 +73,8 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 "ui_class_extra"
             ];
 
-            let settings: any = {};
-            for (let f of fields) {
+            const settings: any = {};
+            for (const f of fields) {
                 settings[f] = this.state[f];
             }
 
@@ -123,7 +123,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     */
 
     render() {
-        let user = this.state;
+        const user = this.state;
 
         return (
             <div className="Modal ModerateUser" ref="modal">

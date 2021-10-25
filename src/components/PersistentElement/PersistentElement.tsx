@@ -28,7 +28,7 @@ export class PersistentElement extends React.Component<PersistentElementProps, a
 
     componentDidMount() {
         if (this.container) {
-            let elt = this.props.elt instanceof jQuery ? this.props.elt[0] : this.props.elt;
+            const elt = this.props.elt instanceof jQuery ? this.props.elt[0] : this.props.elt;
             this.container.appendChild(elt);
         }
     }

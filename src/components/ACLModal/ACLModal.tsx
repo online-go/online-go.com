@@ -78,8 +78,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
     removeACLEntry(obj) {
         console.log("SHould be removing", obj);
-        let new_acl = [];
-        for (let entry of this.state.acl) {
+        const new_acl = [];
+        for (const entry of this.state.acl) {
             if (!(entry.player_id === obj.player_id && entry.group_id === obj.group_id)) {
                 new_acl.push(entry);
             }
@@ -99,13 +99,13 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     };
 
     grantAccess = () => {
-        let player_id = this.state.selected_player && this.state.selected_player.id;
-        let group_id = this.state.selected_group && this.state.selected_group.id;
+        const player_id = this.state.selected_player && this.state.selected_player.id;
+        const group_id = this.state.selected_group && this.state.selected_group.id;
 
         this.refs.player_autocomplete.clear();
         this.refs.group_autocomplete.clear();
 
-        let obj: any = {};
+        const obj: any = {};
         if (player_id) {
             obj.player_id = player_id;
         }

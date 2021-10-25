@@ -25,7 +25,7 @@ import { ChatMessage } from 'chat_manager';
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
-    let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
+    const cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
         "\\b"  + cleaned_username_regex + "\\b"
         + "|\\bplayer ?" + user.id + "\\b"
@@ -40,17 +40,17 @@ interface ChatLineInterface {
 }
 
 export function ChatLine(props: ChatLineInterface): JSX.Element {
-    let line = props.line;
-    let lastline = props.lastline;
-    let user = line;
+    const line = props.line;
+    const lastline = props.lastline;
+    const user = line;
 
     if (line.system) {
         return ( <div className="chat-line system">{chat_markup(line.message.m)}</div>);
     }
 
-    let message = line.message;
-    let ts_ll = lastline ? new Date(lastline.message.t * 1000) : null;
-    let ts = message.t ? new Date(message.t * 1000) : null;
+    const message = line.message;
+    const ts_ll = lastline ? new Date(lastline.message.t * 1000) : null;
+    const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
     let show_date: JSX.Element = null;
@@ -90,12 +90,12 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         }
     }
 
-    let mentions = name_match_regex.test(body);
+    const mentions = name_match_regex.test(body);
 
     let timestamp_str: string = "";
     if (ts) {
-        let hours = ts.getHours();
-        let minutes = ts.getMinutes();
+        const hours = ts.getHours();
+        const minutes = ts.getMinutes();
 
         timestamp_str =
             (hours < 10 ? ` ${hours}` : hours.toString())
@@ -120,12 +120,12 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
 
 function generateChatSearchLine(urlString, command, body) {
     let target = '';
-    let bodyString = body.substr(command.length);
+    const bodyString = body.substr(command.length);
     if (bodyString.split(' ')[0] === '-user') {
         target = bodyString.split(' ')[1] + ' ';
     }
 
-    let params = body.split(' ');
+    const params = body.split(' ');
     if (target.length > 0) {
         return  target.slice(0, target.length - 1) + ": " +
             searchString(urlString, params.slice(3, params.length));

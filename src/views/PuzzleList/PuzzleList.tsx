@@ -48,7 +48,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
     }
 
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
         return (
             <div className="page-width">
@@ -88,7 +88,7 @@ export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
                             }}
                             groom={
                                 (arr) => {
-                                    for (let e of arr) {
+                                    for (const e of arr) {
                                         e.min_rank_string = longRankString(e.min_rank);
                                         e.max_rank_string = longRankString(e.max_rank);
                                         e.min_rank_short = rankString(e.min_rank);

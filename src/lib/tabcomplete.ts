@@ -18,13 +18,13 @@ declare let $;
  * (c) 2006 Alex Brem <alex@0xab.cd> - http://blog.0xab.cd
  */
 function getSelection(field) {
-    let e = field;
+    const e = field;
 
     return (
 
         /* mozilla / dom 3.0 */
         ("selectionStart" in e && (() => {
-            let l = e.selectionEnd - e.selectionStart;
+            const l = e.selectionEnd - e.selectionStart;
             return { start: e.selectionStart, end: e.selectionEnd, length: l, text: e.value.substr(e.selectionStart, l) };
         })) ||
 
@@ -64,7 +64,7 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
         input.focus();
         input.setSelectionRange(selectionStart, selectionEnd);
     } else if (input.createTextRange) {
-        let range = input.createTextRange();
+        const range = input.createTextRange();
         range.collapse(true);
         range.moveEnd("character", selectionEnd);
         range.moveStart("character", selectionStart);
@@ -76,7 +76,7 @@ function setCaretToPos(input, pos) {
     // Fix for difference between normalized val() and value
     // TODO: Need to fix IE test here and replace with support test
     if ($.fn.nicknameTabComplete.has_newline_bug && !$.browser.msie) {
-        let adjustment = $(input).val().substr(0, pos).split("\n").length - 1;
+        const adjustment = $(input).val().substr(0, pos).split("\n").length - 1;
         pos = pos + adjustment;
     }
     setSelectionRange(input, pos, pos);
@@ -85,15 +85,15 @@ function setCaretToPos(input, pos) {
 
 /* The rest of this code is my code */
 function matchName(input, nicknames) {
-    let match = input.toLowerCase();
-    let matches = [];
-    let length = input.length;
+    const match = input.toLowerCase();
+    const matches = [];
+    const length = input.length;
     let letters = "";
     let letter;
     let i = 0;
 
     $.each(nicknames, (index, value) => {
-        let components = value.toLowerCase().split(" ");
+        const components = value.toLowerCase().split(" ");
         for (let k = 0; k < components.length; ++k) {
             if (components[k].substr(0, length) === match) {
                 matches.push(value);
@@ -129,12 +129,12 @@ function matchName(input, nicknames) {
 }
 
 function matchFullName(input, nicknames) {
-    let matches = [];
+    const matches = [];
     let i = 0;
     let letter;
     let letters = "";
     $.each(nicknames, (index, value) => {
-        let idx = input.lastIndexOf(value);
+        const idx = input.lastIndexOf(value);
         if (idx >= 0 && idx === input.length - value.length) {
             matches.push(value);
         }
@@ -167,9 +167,9 @@ function matchFullName(input, nicknames) {
 /* eslint-disable @typescript-eslint/no-invalid-this */
 function onKeyPress(e, options) {
     if (e.which === 9) {
-        let $this = $(this);
-        let val = $this.val();
-        let sel = getSelection($this[0]);
+        const $this = $(this);
+        const val = $this.val();
+        const sel = getSelection($this[0]);
         let text = "";
         let match: any = "";
         let first;
@@ -204,7 +204,7 @@ function onKeyPress(e, options) {
                     last    = val.substr(sel.start);
                     /* Space should not be added when there is only 1 match
                             or if there is already a space following the caret position */
-                    let space = (match.matches.length > 1 || last.length && last.substr(0, 1) === " ") ? "" : (first.trim().length === 0 ? ": " : " ");
+                    const space = (match.matches.length > 1 || last.length && last.substr(0, 1) === " ") ? "" : (first.trim().length === 0 ? ": " : " ");
                     $this.val(first + match.value + space + last);
                     setCaretToPos(this, sel.start - text.length + match.value.length + space.length);
                 }
@@ -214,7 +214,7 @@ function onKeyPress(e, options) {
                 // Part of a crazy hack for Opera
                 this.lastKey = 9;
             } else if (/( |: )$/.test(text)) {
-                let space = text.match(/( |: )$/)[1];
+                const space = text.match(/( |: )$/)[1];
                 text = text.substring(0, text.length - space.length);
                 if (typeof(options.nicknames) === "function") {
                     match = matchFullName(text, options.nicknames());
@@ -276,7 +276,7 @@ $.fn.nicknameTabComplete.defaults = {
 };
 
 $.fn.nicknameTabComplete.has_newline_bug = (() => {
-    let textarea = $("<textarea>").val("Newline\nTest");
+    const textarea = $("<textarea>").val("Newline\nTest");
     return textarea[0].value === "Newline\r\nTest";
 })();
 

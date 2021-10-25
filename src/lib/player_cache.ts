@@ -26,7 +26,7 @@ const debug = new Debug("player_cache");
 // subscribe to and unsubscribe from numerical ids or whole Players. The
 // function to query which players we are watching is called "players", not
 // "channels".
-let publisher = new Publisher<{[id: string]: PlayerCacheEntry}>();
+const publisher = new Publisher<{[id: string]: PlayerCacheEntry}>();
 export class Subscriber {
     private subscriber: RealSubscriber<{[id: string]: PlayerCacheEntry}, string>;
 
@@ -49,11 +49,11 @@ export class Subscriber {
     }
 
     private to_strings(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): Array<string> {
-        let result: Array<string> = [];
+        const result: Array<string> = [];
         if (!(players instanceof Array)) {
             players = [players];
         }
-        for (let player of players) {
+        for (const player of players) {
             if (typeof player === "number") {
                 result.push(player.toString());
             } else {
@@ -90,20 +90,20 @@ interface FetchEntry {
     required_fields: Array<string>;
 }
 
-let cache: {[id: number]: PlayerCacheEntry} = {};
-let cache_by_username: {[username: string]: PlayerCacheEntry} = {};
-let active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
-export let nicknames: Array<string> = [];
+const cache: {[id: number]: PlayerCacheEntry} = {};
+const cache_by_username: {[username: string]: PlayerCacheEntry} = {};
+const active_fetches: {[id: number]: Promise<PlayerCacheEntry>} = {};
+export const nicknames: Array<string> = [];
 
 export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry {
     if (Array.isArray(player)) {
-        for (let p of player) {
+        for (const p of player) {
             update(p, dont_overwrite);
         }
         return;
     }
 
-    let id = "user_id" in player ? player.user_id : player.id;
+    const id = "user_id" in player ? player.user_id : player.id;
     if (!id) {
         if (player && player.anonymous) {
             return;
@@ -115,7 +115,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
     if (!(id in cache)) {
         cache[id] = {id:id};
     }
-    for (let k in player) {
+    for (const k in player) {
         if (dont_overwrite && k in cache[id]) {
             continue;
         }
@@ -158,11 +158,11 @@ export function lookup_by_username(username: string): PlayerCacheEntry | null {
 
 
 export function fetch_by_username(username: string, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
-    let user = lookup_by_username(username);
+    const user = lookup_by_username(username);
     if (user) {
         return fetch(user.id, required_fields);
     } else {
-        let res = get("players", {username: username})
+        const res = get("players", {username: username})
                     .then((res) => {
                         if (res.results.length) {
                             return fetch(res.results[0].id, required_fields);
@@ -183,13 +183,13 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
         return Promise.reject("invalid player id");
     }
 
-    let missing_fields = [];
+    const missing_fields = [];
 
     if (player_id in cache) {
         let have_cached_copy = true;
 
         if (required_fields) {
-            for (let f of required_fields) {
+            for (const f of required_fields) {
                 if (!(f in cache[player_id])) {
                     missing_fields.push(f);
                     have_cached_copy = false;
@@ -221,9 +221,9 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
     });
 }
 
-let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
+const fetch_player = new Batcher<FetchEntry>(fetch_queue => {
     while (fetch_queue.length > 0) {
-        let queue = fetch_queue.slice(0, 100);
+        const queue = fetch_queue.slice(0, 100);
         fetch_queue = fetch_queue.slice(100);
 
         debug.log(`Batch requesting player info for id ${queue.map(e => e.player_id).join(',')}`);
@@ -231,10 +231,10 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         get("/termination-api/players", { "ids": queue.map(e => e.player_id).join('.') })
         .then((players) => {
             for (let idx = 0; idx < queue.length; ++idx) {
-                let player = players[idx];
-                let resolve = queue[idx].resolve;
-                let reject = queue[idx].reject;
-                let required_fields = queue[idx].required_fields;
+                const player = players[idx];
+                const resolve = queue[idx].resolve;
+                const reject = queue[idx].reject;
+                const required_fields = queue[idx].required_fields;
 
                 if ('icon-url' in player) {
                     player.icon = player['icon-url']; /* handle stupid inconsistency in API */
@@ -243,7 +243,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
                 delete active_fetches[player.id];
                 update(player);
                 if (required_fields) {
-                    for (let field of required_fields) {
+                    for (const field of required_fields) {
                         if (!(field in cache[player.id])) {
                             debug.warn("Required field ", field, " was not resolved by fetch");
                             cache[player.id][field] = "[ERROR]";
@@ -260,7 +260,7 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
         .catch((err) => {
             if ("error" in err.responseJSON) {
                 if (/Player ([0-9]+) not found in cassandra/gi.test(err.responseJSON.error)) {
-                    let err_player_id = Number(/Player ([0-9]+) not found in cassandra/gi.exec(err.responseJSON.error)[1]);
+                    const err_player_id = Number(/Player ([0-9]+) not found in cassandra/gi.exec(err.responseJSON.error)[1]);
                     // create a dummy entry for missing player
                     let idx = 0;
                     for (; idx < 100; idx ++) {
@@ -268,8 +268,8 @@ let fetch_player = new Batcher<FetchEntry>(fetch_queue => {
                             break;
                         }
                     }
-                    let reject = queue[idx].reject;
-                    let player = {id: err_player_id, username: "?player" + err_player_id + "?", ui_class: "provisional", pro: false};
+                    const reject = queue[idx].reject;
+                    const player = {id: err_player_id, username: "?player" + err_player_id + "?", ui_class: "provisional", pro: false};
                     update(player);
                     debug.error(err);
                     reject(err);

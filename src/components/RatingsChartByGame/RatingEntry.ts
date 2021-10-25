@@ -90,13 +90,13 @@ export class RatingEntry {
 }
 
 export function makeRatingEntry(d: any): RatingEntry {
-    let played_black = parseInt(d.played_black) === 1;
-    let rating = parseFloat(d.rating);
-    let opponent_rating = parseFloat(d.opponent_rating);
-    let handicap = parseInt(d.handicap);
+    const played_black = parseInt(d.played_black) === 1;
+    const rating = parseFloat(d.rating);
+    const opponent_rating = parseFloat(d.opponent_rating);
+    const handicap = parseInt(d.handicap);
     let won = parseInt(d.outcome);
     let lost = 1 - won;
-    let extra = JSON.parse(d.extra);
+    const extra = JSON.parse(d.extra);
 
     if (d.opponent_id <= 0) {
         // the initial rating entry has an invalid id like this
@@ -111,7 +111,7 @@ export function makeRatingEntry(d: any): RatingEntry {
         outcome = effective_outcome(opponent_rating, rating, handicap);
     }
 
-    let new_rating_entry = new RatingEntry({
+    const new_rating_entry = new RatingEntry({
         ended              : new Date(parseInt(d.ended) * 1000),
         game_id            : parseInt(d.game_id),
         played_black       : played_black,

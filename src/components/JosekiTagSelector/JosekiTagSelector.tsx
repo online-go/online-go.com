@@ -48,8 +48,8 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
             const available_tags = body.tags.map((tag, i) => (
                 { label: tag.description, value: tag.id }
             ));
-            let tag_map = {};
-            for (let tag of available_tags) {
+            const tag_map = {};
+            for (const tag of available_tags) {
                 tag_map[tag.value] = tag;
             }
             this.setState({

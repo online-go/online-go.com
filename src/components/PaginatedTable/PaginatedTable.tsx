@@ -107,8 +107,8 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
     }
 
     setPageSize(n: number|string) {
-        let old_page_size = this.state.page_size;
-        let page_size = parseInt(n + "");
+        const old_page_size = this.state.page_size;
+        const page_size = parseInt(n + "");
         if (this.props.name) {
             data.set(`paginated-table.${this.props.name}.page_size`, page_size);
         }
@@ -117,11 +117,11 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
     }
 
     ajax_loader(filter: any, sorting: Array<string>): Promise<any> {
-        let query = {
+        const query = {
             page_size: this.state.page_size,
             page: this.state.page,
         };
-        for (let k in filter) {
+        for (const k in filter) {
             if (
                 (
                     (k.indexOf("__istartswith") > 0) ||
@@ -137,7 +137,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             query[k] = filter[k];
         }
         //console.log(query);
-        let order_by = (this.state.orderBy ? this.state.orderBy : (sorting || []));
+        const order_by = (this.state.orderBy ? this.state.orderBy : (sorting || []));
 
         if (order_by.length) {
             query["ordering"] = order_by.join(",");
@@ -168,7 +168,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         this.needs_another_update = false;
         this.source_function(this.filter, this.sorting)
         .then((res) => {
-            let new_rows = this.props.groom ? this.props.groom(res.results || []) : res.results || [];
+            const new_rows = this.props.groom ? this.props.groom(res.results || []) : res.results || [];
 
             if (this.props.debug) {
                 console.debug("PaginatedTable groomed rows: ", new_rows);
@@ -215,7 +215,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             this.setState({page: ""});
             return;
         }
-        let n = parseInt(ev.target.value);
+        const n = parseInt(ev.target.value);
         this.setPage(n);
     };
     _select = (ev) => {
@@ -235,7 +235,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
     ordersMatch(order1, order2) {
         let match = true;
         if (order1.length === order2.length) {
-            for (let i in order1) {
+            for (const i in order1) {
                 if (order1[i].replace("-", "") !== order2[i].replace("-", "")) {
                     match = false;
                     break;
@@ -248,8 +248,8 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
     }
 
     reverseOrder(order) {
-        let new_order_by = [];
-        for (let str of order) {
+        const new_order_by = [];
+        for (const str of order) {
             new_order_by.push(str.indexOf("-") === 0 ? str.substr(1) : "-" + str);
         }
         return new_order_by;
@@ -261,7 +261,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             let clsName = "";
             if (this.ordersMatch(this.state.orderBy, order)) {
                 let minus = false;
-                for (let o of this.state.orderBy) {
+                for (const o of this.state.orderBy) {
                     if (o.indexOf("-") === 0) {
                         minus = true;
                         break;
@@ -296,11 +296,11 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
             return column.render;
         }
 
-        let extra_classes = [
+        const extra_classes = [
             this.props.className || "",
             this.props.onRowClick ? "clickable-rows" : "",
         ].join(" ");
-        let page_sizes = this.props.pageSizeOptions || [10, 25, 50];
+        const page_sizes = this.props.pageSizeOptions || [10, 25, 50];
         if (this.props.pageSize) {
             if (page_sizes.indexOf(this.props.pageSize) < 0) {
                 page_sizes.push(this.props.pageSize);
@@ -308,10 +308,10 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
         }
         page_sizes.sort();
 
-        let columns = this.props.columns.filter((c) => !!c);
-        let ncols = columns.length;
+        const columns = this.props.columns.filter((c) => !!c);
+        const ncols = columns.length;
 
-        let blank_rows = [];
+        const blank_rows = [];
         if (this.props.fillBlankRows) {
             for (let i = 0; i < this.state.page_size - this.state.rows.length; ++i) {
                 blank_rows.push(<tr key={"blank-" + i}><td className="blank" colSpan={ncols} /></tr>);
@@ -329,7 +329,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
                     </thead>
                     <tbody>
                         {this.state.rows.map((row, i) => {
-                            let cols = columns.map((column, idx) => (
+                            const cols = columns.map((column, idx) => (
                                 <td key={idx} className={cls(row, column)} {...column.cellProps}>{column_render(column, row)}</td>
                             ));
                             if (this.props.onRowClick) {
