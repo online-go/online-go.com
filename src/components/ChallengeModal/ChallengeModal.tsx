@@ -96,11 +96,8 @@ const demo_ranks = allRanks();
 const ranked_ranks = (() => {
     if (!data.get("user")) { return []; }
 
-    let rankedMin;
-    let rankedMax;
-
-    rankedMin = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank - 9);
-    rankedMax = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank + 9);
+    const rankedMin = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank - 9);
+    const rankedMax = bounded_rank(getUserRating(data.get("user"), "overall", 0).bounded_rank + 9);
 
     return rankList(rankedMin, rankedMax, false);
 })();

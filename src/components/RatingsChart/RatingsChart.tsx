@@ -893,29 +893,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
     };
 
     getUTCMonthWidth(d: Date): number {
-        let days_in_month;
-
-        /*
-        let today = new Date();
-        today.setHours(23, 59, 59);
-        if (is_same_month(d, today)) {
-            days_in_month = ((today.getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-        } else {
-            days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
-        }
-        */
-        days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
+        const days_in_month = ((new Date(d.getUTCFullYear(), d.getUTCMonth() + 1).getTime() - new Date(d.getUTCFullYear(), d.getUTCMonth()).getTime()) / 86400);
 
         let s = this.date_extents[0];
         let e = this.date_extents[1];
         s = new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate());
         e = new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate());
-        /*
-        if (e.getTime() > Date.now()) {
-            e = new Date();
-        }
-        */
-        //let days_in_range = Math.round((e.getTime() - s.getTime()) / 86400);
+
         const days_in_range = ((e.getTime() - s.getTime()) / 86400);
 
         return this.graph_width * (days_in_month / days_in_range);

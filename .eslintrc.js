@@ -43,7 +43,6 @@ module.exports = {
         "no-prototype-builtins": "off", // 8 errors
         "no-self-assign": "off", // 2 errors
         "no-useless-escape": "off", // 24 errors
-        "prefer-const": "off", // 6 errors
         "prefer-spread": "off", // 7 errors
 
         //==============================================================

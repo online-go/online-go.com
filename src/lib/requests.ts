@@ -96,8 +96,7 @@ export function request(method: Method): RequestFunction {
         }
 
         const real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
-        let real_data: any;
-        real_data = data;
+        const real_data = data;
 
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
